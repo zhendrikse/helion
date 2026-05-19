@@ -10,3 +10,4 @@ examples/nature/node_modules
 examples/nature/dist
 examples/electromagnetism/node_modules
 examples/electromagnetism/dist
+.idea

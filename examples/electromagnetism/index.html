@@ -5,7 +5,6 @@
   </body>
     <!--
        - A N T E N N A
-       -->
     <div class="applicationCanvasWrapper" id="antennaCanvasWrapper">
       <canvas id="antennaCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
     </div>
@@ -15,14 +14,23 @@
       <span id="antennaFieldStrengthSliderValue">10</span>
     </div>
     <script type="module" src="scenes/antenna.js"></script>
+       -->
     <!--
        - C H A R G E D  R I N G
     <div class="canvasWrapper" id="chargedRingWrapper">
       <canvas class="applicationCanvas" id="chargedRingCanvas"></canvas>
       <div class="overlayText" id="chargedRingOverlay">Click to start the animation!</div>
     </div>
-    <script type="module" src="scenes/charged_ring.js"></script>
        -->
+    <!--
+       - C H A R G E D  R O D
+       -->
+    <script type="module" src="scenes/charged_ring.js"></script>
+    <div class="applicationCanvasWrapper" id="chargedRodWrapper" style="aspect-ratio: 3/4">
+      <canvas id="chargedRodCanvas" class="applicationCanvas" style="aspect-ratio: 3/4"></canvas>
+      <div class="overlayText" id="chargedRodOverlay">Click to start the animation!</div>
+    </div>
+    <script type="module" src="scenes/charged_rod.js"></script>
     <!--
        - D I P O L E  F I E L D
     <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">
