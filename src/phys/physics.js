@@ -36,7 +36,8 @@ class AccelerationVector {
 
     clone() { return new AccelerationVector(this._parent); }
 
-    to(view) { return { body: this, view: view}; };
+    alwaysWith(view) { return { body: this, view: view, always: true}; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
 
     get position() { return this._parent.position; }
     get velocity() { return this._parent.velocity; }
@@ -52,7 +53,8 @@ class VelocityVector {
 
     clone() { return new VelocityVector(this._parent); }
 
-    to(view) { return { body: this, view: view}; };
+    alwaysWith(view) { return { body: this, view: view, always: true}; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
 
     get position() { return this._parent.position; }
     get velocity() { return this._parent.velocity; }
@@ -96,7 +98,8 @@ export class Body {
 
     and(otherBody) { return new TwoBodies(this, otherBody) };
 
-    to(view) { return { body: this, view: view}; };
+    alwaysWith(view) { return { body: this, view: view, always: true }; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
 
     positionVectorTo(other) { return other.position.clone().sub(this.position); }
     distanceToSquared(other) { return this.positionVectorTo(other).dot(this.positionVectorTo(other)); }
@@ -269,7 +272,8 @@ export class HarmonicOscillator {
         this._damping = damping;
     }
 
-    to(view) { return { body: this.bond, view: view}; };
+    alwaysWith(view) { return { body: this.bond, view: view, always: true}; };
+    onceWith(view) { return { body: this.bond, view: view, always: false}; };
 
     oscillate(dt, integrator = Integrators.symplecticEulerStep) {
         const delta = this.body1.positionVectorTo(this.body2);
@@ -324,7 +328,8 @@ export class OneDimensionalPlaneWave {
     get lambda() { return this._lambda; }
     get k() { return this._k; }
 
-    to(view) { return { body: this, view: view}; };
+    alwaysWith(view) { return { body: this, view: view, always: true}; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
 
     propagate(t) { this._time = t; }
 

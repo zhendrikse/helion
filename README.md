@@ -30,8 +30,8 @@ const renderer = ThreeJsRenderer.on(HtmlDiv
     .with(threeJsRendererOptions);
 
 // 2. Bind physics objects to visual representations
-renderer.add(physicsBody.to(new Sphere()));
-renderer.add(coneGeometry.to(new IsoparametricContoursSurface()));
+renderer.synchronize(physicsBody.alwaysWith(new Sphere()));
+renderer.synchronize(coneGeometry.onceWith(new IsoparametricContoursSurface()));
 
 // 3. Run simulation
 Simulation

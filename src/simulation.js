@@ -207,12 +207,7 @@ export class Renderer {
     /**
      * Add objects to simulation with synchronization of the physics state.
      */
-    add(object) {}
-
-    /**
-     * Add objects to simulation _without_ synchronization of the physics state.
-     */
-    asyncAdd(object) {}
+    synchronize(object) {}
 
     /**
      * A renderer gets notified from the simulation when the run status changes.

@@ -246,7 +246,8 @@ export class VectorFieldVector {
         });
     }
 
-    to(view) { return { body: this, view: view}; };
+    alwaysWith(view) { return { body: this, view: view, always: true}; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
 }
 
 export class ScalarField2D {
@@ -273,7 +274,8 @@ class ScalarFieldValue {
         });
     }
 
-    to(view) { return { body: this, view: view}; };
+    alwaysWith(view) { return { body: this, view: view, always: true}; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
 }
 
 export class ComplexScalarFieldValue {
@@ -298,7 +300,8 @@ export class ComplexScalarFieldValue {
 export class VectorField {
     constructor() { }
 
-    to(view) { return { body: this, view: view}; };
+    alwaysWith(view) { return { body: this, view: view, always: true}; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
 
     vectorAt(positionVector) {
         throw new Error("You invoked the method of an abstract base class. Please create a subclass first.");
@@ -398,7 +401,8 @@ export class StaticSurface {
         throw new Error("Abstract class: sample() must be implemented!");
     }
 
-    to(view) { return { body: this, view: view}; };
+    alwaysWith(view) { return { body: this, view: view, always: true }; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
 }
 
 /**
@@ -413,7 +417,8 @@ export class DynamicSurface {
 
     update(dt, time) {}
 
-    to(view) { return { body: this, view: view}; };
+    alwaysWith(view) { return { body: this, view: view, always: true }; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
 }
 
 /**

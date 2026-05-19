@@ -117,18 +117,18 @@ const renderer = ThreeJsRenderer
 
 // Ring rendering
 for (const segment of ring.segments)
-    renderer.asyncAdd(segment.to(new Cylinder({ color: new Color("orange") })));
+    renderer.synchronize(segment.onceWith(new Cylinder({ color: new Color("orange") })));
 
 // Electron + trail rendering
 const electronSphere = new Sphere({ color: new Color("red")});
-renderer.add(electron.to(electronSphere));
-renderer.add(electron.to(new Trail({
+renderer.synchronize(electron.alwaysWith(electronSphere));
+renderer.synchronize(electron.alwaysWith(new Trail({
     maxPoints: 150,
     color: electronSphere.color
 })));
 
 // Field visualization
-renderer.asyncAdd(electricField.to(new ArrowField({
+renderer.synchronize(electricField.onceWith(new ArrowField({
     xRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     yRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     zRange: new Range(-radius * 1.5, radius * 1.5, radius / 6),

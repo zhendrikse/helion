@@ -74,9 +74,9 @@ const arrowField = new ArrowField({
     colorMap: (axis, magnitude) => new Color().setHSL(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.5)
 });
 
-renderer.add(dipole.positive.to(positiveSphere));
-renderer.add(dipole.negative.to(negativeSphere));
-renderer.add(dipoleField.to(arrowField));
+renderer.synchronize(dipole.positive.onceWith(positiveSphere));
+renderer.synchronize(dipole.negative.onceWith(negativeSphere));
+renderer.synchronize(dipoleField.alwaysWith(arrowField));
 
 //
 // Event controller

@@ -212,27 +212,22 @@ export class ThreeJsRenderer extends Renderer {
             this._doAutoRotate(this._camera.position.length());
     }
 
-    addPlainObject(threeJsObject) {
+    addObject3D(threeJsObject) {
         this._world.add(threeJsObject);
     }
 
-    add(bodyAndView) {
-        this._world.add(bodyAndView.view);
-        this._dynamicObjects.push(bodyAndView.view);
-
+    synchronize(bodyAndView) {
         // Tie the body state to its associated view
         if (!bodyAndView.view.attachTo)
             throw new Error("Use addPlainObject() to attach regular Three.js objects!");
-        bodyAndView.view.attachTo(bodyAndView.body);
-    }
 
-    asyncAdd(bodyAndView) {
         this._world.add(bodyAndView.view);
-        this._staticObjects.push(bodyAndView.view);
 
-        // Tie the body state to its associated view
-        if (!bodyAndView.view.attachTo)
-            throw new Error("Use addPlainObject() to attach regular Three.js objects!");
+        if (bodyAndView.always)
+            this._dynamicObjects.push(bodyAndView.view);
+        else
+            this._staticObjects.push(bodyAndView.view);
+
         bodyAndView.view.attachTo(bodyAndView.body);
     }
 

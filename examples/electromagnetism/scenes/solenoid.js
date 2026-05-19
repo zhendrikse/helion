@@ -95,9 +95,9 @@ const renderer = ThreeJsRenderer
     .with(threeJsRendererOptions);
 
 for (const segment of solenoid.segments)
-    renderer.asyncAdd(segment.to(new Cylinder({ color: new Color("yellow") })));
+    renderer.synchronize(segment.onceWith(new Cylinder({ color: new Color("yellow") })));
 
-renderer.add(magneticField.to(new ArrowField({
+renderer.synchronize(magneticField.alwaysWith(new ArrowField({
     xRange: new Range(-20, 20, 4),
     yRange: new Range(-20, 20, 4),
     zRange: new Range(-20, 20, 4),

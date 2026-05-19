@@ -51,22 +51,16 @@ export class Canvas2DRenderer extends Renderer {
         this._staticObjects.forEach(obj => obj.render?.(this._context));
     }
 
-
-    add(bodyAndView) {
-        this._dynamicObjects.push(bodyAndView.view);
-
+    synchronize(bodyAndView) {
         // Tie the body state to its associated view
         if (!bodyAndView.view.attachTo)
-            throw new Error("body does not implement attachTo(), hence it cannot be attached to view");
-        bodyAndView.view.attachTo(bodyAndView.body);
-    }
+            throw new Error("Use addPlainObject() to attach regular Three.js objects!");
 
-    asyncAdd(bodyAndView) {
-        this._staticObjects.push(bodyAndView.view);
+        if (bodyAndView.always)
+            this._dynamicObjects.push(bodyAndView.view);
+        else
+            this._staticObjects.push(bodyAndView.view);
 
-        // Tie the body state to its associated view
-        if (!bodyAndView.view.attachTo)
-            throw new Error("body does not implement attachTo(), hence it cannot be attached to view");
         bodyAndView.view.attachTo(bodyAndView.body);
     }
 
