@@ -70,8 +70,16 @@ Complex orchestration layers are intentionally avoided.
 ## 🧪 Live demos
 <div class="header_line"><br/></div>
 
-TODO
+### Electromagnetism
+<div class="header_line"><br/></div>
 
-````
+🎯 Movement of a charged particle in a field of a charged plate<br/>
+🧠 Inspired by [this demo](https://trinket.io/glowscript/38fbc7b2d01d) Byron Philhour<br/>
 
----
+<div class="canvasWrapper" id="chargedSheetWrapper">
+    <canvas class="applicationCanvas" id="chargedSheetCanvas"></canvas>
+    <div class="overlayText" id="chargedSheetOverlay">Click to start the animation!</div>
+</div>
+<script type="module" src="examples/electromagnetism/scenes/charged_sheet.js"></script>
+<p style="clear: both;"></p>
+
