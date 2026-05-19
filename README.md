@@ -23,17 +23,21 @@ physics or mathematics, it is likely too abstract!
 Helion code expresses intent:
 
 ```js
-// 1. Define renderer (visual layer)
+// 1. Do your physics and math
+const coneGeometry = new SchwarzschildSurface(sunMass);
+const spring = new Spring();
+    ...
+
+// 2. Choose renderer (visual layer)
 const renderer = ThreeJsRenderer.on(HtmlDiv
         .withElementId("canvasWrapper")
         .contains(Canvas.withElementId("canvas")))
-    .with(threeJsRendererOptions);
 
-// 2. Bind physics objects to visual representations
-renderer.synchronize(physicsBody.alwaysWith(new Sphere()));
+// 3. Bind physics objects to visual representations
+renderer.synchronize(spring.alwaysWith(new Helix()));
 renderer.synchronize(coneGeometry.onceWith(new IsoparametricContoursSurface()));
 
-// 3. Run simulation
+// 4. Run simulation
 Simulation
     .with(renderer)
     .onScale(1e-10)
@@ -47,10 +51,10 @@ Simulation
 
 Helion is designed for:
 
-* students of physics and mathematics
-* researchers prototyping ideas
-* educators building interactive explanations
-* learners exploring physical intuition
+👩🏻‍🎓 students of physics and mathematics<br/>
+🕵️ researchers prototyping ideas<br/>
+👨🏻‍🏫 educators building interactive explanations<br/>
+🧑‍💻 learners exploring physical intuition<br/>
 
 ## 🧭 Design rule of thumb
 <div class="header_line"><br/></div>
@@ -70,16 +74,5 @@ Complex orchestration layers are intentionally avoided.
 ## 🧪 Live demos
 <div class="header_line"><br/></div>
 
-### Electromagnetism
-<div class="header_line"><br/></div>
-
-🎯 Movement of a charged particle in a field of a charged plate<br/>
-🧠 Inspired by [this demo](https://trinket.io/glowscript/38fbc7b2d01d) Byron Philhour<br/>
-
-<div class="canvasWrapper" id="chargedSheetWrapper">
-    <canvas class="applicationCanvas" id="chargedSheetCanvas"></canvas>
-    <div class="overlayText" id="chargedSheetOverlay">Click to start the animation!</div>
-</div>
-<script type="module" src="examples/electromagnetism/scenes/charged_sheet.js"></script>
-<p style="clear: both;"></p>
+TODO
 
