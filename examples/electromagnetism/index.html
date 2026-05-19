@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  </body>
+    <!--
+       - C H A R G E D  R I N G
+    <div class="canvasWrapper" id="chargedRingWrapper">
+      <canvas class="applicationCanvas" id="chargedRingCanvas"></canvas>
+      <div class="overlayText" id="chargedRingOverlay">Click to start the animation!</div>
+    </div>
+    <script type="module" src="scenes/charged_ring.js"></script>
+       -->
+    <!--
+       - D I P O L E  F I E L D
+    <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">
+      <canvas id="solenoidCanvas" class="applicationCanvas"></canvas>
+    </div>
+    <div class="applicationCanvasWrapper" id="dipoleCanvasWrapper" style="aspect-ratio: 19 / 12;">
+      <canvas id="dipoleCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
+    </div>
+    <div class="buttonRow">
+      <label for="fieldStrengthSlider">Field </label><input type="range" id="fieldStrengthSlider" min="0" max=".5" step="any" value="0.25"/>
+      <span id="fieldStrengthSliderValue">0.25</span>
+      <label for="autoRotate">Auto-rotate </label><input type="checkbox" id="autoRotate"/>
+    </div>
+    <script type="module" src="scenes/dipole_field.js"></script>
+       -->
+
+    <!--
+       - S O L E N O I D
+     -->
+    <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">
+      <canvas id="solenoidCanvas" class="applicationCanvas" ></canvas>
+    </div>
+    <div class="buttonRow">
+      <label for="fieldStrength">Field </label><input type="range" id="fieldStrength" min="0" max="2" step="any" value=".5"/>
+      <span id="fieldStrengthSliderValue">.5</span>
+      <label for="autoRotate">Auto-rotate </label><input type="checkbox" id="autoRotate"/>
+    </div>
+    <script type="module" src="scenes/solenoid.js"></script>
+  </body>
+</html>
+

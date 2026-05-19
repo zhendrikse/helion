@@ -1,0 +1,12 @@
+node_modules/
+dist/
+examples/kinematics/node_modules
+examples/kinematics/dist
+examples/waves/node_modules
+examples/waves/dist
+examples/quantumphysics/node_modules
+examples/quantumphysics/dist
+examples/nature/node_modules
+examples/nature/dist
+examples/electromagnetism/node_modules
+examples/electromagnetism/dist

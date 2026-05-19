@@ -1,0 +1,37 @@
+{
+  "name": "helion",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A web-based simulation environment for educational and scientific visualizations",
+  "main": "./dist/my-library.js",
+  "module": "./dist/my-library.js",
+  "exports": {
+    ".": "./dist/my-library.js"
+  },
+  "scripts": {
+    "build": "vite build"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhendrikse/helion.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zhendrikse/helion/issues"
+  },
+  "homepage": "https://github.com/zhendrikse/helion#readme",
+  "devDependencies": {
+    "vite": "^8.0.13"
+  },
+  "dependencies": {
+    "three": "^0.184.0"
+  },
+  "peerDependencies": {
+  "three": "^0.184.0"
+  }
+}
