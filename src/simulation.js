@@ -291,7 +291,7 @@ export class Simulation {
         this._onAfterPhysicsUpdate = customFunction;
     }
 
-    onPhysicsUpdate(updateFunction = () => {}, substepsCount = 1) {
+    onClockTick(updateFunction = () => {}, substepsCount = 1) {
         this._updateFunction = updateFunction;
         this._substepsCount = substepsCount;
 

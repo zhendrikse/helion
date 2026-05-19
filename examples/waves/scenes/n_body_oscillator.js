@@ -96,7 +96,7 @@ const subSteps = 10;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onPhysicsUpdate((clockTime, _) => {
+    .onClockTick((clockTime, _) => {
         for (let i = 0; i < balls.length - 1; i++)
             springs[i].oscillate(dt);
 

@@ -98,7 +98,7 @@ eventController.attach(HtmlControl
 Simulation
     .with(renderer)
     .onScale(scale)
-    .onPhysicsUpdate();
+    .onClockTick();
 
 export function createDipoleFieldScene() {
     return {

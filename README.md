@@ -37,7 +37,7 @@ renderer.synchronize(coneGeometry.onceWith(new IsoparametricContoursSurface()));
 Simulation
     .with(renderer)
     .onScale(1e-10)
-    .run((clockTime, simulatedTime) => {
+    .onClockTick((clockTime, simulatedTime) => {
         // physics update
     });
 ```

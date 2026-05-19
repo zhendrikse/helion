@@ -4,6 +4,18 @@
   </head>
   </body>
     <!--
+       - A N T E N N A
+       -->
+    <div class="applicationCanvasWrapper" id="antennaCanvasWrapper">
+      <canvas id="antennaCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
+    </div>
+    <div class="buttonRow">
+      <label for="antennaFieldStrengthSlider">🧲 Field strength: </label>
+      <input type="range" id="antennaFieldStrengthSlider" min="1" max="20" step="0.1" value="10"/>
+      <span id="antennaFieldStrengthSliderValue">10</span>
+    </div>
+    <script type="module" src="scenes/antenna.js"></script>
+    <!--
        - C H A R G E D  R I N G
     <div class="canvasWrapper" id="chargedRingWrapper">
       <canvas class="applicationCanvas" id="chargedRingCanvas"></canvas>
@@ -13,7 +25,6 @@
        -->
     <!--
        - D I P O L E  F I E L D
-       -->
     <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">
       <canvas id="solenoidCanvas" class="applicationCanvas"></canvas>
     </div>
@@ -26,7 +37,15 @@
       <label for="autoRotate">Auto-rotate </label><input type="checkbox" id="autoRotate"/>
     </div>
     <script type="module" src="scenes/dipole_field.js"></script>
-
+       -->
+    <!--
+       - E L E C T R O M A G N E T I C   W A V E
+    <div class="canvasWrapper" id="electromagneticWaveWrapper">
+      <canvas class="applicationCanvas" id="electromagneticWaveCanvas"></canvas>
+      <div class="overlayText" id="electromagneticWaveOverlay">Click to start the animation!</div>
+    </div>
+    <script type="module" src="scenes/electromagnetic_wave_quiver.js"></script>
+       -->
     <!--
        - S O L E N O I D
     <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">

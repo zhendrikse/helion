@@ -152,7 +152,7 @@ const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
     .onScale(5e10)
-    .onPhysicsUpdate((clockTime, simulatedTime) => timeStep(dt), subSteps);
+    .onClockTick((clockTime, simulatedTime) => timeStep(dt), subSteps);
 
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas);
