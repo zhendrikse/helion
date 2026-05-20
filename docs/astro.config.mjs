@@ -7,7 +7,7 @@ export default defineConfig({
 	outDir: 'docs/dist', // URL pref
 	integrations: [
 		starlight({
-			title: '☀️ Helion',
+			title: '☀️ Helion 1',
 			sidebar: [
 				{
 					collapsed: true,
