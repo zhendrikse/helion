@@ -29,5 +29,5 @@ layout: ../../../layouts/DocsLayout.astro
     <canvas className="applicationCanvas" id="chargedRingCanvas"></canvas>
     <div className="overlayText" id="chargedRingOverlay">Click to start the animation!</div>
 </div>
-<script type="module"  src="/public/examples/charged_ring.js"></script>
+<script type="module" src={import.meta.env.BASE_URL + "examples/charged_ring.js"}></script>
 <p style="clear: both;"></p>
