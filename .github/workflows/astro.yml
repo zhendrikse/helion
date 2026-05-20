@@ -21,11 +21,11 @@ jobs:
       # 3. Install dependencies
       - run: npm ci
 
-      # 4. Build library
+      # 4. Build Helion library
       - run: npm run build:lib
 
-      # 5. Build demos
-      - run: npm run build:demos
+      # 5. Make a copy of the examples dir in public for the Astro GitHub pages site
+      - run: npm run build:examples
 
       # 6. Build Astro docs
       - run: npm run docs:build

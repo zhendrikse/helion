@@ -10,7 +10,8 @@
   },
   "scripts": {
     "build": "vite build",
-    "build:lib": "vite build --config vite.lib.config.js"
+    "build:lib": "vite build --config vite.lib.config.js",
+    "build:examples": "vite build --config vite.examples.config.js"
   },
   "files": [
     "dist"
