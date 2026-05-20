@@ -3,8 +3,8 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
 export default defineConfig({
-	base: '/', // URL prefix for GitHub pages
-	root: 'docs/dist',
+	base: '/helion/', // URL prefix for GitHub pages
+	outDir: 'docs/',
 	integrations: [
 		starlight({
 			title: '☀️ Helion',
