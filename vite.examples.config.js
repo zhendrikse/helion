@@ -3,7 +3,7 @@ import path from 'path';
 
 export default defineConfig({
     build: {
-        outDir: 'examples',  // waar de gebundelde scripts komen
+        outDir: 'public/examples',  // waar de gebundelde scripts komen
         rollupOptions: {
             input: {
                 charged_ring: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_ring.js'),
