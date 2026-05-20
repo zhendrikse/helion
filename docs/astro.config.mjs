@@ -7,6 +7,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: '☀️ Helion',
+			outDir: 'docs/dist',
 			sidebar: [
 				{
 					collapsed: true,
