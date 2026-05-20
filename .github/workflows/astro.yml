@@ -29,9 +29,7 @@ jobs:
       - run: npm run build:examples
 
       # 6. Build Astro docs
-      - name: Build Astro docs
-        working-directory: docs
-        run: npm run docs:build
+      - run: npm run docs:build
 
       # 7. Deploy to GitHub Pages (root or docs folder)
       - name: Deploy to GitHub Pages
@@ -40,4 +38,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/dist
           publish_branch: gh-pages
-          force_orphan: true
+          force_orphan: false
