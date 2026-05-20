@@ -1,0 +1,37 @@
+---
+title: "$N$-body mass-spring system"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div className="badgeRow">
+    <a href="https://github.com/zhendrikse/science/blob/main/waves/n_body_oscillator.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=n_body_oscillator.js"/>
+    </a>
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div className="header_line"><br/></div>
+
+🎯 Modeling an N-body mass-spring system<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Kinematics/program/N-bodycoupledoscillator) is available as well, see [n_body_oscillator.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/n_body_oscillator)<br/>
+
+### Live experiment
+<div className="header_line"><br/></div>
+
+<link href="https://unpkg.com/uplot/dist/uPlot.min.css" rel="stylesheet"/>
+<script src="https://unpkg.com/uplot/dist/uPlot.iife.min.js"></script>
+
+<div className="canvasWrapper" id="oscillatorCanvasWrapper"  style="aspect-ratio: 19 / 12;">
+    <canvas id="oscillatorCanvas" className="applicationCanvas" style="aspect-ratio: 19 / 12;"></canvas>
+    <div className="overlayText" id="oscillatorOverlay">Click to start the animation!</div>
+</div>
+<p style="clear: both;"></p>
+
+<div id="oscillatorPlot" style="margin:auto;"></div>
+<script type="module" src="/public/examples/n_body_oscillator.js"></script>

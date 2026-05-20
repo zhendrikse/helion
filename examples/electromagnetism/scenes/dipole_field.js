@@ -100,11 +100,8 @@ Simulation
     .onScale(scale)
     .onClockTick();
 
+// Only needed for development with Vite //
 export function createDipoleFieldScene() {
-    return {
-        run() {
-        },
-        stop() {
-        }
-    };
+    return { run() {}, stop() {} };
 }
+//////////////////////////////////////////

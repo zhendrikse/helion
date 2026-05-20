@@ -175,11 +175,8 @@ const simulation = Simulation
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas);
 
+// Only needed for development with Vite //
 export function createElectromagneticWaveScene() {
-    return {
-        run() {
-        },
-        stop() {
-        }
-    };
+    return { run() {}, stop() {} };
 }
+//////////////////////////////////////////

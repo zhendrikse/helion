@@ -11,7 +11,8 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ["three"]
-    }
+    },
+    outDir: "dist",
   }
 });
 

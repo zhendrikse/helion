@@ -181,11 +181,9 @@ const simulation = Simulation
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(Canvas.withElementId("chargedRodCanvas"));
 
+
+// Only needed for development with Vite //
 export function createChargedRodScene() {
-    return {
-        run() {
-        },
-        stop() {
-        }
-    };
+    return { run() {}, stop() {} };
 }
+//////////////////////////////////////////

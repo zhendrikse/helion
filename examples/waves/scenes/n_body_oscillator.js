@@ -104,7 +104,7 @@ const simulation = Simulation
         for (let i = 0; i < balls.length; i++)
             plot.graphData[i + 1].push(balls[i].position.x);
     }, subSteps);
-simulation.onAfterPhysicsUpdate((clockTime, simulatedTime) => plot.update());
+simulation.onAfterClockTick((clockTime, simulatedTime) => plot.update());
 simulation.onReset(() => {
     plot.graphData[0] = [0];
     for (let i = 0; i < balls.length; i++)

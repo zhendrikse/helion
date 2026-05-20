@@ -1,6 +1,6 @@
 <html>
   <head>
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="../style.css" />
   </head>
   </body>
     <!--
@@ -21,17 +21,25 @@
       <canvas class="applicationCanvas" id="chargedRingCanvas"></canvas>
       <div class="overlayText" id="chargedRingOverlay">Click to start the animation!</div>
     </div>
+    <script type="module" src="scenes/charged_ring.js"></script>
        -->
     <!--
        - C H A R G E D  R O D
-       -->
-    <script type="module" src="scenes/charged_ring.js"></script>
     <div class="applicationCanvasWrapper" id="chargedRodWrapper" style="aspect-ratio: 3/4">
       <canvas id="chargedRodCanvas" class="applicationCanvas" style="aspect-ratio: 3/4"></canvas>
       <div class="overlayText" id="chargedRodOverlay">Click to start the animation!</div>
     </div>
     <script type="module" src="scenes/charged_rod.js"></script>
+       -->
     <!--
+       - C H A R G E D  S H E E T
+    <div class="canvasWrapper" id="chargedSheetWrapper">
+      <canvas class="applicationCanvas" id="chargedSheetCanvas"></canvas>
+      <div class="overlayText" id="chargedSheetOverlay">Click to start the animation!</div>
+    </div>
+    <script type="module" src="scenes/charged_sheet.js"></script>
+       -->
+      <!--
        - D I P O L E  F I E L D
     <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">
       <canvas id="solenoidCanvas" class="applicationCanvas"></canvas>
@@ -48,12 +56,12 @@
        -->
     <!--
        - E L E C T R O M A G N E T I C   W A V E
+       -->
     <div class="canvasWrapper" id="electromagneticWaveWrapper">
       <canvas class="applicationCanvas" id="electromagneticWaveCanvas"></canvas>
       <div class="overlayText" id="electromagneticWaveOverlay">Click to start the animation!</div>
     </div>
     <script type="module" src="scenes/electromagnetic_wave_quiver.js"></script>
-       -->
     <!--
        - S O L E N O I D
     <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">

@@ -283,11 +283,11 @@ export class Simulation {
         }
     }
 
-    onBeforePhysicsUpdate(customFunction = (clockTime, simulatedTime) => {}) {
+    onBeforeClockTick(customFunction = (clockTime, simulatedTime) => {}) {
         this._onBeforePhysicsUpdate = customFunction;
     }
 
-    onAfterPhysicsUpdate(customFunction = (clockTime, simulatedTime) => {}) {
+    onAfterClockTick(customFunction = (clockTime, simulatedTime) => {}) {
         this._onAfterPhysicsUpdate = customFunction;
     }
 

@@ -69,11 +69,8 @@ Simulation
     }, 2)
     .start();
 
+// Only needed for development with Vite //
 export function createAntennaScene() {
-    return {
-        run() {
-        },
-        stop() {
-        }
-    };
+    return { run() {}, stop() { } };
 }
+//////////////////////////////////////////
