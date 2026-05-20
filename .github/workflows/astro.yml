@@ -29,7 +29,9 @@ jobs:
       - run: npm run build:examples
 
       # 6. Build Astro docs
-      - run: npm run docs:build
+      - name: Build Astro docs
+        working-directory: docs
+        run: npm ci && npm run docs:build
 
       # 7. Deploy to GitHub Pages (root or docs folder)
       - name: Deploy to GitHub Pages
