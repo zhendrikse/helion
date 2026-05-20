@@ -3,7 +3,7 @@ import path from 'path';
 
 export default defineConfig({
     build: {
-        outDir: 'public/examples',  // ← nu kopieert Astro dit automatisch
+        outDir: 'examples',
         emptyOutDir: true,
         rollupOptions: {
             input: {
