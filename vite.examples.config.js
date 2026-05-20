@@ -3,7 +3,8 @@ import path from 'path';
 
 export default defineConfig({
     build: {
-        outDir: 'dist',  // waar de gebundelde scripts komen
+        outDir: 'public/examples',  // ← nu kopieert Astro dit automatisch
+        emptyOutDir: true,
         rollupOptions: {
             input: {
                 charged_ring: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_ring.js'),
@@ -16,7 +17,7 @@ export default defineConfig({
                 star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js')
             },
             output: {
-                entryFileNames: 'examples/[name].js',
+                entryFileNames: '[name].js',
                 format: 'esm'
             }
         }
