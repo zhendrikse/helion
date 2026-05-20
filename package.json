@@ -9,7 +9,8 @@
     ".": "./dist/my-library.js"
   },
   "scripts": {
-    "build": "vite build"
+    "build": "vite build",
+    "build:lib": "vite build --config vite.lib.config.js"
   },
   "files": [
     "dist"
