@@ -4,10 +4,10 @@ import starlight from '@astrojs/starlight';
 
 export default defineConfig({
 	base: '/helion/',
+	outDir: 'docs/dist',
 	integrations: [
 		starlight({
 			title: '☀️ Helion',
-			outDir: 'docs/dist',
 			sidebar: [
 				{
 					collapsed: true,
