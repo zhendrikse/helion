@@ -4,7 +4,7 @@ import starlight from '@astrojs/starlight';
 
 export default defineConfig({
 	base: '/helion/', // URL prefix for GitHub pages
-	outDir: 'docs', // URL pref
+	outDir: 'docs/dist', // URL pref
 	integrations: [
 		starlight({
 			title: '☀️ Helion',
