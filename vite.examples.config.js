@@ -3,7 +3,7 @@ import path from 'path';
 
 export default defineConfig({
     build: {
-        outDir: 'examples',  // waar de gebundelde scripts komen
+        outDir: 'ddst',  // waar de gebundelde scripts komen
         rollupOptions: {
             input: {
                 charged_ring: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_ring.js'),
@@ -16,7 +16,7 @@ export default defineConfig({
                 star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js')
             },
             output: {
-                entryFileNames: '[name].js',
+                entryFileNames: 'examples/[name].js',
                 format: 'esm'
             }
         }
