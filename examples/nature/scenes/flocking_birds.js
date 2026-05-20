@@ -1,0 +1,164 @@
+import {Vector3, Color} from "three";
+import { Body } from "../js/phys/physics.js";
+import {
+    Simulation,
+    Canvas,
+    Overlay,
+    HtmlDiv,
+    EventController,
+    HtmlControl,
+    CallbackFunction
+} from "../js/simulation.js";
+import { Arrow, ThreeJsRenderOptions, ThreeJsRenderer } from "../js/renderers/three/threesim.js";
+
+// Simulation parameters
+const speed = 6;  // initial horizontal speed
+const size = 1;   // length of a bird vector
+const threshold = (5 * size) ** 2;
+
+class Flock {
+    constructor(bird_count) {
+        this._birds = [];
+        this._bird_count = bird_count;
+        this._random_weight = 5;
+        this._center_weight = 0.1;
+        this._direction_weight = 0.05;
+        this._avoid_weight = 0.5;
+
+        this._acceleration = new Vector3();
+        this._center = new Vector3();
+        this._direction = new Vector3();
+
+        const initialPhysicalFlockRadius= 3;
+        for (let i = 0; i < bird_count; i++)
+            this._birds.push(new Body({
+                position: new Vector3().random().multiplyScalar(initialPhysicalFlockRadius),
+                velocity: new Vector3(speed, 0, 0).add(new Vector3().random().multiplyScalar(speed)),
+            }));
+    }
+
+    // avoid nearest birds (A BETTER VERSION WOULD ANTICIPATE COLLISIONS)
+    avoidNearestBirds() {
+        const avoid = []
+        for (let i = 0; i < this._bird_count; i++) {
+            avoid.push(new Vector3(0, 0, 0));
+            for (let j = 0; j < i; j++) {
+                const distanceSquared = this._birds[i].distanceToSquared(this._birds[j]);
+                if (distanceSquared < threshold) {
+                    const separation_dist = this._birds[i].positionVectorTo(this._birds[j]);
+                    avoid[i].sub(separation_dist.divideScalar(distanceSquared));
+                    avoid[j].add(separation_dist.divideScalar(distanceSquared));
+                }
+            }
+        }
+        return avoid;
+    }
+
+    updateBird(count, avoid, dt) {
+        const bird = this._birds[count];
+
+        this._acceleration.set(
+            Math.random() - 0.5,
+            Math.random() - 0.5,
+            Math.random() - 0.5
+        ).normalize().multiplyScalar(this._random_weight);
+        let diff = this._center.clone().sub(bird.position);
+        this._acceleration.add(diff.multiplyScalar(this._center_weight));
+
+        diff = this._direction.clone().sub(bird.velocity);
+        this._acceleration.add(diff.multiplyScalar(this._direction_weight));
+
+        diff = avoid[count].clone().normalize().sub(bird.position);
+        this._acceleration.add(diff.multiplyScalar(this._avoid_weight));
+
+        const force = this._acceleration; // Since the bird mass = 1, the force F = m a = a!
+        bird.apply(force, dt);
+    }
+
+    update(dt) {
+        // compute average position and direction
+        this._center.set(0, 0, 0);
+        this._direction.set(0, 0, 0);
+
+        for (let i = 0; i < this._bird_count; i++) {
+            const bird = this._birds[i];
+            this._center.add(bird.position);
+            this._direction.add(bird.velocity);
+        }
+
+        this._center.divideScalar(this._bird_count);
+        this._direction.divideScalar(this._bird_count);
+
+        const avoid = this.avoidNearestBirds();
+        for (let count = 0; count < this._bird_count; count++)
+            this.updateBird(count, avoid, dt);
+    }
+
+    set randomWeight(value) { this._random_weight = value; }
+    set centeringWeight(value) { this._center_weight = value; }
+    set directionWeight(number) { this._direction_weight = number; }
+    set avoidWeight(number) { this._avoid_weight = number; }
+
+    bird(i) { return this._birds[i]; }
+
+    startleBirds() {
+        for (let i = 0; i < this._bird_count; i++)
+            this._birds[i].velocity = new Vector3().random().multiplyScalar(2 * speed);
+    }
+}
+
+const birdCount = 250;
+const flock = new Flock(birdCount);
+
+const threeJsRendererOptions = new ThreeJsRenderOptions({
+    cameraPosition: new Vector3(15, 0, 30).multiplyScalar(1.5),
+    fieldOfView: 30
+});
+const canvas = Canvas.withElementId("birdsCanvas");
+const canvasWrapper = HtmlDiv.withElementId("birdsCanvasWrapper").contains(canvas);
+const renderer = ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions);
+
+for (let i = 0; i < birdCount; i++)
+    renderer.add(flock.bird(i).velocityVector.to(new Arrow({
+        round: true,
+        color: new Color(.5, 1, .5),
+        size: .2
+    })));
+
+const dt = 0.02;
+const simulation = Simulation
+    .with(renderer)
+    .incrementsTimeBy(dt)
+    .run( () => flock.update(dt));
+
+//
+// Event listeners
+//
+const eventController = EventController.for(simulation);
+eventController.addStartStopMouseClickEventListenerTo(canvas);
+
+eventController.attach(HtmlControl
+    .withElementId("randomWeightSlider")
+    .forType("input")
+    .to(flock)
+    .withProperty("randomWeight"));
+eventController.attach(HtmlControl
+    .withElementId("centerWeightSlider")
+    .forType("input")
+    .to(flock)
+    .withProperty("centeringWeight"));
+eventController.attach(HtmlControl
+    .withElementId("directionWeightSlider")
+    .forType("input")
+    .to(flock)
+    .withProperty("directionWeight"));
+eventController.attach(HtmlControl
+    .withElementId("avoidWeightSlider")
+    .forType("input")
+    .to(flock)
+    .withProperty("avoidWeight"));
+
+const startStopCallback = new CallbackFunction(() => flock.startleBirds());
+eventController.add(startStopCallback.to(HtmlControl.withElementId("startleButton").forType("click")));
+
+simulation.start();
