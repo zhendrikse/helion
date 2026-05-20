@@ -3,7 +3,7 @@ import path from 'path';
 
 export default defineConfig({
     build: {
-        outDir: 'public/examples',
+        outDir: 'docs/public/examples',
         emptyOutDir: true,
         rollupOptions: {
             input: {
