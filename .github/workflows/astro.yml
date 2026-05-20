@@ -1,0 +1,39 @@
+name: Deploy Helion Docs
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - uses: actions/checkout@v3
+
+      # 2. Setup Node.js
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      # 3. Install dependencies
+      - run: npm ci
+
+      # 4. Build library
+      - run: npm run build:lib
+
+      # 5. Build demos
+      - run: npm run build:demos
+
+      # 6. Build Astro docs
+      - run: npm run docs:build
+
+      # 7. Deploy to GitHub Pages (root or docs folder)
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/dist
+          # publish_branch: main   # Optioneel als je naar main wilt schrijven
