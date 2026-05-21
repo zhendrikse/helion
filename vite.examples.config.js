@@ -20,6 +20,7 @@ export default defineConfig({
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),
                 proton_in_magnetic_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_in_magnetic_field.js'),
                 solenoid: path.resolve(__dirname, 'examples/electromagnetism/scenes/solenoid.js'),
+                three_body: path.resolve(__dirname, 'examples/kinematics/scenes/three_body.js'),
                 star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js')
             },
             output: {

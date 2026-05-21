@@ -1,0 +1,36 @@
+---
+title: "🫧 Three-body problem"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div class="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div class="header_line"></div>
+
+🎯 Numeric simulation of the three-body problem<br/>
+🧠 Based on [this original code snippet](https://trinket.io/glowscript/9ece3648f0) by Rhett Allain<br/>
+⭐ Coding this problem is explained in [this video](https://www.youtube.com/watch?v=Ye2wIV8-SB8)<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Astrophysics/program/ThreeBody) is available as well, see [three_body.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/three_body.py)<br/>
+
+### Live experiment
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/kinematics/scenes/three_body.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=three_body.js"/>
+    </a>
+</div>
+
+<div class="canvasWrapper" id="threeBodyWrapper">
+    <canvas class="applicationCanvas" id="threeBodyCanvas"></canvas>
+    <div class="overlayText" id="overlayText">Click to start the animation!</div>
+</div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/three_body.js"}></script>

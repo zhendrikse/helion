@@ -5,7 +5,7 @@ export {
 } from "./phys/physics.js";
 
 export {
-    VectorField, Range, Vec3
+    VectorField, Range, Vec3, Integrators
 } from "./math/math.js";
 
 export {

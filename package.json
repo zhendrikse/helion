@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "type": "module",
   "description": "A web-based simulation environment for educational and scientific visualizations",
-  "main": "./dist/my-library.js",
-  "module": "./dist/my-library.js",
+  "main": "./dist/helion.umd.js",
+  "module": "./dist/helion.es.js",
+
   "exports": {
-    ".": "./dist/my-library.js"
+    ".": {
+      "import": "./dist/helion.es.js",
+      "require": "./dist/helion.umd.js"
+    }
   },
   "scripts": {
     "build": "vite build",

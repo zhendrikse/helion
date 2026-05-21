@@ -52,7 +52,7 @@ class StarCluster extends Group {
 }
 
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(10, 20, 30),
+    cameraPosition: new Vector3(7, 14, 21),
     background: ThreeJsRenderer.Background.STARS,
     fov: 35,
     light: false

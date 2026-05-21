@@ -1,8 +1,7 @@
 import { Vector3 } from "three";
-import { Integrators } from "../js/math/math.js";
-import { RadialSymmetricBody, G, gravitationalForceBetween } from "../js/phys/physics.js";
-import {Simulation, Canvas, Overlay, HtmlDiv, EventController} from "../js/simulation.js";
-import { Sphere, ThreeJsRenderOptions, ThreeJsRenderer, Trail } from "../js/renderers/three/threesim.js";
+import { Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation, Canvas, Vec3,
+    Overlay, HtmlDiv, EventController, Sphere, ThreeJsRenderOptions, ThreeJsRenderer, Trail
+} from "helion";
 
 //
 // Physics model
@@ -16,22 +15,22 @@ const velocityA = Math.sqrt(G * 0.8 * mass * radiusA) / (radiusA + radiusB);
 
 const radius = 1.9e9;
 const bodyA = new RadialSymmetricBody({
-    position: new Vector3(radiusA, 0, 0),
-    velocity: new Vector3(0, velocityA, 0),
+    position: new Vec3(radiusA, 0, 0),
+    velocity: new Vec3(0, velocityA, 0),
     radius,
     mass
 });
 
 const bodyB = new RadialSymmetricBody({
-    position: new Vector3(-radiusB, 0, 0),
-    velocity: new Vector3(0, -velocityA / 0.8, 0),
+    position: new Vec3(-radiusB, 0, 0),
+    velocity: new Vec3(0, -velocityA / 0.8, 0),
     radius,
     mass: mass * 0.8
 });
 
 const bodyC = new RadialSymmetricBody({
-    position: new Vector3(0, 0, radiusA),
-    velocity: new Vector3(0, 0, 0),
+    position: new Vec3(0, 0, radiusA),
+    velocity: new Vec3(0, 0, 0),
     radius,
     mass: mass * 0.5
 });
@@ -60,12 +59,12 @@ const renderer = ThreeJsRenderer
     .on(canvasWrapper)
     .with(threeJsRendererOptions);
 
-renderer.add(bodyA.to(new Sphere({ color: "yellow" })));
-renderer.add(bodyA.to(new Trail({ maxPoints: 500, color: "yellow" })));
-renderer.add(bodyB.to(new Sphere({ color: "cyan" })));
-renderer.add(bodyB.to(new Trail({ maxPoints: 500, color: "cyan" })));
-renderer.add(bodyC.to(new Sphere({ color: "magenta" })));
-renderer.add(bodyC.to(new Trail({ maxPoints: 500, color: "magenta"})));
+renderer.synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })));
+renderer.synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })));
+renderer.synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })));
+renderer.synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })));
+renderer.synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })));
+renderer.synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta"})));
 
 const dt = 5000;
 const subSteps = 50;
@@ -73,7 +72,7 @@ const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt / subSteps)
     .onScale(1e-9)
-    .run((clockTime, simulatedTime) => updateForces(dt), subSteps);
+    .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps);
 
 //
 // Event controller
