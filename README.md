@@ -16,9 +16,9 @@ you can read and understand almost without knowing the framework at all.
 If you cannot immediately explain what a line of code is doing in terms of 
 physics or mathematics, it is likely too abstract!
 
-👉 Experiments are meant to be **explicit, isolated, and readable**
-👉 Low cognitive overhead
-👉 Code expresses scientific intent directly
+👉 Experiments are meant to be **explicit, isolated, and readable**<br/>
+👉 Low cognitive overhead<br/>
+👉 Code expresses scientific intent directly<br/>
 
 ## 📊 Code example
 
@@ -74,9 +74,9 @@ Complex orchestration layers are intentionally avoided.
 ## 🧪 Live demos
 
 ⚡  [Electromagnetism](https://www.hendrikse.name/helion/electromagnetism/)<br/>
-🏃 [Kinematics](https://www.hendrikse.name/helion/electromagnetism/kinematics/)<br/>
-💫 [Astrophysics](https://www.hendrikse.name/helion/electromagnetism/astrophysics/)<br/>
-🌊 [Waves](https://www.hendrikse.name/helion/electromagnetism/waves/)<br/>
+🏃 [Kinematics](https://www.hendrikse.name/helion/kinematics/)<br/>
+💫 [Astrophysics](https://www.hendrikse.name/helion/astrophysics/)<br/>
+🌊 [Waves](https://www.hendrikse.name/helion/waves/)<br/>
 
 
 
