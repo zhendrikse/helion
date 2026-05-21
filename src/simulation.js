@@ -1,32 +1,3 @@
-/**
- * Simulation environment for educational and scientific visualizations:
- *  - browser-based
- *  - realtime
- *  - educational
- *  - interactive
- *  - physics and mathematics first, i.e.simulation state and rendering are decoupled and synchronized by the engine.
- *
- * Design goals:
- *  - low cognitive overhead
- *  - code expresses scientific intent directly
- *
- * Example:
- *     // 1. Define your renderer of choice
- *     const renderer = ThreeJsRenderer
- *         .on(HtmlDiv.withElementId("canvasWrapper").contains(Canvas.withElementId("canvas")))
- *         .with(threeJsRendererOptions);
- *
- *     // 2. Attach view to physics or mathematics object
- *     renderer.add(physicsBody.to(new Sphere()));
- *     renderer.add(coneGeometry.to(new IsoparametricContoursSurface()));
- *
- *     // 3. Run the simulation
- *     Simulation
- *         .with(renderer)
- *         .onScale(1e-10)
- *         .run((clockTime, simulatedTime) => (...));
- */
-
 /**********************************************
  * S I M U L A T I O N  E N V I R O N M E N T *
  **********************************************/

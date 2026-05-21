@@ -1,0 +1,34 @@
+<html>
+<head>
+    <link rel="stylesheet" href="../../docs/src/assets/styles.css" />
+</head>
+<body>
+    <!--
+       - B O U N C I N G   B A L L   O N   S P R I N G
+    <div class="canvasWrapper" id="bouncingBallOnSpringWrapper">
+        <canvas class="applicationCanvas" id="bouncingBallOnSpringCanvas" width="600" height="600"></canvas>
+        <div class="overlayText" id="bouncingBallOnSpringOverlay">Click to start the animation!</div>
+    </div>
+    <div class="buttonRow">
+        <label><span style="color: cyan">🚀 Velocity: </span></label><input type="checkbox" id="velocityArrow" checked/>
+        <label><span style="color: red">💪🏻 Force: </span></label><input type="checkbox" id="forceArrow" checked/>
+    </div>
+    <div class="buttonRow">
+        <label>🍃 Air resistance: </label>
+        <input type="range" id="dampingSlider" min="0" max="1" step="0.1" value=".2"/>
+    </div>
+    <script type="module" src="scenes/bouncing_ball_on_spring.js"></script>
+    -->
+    <!--
+       - B O U N C I N G   B A L L   O N   F L O O R
+       -->
+    <link rel="stylesheet" href="https://unpkg.com/uplot/dist/uPlot.min.css">
+    <script src="https://unpkg.com/uplot/dist/uPlot.iife.min.js"></script>
+    <div class="canvasWrapper" id="bouncingBallOnFloorWrapper">
+        <canvas class="applicationCanvas" id="bouncingBallOnFloorCanvas" style="aspect-ratio: 19/12"></canvas>
+        <div class="overlayText" id="bouncingBallOnFloorOverlayText">Click to start the animation!</div>
+    </div>
+    <script type="module" src="scenes/bouncing_ball_on_floor.js"></script>
+</body>
+</html>
+

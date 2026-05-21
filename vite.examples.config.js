@@ -8,6 +8,8 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 antenna: path.resolve(__dirname, 'examples/electromagnetism/scenes/antenna.js'),
+                bouncing_ball_on_floor: path.resolve(__dirname, 'examples/kinematics/scenes/bouncing_ball_on_floor.js'),
+                bouncing_ball_on_spring: path.resolve(__dirname, 'examples/kinematics/scenes/bouncing_ball_on_spring.js'),
                 charged_ring: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_ring.js'),
                 charged_rod: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_rod.js'),
                 charged_sheet: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_sheet.js'),

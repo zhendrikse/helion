@@ -584,8 +584,7 @@ export class ArrowField extends Group{
         for (let fieldArrow of this._fieldArrows) {
             // Field vectors haven't been added to the renderer by the application, so we need to sync state here:
             const fieldVector = fieldArrow.body;
-            const newVector = this._vectorField.vectorAt(fieldVector.position);
-            fieldVector.axis.copy(newVector);
+            fieldVector.axis.copy(this._vectorField.vectorAt(fieldVector.position));
             fieldArrow.render(transform);
         }
     }

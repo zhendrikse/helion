@@ -1,12 +1,13 @@
 # ✨ Helion
 <div class="header_line"><br/></div>
 
+### ❤️ Visualizing the beauty of math &amp; physics
+
 Helion is a modular math & physics visualization toolkit for the browser. It provides a low-cognitive-overhead 
 environment for visually expressing physical and mathematical ideas. These ideas can then easily be 
 translated into code and rendered on the web.
 
 ## 🧠 Core idea
-<div class="header_line"><br/></div>
 
 A Helion program should read like a laboratory notebook with
 one or more scientific experiment scripts, that
@@ -16,9 +17,10 @@ If you cannot immediately explain what a line of code is doing in terms of
 physics or mathematics, it is likely too abstract!
 
 👉 Experiments are meant to be **explicit, isolated, and readable**
+👉 Low cognitive overhead
+👉 Code expresses scientific intent directly
 
 ## 📊 Code example
-<div class="header_line"><br/></div>
 
 Helion code expresses intent:
 
@@ -47,7 +49,6 @@ Simulation
 ```
 
 ## 🎓 Educational focus
-<div class="header_line"><br/></div>
 
 Helion is designed for:
 
@@ -57,7 +58,6 @@ Helion is designed for:
 🧑‍💻 learners exploring physical intuition<br/>
 
 ## 🧭 Design rule of thumb
-<div class="header_line"><br/></div>
 
 If a feature does not directly improve scientific understanding in code, it is not included.
 
@@ -72,6 +72,11 @@ Helion is designed with the following guidelines in mind:
 Complex orchestration layers are intentionally avoided.
 
 ## 🧪 Live demos
-<div class="header_line"><br/></div>
+
+⚡  [Electromagnetism](https://www.hendrikse.name/helion/electromagnetism/)<br/>
+🏃 [Kinematics](https://www.hendrikse.name/helion/electromagnetism/kinematics/)<br/>
+💫 [Astrophysics](https://www.hendrikse.name/helion/electromagnetism/astrophysics/)<br/>
+🌊 [Waves](https://www.hendrikse.name/helion/electromagnetism/waves/)<br/>
+
 
 

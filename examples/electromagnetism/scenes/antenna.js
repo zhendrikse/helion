@@ -18,7 +18,6 @@ for (let position of range)
     planeWaves.push(new OneDimensionalPlaneWave({
         position,
         lambda,
-        scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10),
         amplitude: 7.5
     }));
 
@@ -42,6 +41,7 @@ for (let wave of planeWaves)
     renderer.synchronize(wave.alwaysWith(new ElectromagneticWave({
         numArrows: 120,
         arrowSize: 0.5,
+        scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)
     })));
 
 const antenna = new AxialSymmetricBody({

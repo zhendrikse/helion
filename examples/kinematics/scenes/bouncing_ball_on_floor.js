@@ -1,8 +1,6 @@
-import {EventController, HtmlDiv, UPlotGraph} from "../js/simulation.js";
 import { Vector3, Vector2 } from "three";
-import { RadialSymmetricBody } from "../js/phys/physics.js";
-import { Simulation, Canvas, Overlay } from "../js/simulation.js";
-import { Sphere, Floor, ThreeJsRenderOptions, ThreeJsRenderer, Trail } from "../js/renderers/three/threesim.js";
+import { RadialSymmetricBody , Simulation, Canvas, Overlay, Sphere, Floor, Vec3,
+    ThreeJsRenderOptions, ThreeJsRenderer, Trail, EventController, HtmlDiv, UPlotGraph } from "helion";
 
 class BouncingBall extends RadialSymmetricBody {
     constructor({position, velocity, radius, mass}) {
@@ -29,13 +27,13 @@ class BouncingBall extends RadialSymmetricBody {
 // Physics model
 //
 const ball = new BouncingBall({
-    position: new Vector3(-1.5, 1.5, 1.5),
-    velocity: new Vector3(.5, 0, -.4),
+    position: new Vec3(-1.5, 1.5, 1.5),
+    velocity: new Vec3(.5, 0, -.4),
     radius: 0.1,
     mass: 1
 });
 
-const gravitationalForce = new Vector3(0, -9.8 * ball.mass, 0);
+const gravitationalForce = new Vec3(0, -9.8 * ball.mass, 0);
 function ballStep(dt) {
     ball.apply(gravitationalForce, dt);
     if (ball.liesOnFloor())
@@ -55,10 +53,10 @@ const renderer = ThreeJsRenderer
     }));
 
 const sphere = new Sphere({ color: "cyan" });
-renderer.add(ball.to(sphere));
-renderer.add(ball.to(new Trail({ color: sphere.color})));
+renderer.synchronize(ball.alwaysWith(sphere));
+renderer.synchronize(ball.alwaysWith(new Trail({ color: sphere.color})));
 
-renderer.addPlainObject(new Floor({
+renderer.addObject3D(new Floor({
     type: Floor.Type.GRID,
     planeSizeXy: new Vector2(5, 5),
     opacity: 0.3,
@@ -98,7 +96,7 @@ const subSteps = 10;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .run((clockTime, simulatedTime) => {
+    .onClockTick((clockTime, simulatedTime) => {
         if (ball.reachedEnd())
             return;
 
@@ -106,7 +104,7 @@ const simulation = Simulation
     }, subSteps);
 
 // Update graph not inside simulation loop, as we do not want to update it with every physics update substep
-simulation.onAfterPhysicsUpdate((clockTime, simulatedTime) => updateGraph(simulatedTime));
+simulation.onAfterClockTick((clockTime, simulatedTime) => updateGraph(simulatedTime));
 
 //
 // Event controller

@@ -11,33 +11,27 @@ export default defineConfig({
 			sidebar: [
 				{
 					label: 'Guides',
-					items: [
-						{ label: 'Getting started', slug: 'guides/getting_started' },
-					],
+					items: [{ autogenerate: { directory: 'guides' } }],
 				},
 				{
 					collapsed: true,
 					label: 'Astrophysics',
-					items: [
-						{ label: 'Star cluster', slug: 'astrophysics/star_cluster' },
-					],
+					items: [{ autogenerate: { directory: 'astrophysics' } }],
 				},
 				{
 					collapsed: true,
 					label: 'Electromagnetism',
-					items: [
-						{ label: 'Electric fields', slug: 'electromagnetism/electric_fields' },
-						{ label: 'Electromagnetic fields', slug: 'electromagnetism/electromagnetic_fields' },
-						{ label: 'Particle in electric field', slug: 'electromagnetism/particle_electric_field' },
-						{ label: 'Particle in magnetic field', slug: 'electromagnetism/particle_magnetic_field' },
-					],
+					items: [{ autogenerate: { directory: 'electromagnetism' } }],
+				},
+				{
+					collapsed: true,
+					label: 'Kinematics',
+					items: [{ autogenerate: { directory: 'kinematics' } }],
 				},
 				{
 					collapsed: true,
 					label: 'Waves',
-					items: [
-						{ label: 'N-body oscillator', slug: 'waves/n_body_oscillator' }
-					],
+					items: [{ autogenerate: { directory: 'waves' } }],
 				}
 			],
 		})

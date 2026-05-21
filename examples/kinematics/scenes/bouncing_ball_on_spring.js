@@ -1,32 +1,32 @@
 import { Vector3 } from "three";
-import { RadialSymmetricBody, Spring } from "../js/phys/physics.js";
-import {Simulation, Canvas, Overlay, HtmlDiv, EventController, HtmlControl} from "../js/simulation.js";
-import { Arrow, Sphere, ThreeJsRenderOptions, ThreeJsRenderer, Floor, Helix } from "../js/renderers/three/threesim.js";
+import { RadialSymmetricBody, Spring , Simulation, Canvas, Overlay, HtmlDiv,
+    EventController, HtmlControl, Arrow, Sphere, ThreeJsRenderOptions,
+    ThreeJsRenderer, Floor, Helix, Vec3 } from "helion";
 
 //
 // Physics model
 //
 const floor = new Floor({
-    position: new Vector3(0, -1, 0),
+    position: new Vec3(0, -1, 0),
     type: Floor.Type.PAVING,
 });
 const spring = new Spring({
-    position: new Vector3(0, floor.level, 0),
-    axis: new Vector3(0, 0.75, 0),
+    position: new Vec3(0, floor.level, 0),
+    axis: new Vec3(0, 0.75, 0),
     radius: 0.125,
     k: 225
 });
 const springTopAtRest = spring.endPosition;
 
 const ball = new RadialSymmetricBody({
-    position: new Vector3(0, 1.5, 0),
+    position: new Vec3(0, 1.5, 0),
     radius: 0.15,
     mass: 1.5
 });
 
 const ballHitsSpring = (epsilon=1e-2) => springTopAtRest.clone().sub(ball.position).length() < epsilon;
-const gravitationalForce = new Vector3(0, -9.8 * ball.mass, 0);
-const netForce = new Vector3();
+const gravitationalForce = new Vec3(0, -9.8 * ball.mass, 0);
+const netForce = new Vec3();
 
 class PhysicsWorld {
     constructor(ball) {
@@ -46,7 +46,6 @@ class PhysicsWorld {
     set damping(value) { this._damping = value; }
 }
 
-
 //
 // View objects
 //
@@ -63,11 +62,11 @@ const helix = new Helix({ coils: 15, color: "yellow" });
 const sphere = new Sphere({ color: "orange" });
 const velocityArrow = new Arrow({ color: "cyan", size: .125 });
 const forceArrow = new Arrow({ color: "red", size: .03 });
-renderer.add(ball.to(sphere));
-renderer.add(ball.velocityVector.to(velocityArrow));
-renderer.add(ball.accelerationVector.to(forceArrow));
-renderer.add(spring.to(helix));
-renderer.addPlainObject(floor);
+renderer.synchronize(ball.alwaysWith(sphere));
+renderer.synchronize(ball.velocityVector.alwaysWith(velocityArrow));
+renderer.synchronize(ball.accelerationVector.alwaysWith(forceArrow));
+renderer.synchronize(spring.alwaysWith(helix));
+renderer.addObject3D(floor);
 
 const dt = 1.5e-3;
 const subSteps = 10;
@@ -75,7 +74,7 @@ const world = new PhysicsWorld(ball);
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .run((clockTime, simulatedTime) => world.timeStep(dt), subSteps);
+    .onClockTick((clockTime, simulatedTime) => world.timeStep(dt), subSteps);
 
 //
 // Event controller
