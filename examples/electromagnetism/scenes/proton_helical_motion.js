@@ -50,7 +50,7 @@ const renderer = ThreeJsRenderer
 const protonSphere = new Sphere({ color: 0xff0000 });
 renderer.synchronize(proton.alwaysWith(protonSphere));
 renderer.synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })));
-renderer.synchronize(magneticField.onceWith(new ArrowField({
+renderer.synchronize(magneticField.alwaysWith(new ArrowField({
     xRange: new Range(-boxSize, boxSize, 10),
     yRange: new Range(-boxSize, boxSize, 10),
     zRange: new Range(-boxSize, boxSize, 10),

@@ -62,7 +62,7 @@ const arrowField = new ArrowField({
     magnitudeMap: (magnitude) => .5 * Math.sqrt(magnitude),
     colorMap: (axis, magnitude) => new Color().setHSL(.5 * Math.sqrt(magnitude), 1, 0.5)
 });
-renderer.synchronize(magneticField.onceWith(arrowField));
+renderer.synchronize(magneticField.alwaysWith(arrowField));
 
 const dt = 2.5e-3;
 const subSteps = 100;
