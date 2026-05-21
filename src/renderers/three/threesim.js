@@ -741,12 +741,16 @@ class Coils extends Curve {
         this.start = position.clone();
         this.coils = coils;
         this._axis = axis;
+        this._direction = axis.clone().normalize();
         this.radius = radius;
         this.waveAmp = waveAmp;
         this.wavePhase = wavePhase;
     }
 
-    updateAxis = (newAxis) => this._axis.copy(newAxis);
+    updateAxis = (newAxis) => {
+        this._axis.copy(newAxis);
+        this._direction.copy(newAxis).normalize();
+    }
 
     getPoint(t) {
         const length = this._axis.length();
@@ -759,7 +763,7 @@ class Coils extends Curve {
 
         const point = new Vector3(x, y, z);
         const quaternion = new Quaternion();
-        quaternion.setFromUnitVectors(new Vector3(0, 0, 1), this._axis.clone().normalize());
+        quaternion.setFromUnitVectors(Arrow.FORWARD, this._direction);
         point.applyQuaternion(quaternion);
 
         return point.add(this.start);
