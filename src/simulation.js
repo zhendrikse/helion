@@ -321,12 +321,12 @@ class Transform {
         this._scale = scale;
     }
 
-    physicsToRender(vector) {
-        return vector.clone().multiplyScalar(this._scale);
+    physicsToRender(fromVector, toVector) {
+        toVector.set(fromVector.x * this._scale, fromVector.y * this._scale, fromVector.z * this._scale);
     }
 
-    renderToPhysics(vector) {
-        return vector.clone().multiplyScalar(1 / this._scale);
+    renderToPhysics(fromVector, toVector) {
+        toVector.set(fromVector.x / this._scale, fromVector.y / this._scale, fromVector.z / this._scale);
     }
 
     scaleRadius(radius) {
