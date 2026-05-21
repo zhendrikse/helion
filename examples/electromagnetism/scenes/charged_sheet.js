@@ -131,10 +131,7 @@ const simulation = Simulation
     .onScale(5e10)
     .onClockTick(() => {
         const field = electricField.vectorAt(electron.position);
-        const force = field
-            .clone()
-            .multiplyScalar(electron.charge);
-
+        const force = field.clone().multiplyScalar(electron.charge);
         electron.apply(force, dt);
     }, 10);
 
@@ -143,9 +140,3 @@ const simulation = Simulation
 //
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(Canvas.withElementId("chargedSheetCanvas"));
-
-// Only needed for development with Vite //
-export function createChargedSheet() {
-    return { run() {}, stop() {} };
-}
-//////////////////////////////////////////

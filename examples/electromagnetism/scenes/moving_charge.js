@@ -1,8 +1,7 @@
 import { Vector3, Color, AmbientLight, PointLight } from "three";
-import { Particle, EC } from "../js/phys/physics.js";
-import { VectorField, Range } from "../js/math/math.js";
-import { Simulation, Canvas, Overlay, HtmlDiv, EventController, HtmlControl, CallbackFunction} from "../js/simulation.js";
-import { Sphere, ArrowField, ThreeJsRenderOptions, ThreeJsRenderer, Trail } from "../js/renderers/three/threesim.js";
+import { Particle, EC , VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
+    EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
+    ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3 } from "helion";
 
 const K = 9e9;
 const scale = 1e14;
@@ -15,13 +14,13 @@ class Capacitor {
             for (let z = -20; z <= 20; z += 2)
                 for (const y of [topY, bottomY])
                     this.charges.push(new Particle({
-                        position: new Vector3(x / scale, y, z / scale),
+                        position: new Vec3(x / scale, y, z / scale),
                         radius: 1e-14,
                         charge: EC * (y > 0 ? 1 : -1)
                     }));
     }
 
-    fieldAt(position, out=new Vector3()) {
+    fieldAt(position, out=new Vec3()) {
         out.set(0, 0, 0);
         for (const charge of this.charges)
             out.add(charge.fieldAt(position).multiplyScalar(K));
@@ -45,8 +44,8 @@ class CapacitorField extends VectorField {
 const capacitor = new Capacitor();
 const capacitorField = new CapacitorField(capacitor);
 const movingCharge = new Particle({
-    position: new Vector3(-30, 4, 0).divideScalar(scale),
-    velocity: new Vector3(Number(speedSlider.value), 0, 0).divideScalar(scale),
+    position: new Vec3(-30, 4, 0).divideScalar(scale),
+    velocity: new Vec3(15, 0, 0).divideScalar(scale),
     mass: 1.6e-27,
     radius: 1.2e-14,
     charge: 5e-42 * EC
@@ -68,19 +67,19 @@ const renderer = ThreeJsRenderer.on(
 
 const dirLight = new PointLight(0xffffff, 2e3);
 dirLight.position.set(0, 0, 0);
-renderer.addPlainObject(dirLight);
-renderer.addPlainObject(new AmbientLight(0xffffff, 0.8));
+renderer.addObject3D(dirLight);
+renderer.addObject3D(new AmbientLight(0xffffff, 0.8));
 
 for (const charge of capacitor.charges) {
     const sphere = new Sphere({
         color: charge.charge > 0 ? new Color(0x4444ff) : new Color(0xff0000)
     });
-    renderer.asyncAdd(charge.to(sphere)); // Prevent unnecessary updates!
+    renderer.synchronize(charge.onceWith(sphere)); // Prevent unnecessary updates!
 }
 
 const sphere = new Sphere({ color: new Color(0x44ff44)});
-renderer.add(movingCharge.to(sphere));
-renderer.add(movingCharge.to(new Trail({ maxPoints: 400, color: sphere.color })));
+renderer.synchronize(movingCharge.alwaysWith(sphere));
+renderer.synchronize(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })));
 
 const arrowField = new ArrowField({
     xRange: new Range(-18 / scale, 18 / scale, 8 / scale),
@@ -91,7 +90,7 @@ const arrowField = new ArrowField({
     magnitudeMap: magnitude => Math.sqrt(magnitude),
     colorMap: (axis, magnitude) => new Color(1, Math.sqrt(magnitude) * 1e-10, 0)
 });
-renderer.add(capacitorField.to(arrowField));
+renderer.synchronize(capacitorField.onceWith(arrowField));
 
 const dt = 0.01;
 const subSteps = 3;
@@ -99,7 +98,7 @@ const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
     .onScale(scale)
-    .run(() => {
+    .onClockTick(() => {
         if (movingCharge.position.x > 60 / scale)
             return;
 

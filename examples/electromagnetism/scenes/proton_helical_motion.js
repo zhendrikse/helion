@@ -1,16 +1,8 @@
 import { Vector3, Color } from "three";
-import { Particle } from "../js/phys/physics.js";
-import { VectorField, Range } from "../js/math/math.js";
-import {Sphere, Trail, ArrowField, ThreeJsRenderer, ThreeJsRenderOptions} from "../js/renderers/three/threesim.js";
-import {
-    CallbackFunction,
-    Canvas,
-    EventController,
-    HtmlControl,
-    HtmlDiv,
-    Overlay,
-    Simulation
-} from "../js/simulation.js";
+import { Particle, VectorField, Range, Sphere, Trail, Vec3,
+    ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, CallbackFunction, Canvas,
+    EventController, HtmlControl, HtmlDiv, Overlay, Simulation
+} from "helion";
 
 const initialSspeed = 50;
 const angle = 10 * Math.PI / 180;
@@ -20,7 +12,7 @@ const boxSize = 40;
 // Physics model
 //
 class UniformMagneticField extends VectorField {
-    constructor(field = new Vector3(0, -5, 0), strength = 1) {
+    constructor(field = new Vec3(0, -5, 0), strength = 1) {
         super();
         this._field = field;
         this._fieldStrength = strength;
@@ -34,8 +26,8 @@ class UniformMagneticField extends VectorField {
 
 const magneticField = new UniformMagneticField();
 const proton = new Particle({
-    position: new Vector3(0, -boxSize, boxSize * .5),
-    velocity: new Vector3(initialSspeed * Math.cos(angle), initialSspeed * Math.sin(angle), 0),
+    position: new Vec3(0, -boxSize, boxSize * .5),
+    velocity: new Vec3(initialSspeed * Math.cos(angle), initialSspeed * Math.sin(angle), 0),
     mass: 1,
     charge: 0.8,
     radius: 1.5
@@ -56,9 +48,9 @@ const renderer = ThreeJsRenderer
     .with(threeJsRendererOptions);
 
 const protonSphere = new Sphere({ color: 0xff0000 });
-renderer.add(proton.to(protonSphere));
-renderer.add(proton.to(new Trail({ maxPoints: 2000, color: protonSphere.color })));
-renderer.add(magneticField.to(new ArrowField({
+renderer.synchronize(proton.alwaysWith(protonSphere));
+renderer.synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })));
+renderer.synchronize(magneticField.onceWith(new ArrowField({
     xRange: new Range(-boxSize, boxSize, 10),
     yRange: new Range(-boxSize, boxSize, 10),
     zRange: new Range(-boxSize, boxSize, 10),
@@ -81,15 +73,14 @@ const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
     .onScale(1)
-    .run((clockTime, simulatedTime) => timeStep(), 25);
+    .onClockTick((clockTime, simulatedTime) => timeStep(), 25);
 
 function timeStep() {
     if (outOfBox(proton.position))
         return;
 
     // Lorentz force: F = q v × B
-    const force = proton.velocity
-        .clone()
+    const force = proton.velocity.clone()
         .cross(magneticField.vectorAt(proton.position))
         .multiplyScalar(proton.charge);
 

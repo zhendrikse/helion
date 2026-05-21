@@ -10,6 +10,12 @@ export default defineConfig({
 			title: '☀️ Helion',
 			sidebar: [
 				{
+					label: 'Guides',
+					items: [
+						{ label: 'Getting started', slug: 'guides/getting_started' },
+					],
+				},
+				{
 					collapsed: true,
 					label: 'Astrophysics',
 					items: [
@@ -20,12 +26,10 @@ export default defineConfig({
 					collapsed: true,
 					label: 'Electromagnetism',
 					items: [
-						{ label: 'Charged Ring', slug: 'electromagnetism/charged_ring' },
-						{ label: 'Charged Rod', slug: 'electromagnetism/charged_rod' },
-						{ label: 'Charged Sheet', slug: 'electromagnetism/charged_sheet' },
-						{ label: 'Dipole field', slug: 'electromagnetism/dipole_field' },
-						{ label: 'Electromagnetic wave', slug: 'electromagnetism/electromagnetic_wave_quiver' },
-						{ label: 'Solenoid', slug: 'electromagnetism/solenoid' },
+						{ label: 'Electric fields', slug: 'electromagnetism/electric_fields' },
+						{ label: 'Electromagnetic fields', slug: 'electromagnetism/electromagnetic_fields' },
+						{ label: 'Particle in electric field', slug: 'electromagnetism/particle_electric_field' },
+						{ label: 'Particle in magnetic field', slug: 'electromagnetism/particle_magnetic_field' },
 					],
 				},
 				{

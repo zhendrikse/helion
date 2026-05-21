@@ -4,14 +4,15 @@ title: ✨ Helion
 
 import '../../assets/styles.css';
 
-##### Visualizing the beauty of math &amp; physics
+#### ❤️ Visualizing the beauty of math &amp; physics
 
-Helion is a modular math & physics visualization toolkit for the browser. It provides a low-cognitive-overhead
+Helion is a modular math & physics visualization toolkit for the browser.
+It provides a low-cognitive-overhead
 environment for visually expressing physical and mathematical ideas. These ideas can then easily be
 translated into code and rendered on the web.
 
 #### 🧠 Core idea
-<div className="header_line"><br/></div>
+<div className="header_line"></div>
 
 A Helion program should read like a laboratory notebook with
 one or more scientific experiment scripts, that
@@ -22,35 +23,8 @@ physics or mathematics, it is likely too abstract!
 
 👉 Experiments are meant to be **explicit, isolated, and readable**
 
-#### 📊 Helion code expresses intent
-<div className="header_line"><br/></div>
-
-```js
-// 1. Do your physics and math
-const coneGeometry = new SchwarzschildSurface(sunMass);
-const spring = new Spring();
-    ...
-
-// 2. Choose renderer (visual layer)
-const renderer = ThreeJsRenderer.on(HtmlDiv
-        .withElementId("canvasWrapper")
-        .contains(Canvas.withElementId("canvas")))
-
-// 3. Bind physics objects to visual representations
-renderer.synchronize(spring.alwaysWith(new Helix()));
-renderer.synchronize(coneGeometry.onceWith(new IsoparametricContoursSurface()));
-
-// 4. Run simulation
-Simulation
-    .with(renderer)
-    .onScale(1e-10)
-    .onClockTick((clockTime, simulatedTime) => {
-        // physics update
-    });
-```
-
 #### 🎓 Educational focus
-<div className="header_line"><br/></div>
+<div className="header_line"></div>
 
 👩🏻‍🎓 students of physics and mathematics<br/>
 🕵️ researchers prototyping ideas<br/>
@@ -58,7 +32,7 @@ Simulation
 🧑‍💻 learners exploring physical and geometric intuition<br/>
 
 #### 🧪 Live demos
-<div className="header_line"><br/></div>
+<div className="header_line"></div>
 
 <div className="categoryGrid">
     <a href="electromagnetism//">⚡ Electromagnetism</a>

@@ -1,7 +1,7 @@
 import { Vector3, Color } from "three";
 import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Canvas, HtmlDiv,
     EventController, HtmlControl, Cylinder, ElectromagneticWave, ThreeJsRenderOptions,
-    ThreeJsRenderer, Vec3
+    ThreeJsRenderer, Vec3, Overlay
 } from "helion";
 
 //
@@ -18,6 +18,7 @@ for (let position of range)
     planeWaves.push(new OneDimensionalPlaneWave({
         position,
         lambda,
+        scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10),
         amplitude: 7.5
     }));
 
@@ -28,8 +29,12 @@ const threeJsRendererOptions = new ThreeJsRenderOptions({
     cameraPosition: new Vector3(-1, 4, -9).multiplyScalar(2.5),
     fieldOfView: 25
 });
+
+const canvas= Canvas.withElementId("antennaCanvas");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("antennaCanvasWrapper").contains(Canvas.withElementId("antennaCanvas")))
+    .on(HtmlDiv
+        .withElementId("antennaCanvasWrapper")
+        .containsBoth(canvas.and(Overlay.withElementId("antennaOverlay"))))
     .with(threeJsRendererOptions);
 
 const slit = new Vec3(0, 0, lambda)
@@ -37,7 +42,6 @@ for (let wave of planeWaves)
     renderer.synchronize(wave.alwaysWith(new ElectromagneticWave({
         numArrows: 120,
         arrowSize: 0.5,
-        scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)
     })));
 
 const antenna = new AxialSymmetricBody({
@@ -47,10 +51,21 @@ const antenna = new AxialSymmetricBody({
 });
 renderer.synchronize(antenna.onceWith(new Cylinder({color: new Color(0.7, 0.7, 0.7)})));
 
+const simulation = Simulation
+    .with(renderer)
+    .incrementsTimeBy(lambda / OneDimensionalPlaneWave.c / 100.0)
+    .onScale(1)
+    .onClockTick((clockTime, simulatedTime) => {
+        for (let wave of planeWaves)
+            wave.propagate(simulatedTime);
+    }, 2);
+
 //
 // Event controller
 //
-const eventController = new EventController();
+const eventController = new EventController(simulation);
+eventController.addStartStopMouseClickEventListenerTo(canvas);
+
 for (let wave of planeWaves)
     eventController.attach(HtmlControl
         .withElementId("antennaFieldStrengthSlider")
@@ -59,18 +74,3 @@ for (let wave of planeWaves)
         .to(wave)
         .withProperty("amplitude"));
 
-Simulation
-    .with(renderer)
-    .incrementsTimeBy(lambda / OneDimensionalPlaneWave.c / 100.0)
-    .onScale(1)
-    .onClockTick((clockTime, simulatedTime) => {
-        for (let wave of planeWaves)
-            wave.propagate(simulatedTime);
-    }, 2)
-    .start();
-
-// Only needed for development with Vite //
-export function createAntennaScene() {
-    return { run() {}, stop() { } };
-}
-//////////////////////////////////////////

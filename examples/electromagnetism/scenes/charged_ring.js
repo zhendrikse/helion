@@ -157,8 +157,3 @@ const simulation = Simulation
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas);
 
-// Only needed for development with Vite //
-export function createChargedRingScene() {
-    return { run() {}, stop() { } };
-}
-//////////////////////////////////////////

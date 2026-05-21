@@ -169,10 +169,8 @@ const simulation = Simulation
     .incrementsTimeBy(dt)
     .onScale(1)
     .onClockTick(() => {
-        if (allGone())
-            return;
-
-        rod.update(dt);
+        if (!allGone())
+            rod.update(dt);
     }, 2);
 
 //
@@ -180,10 +178,3 @@ const simulation = Simulation
 //
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(Canvas.withElementId("chargedRodCanvas"));
-
-
-// Only needed for development with Vite //
-export function createChargedRodScene() {
-    return { run() {}, stop() {} };
-}
-//////////////////////////////////////////

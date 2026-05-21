@@ -2,11 +2,12 @@
   <head>
     <link rel="stylesheet" href="../style.css" />
   </head>
-  </body>
+  <body>
     <!--
        - A N T E N N A
     <div class="applicationCanvasWrapper" id="antennaCanvasWrapper">
       <canvas id="antennaCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
+      <div class="overlayText" id="antennaOverlay">Click to start the animation!</div>
     </div>
     <div class="buttonRow">
       <label for="antennaFieldStrengthSlider">🧲 Field strength: </label>
@@ -56,12 +57,12 @@
        -->
     <!--
        - E L E C T R O M A G N E T I C   W A V E
-       -->
     <div class="canvasWrapper" id="electromagneticWaveWrapper">
       <canvas class="applicationCanvas" id="electromagneticWaveCanvas"></canvas>
       <div class="overlayText" id="electromagneticWaveOverlay">Click to start the animation!</div>
     </div>
     <script type="module" src="scenes/electromagnetic_wave_quiver.js"></script>
+       -->
     <!--
        - S O L E N O I D
     <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">
@@ -74,6 +75,66 @@
     </div>
     <script type="module" src="scenes/solenoid.js"></script>
      -->
-  </body>
+    <!--
+       - P R O T O N  I N  M A G N E T I C  F I E L D
+    <div class="canvasWrapper" id="protonInFieldWrapper" style="aspect-ratio: 19/12">
+      <canvas id="protonInFieldCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
+      <div class="overlayText" id="protonInFieldOverlayText">Click to start the animation!</div>
+    </div>
+    <div class="buttonRow">
+      <label for="protonInFieldStrengthSlider">🧲 Field: </label>
+      <input type="range" id="protonInFieldStrengthSlider" min=".1" max="1" step="any" value=".2"/>
+      <span id="protonInFieldStrengthSliderValue">10</span>
+    </div>
+    <div class="buttonRow">
+      <label for="protonInFieldSpeedSlider" >🚀 Speed: </label>
+      <input type="range" id="protonInFieldSpeedSlider" min="1" max="100" step="any" value="50"/>
+      <span id="protonInFieldSpeedSliderValue">50</span>
+    </div>
+    <script type="module" src="scenes/proton_in_magnetic_field.js"></script>
+    <p style="clear: both;"></p>
+    -->
+    <!--
+       - H E L I C A L  M O T I O N
+    <div class="canvasWrapper" id="helicalProtonCanvasWrapper">
+      <canvas id="helicalProtonCanvas" class="applicationCanvas"></canvas>
+      <div class="overlayText" id="helicalProtonCanvasOverlay">Click to start the animation!</div>
+    </div>
+    <div class="buttonRow">
+      <label>🧲 Field: </label>
+      <input type="range" id="helicalProtonFieldStrengthSlider" min=".5" max="5" step="any" value="1"/>
+      <span id="helicalProtonFieldStrengthSliderValue">1</span>
+    </div>
+    <div class="buttonRow">
+      <label>🚀 Speed: </label>
+      <input type="range" id="helicalProtonSpeedSlider" min="1" max="100" step="any" value="50"/>
+      <span id="helicalProtonSpeedSliderValue">50</span>
+    </div>
+    <div class="buttonRow">
+      <label>🪫 charge: </label>
+      <input type="range" id="helicalProtonChargeSlider" min=".25" max="5" step="any" value="0.8"/>
+      <span id="helicalProtonChargeSliderValue">0.8</span>
+    </div>
+    <script type="module" src="scenes/proton_helical_motion.js"></script>
+      -->
+    <!--
+       - M O V I N G   C H A R G E   B E T W E E N   C A P A C I T O R   P L A T E S
+      -->
+    <div class="canvasWrapper" id="movingChargeWrapper" style="aspect-ratio: 19/12">
+      <canvas id="movingChargeCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
+      <div class="overlayText" id="movingChargeOverlayText">Click to start the animation!</div>
+    </div>
+    <div class="buttonRow">
+      <label for="chargeSlider">🪫Charge: </label><input type="range" id="chargeSlider" min="0" max="5" step="0.1" value="1"/>
+      <span id="chargeSliderValue">1</span> electron charge(s)
+    </div>
+    <div class="buttonRow">
+      <label for="speedSlider" >🚀 Speed: </label><input type="range" id="speedSlider" min="1" max="50" step="1" value="15"/>
+      <span id="speedSliderValue">15</span> x 1E-14 m/s
+    </div>
+    <script type="module" src="scenes/moving_charge.js"></script>
+
+    <p style="clear: both;"></p>
+</body>
 </html>
 

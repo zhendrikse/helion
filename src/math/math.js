@@ -66,6 +66,13 @@ export class Vec3 {
         return this;
     }
 
+    divideScalar(s) {
+        this.x /= s;
+        this.y /= s;
+        this.z /= s;
+        return this;
+    }
+
     multiplyScalar(s) {
         this.x *= s;
         this.y *= s;

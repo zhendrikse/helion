@@ -1,7 +1,9 @@
 import { Group, Color, BufferAttribute, CanvasTexture,
     BufferGeometry, PointsMaterial, AdditiveBlending, Points, Vector3 } from "three";
 import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
-import {ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation} from "helion";
+import {ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation} from "helion";
+
+import { ThreeJsRenderer } from "../../../src/index.js";
 
 class StarCluster extends Group {
     constructor(htmlCanvas, N=40000) {
@@ -15,20 +17,18 @@ class StarCluster extends Group {
             if (this.starCreated(count, positions, colors, perlin))
                 count++;
 
-        const texture = new CanvasTexture(htmlCanvas);
-        console.log(htmlCanvas.width, htmlCanvas.height);
         const geometry = new BufferGeometry();
         geometry.setAttribute('position', positions);
         geometry.setAttribute('color', colors);
         const material = new PointsMaterial({
             color: 'white',
+            opacity: 0.5,
             vertexColors: true,
             size: 0.15,
             sizeAttenuation: true,
-            map: texture,
             transparent: true,
             blending: AdditiveBlending,
-            depthTest: false,
+            depthTest: true,
         });
         const cloud = new Points(geometry, material);
         this.add(cloud);
@@ -53,8 +53,9 @@ class StarCluster extends Group {
 
 const threeJsRendererOptions = new ThreeJsRenderOptions({
     cameraPosition: new Vector3(10, 20, 30),
-    fieldOfView: 30,
-    background: ThreeJsRenderer.Background.STARS
+    background: ThreeJsRenderer.Background.STARS,
+    fov: 35,
+    light: false
 });
 const canvas = Canvas.withElementId("starClusterCanvas");
 const renderer = ThreeJsRenderer

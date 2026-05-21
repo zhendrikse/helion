@@ -1,8 +1,7 @@
 import { Vector3, Color } from "three";
-import { Particle } from "../js/phys/physics.js";
-import { VectorField, Range } from "../js/math/math.js";
-import {Simulation, Canvas, Overlay, HtmlDiv, EventController, HtmlControl, CallbackFunction} from "../js/simulation.js";
-import { Sphere, ArrowField, ThreeJsRenderOptions, ThreeJsRenderer, Trail } from "../js/renderers/three/threesim.js";
+import { Particle, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
+    EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
+    ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3 } from "helion";
 
 class MagneticField extends VectorField {
     constructor(fieldStrength) {
@@ -15,7 +14,7 @@ class MagneticField extends VectorField {
     vectorAt(position) {
         const yComponent = Math.sqrt(position.x * position.x + position.z * position.z);
         // b_z = 5 if (abs(abs(position.x)-1) < 0.2 and abs(abs(position.y)-1) < 0.2) else 0
-        return new Vector3(0, yComponent, 0).multiplyScalar(this._strength);
+        return new Vec3(0, yComponent, 0).multiplyScalar(this._strength);
     }
 }
 
@@ -23,8 +22,8 @@ class MagneticField extends VectorField {
 // Physics
 //
 const proton = new Particle({
-    position: new Vector3(0, 1, 0),
-    velocity: new Vector3(.5, 0, 0),
+    position: new Vec3(0, 1, 0),
+    velocity: new Vec3(.5, 0, 0),
     mass: 1,
     radius: .125,
     charge: 1
@@ -51,8 +50,8 @@ const renderer = ThreeJsRenderer.on(
     .with(threeJsRendererOptions);
 
 const sphere = new Sphere({ color: new Color("red")});
-renderer.add(proton.to(sphere));
-renderer.add(proton.to(new Trail({ maxPoints: 300, color: sphere.color })));
+renderer.synchronize(proton.alwaysWith(sphere));
+renderer.synchronize(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })));
 
 const arrowField = new ArrowField({
     xRange: new Range(-6, 6, .5),
@@ -63,14 +62,14 @@ const arrowField = new ArrowField({
     magnitudeMap: (magnitude) => .5 * Math.sqrt(magnitude),
     colorMap: (axis, magnitude) => new Color().setHSL(.5 * Math.sqrt(magnitude), 1, 0.5)
 });
-renderer.add(magneticField.to(arrowField));
+renderer.synchronize(magneticField.onceWith(arrowField));
 
 const dt = 2.5e-3;
 const subSteps = 100;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .run(() => timeStep(dt), subSteps);
+    .onClockTick(() => timeStep(dt), subSteps);
 
 //
 // Event listeners
