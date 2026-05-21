@@ -3,7 +3,7 @@ title: "🏀️ Bouncing balls"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://en.wikipedia.org/wiki/JavaScript">
         <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
     </a>
@@ -13,10 +13,10 @@ layout: ../../../layouts/DocsLayout.astro
 </div>
 
 ## Bouncing ball on spring
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 ### About
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 🎯 Illustration of the simplicity of the ThreeSim.js library<br/>
 🧠 Based on [this original code snippet](https://trinket.io/glowscript/58d3d4ba0b) by Rhett Allain<br/>
@@ -24,23 +24,23 @@ layout: ../../../layouts/DocsLayout.astro
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Kinematics/program/Ballonspringdrop) is available as well<br/>
 
 ### Live experiment
-<div className="header_line"></div>
+<div class="header_line"></div>
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://github.com/zhendrikse/helion/blob/main/examples/kinematics/scenes/bouncing_ball_on_spring.js">
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=bouncing_ball_on_spring.js"/>
     </a>
 </div>
 
-<div className="canvasWrapper" id="bouncingBallOnSpringWrapper">
-    <canvas className="applicationCanvas" id="bouncingBallOnSpringCanvas" width="600" height="600"></canvas>
-    <div className="overlayText" id="bouncingBallOnSpringOverlay">Click to start the animation!</div>
+<div class="canvasWrapper" id="bouncingBallOnSpringWrapper">
+    <canvas class="applicationCanvas" id="bouncingBallOnSpringCanvas"></canvas>
+    <div class="overlayText" id="bouncingBallOnSpringOverlay">Click to start the animation!</div>
 </div>
-<div className="buttonRow">
+<div class="buttonRow">
     <label><span style="color: cyan">🚀 Velocity: </span></label><input type="checkbox" id="velocityArrow" checked/>
     <label><span style="color: red">💪🏻 Force: </span></label><input type="checkbox" id="forceArrow" checked/>
 </div>
-<div className="buttonRow">
+<div class="buttonRow">
     <label>🍃 Air resistance: </label>
     <input type="range" id="dampingSlider" min="0" max="1" step="0.1" value=".2"/>
 </div>
@@ -48,18 +48,18 @@ layout: ../../../layouts/DocsLayout.astro
 
 
 ## Bouncing ball on floor
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 ### About
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 🎯 Graphing the kinetic and potential energies of a bouncing ball<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Kinematics/program/Bouncingball) is available as well, see [bouncing_ball.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/bouncing_ball.py)<br/>
 
 ### Live experiment
-<div className="header_line"></div>
+<div class="header_line"></div>
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://github.com/zhendrikse/helion/blob/main/examples/kinematics/scenes/bouncing_ball_on_floor.js">
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=bouncing_ball_on_floor.js"/>
     </a>
@@ -67,9 +67,9 @@ layout: ../../../layouts/DocsLayout.astro
 
 <link rel="stylesheet" href="https://unpkg.com/uplot/dist/uPlot.min.css"/>
 <script src="https://unpkg.com/uplot/dist/uPlot.iife.min.js"></script>
-<div className="canvasWrapper" id="bouncingBallOnFloorWrapper">
-    <canvas className="applicationCanvas" id="bouncingBallOnFloorCanvas" style="aspect-ratio: 19/12"></canvas>
-    <div className="overlayText" id="bouncingBallOnFloorOverlayText">Click to start the animation!</div>
+<div class="canvasWrapper" id="bouncingBallOnFloorWrapper">
+    <canvas class="applicationCanvas" id="bouncingBallOnFloorCanvas"></canvas>
+    <div class="overlayText" id="bouncingBallOnFloorOverlayText">Click to start the animation!</div>
 </div>
 <div id="chart" style="margin: auto;"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/bouncing_ball_on_floor.js"}></script>
