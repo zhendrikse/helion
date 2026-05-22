@@ -1,16 +1,15 @@
-import { Vector3 } from "three";
-import {EventController, HtmlControl, HtmlDiv, UPlotGraph} from "../js/simulation.js";
-import { Block } from "../js/phys/physics.js";
-import { Simulation, Canvas, Overlay } from "../js/simulation.js";
-import { Box, ThreeJsRenderOptions, ThreeJsRenderer, Aquarium } from "../js/renderers/three/threesim.js";
+import {EventController, Vec3, HtmlDiv, UPlotGraph, Block,
+    Simulation, Canvas, Overlay, Box, ThreeJsRenderOptions, ThreeJsRenderer, Aquarium
+} from "helion";
+import 'uplot/dist/uPlot.min.css';
 
 const liquidDensity = 1000;
 const g = -9.8;
 
 class WoodenBlock extends Block {
-    constructor({ density = 500, size = new Vector3(1, 1, 1) } = {}) {
+    constructor({ density = 500, size = new Vec3(1, 1, 1) } = {}) {
         super({size: size, mass: density * size.x * size.y * size.z});
-        this._force = new Vector3();
+        this._force = new Vec3();
     }
 
     submergedVolume(water) {
@@ -45,10 +44,10 @@ class WoodenBlock extends Block {
     }
 }
 
-const woodenBlock = new WoodenBlock( {size: new Vector3(0.4, 0.4, 0.1) });
+const woodenBlock = new WoodenBlock( {size: new Vec3(0.4, 0.4, 0.1) });
 const water = new Aquarium({
     color: 0x1e90ff,
-    size: new Vector3(2, 2, 0.75),
+    size: new Vec3(2, 2, 0.75),
     frameColor: 0xffff00,
 });
 
@@ -56,12 +55,12 @@ const canvas = Canvas.withElementId("floatingBlockCanvas");
 const overlay = Overlay.withElementId("floatingBlockOverlayText");
 const canvasWrapper = HtmlDiv.withElementId("floatingBlockContainer").containsBoth(canvas.and(overlay));
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(1, 0.4, 2).multiplyScalar(1.7)
+    cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
 });
 const renderer = ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions);
 
-renderer.add(woodenBlock.to(new Box({ color: 0xdeb887 })));
-renderer.addPlainObject(water);
+renderer.synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })));
+renderer.addObject3D(water);
 
 //
 // Graph
@@ -90,7 +89,7 @@ const substeps = 20;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .run( () => {
+    .onClockTick( () => {
         woodenBlock.apply(woodenBlock.netForce(water), dt);
 
         plot.graphData[0].push(t);

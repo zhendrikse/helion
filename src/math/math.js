@@ -117,6 +117,13 @@ export class Vec3 {
 
         return this;
     }
+
+    random() {
+        this.x = Math.random();
+        this.y = Math.random();
+        this.z = Math.random();
+        return this;
+    }
 }
 
 export class Integrators {

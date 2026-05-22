@@ -1,6 +1,7 @@
-import { Vector3, Vector2 } from "three";
+import { Vector2 } from "three";
 import { RadialSymmetricBody , Simulation, Canvas, Overlay, Sphere, Floor, Vec3,
     ThreeJsRenderOptions, ThreeJsRenderer, Trail, EventController, HtmlDiv, UPlotGraph } from "helion";
+import 'uplot/dist/uPlot.min.css';
 
 class BouncingBall extends RadialSymmetricBody {
     constructor({position, velocity, radius, mass}) {
@@ -49,7 +50,7 @@ const canvasWrapper = HtmlDiv.withElementId("bouncingBallOnFloorWrapper").contai
 const renderer = ThreeJsRenderer
     .on(canvasWrapper)
     .with(new ThreeJsRenderOptions({
-        cameraPosition: new Vector3(2, 1, 0.5).multiplyScalar(2.25)
+        cameraPosition: new Vec3(2, 1, 0.5).multiplyScalar(2.25)
     }));
 
 const sphere = new Sphere({ color: "cyan" });

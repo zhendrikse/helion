@@ -1,4 +1,3 @@
-import { Vector3 } from "three";
 import { Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation, Canvas, Vec3,
     Overlay, HtmlDiv, EventController, Sphere, ThreeJsRenderOptions, ThreeJsRenderer, Trail
 } from "helion";
@@ -52,7 +51,7 @@ const canvas = new Canvas("threeBodyCanvas");
 const overlay = new Overlay("overlayText");
 const canvasWrapper = HtmlDiv.withElementId("threeBodyWrapper").containsBoth(canvas.and(overlay));
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(30, 30, 30)
+    cameraPosition: new Vec3(30, 30, 30)
 });
 
 const renderer = ThreeJsRenderer

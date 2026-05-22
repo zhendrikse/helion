@@ -1,4 +1,3 @@
-import { Vector3, Color } from "three";
 import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Canvas, HtmlDiv,
     EventController, HtmlControl, Cylinder, ElectromagneticWave, ThreeJsRenderOptions,
     ThreeJsRenderer, Vec3, Overlay
@@ -25,7 +24,7 @@ for (let position of range)
 // View
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(-1, 4, -9).multiplyScalar(2.5),
+    cameraPosition: new Vec3(-1, 4, -9).multiplyScalar(2.5),
     fieldOfView: 25
 });
 
@@ -49,7 +48,7 @@ const antenna = new AxialSymmetricBody({
     axis: new Vec3(0, 2 * lambda, 0),
     radius: 0.5
 });
-renderer.synchronize(antenna.onceWith(new Cylinder({color: new Color(0.7, 0.7, 0.7)})));
+renderer.synchronize(antenna.onceWith(new Cylinder({color: 0x777777})));
 
 const simulation = Simulation
     .with(renderer)

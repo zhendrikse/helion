@@ -5,7 +5,6 @@
   "description": "A web-based simulation environment for educational and scientific visualizations",
   "main": "./dist/helion.umd.js",
   "module": "./dist/helion.es.js",
-
   "exports": {
     ".": {
       "import": "./dist/helion.es.js",
@@ -33,12 +32,15 @@
   },
   "homepage": "https://github.com/zhendrikse/helion#readme",
   "devDependencies": {
-    "vite": "^8.0.13"
+    "vite": "^8.0.13",
+    "uplot": "^1.6.32"
   },
   "dependencies": {
-    "three": "^0.184.0"
+    "three": "^0.184.0",
+    "uplot": "^1.6.32"
   },
   "peerDependencies": {
-  "three": "^0.184.0"
+    "three": "^0.184.0",
+    "uplot": "^1.6.32"
   }
 }

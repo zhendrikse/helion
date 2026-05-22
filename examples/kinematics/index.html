@@ -31,11 +31,20 @@
        -->
     <!--
        - T H R E E   B O D Y   P R O B L E M
-       -->
     <div class="canvasWrapper" id="threeBodyWrapper">
         <canvas class="applicationCanvas" id="threeBodyCanvas"></canvas>
         <div class="overlayText" id="overlayText">Click to start the animation!</div>
     </div>
     <script type="module" src="scenes/three_body.js"></script></body>
+       -->
+    <!--
+       - F L O A T I N G   B L O C K
+       -->
+    <div class="canvasWrapper" id="floatingBlockContainer">
+        <canvas id="floatingBlockCanvas" class="applicationCanvas"></canvas>
+        <div class="overlayText" id="floatingBlockOverlayText">Click to start the animation!</div>
+    </div>
+    <div id="forceChart" style="margin:auto;"></div>
+    <script type="module" src="scenes/floating_block.js"></script>
 </html>
 

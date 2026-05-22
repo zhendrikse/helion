@@ -1,4 +1,4 @@
-import { Vector3, Color } from "three"
+import { Color } from "three"
 import { AxialSymmetricBody, VectorField, Range, Simulation, Vec3,
     Canvas, HtmlDiv, EventController, HtmlControl, Cylinder, ArrowField,
     ThreeJsRenderOptions, ThreeJsRenderer } from "helion";
@@ -86,7 +86,7 @@ const magneticField = new SolenoidField(solenoid);
 // View
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(32, 16, 48).multiplyScalar(1.25),
+    cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
     fieldOfView: 45
 });
 const canvas = Canvas.withElementId("solenoidCanvas");

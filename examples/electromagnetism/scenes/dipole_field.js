@@ -1,4 +1,4 @@
-import { Vector3, Color } from "three";
+import { Color } from "three";
 import { Particle, VectorField, Range , Simulation, Canvas, HtmlDiv, Vec3,
     EventController, HtmlControl, Sphere, ArrowField, ThreeJsRenderOptions,
     ThreeJsRenderer } from "helion";
@@ -54,7 +54,7 @@ const dipoleField = new DipoleField(dipole);
 // View
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(32, 16, 48).multiplyScalar(0.75),
+    cameraPosition: new Vec3(32, 16, 48).multiplyScalar(0.75),
     fieldOfView: 40
 });
 

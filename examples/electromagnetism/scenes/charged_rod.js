@@ -1,4 +1,4 @@
-import { Vector3, Color } from "three";
+import { Color } from "three";
 import { Particle, VectorField, Range, Sphere, ArrowField, Trail, ThreeJsRenderer,
     ThreeJsRenderOptions, Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
 } from "helion";
@@ -129,7 +129,7 @@ const magneticField = new RodMagneticField(rod);
 const renderer = ThreeJsRenderer.on(HtmlDiv.withElementId("chargedRodWrapper")
     .containsBoth(Canvas.withElementId("chargedRodCanvas").and(Overlay.withElementId("chargedRodOverlay"))))
     .with(new ThreeJsRenderOptions({
-        cameraPosition: new Vector3(2, 1.5, 2.5),
+        cameraPosition: new Vec3(2, 1.5, 2.5),
         fieldOfView: 25
     }));
 

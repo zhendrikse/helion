@@ -1,15 +1,5 @@
-import {Vector3, Color} from "three";
-import { Body } from "../js/phys/physics.js";
-import {
-    Simulation,
-    Canvas,
-    Overlay,
-    HtmlDiv,
-    EventController,
-    HtmlControl,
-    CallbackFunction
-} from "../js/simulation.js";
-import { Arrow, ThreeJsRenderOptions, ThreeJsRenderer } from "../js/renderers/three/threesim.js";
+import { Body, Simulation, Canvas, Vec3, HtmlDiv, EventController, HtmlControl, CallbackFunction,
+    Arrow, ThreeJsRenderOptions, ThreeJsRenderer } from "helion";
 
 // Simulation parameters
 const speed = 6;  // initial horizontal speed
@@ -25,15 +15,15 @@ class Flock {
         this._direction_weight = 0.05;
         this._avoid_weight = 0.5;
 
-        this._acceleration = new Vector3();
-        this._center = new Vector3();
-        this._direction = new Vector3();
+        this._acceleration = new Vec3();
+        this._center = new Vec3();
+        this._direction = new Vec3();
 
         const initialPhysicalFlockRadius= 3;
         for (let i = 0; i < bird_count; i++)
             this._birds.push(new Body({
-                position: new Vector3().random().multiplyScalar(initialPhysicalFlockRadius),
-                velocity: new Vector3(speed, 0, 0).add(new Vector3().random().multiplyScalar(speed)),
+                position: new Vec3().random().multiplyScalar(initialPhysicalFlockRadius),
+                velocity: new Vec3(speed, 0, 0).add(new Vec3().random().multiplyScalar(speed)),
             }));
     }
 
@@ -41,7 +31,7 @@ class Flock {
     avoidNearestBirds() {
         const avoid = []
         for (let i = 0; i < this._bird_count; i++) {
-            avoid.push(new Vector3(0, 0, 0));
+            avoid.push(new Vec3(0, 0, 0));
             for (let j = 0; j < i; j++) {
                 const distanceSquared = this._birds[i].distanceToSquared(this._birds[j]);
                 if (distanceSquared < threshold) {
@@ -103,7 +93,7 @@ class Flock {
 
     startleBirds() {
         for (let i = 0; i < this._bird_count; i++)
-            this._birds[i].velocity = new Vector3().random().multiplyScalar(2 * speed);
+            this._birds[i].velocity = new Vec3().random().multiplyScalar(2 * speed);
     }
 }
 
@@ -111,7 +101,7 @@ const birdCount = 250;
 const flock = new Flock(birdCount);
 
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(15, 0, 30).multiplyScalar(1.5),
+    cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
     fieldOfView: 30
 });
 const canvas = Canvas.withElementId("birdsCanvas");
@@ -119,9 +109,9 @@ const canvasWrapper = HtmlDiv.withElementId("birdsCanvasWrapper").contains(canva
 const renderer = ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions);
 
 for (let i = 0; i < birdCount; i++)
-    renderer.add(flock.bird(i).velocityVector.to(new Arrow({
+    renderer.synchronize(flock.bird(i).velocityVector.alwaysWith(new Arrow({
         round: true,
-        color: new Color(.5, 1, .5),
+        color: 0x77ff77,
         size: .2
     })));
 
@@ -129,7 +119,7 @@ const dt = 0.02;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .run( () => flock.update(dt));
+    .onClockTick( () => flock.update(dt));
 
 //
 // Event listeners

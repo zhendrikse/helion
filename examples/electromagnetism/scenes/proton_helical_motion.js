@@ -1,4 +1,4 @@
-import { Vector3, Color } from "three";
+import { Color } from "three";
 import { Particle, VectorField, Range, Sphere, Trail, Vec3,
     ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, CallbackFunction, Canvas,
     EventController, HtmlControl, HtmlDiv, Overlay, Simulation
@@ -37,7 +37,7 @@ const proton = new Particle({
 // View with renderer
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(7, 4, 4.5).multiplyScalar(25),
+    cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
     fieldOfView: 30
 });
 const canvas= Canvas.withElementId("helicalProtonCanvas");

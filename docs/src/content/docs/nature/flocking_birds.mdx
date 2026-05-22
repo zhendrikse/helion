@@ -1,0 +1,42 @@
+---
+title: "🦅 Flocking birds"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div className="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div class="header_line"></div>
+
+🎯 Modeling flocking behavior of a swarm of birds<br/>
+⭐ Original version created by B. Philhour 10/9/17<br/>
+🧠 Inspired by Gary Flake's [Computational Beauty of Nature](https://www.amazon.com/Computational-Beauty-Nature-Explorations-Adaptation/dp/0262561271)<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/MyPrograms/program/Flockingbirds) is available as well, see [flocking_birds.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/flocking_birds.py)<br/>
+👉 [Another flocking birds demo](https://threejs.org/examples/webgl_gpgpu_birds.html) can be found on the [three.js](https://threejs.org/) website
+
+### Live demo
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/nature/scenes/flocking_birds.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=flocking_birds.js"/>
+    </a>
+</div>
+
+<div class="canvasWrapper" id="birdsCanvasWrapper">
+    <canvas class="applicationCanvas" id="birdsCanvas"></canvas><br/>
+</div>
+
+<label for="randomWeightSlider">Random behavior: <input type="range" min="0" max="50" value="5" step="any" class="slider" id="randomWeightSlider"/></label>
+<label for="centerWeightSlider">Centering behavior: <input type="range" min="0" max="2" value=".1" step="any" class="slider" id="centerWeightSlider"/></label>
+<label for="directionWeightSlider">Direction behavior: <input type="range" min="0" max="2" value=".1" step="any" class="slider" id="directionWeightSlider"/></label>
+<label for="avoidWeightSlider">Avoidance behavior: <input type="range" min="0" max="2" value="1" step="any" class="slider" id="avoidWeightSlider"/></label>
+<button class="button" id="startleButton">Startle birds</button>
+<script type="module" src={import.meta.env.BASE_URL + "examples/flocking_birds.js"}></script>

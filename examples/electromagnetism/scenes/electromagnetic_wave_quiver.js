@@ -1,4 +1,4 @@
-import { Vector3, Color } from "three";
+import { Color } from "three";
 
 import { Particle, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv, EventController,
     Sphere, ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, Vec3 } from "helion";
@@ -119,7 +119,7 @@ const magneticField = new CombinedField([
 // Renderer
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(15, 5, 20),
+    cameraPosition: new Vec3(15, 5, 20),
     fieldOfView: 45
 });
 const canvas= Canvas.withElementId("electromagneticWaveCanvas");

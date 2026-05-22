@@ -1,4 +1,4 @@
-import { Vector3, Color } from "three";
+import { Color } from "three";
 import { Particle, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
     EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
     ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3 } from "helion";
@@ -43,7 +43,7 @@ function timeStep(dt) {
 const canvas = Canvas.withElementId("protonInFieldCanvas");
 const overlay = Overlay.withElementId("protonInFieldOverlayText");
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(0, 5, -10)
+    cameraPosition: new Vec3(0, 5, -10)
 });
 const renderer = ThreeJsRenderer.on(
     HtmlDiv.withElementId("protonInFieldWrapper").containsBoth(canvas.and(overlay)))

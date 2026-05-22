@@ -1,4 +1,4 @@
-import { Vector3, Color } from "three";
+import { Color } from "three";
 import {Block, Particle, VectorField, Range, Sphere, Trail, ArrowField, ThreeJsRenderer,
     ThreeJsRenderOptions, Box, Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
 } from "helion";
@@ -82,7 +82,7 @@ const renderer = ThreeJsRenderer.on(
     HtmlDiv.withElementId("chargedSheetWrapper")
         .containsBoth(Canvas.withElementId("chargedSheetCanvas").and(Overlay.withElementId("chargedSheetOverlay"))))
     .with(new ThreeJsRenderOptions({
-        cameraPosition: new Vector3(12, 8, 16),
+        cameraPosition: new Vec3(12, 8, 16),
         fieldOfView: 20
     }));
 

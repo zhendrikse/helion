@@ -1,4 +1,4 @@
-import { Vector3, Color } from "three";
+import { Color } from "three";
 import { Particle, AxialSymmetricBody, VectorField, Range, Simulation, Canvas,
 	Overlay, EventController, HtmlDiv, Sphere, Cylinder, ArrowField, Vec3,
 	ThreeJsRenderer, ThreeJsRenderOptions, Trail } from "helion";
@@ -105,7 +105,7 @@ function timeStep(dt) {
 // View model
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(15, 5, 20),
+    cameraPosition: new Vec3(15, 5, 20),
     fieldOfView: 22
 });
 const canvas= Canvas.withElementId("chargedRingCanvas");
@@ -117,10 +117,10 @@ const renderer = ThreeJsRenderer
 
 // Ring rendering
 for (const segment of ring.segments)
-    renderer.synchronize(segment.onceWith(new Cylinder({ color: new Color("orange") })));
+    renderer.synchronize(segment.onceWith(new Cylinder({ color: "orange" })));
 
 // Electron + trail rendering
-const electronSphere = new Sphere({ color: new Color("red")});
+const electronSphere = new Sphere({ color: "red"});
 renderer.synchronize(electron.alwaysWith(electronSphere));
 renderer.synchronize(electron.alwaysWith(new Trail({
     maxPoints: 150,

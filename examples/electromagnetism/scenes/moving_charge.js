@@ -1,4 +1,4 @@
-import { Vector3, Color, AmbientLight, PointLight } from "three";
+import { Color, AmbientLight, PointLight } from "three";
 import { Particle, EC , VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
     EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
     ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3 } from "helion";
@@ -58,7 +58,7 @@ const canvas = Canvas.withElementId("movingChargeCanvas");
 const overlay = Overlay.withElementId("movingChargeOverlayText");
 const threeJsRendererOptions = new ThreeJsRenderOptions({
     light: false, // setting our own lights
-    cameraPosition: new Vector3(-50, 0, 75).multiplyScalar(0.5),
+    cameraPosition: new Vec3(-50, 0, 75).multiplyScalar(0.5),
     fieldOfView: 60
 });
 const renderer = ThreeJsRenderer.on(

@@ -8,13 +8,7 @@ import {
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Renderer } from "../../simulation.js"
-import { VectorFieldVector, ComplexScalarFieldValue, Complex } from "../../math/math.js";
-import woodWicketColorUrl from '../../textures/Wood_Wicker_011_color.png';
-import woodWicketNormalUrl from '../../textures/Wood_Wicker_011_normal.png';
-import woodWicketRoughnessUrl from '../../textures/Wood_Wicker_011_roughness.png';
-import pavingColorUrl from '../../textures/paving_color.jpg';
-import pavingRoughnessUrl from '../../textures/paving_roughness.jpg';
-import pavingNormalUrl from '../../textures/paving_normal.jpg';
+import { VectorFieldVector, ComplexScalarFieldValue, Complex, Vec3 } from "../../math/math.js";
 
 export class ThreeJsRenderOptions {
     constructor({
@@ -22,7 +16,7 @@ export class ThreeJsRenderOptions {
         backgroundColor = 0x0088ff,
         controls = true,
         light = true,
-        cameraPosition = new Vector3(3, 3, 3),
+        cameraPosition = new Vec3(3, 3, 3),
         shadowsEnabled = false,
         fieldOfView = 50
     } = {}) {
@@ -98,7 +92,7 @@ export class ThreeJsRenderer extends Renderer {
         }
 
         this._camera = new PerspectiveCamera(options.fieldOfView, canvas.clientWidth / canvas.clientHeight, 0.1, 1e6);
-        this._camera.position.copy(options.cameraPosition);
+        this._camera.position.set(options.cameraPosition.x, options.cameraPosition.y, options.cameraPosition.z);
 
         if (options.controls)
             this._controls = new OrbitControls(this._camera, canvas);
@@ -1041,6 +1035,12 @@ export class Floor extends Group {
         PAVING: "Paving",
         WOOD_WICKER: "WoodWicker"  // https://3dtextures.me/2024/06/22/wood-wicker-011/
     });
+    static woodWicketColorUrl = new URL('../../textures/Wood_Wicker_011_color.png', import.meta.url).href;
+    static woodWicketNormalUrl = new URL('../../textures/Wood_Wicker_011_normal.png', import.meta.url).href;
+    static woodWicketRoughnessUrl = new URL('../../textures/Wood_Wicker_011_roughness.png', import.meta.url).href;
+    static pavingColorUrl = new URL('../../textures/paving_color.jpg', import.meta.url).href;
+    static pavingRoughnessUrl = new URL('../../textures/paving_roughness.jpg', import.meta.url).href;
+    static pavingNormalUrl = new URL('../../textures/paving_normal.jpg', import.meta.url).href;
     constructor({
         type= Floor.Type.PLAIN,
         position = new Vector3(),
@@ -1083,15 +1083,14 @@ export class Floor extends Group {
                 }));
                 break;
             case Floor.Type.PAVING:
-                this._mesh.material.map = this._loadTexture(loader, pavingColorUrl, granularity);
-                this._mesh.material.roughnessMap = this._loadTexture(loader, pavingRoughnessUrl, granularity);
-                this._mesh.material.normalMap = this._loadTexture(loader, pavingNormalUrl, granularity);
+                this._mesh.material.map = this._loadTexture(loader, Floor.pavingColorUrl, granularity);
+                this._mesh.material.roughnessMap = this._loadTexture(loader, Floor.pavingRoughnessUrl, granularity);
+                this._mesh.material.normalMap = this._loadTexture(loader, Floor.pavingNormalUrl, granularity);
                 break;
             case Floor.Type.WOOD_WICKER:
-                console.log(path + '/paving_color.jpg');
-                this._mesh.material.map = this._loadTexture(loader, woodWicketColorUrl, granularity);
-                this._mesh.material.roughnessMap = this._loadTexture(loader, path + woodWicketRoughnessUrl, granularity);
-                this._mesh.material.normalMap = this._loadTexture(loader, path + woodWicketNormalUrl, granularity);
+                this._mesh.material.map = this._loadTexture(loader, Floor.woodWicketColorUrl, granularity);
+                this._mesh.material.roughnessMap = this._loadTexture(loader, Floor.woodWicketRoughnessUrl, granularity);
+                this._mesh.material.normalMap = this._loadTexture(loader, Floor.woodWicketNormalUrl, granularity);
                 break;
         }
     }

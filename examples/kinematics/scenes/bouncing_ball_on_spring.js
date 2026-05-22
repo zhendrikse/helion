@@ -1,4 +1,3 @@
-import { Vector3 } from "three";
 import { RadialSymmetricBody, Spring , Simulation, Canvas, Overlay, HtmlDiv,
     EventController, HtmlControl, Arrow, Sphere, ThreeJsRenderOptions,
     ThreeJsRenderer, Floor, Helix, Vec3 } from "helion";
@@ -55,7 +54,7 @@ const canvasWrapper = HtmlDiv.withElementId("bouncingBallOnSpringWrapper").conta
 const renderer = ThreeJsRenderer
     .on(canvasWrapper)
     .with(new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(1, 0.4, 2).multiplyScalar(1.7)
+    cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
 }));
 
 const helix = new Helix({ coils: 15, color: "yellow" });

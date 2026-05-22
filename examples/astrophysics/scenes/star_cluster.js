@@ -1,4 +1,4 @@
-import { Group, Color, BufferAttribute, CanvasTexture,
+import { Group, Color, BufferAttribute,
     BufferGeometry, PointsMaterial, AdditiveBlending, Points, Vector3 } from "three";
 import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
 import {ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation} from "helion";
@@ -52,7 +52,7 @@ class StarCluster extends Group {
 }
 
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(7, 14, 21),
+    cameraPosition: new Vec3(7, 14, 21),
     background: ThreeJsRenderer.Background.STARS,
     fov: 35,
     light: false

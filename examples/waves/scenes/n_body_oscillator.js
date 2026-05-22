@@ -1,7 +1,8 @@
-import { Vector3, Vector2 } from "three";
+import { Vector2 } from "three";
 import { EventController, HtmlDiv, UPlotGraph, RadialSymmetricBody, Vec3, HarmonicOscillator,
     Simulation, Canvas, Overlay, Sphere, ThreeJsRenderOptions, ThreeJsRenderer, Helix, Floor
 } from "helion";
+import 'uplot/dist/uPlot.min.css';
 
 //
 // Physics
@@ -37,7 +38,7 @@ initialDisturbance(7);
 const canvas = Canvas.withElementId("oscillatorCanvas");
 const overlay = Overlay.withElementId("oscillatorOverlay");
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(17, 6, 17),
+    cameraPosition: new Vec3(17, 6, 17),
     light: true,
     shadowsEnabled: true,
     fieldOfView: 45,
