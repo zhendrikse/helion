@@ -2,7 +2,6 @@ node_modules/
 dist/
 docs/.vscode/
 docs/public/examples/
-public/
 examples/astrophysics/node_modules
 examples/astrophysics/dist
 examples/kinematics/node_modules
