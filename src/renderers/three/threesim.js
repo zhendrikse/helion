@@ -9,6 +9,12 @@ import {
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Renderer } from "../../simulation.js"
 import { VectorFieldVector, ComplexScalarFieldValue, Complex, Vec3 } from "../../math/math.js";
+import woodWicketColorUrl from '../../textures/Wood_Wicker_011_color.png';
+import woodWicketNormalUrl from '../../textures/Wood_Wicker_011_normal.png';
+import woodWicketRoughnessUrl from '../../textures/Wood_Wicker_011_roughness.png';
+import pavingColorUrl from '../../textures/paving_color.jpg';
+import pavingRoughnessUrl from '../../textures/paving_roughness.jpg';
+import pavingNormalUrl from '../../textures/paving_normal.jpg';
 
 export class ThreeJsRenderOptions {
     constructor({
@@ -1035,12 +1041,6 @@ export class Floor extends Group {
         PAVING: "Paving",
         WOOD_WICKER: "WoodWicker"  // https://3dtextures.me/2024/06/22/wood-wicker-011/
     });
-    static woodWicketColorUrl = new URL('../../textures/Wood_Wicker_011_color.png', import.meta.url).href;
-    static woodWicketNormalUrl = new URL('../../textures/Wood_Wicker_011_normal.png', import.meta.url).href;
-    static woodWicketRoughnessUrl = new URL('../../textures/Wood_Wicker_011_roughness.png', import.meta.url).href;
-    static pavingColorUrl = new URL('../../textures/paving_color.jpg', import.meta.url).href;
-    static pavingRoughnessUrl = new URL('../../textures/paving_roughness.jpg', import.meta.url).href;
-    static pavingNormalUrl = new URL('../../textures/paving_normal.jpg', import.meta.url).href;
     constructor({
         type= Floor.Type.PLAIN,
         position = new Vector3(),
@@ -1083,14 +1083,14 @@ export class Floor extends Group {
                 }));
                 break;
             case Floor.Type.PAVING:
-                this._mesh.material.map = this._loadTexture(loader, Floor.pavingColorUrl, granularity);
-                this._mesh.material.roughnessMap = this._loadTexture(loader, Floor.pavingRoughnessUrl, granularity);
-                this._mesh.material.normalMap = this._loadTexture(loader, Floor.pavingNormalUrl, granularity);
+                this._mesh.material.map = this._loadTexture(loader, pavingColorUrl, granularity);
+                this._mesh.material.roughnessMap = this._loadTexture(loader, pavingRoughnessUrl, granularity);
+                this._mesh.material.normalMap = this._loadTexture(loader, pavingNormalUrl, granularity);
                 break;
             case Floor.Type.WOOD_WICKER:
-                this._mesh.material.map = this._loadTexture(loader, Floor.woodWicketColorUrl, granularity);
-                this._mesh.material.roughnessMap = this._loadTexture(loader, Floor.woodWicketRoughnessUrl, granularity);
-                this._mesh.material.normalMap = this._loadTexture(loader, Floor.woodWicketNormalUrl, granularity);
+                this._mesh.material.map = this._loadTexture(loader, woodWicketColorUrl, granularity);
+                this._mesh.material.roughnessMap = this._loadTexture(loader, woodWicketRoughnessUrl, granularity);
+                this._mesh.material.normalMap = this._loadTexture(loader, woodWicketNormalUrl, granularity);
                 break;
         }
     }

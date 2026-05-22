@@ -1,7 +1,7 @@
 import { Group, Color, BufferAttribute,
     BufferGeometry, PointsMaterial, AdditiveBlending, Points, Vector3 } from "three";
 import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
-import {ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation} from "helion";
+import {ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, Vec3 } from "helion";
 
 import { ThreeJsRenderer } from "../../../src/index.js";
 

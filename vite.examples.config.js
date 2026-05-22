@@ -2,8 +2,8 @@ import { defineConfig } from 'vite';
 import path from 'path';
 
 export default defineConfig({
+    base: '/helion/',
     build: {
-        outDir: 'docs/public/examples',
         emptyOutDir: true,
         rollupOptions: {
             input: {
@@ -15,6 +15,8 @@ export default defineConfig({
                 charged_sheet: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_sheet.js'),
                 dipole_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/dipole_field.js'),
                 electromagnetic_wave_quiver: path.resolve(__dirname, 'examples/electromagnetism/scenes/electromagnetic_wave_quiver.js'),
+                floating_block: path.resolve(__dirname, 'examples/kinematics/scenes/floating_block.js'),
+                flocking_birds: path.resolve(__dirname, 'examples/nature/scenes/flocking_birds.js'),
                 proton_helical_motion: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_helical_motion.js'),
                 n_body_oscillator: path.resolve(__dirname, 'examples/waves/scenes/n_body_oscillator.js'),
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),

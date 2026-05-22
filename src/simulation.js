@@ -356,8 +356,13 @@ export class UPlotGraph {
         this._graphData = [];
         dataDefinition.forEach(() => this._graphData.push([]));
 
-        const series = [];
-        dataDefinition.forEach(dataPoint => series.push({label: dataPoint.label, stroke: dataPoint.color}));
+        const series = [{}];
+        dataDefinition.slice(1).forEach(dataPoint => {
+            series.push({
+                label: dataPoint.label,
+                stroke: dataPoint.color
+            });
+        });
 
         const uPlotOptions = this._uplotOptions(title, width, height, labelColor, xLabel, yLabel, series);
         this._uplotChart = new uPlot(uPlotOptions, this._graphData, plotDiv);

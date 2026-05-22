@@ -30,6 +30,11 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
+					label: 'Nature',
+					items: [{ autogenerate: { directory: 'nature' } }],
+				},
+				{
+					collapsed: true,
 					label: 'Waves',
 					items: [{ autogenerate: { directory: 'waves' } }],
 				}

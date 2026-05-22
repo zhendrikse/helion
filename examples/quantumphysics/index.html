@@ -1,0 +1,23 @@
+<html>
+<head>
+    <link rel="stylesheet" href="../../docs/src/assets/styles.css" />
+</head>
+<body>
+    <!--
+       - C O M P L E X  P L A N E  W A V E
+       -->
+    <div class="canvasWrapper" id="birdsCanvasWrapper">
+        <canvas class="applicationCanvas" id="birdsCanvas"></canvas><br/>
+    </div>
+    <div id="forceChart" style="margin:auto;"></div>
+    <label for="randomWeightSlider">Random behavior: <input type="range" min="0" max="50" value="5" step="any" class="slider" id="randomWeightSlider"/></label>
+    <label for="centerWeightSlider">Centering behavior: <input type="range" min="0" max="2" value=".1" step="any" class="slider" id="centerWeightSlider"/></label>
+    <label for="directionWeightSlider">Direction behavior: <input type="range" min="0" max="2" value=".1" step="any" class="slider" id="directionWeightSlider"/></label>
+    <label for="avoidWeightSlider">Avoidance behavior: <input type="range" min="0" max="2" value="1" step="any" class="slider" id="avoidWeightSlider"/></label>
+    <button class="button" id="startleButton">Startle birds</button>
+    <script type="module" src="scenes/flocking_birds.js"></script>
+</html>
+
+
+
+
