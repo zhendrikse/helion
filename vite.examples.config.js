@@ -27,7 +27,7 @@ export default defineConfig({
                 star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js')
             },
             output: {
-                entryFileNames: '[name].js',
+                entryFileNames: 'examples/[name].js',
                 format: 'esm'
             }
         }
