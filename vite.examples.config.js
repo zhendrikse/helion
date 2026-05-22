@@ -4,7 +4,7 @@ import path from 'path';
 export default defineConfig({
     base: '/helion/',
     build: {
-        outDir: 'docs/public/examples',
+        outDir: 'docs/public',
         emptyOutDir: true,
         rollupOptions: {
             input: {
