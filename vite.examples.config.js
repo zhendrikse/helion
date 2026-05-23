@@ -4,8 +4,6 @@ import path from 'path';
 export default defineConfig({
     base: '/helion/',
     build: {
-        outDir: 'docs/public',
-        emptyOutDir: true,
         rollupOptions: {
             input: {
                 antenna: path.resolve(__dirname, 'examples/electromagnetism/scenes/antenna.js'),
