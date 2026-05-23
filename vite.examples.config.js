@@ -18,10 +18,12 @@ export default defineConfig({
                 electromagnetic_wave_quiver: path.resolve(__dirname, 'examples/electromagnetism/scenes/electromagnetic_wave_quiver.js'),
                 floating_block: path.resolve(__dirname, 'examples/kinematics/scenes/floating_block.js'),
                 flocking_birds: path.resolve(__dirname, 'examples/nature/scenes/flocking_birds.js'),
+                faradays_law: path.resolve(__dirname, 'examples/electromagnetism/scenes/faradays_law.js'),
                 proton_helical_motion: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_helical_motion.js'),
                 n_body_oscillator: path.resolve(__dirname, 'examples/waves/scenes/n_body_oscillator.js'),
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),
                 proton_in_magnetic_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_in_magnetic_field.js'),
+                plane_wave: path.resolve(__dirname, 'examples/quantumphysics/scenes/plane_wave.js'),
                 solenoid: path.resolve(__dirname, 'examples/electromagnetism/scenes/solenoid.js'),
                 three_body: path.resolve(__dirname, 'examples/kinematics/scenes/three_body.js'),
                 star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js')

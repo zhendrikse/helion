@@ -36,6 +36,11 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
+					label: 'Quantum physics',
+					items: [{ autogenerate: { directory: 'quantumphysics' } }],
+				},
+				{
+					collapsed: true,
 					label: 'Waves',
 					items: [{ autogenerate: { directory: 'waves' } }],
 				}

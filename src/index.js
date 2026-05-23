@@ -16,3 +16,7 @@ export {
     Cylinder, ArrowField, ThreeJsRenderOptions, ThreeJsRenderer, Sphere, Box, Arrow, Floor,
     Aquarium, OneDimensionalComplexPlaneWave3D, Ring, ElectromagneticWave, Helix, Trail, Ceiling
 } from "./renderers/three/threesim.js";
+
+export {
+    OneDimensionalComplexPlaneWave2D, Canvas2DRenderer
+} from "./renderers/canvas2d/canvassim.js";

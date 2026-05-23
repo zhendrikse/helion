@@ -1,0 +1,247 @@
+---
+title: "Ψ Complex plane wave"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+
+<div className="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div class="header_line"></div>
+
+🎯 Build intuition for complex waves, phase propagation, and the role of $k$ and $\omega$ <br/>
+🎯 Demonstration of multiple views on one and the same object $\psi(x,t)$<br/>
+🧠 3D visualization found in [Visualizing Quantum Mechanics with Python](https://www.amazon.com/Visualizing-Quantum-Mechanics-Python-Spicklemire/dp/1032569247)<br/>
+🧠 2D visualization based on [SinusoidalWave.html](https://physics.weber.edu/schroeder/software/SinusoidalWave.html) by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/)<br/>
+🐍 A 3D [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Quantum/program/Planewave) is available as well, see [plane_wave.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/plane_wave.py)<br/>
+👉 More physics software by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/) can be found [here](https://physics.weber.edu/schroeder/software/)
+
+#### Wave function of a free particle
+
+$$\begin\{equation\}
+\psi(x, t) = Ae^\{i(k x - \omega t)\}
+\end\{equation\}$$
+
+### Live demo
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/quantumphysics/scenes/plane_wave.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=plane_wave.js"/>
+    </a>
+</div>
+
+<p style="clear: both;"></p>
+<div class="canvasWrapper" id="planeWaveCanvasWrapper3d" style="aspect-ratio: 2/1" >
+    <canvas id="planeWaveCanvas3d" style="aspect-ratio: 2/1" class="applicationCanvas"></canvas>
+</div>
+<p style="clear: both;"></p>
+<div class="buttonRow">
+    <label for="amplitudeSlider">&nbsp;Amplitude: </label>
+    <input type="range" id="amplitudeSlider" min="0.5" max="10" step="any" value="5"/>
+</div>
+<div class="buttonRow">
+    <label for="omegaSlider">&nbsp;Omega: </label>
+    <input type="range" id="omegaSlider" min="0" max="25" step="any" value="3.2"/>
+</div>
+<div class="buttonRow">
+    <label for="waveNumberSlider">&nbsp;Wave number: </label>
+    <input type="range" id="waveNumberSlider" min="-1" max="1" step="any" value="0"/>
+</div>
+<p style="clear: both;"></p>
+<div class="canvasWrapper" id="planeWaveCanvasWrapper2d" style="aspect-ratio: 3/1" >
+    <canvas id="planeWaveCanvas2d" style="aspect-ratio: 3/1" class="applicationCanvas"></canvas>
+</div>
+<div class="buttonRow">
+    <button id="pauseButton">Pause</button>
+    <label for="realImagButton">Real/imag&nbsp;</label>
+    <input type="radio" name="plotType" id="realImagButton" value="realImag"/>
+    <label for="densityPhaseButton">Density/phase</label>
+    <input type="radio" name="plotType" checked id="densityPhaseButton" value="densityPhase"/>
+</div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/plane_wave.js"}></script>
+<p style="clear: both;"></p>
+
+
+### About the 3D visualization
+<div class="header_line"><br/></div>
+
+Each arrow represents the complex value of the wave function at a fixed position $x$.
+The arrow rotates in the complex plane as time evolves:
+
+- **z-direction**: real part of $\psi$
+- **y-direction**: imaginary part of $\psi$
+
+The **length of the arrows is constant**, showing that the magnitude $|\psi|$
+of a plane wave does not change in space or time.
+The **color encodes the phase**, making the spatial and temporal phase structure visible.
+
+### About the 2D visualization
+<div class="header_line"><br/></div>
+
+> This is an animated visualization of the behavior of a pure sinusoidal wavefunction in one
+> dimension, representing a free quantum particle with a precise momentum that is inversely proportional
+> to the wavelength. There is no potential energy and the particle is nonrelativistic, so the
+> phase velocity is directly proportional to the momentum.
+>
+> The real part is shown in orange, the imaginary part in blue. Alternatively,
+> the probability density and phase are drawn, with the phase represented by hues going from
+> - red (pure real and positive) to
+> -  light green (pure imaginary and positive) to
+> -  cyan (pure real and negative) to
+> - purple (pure imaginary and negative) and finally back to red.
+>
+> For a pure sinusoidal wavefunction, the probability density is the same everywhere.
+> &mdash; Paraphrased from instructions at [SinusoidalWave.html](https://physics.weber.edu/schroeder/software/SinusoidalWave.html)
+
+## Guided Exploration
+<div class="header_line"><br/></div>
+
+Use the controls to explore the properties of the plane wave.
+
+---
+
+#### Exercise 1 — Spatial phase
+
+1. Set $\omega = 0$.
+2. Change the wave number $k$.
+
+**Questions**
+
+* What happens to the phase difference between neighboring arrows?
+* How does this relate to the wavelength $\lambda = 2\pi/k$?
+
+---
+
+#### Exercise 2 — Temporal evolution
+
+1. Fix $k$.
+2. Increase $\omega$.
+
+**Questions**
+
+* What changes visually?
+* What does $\omega$ control physically?
+* Does the probability density change?
+
+---
+
+#### Exercise 3 — Direction of propagation
+
+1. Set $k > 0$.
+2. Observe how the phase moves in space.
+3. Repeat for $k < 0$.
+
+**Questions**
+
+* In which direction does the phase propagate?
+* How is this related to the sign of the momentum?
+
+---
+
+#### Exercise 4 — Real vs imaginary parts
+
+Focus on a single arrow and track its motion.
+
+**Questions**
+
+* How are the real and imaginary parts related?
+* Why can neither part alone represent the full wave?
+
+---
+
+#### Exercise 5 — Interpretation
+
+A plane wave is not normalizable.
+
+**Questions**
+
+* What does that mean physically?
+* Why are plane waves still useful in quantum mechanics?
+* How might you build a localized wave packet from plane waves?
+
+---
+
+### Optional challenge
+
+Predict what would happen if **two plane waves with slightly different $k$ ** were added together.
+What new structure would you expect to see?
+
+
+### Complex Plane Waves in Quantum Mechanics
+<div class="header_line"><br/></div>
+
+In quantum mechanics, the state of a free particle with definite momentum is described by a **plane wave**
+
+$$
+\psi(x,t) = A  e^\{i(kx - \omega t)\}.
+$$
+
+This visualization shows the wave function as a **geometric object** rather than a real-valued curve.
+
+At each position $x$:
+
+* the arrow represents the **complex value** of $\psi(x,t)$
+* the arrow rotates in the complex plane with angular frequency $\omega$
+* the spatial phase advance is controlled by the wave number $k$
+
+The real and imaginary parts are shown along orthogonal axes.
+The **constant arrow length** illustrates that
+
+$$
+|\psi(x,t)|^2 = |A|^2
+$$
+
+is uniform in space and time.
+
+This emphasizes an important quantum-mechanical point:
+
+> A plane wave does **not** represent a localized particle,
+> but a state with definite momentum and completely delocalized position.
+
+The animation separates:
+
+* **phase evolution** (rotation of arrows)
+* from **probability density** (constant magnitude)
+
+which is often obscured in standard textbook plots.
+
+
+### Concise derivation of the Schr&#246;dinger equation
+<div class="header_line"><br/></div>
+
+According to <a href="https://en.wikipedia.org/wiki/Matter_wave">De Broglie</a> we have:
+
+$$\begin\{equation\}
+p = \dfrac\{h\}\{\lambda\} = \dfrac\{h\}\{2\pi\} \dfrac\{2\pi\}\{\lambda\} =
+\hbar k \Rightarrow \hbar k =
+\hbar \dfrac\{\partial\}\{\partial x\} \psi(x,t) =
+p \psi(x, t) \Rightarrow p = \hbar \dfrac\{\partial\}\{\partial x\}
+\end\{equation\}$$
+
+The Kinetic energy can be expressed as:
+
+$$\begin\{equation\}
+K = \dfrac\{p^2\}\{2m\} = -\dfrac\{\hbar^2\}\{2m\}\dfrac\{\partial^2\}\{\partial x^2\} \psi(x,t)
+\end\{equation\}$$
+
+The total energy is given by the <a href="https://en.wikipedia.org/wiki/Planck_relation">Planck-Einstein relation</a>:
+
+$$\begin\{equation\}
+E = hf = \dfrac\{h\}\{2\pi\}\dfrac\{2\pi\}\{T\} =
+\hbar \omega \Rightarrow -i\hbar\dfrac\{\partial\}\{\partial t\} \psi(x,t) =
+E \psi(x,t) \Rightarrow E = -i\hbar\dfrac\{\partial\}\{\partial t\}
+\end\{equation\}$$
+
+From this we arrive at the <a href="https://en.wikipedia.org/wiki/Schr%C3%B6dinger_equation">Schr&#246;dinger equation</a>:
+
+$$\begin\{equation\}
+(KE + PE)\Psi(x,,t) = E\Psi(x,t) = -i\hbar \dfrac\{\partial\}\{\partial t\}\Psi(x, t) = -\dfrac\{\hbar^2\}\{2m\}\dfrac\{\partial^2\}\{\partial x^2\} \Psi(x,t) + V(x)\Psi(x,t)
+\end\{equation\}$$

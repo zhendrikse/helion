@@ -5,7 +5,6 @@
   <body>
     <!--
        - A N T E N N A
-       -->
     <div class="canvasWrapper" id="antennaCanvasWrapper">
       <canvas id="antennaCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
       <div class="overlayText" id="antennaOverlay">Click to start the animation!</div>
@@ -16,6 +15,7 @@
       <span id="antennaFieldStrengthSliderValue">10</span>
     </div>
     <script type="module" src="scenes/antenna.js"></script>
+    -->
     <!--
        - C H A R G E D  R I N G
     <div class="canvasWrapper" id="chargedRingWrapper">
@@ -63,6 +63,17 @@
     </div>
     <script type="module" src="scenes/electromagnetic_wave_quiver.js"></script>
        -->
+    <!--
+       - F A R A D A Y ' S   L A W
+       -->
+    <div class="canvasWrapper" id="faradayLawCanvasWrapper" style="aspect-ratio: 19 / 12;">
+      <canvas class="applicationCanvas" id="faradayLawCanvas" style="aspect-ratio: 19/12"></canvas>
+      <div class="overlayText" id="faradayLawCanvasOverlay">Click to start the animation!</div>
+    </div>
+    <div class="buttonRow">
+      <label for="faradayLoopButton">Show Faraday loop <input type="checkbox" id="faradayLoopButton"/></label>
+    </div>
+    <script type="module" src="scenes/faradays_law.js"></script>
     <!--
        - S O L E N O I D
     <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">

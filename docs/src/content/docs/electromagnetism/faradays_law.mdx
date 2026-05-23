@@ -1,0 +1,109 @@
+---
+title: "🔌 Faraday's law of induction"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div className="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+
+## About
+<div class="header_line"><br/></div>
+
+🎯 Visualization of the relationship between a changing magnetic field and the induced electric field<br/>
+🧠 Inspired by original version on [web page of Rob Salgado](https://www.visualrelativity.com/vpython/)<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/Faradayslaw) is available as well, see [faradays_law.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/faradays_law.py)<br/>
+👉 Current through a real wire would have an azimuthal magnetic around the wire<br/>
+👉 Faraday’s law<br/>
+<p style="clear: both;"></p>
+
+$$\text\{In differential form:\}\quad \nabla \times \vec\{E\} = -\frac\{\partial \vec\{B\}\}\{\partial t\}$$
+
+$$\text\{In integral form:\}\quad \oint \vec\{E\}\cdot d\vec\{l\} = -\frac\{d\Phi_B\}\{dt\} $$
+
+🔴 Arrows represent the magnetic field change $\frac\{\partial \vec\{B\}\}\{\partial t\}$<br/>
+🔵 Arrows represent induced electric field $\nabla \times \vec\{E\} = -\frac\{\partial \vec\{B\}\}\{\partial t\}$<br/>
+🟡 Balls visualize the electric charges traveling through the wire.<br/>
+🟢 Faraday loops represent the **orientation of the integration loop** used in Faraday’s law.
+
+These green arrows do **not** necessarily represent the physical electric field direction itself.
+Instead, they define the positive circulation direction according to the right-hand rule:
+
+### Live experiment
+<div className="header_line"><br/></div>
+
+<div className="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/electromagnetism/scenes/faradays_law.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=faradays_law.js"/>
+    </a>
+</div>
+
+<div class="canvasWrapper" id="faradayLawCanvasWrapper" style="aspect-ratio: 19 / 12;">
+    <canvas class="applicationCanvas" id="faradayLawCanvas" style="aspect-ratio: 19/12"></canvas>
+    <div class="overlayText" id="faradayLawCanvasOverlay">Click to start the animation!</div>
+</div>
+<div class="buttonRow">
+    <label for="faradayLoopButton">Show Faraday loop <input type="checkbox" id="faradayLoopButton"/></label>
+</div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/faradays_law.js"}></script>
+<p style="clear: both;"></p>
+
+
+### Important conceptual points
+<div class="header_line"><br/></div>
+
+The simulation distinguishes between:
+
+| Visual Element       | Meaning                         |
+| -------------------- | ------------------------------- |
+| Green loop direction | chosen mathematical orientation |
+| Blue electric field  | physical induced field          |
+| Red magnetic arrows  | changing magnetic flux source   |
+
+This separation is important because Faraday’s law relates:
+
+* the circulation of the electric field around a closed path,
+* to the time rate of change of magnetic flux through that path.
+
+#### Physical Interpretation of the Minus Sign
+
+The minus sign in Faraday’s law means:
+
+> Nature resists changes in magnetic flux.
+
+If the magnetic field through the loop increases in one direction, the induced electric field circulates in the direction that would generate an opposing magnetic field.
+This is the essence of electromagnetic induction and energy conservation.
+
+## Field of moving charged rod
+<div className="header_line"></div>
+
+### About
+<div className="header_line"><br/></div>
+
+🎯 Illustration of [Faraday's law](./faradays_law.html): field around a moving charged rod<br/>
+🧠 Inspired by [MovingLineOfCharge](https://www.glowscript.org/#/user/wlane/folder/PHYS152/program/MovingLineOfCharge) by Ksenja Llazar and Alyssa McCaskey<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/ChargedSheet) is available as well, see [charged_rod.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/charged_rod.py)<br/>
+👉 The rod is modeled as a collection of point charges<br/>
+👉 Electric field arrows are <span style="color: red">red</span>, magnetic field arrows are <span style="color: blue">blue</span>
+
+### Live experiment
+<div className="header_line"><br/></div>
+
+<div className="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/electromagnetism/scenes/charged_rod.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=charged_rod.js"/>
+    </a>
+</div>
+
+<div className="canvasWrapper" id="chargedRodWrapper" style="aspect-ratio: 3/4">
+    <canvas id="chargedRodCanvas" className="applicationCanvas" style="aspect-ratio: 3/4"></canvas>
+    <div className="overlayText" id="chargedRodOverlay">Click to start the animation!</div>
+</div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/charged_rod.js"}></script>
+<p style="clear: both;"></p>
