@@ -32,10 +32,14 @@
   },
   "homepage": "https://github.com/zhendrikse/helion#readme",
   "devDependencies": {
-    "vite": "^8.0.13",
-    "uplot": "^1.6.32"
+    "uplot": "^1.6.32",
+    "vite": "^8.0.13"
   },
   "dependencies": {
+    "@astrojs/mdx": "^5.0.6",
+    "katex": "^0.17.0",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "three": "^0.184.0",
     "uplot": "^1.6.32"
   },

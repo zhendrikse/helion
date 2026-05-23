@@ -3,7 +3,6 @@ title: "Ψ Complex plane wave"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
-
 <div className="badgeRow">
     <a href="https://en.wikipedia.org/wiki/JavaScript">
         <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
@@ -21,13 +20,12 @@ layout: ../../../layouts/DocsLayout.astro
 🧠 3D visualization found in [Visualizing Quantum Mechanics with Python](https://www.amazon.com/Visualizing-Quantum-Mechanics-Python-Spicklemire/dp/1032569247)<br/>
 🧠 2D visualization based on [SinusoidalWave.html](https://physics.weber.edu/schroeder/software/SinusoidalWave.html) by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/)<br/>
 🐍 A 3D [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Quantum/program/Planewave) is available as well, see [plane_wave.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/plane_wave.py)<br/>
-👉 More physics software by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/) can be found [here](https://physics.weber.edu/schroeder/software/)
+👉 More physics software by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/) can be found [here](https://physics.weber.edu/schroeder/software/)<br/>
+👉 Wave function of a free particle:
 
-#### Wave function of a free particle
-
-$$\begin\{equation\}
-\psi(x, t) = Ae^\{i(k x - \omega t)\}
-\end\{equation\}$$
+$$
+\psi(x, t) = Ae^{i(k x - \omega t)}
+$$
 
 ### Live demo
 <div class="header_line"></div>
@@ -181,7 +179,7 @@ What new structure would you expect to see?
 In quantum mechanics, the state of a free particle with definite momentum is described by a **plane wave**
 
 $$
-\psi(x,t) = A  e^\{i(kx - \omega t)\}.
+\psi(x,t) = A  e^{i(kx - \omega t)}.
 $$
 
 This visualization shows the wave function as a **geometric object** rather than a real-valued curve.
@@ -213,35 +211,29 @@ The animation separates:
 
 which is often obscured in standard textbook plots.
 
-
 ### Concise derivation of the Schr&#246;dinger equation
 <div class="header_line"><br/></div>
 
 According to <a href="https://en.wikipedia.org/wiki/Matter_wave">De Broglie</a> we have:
 
-$$\begin\{equation\}
-p = \dfrac\{h\}\{\lambda\} = \dfrac\{h\}\{2\pi\} \dfrac\{2\pi\}\{\lambda\} =
-\hbar k \Rightarrow \hbar k =
-\hbar \dfrac\{\partial\}\{\partial x\} \psi(x,t) =
-p \psi(x, t) \Rightarrow p = \hbar \dfrac\{\partial\}\{\partial x\}
-\end\{equation\}$$
+$$
+p = \dfrac{h}{\lambda} = \dfrac{h}{2\pi} \dfrac{2\pi}{\lambda} = \hbar k \Rightarrow \hbar k = \hbar \dfrac{\partial}{\partial x} \psi(x,t) = p \psi(x, t) \Rightarrow p = \hbar \dfrac{\partial}{\partial x}
+$$
 
 The Kinetic energy can be expressed as:
 
-$$\begin\{equation\}
-K = \dfrac\{p^2\}\{2m\} = -\dfrac\{\hbar^2\}\{2m\}\dfrac\{\partial^2\}\{\partial x^2\} \psi(x,t)
-\end\{equation\}$$
+$$
+K = \dfrac{p^2}{2m} = -\dfrac{\hbar^2}{2m}\dfrac{\partial^2}{\partial x^2} \psi(x,t)
+$$
 
 The total energy is given by the <a href="https://en.wikipedia.org/wiki/Planck_relation">Planck-Einstein relation</a>:
 
-$$\begin\{equation\}
-E = hf = \dfrac\{h\}\{2\pi\}\dfrac\{2\pi\}\{T\} =
-\hbar \omega \Rightarrow -i\hbar\dfrac\{\partial\}\{\partial t\} \psi(x,t) =
-E \psi(x,t) \Rightarrow E = -i\hbar\dfrac\{\partial\}\{\partial t\}
-\end\{equation\}$$
+$$
+E = hf = \dfrac{h}{2\pi}\dfrac{2\pi}{T} = \hbar \omega \Rightarrow -i\hbar\dfrac{\partial}{\partial t} \psi(x,t) = E \psi(x,t) \Rightarrow E = -i\hbar\dfrac{\partial}{\partial t}
+$$
 
 From this we arrive at the <a href="https://en.wikipedia.org/wiki/Schr%C3%B6dinger_equation">Schr&#246;dinger equation</a>:
 
-$$\begin\{equation\}
-(KE + PE)\Psi(x,,t) = E\Psi(x,t) = -i\hbar \dfrac\{\partial\}\{\partial t\}\Psi(x, t) = -\dfrac\{\hbar^2\}\{2m\}\dfrac\{\partial^2\}\{\partial x^2\} \Psi(x,t) + V(x)\Psi(x,t)
-\end\{equation\}$$
+$$
+(KE + PE)\Psi(x,,t) = E\Psi(x,t) = -i\hbar \dfrac{\partial}{\partial t}\Psi(x, t) = -\dfrac{\hbar^2}{2m}\dfrac{\partial^2}{\partial x^2} \Psi(x,t) + V(x)\Psi(x,t)
+$$
