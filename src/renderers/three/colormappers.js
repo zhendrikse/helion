@@ -63,6 +63,7 @@ export class SurfaceColorMapper {
         }
     }
 
+    set mode(newValue) { this._mode = newValue; this._colorMap = colors255[newValue]}
 
     map(t, target = new Color()) {
         switch (this._mode) {

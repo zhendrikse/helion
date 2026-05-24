@@ -30,4 +30,35 @@ layout: ../../../layouts/DocsLayout.astro
 <div class="canvasWrapper" id="membraneCanvasWrapper" style="aspect-ratio: 19/12">
   <canvas class="applicationCanvas" id="membraneCanvas" style="aspect-ratio: 19/12"></canvas><br/>
 </div>
+    <div class="buttonRow">
+    <label for="colorMapSelect">Color map:</label>
+    <select name="colorMaps" id="colorMapSelect">
+        <option value="seismic">Seismic</option>
+        <option value="virdis">Virdis</option>
+        <option value="jet">Jet</option>
+        <option value="inferno">Inferno</option>
+        <option value="RdYlBu">RdYlBu</option>
+        <option value="water">Water</option>
+        <option value="water alternative">Water alternative</option>
+        <option value="gradient">Gradient</option>
+    </select>
+    <label for="showContours">Contours</label>
+    <input type="checkbox" name="showContours" id="showContours" checked="checked" />
+</div>
+    <div class="buttonRow">
+    Mode-x :
+    <button id="x1" value="1">1</button>
+    <button id="x2" value="2">2</button>
+    <button id="x3" value="3">3</button>
+    <button id="x4" value="4">4</button>
+    <button id="x5" value="5">5</button>
+</div>
+    <div class="buttonRow">
+    Mode-y :
+    <button id="y1" value="1">1</button>
+    <button id="y2" value="2">2</button>
+    <button id="y3" value="3">3</button>
+    <button id="y4" value="4">4</button>
+    <button id="y5" value="5">5</button>
+</div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/vibrating_membrane.js"}></script>

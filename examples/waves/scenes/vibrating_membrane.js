@@ -1,6 +1,6 @@
 import {ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation,
     Surface, ScalarField, PlaneSurfaceView, IsoparametricContoursView,
-    SphereSurfaceView, SurfaceColorMapper, Vec3 } from "helion";
+    HtmlControl, EventController, SurfaceColorMapper, Vec3 } from "helion";
 
 class MembraneScalarField extends ScalarField {
     constructor({
@@ -14,7 +14,7 @@ class MembraneScalarField extends ScalarField {
         this._width = width;
         this._depth = depth;
         this._amplitude = amplitude;
-        this._waveCountX = 2;
+        this._waveCountX = 1;
         this._waveCountY = 1;
         this._time = 0;
     }
@@ -22,6 +22,8 @@ class MembraneScalarField extends ScalarField {
     get amplitude() { return this._amplitude; }
     get depth() { return this._depth; }
     get width() { return this._width; }
+    set waveCountX(waveCountX) { this._waveCountX = waveCountX; }
+    set waveCountY(waveCountY) { this._waveCountY = waveCountY; }
 
     updateWith(time) { this._time = time; }
 
@@ -74,31 +76,60 @@ const renderer = ThreeJsRenderer
 //
 // Surface view
 //
-const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.JET_COLOR_MAP);
+const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.INFERNO_COLOR_MAP);
+const normalizer = (position) => (position.y + scalarField.amplitude) / (2 * scalarField.amplitude);
 renderer.synchronize(waveSurface.alwaysWith(new PlaneSurfaceView({
     uSegments: 100,
     vSegments: 100,
     colorMapper: colorMapper,
-    normalizer: (position) =>
-        (position.y + scalarField.amplitude) /
-        (2 * scalarField.amplitude)
+    normalizer: normalizer
 })));
-renderer.synchronize(waveSurface.alwaysWith(new IsoparametricContoursView({
+const contoursView = new IsoparametricContoursView({
     uSegments: 20,
     vSegments: 20,
     colorMapper: colorMapper,
-    normalizer: (position) =>
-        (position.y + scalarField.amplitude) /
-        (2 * scalarField.amplitude)
-})));
+    normalizer: normalizer
+});
+renderer.synchronize(waveSurface.alwaysWith(contoursView));
 
 //
 // Simulation
 //
 const dt = 0.016;
-Simulation
+const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
     .onScale(1)
     .onClockTick((clockTime, simulatedTime) => scalarField.updateWith(simulatedTime), 3)
     .start();
+
+// document.getElementById("colorMapSelect").addEventListener("change", (event) => {
+//     colorMapper.mode = event.target.value;
+// })
+
+const eventController = EventController.for(simulation);
+eventController.attach(HtmlControl
+    .withElementId("colorMapSelect")
+    .forType("change")
+    .to(colorMapper)
+    .withProperty("mode"));
+
+eventController.attach(HtmlControl
+    .withElementId("showContours")
+    .forType("click")
+    .to(contoursView)
+    .withProperty("visible"));
+
+for (let i = 1; i < 6; i++) {
+    eventController.attach(HtmlControl
+        .withElementId("x" + i)
+        .forType("click")
+        .to(scalarField)
+        .withProperty("waveCountX"));
+
+    eventController.attach(HtmlControl
+        .withElementId("y" + i)
+        .forType("click")
+        .to(scalarField)
+        .withProperty("waveCountY"));
+}
