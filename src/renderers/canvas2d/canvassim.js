@@ -1,4 +1,4 @@
-import { Renderer} from "../../simulation.js";
+import { Renderer} from "../renderer.js";
 
 /** Utility function to convert a number to a two-digit hex string (from stackoverflow): */
 function numberToTwoDigitHexString(numberToConvert) {

@@ -1,2 +1,2 @@
 - Make surface view like [this](https://chrisboligprojects.pythonanywhere.com/fdm), see also [this link](https://discourse.threejs.org/t/finite-difference-method-for-wave-equation/52822) and [repo](https://github.com/chrismars91/fdm)
-- 
+- Make Fourier transform demo like this [WaveBuilder](https://physics.weber.edu/schroeder/software/WaveBuilder.html)

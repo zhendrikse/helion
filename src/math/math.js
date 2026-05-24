@@ -264,32 +264,12 @@ export class VectorFieldVector {
     onceWith(view) { return { body: this, view: view, always: false}; };
 }
 
-export class ScalarField2D {
-    valueAt(i, j) {}
-
-    valueAtNormalized(u, v) {}
-
-    step(dt) {}
-}
-
-class ScalarFieldValue {
-    constructor({
-                    position = new Vec3(),
-                    value = 0
-                } = {})  {
-        this.position = position.clone();
-        this.value = value;
+export class ScalarField {
+    scalarValueAt(x, y) {
+        throw new Error("You invoked the method of an abstract base class. Please create a subclass first.");
     }
 
-    clone() {
-        return new VectorFieldVector({
-            position: this.position.clone(),
-            value: this.value,
-        });
-    }
-
-    alwaysWith(view) { return { body: this, view: view, always: true}; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
+    updateWith(time) {}
 }
 
 export class ComplexScalarFieldValue {
@@ -405,31 +385,10 @@ export class Complex {
     }
 }
 
-/**
- * Static parametric surface.
- *
- * Each subclass of this class implements a function F(u, v) => (x, y, z) that can be attached to a surface view.
- */
-export class StaticSurface {
+export class Surface {
     sample(u, v, target) {
         throw new Error("Abstract class: sample() must be implemented!");
     }
-
-    alwaysWith(view) { return { body: this, view: view, always: true }; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
-}
-
-/**
- * Dynamic parametric surface.
- *
- * Each subclass of this class implements a function F(u, v, t) => (x, y, z) that can be attached to a surface view.
- */
-export class DynamicSurface {
-    sample(u, v, time, target) {
-        throw new Error("Abstract class: sample() must be implemented!");
-    }
-
-    update(dt, time) {}
 
     alwaysWith(view) { return { body: this, view: view, always: true }; };
     onceWith(view) { return { body: this, view: view, always: false}; };
@@ -536,7 +495,7 @@ export class FiniteDifferenceMethodField extends PDESurfaceField{
 /**
  * Partial different equation surface, a dynamic surface governed by a partial differential equation.
  */
-export class PDESurface extends DynamicSurface {
+export class PDESurface extends Surface {
     constructor({
         field,
         width = 10,

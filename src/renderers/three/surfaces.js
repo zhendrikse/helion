@@ -1,7 +1,10 @@
-import { Group, Vector3, LineBasicMaterial, Line, BufferGeometry, DoubleSide, PlaneGeometry,
-    Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh } from "three";
+import {
+    Group, Vector3, LineBasicMaterial, Line, BufferGeometry, DoubleSide, PlaneGeometry, Color,
+    Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
+    DynamicDrawUsage
+} from "three";
 
-export class SurfaceCView extends Group {
+export class SurfaceView extends Group {
     constructor() {
         super();
         this._surface = null;
@@ -16,12 +19,12 @@ export class SurfaceCView extends Group {
     }
 }
 
-export class IsoparametricContoursSurface extends SurfaceCView {
+export class IsoparametricContoursView extends SurfaceView {
     constructor({
         uCount = 20,
         vCount = 20,
         segments = 100,
-        color = 0xffffff
+        color = 0xffff00
     } = {}) {
         super();
         this._uCount = uCount;
@@ -92,12 +95,13 @@ export class IsoparametricContoursSurface extends SurfaceCView {
     }
 }
 
-export class SphereSurfaceView extends SurfaceCView {
+export class SphereSurfaceView extends SurfaceView {
     constructor({
         uSegments = 40,
         vSegments = 40,
         radius = 0.08,
-        color = 0x00ffff
+        opacity = 1.0,
+        colorMap = (height) => new Color(0x00ffff)
     } = {}) {
         super();
 
@@ -105,13 +109,24 @@ export class SphereSurfaceView extends SurfaceCView {
         this._vSegments = vSegments;
         this._target = new Vector3();
         this._dummy = new Object3D();
+        this._colorMap = colorMap;
+        this._color = new Color();
 
         const geometry = new SphereGeometry(radius, 8, 8);
-        const material = new MeshStandardMaterial({ color });
-
+        const material = new MeshStandardMaterial({
+            side: DoubleSide,
+            roughness: 0.25,
+            metalness: 0.0,
+            transparent: true,
+            opacity: opacity
+        });
         const count = (uSegments + 1) * (vSegments + 1);
         this._mesh = new InstancedMesh(geometry, material, count);
         this.add(this._mesh);
+
+        this._colorArray = new Float32Array(count * 3);
+        this._mesh.instanceColor = new InstancedBufferAttribute(this._colorArray, 3);
+        this._mesh.instanceColor.setUsage(DynamicDrawUsage);
     }
 
     render(transform) {
@@ -124,15 +139,24 @@ export class SphereSurfaceView extends SurfaceCView {
                 this._surface.sample(u, v, this._target);
                 this._dummy.position.copy(this._target);
                 this._dummy.updateMatrix();
-                this._mesh.setMatrixAt(index++, this._dummy.matrix);
+                this._mesh.setMatrixAt(index, this._dummy.matrix);
+
+                this._colorMap(this._target, this._color);
+                const k = 3 * index;
+                this._colorArray[k] = this._color.r;
+                this._colorArray[k + 1] = this._color.g;
+                this._colorArray[k + 2] = this._color.b;
+
+                index++;
             }
         }
 
         this._mesh.instanceMatrix.needsUpdate = true;
+        this._mesh.instanceColor.needsUpdate = true;
     }
 }
 
-export class PlaneSurfaceView extends SurfaceCView {
+export class PlaneSurfaceView extends SurfaceView {
     constructor({
         uSegments = 100,
         vSegments = 100,

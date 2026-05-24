@@ -21,7 +21,7 @@ const renderer = ThreeJsRenderer.on(HtmlDiv
 
 // 3. Bind physics objects to visual representations
 renderer.synchronize(spring.alwaysWith(new Helix()));
-renderer.synchronize(coneGeometry.onceWith(new IsoparametricContoursSurface()));
+renderer.synchronize(coneGeometry.onceWith(new IsoparametricContoursView()));
 
 // 4. Run simulation
 Simulation

@@ -7,7 +7,7 @@ import {
 } from "three";
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { Renderer } from "../../simulation.js"
+import { Renderer } from "../renderer.js"
 import { VectorFieldVector, ComplexScalarFieldValue, Complex, Vec3 } from "../../math/math.js";
 import woodWicketColorUrl from '../../textures/Wood_Wicker_011_color.png';
 import woodWicketNormalUrl from '../../textures/Wood_Wicker_011_normal.png';
