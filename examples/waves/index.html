@@ -5,10 +5,6 @@
   <body>
     <!--
        - N - B O D Y  O S C I L L A T O R
-     -->
-    <link href="https://unpkg.com/uplot/dist/uPlot.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/uplot/dist/uPlot.iife.min.js"></script>
-
     <div class="canvasWrapper" id="oscillatorCanvasWrapper"  style="aspect-ratio: 19 / 12;">
       <canvas id="oscillatorCanvas" class="applicationCanvas" style="aspect-ratio: 19 / 12;"></canvas>
       <div class="overlayText" id="oscillatorOverlay">Click to start the animation!</div>
@@ -16,6 +12,14 @@
 
     <div id="oscillatorPlot" style="margin:auto;"></div>
     <script type="module" src="scenes/n_body_oscillator.js"></script>
+     -->
+    <!--
+       - V I B R A T I N G  M E M B R A N E
+       -->
+    <div class="canvasWrapper" id="membraneCanvasWrapper">
+      <canvas class="applicationCanvas" id="membraneCanvas"></canvas><br/>
+    </div>
+    <script type="module" src="scenes/vibrating_membrane.js"></script>
   </body>
 </html>
 

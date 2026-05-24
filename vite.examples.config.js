@@ -26,7 +26,8 @@ export default defineConfig({
                 plane_wave: path.resolve(__dirname, 'examples/quantumphysics/scenes/plane_wave.js'),
                 solenoid: path.resolve(__dirname, 'examples/electromagnetism/scenes/solenoid.js'),
                 three_body: path.resolve(__dirname, 'examples/kinematics/scenes/three_body.js'),
-                star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js')
+                star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js'),
+                vibrating_membrane: path.resolve(__dirname, 'examples/waves/scenes/vibrating_membrane.js')
             },
             output: {
                 entryFileNames: 'examples/[name].js',
