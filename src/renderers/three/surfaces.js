@@ -1,7 +1,7 @@
 import {
     Group, Vector3, LineBasicMaterial, Line, BufferGeometry, DoubleSide, PlaneGeometry, Color,
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
-    DynamicDrawUsage
+    DynamicDrawUsage, BufferAttribute
 } from "three";
 
 export class SurfaceView extends Group {
@@ -101,7 +101,8 @@ export class SphereSurfaceView extends SurfaceView {
         vSegments = 40,
         radius = 0.08,
         opacity = 1.0,
-        colorMap = (height) => new Color(0x00ffff)
+        colorMapper = (position, targetColor) => { targetColor.r = 1; targetColor.g = 0; targetColor.b = 0},
+        normalizer = (position) => position.y
     } = {}) {
         super();
 
@@ -109,8 +110,9 @@ export class SphereSurfaceView extends SurfaceView {
         this._vSegments = vSegments;
         this._target = new Vector3();
         this._dummy = new Object3D();
-        this._colorMap = colorMap;
         this._color = new Color();
+        this._normalizer = normalizer;
+        this._colorMapper = colorMapper;
 
         const geometry = new SphereGeometry(radius, 8, 8);
         const material = new MeshStandardMaterial({
@@ -141,7 +143,8 @@ export class SphereSurfaceView extends SurfaceView {
                 this._dummy.updateMatrix();
                 this._mesh.setMatrixAt(index, this._dummy.matrix);
 
-                this._colorMap(this._target, this._color);
+                const t = this._normalizer(this._target);
+                this._colorMapper.map(t, this._color);
                 const k = 3 * index;
                 this._colorArray[k] = this._color.r;
                 this._colorArray[k + 1] = this._color.g;
@@ -160,26 +163,35 @@ export class PlaneSurfaceView extends SurfaceView {
     constructor({
         uSegments = 100,
         vSegments = 100,
-        color = 0x00ffff,
-        wireframe = false
+        wireframe = false,
+        colorMapper = (position, targetColor) => { targetColor.r = 1; targetColor.g = 0; targetColor.b = 0},
+        normalizer = (position) => position.y
     } = {}) {
         super();
-
         this._uSegments = uSegments;
         this._vSegments = vSegments;
+        this._normalizer = normalizer;
+        this._colorMapper = colorMapper;
 
         const geometry = new PlaneGeometry(1, 1, uSegments, vSegments);
-        const material = new MeshStandardMaterial({color, side: DoubleSide, wireframe});
+        const material = new MeshStandardMaterial({
+            side: DoubleSide,
+            wireframe,
+            vertexColors: true
+        });
 
         this._mesh = new Mesh(geometry, material);
         this.add(this._mesh);
-
         this._positions = geometry.attributes.position.array;
+        this._colors = new Float32Array((uSegments + 1) * (vSegments + 1) * 3);
+        geometry.setAttribute("color", new BufferAttribute(this._colors, 3));
         this._target = new Vector3();
+        this._color = new Color();
     }
 
     render() {
         let k = 0;
+        let c = 0;
 
         for (let i = 0; i <= this._uSegments; i++) {
             const u = i / this._uSegments;
@@ -189,10 +201,18 @@ export class PlaneSurfaceView extends SurfaceView {
                 this._positions[k++] = this._target.x;
                 this._positions[k++] = this._target.y;
                 this._positions[k++] = this._target.z;
+
+                const t = this._normalizer(this._target);
+                this._colorMapper.map(t, this._color);
+                this._colors[c++] = this._color.r;
+                this._colors[c++] = this._color.g;
+                this._colors[c++] = this._color.b;
             }
         }
 
-        this._mesh.geometry.attributes.position.needsUpdate = true;
-        this._mesh.geometry.computeVertexNormals();
+        const geometry = this._mesh.geometry;
+        geometry.attributes.position.needsUpdate = true;
+        geometry.attributes.color.needsUpdate = true;
+        geometry.computeVertexNormals();
     }
 }

@@ -1,5 +1,5 @@
 import {ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation,
-    Surface, ScalarField, PDESurface, IsoparametricContoursView,
+    Surface, ScalarField, PlaneSurfaceView, IsoparametricContoursView,
     SphereSurfaceView, SurfaceColorMapper, Vec3 } from "helion";
 
 class MembraneScalarField extends ScalarField {
@@ -15,7 +15,7 @@ class MembraneScalarField extends ScalarField {
         this._depth = depth;
         this._amplitude = amplitude;
         this._waveCountX = 2;
-        this._waveCountY = 2;
+        this._waveCountY = 1;
         this._time = 0;
     }
 
@@ -68,22 +68,25 @@ const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("membraneCanvasWrapper").contains(Canvas.withElementId("membraneCanvas")))
     .with(new ThreeJsRenderOptions({
         cameraPosition: new Vec3(0, 8, 14),
-        fieldOfView: 45
+        fieldOfView: 45,
     }));
 
 //
 // Surface view
 //
 const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.JET_COLOR_MAP);
-renderer.synchronize(waveSurface.alwaysWith(new SphereSurfaceView({
+renderer.synchronize(waveSurface.alwaysWith(new PlaneSurfaceView({
     uSegments: 100,
     vSegments: 100,
-    colorMap: (position, targetColor) => {
-        const t =
-            (position.y + scalarField.amplitude) /
-            (2 * scalarField.amplitude);
-        colorMapper.map(t, targetColor);
-    }})));
+    colorMapper: colorMapper,
+    normalizer: (position) =>
+        (position.y + scalarField.amplitude) /
+        (2 * scalarField.amplitude)
+})));
+renderer.synchronize(waveSurface.alwaysWith(new IsoparametricContoursView({
+    uSegments: 100,
+    vSegments: 100
+})));
 
 //
 // Simulation
