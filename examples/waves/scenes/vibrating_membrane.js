@@ -76,7 +76,7 @@ const renderer = ThreeJsRenderer
 //
 // Surface view
 //
-const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.INFERNO_COLOR_MAP);
+const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.RDYLBU_COLOR_MAP);
 const normalizer = (position) => (position.y + scalarField.amplitude) / (2 * scalarField.amplitude);
 renderer.synchronize(waveSurface.alwaysWith(new PlaneSurfaceView({
     uSegments: 100,
