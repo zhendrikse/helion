@@ -3,10 +3,20 @@ import {
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
     DynamicDrawUsage, BufferAttribute
 } from "three";
+import {SurfaceColorMapper} from "./colormappers.js";
 
 export class SurfaceView extends Group {
-    constructor() {
+    constructor({
+        uSegments = 100,
+        vSegments = 100,
+        colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.GRADIENT),
+        normalizer = (position) => position.y
+    } = {}) {
         super();
+        this._uSegments = uSegments;
+        this._vSegments = vSegments;
+        this._normalizer = normalizer;
+        this._colorMapper = colorMapper;
         this._surface = null;
     }
 
@@ -21,77 +31,92 @@ export class SurfaceView extends Group {
 
 export class IsoparametricContoursView extends SurfaceView {
     constructor({
-        uCount = 20,
-        vCount = 20,
+        uSegments = 20,
+        vSegments = 20,
         segments = 100,
-        color = 0xffff00
+        colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.GRADIENT),
+        normalizer = (position) => position.y
     } = {}) {
-        super();
-        this._uCount = uCount;
-        this._vCount = vCount;
+        super({uSegments, vSegments, colorMapper, normalizer});
         this._segments = segments;
         this._material = new LineBasicMaterial({
-            color,
+            vertexColors: true,
             transparent: true,
             depthWrite: true,
             depthTest: true
         });
-
         this._uLines = [];
         this._vLines = [];
+
+        this._target = new Vector3();
+        this._color = new Color();
+    }
+    attachTo(surface) {
+        super.attachTo(surface);
+        this.#build();
     }
 
-    attachTo(mathSurfaceDefinition) {
-        super.attachTo(mathSurfaceDefinition);
-        this.#build();
+    #createLine() {
+        const geometry = new BufferGeometry();
+
+        const positions = new Float32Array((this._segments + 1) * 3);
+        geometry.setAttribute("position", new BufferAttribute(positions, 3));
+
+        const colors = new Float32Array((this._segments + 1) * 3);
+        geometry.setAttribute("color", new BufferAttribute(colors, 3));
+
+        return new Line(geometry, this._material);
     }
 
     #build() {
         // u = constant
-        for (let i = 0; i <= this._uCount; i++) {
-            const geometry = new BufferGeometry();
-            const line = new Line(geometry, this._material);
+        for (let i = 0; i <= this._uSegments; i++) {
+            const line = this.#createLine();
             this.add(line);
-            this._uLines.push({ line, u: i / this._uCount });
+            this._uLines.push({ line: line, u: i / this._uSegments });
         }
 
         // v = constant
-        for (let i = 0; i <= this._vCount; i++) {
-            const geometry = new BufferGeometry();
-            const line = new Line(geometry, this._material);
+        for (let i = 0; i <= this._vSegments; i++) {
+            const line = this.#createLine();
             this.add(line);
-            this._vLines.push({ line, v: i / this._vCount });
+            this._vLines.push({ line: line, v: i / this._vSegments });
         }
     }
 
-    render(transform) {
-        const target = new Vector3();
+    #updateLine(entry, sampleFn) {
+        const geometry = entry.line.geometry;
+        const positions = geometry.attributes.position.array;
 
-        // u lines
-        for (const entry of this._uLines) {
-            const points = [];
-            for (let j = 0; j <= this._segments; j++) {
-                const v = j / this._segments;
-                this._surface.sample(entry.u, v, target);
-                points.push(target.clone());
-            }
+        const colors = geometry.attributes.color.array;
+        for (let j = 0; j <= this._segments; j++) {
+            sampleFn(j / this._segments);
+            const k = 3 * j;
 
-            entry.line.geometry.dispose();
-            entry.line.geometry = new BufferGeometry().setFromPoints(points);
+            // position
+            positions[k] = this._target.x;
+            positions[k + 1] = this._target.y;
+            positions[k + 2] = this._target.z;
+
+            // color
+            const t = this._normalizer(this._target);
+            this._colorMapper.map(t, this._color);
+            colors[k] = this._color.r;
+            colors[k + 1] = this._color.g;
+            colors[k + 2] = this._color.b;
         }
 
-        // v lines
-        for (const entry of this._vLines) {
-            const points = [];
-            for (let j = 0; j <= this._segments; j++) {
-                const u = j / this._segments;
-                this._surface.sample(u, entry.v, target);
-                points.push(target.clone());
-            }
+        geometry.attributes.position.needsUpdate = true;
+        geometry.attributes.color.needsUpdate = true;
+        geometry.computeBoundingSphere();
+    }
 
-            entry.line.geometry.dispose();
-            entry.line.geometry = new BufferGeometry().setFromPoints(points);
-        }
+    render() {
+        for (const entry of this._uLines)
+            this.#updateLine(entry, (v) => this._surface.sample(entry.u, v, this._target));
+
+        for (const entry of this._vLines)
+            this.#updateLine(entry, (u) => this._surface.sample(u, entry.v, this._target));
     }
 }
 
@@ -101,18 +126,13 @@ export class SphereSurfaceView extends SurfaceView {
         vSegments = 40,
         radius = 0.08,
         opacity = 1.0,
-        colorMapper = (position, targetColor) => { targetColor.r = 1; targetColor.g = 0; targetColor.b = 0},
+        colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.GRADIENT),
         normalizer = (position) => position.y
     } = {}) {
-        super();
-
-        this._uSegments = uSegments;
-        this._vSegments = vSegments;
+        super({uSegments, vSegments, colorMapper, normalizer});
         this._target = new Vector3();
         this._dummy = new Object3D();
         this._color = new Color();
-        this._normalizer = normalizer;
-        this._colorMapper = colorMapper;
 
         const geometry = new SphereGeometry(radius, 8, 8);
         const material = new MeshStandardMaterial({
@@ -164,15 +184,10 @@ export class PlaneSurfaceView extends SurfaceView {
         uSegments = 100,
         vSegments = 100,
         wireframe = false,
-        colorMapper = (position, targetColor) => { targetColor.r = 1; targetColor.g = 0; targetColor.b = 0},
+        colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.GRADIENT),
         normalizer = (position) => position.y
     } = {}) {
-        super();
-        this._uSegments = uSegments;
-        this._vSegments = vSegments;
-        this._normalizer = normalizer;
-        this._colorMapper = colorMapper;
-
+        super({uSegments, vSegments, colorMapper, normalizer});
         const geometry = new PlaneGeometry(1, 1, uSegments, vSegments);
         const material = new MeshStandardMaterial({
             side: DoubleSide,

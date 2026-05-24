@@ -75,18 +75,18 @@ const renderer = ThreeJsRenderer
 // Surface view
 //
 const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.JET_COLOR_MAP);
-renderer.synchronize(waveSurface.alwaysWith(new PlaneSurfaceView({
-    uSegments: 100,
-    vSegments: 100,
-    colorMapper: colorMapper,
-    normalizer: (position) =>
-        (position.y + scalarField.amplitude) /
-        (2 * scalarField.amplitude)
-})));
+// renderer.synchronize(waveSurface.alwaysWith(new PlaneSurfaceView({
+//     uSegments: 100,
+//     vSegments: 100,
+//     colorMapper: colorMapper,
+//     normalizer: (position) =>
+//         (position.y + scalarField.amplitude) /
+//         (2 * scalarField.amplitude)
+// })));
 renderer.synchronize(waveSurface.alwaysWith(new IsoparametricContoursView({
-    uSegments: 100,
-    vSegments: 100
-})));
+    uSegments: 20,
+    vSegments: 20}
+)));
 
 //
 // Simulation
