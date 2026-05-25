@@ -14,16 +14,29 @@ export {
 } from "./simulation.js";
 
 export {
-    Cylinder, ArrowField, ThreeJsRenderOptions, ThreeJsRenderer, Sphere, Box, Arrow, Floor,
-    Aquarium, OneDimensionalComplexPlaneWave3D, Ring, ElectromagneticWave, Helix, Trail, Ceiling
-} from "./renderers/three/threesim.js";
+    ThreeJsRenderOptions, ThreeJsRenderer
+} from "./renderers/3d/threesim.js";
+
+export {
+    Cylinder, ArrowField, Sphere, Box, Arrow, Ring, Helix, Trail
+} from "./renderers/3d/primitives/primitives.js";
+
+export {
+    OneDimensionalComplexPlaneWave3D, ElectromagneticWave
+} from "./renderers/3d/composite/composites.js";
+
+export {
+    Floor, Aquarium, Ceiling
+} from "./renderers/3d/primitives/decorations.js";
 
 export { CompositeRenderer } from "./renderers/renderer.js";
 
-export { SurfaceColorMapper} from "./renderers/three/colormappers.js";
+export { SurfaceColorMapper} from "./renderers/3d/scalarfields/colormappers.js";
 
-export { SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView } from "./renderers/three/surfaces.js"
+export {
+    SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView
+} from "./renderers/3d/scalarfields/surfaces.js"
 
 export {
     OneDimensionalComplexPlaneWave2D, Canvas2DRenderer
-} from "./renderers/canvas2d/canvassim.js";
+} from "./renderers/2d/canvassim.js";

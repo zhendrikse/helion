@@ -45,6 +45,11 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
+					label: 'Relativity',
+					items: [{ autogenerate: { directory: 'relativity' } }],
+				},
+				{
+					collapsed: true,
 					label: 'Waves',
 					items: [{ autogenerate: { directory: 'waves' } }],
 				}

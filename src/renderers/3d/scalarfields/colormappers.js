@@ -46,12 +46,14 @@ export class SurfaceColorMapper {
         VIRIDIS_COLOR_MAP: "viridis",
         JET_COLOR_MAP: "jet",
         INFERNO_COLOR_MAP: "inferno",
-        RDYLBU_COLOR_MAP: "RdYlBu"
+        RDYLBU_COLOR_MAP: "RdYlBu",
+        UNIFORM: "uniform"
     });
 
-    constructor(mode = SurfaceColorMapper.Mode.WATER) {
+    constructor(mode = SurfaceColorMapper.Mode.WATER, uniformColor = new Color(0xffff00)) {
         this._mode = mode;
         this._colorMap = colors255[mode];
+        this._uniformColor = uniformColor;
         this._tmp = new Color();
 
         if (!this._colorMap) {
@@ -91,6 +93,10 @@ export class SurfaceColorMapper {
 
             case SurfaceColorMapper.Mode.GRADIENT:
                 return target.setRGB(t, 0.2, 1.0 - t);
+
+            case SurfaceColorMapper.Mode.UNIFORM:
+                const colour = this._uniformColor;
+                return target.setRGB(colour.r, colour.g, colour.b);
         }
     }
 }
