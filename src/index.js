@@ -1,13 +1,15 @@
 export {
     AxialSymmetricBody, Particle, HarmonicOscillator, RadialSymmetricBody,
     EC, Body, G, OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave, Spring,
-    Block, gravitationalForceBetween
+    Block, gravitationalForceBetween, PointCloud
 } from "./phys/physics.js";
 
 export {
-    VectorField, Range, Vec3, Integrators, FiniteDifferenceMethodField, Surface,
+    VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface,
     PDESurface, ScalarField
 } from "./math/math.js";
+
+export { Integrators } from "./numerics/integrators/integrators.js";
 
 export {
     Simulation, Canvas, HtmlDiv, Overlay, EventController, HtmlControl, UPlotGraph, CallbackFunction
@@ -18,7 +20,7 @@ export {
 } from "./renderers/3d/threesim.js";
 
 export {
-    Cylinder, ArrowField, Sphere, Box, Arrow, Ring, Helix, Trail
+    Cylinder, ArrowField, Sphere, Box, Arrow, Ring, Helix, Trail, PointCloudView
 } from "./renderers/3d/primitives/primitives.js";
 
 export {

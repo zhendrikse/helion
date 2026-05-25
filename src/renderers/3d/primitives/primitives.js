@@ -1,7 +1,8 @@
 import {
     Group, Vector3, BufferAttribute, TorusGeometry,
     MeshStandardMaterial, SphereGeometry, Mesh, BufferGeometry, LineBasicMaterial, Line, TubeGeometry,
-    CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion,
+    CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion, Points, ShaderMaterial,
+    AdditiveBlending
 } from "three";
 
 import { VectorFieldVector } from "../../../math/math.js";
@@ -9,6 +10,83 @@ import { VectorFieldVector } from "../../../math/math.js";
 /*************
  * V I E W S *
  *************/
+
+//
+// Point cloud
+//
+export class PointCloudView extends Points {
+    constructor() {
+        super();
+    }
+
+    attachTo(pointCloud) {
+        // Sanity checks
+        if (!pointCloud.positionAt || !pointCloud.colorAt || !pointCloud.sizeAt)
+            throw new Error("Body does not behave like a point cloud, hence it cannot be attached to this view.");
+
+        const N = pointCloud.length;
+        const positionAttr = new BufferAttribute(new Float32Array(3 * N), 3);
+        const colorAttr = new BufferAttribute(new Float32Array(3 * N), 3);
+        const sizeAttr = new BufferAttribute(new Float32Array(N), 1);
+
+        for (let i = 0; i < N; i++) {
+            const p = pointCloud.positionAt(i);
+            const c = pointCloud.colorAt(i);
+
+            positionAttr.setXYZ(i, p.x, p.y, p.z);
+            colorAttr.setXYZ(i, c.r, c.g, c.b);
+            sizeAttr.setX(i, pointCloud.sizeAt?.(i) ?? 1.0);
+        }
+
+        this.material = PointCloudView.defaultMaterial();
+        this.geometry.setAttribute('position', positionAttr);
+        this.geometry.setAttribute('color', colorAttr);
+        this.geometry.setAttribute('size', sizeAttr);
+    }
+
+    render(transform) {
+        // TODO: So far we do not have any dynamic point clouds
+    }
+
+    static defaultMaterial() {
+        return new ShaderMaterial({
+            vertexColors: true,
+            transparent: true,
+            depthTest: false,
+            blending: AdditiveBlending,
+
+            vertexShader: `
+                attribute float size;
+                varying vec3 vColor;
+                varying float vAlpha;
+
+                void main() {
+                    vColor = color;
+                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                    float dist = length(position);
+
+                    vAlpha = 1.0 - smoothstep(0.0, 600.0, dist);
+                    gl_PointSize = size * (1500.0 / length(mvPosition.xyz));
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+
+            fragmentShader: `
+                varying vec3 vColor;
+                varying float vAlpha;
+
+                void main() {
+                    float d = length(gl_PointCoord - vec2(0.5));
+                    float alpha = exp(-d * d * 10.0) * vAlpha;
+                    if(alpha < 0.01)
+                        discard;
+
+                    gl_FragColor = vec4(vColor, alpha);
+                }
+            `
+        });
+    }
+}
 
 //
 // T R A I L
@@ -51,11 +129,11 @@ class TrailLine {
 
 export class Trail extends Group {
     constructor({
-                    maxPoints = 200,
-                    trailStep = 1,
-                    lineWidth = 1,
-                    color = 0xffff00
-                } = {}) {
+        maxPoints = 200,
+        trailStep = 1,
+        lineWidth = 1,
+        color = 0xffff00
+    } = {}) {
         super();
         this._color = color;
         this._maxPoints = maxPoints;
@@ -123,13 +201,13 @@ export class Trail extends Group {
 //
 export class Sphere extends Mesh {
     constructor({
-                    color = 0xffff00,
-                    visible = true,
-                    segments = 24,
-                    opacity = 1,
-                    castShadow = false,
-                    wireframe = false
-                } = {}) {
+        color = 0xffff00,
+        visible = true,
+        segments = 24,
+        opacity = 1,
+        castShadow = false,
+        wireframe = false
+    } = {}) {
         const material = new MeshStandardMaterial({
             color: color,
             opacity: opacity,
@@ -188,15 +266,15 @@ export class Arrow extends Group {
     static HeadGeometryRound = new ConeGeometry(1, 1, 16);
     static HeadGeometrySquare = new ConeGeometry(1, 1, 4);
     constructor({
-                    color = 0xff0000,
-                    size = 1,
-                    opacity = 1,
-                    round = false,
-                    visible = true,
-                    castShadow = false,
-                    magnitudeMap = magnitude => magnitude, // identity mapping by default
-                    colorMap = null  // use the unmodified base color by default
-                } = {}) {
+        color = 0xff0000,
+        size = 1,
+        opacity = 1,
+        round = false,
+        visible = true,
+        castShadow = false,
+        magnitudeMap = magnitude => magnitude, // identity mapping by default
+        colorMap = null  // use the unmodified base color by default
+    } = {}) {
         super();
 
         const shaftGeometry = round ? Arrow.ShaftGeometryRound : Arrow.ShaftGeometrySquare;
@@ -298,13 +376,13 @@ export class Arrow extends Group {
 //
 export class ArrowField extends Group{
     constructor({
-                    xRange,
-                    yRange,
-                    zRange,
-                    scaleFactor = 1,
-                    round = false,
-                    magnitudeMap = magnitude => Math.log(1 + magnitude),
-                    colorMap = (axis, magnitude) => new Color().setHSL(Math.min(Math.log(1 + magnitude)/5, 1), 0.7, 0.5)
+        xRange,
+        yRange,
+        zRange,
+        scaleFactor = 1,
+        round = false,
+        magnitudeMap = magnitude => Math.log(1 + magnitude),
+        colorMap = (axis, magnitude) => new Color().setHSL(Math.min(Math.log(1 + magnitude)/5, 1), 0.7, 0.5)
                 } = {}) {
         super();
         this._xRange = xRange;
@@ -360,11 +438,11 @@ export class ArrowField extends Group{
 //
 export class Cylinder extends Mesh {
     constructor({
-                    color = 0xffff00,
-                    opacity = 1,
-                    segments = 24,
-                    castShadow = false
-                } = {}) {
+        color = 0xffff00,
+        opacity = 1,
+        segments = 24,
+        castShadow = false
+    } = {}) {
         const geometry = new CylinderGeometry(1, 1, 1, segments);
         const material = new MeshStandardMaterial({
             color,
@@ -416,11 +494,11 @@ export class Cylinder extends Mesh {
 //
 export class Box extends Mesh {
     constructor({
-                    color = 0xff0000,
-                    opacity = 1,
-                    visible = true,
-                    castShadow = false
-                } = {}) {
+        color = 0xff0000,
+        opacity = 1,
+        visible = true,
+        castShadow = false
+    } = {}) {
         super(
             new BoxGeometry(1, 1, 1),
             new MeshStandardMaterial({
@@ -459,11 +537,11 @@ export class Box extends Mesh {
 //
 export class Ring extends Mesh {
     constructor({
-                    color = 0xffff00,
-                    thickness = 0.1,
-                    radialSegments = 16,
-                    tubularSegments = 32
-                } = {}) {
+        color = 0xffff00,
+        thickness = 0.1,
+        radialSegments = 16,
+        tubularSegments = 32
+    } = {}) {
         const geometry = new TorusGeometry(1, thickness, radialSegments, tubularSegments);
         const material = new MeshStandardMaterial({
             color: color,
@@ -540,16 +618,16 @@ class Coils extends Curve {
 
 export class Helix extends Mesh {
     constructor({
-                    color = 0x00ffff,
-                    coils = 20,
-                    longitudinalOscillation = false,
-                    tubularSegments = 400,
-                    radialSegments = 16,
-                    radius = 0.125,
-                    thickness = 0.01,
-                    visible = true,
-                    castShadow = false
-                } = {}) {
+        color = 0x00ffff,
+        coils = 20,
+        longitudinalOscillation = false,
+        tubularSegments = 400,
+        radialSegments = 16,
+        radius = 0.125,
+        thickness = 0.01,
+        visible = true,
+        castShadow = false
+    } = {}) {
         const curve = new Coils(new Vector3(), new Vector3(), coils, radius, longitudinalOscillation ? 0.05 : 0);
         const geometry = new TubeGeometry(curve, tubularSegments, thickness, radialSegments, false);
         const material = new MeshStandardMaterial({

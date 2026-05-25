@@ -2,7 +2,9 @@
  * P H Y S I C S *
  *****************/
 
-import { Integrators, Complex, Vec3 } from "../math/math.js";
+import { Complex, Vec3 } from "../math/math.js";
+import { Integrators } from "../numerics/integrators/integrators.js";
+import {BufferAttribute, BufferGeometry, Points} from "three";
 
 //
 // Constants
@@ -18,6 +20,31 @@ export function gravitationalForceBetween(twoBodies) {
     const rSquared = twoBodies.body1.distanceToSquared(twoBodies.body2);
     return radius.normalize().multiplyScalar(G * twoBodies.body1.mass * twoBodies.body2.mass / rSquared);
 }
+
+//
+// Point cloud
+//
+export class PointCloud {
+    constructor({
+        positions = [],
+        colors = [],
+        sizes = [],
+    } = {}) {
+        this._positions = positions;
+        this._colors = colors;
+        this._sizes = sizes;
+    }
+
+    alwaysWith(view) { return { body: this, view: view, always: true}; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
+
+    get length() { return this._positions.length; }
+
+    positionAt(index) { return this._positions[index]; }
+    colorAt(index) { return this._colors[index]; }
+    sizeAt(index) { return this._sizes[index]; }
+}
+
 
 //
 // Bodies to do physics with

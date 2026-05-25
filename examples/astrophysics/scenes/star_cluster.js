@@ -1,53 +1,52 @@
-import { Group, Color, BufferAttribute,
-    BufferGeometry, PointsMaterial, AdditiveBlending, Points, Vector3 } from "three";
+import { Group, Color, Vector3 } from "three";
 import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
-import {ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, Vec3 } from "helion";
+import {
+    ThreeJsRenderOptions, ThreeJsRenderer, Canvas, HtmlDiv, Simulation, Vec3,
+    PointCloud, PointCloudView
+} from "helion";
 
-import { ThreeJsRenderer } from "../../../src/index.js";
+class StarCluster extends PointCloud {
+    constructor(N=40000) {
+        super({});
 
-class StarCluster extends Group {
-    constructor(htmlCanvas, N=40000) {
-        super();
-        const positions = new BufferAttribute(new Float32Array(3 * N), 3),
-            colors = new BufferAttribute(new Float32Array(3 * N), 3),
-            perlin = new ImprovedNoise();
+        const perlin = new ImprovedNoise();
 
-        let count = 0;
-        while (count < N)
-            if (this.starCreated(count, positions, colors, perlin))
-                count++;
+        while (this._positions.length < N) {
+            const star = this.createStar(perlin);
 
-        const geometry = new BufferGeometry();
-        geometry.setAttribute('position', positions);
-        geometry.setAttribute('color', colors);
-        const material = new PointsMaterial({
-            color: 'white',
-            opacity: 0.5,
-            vertexColors: true,
-            size: 0.15,
-            sizeAttenuation: true,
-            transparent: true,
-            blending: AdditiveBlending,
-            depthTest: true,
-        });
-        const cloud = new Points(geometry, material);
-        this.add(cloud);
+            if (!star)
+                continue;
+
+            this._positions.push(star.position);
+            this._colors.push(star.color);
+            this._sizes.push(0.045);
+        }
     }
 
-    starCreated(i, position, color, perlin) {
-        const pos = new Vector3().randomDirection().setLength(5 * Math.pow(Math.random(), 1 / 3));
-        pos.x = pos.x * (1 + 0.4 * Math.sin(3 * pos.y) + 0.4 * Math.sin(2 * pos.z));
-        pos.y = pos.y * (1 + 0.4 * Math.sin(3 * pos.z) + 0.4 * Math.sin(2 * pos.x));
-        pos.z = pos.z * (1 + 0.4 * Math.sin(3 * pos.x) + 0.4 * Math.sin(2 * pos.y));
+    createStar(perlin) {
+        const pos = new Vector3()
+            .randomDirection()
+            .setLength(5 * Math.pow(Math.random(), 1 / 3));
 
-        const noise = perlin.noise(pos.x, pos.y, pos.z) + perlin.noise(pos.y, pos.z, pos.x) + perlin.noise(pos.z, pos.x, pos.y);
+        pos.x *= 1 + 0.4 * Math.sin(3 * pos.y) + 0.4 * Math.sin(2 * pos.z);
+        pos.y *= 1 + 0.4 * Math.sin(3 * pos.z) + 0.4 * Math.sin(2 * pos.x);
+        pos.z *= 1 + 0.4 * Math.sin(3 * pos.x) + 0.4 * Math.sin(2 * pos.y);
+
+        const noise =
+            perlin.noise(pos.x, pos.y, pos.z) +
+            perlin.noise(pos.y, pos.z, pos.x) +
+            perlin.noise(pos.z, pos.x, pos.y);
+
         if (noise < 0.5)
-            return false;
+            return null;
 
-        const colour = new Color().setHSL(0.5 + 0.15 * Math.random(), 0.5 + 0.5 * Math.random(), Math.random());
-        color.setXYZ(i, colour.r, colour.g, colour.b);
-        position.setXYZ(i, pos.x, pos.y, pos.z);
-        return true;
+        const color = new Color().setHSL(
+            0.5 + 0.15 * Math.random(),
+            0.5 + 0.5 * Math.random(),
+            Math.random()
+        );
+
+        return { position: pos, color };
     }
 }
 
@@ -61,11 +60,13 @@ const canvas = Canvas.withElementId("starClusterCanvas");
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("starClusterCanvasWrapper").contains(canvas))
     .with(threeJsRendererOptions);
-const starCluster = new StarCluster(canvas.htmlCanvas);
-renderer.addObject3D(starCluster);
+
+const starCluster = new StarCluster();
+const cloud = new PointCloudView();
+renderer.synchronize(starCluster.onceWith(cloud));
 
 Simulation
     .with(renderer)
     .onScale(1)
-    .onClockTick((clockTime, simulatedTime) => {starCluster.rotation.y += 2.5e-3})
+    .onClockTick((clockTime, simulatedTime) => {cloud.rotation.y += 2.5e-3})
     .start();

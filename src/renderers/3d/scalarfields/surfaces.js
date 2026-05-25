@@ -1,3 +1,12 @@
+/**
+ * SurfaceView
+ *     ↓
+ * Surface.sample()
+ *     ↓
+ * ScalarField.scalarValueAt()
+ *
+ */
+
 import {
     Group, Vector3, LineBasicMaterial, Line, BufferGeometry, DoubleSide, PlaneGeometry, Color,
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
