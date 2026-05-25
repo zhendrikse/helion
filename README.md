@@ -19,7 +19,7 @@ physics or mathematics, it is likely too abstract!
 👉 Experiments are meant to be **explicit, isolated, and readable**<br/>
 👉 Low cognitive overhead<br/>
 👉 Code expresses scientific intent directly<br/>
-👉 Purely browser based: zero installation nor configuration<br/>
+👉 Purely browser based: **zero** installation nor configuration<br/>
 
 ## 📊 Code example
 
@@ -74,10 +74,12 @@ Complex orchestration layers are intentionally avoided.
 
 ## 🧪 Live demos
 
+💫 [Astrophysics](https://www.hendrikse.name/helion/astrophysics/)<br/>
 ⚡  [Electromagnetism](https://www.hendrikse.name/helion/electromagnetism/)<br/>
 🏃 [Kinematics](https://www.hendrikse.name/helion/kinematics/)<br/>
-💫 [Astrophysics](https://www.hendrikse.name/helion/astrophysics/)<br/>
+🏕️ [Nature](https://www.hendrikse.name/helion/nature/)<br/>
+🔱 [Quantum physics](https://www.hendrikse.name/helion/quantumphysics/)<br/>
+🌃 [Relativity](https://www.hendrikse.name/helion/relativity/)<br/>
 🌊 [Waves](https://www.hendrikse.name/helion/waves/)<br/>
-
 
 
