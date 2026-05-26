@@ -24,7 +24,7 @@ export {
 } from "./renderers/3d/primitives/primitives.js";
 
 export {
-    OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView
+    OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial
 } from "./renderers/3d/composite/composites.js";
 
 export {

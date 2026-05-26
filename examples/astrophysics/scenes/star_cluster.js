@@ -2,7 +2,7 @@ import { Color, Vector3 } from "three";
 import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
 import {
     ThreeJsRenderOptions, ThreeJsRenderer, Canvas, HtmlDiv, Simulation, Vec3,
-    PointCloud, PointCloudView
+    PointCloud, PointCloudView, PointCloudMaterial
 } from "helion";
 
 class StarCluster extends PointCloud {
@@ -19,7 +19,7 @@ class StarCluster extends PointCloud {
 
             this._positions.push(star.position);
             this._colors.push(star.color);
-            this._sizes.push(0.045);
+            this._sizes.push(7.5E-2);
         }
     }
 
@@ -62,7 +62,7 @@ const renderer = ThreeJsRenderer
     .with(threeJsRendererOptions);
 
 const starCluster = new StarCluster();
-const cloud = new PointCloudView();
+const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
 renderer.synchronize(starCluster.onceWith(cloud));
 
 Simulation

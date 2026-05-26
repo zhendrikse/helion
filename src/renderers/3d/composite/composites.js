@@ -1,5 +1,5 @@
 import {
-    Group, Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute
+    Group, Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute, BufferGeometry
 } from "three";
 import { Arrow } from "../primitives/primitives.js";
 import { VectorFieldVector, ComplexScalarFieldValue, Complex} from "../../../math/math.js";
@@ -7,9 +7,115 @@ import { VectorFieldVector, ComplexScalarFieldValue, Complex} from "../../../mat
 //
 // Point cloud
 //
+export class PointCloudMaterial {
+    static stars() {
+        return new ShaderMaterial({
+            vertexColors: true,
+            transparent: true,
+            depthTest: false,
+            blending: AdditiveBlending,
+
+            vertexShader: `
+                attribute float size;
+                varying vec3 vColor;
+                varying float vAlpha;
+
+                void main() {
+                    vColor = color;
+                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                    float dist = length(position);
+                    vAlpha = 1.0 - smoothstep(0.0, 25.0, dist);
+                    gl_PointSize = clamp(size * (750.0 / length(mvPosition.xyz)), 1.0, 8.0);
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+
+            fragmentShader: `
+                varying vec3 vColor;
+                varying float vAlpha;
+
+                void main() {
+                    float d = length(gl_PointCoord - vec2(0.5));
+                    float alpha = exp(-d * d * 10.0) * vAlpha;
+
+                    if(alpha < 0.01)
+                        discard;
+
+                    gl_FragColor = vec4(vColor, alpha);
+                }
+            `
+        });
+    }
+
+    static galaxy() {
+        return new ShaderMaterial({
+            vertexColors: true,
+            transparent: true,
+            depthTest: false,
+            blending: AdditiveBlending,
+            vertexShader: `
+    attribute float size;
+    varying float vAlpha;
+    varying float vDistance;
+    varying float vRandom;
+
+    float rand(vec2 co){
+        return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    }
+
+    void main() {
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+
+        // distance to center
+        float dist = length(position);
+        vDistance = dist;
+
+        // random factor for star brightness
+        vRandom = 0.8 + 0.2 * rand(position.xy);
+
+        // alpha: central glow + distance decrease
+        float haloFactor = smoothstep(0.0, 150.0, dist); // halo groter bij kern
+        vAlpha = vRandom * (1.0 - smoothstep(0.0, 500.0, dist)) * haloFactor;
+
+        // camera-dependent size
+        gl_PointSize = size * (750.0 / (length(mvPosition.xyz) + 1.0));
+        gl_Position = projectionMatrix * mvPosition;
+    }
+`,
+            fragmentShader: `
+    varying float vAlpha;
+    varying float vDistance;
+
+    void main() {
+        float dist = length(gl_PointCoord - vec2(0.5));
+
+        // pointy core: hard edge
+        float coreAlpha = dist < 0.3 ? 1.0 : 0.0;
+
+        // soft halo: Gaussian outer core
+        float haloAlpha = exp(-dist*dist*8.0);
+
+        // combined
+        float alpha = max(coreAlpha, haloAlpha) * vAlpha;
+        if(alpha < 0.01) discard;
+
+        // Color gradient: core warm, edge cold
+        float t = clamp(vDistance / 350.0, 0.0, 1.0);
+        vec3 centerColor = vec3(1.0, 0.9, 0.8);
+        vec3 edgeColor   = vec3(0.4, 0.6, 1.0);
+        vec3 finalColor = mix(centerColor, edgeColor, t);
+
+        gl_FragColor = vec4(finalColor, alpha);
+    }
+`});
+    }
+}
+
 export class PointCloudView extends Points {
-    constructor() {
-        super();
+    constructor({
+        material = PointCloudMaterial.stars()
+    } = {}) {
+        super(new BufferGeometry(), material);
     }
 
     attachTo(pointCloud) {
@@ -31,7 +137,6 @@ export class PointCloudView extends Points {
             sizeAttr.setX(i, pointCloud.sizeAt?.(i) ?? 1.0);
         }
 
-        this.material = PointCloudView.defaultMaterial();
         this.geometry.setAttribute('position', positionAttr);
         this.geometry.setAttribute('color', colorAttr);
         this.geometry.setAttribute('size', sizeAttr);
@@ -39,45 +144,6 @@ export class PointCloudView extends Points {
 
     render(transform) {
         // TODO: So far we do not have any dynamic point clouds
-    }
-
-    static defaultMaterial() {
-        return new ShaderMaterial({
-            vertexColors: true,
-            transparent: true,
-            depthTest: false,
-            blending: AdditiveBlending,
-
-            vertexShader: `
-                attribute float size;
-                varying vec3 vColor;
-                varying float vAlpha;
-
-                void main() {
-                    vColor = color;
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    float dist = length(position);
-
-                    vAlpha = 1.0 - smoothstep(0.0, 600.0, dist);
-                    gl_PointSize = size * (1500.0 / length(mvPosition.xyz));
-                    gl_Position = projectionMatrix * mvPosition;
-                }
-            `,
-
-            fragmentShader: `
-                varying vec3 vColor;
-                varying float vAlpha;
-
-                void main() {
-                    float d = length(gl_PointCoord - vec2(0.5));
-                    float alpha = exp(-d * d * 10.0) * vAlpha;
-                    if(alpha < 0.01)
-                        discard;
-
-                    gl_FragColor = vec4(vColor, alpha);
-                }
-            `
-        });
     }
 }
 
