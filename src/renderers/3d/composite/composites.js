@@ -1,5 +1,6 @@
 import {
-    Group, Vector3, Color, Points, ShaderMaterial, AdditiveBlending } from "three";
+    Group, Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute
+} from "three";
 import { Arrow } from "../primitives/primitives.js";
 import { VectorFieldVector, ComplexScalarFieldValue, Complex} from "../../../math/math.js";
 
