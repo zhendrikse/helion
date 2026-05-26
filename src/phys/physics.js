@@ -4,7 +4,6 @@
 
 import { Complex, Vec3 } from "../math/math.js";
 import { Integrators } from "../numerics/integrators/integrators.js";
-import {BufferAttribute, BufferGeometry, Points} from "three";
 
 //
 // Constants

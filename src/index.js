@@ -6,7 +6,7 @@ export {
 
 export {
     VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface,
-    PDESurface, ScalarField
+    PDESurface, ScalarField, normalDistribution, randomArbitrary, randomInt
 } from "./math/math.js";
 
 export { Integrators } from "./numerics/integrators/integrators.js";

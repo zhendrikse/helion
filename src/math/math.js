@@ -1,7 +1,66 @@
 /*************************
  * M A T H E M A T I C S *
  *************************/
-import {Group} from "three";
+
+/**
+ * Pick a number from a normal distribution using Box-Muller transform.
+ *
+ * @param mu Average.
+ * @param sigma Standard deviation
+ * @returns A normally distributed number.
+ */
+export function normalDistribution(mu, sigma) {
+    const u1 = Math.random();
+    const u2 = Math.random();
+    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2) * sigma + mu;
+}
+
+/**
+ * Returns a random number between min (inclusive) and max (exclusive)
+ */
+export function randomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+/**
+ * Returns a random integer between min (inclusive) and max (inclusive).
+ * The value is no lower than min (or the next integer greater than min
+ * if min isn't an integer) and no greater than max (or the next integer
+ * lower than max if max isn't an integer).
+ * Using Math.round() will give you a non-uniform distribution!
+ */
+export function randomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function factorial(n) {
+    let result = 1;
+    for (let i=2; i<=n; i++)
+        result *= i;
+    return result;
+}
+
+export function linspace(start, stop, num) {
+    const linSpace = [];
+    const step = (stop - start) / (num - 1);
+    for (let i = 0; i < num; i++)
+        linSpace.push(start + i * step);
+    return linSpace;
+}
+
+export function meshgrid(x, y) {
+    const X = [];
+    const Y = [];
+
+    for (let i = 0; i < y.length; i++) {
+        X.push(x.slice());
+        Y.push(Array(x.length).fill(y[i]));
+    }
+
+    return [X, Y];
+}
 
 export class Vec3 {
     constructor(x=0, y=0, z=0) {
@@ -126,7 +185,6 @@ export class Vec3 {
         return this;
     }
 }
-
 
 export class Range {
     constructor(from, to, stepSize) {

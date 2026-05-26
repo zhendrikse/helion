@@ -1,4 +1,4 @@
-import { Group, Color, Vector3 } from "three";
+import { Color, Vector3 } from "three";
 import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
 import {
     ThreeJsRenderOptions, ThreeJsRenderer, Canvas, HtmlDiv, Simulation, Vec3,

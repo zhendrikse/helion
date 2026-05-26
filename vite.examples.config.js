@@ -27,6 +27,7 @@ export default defineConfig({
                 solenoid: path.resolve(__dirname, 'examples/electromagnetism/scenes/solenoid.js'),
                 three_body: path.resolve(__dirname, 'examples/kinematics/scenes/three_body.js'),
                 schwarzschild_space_time: path.resolve(__dirname, 'examples/relativity/scenes/schwarzschild_space_time.js'),
+                spiral_galaxy: path.resolve(__dirname, 'examples/astrophysics/scenes/spiral_galaxy.js'),
                 star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js'),
                 vibrating_membrane: path.resolve(__dirname, 'examples/waves/scenes/vibrating_membrane.js')
             },
