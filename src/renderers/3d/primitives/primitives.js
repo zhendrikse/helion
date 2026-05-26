@@ -1,8 +1,7 @@
 import {
     Group, Vector3, BufferAttribute, TorusGeometry,
     MeshStandardMaterial, SphereGeometry, Mesh, BufferGeometry, LineBasicMaterial, Line, TubeGeometry,
-    CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion, Points, ShaderMaterial,
-    AdditiveBlending
+    CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion
 } from "three";
 
 import { VectorFieldVector } from "../../../math/math.js";
@@ -10,83 +9,6 @@ import { VectorFieldVector } from "../../../math/math.js";
 /*************
  * V I E W S *
  *************/
-
-//
-// Point cloud
-//
-export class PointCloudView extends Points {
-    constructor() {
-        super();
-    }
-
-    attachTo(pointCloud) {
-        // Sanity checks
-        if (!pointCloud.positionAt || !pointCloud.colorAt || !pointCloud.sizeAt)
-            throw new Error("Body does not behave like a point cloud, hence it cannot be attached to this view.");
-
-        const N = pointCloud.length;
-        const positionAttr = new BufferAttribute(new Float32Array(3 * N), 3);
-        const colorAttr = new BufferAttribute(new Float32Array(3 * N), 3);
-        const sizeAttr = new BufferAttribute(new Float32Array(N), 1);
-
-        for (let i = 0; i < N; i++) {
-            const p = pointCloud.positionAt(i);
-            const c = pointCloud.colorAt(i);
-
-            positionAttr.setXYZ(i, p.x, p.y, p.z);
-            colorAttr.setXYZ(i, c.r, c.g, c.b);
-            sizeAttr.setX(i, pointCloud.sizeAt?.(i) ?? 1.0);
-        }
-
-        this.material = PointCloudView.defaultMaterial();
-        this.geometry.setAttribute('position', positionAttr);
-        this.geometry.setAttribute('color', colorAttr);
-        this.geometry.setAttribute('size', sizeAttr);
-    }
-
-    render(transform) {
-        // TODO: So far we do not have any dynamic point clouds
-    }
-
-    static defaultMaterial() {
-        return new ShaderMaterial({
-            vertexColors: true,
-            transparent: true,
-            depthTest: false,
-            blending: AdditiveBlending,
-
-            vertexShader: `
-                attribute float size;
-                varying vec3 vColor;
-                varying float vAlpha;
-
-                void main() {
-                    vColor = color;
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    float dist = length(position);
-
-                    vAlpha = 1.0 - smoothstep(0.0, 600.0, dist);
-                    gl_PointSize = size * (1500.0 / length(mvPosition.xyz));
-                    gl_Position = projectionMatrix * mvPosition;
-                }
-            `,
-
-            fragmentShader: `
-                varying vec3 vColor;
-                varying float vAlpha;
-
-                void main() {
-                    float d = length(gl_PointCoord - vec2(0.5));
-                    float alpha = exp(-d * d * 10.0) * vAlpha;
-                    if(alpha < 0.01)
-                        discard;
-
-                    gl_FragColor = vec4(vColor, alpha);
-                }
-            `
-        });
-    }
-}
 
 //
 // T R A I L

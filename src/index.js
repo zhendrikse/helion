@@ -20,11 +20,11 @@ export {
 } from "./renderers/3d/threesim.js";
 
 export {
-    Cylinder, ArrowField, Sphere, Box, Arrow, Ring, Helix, Trail, PointCloudView
+    Cylinder, ArrowField, Sphere, Box, Arrow, Ring, Helix, Trail
 } from "./renderers/3d/primitives/primitives.js";
 
 export {
-    OneDimensionalComplexPlaneWave3D, ElectromagneticWave
+    OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView
 } from "./renderers/3d/composite/composites.js";
 
 export {

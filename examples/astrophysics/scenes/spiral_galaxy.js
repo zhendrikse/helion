@@ -1,7 +1,7 @@
 import {Vector3, Color, ShaderMaterial, AdditiveBlending, BufferGeometry, BufferAttribute, Points, Group } from "three";
 import {
     normalDistribution, randomArbitrary, randomInt,ThreeJsRenderOptions, ThreeJsRenderer, Vec3,
-    HtmlDiv, Canvas, Simulation } from "helion";
+    HtmlDiv, Canvas, Simulation, PointCloud } from "helion";
 
 const vector = Vector3,
     color = Color;
@@ -71,7 +71,7 @@ const starMaterial = new ShaderMaterial({
 `
 });
 
-class PointCloud extends Group {
+class PointCloudView extends Group {
     constructor(positions, radii, colours) {
         super();
         const N = positions.length;
@@ -94,13 +94,9 @@ class PointCloud extends Group {
         this.cloud = new Points(geometry, starMaterial);
         this.add(this.cloud);
     }
-
-    getThreeJsHandle() {
-        return this.cloud;
-    }
 }
 
-class SpiralGalaxy {
+class SpiralGalaxy extends PointCloud {
     // Set the radius of the galactic disc (scaling factor):
     static ScaleFactor = 350; // Use range of 200 - 700.
     static NumRimStars = 3000;
@@ -115,10 +111,8 @@ class SpiralGalaxy {
         [-SpiralGalaxy.ScaleFactor, -0.5, 1.5], [-SpiralGalaxy.ScaleFactor, -0.6, 1.5]];
 
     constructor() {
-        const positions = [],
-            radii = [],
-            colours = [],
-            coreRadius = SpiralGalaxy.ScaleFactor / 15;
+        super();
+        const coreRadius = SpiralGalaxy.ScaleFactor / 15;
 
         const outerCore = SpiralGalaxy.createCoreStars(SpiralGalaxy.NumRimStars, coreRadius);
         const innerCore = SpiralGalaxy.createCoreStars(Math.trunc(SpiralGalaxy.NumRimStars / 4), coreRadius / 2.5);
@@ -126,26 +120,20 @@ class SpiralGalaxy {
         const outerHaze = SpiralGalaxy.haze(SpiralGalaxy.ScaleFactor, 1, 0.3, SpiralGalaxy.Density);
         const [leadingArms, trailingArms] = SpiralGalaxy.buildSpiralArms(-0.3, SpiralGalaxy.ArmsInfo);
 
-        this.add(outerCore, 1, positions, radii, colours);
-        this.add(innerCore, 1, positions, radii, colours);
-        this.add(leadingArms, 7, positions, radii, colours);
-        this.add(trailingArms, 3, positions, radii, colours);
-        this.add(innerHaze, 2, positions, radii, colours);
-        this.add(outerHaze, 2, positions, radii, colours);
-
-        this.pointCloud = new PointCloud(positions, radii, colours);
+        this.add(outerCore, 1);
+        this.add(innerCore, 1);
+        this.add(leadingArms, 7);
+        this.add(trailingArms, 3);
+        this.add(innerHaze, 2);
+        this.add(outerHaze, 2);
     }
 
-    add(starPositions, starRadius, positions, radii, colours) {
+    add(starPositions, starRadius) {
         for (let i = 0, n=starPositions.length; i < n; i++) {
-            positions.push(starPositions[i]);
-            colours.push(SpiralGalaxy.colorAt(starPositions[i]));
-            radii.push(starRadius);
+            this._positions.push(starPositions[i]);
+            this._colors.push(SpiralGalaxy.colorAt(starPositions[i]));
+            this._sizes.push(starRadius);
         }
-    }
-
-    rotateZ(delta = 0.001) {
-        this.pointCloud.getThreeJsHandle().rotation.z += delta;
     }
 
     static colorAt(position) {
@@ -239,7 +227,8 @@ const renderer = ThreeJsRenderer
     .with(threeJsRendererOptions);
 
 const spiralGalaxy = new SpiralGalaxy();
-renderer.addObject3D(spiralGalaxy.pointCloud)
+const pointCloud = new PointCloudView(spiralGalaxy._positions, spiralGalaxy._sizes, spiralGalaxy._colors);
+renderer.addObject3D(pointCloud)
 
 //
 // const starCluster = new StarCluster();
@@ -249,5 +238,5 @@ renderer.addObject3D(spiralGalaxy.pointCloud)
 Simulation
     .with(renderer)
     .onScale(1)
-    .onClockTick((clockTime, simulatedTime) => {spiralGalaxy.pointCloud.rotation.z += 2.5e-3})
+    .onClockTick((clockTime, simulatedTime) => {pointCloud.rotation.z += 2.5e-3})
     .start();
