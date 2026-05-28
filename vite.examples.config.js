@@ -19,6 +19,7 @@ export default defineConfig({
                 floating_block: path.resolve(__dirname, 'examples/kinematics/scenes/floating_block.js'),
                 flocking_birds: path.resolve(__dirname, 'examples/nature/scenes/flocking_birds.js'),
                 faradays_law: path.resolve(__dirname, 'examples/electromagnetism/scenes/faradays_law.js'),
+                fraunhofer_diffraction: path.resolve(__dirname, 'examples/optics/scenes/fraunhofer_diffraction.js'),
                 proton_helical_motion: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_helical_motion.js'),
                 n_body_oscillator: path.resolve(__dirname, 'examples/waves/scenes/n_body_oscillator.js'),
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),

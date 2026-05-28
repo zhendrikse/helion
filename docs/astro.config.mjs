@@ -40,6 +40,11 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
+					label: 'Optics',
+					items: [{ autogenerate: { directory: 'optics' } }],
+				},
+				{
+					collapsed: true,
 					label: 'Quantum physics',
 					items: [{ autogenerate: { directory: 'quantumphysics' } }],
 				},

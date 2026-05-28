@@ -1,0 +1,41 @@
+<html>
+<head>
+    <link rel="stylesheet" href="../../docs/src/assets/styles.css" />
+</head>
+<body>
+    <!--
+       - F R A U N H O F E R   D I F F R A C T I O N
+       -->
+    <div id="fraunhoferCanvasWrapper" style="margin: 0 auto; text-align: center;">
+        <canvas id="fraunhoferCanvas" class="applicationCanvas"></canvas>
+    </div>
+
+    <div class="buttonRow">
+        <button id="squareButton">🟩 Square</button>
+        <button id="circleButton">🟢 Circle </button>
+        <label for="diameterSlider">Size:
+            <input type="range" id="diameterSlider" min="20" max="200" value="200"/>
+            <span id="diameterValue">200 µm</span>
+        </label>
+    </div>
+    <div class="buttonRow">
+        <label for="popFactorSlider">Pop factor:
+            <input type="range" id="popFactorSlider" min=".3" max="1" value=".3" step="0.01"/>
+        </label>
+    </div>
+    <div class="buttonRow">
+        <label for="wavelengthSlider">Color:
+            <input type="range" id="wavelengthSlider" min="380" max="700" value="500"/>
+            &nbsp;<span id="wavelengthProbe">&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;
+            <span id="wavelengthValue">500 nm</span>&nbsp;
+        </label>
+        <label for="laserColor">🎨 <input type="checkbox" id="laserColor" checked/></label>
+    </div>
+
+    <script type="module" src="scenes/fraunhofer_diffraction.js"></script>
+</body>
+</html>
+
+
+
+

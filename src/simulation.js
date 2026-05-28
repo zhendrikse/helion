@@ -188,7 +188,10 @@ export class Simulation {
         this._substepsCount = 1;
     }
 
-    onScale(scale) { this._transform = new Transform(scale); return this; }
+    onScale(scale) {
+        this._transform = new Transform(scale);
+        return this;
+    }
 
     incrementsTimeBy(dt) {
         this._dt = dt;
