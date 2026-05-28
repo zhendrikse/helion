@@ -33,6 +33,8 @@ export {
 
 export { CompositeRenderer } from "./renderers/renderer.js";
 
+export { ArrowField2 } from "./renderers/3d/vectorfields/arrowfield.js";
+
 export { SurfaceColorMapper} from "./renderers/3d/scalarfields/colormappers.js";
 
 export {

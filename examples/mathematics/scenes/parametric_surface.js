@@ -1,8 +1,9 @@
 import {ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation,
-    DynamicSurface, FiniteDifferenceMethodField, PDESurface, IsoparametricContoursView,
+    Surface, FiniteDifferenceMethodField, PDESurface, IsoparametricContoursView,
     SphereSurfaceView, PlaneSurfaceView, Vec3 } from "helion";
 
-class WaveSurface extends DynamicSurface {
+
+class WaveSurface extends Surface {
     constructor({
                     width = 10,
                     depth = 10,
@@ -54,7 +55,10 @@ const renderer = ThreeJsRenderer
 //
 // Surface view
 //
-renderer.synchronize(waveSurface.alwaysWith(new SphereSurfaceView({ uSegments: 50, vSegments: 50 })));
+const sphereSurface = new PlaneSurfaceView({ uSegments: 50, vSegments: 50 });
+renderer.synchronize(waveSurface.alwaysWith(sphereSurface));
+
+renderer.provideAxesFor(sphereSurface);
 
 //
 // Simulation
@@ -62,5 +66,7 @@ renderer.synchronize(waveSurface.alwaysWith(new SphereSurfaceView({ uSegments: 5
 Simulation
     .with(renderer)
     .onScale(1)
-    .onClockTick((clockTime, simulatedTime) => waveSurface.update(0.016), 3)
+    .onClockTick((clockTime, simulatedTime) => {
+        waveSurface.update(0.016);
+    }, 3)
     .start();

@@ -10,7 +10,7 @@ const shaftGeometrySquare = new BoxGeometry(1, 1, 1);
 const headGeometryRound = new ConeGeometry(1, 1, 16);
 const headGeometrySquare = new ConeGeometry(1, 1, 4);
 
-export class ArrowField extends Group {
+export class ArrowField2 extends Group {
     constructor({
         xRange,
         yRange,
@@ -93,7 +93,7 @@ export class ArrowField extends Group {
         this._shaftMesh.instanceColor.setXYZ(index, c.r, c.g, c.b);
     }
 
-    render() {
+    render(transform) {
         const count = this._positions.length;
 
         for (let i = 0; i < count; i++) {

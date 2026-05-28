@@ -116,6 +116,10 @@ export class PointCloudView extends Points {
         material = PointCloudMaterial.stars()
     } = {}) {
         super(new BufferGeometry(), material);
+        this._pointCloud = null;
+        this._positionAttribute = null;
+        this._colorAttribute = null;
+        this._radiusAttribute = null;
     }
 
     attachTo(pointCloud) {
@@ -124,26 +128,33 @@ export class PointCloudView extends Points {
             throw new Error("Body does not behave like a point cloud, hence it cannot be attached to this view.");
 
         const N = pointCloud.length;
-        const positionAttr = new BufferAttribute(new Float32Array(3 * N), 3);
-        const colorAttr = new BufferAttribute(new Float32Array(3 * N), 3);
-        const sizeAttr = new BufferAttribute(new Float32Array(N), 1);
+        this._positionAttribute = new BufferAttribute(new Float32Array(3 * N), 3);
+        this._colorAttribute = new BufferAttribute(new Float32Array(3 * N), 3);
+        this._radiusAttribute = new BufferAttribute(new Float32Array(N), 1);
 
         for (let i = 0; i < N; i++) {
             const p = pointCloud.positionAt(i);
             const c = pointCloud.colorAt(i);
 
-            positionAttr.setXYZ(i, p.x, p.y, p.z);
-            colorAttr.setXYZ(i, c.r, c.g, c.b);
-            sizeAttr.setX(i, pointCloud.sizeAt?.(i) ?? 1.0);
+            this._positionAttribute.setXYZ(i, p.x, p.y, p.z);
+            this._colorAttribute.setXYZ(i, c.r, c.g, c.b);
+            this._radiusAttribute.setX(i, pointCloud.sizeAt?.(i) ?? 1.0);
         }
 
-        this.geometry.setAttribute('position', positionAttr);
-        this.geometry.setAttribute('color', colorAttr);
-        this.geometry.setAttribute('size', sizeAttr);
+        this.geometry.setAttribute('position', this._positionAttribute);
+        this.geometry.setAttribute('color', this._colorAttribute);
+        this.geometry.setAttribute('size', this._radiusAttribute);
+
+        this._pointCloud = pointCloud;
     }
 
-    render(transform) {
-        // TODO: So far we do not have any dynamic point clouds
+    render() {
+        for (let i = 0; i < this._pointCloud.length; i++) {
+            const p = this._pointCloud.positionAt(i);
+            this._positionAttribute.setXYZ(i, p.x, p.y, p.z);
+        }
+
+        this._positionAttribute.needsUpdate = true;
     }
 }
 

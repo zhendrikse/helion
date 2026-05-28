@@ -42,11 +42,12 @@
        -->
       <!--
        - D I P O L E  F I E L D
+       -->
     <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">
       <canvas id="solenoidCanvas" class="applicationCanvas"></canvas>
     </div>
-    <div class="applicationCanvasWrapper" id="dipoleCanvasWrapper" style="aspect-ratio: 19 / 12;">
-      <canvas id="dipoleCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
+    <div class="applicationCanvasWrapper" id="dipoleCanvasWrapper">
+      <canvas id="dipoleCanvas" class="applicationCanvas"></canvas>
     </div>
     <div class="buttonRow">
       <label for="fieldStrengthSlider">Field </label><input type="range" id="fieldStrengthSlider" min="0" max=".5" step="any" value="0.25"/>
@@ -54,7 +55,6 @@
       <label for="autoRotate">Auto-rotate </label><input type="checkbox" id="autoRotate"/>
     </div>
     <script type="module" src="scenes/dipole_field.js"></script>
-       -->
     <!--
        - E L E C T R O M A G N E T I C   W A V E
     <div class="canvasWrapper" id="electromagneticWaveWrapper">
@@ -65,7 +65,6 @@
        -->
     <!--
        - F A R A D A Y ' S   L A W
-       -->
     <div class="canvasWrapper" id="faradayLawCanvasWrapper" style="aspect-ratio: 19 / 12;">
       <canvas class="applicationCanvas" id="faradayLawCanvas" style="aspect-ratio: 19/12"></canvas>
       <div class="overlayText" id="faradayLawCanvasOverlay">Click to start the animation!</div>
@@ -74,6 +73,7 @@
       <label for="faradayLoopButton">Show Faraday loop <input type="checkbox" id="faradayLoopButton"/></label>
     </div>
     <script type="module" src="scenes/faradays_law.js"></script>
+       -->
     <!--
        - S O L E N O I D
     <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">

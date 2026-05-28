@@ -1,12 +1,13 @@
 import {
     Scene, PerspectiveCamera, WebGLRenderer, DirectionalLight, Group, Fog, Color,
     PCFShadowMap, AmbientLight, ShaderMaterial, AdditiveBlending, Points, PointsMaterial,
-    BufferAttribute, Vector3, BufferGeometry
+    BufferAttribute, Vector3, BufferGeometry, Box3
 } from "three";
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Renderer } from "../renderer.js"
 import { Vec3 } from "../../math/math.js";
+import { AxesController, Axes } from "./primitives/decorations.js";
 
 export class ThreeJsRenderOptions {
     constructor({
@@ -54,6 +55,7 @@ export class ThreeJsRenderer extends Renderer {
         this._world = new Group();
         this._skydome = null;
         this._scene.add(this._world);
+        this._axisController = null;
     }
 
     _showOverlayMessage(message, duration = 1000) {
@@ -205,6 +207,7 @@ export class ThreeJsRenderer extends Renderer {
         this._renderer.render(this._scene, this._camera);
         this._controls?.update();
         this._skydome?.update(time, this._camera);
+        this._axisController?.render(this._scene, this._camera);
 
         if (this._autoRotate)
             this._doAutoRotate(this._camera.position.length());
@@ -231,6 +234,30 @@ export class ThreeJsRenderer extends Renderer {
 
     remove(anObject) {
         throw new Error("Remove() method not implemented.");
+    }
+
+    provideAxesFor(anObject, {
+        layoutType = Axes.Type.MATLAB,
+        divisions = 10,
+        frame = true,
+        annotations = true,
+        tickLabels = true,
+        xyPlane = true,
+        xzPlane = true,
+        yzPlane = true,
+        axisLabels = ["X", "Y", "Z"],
+        positiveXZ = false
+    } = {}) {
+        this._axesController = new AxesController({
+            parentGroup: this._world,
+            canvasContainer: this._canvasWrapperDiv.htmlDiv,
+            axesParameters: {layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ}
+        });
+
+        anObject.updateMatrixWorld();
+        const boundingBox = new Box3();
+        boundingBox.setFromObject( this._world );
+        this._axesController.createFromBoundingBox(boundingBox);
     }
 
     set autoRotate(autoRotate) { this._autoRotate = autoRotate; }

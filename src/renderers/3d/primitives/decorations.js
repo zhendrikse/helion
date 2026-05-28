@@ -1,9 +1,10 @@
 import {
-    Group, Vector3,
+    Group, Vector3, AxesHelper, GridHelper, MeshPhongMaterial,
     MeshStandardMaterial, Mesh, BufferGeometry, LineBasicMaterial, Line,
-    BoxGeometry, Color, RepeatWrapping, DoubleSide,
+    BoxGeometry, Color, RepeatWrapping, DoubleSide, Box3,
     TextureLoader, Vector2, PlaneGeometry, EdgesGeometry, LineSegments
 } from "three";
+import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer";
 
 import woodWicketColorUrl from '../../../textures/Wood_Wicker_011_color.png';
 import woodWicketNormalUrl from '../../../textures/Wood_Wicker_011_normal.png';
@@ -18,11 +19,11 @@ import pavingNormalUrl from '../../../textures/paving_normal.jpg';
 
 class Grid extends Group {
     constructor({
-                    size = 1,
-                    granularity = 20,
-                    y = 0,
-                    color = 0x00ff00
-                } = {}) {
+        size = 1,
+        granularity = 20,
+        y = 0,
+        color = 0x00ff00
+    } = {}) {
         super();
 
         const step = (size * 2) / granularity;
@@ -51,14 +52,14 @@ export class Floor extends Group {
         WOOD_WICKER: "WoodWicker"  // https://3dtextures.me/2024/06/22/wood-wicker-011/
     });
     constructor({
-                    type= Floor.Type.PLAIN,
-                    position = new Vector3(),
-                    planeSizeXy = new Vector2(2, 2),
-                    granularity = 1,
-                    color = 0x00ff00,
-                    opacity = null,
-                    receiveShadow = true
-                } = {}) {
+        type= Floor.Type.PLAIN,
+        position = new Vector3(),
+        planeSizeXy = new Vector2(2, 2),
+        granularity = 1,
+        color = 0x00ff00,
+        opacity = null,
+        receiveShadow = true
+    } = {}) {
         super();
         const planeGeometry = new PlaneGeometry(planeSizeXy.x, planeSizeXy.y);
         const planeMaterial = new MeshStandardMaterial({
@@ -117,11 +118,11 @@ export class Floor extends Group {
 
 export class Ceiling extends Mesh {
     constructor({
-                    position = new Vector3(0, 0, 0),
-                    size = 12,
-                    thickness = 0.75,
-                    color = 0x8a8a8a
-                } = {}) {
+        position = new Vector3(0, 0, 0),
+        size = 12,
+        thickness = 0.75,
+        color = 0x8a8a8a
+    } = {}) {
         const ceilingGeometry = new BoxGeometry(size, size, thickness);
         const ceilingMaterial = new MeshStandardMaterial({
             color: color,
@@ -176,32 +177,6 @@ export class Aquarium extends Mesh {
 /*******************************************
  * Floor, Grid, Ceiling, Aquarium          *
  *******************************************/
-
-export class AxesParameters {
-    constructor({
-                    layoutType = Axes.Type.MATLAB,
-                    divisions = 10,
-                    frame = true,
-                    annotations = true,
-                    tickLabels = true,
-                    xyPlane = true,
-                    xzPlane = true,
-                    yzPlane = true,
-                    axisLabels = ["X", "Y", "Z"],
-                    positiveXZ = false
-                } = {}) {
-        this.layoutType = layoutType;
-        this.divisions = divisions;
-        this.frame = frame;
-        this.annotations = annotations;
-        this.xyPlane = xyPlane;
-        this.xzPlane = xzPlane;
-        this.yzPlane = yzPlane;
-        this.axisLabels = axisLabels;
-        this.tickLabels = tickLabels;
-        this.positiveXZ = positiveXZ;
-    }
-}
 
 export class Axes extends Group {
     static Type = Object.freeze({
@@ -485,56 +460,54 @@ class MatlabAnnotations extends AxesAnnotation {
     }
 }
 
-// export class AxesController {
-//     constructor({
-//                     parentGroup,
-//                     canvasContainer,
-//                     axesParameters,
-//                     scene
-//                 }) {
-//         this._parentGroup = parentGroup;
-//         this._canvasContainer = canvasContainer;
-//         this._axesParameters = axesParameters;
-//         this._scene = scene;
-//         this._axes = null;
-//     }
-//
-//     createFromBoundingBox(boundingBox, bottomAlign = true) {
-//         if (this._axes) {
-//             this._axes.dispose();
-//             this._parentGroup.remove(this._axes);
-//         }
-//
-//         const { layoutType, divisions, axisLabels, tickLabels } = this._axesParameters;
-//         const { frame, annotations, xyPlane, xzPlane, yzPlane, positiveXZ } = this._axesParameters;
-//
-//         this._axes = Axes.from(boundingBox, divisions)
-//             .withLayout(layoutType, positiveXZ)
-//             .withAnnotations(this._canvasContainer, layoutType, axisLabels)
-//             .withSettings(
-//                 { frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels });
-//
-//         if (layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed
-//             this._axes.frameTo(boundingBox, bottomAlign);
-//         this._axes.onWindowResize();
-//         this._parentGroup.add(this._axes);
-//     }
-//
-//     updateSettings() {
-//         if (!this._axes) return;
-//
-//         const { frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels } = this._axesParameters;
-//         this._axes.withSettings(
-//             { frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels });
-//     }
-//
-//     render = (camera) => this._axes?.render(this._scene, camera);
-//     resize = () => this._axes?.onWindowResize();
-//
-//     dispose() {
-//         if (!this._axes) return;
-//         this._axes.dispose();
-//         this._parentGroup.remove(this._axes);
-//         this._axes = null;
-//     }
-// }
+export class AxesController {
+    constructor({
+        parentGroup,
+        canvasContainer,
+        axesParameters,
+    }) {
+        this._parentGroup = parentGroup;
+        this._canvasContainer = canvasContainer;
+        this._axesParameters = axesParameters;
+        this._axes = null;
+    }
+
+    createFromBoundingBox(boundingBox, bottomAlign = true) {
+        if (this._axes) {
+            this._axes.dispose();
+            this._parentGroup.remove(this._axes);
+        }
+
+        const { layoutType, divisions, axisLabels, tickLabels } = this._axesParameters;
+        const { frame, annotations, xyPlane, xzPlane, yzPlane, positiveXZ } = this._axesParameters;
+
+        this._axes = Axes.from(boundingBox, divisions)
+            .withLayout(layoutType, positiveXZ)
+            .withAnnotations(this._canvasContainer, layoutType, axisLabels)
+            .withSettings(
+                { frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels });
+
+        if (layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed
+            this._axes.frameTo(boundingBox, bottomAlign);
+        this._axes.onWindowResize();
+        this._parentGroup.add(this._axes);
+    }
+
+    updateSettings() {
+        if (!this._axes) return;
+
+        const { frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels } = this._axesParameters;
+        this._axes.withSettings(
+            { frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels });
+    }
+
+    render = (scene, camera) => this._axes?.render(scene, camera);
+    resize = () => this._axes?.onWindowResize();
+
+    dispose() {
+        if (!this._axes) return;
+        this._axes.dispose();
+        this._parentGroup.remove(this._axes);
+        this._axes = null;
+    }
+}

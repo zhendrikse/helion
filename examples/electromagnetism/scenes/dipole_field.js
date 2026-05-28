@@ -54,7 +54,7 @@ const dipoleField = new DipoleField(dipole);
 // View
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(32, 16, 48).multiplyScalar(0.75),
+    cameraPosition: new Vec3(32, 16, 48),
     fieldOfView: 40
 });
 

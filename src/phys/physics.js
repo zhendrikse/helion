@@ -26,12 +26,16 @@ export function gravitationalForceBetween(twoBodies) {
 export class PointCloud {
     constructor({
         positions = [],
+        velocities = [],
+        masses = [],
         colors = [],
         sizes = [],
     } = {}) {
         this._positions = positions;
         this._colors = colors;
         this._sizes = sizes;
+        this._masses = masses;
+        this.velocities = velocities;
     }
 
     alwaysWith(view) { return { body: this, view: view, always: true}; };

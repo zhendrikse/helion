@@ -26,6 +26,7 @@ export class HtmlDiv {
         return this;
     }
 
+    get htmlDiv() { return this._htmlDiv; }
     get overlay() { return this._overlay; }
     get canvas() { return this._canvas; }
 }
