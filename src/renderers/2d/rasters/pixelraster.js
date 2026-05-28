@@ -43,7 +43,6 @@ export class PixelRaster {
             return;
         }
 
-        // TODO: Ask ChatGPT if this is wise to do
         // draw direct scaled imageData via offscreen canvas
         const off = new OffscreenCanvas(this._width, this._height);
         off.getContext("2d").putImageData(this._imageData, 0, 0);
