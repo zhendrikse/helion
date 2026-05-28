@@ -1,28 +1,38 @@
-import { linspace, meshgrid, PixelRaster, wavelengthColor, wavelengthToRGBNormalized } from "helion";
+import {
+    linspace, meshgrid, PixelRaster, wavelengthColor, wavelengthToRGBNormalized,
+    ScalarGridField, Canvas, Canvas2DRenderer, HtmlDiv
+} from "helion";
 
-export class IntensityRaser extends PixelRaster {
+class IntensityRaster extends PixelRaster {
     constructor({
-        context,
         width = 100,
         height = 100,
-        scaleToCanvas = false
+        scaleToCanvas = false,
+        showSpectralColor = true
     } = {}) {
-        super({context, width, height, scaleToCanvas});
+        super({width, height, scaleToCanvas});
+        this._showSpectralColor = showSpectralColor;
     }
 
-    render(electricField, showSpectralColor= true) {
-        const intensityMap = electricField.intensity;
-        const maxIntensity = electricField.maxIntensity;
-        const lambda = electricField.lambdaInNanos;
-        for (let i = 0; i < resolution; i++)
-            for (let j = 0; j < resolution; j++) {
-                const intensity = Math.pow(intensityMap[i][j] / maxIntensity, popFactor);
-                const color = showSpectralColor ?
-                    wavelengthColor(lambda, intensity) :
-                    [255, 255, 255, 255 * Math.sqrt(intensity)];
-                this.setColourAt(i, j, color);
-            }
-        super.render();
+    set showSpectralColor(value) { this._showSpectralColor = value; }
+
+    normalize = (i, j) => this._scalarGridField.valueAt(i, j) / this._scalarGridField.maxIntensity;
+    colorMapper = (intensity) => this._showSpectralColor ?
+        wavelengthColor(this._scalarGridField.lambdaInNanos, intensity) :
+        [255, 255, 255, 255 * Math.sqrt(intensity)];
+
+    setColourAt(i, j, imageData) {
+        let index = j * (this._width * 4) + i * 4;
+        const color = this.colorMapper(this.normalize(i, j))
+        if (color === null) { // 👈 Intentional use of ==, not ===
+            imageData.data[index + 3] = 0; // completely transparant
+            return;
+        }
+
+        imageData.data[index++] = color[0];
+        imageData.data[index++] = color[1];
+        imageData.data[index++] = color[2];
+        imageData.data[index++] = (color[3] ?? 255);
     }
 }
 
@@ -89,77 +99,43 @@ class Aperture {
     }
 }
 
-class ElectricField {
+class ElectricFieldIntensityGrid extends ScalarGridField {
     constructor(N) {
-        this._field = Array.from({length:N}, () => Array(N).fill(0));
-        this._N = N;
-        this._intensity = null;
+        super(N, N, N, N);
+
         this._maxIntensity = 0;
-        this._update();
         this._lambdaInNanos = null;
     }
 
-    get intensity() { return this._intensity; }
-    get maxIntensity() { return this._maxIntensity;}
+    get maxIntensity() { return this._maxIntensity; }
     get lambdaInNanos() { return this._lambdaInNanos; }
-
-    _update() {
-        this._intensity = this._field.map(row => row.map(v => v * v));
-        let max = 0;
-        for (let i = 0; i < this._N; i++)
-            for (let j = 0; j < this._N; j++)
-                if (this._intensity[i][j] > max) max = this._intensity[i][j];
-        this._maxIntensity = max;
-    }
 
     recompute(aperture, lambdaInNanoMeter) {
         this._lambdaInNanos = lambdaInNanoMeter;
-        this._computeElectricField(aperture);
-        this._update();
+        this._computeElectricFieldIntensityGrid(aperture);
     }
 
-    _computeElectricField(aperture) {
+    _computeElectricFieldIntensityGrid(aperture) {
+        let max = 0;
         const k = 2 * Math.PI / (this._lambdaInNanos * 1e-9);
-        for (let i = 0; i < this._N; i++)
-            for (let j = 0; j < this._N; j++)
-                this._field[i][j] = aperture.sumRaysAt(i, j, k) / R;
+        for (let i = 0; i < this._nx; i++)
+            for (let j = 0; j < this._ny; j++) {
+                const field = aperture.sumRaysAt(i, j, k) / R;
+                const intensity = field * field;
+                super.setValueAt(i, j, intensity);
+                if (intensity > max)
+                    max = intensity;
+            }
+        this._maxIntensity = max;
     }
 }
 
 const diameterSlider = document.getElementById("diameterSlider");
 const diameterLabel = document.getElementById("diameterValue");
-const popFactorSlider = document.getElementById("popFactorSlider");
 const wavelengthSlider = document.getElementById("wavelengthSlider");
 const wavelengthValue = document.getElementById("wavelengthValue");
 const wavelengthProbe = document.getElementById("wavelengthProbe");
 const screenContext = document.getElementById("fraunhoferCanvas").getContext("2d");
-
-const resolution = 100;
-const R = 1.0;
-
-let popFactor = 1;
-const intensityImage = new IntensityRaser({
-    context: screenContext,
-    width: resolution,
-    height: resolution,
-    scaleToCanvas: true
-});
-
-async function recomputeAndRender(aperture) {
-    document.body.style.cursor = "wait";
-
-    await new Promise(requestAnimationFrame);
-
-    electricField.recompute(aperture, Number(wavelengthSlider.value));
-    render();
-
-    document.body.style.cursor = "default";
-}
-
-function render() {
-    const showSpectralColor = document.getElementById("laserColor").checked;
-    intensityImage.render(electricField, showSpectralColor);
-}
 
 //
 // Event listeners
@@ -168,12 +144,12 @@ document.getElementById("laserColor").addEventListener("change", render);
 
 document.getElementById("squareButton").addEventListener("click", () => {
     aperture.isCircular = false;
-    recomputeAndRender(aperture).then();
+    recomputeAndRender(aperture);
 });
 
 document.getElementById("circleButton").addEventListener("click", () => {
     aperture.isCircular = true;
-    recomputeAndRender(aperture).then();
+    recomputeAndRender(aperture);
 });
 
 function updateWavelengthUI() {
@@ -196,15 +172,36 @@ diameterSlider.addEventListener("change", () => {
     const diameter = Number(diameterSlider.value);
     diameterLabel.textContent = `${diameter} µm`;
     aperture.setDiameter(diameter, resolution);
-    recomputeAndRender(aperture).then();
+    recomputeAndRender(aperture);
 });
 
-popFactorSlider.addEventListener("input", () => {
-    popFactor = Number(1 - popFactorSlider.value + .3);
-    render();
-})
 
+//
+// View for 2D canvas
+//
+const canvas2d = Canvas.withElementId("fraunhoferCanvas");
+const renderer2d = Canvas2DRenderer.on(HtmlDiv.withElementId("fraunhoferCanvasWrapper").contains(canvas2d));
+
+const resolution = 100;
+const R = 1.0;
 const aperture = new Aperture(Number(diameterSlider.value), resolution);
-const electricField = new ElectricField(resolution);
+const electricField = new ElectricFieldIntensityGrid(resolution);
+const intensityPixelRaster = new IntensityRaster({
+    width: resolution,
+    height: resolution,
+    scaleToCanvas: true
+});
+renderer2d.synchronize(electricField.alwaysWith(intensityPixelRaster));
+
+function recomputeAndRender(aperture) {
+    electricField.recompute(aperture, Number(wavelengthSlider.value));
+    render();
+}
+
+function render() {
+    intensityPixelRaster.showSpectralColor = document.getElementById("laserColor").checked;
+    intensityPixelRaster.render(screenContext);
+}
+
 updateWavelengthUI();
-recomputeAndRender(aperture).then();
+recomputeAndRender(aperture);

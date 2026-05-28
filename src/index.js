@@ -5,7 +5,7 @@ export {
 } from "./phys/physics.js";
 
 export {
-    VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface,
+    VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface, ScalarGridField,
     PDESurface, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid, factorial, linspace
 } from "./math/math.js";
 
@@ -43,6 +43,6 @@ export {
     SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView
 } from "./renderers/3d/scalarfields/surfaces.js"
 
-export {
-    OneDimensionalComplexPlaneWave2D, Canvas2DRenderer
-} from "./renderers/2d/canvassim.js";
+export { Canvas2DRenderer } from "./renderers/2d/canvassim.js";
+
+export { OneDimensionalComplexPlaneWave2D } from "./renderers/2d/composite/quantum.js";

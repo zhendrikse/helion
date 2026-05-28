@@ -258,15 +258,20 @@ export class ScalarField {
         throw new Error("You invoked the method of an abstract base class. Please create a subclass first.");
     }
 
+    alwaysWith(view) { return { body: this, view: view, always: true }; };
+    onceWith(view) { return { body: this, view: view, always: false}; };
+
     updateWith(time) {}
 }
 
-class ScalarGridField extends ScalarField {
+export class ScalarGridField extends ScalarField {
     constructor(nx, ny, width, height) {
         super();
 
         this._nx = nx;
         this._ny = ny;
+        this._width = width;
+        this._height = height;
 
         this._data = new Float32Array(nx * ny);
     }
