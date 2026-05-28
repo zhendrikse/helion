@@ -12,7 +12,7 @@ import {
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
     DynamicDrawUsage, BufferAttribute
 } from "three";
-import {SurfaceColorMapper} from "./colormappers.js";
+import {SurfaceColorMapper} from "../../colormappers.js";
 
 export class SurfaceView extends Group {
     constructor({

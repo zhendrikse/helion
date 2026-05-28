@@ -6,7 +6,7 @@ export {
 
 export {
     VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface,
-    PDESurface, ScalarField, normalDistribution, randomArbitrary, randomInt
+    PDESurface, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid, factorial, linspace
 } from "./math/math.js";
 
 export { Integrators } from "./numerics/integrators/integrators.js";
@@ -35,7 +35,9 @@ export { CompositeRenderer } from "./renderers/renderer.js";
 
 export { ArrowField2 } from "./renderers/3d/vectorfields/arrowfield.js";
 
-export { SurfaceColorMapper} from "./renderers/3d/scalarfields/colormappers.js";
+export { SurfaceColorMapper, wavelengthColor, wavelengthToRGBNormalized } from "./renderers/colormappers.js";
+
+export { PixelRaster } from "./renderers/2d/rasters/pixelraster.js";
 
 export {
     SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView
