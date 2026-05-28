@@ -141,7 +141,8 @@ let popFactor = 1;
 const intensityImage = new IntensityRaser({
     context: screenContext,
     width: resolution,
-    height: resolution
+    height: resolution,
+    scaleToCanvas: true
 });
 
 async function recomputeAndRender(aperture) {
