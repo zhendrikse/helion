@@ -2,10 +2,14 @@ export class PixelRaster {
     constructor({
         width,
         height,
-        scaleToCanvas = false
+        scaleToCanvas = false,
+        normalize = (value, max) => value / max,
+        colorMapper = (lambda, intensity) => [255, 255, 255, 255 * Math.sqrt(intensity)]
     } = {}) {
         this._width = width;
         this._height = height;
+        this.normalize = normalize;
+        this.colorMapper = colorMapper;
         this._scaleToCanvas = scaleToCanvas;
         this._scalarGridField = null;
     }
@@ -18,7 +22,20 @@ export class PixelRaster {
         this._scalarGridField = scalarGridField;
     }
 
-    setColourAt(x, y, imageData) {}
+    setColourAt(i, j, imageData) {
+        let index = j * (this._width * 4) + i * 4;
+        const normalizedValue = this.normalize(this._scalarGridField.valueAt(i, j), this._scalarGridField.maxIntensity);
+        const color = this.colorMapper(this._scalarGridField.lambdaInNanos, normalizedValue);
+        if (color === null) { // 👈 Intentional use of ==, not ===
+            imageData.data[index + 3] = 0; // completely transparant
+            return;
+        }
+
+        imageData.data[index++] = color[0];
+        imageData.data[index++] = color[1];
+        imageData.data[index++] = color[2];
+        imageData.data[index++] = (color[3] ?? 255);
+    }
 
     // TODO Doesn't seem to work?
     // clear(color = null) {

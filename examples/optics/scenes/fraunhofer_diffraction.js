@@ -8,32 +8,16 @@ class IntensityRaster extends PixelRaster {
         width = 100,
         height = 100,
         scaleToCanvas = false,
-        showSpectralColor = true
+        showSpectralColor = true,
+        normalize = (value, max) => value / max,
+        colorMapper = (lambda, intensity) => this._showSpectralColor ?
+            wavelengthColor(lambda, intensity) : [255, 255, 255, 255 * Math.sqrt(intensity)]
     } = {}) {
-        super({width, height, scaleToCanvas});
+        super({width, height, scaleToCanvas, normalize, colorMapper});
         this._showSpectralColor = showSpectralColor;
     }
 
     set showSpectralColor(value) { this._showSpectralColor = value; }
-
-    normalize = (i, j) => this._scalarGridField.valueAt(i, j) / this._scalarGridField.maxIntensity;
-    colorMapper = (intensity) => this._showSpectralColor ?
-        wavelengthColor(this._scalarGridField.lambdaInNanos, intensity) :
-        [255, 255, 255, 255 * Math.sqrt(intensity)];
-
-    setColourAt(i, j, imageData) {
-        let index = j * (this._width * 4) + i * 4;
-        const color = this.colorMapper(this.normalize(i, j))
-        if (color === null) { // 👈 Intentional use of ==, not ===
-            imageData.data[index + 3] = 0; // completely transparant
-            return;
-        }
-
-        imageData.data[index++] = color[0];
-        imageData.data[index++] = color[1];
-        imageData.data[index++] = color[2];
-        imageData.data[index++] = (color[3] ?? 255);
-    }
 }
 
 class Aperture {
