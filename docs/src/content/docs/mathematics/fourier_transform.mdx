@@ -33,16 +33,14 @@ layout: ../../../layouts/DocsLayout.astro
 </div>
 
 <div class="buttonRow">
-    <div class="buttonRow">
-        <label for="squareButton">🟩 Square</label>
-        <input id="squareButton" name="apertureType" type="radio" value="square"/>
-        <label for="circleButton">🟢 Circle </label>
-        <input id="circleButton" name="apertureType" type="radio" value="circular" checked/>
-    </div>
-    <div class="buttonRow">
-        <label for="diameterSlider">Size:</label>
-        <input type="range" id="diameterSlider" min="20" max="50" value="30"/>
-        <span id="diameterValue">30</span> pixels
-    </div>
+    <label for="squareButton">🟩 Square</label>
+    <input id="squareButton" name="apertureType" type="radio" value="square"/>
+    <label for="circleButton">🟢 Circle </label>
+    <input id="circleButton" name="apertureType" type="radio" value="circular" checked/>
+</div>
+<div class="buttonRow">
+    <label for="diameterSlider">Size:</label>
+    <input type="range" id="diameterSlider" min="20" max="50" value="30"/>
+    <span id="diameterValue">30</span> pixels
 </div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/fourier_transform.js"}></script>

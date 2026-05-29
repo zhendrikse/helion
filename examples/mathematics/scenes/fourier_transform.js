@@ -31,8 +31,8 @@ class ShapeField extends DiscreteComplexField{
     }
 
     doFft() {
-        this._fft.fft2D(field);
-        return field.transformWith(this._fftShift2D); // Shift back to center
+        this._fft.fft2D(this);
+        return this.transformWith(this._fftShift2D); // Shift back to center
     }
 
 
