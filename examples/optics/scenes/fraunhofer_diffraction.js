@@ -90,55 +90,55 @@ class Aperture {
 class ElectricFieldIntensityGrid extends ScalarGridField {
     constructor(N) {
         super(N, N, N, N);
-
+        this._resolution = N;
         this._maxIntensity = 0;
-        this._lambdaInNanos = null;
     }
 
+    get resolution() { return this._resolution; }
     get maxIntensity() { return this._maxIntensity; }
-    get lambdaInNanos() { return this._lambdaInNanos; }
-    set lambdaInNanos(value) { this._lambdaInNanos = value; }
-
-    recompute(aperture) {
-        let max = 0;
-        const k = 2 * Math.PI / (this._lambdaInNanos * 1e-9);
-        for (let i = 0; i < this._nx; i++)
-            for (let j = 0; j < this._ny; j++) {
-                const field = aperture.sumRaysAt(i, j, k) / R;
-                const intensity = field * field;
-                super.setValueAt(i, j, intensity);
-                if (intensity > max)
-                    max = intensity;
-            }
-        this._maxIntensity = max;
-    }
-}
-
-class UiControls {
-    constructor(aperture, electricField) {
-        this._aperture = aperture;
-        this._electricField = electricField;
-    }
-
-    set diameterInMicroMeter(diameterInMicroMeter) {
-        this._aperture.diameterInMicroMeter = diameterInMicroMeter;
-        this._electricField.recompute(this._aperture);
-    }
-
-    set lambdaInNanos(value) {
-        this._electricField.lambdaInNanos = value;
-        this._electricField.recompute(this._aperture);
-    }
-
-    set apertureType(type) {
-        this._aperture.type = type;
-        this._electricField.recompute(this._aperture);
-    }
+    set maxIntensity(maxIntensity) { this._maxIntensity = maxIntensity; }
 }
 
 //
 // Physics
 //
+class FraunhoferSimulation {
+    constructor(aperture, electricField) {
+        this._aperture = aperture;
+        this._electricField = electricField;
+        this.recompute();
+    }
+
+    set diameterInMicroMeter(diameterInMicroMeter) {
+        this._aperture.diameterInMicroMeter = diameterInMicroMeter;
+        this.recompute();
+    }
+
+    set lambdaInNanos(value) {
+        this._electricField.lambdaInNanos = value;
+        this.recompute();
+    }
+
+    set apertureType(type) {
+        this._aperture.type = type;
+        this.recompute();
+    }
+
+    recompute() {
+        let max = 0;
+        const k = 2 * Math.PI / (this._electricField.lambdaInNanos * 1e-9);
+        for (let i = 0; i < this._electricField.resolution; i++)
+            for (let j = 0; j < this._electricField.resolution; j++) {
+                const field = this._aperture.sumRaysAt(i, j, k) / R;
+                const intensity = field * field;
+                this._electricField.setValueAt(i, j, intensity);
+                if (intensity > max)
+                    max = intensity;
+            }
+        this._electricField.maxIntensity = max;
+    }
+}
+
 const resolution = 100;
 const R = 1.0;
 const aperture = new Aperture(200, resolution);
@@ -157,31 +157,31 @@ const intensityPixelRaster = new IntensityRaster({
 });
 renderer2d.synchronize(electricField.alwaysWith(intensityPixelRaster));
 
+const fraunhoferSimulation = new FraunhoferSimulation(aperture, electricField);
 const simulation = Simulation.with(renderer2d).onClockTick();
-const uiControls = new UiControls(aperture, electricField);
 
 const eventController = new EventController(simulation);
 eventController.attach(HtmlControl
     .withElementId("wavelengthSlider")
     .forType("change")
     .withValueSpanId("wavelengthValue")
-    .to(uiControls).withProperty("lambdaInNanos"));
+    .to(fraunhoferSimulation).withProperty("lambdaInNanos"));
 
 eventController.attach(HtmlControl
     .withElementId("diameterSlider")
     .forType("change")
     .withValueSpanId("diameterValue")
-    .to(uiControls).withProperty("diameterInMicroMeter"));
+    .to(fraunhoferSimulation).withProperty("diameterInMicroMeter"));
 
 eventController.attach(HtmlControl
     .withElementId("circleButton")
     .forType("click")
-    .to(uiControls).withProperty("apertureType"));
+    .to(fraunhoferSimulation).withProperty("apertureType"));
 
 eventController.attach(HtmlControl
     .withElementId("squareButton")
     .forType("click")
-    .to(uiControls).withProperty("apertureType"));
+    .to(fraunhoferSimulation).withProperty("apertureType"));
 
 eventController.attach(HtmlControl
     .withElementId("laserColor")
@@ -203,7 +203,5 @@ document.getElementById("wavelengthSlider").addEventListener("input", e => {
 
 })
 
-uiControls.lambdaInNanos = 500;
-uiControls.aperture = Aperture.Type.CIRCULAR;
-uiControls.diameterInMicroMeter = 200;
+fraunhoferSimulation.lambdaInNanos = 500;
 simulation.start();
