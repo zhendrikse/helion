@@ -1,9 +1,14 @@
 export class PixelRaster {
+    static RenderMode = Object.freeze({
+        CLEAR_EACH_FRAME: "clearEachFrame",
+        ACCUMULATE: "accumulate"
+    });
+
     constructor({
         width,
         height,
         scaleToCanvas = false,
-        normalize = (value, max) => value / max,
+        normalize = (intensity, max) => intensity / max,
         colorMapper = (lambda, intensity) => [255, 255, 255, 255 * Math.sqrt(intensity)]
     } = {}) {
         this._width = width;

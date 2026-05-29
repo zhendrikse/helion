@@ -1,6 +1,6 @@
 import {
     linspace, meshgrid, PixelRaster, wavelengthColor, wavelengthToRGBNormalized,
-    ScalarGridField, Canvas, Canvas2DRenderer, HtmlDiv
+    ScalarGridField, Canvas, Canvas2DRenderer, HtmlDiv, Simulation, EventController, HtmlControl
 } from "helion";
 
 class IntensityRaster extends PixelRaster {
@@ -9,7 +9,7 @@ class IntensityRaster extends PixelRaster {
         height = 100,
         scaleToCanvas = false,
         showSpectralColor = true,
-        normalize = (value, max) => value / max,
+        normalize = (intensity, max) => intensity / max,
         colorMapper = (lambda, intensity) => this._showSpectralColor ?
             wavelengthColor(lambda, intensity) : [255, 255, 255, 255 * Math.sqrt(intensity)]
     } = {}) {
@@ -21,6 +21,10 @@ class IntensityRaster extends PixelRaster {
 }
 
 class Aperture {
+    static Type = Object.freeze({
+        CIRCULAR: "circular",
+        SQUARE: "square"
+    });
     static circularAperture = (x, y, diameter) => x * x + y * y < (.5 * diameter) * (.5 * diameter);
     static squareAperture = (x, y, size) => Math.abs(x) <= size * .5 && Math.abs(y) <= size * .5;
 
@@ -30,42 +34,42 @@ class Aperture {
         Array.from({length: N}, (_, j) => Aperture.squareAperture(X[i][j], Y[i][j], diameter)));
 
     constructor(diameterInMicroMeter, N) {
-        this._isCircular = true;
+        this._apertureType = Aperture.Type.CIRCULAR;
         this._N = N;
-        this.setDiameter(diameterInMicroMeter, N);
 
         const side = linspace(-0.01 * Math.PI, 0.01 * Math.PI, N);
         const [x, y] = meshgrid(side, side);
         this._kX = x;
         this._kY = y;
+        this.diameterInMicroMeter = diameterInMicroMeter;
     }
 
-    setDiameter(diameterInMicroMeter, N) {
+    set diameterInMicroMeter(diameterInMicroMeter) {
         this._diameterInMicroMeter = diameterInMicroMeter;
         const diameter = this._diameterInMicroMeter * 1e-6;
 
-        const dx = diameter / N;
-        const dy = diameter / N;
+        const dx = diameter / this._N;
+        const dy = diameter / this._N;
         this._dx_dy = dx * dy;
 
-        const side_ap = linspace(-diameter *.5, diameter *.5, N);
+        const side_ap = linspace(-diameter *.5, diameter *.5, this._N);
         const [X, Y] = meshgrid(side_ap, side_ap);
         this._X = X;
         this._Y = Y;
 
-        const mask = this._isCircular ?
-            Aperture.circleMask(X, Y, diameter, N) :
-            Aperture.squareMask(X, Y, diameter, N);
+        const mask = this._apertureType === Aperture.Type.CIRCULAR ?
+            Aperture.circleMask(X, Y, diameter, this._N) :
+            Aperture.squareMask(X, Y, diameter, this._N);
 
         this._aperture = [];
-        for (let m = 0; m < N; m++)
-            for (let n = 0; n < N; n++)
+        for (let m = 0; m < this._N; m++)
+            for (let n = 0; n < this._N; n++)
                 if (mask[m][n]) this._aperture.push([m, n]);
     }
 
-    set isCircular(circularBoolean) {
-        this._isCircular = circularBoolean;
-        this.setDiameter(this._diameterInMicroMeter, this._N);
+    set type(type) {
+        this._apertureType = type;
+        this.diameterInMicroMeter = this._diameterInMicroMeter; // Force update of mask!!
     }
 
     //
@@ -93,13 +97,9 @@ class ElectricFieldIntensityGrid extends ScalarGridField {
 
     get maxIntensity() { return this._maxIntensity; }
     get lambdaInNanos() { return this._lambdaInNanos; }
+    set lambdaInNanos(value) { this._lambdaInNanos = value; }
 
-    recompute(aperture, lambdaInNanoMeter) {
-        this._lambdaInNanos = lambdaInNanoMeter;
-        this._computeElectricFieldIntensityGrid(aperture);
-    }
-
-    _computeElectricFieldIntensityGrid(aperture) {
+    recompute(aperture) {
         let max = 0;
         const k = 2 * Math.PI / (this._lambdaInNanos * 1e-9);
         for (let i = 0; i < this._nx; i++)
@@ -114,51 +114,35 @@ class ElectricFieldIntensityGrid extends ScalarGridField {
     }
 }
 
-const diameterSlider = document.getElementById("diameterSlider");
-const diameterLabel = document.getElementById("diameterValue");
-const wavelengthSlider = document.getElementById("wavelengthSlider");
-const wavelengthValue = document.getElementById("wavelengthValue");
-const wavelengthProbe = document.getElementById("wavelengthProbe");
-const screenContext = document.getElementById("fraunhoferCanvas").getContext("2d");
+class UiControls {
+    constructor(aperture, electricField) {
+        this._aperture = aperture;
+        this._electricField = electricField;
+    }
 
-//
-// Event listeners
-//
-document.getElementById("laserColor").addEventListener("change", render);
+    set diameterInMicroMeter(diameterInMicroMeter) {
+        this._aperture.diameterInMicroMeter = diameterInMicroMeter;
+        this._electricField.recompute(this._aperture);
+    }
 
-document.getElementById("squareButton").addEventListener("click", () => {
-    aperture.isCircular = false;
-    recomputeAndRender(aperture);
-});
+    set lambdaInNanos(value) {
+        this._electricField.lambdaInNanos = value;
+        this._electricField.recompute(this._aperture);
+    }
 
-document.getElementById("circleButton").addEventListener("click", () => {
-    aperture.isCircular = true;
-    recomputeAndRender(aperture);
-});
-
-function updateWavelengthUI() {
-    const wavelength = Number(wavelengthSlider.value);
-    const color = wavelengthToRGBNormalized(wavelength);
-
-    const intensity = 1;
-
-    wavelengthProbe.style.backgroundColor =
-        `rgb(${color.r * intensity * 255},
-             ${color.g * intensity * 255},
-             ${color.b * intensity * 255})`;
-
-    wavelengthValue.textContent = `${wavelength} nm`;
+    set apertureType(type) {
+        this._aperture.type = type;
+        this._electricField.recompute(this._aperture);
+    }
 }
-wavelengthSlider.addEventListener("input", updateWavelengthUI);
-wavelengthSlider.addEventListener("change", () => recomputeAndRender(aperture));
 
-diameterSlider.addEventListener("change", () => {
-    const diameter = Number(diameterSlider.value);
-    diameterLabel.textContent = `${diameter} µm`;
-    aperture.setDiameter(diameter, resolution);
-    recomputeAndRender(aperture);
-});
-
+//
+// Physics
+//
+const resolution = 100;
+const R = 1.0;
+const aperture = new Aperture(200, resolution);
+const electricField = new ElectricFieldIntensityGrid(resolution);
 
 //
 // View for 2D canvas
@@ -166,10 +150,6 @@ diameterSlider.addEventListener("change", () => {
 const canvas2d = Canvas.withElementId("fraunhoferCanvas");
 const renderer2d = Canvas2DRenderer.on(HtmlDiv.withElementId("fraunhoferCanvasWrapper").contains(canvas2d));
 
-const resolution = 100;
-const R = 1.0;
-const aperture = new Aperture(Number(diameterSlider.value), resolution);
-const electricField = new ElectricFieldIntensityGrid(resolution);
 const intensityPixelRaster = new IntensityRaster({
     width: resolution,
     height: resolution,
@@ -177,15 +157,53 @@ const intensityPixelRaster = new IntensityRaster({
 });
 renderer2d.synchronize(electricField.alwaysWith(intensityPixelRaster));
 
-function recomputeAndRender(aperture) {
-    electricField.recompute(aperture, Number(wavelengthSlider.value));
-    render();
-}
+const simulation = Simulation.with(renderer2d).onClockTick();
+const uiControls = new UiControls(aperture, electricField);
 
-function render() {
-    intensityPixelRaster.showSpectralColor = document.getElementById("laserColor").checked;
-    intensityPixelRaster.render(screenContext);
-}
+const eventController = new EventController(simulation);
+eventController.attach(HtmlControl
+    .withElementId("wavelengthSlider")
+    .forType("change")
+    .withValueSpanId("wavelengthValue")
+    .to(uiControls).withProperty("lambdaInNanos"));
 
-updateWavelengthUI();
-recomputeAndRender(aperture);
+eventController.attach(HtmlControl
+    .withElementId("diameterSlider")
+    .forType("change")
+    .withValueSpanId("diameterValue")
+    .to(uiControls).withProperty("diameterInMicroMeter"));
+
+eventController.attach(HtmlControl
+    .withElementId("circleButton")
+    .forType("click")
+    .to(uiControls).withProperty("apertureType"));
+
+eventController.attach(HtmlControl
+    .withElementId("squareButton")
+    .forType("click")
+    .to(uiControls).withProperty("apertureType"));
+
+eventController.attach(HtmlControl
+    .withElementId("laserColor")
+    .forType("click")
+    .to(intensityPixelRaster).withProperty("showSpectralColor"));
+
+
+// Custom wavelength -> color renderer
+const wavelengthSlider = document.getElementById("wavelengthSlider");
+const wavelengthProbe = document.getElementById("wavelengthProbe");
+document.getElementById("wavelengthSlider").addEventListener("input", e => {
+    const wavelength = Number(wavelengthSlider.value);
+    const color = wavelengthToRGBNormalized(wavelength);
+    const intensity = 1;
+    wavelengthProbe.style.backgroundColor =
+        `rgb(${color.r * intensity * 255},
+             ${color.g * intensity * 255},
+             ${color.b * intensity * 255})`;
+
+})
+
+uiControls.lambdaInNanos = 500;
+uiControls.aperture = Aperture.Type.CIRCULAR;
+uiControls.diameterInMicroMeter = 200;
+simulation.start();
