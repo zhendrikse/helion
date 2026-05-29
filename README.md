@@ -77,6 +77,7 @@ Complex orchestration layers are intentionally avoided.
 💫 [Astrophysics](https://www.hendrikse.name/helion/astrophysics/)<br/>
 ⚡  [Electromagnetism](https://www.hendrikse.name/helion/electromagnetism/)<br/>
 🏃 [Kinematics](https://www.hendrikse.name/helion/kinematics/)<br/>
+🧮️ [Mathematics](https://www.hendrikse.name/helion/mathematics/)<br/>
 🏕️ [Nature](https://www.hendrikse.name/helion/nature/)<br/>
 🔦 [Optics](https://www.hendrikse.name/helion/optics/)<br/>
 🔱 [Quantum physics](https://www.hendrikse.name/helion/quantumphysics/)<br/>

@@ -35,6 +35,11 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
+					label: 'Mathematics',
+					items: [{ autogenerate: { directory: 'mathematics' } }],
+				},
+				{
+					collapsed: true,
 					label: 'Nature',
 					items: [{ autogenerate: { directory: 'nature' } }],
 				},

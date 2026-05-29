@@ -18,6 +18,7 @@ export default defineConfig({
                 electromagnetic_wave_quiver: path.resolve(__dirname, 'examples/electromagnetism/scenes/electromagnetic_wave_quiver.js'),
                 floating_block: path.resolve(__dirname, 'examples/kinematics/scenes/floating_block.js'),
                 flocking_birds: path.resolve(__dirname, 'examples/nature/scenes/flocking_birds.js'),
+                fourier_transform: path.resolve(__dirname, 'examples/mathematics/scenes/fourier_transform.js'),
                 faradays_law: path.resolve(__dirname, 'examples/electromagnetism/scenes/faradays_law.js'),
                 fraunhofer_diffraction: path.resolve(__dirname, 'examples/optics/scenes/fraunhofer_diffraction.js'),
                 proton_helical_motion: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_helical_motion.js'),

@@ -19,6 +19,23 @@
         <canvas class="applicationCanvas" id="waveCanvas"></canvas><br/>
     </div>
     <script type="module" src="scenes/fourier_transform.js"></script>
+    <div class="canvasWrapper" id="fourierTransformCanvasWrapper">
+        <canvas id="fourierTransformCanvas" class="applicationCanvas"></canvas>
+    </div>
+
+    <div class="buttonRow">
+        <label for="squareButton">🟩 Square</label>
+        <input id="squareButton" name="apertureType" type="radio" value="square"/>
+        <label for="circleButton">🟢 Circle </label>
+        <input id="circleButton" name="apertureType" type="radio" value="circular" checked/>
+    </div>
+    <div class="buttonRow">
+        <label for="diameterSlider">Size:
+            <input type="range" id="diameterSlider" min="20" max="50" value="30" step="any"/>
+            <span id="diameterValue">30</span> pixels
+        </label>
+    </div>
+    <script type="module" src="scenes/fourier_transform.js"></script>
 </body>
 </html>
 

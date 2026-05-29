@@ -1,0 +1,48 @@
+---
+title: "〽️ Fourier transform"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div className="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div class="header_line"></div>
+
+🎯 Illustration of 2D numerical Fourier transformation<br/>
+🧠 Inspired by [this application](https://www.falstad.com/fft/) by [Pual Falstad](https://www.falstad.com/)<br/>
+👉 Related to [Fraunhofer diffraction](../../optics/fraunhofer_diffraction/)
+
+### Live demo
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/fourier_transform.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=fourier_transform.js"/>
+    </a>
+</div>
+
+<div class="canvasWrapper" id="fourierTransformCanvasWrapper">
+    <canvas id="fourierTransformCanvas" class="applicationCanvas"></canvas>
+</div>
+
+<div class="buttonRow">
+    <div class="buttonRow">
+        <label for="squareButton">🟩 Square</label>
+        <input id="squareButton" name="apertureType" type="radio" value="square"/>
+        <label for="circleButton">🟢 Circle </label>
+        <input id="circleButton" name="apertureType" type="radio" value="circular" checked/>
+    </div>
+    <div class="buttonRow">
+        <label for="diameterSlider">Size:</label>
+        <input type="range" id="diameterSlider" min="20" max="50" value="30"/>
+        <span id="diameterValue">30</span> pixels
+    </div>
+</div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/fourier_transform.js"}></script>
