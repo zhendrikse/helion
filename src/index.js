@@ -37,7 +37,7 @@ export { ArrowField2 } from "./renderers/3d/vectorfields/arrowfield.js";
 
 export { SurfaceColorMapper, wavelengthColor, wavelengthToRGBNormalized } from "./renderers/colormappers.js";
 
-export { PixelRaster } from "./renderers/2d/rasters/pixelraster.js";
+export { ScalarRaster } from "./renderers/2d/rasters/pixelrasters.js";
 
 export {
     SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView

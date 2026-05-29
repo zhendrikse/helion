@@ -1,23 +1,22 @@
 import {
-    linspace, meshgrid, PixelRaster, wavelengthColor, wavelengthToRGBNormalized,
+    linspace, meshgrid, ScalarRaster, wavelengthColor, wavelengthToRGBNormalized,
     ScalarGridField, Canvas, Canvas2DRenderer, HtmlDiv, Simulation, EventController, HtmlControl
 } from "helion";
 
-class IntensityRaster extends PixelRaster {
-    constructor({
-        width = 100,
-        height = 100,
-        scaleToCanvas = false,
-        showSpectralColor = true,
-        normalize = (intensity, max) => intensity / max,
-        colorMapper = (lambda, intensity) => this._showSpectralColor ?
-            wavelengthColor(lambda, intensity) : [255, 255, 255, 255 * Math.sqrt(intensity)]
-    } = {}) {
-        super({width, height, scaleToCanvas, normalize, colorMapper});
+class ColorMapper {
+    constructor(lambdaInNanos = 500, showSpectralColor = true) {
         this._showSpectralColor = showSpectralColor;
+        this._lambdaInNanos = lambdaInNanos;
+    }
+
+    mapToColor(intensity) {
+        return this._showSpectralColor ?
+            wavelengthColor(this._lambdaInNanos, intensity) : [255, 255, 255, 255 * Math.sqrt(intensity)]
+
     }
 
     set showSpectralColor(value) { this._showSpectralColor = value; }
+    set lambdaInNanos(value) { this._lambdaInNanos = value; }
 }
 
 class Aperture {
@@ -106,6 +105,7 @@ class FraunhoferSimulation {
     constructor(aperture, electricField) {
         this._aperture = aperture;
         this._electricField = electricField;
+        this._colorMapper = new ColorMapper();
         this.recompute();
     }
 
@@ -115,7 +115,8 @@ class FraunhoferSimulation {
     }
 
     set lambdaInNanos(value) {
-        this._electricField.lambdaInNanos = value;
+        this._lambdaInNanos = value;
+        this._colorMapper.lambdaInNanos = value;
         this.recompute();
     }
 
@@ -124,9 +125,14 @@ class FraunhoferSimulation {
         this.recompute();
     }
 
+    set showSpectralColor(value) {
+        this._colorMapper.showSpectralColor = value;
+        this.recompute();
+    }
+
     recompute() {
         let max = 0;
-        const k = 2 * Math.PI / (this._electricField.lambdaInNanos * 1e-9);
+        const k = 2 * Math.PI / (this._lambdaInNanos * 1e-9);
         for (let i = 0; i < this._electricField.resolution; i++)
             for (let j = 0; j < this._electricField.resolution; j++) {
                 const field = this._aperture.sumRaysAt(i, j, k) / R;
@@ -137,12 +143,15 @@ class FraunhoferSimulation {
             }
         this._electricField.maxIntensity = max;
     }
+
+    get colorMapper() { return this._colorMapper; }
 }
 
 const resolution = 100;
 const R = 1.0;
 const aperture = new Aperture(200, resolution);
 const electricField = new ElectricFieldIntensityGrid(resolution);
+const fraunhoferSimulation = new FraunhoferSimulation(aperture, electricField);
 
 //
 // View for 2D canvas
@@ -150,14 +159,15 @@ const electricField = new ElectricFieldIntensityGrid(resolution);
 const canvas2d = Canvas.withElementId("fraunhoferCanvas");
 const renderer2d = Canvas2DRenderer.on(HtmlDiv.withElementId("fraunhoferCanvasWrapper").contains(canvas2d));
 
-const intensityPixelRaster = new IntensityRaster({
+const intensityPixelRaster = new ScalarRaster({
     width: resolution,
     height: resolution,
+    normalize: (intensity) => intensity / electricField.maxIntensity,
+    colorMapper: fraunhoferSimulation.colorMapper,
     scaleToCanvas: true
 });
 renderer2d.synchronize(electricField.alwaysWith(intensityPixelRaster));
 
-const fraunhoferSimulation = new FraunhoferSimulation(aperture, electricField);
 const simulation = Simulation.with(renderer2d).onClockTick();
 
 const eventController = new EventController(simulation);
@@ -186,7 +196,7 @@ eventController.attach(HtmlControl
 eventController.attach(HtmlControl
     .withElementId("laserColor")
     .forType("click")
-    .to(intensityPixelRaster).withProperty("showSpectralColor"));
+    .to(fraunhoferSimulation).withProperty("showSpectralColor"));
 
 
 // Custom wavelength -> color renderer

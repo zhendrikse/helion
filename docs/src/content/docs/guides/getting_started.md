@@ -37,3 +37,54 @@ Simulation
 <div class="header_line"></div>
 
 TODO
+
+## Design
+
+Wat je nu hebt lijkt sterk op een kleine ECS/MVC-hybride, en dat schaalt veel beter dan losse imperative canvas-code.
+
+```
+Simulation
+    updates solver
+Solver
+    updates field
+SurfaceView
+    samples field
+```
+
+```
+numerics/
+├── solvers/
+│   ├── JacobiSolver
+│   ├── GaussSeidelSolver
+│   ├── MultigridSolver
+│   └── FiniteDifferenceWaveSolver
+│
+├── operators/
+│   ├── Laplacian2D
+│   ├── Gradient2D
+│   └── Divergence2D
+│
+├── boundaryconditions/
+│   ├── Dirichlet
+│   ├── Neumann
+│   └── Periodic
+```
+
+```
+SurfaceView
+    ↓
+Surface.sample()
+    ↓
+ScalarField.scalarValueAt()
+```
+
+```javascript
+const field = new ScalarGridField(...);
+
+const solver = new WaveEquationSolver({
+    field,
+    boundaryCondition: BoundaryCondition.Dirichlet
+});
+
+simulation.onClockTick((_, dt) => solver.step(dt));
+```

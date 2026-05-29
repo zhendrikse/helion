@@ -1,4 +1,4 @@
-export class PixelRaster {
+export class ScalarRaster {
     static RenderMode = Object.freeze({
         CLEAR_EACH_FRAME: "clearEachFrame",
         ACCUMULATE: "accumulate"
@@ -9,12 +9,12 @@ export class PixelRaster {
         height,
         scaleToCanvas = false,
         normalize = (intensity, max) => intensity / max,
-        colorMapper = (lambda, intensity) => [255, 255, 255, 255 * Math.sqrt(intensity)]
+        colorMapper = null
     } = {}) {
         this._width = width;
         this._height = height;
-        this.normalize = normalize;
-        this.colorMapper = colorMapper;
+        this._normalize = normalize;
+        this._colorMapper = colorMapper;
         this._scaleToCanvas = scaleToCanvas;
         this._scalarGridField = null;
     }
@@ -29,8 +29,7 @@ export class PixelRaster {
 
     setColourAt(i, j, imageData) {
         let index = j * (this._width * 4) + i * 4;
-        const normalizedValue = this.normalize(this._scalarGridField.valueAt(i, j), this._scalarGridField.maxIntensity);
-        const color = this.colorMapper(this._scalarGridField.lambdaInNanos, normalizedValue);
+        const color = this._colorMapper.mapToColor(this._normalize(this._scalarGridField.valueAt(i, j)));
         if (color === null) { // 👈 Intentional use of ==, not ===
             imageData.data[index + 3] = 0; // completely transparant
             return;
@@ -70,3 +69,8 @@ export class PixelRaster {
         context.drawImage(off, 0, 0, context.canvas.width, context.canvas.height);
     }
 }
+
+export class ComplexPhaseRaster {
+
+}
+
