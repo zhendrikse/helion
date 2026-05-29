@@ -5,8 +5,9 @@ export {
 } from "./phys/physics.js";
 
 export {
-    VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface, ScalarGridField, FFT,
-    PDESurface, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid, factorial, linspace
+    VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface, DiscreteScalarField, FFT,
+    PDESurface, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid,
+    factorial, linspace, FieldStatistics, DiscreteComplexField
 } from "./math/math.js";
 
 export { Integrators } from "./numerics/integrators/integrators.js";
@@ -37,7 +38,7 @@ export { ArrowField2 } from "./renderers/3d/vectorfields/arrowfield.js";
 
 export { SurfaceColorMapper, wavelengthColor, wavelengthToRGBNormalized } from "./renderers/colormappers.js";
 
-export { ScalarRaster, ComplexPhaseRaster } from "./renderers/2d/rasters/pixelrasters.js";
+export { ScalarFieldRaster, ComplexScalarFieldRaster } from "./renderers/2d/rasters/pixelrasters.js";
 
 export {
     SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView

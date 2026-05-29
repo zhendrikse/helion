@@ -1,4 +1,6 @@
-export class ScalarRaster {
+import {FieldStatistics} from "../../../math/math.js";
+
+export class ScalarFieldRaster {
     static RenderMode = Object.freeze({
         CLEAR_EACH_FRAME: "clearEachFrame",
         ACCUMULATE: "accumulate"
@@ -7,29 +9,30 @@ export class ScalarRaster {
     constructor({
         width,
         height,
-        scaleToCanvas = false,
-        normalize = (intensity, max) => intensity / max,
+        scaleToCanvas = true,
+        max = FieldStatistics.max,
         colorMapper = null
     } = {}) {
         this._width = width;
         this._height = height;
-        this._normalize = normalize;
+        this._max = max;
         this._colorMapper = colorMapper;
         this._scaleToCanvas = scaleToCanvas;
-        this._scalarGridField = null;
+        this._discreteScalarField = null;
     }
 
-    attachTo(scalarGridField) {
+    attachTo(discreteScalarField) {
         // Sanity checks
-        if (!scalarGridField.valueAt)
+        if (!discreteScalarField.valueAt)
             throw new Error("Body does not implement valueAt(), hence it cannot be attached to this view.");
 
-        this._scalarGridField = scalarGridField;
+        this._discreteScalarField = discreteScalarField;
     }
 
-    setColourAt(i, j, imageData) {
+    setColourAt(i, j, imageData, maxValue) {
         let index = j * (this._width * 4) + i * 4;
-        const color = this._colorMapper?.mapToColor(this._normalize(this._scalarGridField.valueAt(i, j)));
+        const color = this._colorMapper?.mapToColor(this._discreteScalarField.valueAt(i, j) / maxValue);
+
         if (color === null) { // 👈 Intentional use of ==, not ===
             imageData.data[index + 3] = 0; // completely transparant
             return;
@@ -41,19 +44,12 @@ export class ScalarRaster {
         imageData.data[index++] = (color[3] ?? 255);
     }
 
-    // TODO Doesn't seem to work?
-    // clear(color = null) {
-    //     for (let x = 0; x < this.dimX(); x++)
-    //         for (let y = 0; y < this.dimY(); y++)
-    //             this.setColourAt(x, y, color);
-    // }
-
     render(context) {
         const imageData = context.createImageData(this._width, this._height);
-
+        const maxValue = this._max(this._discreteScalarField);
         for (let i = 0; i < this._width; i++)
             for (let j = 0; j < this._height; j++)
-                this.setColourAt(i, j, imageData);
+                this.setColourAt(i, j, imageData, maxValue);
 
         if (!this._scaleToCanvas) {
             context.putImageData(imageData, 0, 0);
@@ -94,7 +90,7 @@ export function hsvToRgb(h, s, v) {
     };
 }
 
-export class ComplexPhaseRaster {
+export class ComplexScalarFieldRaster {
     constructor({
         width = 100,
         height = 100,
@@ -114,13 +110,27 @@ export class ComplexPhaseRaster {
         this._colorMapper = colorMapper;
         this._width = width;
         this._height = height;
+        this._discreteComplexField = null;
     }
 
-    render(context, magnitude, phase, max) {
+    attachTo(discreteComplexField) {
+        // Sanity checks
+        if (!discreteComplexField.magnitudeAt)
+            throw new Error("Field does not implement magnitudeAt(), hence it cannot be attached to this view.");
+        if (!discreteComplexField.phaseAt)
+            throw new Error("Field does not implement phaseAt(), hence it cannot be attached to this view.");
+
+        this._discreteComplexField = discreteComplexField;
+    }
+
+    render(context) {
         const imageData = context.createImageData(this._width, this._height);
+        const max = FieldStatistics.maxMagnitude(this._discreteComplexField);
         for (let i = 0; i < this._width; i++)
             for (let j = 0; j < this._height; j++) {
-                const color = this._colorMapper(magnitude[i][j] / max, phase[i][j]);
+                const mag = this._discreteComplexField.magnitudeAt(i, j) / max;
+                const phase = this._discreteComplexField.phaseAt(i, j);
+                const color = this._colorMapper(mag, phase);
                 const index = j * (this._width * 4) + i * 4;
                 for (let k = 0; k < 4; k++)
                     imageData.data[index + k] = color[k];

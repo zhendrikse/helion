@@ -253,6 +253,34 @@ export class VectorFieldVector {
     onceWith(view) { return { body: this, view: view, always: false}; };
 }
 
+export class FieldStatistics {
+    static max(scalarField) {
+        let max = -Infinity;
+
+        for (let i = 0; i < scalarField.nx; i++)
+            for (let j = 0; j < scalarField.ny; j++) {
+                const value = scalarField.valueAt(i, j);
+                if (value > max)
+                    max = value;
+            }
+
+        return max;
+    }
+
+    static maxMagnitude(field) {
+        let max = 0;
+        for (let i = 0; i < field.nx; i++)
+            for (let j = 0; j < field.ny; j++)
+                if (field.magnitudeAt(i, j) > max)
+                    max = field.magnitudeAt(i, j);
+
+        return max;
+    }
+}
+
+/**
+ * Abstract class representing a real/complex, continuous/discrete scalar field.
+ */
 export class ScalarField {
     scalarValueAt(x, y) {
         throw new Error("You invoked the method of an abstract base class. Please create a subclass first.");
@@ -264,17 +292,22 @@ export class ScalarField {
     updateWith(time) {}
 }
 
-export class ScalarGridField extends ScalarField {
-    constructor(nx, ny, width, height) {
+/**
+ * Discrete scalar field, i.e. a scalar field on a grid.
+ */
+export class DiscreteScalarField extends ScalarField {
+    constructor({
+        nx = 100,
+        ny = 100
+    } = {}) {
         super();
-
         this._nx = nx;
         this._ny = ny;
-        this._width = width;
-        this._height = height;
-
         this._data = new Float32Array(nx * ny);
     }
+
+    get nx() { return this._nx; }
+    get ny() { return this._ny; }
 
     scalarValueAt(x, y) {
         // bilinear interpolation
@@ -289,8 +322,43 @@ export class ScalarGridField extends ScalarField {
     }
 }
 
+/**
+ * Discrete complex scalar field, i.e. a complex scalar field on a grid.
+ */
+export class DiscreteComplexField extends ScalarField {
+    constructor({
+        nx = 128,
+        ny = 128,
+        real = Array.from({ length: nx },() => new Float32Array(ny)),
+        imag = Array.from({ length: nx },() => new Float32Array(ny)),
+    } = {}) {
+        super();
+        this.real = real;
+        this.imag = imag;
+        this.nx = nx;
+        this.ny = ny;
+    }
 
-// TODO This is a vector representation of a comlex scalar value,
+    phaseAt(i, j) {
+        const re = this.real[i][j];
+        const im = this.imag[i][j];
+        return Math.atan2(im, re); // [-π, π]
+    }
+
+    magnitudeAt(i, j) {
+        const re = this.real[i][j];
+        const im = this.imag[i][j];
+        return Math.sqrt(re * re + im * im);
+    }
+
+    transformWith(transformation) {
+        this.real = transformation(this.real);
+        this.imag = transformation(this.imag);
+        return this;
+    }
+}
+
+// TODO This is a vector representation of a complex scalar value,
 // rotating in the complex plane, coloured by its phase, and size
 // equal to the abs value.
 export class ComplexScalarFieldValue {
@@ -371,39 +439,40 @@ export class Complex {
 
     clone() { return new Complex(this.re, this.im); }
 
-    absSquared() { return Complex.absSquared(this); }
-    abs() { return Complex.abs(this); }
-    phase = () => Math.atan2(this.im, this.re);
+    get phase() { return Math.atan2(this.im, this.re); }
+    get absSquared() { return this.re * this.re + this.im * this.im; }
+    get magnitude() { return Math.sqrt(this.absSquared); }
+    get abs() { return Math.sqrt(this.absSquared); }
 
-    static multiplyScalar = (a, scalar) => new Complex(a.re * scalar, a.im * scalar);
-    static fromPhase = (theta) => new Complex(Math.cos(theta), Math.sin(theta));
-    static absSquared(z_) { return z_.re * z_.re + z_.im * z_.im; }
-    static abs = (z) => Math.sqrt(Complex.absSquared(z));
-    static add = (a, b) => new Complex(a.re + b.re, a.im + b.im);
-    static subtract = (a, b) => new Complex(a.re - b.re, a.im - b.im);
-    static multiply = (a, b) => new Complex(
-        a.re * b.re - a.im * b.im,
-        a.re * b.im + a.im * b.re
-    );
-    static log = (z) => new Complex(Math.log(Complex.abs(z)), Math.atan2(z.im, z.re));
-    static exp = (z) => new Complex(Math.exp(z.re) * Math.cos(z.im), Math.exp(z.re) * Math.sin(z.im))
-    static sin(z) {
-        const a = Complex.exp(new Complex(-z.im, z.re));
-        const b = Complex.exp(new Complex(z.im, -z.re));
-        return new Complex((a.im - b.im) / 2, (b.re - a.re) / 2);
-    }
-    static divide = (z1, z2) => {
-        const denominator = z2.re * z2.re + z2.im * z2.im;
-        const re = z1.re * z2.re + z1.im * z2.im;
-        const im = z1.im * z2.re - z1.re * z2.im;
-        return new Complex(re / denominator, im / denominator);
-    }
-    static sqrt(z) {
-        const r = Complex.abs(z);
-        const real = Math.sqrt((r + z.re) / 2);
-        const imag = Math.sign(z.im || 1) * Math.sqrt((r - z.re) / 2);
-        return new Complex(real, imag);
-    }
+    // static multiplyScalar = (a, scalar) => new Complex(a.re * scalar, a.im * scalar);
+    // static fromPhase = (theta) => new Complex(Math.cos(theta), Math.sin(theta));
+    // static absSquared(z_) { return z_.re * z_.re + z_.im * z_.im; }
+    // static abs = (z) => Math.sqrt(Complex.absSquared(z));
+    // static add = (a, b) => new Complex(a.re + b.re, a.im + b.im);
+    // static subtract = (a, b) => new Complex(a.re - b.re, a.im - b.im);
+    // static multiply = (a, b) => new Complex(
+    //     a.re * b.re - a.im * b.im,
+    //     a.re * b.im + a.im * b.re
+    // );
+    // static log = (z) => new Complex(Math.log(Complex.abs(z)), Math.atan2(z.im, z.re));
+    // static exp = (z) => new Complex(Math.exp(z.re) * Math.cos(z.im), Math.exp(z.re) * Math.sin(z.im))
+    // static sin(z) {
+    //     const a = Complex.exp(new Complex(-z.im, z.re));
+    //     const b = Complex.exp(new Complex(z.im, -z.re));
+    //     return new Complex((a.im - b.im) / 2, (b.re - a.re) / 2);
+    // }
+    // static divide = (z1, z2) => {
+    //     const denominator = z2.re * z2.re + z2.im * z2.im;
+    //     const re = z1.re * z2.re + z1.im * z2.im;
+    //     const im = z1.im * z2.re - z1.re * z2.im;
+    //     return new Complex(re / denominator, im / denominator);
+    // }
+    // static sqrt(z) {
+    //     const r = Complex.abs(z);
+    //     const real = Math.sqrt((r + z.re) / 2);
+    //     const imag = Math.sign(z.im || 1) * Math.sqrt((r - z.re) / 2);
+    //     return new Complex(real, imag);
+    // }
 }
 
 export class Surface {
@@ -613,10 +682,10 @@ export class FFT {
         }
     }
 
-    fft2D(real, imag) {
+    fft2D(gridField) {
         // rows
         for (let i = 0; i < this._size; i++)
-            this.transform(real[i], imag[i], real[i].slice(), imag[i].slice());
+            this.transform(gridField.real[i], gridField.imag[i], gridField.real[i].slice(), gridField.imag[i].slice());
 
         // columns
         for (let j = 0; j < this._size; j++) {
@@ -624,8 +693,8 @@ export class FFT {
             const colIm = new Array(this._size);
 
             for (let i = 0; i < this._size; i++) {
-                colRe[i] = real[i][j];
-                colIm[i] = imag[i][j];
+                colRe[i] = gridField.real[i][j];
+                colIm[i] = gridField.imag[i][j];
             }
 
             const outRe = new Array(this._size);
@@ -634,8 +703,8 @@ export class FFT {
             this.transform(outRe, outIm, colRe, colIm);
 
             for (let i = 0; i < this._size; i++) {
-                real[i][j] = outRe[i];
-                imag[i][j] = outIm[i];
+                gridField.real[i][j] = outRe[i];
+                gridField.imag[i][j] = outIm[i];
             }
         }
     }

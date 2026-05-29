@@ -1,122 +1,92 @@
-import {FFT, ComplexPhaseRaster, EventController, HtmlControl } from "helion";
+import {
+    FFT, ComplexScalarFieldRaster, DiscreteComplexField, EventController, HtmlControl,
+    Simulation, HtmlDiv, Canvas, Canvas2DRenderer
+} from "helion";
 
-const screenContext = document.getElementById("fourierTransformCanvas").getContext("2d");
-
-const resolution = 512;
-const intensityImage = new ComplexPhaseRaster({
-    width: resolution,
-    height: resolution
-});
-
-class Aperture {
+class ShapeField extends DiscreteComplexField{
     static Type = Object.freeze({
         CIRCULAR: "circular",
         SQUARE: "square"
     });
+
     constructor(diameter, N) {
-        this._type = Aperture.Type.CIRCULAR;
+        super({nx: N, ny: N});
+        this._type = ShapeField.Type.CIRCULAR;
         this._N = N;
         this._diameter = diameter;
-        this.buildField();
+        this._fft = new FFT(N);
+        this._buildShape();
     }
 
     set diameter(diameter) {
         this._diameter = diameter;
-        this.buildField();
+        this._buildShape();
+        fftField = this.doFft();
     }
 
     set type(type) {
         this._type = type;
-        this.buildField();
+        this._buildShape();
+        fftField = this.doFft();
     }
 
-    buildField() {
-        const N = this._N;
-        const field = Array.from({ length: N }, () => new Array(N).fill(0));
+    doFft() {
+        this._fft.fft2D(field);
+        return field.transformWith(this._fftShift2D); // Shift back to center
+    }
 
+
+    _fftShift2D(arr) {
+        const N = arr.length;
+        const half = N >> 1;
+
+        const out = Array.from({ length: N }, () => new Array(N));
+        for (let i = 0; i < N; i++)
+            for (let j = 0; j < N; j++)
+                out[i][j] = arr[(i + half) % N][(j + half) % N];
+
+        return out;
+    }
+
+    _buildShape() {
+        const N = this._N;
+        const real =  Array.from({ length: N },() => new Float32Array(N));
         const cx = N / 2;
         const cy = N / 2;
         const radius = this._diameter / 2;
-
         for (let i = 0; i < N; i++)
             for (let j = 0; j < N; j++) {
                 const x = i - cx;
                 const y = j - cy;
-
-                const inside = this._type === Aperture.Type.CIRCULAR ?
+                const inside = this._type === ShapeField.Type.CIRCULAR ?
                     (x * x + y * y <= radius * radius)
                     : (Math.abs(x) <= radius && Math.abs(y) <= radius);
 
-                field[i][j] = inside ? 1 : 0;
+                real[i][j] = inside ? 1 : 0;
             }
-
-        return field;
+        this.real = real;
+        this.imag = Array.from({ length: N },() => new Float32Array(N));
     }
 }
 
-class FourierTransform {
-    constructor(N) {
-        this._N = N;
-        this._fft = new FFT(N);
-    }
+const resolution = 512;
+const field = new ShapeField(30, resolution);
+let fftField = field.doFft();
 
-    compute(field) {
-        const N = this._N;
+//
+// View for 2D canvas
+//
+const canvas2d = Canvas.withElementId("fourierTransformCanvas");
+const renderer2d = Canvas2DRenderer.on(HtmlDiv.withElementId("fourierTransformCanvasWrapper").contains(canvas2d));
 
-        // create copy (FFT works in-place)
-        const real = field.map(row => row.slice());
-        const imag = Array.from({ length: N }, () => new Array(N).fill(0));
+const intensityRaster = new ComplexScalarFieldRaster({
+    width: resolution,
+    height: resolution
+});
 
-        this._fft.fft2D(real, imag);
-
-        const intensity = Array.from({ length: N }, () => new Array(N));
-        const phaseArray = Array.from({ length: N }, () => new Array(N));
-
-        let max = 0;
-        for (let i = 0; i < N; i++)
-            for (let j = 0; j < N; j++) {
-                const re = real[i][j];
-                const im = imag[i][j];
-                const value = Math.sqrt(re * re + im * im);
-                const phase = Math.atan2(im, re); // [-π, π]
-                intensity[i][j] = value;
-                phaseArray[i][j] = phase;
-                if (value > max) max = value;
-            }
-
-        return {
-            magnitude: fftShift2D(intensity),
-            phase: fftShift2D(phaseArray),
-            max
-        };
-    }
-}
-
-function fftShift2D(arr) {
-    const N = arr.length;
-    const half = N >> 1;
-
-    const out = Array.from({ length: N }, () => new Array(N));
-    for (let i = 0; i < N; i++)
-        for (let j = 0; j < N; j++)
-            out[i][j] = arr[(i + half) % N][(j + half) % N];
-
-    return out;
-}
-
-
-function render() {
-    const currentResult = fourier.compute(aperture.buildField());
-    intensityImage.render(
-        screenContext,
-        currentResult.magnitude,
-        currentResult.phase,
-        currentResult.max
-    );
-}
-
-const aperture = new Aperture(30, resolution);
-const fourier = new FourierTransform(resolution);
+renderer2d.synchronize(fftField.alwaysWith(intensityRaster));
+const simulation = Simulation.with(renderer2d).onClockTick();
+simulation.start()
 
 //
 // Event listeners
@@ -126,16 +96,14 @@ eventController.attach(HtmlControl
     .withElementId("diameterSlider")
     .forType("change")
     .withValueSpanId("diameterValue")
-    .to(aperture).withProperty("diameter"));
+    .to(field).withProperty("diameter"));
 
 eventController.attach(HtmlControl
     .withElementId("circleButton")
     .forType("click")
-    .to(aperture).withProperty("type"));
+    .to(field).withProperty("type"));
 
 eventController.attach(HtmlControl
     .withElementId("squareButton")
     .forType("click")
-    .to(aperture).withProperty("type"));
-
-render();
+    .to(field).withProperty("type"));

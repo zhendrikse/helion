@@ -1,6 +1,7 @@
 import {
-    linspace, meshgrid, ScalarRaster, wavelengthColor, wavelengthToRGBNormalized,
-    ScalarGridField, Canvas, Canvas2DRenderer, HtmlDiv, Simulation, EventController, HtmlControl
+    linspace, meshgrid, ScalarFieldRaster, wavelengthColor, wavelengthToRGBNormalized,
+    DiscreteScalarField, Canvas, Canvas2DRenderer, HtmlDiv, Simulation, EventController,
+    HtmlControl
 } from "helion";
 
 class ColorMapper {
@@ -86,25 +87,13 @@ class Aperture {
     }
 }
 
-class ElectricFieldIntensityGrid extends ScalarGridField {
-    constructor(N) {
-        super(N, N, N, N);
-        this._resolution = N;
-        this._maxIntensity = 0;
-    }
-
-    get resolution() { return this._resolution; }
-    get maxIntensity() { return this._maxIntensity; }
-    set maxIntensity(maxIntensity) { this._maxIntensity = maxIntensity; }
-}
-
 //
 // Physics
 //
 class FraunhoferSimulation {
-    constructor(aperture, electricField) {
+    constructor(aperture, intensityField) {
         this._aperture = aperture;
-        this._electricField = electricField;
+        this._intensityField = intensityField;
         this._colorMapper = new ColorMapper();
         this.recompute();
     }
@@ -131,17 +120,12 @@ class FraunhoferSimulation {
     }
 
     recompute() {
-        let max = 0;
         const k = 2 * Math.PI / (this._lambdaInNanos * 1e-9);
-        for (let i = 0; i < this._electricField.resolution; i++)
-            for (let j = 0; j < this._electricField.resolution; j++) {
+        for (let i = 0; i < this._intensityField.nx; i++)
+            for (let j = 0; j < this._intensityField.ny; j++) {
                 const field = this._aperture.sumRaysAt(i, j, k) / R;
-                const intensity = field * field;
-                this._electricField.setValueAt(i, j, intensity);
-                if (intensity > max)
-                    max = intensity;
+                this._intensityField.setValueAt(i, j, field * field);
             }
-        this._electricField.maxIntensity = max;
     }
 
     get colorMapper() { return this._colorMapper; }
@@ -150,8 +134,8 @@ class FraunhoferSimulation {
 const resolution = 100;
 const R = 1.0;
 const aperture = new Aperture(200, resolution);
-const electricField = new ElectricFieldIntensityGrid(resolution);
-const fraunhoferSimulation = new FraunhoferSimulation(aperture, electricField);
+const intensityField = new DiscreteScalarField({nx: resolution, ny: resolution});
+const fraunhoferSimulation = new FraunhoferSimulation(aperture, intensityField);
 
 //
 // View for 2D canvas
@@ -159,14 +143,12 @@ const fraunhoferSimulation = new FraunhoferSimulation(aperture, electricField);
 const canvas2d = Canvas.withElementId("fraunhoferCanvas");
 const renderer2d = Canvas2DRenderer.on(HtmlDiv.withElementId("fraunhoferCanvasWrapper").contains(canvas2d));
 
-const intensityPixelRaster = new ScalarRaster({
+const intensityPixelRaster = new ScalarFieldRaster({
     width: resolution,
     height: resolution,
-    normalize: (intensity) => intensity / electricField.maxIntensity,
-    colorMapper: fraunhoferSimulation.colorMapper,
-    scaleToCanvas: true
+    colorMapper: fraunhoferSimulation.colorMapper
 });
-renderer2d.synchronize(electricField.alwaysWith(intensityPixelRaster));
+renderer2d.synchronize(intensityField.alwaysWith(intensityPixelRaster));
 
 const simulation = Simulation.with(renderer2d).onClockTick();
 
