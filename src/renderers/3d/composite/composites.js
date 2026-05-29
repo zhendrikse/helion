@@ -281,7 +281,7 @@ export class OneDimensionalComplexPlaneWave3D extends Group {
         const arrow = new Arrow({
             round: this._round,
             size: this._size,
-            colorMap: (axis) => new Color().setHSL(1.0 - new Complex(axis.z, axis.y).phase() / (2 * Math.PI), 1.0, 0.5)
+            colorMap: (axis) => new Color().setHSL(1.0 - new Complex(axis.z, axis.y).phase / (2 * Math.PI), 1.0, 0.5)
         });
 
         arrow.attachTo(new ComplexScalarFieldValue({ position: new Vector3(x, position.y, position.z) }));

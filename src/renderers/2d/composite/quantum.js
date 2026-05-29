@@ -40,7 +40,7 @@ export class OneDimensionalComplexPlaneWave2D {
 
     _plotDensityPhase(context){
         for (let x = 0; x < this._width; x++) {
-            const phase = this._complexPlaneWave.valueAt(x * 0.02).phase();
+            const phase = this._complexPlaneWave.valueAt(x * 0.02).phase;
             const normalizedPhase = (phase % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI); // altijd 0..2π
             const colorIndex = Math.floor(normalizedPhase / (2 * Math.PI) * this._nColors);
             context.strokeStyle = this._phaseColors[colorIndex];
