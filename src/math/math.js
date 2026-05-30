@@ -352,8 +352,7 @@ export class DiscreteComplexField extends ScalarField {
     }
 
     transformWith(transformation) {
-        this.real = transformation(this.real);
-        this.imag = transformation(this.imag);
+        transformation(this);
         return this;
     }
 }

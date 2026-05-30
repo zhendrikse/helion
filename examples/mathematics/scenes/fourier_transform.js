@@ -3,54 +3,59 @@ import {
     Simulation, HtmlDiv, Canvas, Canvas2DRenderer
 } from "helion";
 
-class ShapeField extends DiscreteComplexField{
+class FourierSimulation {
     static Type = Object.freeze({
         CIRCULAR: "circular",
         SQUARE: "square"
     });
 
     constructor(diameter, N) {
-        super({nx: N, ny: N});
-        this._type = ShapeField.Type.CIRCULAR;
+        this._type = FourierSimulation.Type.CIRCULAR;
         this._N = N;
         this._diameter = diameter;
         this._fft = new FFT(N);
-        this._buildShape();
+        this._field = new DiscreteComplexField({nx: N, ny: N});
+        this.doFft();
     }
+
+    get field() { return this._field; }
 
     set diameter(diameter) {
         this._diameter = diameter;
-        this._buildShape();
-        fftField = this.doFft();
+        this.doFft();
     }
 
     set type(type) {
         this._type = type;
-        this._buildShape();
-        fftField = this.doFft();
+        this.doFft();
     }
 
     doFft() {
-        this._fft.fft2D(this);
-        return this.transformWith(this._fftShift2D); // Shift back to center
+        this._buildShape();
+        this._fft.fft2D(this._field);
+        this._field.transformWith(this._fftShift2D); // Shift back to center
     }
 
-
-    _fftShift2D(arr) {
-        const N = arr.length;
+    _fftShift2D(field) {
+        const N = field.real.length;
         const half = N >> 1;
+        const real =  Array.from({ length: N },() => new Float32Array(N));
+        const imag = Array.from({ length: N },() => new Float32Array(N));
 
-        const out = Array.from({ length: N }, () => new Array(N));
         for (let i = 0; i < N; i++)
-            for (let j = 0; j < N; j++)
-                out[i][j] = arr[(i + half) % N][(j + half) % N];
+            for (let j = 0; j < N; j++) {
+                real[i][j] = field.real[(i + half) % N][(j + half) % N];
+                imag[i][j] = field.imag[(i + half) % N][(j + half) % N];
+            }
 
-        return out;
+        field.real = real;
+        field.imag = imag;
     }
 
     _buildShape() {
         const N = this._N;
         const real =  Array.from({ length: N },() => new Float32Array(N));
+        const imag = Array.from({ length: N },() => new Float32Array(N));
         const cx = N / 2;
         const cy = N / 2;
         const radius = this._diameter / 2;
@@ -58,20 +63,19 @@ class ShapeField extends DiscreteComplexField{
             for (let j = 0; j < N; j++) {
                 const x = i - cx;
                 const y = j - cy;
-                const inside = this._type === ShapeField.Type.CIRCULAR ?
+                const inside = this._type === FourierSimulation.Type.CIRCULAR ?
                     (x * x + y * y <= radius * radius)
                     : (Math.abs(x) <= radius && Math.abs(y) <= radius);
 
                 real[i][j] = inside ? 1 : 0;
             }
-        this.real = real;
-        this.imag = Array.from({ length: N },() => new Float32Array(N));
+        this._field.real = real;
+        this._field.imag = imag;
     }
 }
 
 const resolution = 512;
-const field = new ShapeField(30, resolution);
-let fftField = field.doFft();
+const fourierSimulation = new FourierSimulation(30, resolution);
 
 //
 // View for 2D canvas
@@ -84,7 +88,7 @@ const intensityRaster = new ComplexScalarFieldRaster({
     height: resolution
 });
 
-renderer2d.synchronize(fftField.alwaysWith(intensityRaster));
+renderer2d.synchronize(fourierSimulation.field.alwaysWith(intensityRaster));
 const simulation = Simulation.with(renderer2d).onClockTick();
 simulation.start()
 
@@ -96,14 +100,14 @@ eventController.attach(HtmlControl
     .withElementId("diameterSlider")
     .forType("change")
     .withValueSpanId("diameterValue")
-    .to(field).withProperty("diameter"));
+    .to(fourierSimulation).withProperty("diameter"));
 
 eventController.attach(HtmlControl
     .withElementId("circleButton")
     .forType("click")
-    .to(field).withProperty("type"));
+    .to(fourierSimulation).withProperty("type"));
 
 eventController.attach(HtmlControl
     .withElementId("squareButton")
     .forType("click")
-    .to(field).withProperty("type"));
+    .to(fourierSimulation).withProperty("type"));
