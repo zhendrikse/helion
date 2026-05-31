@@ -56,7 +56,7 @@ const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("parametricSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("parametricSurfacesCanvas")))
     .with(new ThreeJsRenderOptions({
-        cameraPosition: new Vec3(20, 10, 20),
+        cameraPosition: new Vec3(25, 12.5, 25),
         fieldOfView: 20
     }));
 
