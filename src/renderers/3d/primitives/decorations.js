@@ -139,13 +139,13 @@ export class Ceiling extends Mesh {
 
 export class Aquarium extends Mesh {
     constructor({
-                    position = new Vector3(0, 0, 0),
-                    size = new Vector3(1, 1, 1),
-                    opacity = 0.35,
-                    contentColor = new Color(.1, .3, .78),
-                    frameColor = 0xaa9900,
-                    frameWidth = 1
-                } = {}) {
+        position = new Vector3(0, 0, 0),
+        size = new Vector3(1, 1, 1),
+        opacity = 0.35,
+        contentColor = new Color(.1, .3, .78),
+        frameColor = 0xaa9900,
+        frameWidth = 1
+    } = {}) {
         const geometry = new BoxGeometry(size.x, size.y, size.z);
         const material = new MeshStandardMaterial({
             color: contentColor,
@@ -491,6 +491,7 @@ export class AxesController {
             this._axes.frameTo(boundingBox, bottomAlign);
         this._axes.onWindowResize();
         this._parentGroup.add(this._axes);
+        return this._axes;
     }
 
     updateSettings() {

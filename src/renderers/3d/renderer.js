@@ -234,6 +234,7 @@ export class ThreeJsRenderer extends Renderer {
             this._staticObjects.push(bodyAndView.view);
 
         bodyAndView.view.attachTo(bodyAndView.body);
+        bodyAndView.view.initialize?.();
     }
 
     remove(anObject) {
@@ -258,10 +259,7 @@ export class ThreeJsRenderer extends Renderer {
             axesParameters: {layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ}
         });
 
-        anObject.updateMatrixWorld();
-        const boundingBox = new Box3();
-        boundingBox.setFromObject( this._world );
-        this._axesController.createFromBoundingBox(boundingBox);
+        this._axesController.createFromBoundingBox(anObject.boundingBox);
     }
 
     set autoRotate(autoRotate) { this._autoRotate = autoRotate; }

@@ -7,14 +7,30 @@
 <body>
     <!--
        - P A R A M E T R I C   S U R F A C E
-    <div class="canvasWrapper" id="waveCanvasWrapper">
-        <canvas class="applicationCanvas" id="waveCanvas"></canvas><br/>
-    </div>
-    <script type="module" src="scenes/parametric_surface.js"></script>
        -->
+    <div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
+        <canvas class="applicationCanvas" id="parametricSurfacesCanvas"></canvas><br/>
+    </div>
+    <div class="buttonRow">
+        <label for="colorMapSelect">Color map:</label>
+        <select name="colorMaps" id="colorMapSelect">
+            <option value="seismic">Seismic</option>
+            <option value="viridis">Viridis</option>
+            <option value="jet">Jet</option>
+            <option value="inferno">Inferno</option>
+            <option value="RdYlBu">RdYlBu</option>
+            <option value="water">Water</option>
+            <option value="water alternative">Water alternative</option>
+            <option value="gradient">Gradient</option>
+        </select>
+        <label for="showContours">Contours</label>
+        <input type="checkbox" name="showContours" id="showContours" checked="checked" />
+        <label for="showWireframe">Wireframe</label>
+        <input type="checkbox" name="showWireframe" id="showWireframe" />
+    </div>
+    <script type="module" src="scenes/parametric_surfaces.js"></script>
     <!--
        - F O U R I E R   T R A N S F O R M
-       -->
     <div class="canvasWrapper" id="waveCanvasWrapper">
         <canvas class="applicationCanvas" id="waveCanvas"></canvas><br/>
     </div>
@@ -37,6 +53,7 @@
         <input id="phaseColor" type="checkbox" checked/>
     </div>
     <script type="module" src="scenes/fourier_transform.js"></script>
+       -->
 </body>
 </html>
 

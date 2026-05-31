@@ -10,7 +10,7 @@
 import {
     Group, Vector3, LineBasicMaterial, Line, BufferGeometry, DoubleSide, PlaneGeometry, Color,
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
-    DynamicDrawUsage, BufferAttribute
+    DynamicDrawUsage, BufferAttribute, Box3
 } from "three";
 import {SurfaceColorMapper} from "../../colormappers.js";
 
@@ -36,6 +36,17 @@ export class SurfaceView extends Group {
 
         this._surface = mathSurfaceDefinition;
     }
+
+    get boundingBox() {
+        this.updateMatrixWorld(true);
+        return new Box3().setFromObject(this);
+    }
+
+    initialize() {
+        this.render();
+    }
+
+    render() {}
 }
 
 export class IsoparametricContoursView extends SurfaceView {
