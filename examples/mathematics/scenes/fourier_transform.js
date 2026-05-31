@@ -115,4 +115,4 @@ eventController.attach(HtmlControl
 eventController.attach(HtmlControl
     .withElementId("phaseColor")
     .forType("click")
-    .to(intensityRaster).withProperty("showPhaseColor"));
+    .to(intensityRaster).withProperty("phaseColor"));

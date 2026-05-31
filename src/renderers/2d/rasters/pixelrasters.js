@@ -108,14 +108,14 @@ export class ComplexScalarFieldRaster {
         }
     } = {}) {
         this._scaleToCanvas = scaleToCanvas;
-        this._showPhaseColour = showPhaseColour;
+        this._phaseColor = showPhaseColour;
         this._colorMapper = colorMapper;
         this._width = width;
         this._height = height;
         this._discreteComplexField = null;
     }
 
-    set showPhaseColor(showPhaseColour) { this._showPhaseColour = showPhaseColour; }
+    set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
     attachTo(discreteComplexField) {
         // Sanity checks
@@ -134,7 +134,7 @@ export class ComplexScalarFieldRaster {
             for (let j = 0; j < this._height; j++) {
                 const mag = this._discreteComplexField.magnitudeAt(i, j) / max;
                 const phase = this._discreteComplexField.phaseAt(i, j);
-                const color = this._showPhaseColour ? this._colorMapper(mag, phase) : [255, 255, 0,Math.log(1 + 10 * mag) * 255];
+                const color = this._phaseColor ? this._colorMapper(mag, phase) : [255, 255, 0,Math.log(1 + 10 * mag) * 255];
                 const index = j * (this._width * 4) + i * 4;
                 for (let k = 0; k < 4; k++)
                     imageData.data[index + k] = color[k];
