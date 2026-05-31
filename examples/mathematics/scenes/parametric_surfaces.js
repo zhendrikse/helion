@@ -1,5 +1,5 @@
 import {
-    ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
+    ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl, HeightFieldSurface,
     ScalarField, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3, SurfaceColorMapper
 } from "helion";
 
@@ -42,6 +42,9 @@ class SurfaceScalarField extends ScalarField {
 // Math objects
 //
 const scalarField = new SurfaceScalarField();
+const heightFieldSurface = new HeightFieldSurface({
+    field: scalarField
+});
 
 //
 // Renderer
@@ -72,8 +75,8 @@ const contoursView = new IsoparametricContoursView({
     normalizer: normalizer
 });
 
-renderer.synchronize(scalarField.alwaysWith(surfaceView));
-renderer.synchronize(scalarField.alwaysWith(contoursView));
+renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));
+renderer.synchronize(heightFieldSurface.alwaysWith(contoursView));
 
 renderer.provideAxesFor(surfaceView);
 

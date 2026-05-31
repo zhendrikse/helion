@@ -1,6 +1,7 @@
 import {ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation,
     ScalarField, PlaneSurfaceView, IsoparametricContoursView,
     HtmlControl, EventController, SurfaceColorMapper, Vec3 } from "helion";
+import {HeightFieldSurface} from "../../../src/index.js";
 
 const gridSize = 15;
 
@@ -36,6 +37,11 @@ class MembraneScalarField extends ScalarField {
 // Math objects
 //
 const scalarField = new MembraneScalarField();
+const heightFieldSurface = new HeightFieldSurface({
+    field: scalarField,
+    width: gridSize,
+    depth: gridSize,
+})
 
 //
 // Surface view
@@ -50,21 +56,17 @@ const renderer = ThreeJsRenderer
 const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.RDYLBU_COLOR_MAP);
 const normalizer = (position) => (position.y + scalarField.amplitude) / (2 * scalarField.amplitude);
 const surfaceView = new PlaneSurfaceView({
-    width: gridSize,
-    depth: gridSize,
     colorMapper: colorMapper,
     normalizer: normalizer
 });
 const contoursView = new IsoparametricContoursView({
-    width: gridSize,
-    depth: gridSize,
     uSegments: 20,
     vSegments: 20,
     colorMapper: colorMapper,
     normalizer: normalizer
 });
-renderer.synchronize(scalarField.alwaysWith(surfaceView));
-renderer.synchronize(scalarField.alwaysWith(contoursView));
+renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));
+renderer.synchronize(heightFieldSurface.alwaysWith(contoursView));
 
 //
 // Simulation

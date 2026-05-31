@@ -7,7 +7,7 @@ export {
 export {
     VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface, DiscreteScalarField, FFT,
     PDESurface, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid,
-    factorial, linspace, FieldStatistics, DiscreteComplexField
+    factorial, linspace, FieldStatistics, DiscreteComplexField, HeightFieldSurface
 } from "./math/math.js";
 
 export { Integrators } from "./numerics/integrators/integrators.js";

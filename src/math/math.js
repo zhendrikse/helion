@@ -362,9 +362,9 @@ export class DiscreteComplexField extends ScalarField {
 // equal to the abs value.
 export class ComplexScalarFieldValue {
     constructor({
-                    position = new Vec3(),
-                    value = new Complex(0, 0)
-                } = {})  {
+        position = new Vec3(),
+        value = new Complex(0, 0)
+    } = {})  {
         this.position = position.clone();
         this.value = value;
     }
@@ -474,11 +474,6 @@ export class Complex {
     // }
 }
 
-
-//
-// TODO WHAT FOLLOWS BELOW IS NOT OK ==> NEED TO BECOME FIELDS!!
-//
-
 export class Surface {
     sample(u, v, target) {
         throw new Error("Abstract class: sample() must be implemented!");
@@ -487,6 +482,34 @@ export class Surface {
     alwaysWith(view) { return { body: this, view: view, always: true }; };
     onceWith(view) { return { body: this, view: view, always: false}; };
 }
+
+export class HeightFieldSurface extends Surface {
+    constructor({
+        field,
+        width = 10,
+        depth = 10
+    } = {}) {
+        super();
+        this._field = field;
+        this._width = width;
+        this._depth = depth;
+    }
+
+    get width() { return this._width; }
+    get depth() { return this._depth; }
+
+    sample(u, v, target) {
+        const x = (u - 0.5) * this._width;
+        const z = (v - 0.5) * this._depth;
+        target.set(x, this._field.scalarValueAt(x, z), z);
+    }
+}
+
+
+
+//
+// TODO WHAT FOLLOWS BELOW IS NOT OK ==> NEED TO BECOME FIELDS!!
+//
 
 /**
  * Field for a surface based on a lattice
