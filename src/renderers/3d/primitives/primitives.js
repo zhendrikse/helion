@@ -176,7 +176,7 @@ export class Sphere extends Mesh {
 // Arrow
 //
 export class Arrow extends Group {
-    static HEAD_RATIO = 0.25;   // part of total length
+    static HEAD_RATIO = 0.35;   // part of total length
     static SHAFT_RATIO = 1 - Arrow.HEAD_RATIO;
     static UP = new Vector3(0, 1, 0);
     static FORWARD = new Vector3(0, 0, 1);
@@ -274,14 +274,14 @@ export class Arrow extends Group {
 
         this.quaternion.setFromUnitVectors(Arrow.UP, this._tempAxisVector.normalize());
 
-        const shaftLength = length * Arrow.SHAFT_RATIO;
+        const shaftLength = length * Arrow.SHAFT_RATIO * .5;
         const headLength = Math.min(length * Arrow.HEAD_RATIO, this._size)
-        const shaftRadius = 0.025;
+        const shaftRadius = 0.15;
 
         this._shaft.scale.set(shaftRadius, shaftLength, shaftRadius);
         this._shaft.position.y = shaftLength * 0.5;
 
-        this._head.scale.set(shaftRadius * 2, headLength, shaftRadius * 1.75);
+        this._head.scale.set(shaftRadius * 2, headLength, shaftRadius * 2);
         this._head.position.y = shaftLength + headLength * 0.5;
 
     }

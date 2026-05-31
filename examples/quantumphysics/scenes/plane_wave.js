@@ -9,7 +9,7 @@ import {
 //
 const planeWave = new OneDimensionalComplexPlaneWave({
     position: new Vec3(-25, 0, 0),
-    amplitude: 5,
+    amplitude: 10,
     omega: -3 * Math.PI,
     lambda: 2 * Math.PI
 });
