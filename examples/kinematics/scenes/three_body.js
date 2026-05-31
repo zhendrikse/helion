@@ -52,7 +52,7 @@ const overlay = new Overlay("overlayText");
 const canvasWrapper = HtmlDiv.withElementId("threeBodyWrapper").containsBoth(canvas.and(overlay));
 const threeJsRendererOptions = new ThreeJsRenderOptions({
     cameraPosition: new Vec3(30, 30, 30),
-    scale: 1e9
+    scale: 1e-9
 });
 
 const renderer = ThreeJsRenderer
