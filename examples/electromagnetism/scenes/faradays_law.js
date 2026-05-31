@@ -127,7 +127,6 @@ const dt = 0.05;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onScale(1)
     .onClockTick((clockTime, simulatedTime) => {
         const fieldLength = (simulatedTime % 20) / 10 + 0.001;
 

@@ -72,7 +72,6 @@ const outOfBox= (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize 
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onScale(1)
     .onClockTick((clockTime, simulatedTime) => timeStep(), 25);
 
 function timeStep() {

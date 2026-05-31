@@ -1,10 +1,13 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <link rel="stylesheet" href="../../docs/src/assets/styles.css" />
+    <title>Testing kinematics</title>
 </head>
 <body>
     <!--
        - B O U N C I N G   B A L L   O N   S P R I N G
+    -->
     <div class="canvasWrapper" id="bouncingBallOnSpringWrapper">
         <canvas class="applicationCanvas" id="bouncingBallOnSpringCanvas" width="600" height="600"></canvas>
         <div class="overlayText" id="bouncingBallOnSpringOverlay">Click to start the animation!</div>
@@ -18,7 +21,6 @@
         <input type="range" id="dampingSlider" min="0" max="1" step="0.1" value=".2"/>
     </div>
     <script type="module" src="scenes/bouncing_ball_on_spring.js"></script>
-    -->
     <!--
        - B O U N C I N G   B A L L   O N   F L O O R
     <link rel="stylesheet" href="https://unpkg.com/uplot/dist/uPlot.min.css">
@@ -39,13 +41,13 @@
        -->
     <!--
        - F L O A T I N G   B L O C K
-       -->
     <div class="canvasWrapper" id="floatingBlockContainer">
         <canvas id="floatingBlockCanvas" class="applicationCanvas"></canvas>
         <div class="overlayText" id="floatingBlockOverlayText">Click to start the animation!</div>
     </div>
     <div id="forceChart" style="margin:auto;"></div>
     <script type="module" src="scenes/floating_block.js"></script>
+       -->
 </body>
 </html>
 

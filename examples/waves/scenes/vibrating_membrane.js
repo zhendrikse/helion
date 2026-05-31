@@ -100,7 +100,6 @@ const dt = 0.016;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onScale(1)
     .onClockTick((clockTime, simulatedTime) => scalarField.updateWith(simulatedTime), 3)
     .start();
 

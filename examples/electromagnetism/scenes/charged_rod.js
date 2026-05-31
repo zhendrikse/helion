@@ -167,7 +167,6 @@ const allGone = () => rod.charges.every(c => c.position.y > 1);
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onScale(1)
     .onClockTick(() => {
         if (!allGone())
             rod.update(dt);

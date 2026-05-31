@@ -106,7 +106,8 @@ function timeStep(dt) {
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
     cameraPosition: new Vec3(15, 5, 20),
-    fieldOfView: 22
+    fieldOfView: 22,
+    scale: 5e10
 });
 const canvas= Canvas.withElementId("chargedRingCanvas");
 const renderer = ThreeJsRenderer
@@ -132,8 +133,8 @@ renderer.synchronize(electricField.onceWith(new ArrowField({
     xRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     yRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     zRange: new Range(-radius * 1.5, radius * 1.5, radius / 6),
-    scaleFactor: 2.5e-7,
-    magnitudeMap: magnitude => Math.sqrt(1 + magnitude),
+    scaleFactor: 2.5e-16,
+    magnitudeMap: magnitude => Math.sqrt(1 + 1e-3 * magnitude),
     colorMap: (axis, magnitude) => {
         const radial = axis.clone().normalize();
         const t = Math.min(Math.sqrt(1 + magnitude) * 1.25e-6, 1);
@@ -151,7 +152,6 @@ const subSteps = 20;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onScale(5e10)
     .onClockTick((clockTime, simulatedTime) => timeStep(dt), subSteps);
 
 const eventController = EventController.for(simulation);

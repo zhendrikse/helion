@@ -59,7 +59,8 @@ const overlay = Overlay.withElementId("movingChargeOverlayText");
 const threeJsRendererOptions = new ThreeJsRenderOptions({
     light: false, // setting our own lights
     cameraPosition: new Vec3(-50, 0, 75).multiplyScalar(0.5),
-    fieldOfView: 60
+    fieldOfView: 60,
+    scale: scale
 });
 const renderer = ThreeJsRenderer.on(
     HtmlDiv.withElementId("movingChargeWrapper").containsBoth(canvas.and(overlay)))
@@ -85,9 +86,9 @@ const arrowField = new ArrowField({
     xRange: new Range(-18 / scale, 18 / scale, 8 / scale),
     yRange: new Range(-9 / scale, 9 / scale, 4 / scale),
     zRange: new Range(-18 / scale, 18 / scale, 8 / scale),
-    scaleFactor: 8e-10,
+    scaleFactor: 1e-15,
     round: false,
-    magnitudeMap: magnitude => Math.sqrt(magnitude),
+    magnitudeMap: magnitude => Math.log(1 + magnitude),
     colorMap: (axis, magnitude) => new Color(1, Math.sqrt(magnitude) * 1e-10, 0)
 });
 renderer.synchronize(capacitorField.onceWith(arrowField));
@@ -97,7 +98,6 @@ const subSteps = 3;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onScale(scale)
     .onClockTick(() => {
         if (movingCharge.position.x > 60 / scale)
             return;

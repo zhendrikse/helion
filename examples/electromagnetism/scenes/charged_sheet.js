@@ -83,7 +83,8 @@ const renderer = ThreeJsRenderer.on(
         .containsBoth(Canvas.withElementId("chargedSheetCanvas").and(Overlay.withElementId("chargedSheetOverlay"))))
     .with(new ThreeJsRenderOptions({
         cameraPosition: new Vec3(12, 8, 16),
-        fieldOfView: 20
+        fieldOfView: 20,
+        scale: 5e10
     }));
 
 //
@@ -112,8 +113,8 @@ renderer.synchronize(electricField.onceWith(new ArrowField({
     xRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
     yRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
     zRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
-    scaleFactor: 4e-5,
-    magnitudeMap: magnitude => Math.sqrt(1 + magnitude * 1e-5),
+    scaleFactor: 1e-16,
+    magnitudeMap: magnitude => Math.sqrt(1 + magnitude * 1e-3),
     colorMap: (axis) =>
         axis.z > 0
             ? new Color(0xff4444)
@@ -128,7 +129,6 @@ const dt = 5e-20;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onScale(5e10)
     .onClockTick(() => {
         const field = electricField.vectorAt(electron.position);
         const force = field.clone().multiplyScalar(electron.charge);

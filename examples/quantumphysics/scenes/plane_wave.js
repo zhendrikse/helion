@@ -42,7 +42,6 @@ renderer3d.synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D
 const simulation = Simulation
     .with(new CompositeRenderer([renderer2d, renderer3d]))
     .incrementsTimeBy(0.01)
-    .onScale(1)
     .onClockTick((clockTime, simulatedTime) => planeWave.propagate(simulatedTime));
 
 //

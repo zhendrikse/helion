@@ -51,7 +51,8 @@ const canvas = new Canvas("threeBodyCanvas");
 const overlay = new Overlay("overlayText");
 const canvasWrapper = HtmlDiv.withElementId("threeBodyWrapper").containsBoth(canvas.and(overlay));
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(30, 30, 30)
+    cameraPosition: new Vec3(30, 30, 30),
+    scale: 1e9
 });
 
 const renderer = ThreeJsRenderer
@@ -70,7 +71,6 @@ const subSteps = 50;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt / subSteps)
-    .onScale(1e-9)
     .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps);
 
 //

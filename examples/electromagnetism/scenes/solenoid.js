@@ -121,7 +121,6 @@ eventController.attach(HtmlControl
 
 const simulation = Simulation
     .with(renderer)
-    .onScale(1)
     .onClockTick();
 
 export function createSolenoidScene() {

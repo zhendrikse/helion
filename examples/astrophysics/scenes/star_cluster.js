@@ -67,6 +67,5 @@ renderer.synchronize(starCluster.onceWith(cloud));
 
 Simulation
     .with(renderer)
-    .onScale(1)
     .onClockTick((clockTime, simulatedTime) => {cloud.rotation.y += 2.5e-3})
     .start();

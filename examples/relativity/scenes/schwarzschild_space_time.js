@@ -291,7 +291,6 @@ renderer.synchronize(comet.alwaysWith(new Trail( { color: 0x00ffff })));
 
 const simulation = Simulation
     .with(renderer)
-    .onScale(1)
     .onClockTick((clockTime, simulatedTime) => timeStep(clockTime));
 
 simulation.onBeforeClockTick((clockTime, simulatedTime) =>

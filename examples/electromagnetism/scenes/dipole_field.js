@@ -32,7 +32,7 @@ class DipoleField extends VectorField {
         super();
 
         this._dipole = dipole;
-        this._fieldStrength = 0.25;
+        this._fieldStrength = 0.5;
     }
 
     vectorAt(position) {
@@ -41,7 +41,9 @@ class DipoleField extends VectorField {
             .multiplyScalar(this._fieldStrength);
     }
 
-    set fieldStrength(value) { this._fieldStrength = value; }
+    set fieldStrength(value) {
+        this._fieldStrength = Math.pow(10, value * 2 - 2);
+    }
 }
 
 //
@@ -55,6 +57,7 @@ const dipoleField = new DipoleField(dipole);
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
     cameraPosition: new Vec3(32, 16, 48),
+    scale: scale,
     fieldOfView: 40
 });
 
@@ -68,9 +71,9 @@ const arrowField = new ArrowField({
     xRange: new Range(-20 / scale, 20 / scale, 2 / scale),
     yRange: new Range(-12 / scale, 12 / scale, 2 / scale),
     zRange: new Range(-12 / scale, 12 / scale, 2 / scale),
-    scaleFactor: 3e-5,
     round: true,
-    magnitudeMap: magnitude => Math.sqrt(1 + magnitude),
+    magnitudeMap: m => Math.sqrt(1e-7 * m),
+    scaleFactor: 1e-16,
     colorMap: (axis, magnitude) => new Color().setHSL(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.5)
 });
 
@@ -97,6 +100,5 @@ eventController.attach(HtmlControl
 
 Simulation
     .with(renderer)
-    .onScale(scale)
     .onClockTick();
 

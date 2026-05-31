@@ -13,6 +13,7 @@ export class ThreeJsRenderOptions {
     constructor({
         background = ThreeJsRenderer.Background.TRANSPARENT,
         backgroundColor = 0x0088ff,
+        scale = 1,
         controls = true,
         light = true,
         cameraPosition = new Vec3(3, 3, 3),
@@ -23,6 +24,7 @@ export class ThreeJsRenderOptions {
         this.backgroundColor = backgroundColor;
         this.controls = controls;
         this.light = light;
+        this.scale = scale;
         this.cameraPosition = cameraPosition;
         this.shadowsEnabled = shadowsEnabled;
         this.fieldOfView = fieldOfView;
@@ -90,6 +92,8 @@ export class ThreeJsRenderer extends Renderer {
             this._renderer.shadowMap.enabled = true;
             this._renderer.shadowMap.type = PCFShadowMap;
         }
+
+        this._world.scale.setScalar(options.scale);
 
         this._camera = new PerspectiveCamera(options.fieldOfView, canvas.clientWidth / canvas.clientHeight, 0.1, 1e6);
         this._camera.position.set(options.cameraPosition.x, options.cameraPosition.y, options.cameraPosition.z);

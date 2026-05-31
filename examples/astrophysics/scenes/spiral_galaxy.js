@@ -140,6 +140,5 @@ renderer.synchronize(spiralGalaxy.onceWith(pointCloud));
 
 Simulation
     .with(renderer)
-    .onScale(1)
     .onClockTick((clockTime, simulatedTime) => {pointCloud.rotation.z += 2.5e-3})
     .start();

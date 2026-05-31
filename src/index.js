@@ -18,11 +18,15 @@ export {
 
 export {
     ThreeJsRenderOptions, ThreeJsRenderer
-} from "./renderers/3d/threesim.js";
+} from "./renderers/3d/renderer.js";
 
 export {
-    Cylinder, ArrowField, Sphere, Box, Arrow, Ring, Helix, Trail
+    Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail
 } from "./renderers/3d/primitives/primitives.js";
+
+export {
+    ArrowField
+} from "./renderers/3d/vectorfields/arrowfield.js";
 
 export {
     OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial
@@ -33,8 +37,6 @@ export {
 } from "./renderers/3d/primitives/decorations.js";
 
 export { CompositeRenderer } from "./renderers/renderer.js";
-
-export { ArrowField2 } from "./renderers/3d/vectorfields/arrowfield.js";
 
 export { SurfaceColorMapper, wavelengthColor, wavelengthToRGBNormalized } from "./renderers/colormappers.js";
 

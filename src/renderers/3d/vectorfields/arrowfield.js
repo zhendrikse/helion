@@ -10,29 +10,23 @@ const shaftGeometrySquare = new BoxGeometry(1, 1, 1);
 const headGeometryRound = new ConeGeometry(1, 1, 16);
 const headGeometrySquare = new ConeGeometry(1, 1, 4);
 
-export class ArrowField2 extends Group {
+export class ArrowField extends Group {
     constructor({
         xRange,
         yRange,
         zRange,
         scaleFactor = 1,
         round = false,
-
         magnitudeMap = m => Math.log(1 + m),
         colorMap = (dir, mag) => new Color().setHSL(Math.min(Math.log(1 + mag) / 5, 1), 0.7, 0.5),
-
         shaftWidth = 0.08,
         headWidth = 2.0,
         headLength = 4.0,
     } = {}) {
         super();
 
-        this._xRange = xRange;
-        this._yRange = yRange;
-        this._zRange = zRange;
-
         this._scaleFactor = scaleFactor;
-        this._magnitudeMap = magnitudeMap;
+        this._matrixMagnitudeMap = magnitudeMap;
         this._colorMap = colorMap;
 
         this._shaftWidth = shaftWidth;
@@ -49,7 +43,6 @@ export class ArrowField2 extends Group {
                     this._positions.push(new Vector3(x, y, z));
 
         const count = this._positions.length;
-
         const shaftGeometry = round ? shaftGeometryRound : shaftGeometrySquare;
         const headGeometry = round ? headGeometryRound : headGeometrySquare;
         const materialShaft = new MeshStandardMaterial();
@@ -64,11 +57,14 @@ export class ArrowField2 extends Group {
         this._shaftMesh.instanceColor = new InstancedBufferAttribute(colors, 3);
         this._headMesh.instanceColor = this._shaftMesh.instanceColor;
 
-        // temp objects
-        this._m = new Matrix4();
+        // reusable temp objects (CRUCIAL)
+        this._matrix = new Matrix4();
         this._q = new Quaternion();
-        this._axis = new Vector3();
         this._dir = new Vector3();
+        this._shape = new Vector3();
+
+        this._shaftOffset = new Vector3();
+        this._headOffset = new Vector3();
     }
 
     attachTo(vectorField) {
@@ -81,7 +77,7 @@ export class ArrowField2 extends Group {
     #computeSizes(length) {
         const shaftRadius = length * this._shaftWidth;
         const headLength = shaftRadius * this._headLength;
-        const shaftLength = Math.max(length - headLength, 1e-6);
+        const shaftLength = length - headLength;
 
         return { shaftRadius, shaftLength, headLength };
     }
@@ -93,7 +89,7 @@ export class ArrowField2 extends Group {
         this._shaftMesh.instanceColor.setXYZ(index, c.r, c.g, c.b);
     }
 
-    render(transform) {
+    render() {
         const count = this._positions.length;
 
         for (let i = 0; i < count; i++) {
@@ -101,41 +97,37 @@ export class ArrowField2 extends Group {
             const vec = this._vectorField.vectorAt(pos);
             const mag = vec.length();
 
-            if (mag < 1e-6) {
-                // collapse
-                this._m.makeScale(0, 0, 0);
-                this._shaftMesh.setMatrixAt(i, this._m);
-                this._headMesh.setMatrixAt(i, this._m);
+            if (mag < 1e-9) {
+                this._shaftMesh.setMatrixAt(i, new Matrix4().makeScale(0,0,0));
+                this._headMesh.setMatrixAt(i, new Matrix4().makeScale(0,0,0));
                 continue;
             }
 
-            // ---- direction
+            // Direction
             this._dir.copy(vec).normalize();
             this._q.setFromUnitVectors(UP, this._dir);
 
-            const visualMag = this._magnitudeMap(mag);
-            const length = visualMag * this._scaleFactor;
-            const { shaftRadius, shaftLength, headLength } = this.#computeSizes(length);
+            const visualMag = this._matrixMagnitudeMap(mag) * this._scaleFactor;
+            const { shaftRadius, shaftLength, headLength } = this.#computeSizes(visualMag);
 
-            // ---- SHAFT
-            this._m.compose(pos, this._q, new Vector3(shaftRadius, shaftLength, shaftRadius));
+            // Shaft
+            this._shaftOffset.set(0, shaftLength * 0.5, 0).applyQuaternion(this._q).add(pos);
+            this._shape.set(shaftRadius, shaftLength, shaftRadius);
+            this._matrix.compose(this._shaftOffset, this._q, this._shape);
+            this._shaftMesh.setMatrixAt(i, this._matrix);
 
-            // move shaft upward half
-            this._m.premultiply(new Matrix4().makeTranslation(0, shaftLength * 0.5, 0));
-            this._shaftMesh.setMatrixAt(i, this._m);
-
-            // ---- HEAD
-            this._m.compose(pos, this._q,
-                new Vector3(shaftRadius * this._headWidth, headLength, shaftRadius * this._headWidth));
-            this._m.premultiply(new Matrix4().makeTranslation(0, shaftLength + headLength * 0.5, 0))
-            this._headMesh.setMatrixAt(i, this._m);
-
-            // ---- COLOR
+            // Head
+            this._headOffset.set(0, shaftLength + headLength * 0.5, 0).applyQuaternion(this._q).add(pos);
+            this._shape.set(shaftRadius * this._headWidth, headLength, shaftRadius * this._headWidth);
+            this._matrix.compose(this._headOffset, this._q, this._shape);
+            this._headMesh.setMatrixAt(i, this._matrix);
+            
             this.#setColor(i, this._dir, mag);
         }
 
         this._shaftMesh.instanceMatrix.needsUpdate = true;
         this._headMesh.instanceMatrix.needsUpdate = true;
         this._shaftMesh.instanceColor.needsUpdate = true;
-    }
+        this._headMesh.instanceColor.needsUpdate = true;    }
+
 }

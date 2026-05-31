@@ -120,7 +120,8 @@ const magneticField = new CombinedField([
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
     cameraPosition: new Vec3(15, 5, 20),
-    fieldOfView: 45
+    fieldOfView: 45,
+    scale: 1e10
 });
 const canvas= Canvas.withElementId("electromagneticWaveCanvas");
 const renderer = ThreeJsRenderer
@@ -138,17 +139,18 @@ renderer.synchronize(electricField.alwaysWith(new ArrowField({
         xRange: new Range(-6e-10, 6e-10, 1.25e-10),
         yRange: new Range(-6e-10, 6e-10, 1.25e-10),
         zRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        scaleFactor: 1.5e-2,
-        magnitudeMap: magnitude => Math.sqrt(magnitude * 3e-7),
-        colorMap: (axis, magnitude) => new Color().setHSL(0.15, 1, Math.min(Math.sqrt(magnitude * 0.25e-6), 0.6)),
+        scaleFactor: 2.5e-12,
+        magnitudeMap: magnitude => Math.log(magnitude + 1),
+        //colorMap: (axis, magnitude) => new Color().setHSL(0.15, 1, Math.min(Math.log(magnitude + 1), 0.6)),
+        colorMap: (axis, magnitude) => new Color(0xbbbb55),
         round: true
 })));
 renderer.synchronize(magneticField.alwaysWith(new ArrowField({
         xRange: new Range(-6e-10, 6e-10, 1.25e-10),
         yRange: new Range(-6e-10, 6e-10, 1.25e-10),
         zRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        scaleFactor: .35,
-        magnitudeMap: magnitude => Math.sqrt(magnitude * .3),
+        scaleFactor: 2.5e-11,
+        magnitudeMap: magnitude => Math.log(magnitude  + 1),
         colorMap: () => new Color("cyan"),
         round: true
 })));
@@ -160,7 +162,6 @@ const dt = 2e-19;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onScale(1e10)
     .onClockTick((clockTime, simulatedTime) => {
         electron.updateAt(simulatedTime);
         proton.updateAt(simulatedTime);

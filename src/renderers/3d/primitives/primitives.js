@@ -79,18 +79,16 @@ export class Trail extends Group {
         this._renew();
     }
 
-    render(transform, increment = 1) {
-        const newPosition = new Vector3();
-        transform.physicsToRender(this._body.position, newPosition);
-        if (this._previousPosition.x === newPosition.x &&
-            this._previousPosition.y === newPosition.y &&
-            this._previousPosition.z === newPosition.z)
+    render(increment = 1) {
+        if (this._previousPosition.x === this._body.position.x &&
+            this._previousPosition.y === this._body.position.y &&
+            this._previousPosition.z === this._body.position.z)
             return; // When body's position remains unchanged, do NOT update the trail
 
         this._trailAccumulator += increment;
         if (this._trailAccumulator >= this._trailStep) {
-            this._trail.addPoint(newPosition);
-            this._previousPosition = newPosition;
+            this._trail.addPoint(this._body.position);
+            this._previousPosition.copy(this._body.position);
             this._trailAccumulator = 0;
         }
     }
@@ -162,10 +160,9 @@ export class Sphere extends Mesh {
         this._body.radius = this._initialState.radius;
     }
 
-    render(transform) {
-        transform.physicsToRender(this._body.position, this.position);
-        this.scale.setScalar(transform.scaleRadius(this._body.radius));
-        this._trail?.render(transform);
+    render() {
+        this.position.copy(this._body.position);
+        this.scale.setScalar(this._body.radius);
     }
 
     get radius() { return this._radius; }
@@ -179,7 +176,7 @@ export class Sphere extends Mesh {
 // Arrow
 //
 export class Arrow extends Group {
-    static HEAD_RATIO = 0.35;   // part of total length
+    static HEAD_RATIO = 0.25;   // part of total length
     static SHAFT_RATIO = 1 - Arrow.HEAD_RATIO;
     static UP = new Vector3(0, 1, 0);
     static FORWARD = new Vector3(0, 0, 1);
@@ -225,7 +222,6 @@ export class Arrow extends Group {
         this._size = size;
         this._colorMap = colorMap;
         this._magnitudeMap = magnitudeMap;
-        this._baseColor = color;
         this._tempAxisVector = new Vector3();
     }
 
@@ -261,8 +257,8 @@ export class Arrow extends Group {
         this.clear();
     }
 
-    render(transform) {
-        transform.physicsToRender(this._body.position, this.position);
+    render() {
+        this.position.copy(this._body.position);
 
         this._tempAxisVector.copy(this._body.axis);
         const magnitude = this._tempAxisVector.length();
@@ -279,80 +275,19 @@ export class Arrow extends Group {
         this.quaternion.setFromUnitVectors(Arrow.UP, this._tempAxisVector.normalize());
 
         const shaftLength = length * Arrow.SHAFT_RATIO;
-        const headLength = length * Arrow.HEAD_RATIO;
-        const shaftRadius = length * 0.075;
+        const headLength = Math.min(length * Arrow.HEAD_RATIO, this._size)
+        const shaftRadius = 0.025;
 
         this._shaft.scale.set(shaftRadius, shaftLength, shaftRadius);
         this._shaft.position.y = shaftLength * 0.5;
 
-        this._head.scale.set(shaftRadius * 2, headLength, shaftRadius * 2);
+        this._head.scale.set(shaftRadius * 2, headLength, shaftRadius * 1.75);
         this._head.position.y = shaftLength + headLength * 0.5;
+
     }
 
     set opacity(opacity) { this._shaft.material.opacity = opacity; }
     set color(color) { this._shaft.material.color = color; }
-}
-
-//
-// ArrowField
-//
-export class ArrowField extends Group{
-    constructor({
-        xRange,
-        yRange,
-        zRange,
-        scaleFactor = 1,
-        round = false,
-        magnitudeMap = magnitude => Math.log(1 + magnitude),
-        colorMap = (axis, magnitude) => new Color().setHSL(Math.min(Math.log(1 + magnitude)/5, 1), 0.7, 0.5)
-                } = {}) {
-        super();
-        this._xRange = xRange;
-        this._yRange = yRange;
-        this._zRange = zRange;
-        this._scaleFactor = scaleFactor;
-        this._magnitudeMap = magnitudeMap;
-        this._colorMap = colorMap;
-        this._round = round;
-        this._fieldArrows = [];
-    }
-
-    _createArrowAt(x, y, z) {
-        const arrow = new Arrow({
-            color: 0x00ffff,
-            size: this._scaleFactor,
-            round: this._round,
-            magnitudeMap: this._magnitudeMap,
-            colorMap: this._colorMap,
-        });
-        const position = new Vector3(x, y, z);
-        arrow.attachTo(new VectorFieldVector({ position }));
-        this._fieldArrows.push(arrow);
-        this.add(arrow);
-    }
-
-    // TODO implement reset()
-
-    attachTo(vectorField) {
-        // Sanity checks
-        if (!vectorField.vectorAt)
-            throw new Error("Body does not implement vectorAt(), hence it cannot be attached to this view.");
-
-        this._vectorField = vectorField;
-        for (let x of this._xRange)
-            for (let y of this._yRange)
-                for (let z of this._zRange)
-                    this._createArrowAt(x, y, z);
-    }
-
-    render(transform) {
-        for (let fieldArrow of this._fieldArrows) {
-            // Field vectors haven't been added to the renderer by the application, so we need to sync state here:
-            const fieldVector = fieldArrow.body;
-            fieldVector.axis.copy(this._vectorField.vectorAt(fieldVector.position));
-            fieldArrow.render(transform);
-        }
-    }
 }
 
 //
@@ -376,6 +311,7 @@ export class Cylinder extends Mesh {
 
         this._body = null;
         this._initialState = null;
+        this._direction = new Vector3();
     }
 
     reset() {
@@ -395,19 +331,13 @@ export class Cylinder extends Mesh {
         this._initialState = body.clone();
     }
 
-    render(transform) {
-        transform.physicsToRender(this._body.position, this.position);
+    render() {
+        this.position.copy(this._body.position);
+        this._direction.copy(this._body.axis);
 
-        const axis = new Vector3();
-        transform.physicsToRender(this._body.axis, axis);
-        const radius = transform.scaleRadius(this._body.radius);
-        const length = axis.length();
-        this.scale.set(radius, length, radius);
-
-        const direction = axis.normalize();
-        this.quaternion.setFromUnitVectors(Arrow.UP, direction);
-
-        this.position.add(direction.multiplyScalar(length / 2));
+        this.scale.set(this._body.radius, this._direction.length(), this._body.radius);
+        this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
+        this.position.add(this._direction.multiplyScalar(length / 2));
     }
 }
 
@@ -448,9 +378,9 @@ export class Box extends Mesh {
         this._initialState = body.clone();
     }
 
-    render(transform) {
-        transform.physicsToRender(this._body.position, this.position);
-        transform.physicsToRender(this._body.size, this.scale);
+    render() {
+        this.position.copy(this._body.position);
+        this.scale.setScalar(this._body.size);
     }
 }
 
@@ -486,17 +416,17 @@ export class Ring extends Mesh {
 
         this._body = body;
         this._initialState = body.clone();
+        this._direction = new Vector3();
     }
 
-    render(transform) {
-        transform.physicsToRender(this._body.position, this.position);
+    render() {
+        this.position.copy(this._body.position);
 
-        const axis = new Vector3();
-        transform.physicsToRender(this._body.axis, axis);
-        this.scale.setScalar(transform.scaleRadius(this._body.radius));
+        this.scale.setScalar(this._body.radius);
 
-        const direction = axis.normalize();
-        this.quaternion.setFromUnitVectors(Arrow.FORWARD, direction);
+        this._direction.copy(this._body.axis);
+        this._direction.normalize();
+        this.quaternion.setFromUnitVectors(Arrow.FORWARD, this._direction);
     }
 }
 
@@ -569,6 +499,7 @@ export class Helix extends Mesh {
 
         this._body = null;
         this._initialState = null;
+        this._axis = new Vector3();
     }
 
     reset() {
@@ -611,14 +542,12 @@ export class Helix extends Mesh {
         this.#regenerateTube();
     }
 
-    render(transform) {
-        transform.physicsToRender(this._body.position, this.position);
+    render() {
+        this.position.copy(this._body.position);
+        this._curve.radius = this._body.radius;
 
-        this._curve.radius = transform.scaleRadius(this._body.radius);
-
-        const axis = new Vector3();
-        transform.physicsToRender(this._body.axis.clone(), axis );
-        this._curve.updateAxis(axis);
+        this._axis.copy(this._body.axis);
+        this._curve.updateAxis(this._axis);
         this._longitudinalOscillation ?
             this.#updateWithLongitudinal() :
             this.#updateWithoutLongitudinal();

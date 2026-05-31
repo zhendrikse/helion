@@ -181,16 +181,10 @@ export class Simulation {
         this._onReset = () => {};
         this._onBeforePhysicsUpdate = () => {};
         this._onAfterPhysicsUpdate = () => {};
-        this._transform = new Transform(1);
         this._running = false;
         this._simulatedTime = 0;
         this._dt = 0.01;
         this._substepsCount = 1;
-    }
-
-    onScale(scale) {
-        this._transform = new Transform(scale);
-        return this;
     }
 
     incrementsTimeBy(dt) {
@@ -268,24 +262,6 @@ export class Simulation {
     onReset(resetFunction = () => {}) { this._onReset = resetFunction; }
 
     set substepsCount(substepsCount) { this._substepsCount = substepsCount; }
-}
-
-class Transform {
-    constructor(scale) {
-        this._scale = scale;
-    }
-
-    physicsToRender(fromVector, toVector) {
-        toVector.set(fromVector.x * this._scale, fromVector.y * this._scale, fromVector.z * this._scale);
-    }
-
-    renderToPhysics(fromVector, toVector) {
-        toVector.set(fromVector.x / this._scale, fromVector.y / this._scale, fromVector.z / this._scale);
-    }
-
-    scaleRadius(radius) {
-        return radius * this._scale;
-    }
 }
 
 /*******************************************

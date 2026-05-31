@@ -51,6 +51,31 @@ SurfaceView
     samples field
 ```
 
+
+In jouw architectuur (zoals je die nu gebruikt)
+
+Je hebt 3 lagen:
+
+1. Physics layer
+   Dipole, Particle, VectorField
+
+→ puur fysica in meters (of SI units)
+
+2. Simulation layer
+   Simulation
+
+→ tijd, substeps, integratie
+
+❗ hoort NIETS te weten over visual scale
+
+3. Render layer
+   ThreeJsRenderer._world
+   ArrowField2
+   Sphere
+   etc.
+
+→ mapping physics → visuals
+
 ```
 numerics/
 ├── solvers/

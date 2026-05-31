@@ -1,7 +1,9 @@
-<html>
-  <head>
-    <link rel="stylesheet" href="../style.css" />
-  </head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="../../docs/src/assets/styles.css" />
+  <title>Testing electromagnetism</title>
+</head>
   <body>
     <!--
        - A N T E N N A
@@ -42,7 +44,6 @@
        -->
       <!--
        - D I P O L E  F I E L D
-       -->
     <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">
       <canvas id="solenoidCanvas" class="applicationCanvas"></canvas>
     </div>
@@ -50,11 +51,12 @@
       <canvas id="dipoleCanvas" class="applicationCanvas"></canvas>
     </div>
     <div class="buttonRow">
-      <label for="fieldStrengthSlider">Field </label><input type="range" id="fieldStrengthSlider" min="0" max=".5" step="any" value="0.25"/>
-      <span id="fieldStrengthSliderValue">0.25</span>
+      <label for="fieldStrengthSlider">Field </label><input type="range" id="fieldStrengthSlider" min="0" max="1" step="any" value="0.5"/>
+      <span id="fieldStrengthSliderValue">0.5</span>
       <label for="autoRotate">Auto-rotate </label><input type="checkbox" id="autoRotate"/>
     </div>
     <script type="module" src="scenes/dipole_field.js"></script>
+       -->
     <!--
        - E L E C T R O M A G N E T I C   W A V E
     <div class="canvasWrapper" id="electromagneticWaveWrapper">
@@ -88,6 +90,7 @@
      -->
     <!--
        - P R O T O N  I N  M A G N E T I C  F I E L D
+    -->
     <div class="canvasWrapper" id="protonInFieldWrapper" style="aspect-ratio: 19/12">
       <canvas id="protonInFieldCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
       <div class="overlayText" id="protonInFieldOverlayText">Click to start the animation!</div>
@@ -104,7 +107,6 @@
     </div>
     <script type="module" src="scenes/proton_in_magnetic_field.js"></script>
     <p style="clear: both;"></p>
-    -->
     <!--
        - H E L I C A L  M O T I O N
     <div class="canvasWrapper" id="helicalProtonCanvasWrapper">

@@ -48,12 +48,11 @@ const antenna = new AxialSymmetricBody({
     axis: new Vec3(0, 2 * lambda, 0),
     radius: 0.5
 });
-renderer.synchronize(antenna.onceWith(new Cylinder({color: 0x777777})));
+renderer.synchronize(antenna.onceWith(new Cylinder({color: 0xcccc77})));
 
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(lambda / OneDimensionalPlaneWave.c / 100.0)
-    .onScale(1)
     .onClockTick((clockTime, simulatedTime) => {
         for (let wave of planeWaves)
             wave.propagate(simulatedTime);
