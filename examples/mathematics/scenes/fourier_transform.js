@@ -111,3 +111,8 @@ eventController.attach(HtmlControl
     .withElementId("squareButton")
     .forType("click")
     .to(fourierSimulation).withProperty("type"));
+
+eventController.attach(HtmlControl
+    .withElementId("phaseColor")
+    .forType("click")
+    .to(intensityRaster).withProperty("showPhaseColor"));

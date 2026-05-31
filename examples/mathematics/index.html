@@ -30,10 +30,11 @@
         <input id="circleButton" name="apertureType" type="radio" value="circular" checked/>
     </div>
     <div class="buttonRow">
-        <label for="diameterSlider">Size:
-            <input type="range" id="diameterSlider" min="20" max="50" value="30" step="any"/>
-            <span id="diameterValue">30</span> pixels
-        </label>
+        <label for="diameterSlider">Size:</label>
+        <input type="range" id="diameterSlider" min="20" max="50" value="30" step="any"/>
+        <span id="diameterValue">30</span> pixels
+        <label for="phaseColor">🎨 Phase</label>
+        <input id="phaseColor" type="checkbox" checked/>
     </div>
     <script type="module" src="scenes/fourier_transform.js"></script>
 </body>
