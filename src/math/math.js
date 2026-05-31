@@ -233,7 +233,7 @@ export class Interval {
     scaleUnitParameter = (unitParameter) => this.range() * (unitParameter + this.from / this.range());
 }
 
-export class VectorFieldVector {
+export class VectorFieldValue {
     constructor({
                     position = new Vec3(),
                     axis = new Vec3()
@@ -243,7 +243,7 @@ export class VectorFieldVector {
     }
 
     clone() {
-        return new VectorFieldVector({
+        return new VectorFieldValue({
             position: this.position.clone(),
             axis: this.axis.clone(),
         });
@@ -289,7 +289,7 @@ export class ScalarField {
     alwaysWith(view) { return { body: this, view: view, always: true }; };
     onceWith(view) { return { body: this, view: view, always: false}; };
 
-    updateWith(time) {}
+    updateWith(newTime) {}
 }
 
 /**
@@ -370,7 +370,7 @@ export class ComplexScalarFieldValue {
     }
 
     clone() {
-        return new VectorFieldVector({
+        return new VectorFieldValue({
             position: this.position.clone(),
             value: this.value.clone(),
         });
@@ -473,6 +473,11 @@ export class Complex {
     //     return new Complex(real, imag);
     // }
 }
+
+
+//
+// TODO WHAT FOLLOWS BELOW IS NOT OK ==> NEED TO BECOME FIELDS!!
+//
 
 export class Surface {
     sample(u, v, target) {

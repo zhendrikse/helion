@@ -4,8 +4,6 @@ import {
     CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion
 } from "three";
 
-import { VectorFieldVector } from "../../../math/math.js";
-
 /*************
  * V I E W S *
  *************/

@@ -2,7 +2,7 @@ import {
     Group, Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute, BufferGeometry
 } from "three";
 import { Arrow } from "../primitives/primitives.js";
-import { VectorFieldVector, ComplexScalarFieldValue, Complex} from "../../../math/math.js";
+import { VectorFieldValue, ComplexScalarFieldValue, Complex} from "../../../math/math.js";
 
 //
 // Point cloud
@@ -238,8 +238,8 @@ export class ElectromagneticWave extends Group {
                 size: this._arrowSize,
                 round: true
             });
-            electricFieldArrow.attachTo(new VectorFieldVector({position}));
-            magneticFieldArrow.attachTo(new VectorFieldVector({position}));
+            electricFieldArrow.attachTo(new VectorFieldValue({position}));
+            magneticFieldArrow.attachTo(new VectorFieldValue({position}));
             this._magneticFieldArrows.push(magneticFieldArrow);
             this._electricFieldArrows.push(electricFieldArrow);
             this.add(electricFieldArrow, magneticFieldArrow);

@@ -1,55 +1,34 @@
 import {ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation,
-    Surface, ScalarField, PlaneSurfaceView, IsoparametricContoursView,
+    ScalarField, PlaneSurfaceView, IsoparametricContoursView,
     HtmlControl, EventController, SurfaceColorMapper, Vec3 } from "helion";
+
+const gridSize = 15;
 
 class MembraneScalarField extends ScalarField {
     constructor({
-        width = 15,
-        depth = 15,
         omega = Math.PI / 2,
-        amplitude = 2
+        amplitude = 2,
+        size = gridSize,
     } = {}) {
         super();
         this._omega = omega;
-        this._width = width;
-        this._depth = depth;
         this._amplitude = amplitude;
-        this._waveCountX = 1;
-        this._waveCountY = 1;
+        this._waveCountX = 1 / size;
+        this._waveCountY = 1 / size;
         this._time = 0;
+        this._size = size
     }
 
     get amplitude() { return this._amplitude; }
-    get depth() { return this._depth; }
-    get width() { return this._width; }
-    set waveCountX(waveCountX) { this._waveCountX = waveCountX; }
-    set waveCountY(waveCountY) { this._waveCountY = waveCountY; }
+    set waveCountX(waveCountX) { this._waveCountX = waveCountX / this._size; }
+    set waveCountY(waveCountY) { this._waveCountY = waveCountY / this._size; }
 
     updateWith(time) { this._time = time; }
 
     scalarValueAt(x, y) {
         return this._amplitude *  Math.cos(this._omega * this._time) *
-            Math.cos(Math.PI * x * this._waveCountX / this._width) *
-            Math.cos(Math.PI * y * this._waveCountY / this._depth);
-    }
-}
-
-class WaveSurface extends Surface {
-    constructor({
-        scalarField,
-        width = 15,
-        depth = 15
-    } = {}) {
-        super();
-        this._scalarField = scalarField;
-        this._width = width;
-        this._depth = depth;
-    }
-
-    sample(u, v, target) {
-        const x = (u - 0.5) * this._width;
-        const z = (v - 0.5) * this._depth;
-        target.set(x, this._scalarField.scalarValueAt(x, z), z);
+            Math.cos(Math.PI * x * this._waveCountX) *
+            Math.cos(Math.PI * y * this._waveCountY);
     }
 }
 
@@ -57,14 +36,9 @@ class WaveSurface extends Surface {
 // Math objects
 //
 const scalarField = new MembraneScalarField();
-const waveSurface = new WaveSurface({
-    scalarField,
-    width: scalarField.width,
-    depth: scalarField.depth
-});
 
 //
-// Renderer
+// Surface view
 //
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("membraneCanvasWrapper").contains(Canvas.withElementId("membraneCanvas")))
@@ -73,25 +47,24 @@ const renderer = ThreeJsRenderer
         fieldOfView: 45,
     }));
 
-//
-// Surface view
-//
 const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.RDYLBU_COLOR_MAP);
 const normalizer = (position) => (position.y + scalarField.amplitude) / (2 * scalarField.amplitude);
 const surfaceView = new PlaneSurfaceView({
-    uSegments: 100,
-    vSegments: 100,
+    width: gridSize,
+    depth: gridSize,
     colorMapper: colorMapper,
     normalizer: normalizer
 });
 const contoursView = new IsoparametricContoursView({
+    width: gridSize,
+    depth: gridSize,
     uSegments: 20,
     vSegments: 20,
     colorMapper: colorMapper,
     normalizer: normalizer
 });
-renderer.synchronize(waveSurface.alwaysWith(surfaceView));
-renderer.synchronize(waveSurface.alwaysWith(contoursView));
+renderer.synchronize(scalarField.alwaysWith(surfaceView));
+renderer.synchronize(scalarField.alwaysWith(contoursView));
 
 //
 // Simulation
@@ -102,10 +75,6 @@ const simulation = Simulation
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, simulatedTime) => scalarField.updateWith(simulatedTime), 3)
     .start();
-
-// document.getElementById("colorMapSelect").addEventListener("change", (event) => {
-//     colorMapper.mode = event.target.value;
-// })
 
 const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl

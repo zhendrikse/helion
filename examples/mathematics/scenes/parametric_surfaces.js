@@ -1,44 +1,38 @@
 import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
-    Surface, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3, SurfaceColorMapper
+    ScalarField, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3, SurfaceColorMapper
 } from "helion";
 
 
-class ParametricSurface extends Surface {
+class SurfaceScalarField extends ScalarField {
     constructor({
-        width = 10,
-        depth = 10,
         amplitude = 2
     } = {}) {
         super();
-        this._width = width;
-        this._depth = depth;
         this._amplitude = amplitude;
         this._time = 0;
         this._animate = false;
     }
 
-    update(dt) {
+    updateWith(newTime) {
         if (this._animate)
-            this._time += dt;
+            this._time = newTime;
     }
 
     set animate(value) { this._animate = value; }
 
     f_x_y_t_1(x, y, t) {
         const r2 = -x * x - y * y;
-        return this._amplitude * Math.exp(.25 * r2) * (1 - Math.sin(Math.PI * this._time));
+        return this._amplitude * Math.exp(.25 * r2) * (1 - Math.sin(Math.PI * t));
     }
 
     f_x_y_t(x, y, t) {
         const r = Math.sqrt(x * x + y * y);
-        return this._amplitude * Math.sin(Math.PI * r - Math.PI * this._time);
+        return this._amplitude * Math.sin(Math.PI * r - Math.PI * t);
     }
 
-    sample(u, v, target) {
-        const x = (u - 0.5) * this._width;
-        const z = (v - 0.5) * this._depth;
-        target.set(x, this.f_x_y_t(x, z), z);
+    scalarValueAt(x, y) {
+        return this.f_x_y_t(x, y, this._time);
     }
 
     get amplitude() { return this._amplitude; }
@@ -47,7 +41,7 @@ class ParametricSurface extends Surface {
 //
 // Math objects
 //
-const surface = new ParametricSurface();
+const scalarField = new SurfaceScalarField();
 
 //
 // Renderer
@@ -56,7 +50,7 @@ const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("parametricSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("parametricSurfacesCanvas")))
     .with(new ThreeJsRenderOptions({
-        cameraPosition: new Vec3(25, 12.5, 25),
+        cameraPosition: new Vec3(30, 15, 30),
         fieldOfView: 20
     }));
 
@@ -64,7 +58,7 @@ const renderer = ThreeJsRenderer
 // Surface view
 //
 const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.RDYLBU_COLOR_MAP);
-const normalizer = (position) => (position.y + surface.amplitude) / (2 * surface.amplitude);
+const normalizer = (position) => (position.y + scalarField.amplitude) / (2 * scalarField.amplitude);
 const surfaceView = new PlaneSurfaceView({
     uSegments: 100,
     vSegments: 100,
@@ -78,8 +72,8 @@ const contoursView = new IsoparametricContoursView({
     normalizer: normalizer
 });
 
-renderer.synchronize(surface.alwaysWith(surfaceView));
-renderer.synchronize(surface.alwaysWith(contoursView));
+renderer.synchronize(scalarField.alwaysWith(surfaceView));
+renderer.synchronize(scalarField.alwaysWith(contoursView));
 
 renderer.provideAxesFor(surfaceView);
 
@@ -88,7 +82,8 @@ renderer.provideAxesFor(surfaceView);
 //
 const simulation = Simulation
     .with(renderer)
-    .onClockTick((clockTime, simulatedTime) => surface.update(0.016), 1)
+    .incrementsTimeBy(0.016)
+    .onClockTick((clockTime, simulatedTime) => scalarField.updateWith(simulatedTime), 1)
     .start();
 
 const eventController = EventController.for(simulation);
@@ -107,7 +102,7 @@ eventController.attach(HtmlControl
 eventController.attach(HtmlControl
     .withElementId("animate")
     .forType("click")
-    .to(surface)
+    .to(scalarField)
     .withProperty("animate"));
 
 eventController.attach(HtmlControl
