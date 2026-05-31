@@ -53,7 +53,7 @@ const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("realSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("realSurfacesCanvas")))
     .with(new ThreeJsRenderOptions({
-        cameraPosition: new Vec3(30, 15, 30),
+        cameraPosition: new Vec3(25, 10, 10).multiplyScalar(1.6),
         fieldOfView: 20
     }));
 

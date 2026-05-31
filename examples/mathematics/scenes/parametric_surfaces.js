@@ -14,6 +14,16 @@ const parametricSurface = new ParametricSurface({
     z: (u, v) => 1 * Math.cos(u) + 2 * Math.cos(0.5 * v)
 });
 
+const kleinBottle = new ParametricSurface({
+    uRange: new Interval(0, 2 * Math.PI),
+    vRange: new Interval(0, 2 * Math.PI),
+    width: 4 * Math.PI,
+    depth: 4 * Math.PI,
+    x: (u, v) => -(5 - 2 * Math.cos(u)) * Math.cos(v) + 6 * (Math.sin(u) + 1) * Math.cos(u),
+    y: (u, v) => (5 - 2 * Math.cos(u)) * Math.sin(v),
+    z: (u, v) => -16 * Math.sin(u)
+});
+
 //
 // Renderer
 //
@@ -21,7 +31,7 @@ const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("parametricSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("parametricSurfacesCanvas")))
     .with(new ThreeJsRenderOptions({
-        cameraPosition: new Vec3(18, 9, 18),
+        cameraPosition: new Vec3(25, 10, 10),
         fieldOfView: 20
     }));
 
