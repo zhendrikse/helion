@@ -160,7 +160,7 @@ export class SphereSurfaceView extends SurfaceView {
         this._mesh.instanceColor.setUsage(DynamicDrawUsage);
     }
 
-    render(transform) {
+    render() {
         let index = 0;
 
         for (let i = 0; i <= this._uSegments; i++) {

@@ -214,13 +214,13 @@ export class ElectromagneticWave extends Group {
         );
     }
 
-    render(transform) {
+    render() {
         for (let index = 0; index < this._electricFieldArrows.length; index++)
             this._updateFieldVectorAt(index);
         for (const arrow of this._electricFieldArrows)
-            arrow.render(transform);
+            arrow.render();
         for (const arrow of this._magneticFieldArrows)
-            arrow.render(transform);
+            arrow.render();
     }
 
     _createEmWaveFor(planeWave) {
@@ -289,11 +289,11 @@ export class OneDimensionalComplexPlaneWave3D extends Group {
         this.add(arrow);
     }
 
-    render(transform) {
+    render() {
         for (let arrow of this._arrows)
             arrow.body.value = this._complexPlaneWave.valueAt(arrow.body.position.x);
 
         for (let arrow of this._arrows)
-            arrow.render(transform);
+            arrow.render();
     }
 }
