@@ -213,6 +213,8 @@ export class PlaneSurfaceView extends SurfaceView {
         this._color = new Color();
     }
 
+    set wireframe(value) { this._mesh.material.wireframe = value; }
+
     render() {
         let k = 0;
         let c = 0;

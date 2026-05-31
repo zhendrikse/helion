@@ -78,18 +78,19 @@ const renderer = ThreeJsRenderer
 //
 const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.RDYLBU_COLOR_MAP);
 const normalizer = (position) => (position.y + scalarField.amplitude) / (2 * scalarField.amplitude);
-renderer.synchronize(waveSurface.alwaysWith(new PlaneSurfaceView({
+const surfaceView = new PlaneSurfaceView({
     uSegments: 100,
     vSegments: 100,
     colorMapper: colorMapper,
     normalizer: normalizer
-})));
+});
 const contoursView = new IsoparametricContoursView({
     uSegments: 20,
     vSegments: 20,
     colorMapper: colorMapper,
     normalizer: normalizer
 });
+renderer.synchronize(waveSurface.alwaysWith(surfaceView));
 renderer.synchronize(waveSurface.alwaysWith(contoursView));
 
 //
@@ -119,6 +120,12 @@ eventController.attach(HtmlControl
     .forType("click")
     .to(contoursView)
     .withProperty("visible"));
+
+eventController.attach(HtmlControl
+    .withElementId("showWireframe")
+    .forType("click")
+    .to(surfaceView)
+    .withProperty("wireframe"));
 
 for (let i = 1; i < 6; i++) {
     eventController.attach(HtmlControl
