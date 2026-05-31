@@ -371,7 +371,7 @@ export class Box extends Mesh {
 
     attachTo(body) {
         // Sanity checks
-        if (!body.size || !body.size.x)
+        if (!body.size || body.size.x === undefined)
             throw new Error("Body does not have size (vector), hence it cannot be attached to this view.");
 
         this._body = body;
@@ -380,7 +380,7 @@ export class Box extends Mesh {
 
     render() {
         this.position.copy(this._body.position);
-        this.scale.setScalar(this._body.size);
+        this.scale.copy(this._body.size);
     }
 }
 
