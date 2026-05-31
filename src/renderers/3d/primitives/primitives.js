@@ -189,7 +189,7 @@ export class Arrow extends Group {
         round = false,
         visible = true,
         castShadow = false,
-        magnitudeMap = magnitude => Math.max(magnitude, 5),
+        magnitudeMap = magnitude => Math.max(magnitude, .1),
         colorMap = null  // use the unmodified base color by default
     } = {}) {
         super();
@@ -333,9 +333,10 @@ export class Cylinder extends Mesh {
         this.position.copy(this._body.position);
         this._direction.copy(this._body.axis);
 
+        const length = this._direction.length();
         this.scale.set(this._body.radius, this._direction.length(), this._body.radius);
         this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
-        this.position.add(this._direction.multiplyScalar(length / 2));
+        this.position.add(this._direction.multiplyScalar(length * .5));
     }
 }
 

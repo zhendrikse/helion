@@ -50,8 +50,8 @@ const heightFieldSurface = new HeightFieldSurface({
 // Renderer
 //
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("parametricSurfacesCanvasWrapper")
-        .contains(Canvas.withElementId("parametricSurfacesCanvas")))
+    .on(HtmlDiv.withElementId("realSurfacesCanvasWrapper")
+        .contains(Canvas.withElementId("realSurfacesCanvas")))
     .with(new ThreeJsRenderOptions({
         cameraPosition: new Vec3(30, 15, 30),
         fieldOfView: 20

@@ -505,6 +505,25 @@ export class HeightFieldSurface extends Surface {
     }
 }
 
+export class ParametricSurface extends Surface {
+    constructor({
+        width = 10,
+        depth = 10
+    } = {}) {
+        super();
+        this._width = width;
+        this._depth = depth;
+    }
+
+    get width() { return this._width; }
+    get depth() { return this._depth; }
+
+    sample(u, v, target) {
+        const x = f1(u, v);
+        const z = f2(u, v);
+        target.set(x, f3(u, v), z);
+    }
+}
 
 
 //

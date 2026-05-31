@@ -69,7 +69,7 @@ function createFaradayLoops(faradayLoopsGroup) {
 
             const arrow = new Arrow({
                 color: new Color("green"),
-                size: 0.15,
+                size: 0.2,
                 round: true
             });
             renderer.synchronize(body.onceWith(arrow));
@@ -92,7 +92,7 @@ renderer.synchronize(new FaradayField().onceWith(new ArrowField({
     xRange: new Range(-1, 1, 0.25),
     yRange: new Range(-1, 1, 0.25),
     zRange: new Range(-2, 2, 1),
-    scaleFactor: .26,
+    scaleFactor: .4,
     magnitudeMap: m => {
         const max = dBdtMax / 0.25;
         return Math.log(1 + m) / Math.log(1 + max);
@@ -118,7 +118,7 @@ for (const position of magneticFieldPositions) {
     magneticVectors.push(body);
     renderer.synchronize(body.alwaysWith(new Arrow({
         color: new Color("red"),
-        size: 0.2,
+        size: 0.4,
         round: true
     })));
 }
