@@ -57,7 +57,7 @@ export class ThreeJsRenderer extends Renderer {
         this._world = new Group();
         this._skydome = null;
         this._scene.add(this._world);
-        this._axisController = null;
+        this._axis = null;
     }
 
     _showOverlayMessage(message, duration = 1000) {
@@ -211,7 +211,7 @@ export class ThreeJsRenderer extends Renderer {
         this._renderer.render(this._scene, this._camera);
         this._controls?.update();
         this._skydome?.update(time, this._camera);
-        this._axisController?.render(this._scene, this._camera);
+        this._axis?.render(this._scene, this._camera);
 
         if (this._autoRotate)
             this._doAutoRotate(this._camera.position.length());
@@ -259,7 +259,7 @@ export class ThreeJsRenderer extends Renderer {
             axesParameters: {layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ}
         });
 
-        this._axesController.createFromBoundingBox(anObject.boundingBox);
+        this._axis = this._axesController.createFromBoundingBox(anObject.boundingBox);
     }
 
     set autoRotate(autoRotate) { this._autoRotate = autoRotate; }

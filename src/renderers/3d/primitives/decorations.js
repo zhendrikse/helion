@@ -502,7 +502,6 @@ export class AxesController {
             { frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels });
     }
 
-    render = (scene, camera) => this._axes?.render(scene, camera);
     resize = () => this._axes?.onWindowResize();
 
     dispose() {

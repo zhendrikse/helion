@@ -4,28 +4,41 @@ import {
 } from "helion";
 
 
-class WaveSurface extends Surface {
+class ParametricSurface extends Surface {
     constructor({
         width = 10,
         depth = 10,
-        amplitude = 1
+        amplitude = 2
     } = {}) {
         super();
         this._width = width;
         this._depth = depth;
         this._amplitude = amplitude;
         this._time = 0;
+        this._animate = false;
     }
 
-    update(dt) { this._time += dt; }
+    update(dt) {
+        if (this._animate)
+            this._time += dt;
+    }
+
+    set animate(value) { this._animate = value; }
+
+    f_x_y_t_1(x, y, t) {
+        const r2 = -x * x - y * y;
+        return this._amplitude * Math.exp(.25 * r2) * (1 - Math.sin(Math.PI * this._time));
+    }
+
+    f_x_y_t(x, y, t) {
+        const r = Math.sqrt(x * x + y * y);
+        return this._amplitude * Math.sin(Math.PI * r - Math.PI * this._time);
+    }
 
     sample(u, v, target) {
         const x = (u - 0.5) * this._width;
         const z = (v - 0.5) * this._depth;
-        const r = Math.sqrt(x*x + z*z);
-        const y = this._amplitude * Math.sin(4 * r - 3 * this._time);
-
-        target.set(x, y, z);
+        target.set(x, this.f_x_y_t(x, z), z);
     }
 
     get amplitude() { return this._amplitude; }
@@ -34,7 +47,7 @@ class WaveSurface extends Surface {
 //
 // Math objects
 //
-const waveSurface = new WaveSurface();
+const surface = new ParametricSurface();
 
 //
 // Renderer
@@ -43,15 +56,15 @@ const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("parametricSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("parametricSurfacesCanvas")))
     .with(new ThreeJsRenderOptions({
-        cameraPosition: new Vec3(10, 5, 10),
-        fieldOfView: 45
+        cameraPosition: new Vec3(20, 10, 20),
+        fieldOfView: 20
     }));
 
 //
 // Surface view
 //
 const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.RDYLBU_COLOR_MAP);
-const normalizer = (position) => (position.y + waveSurface.amplitude) / (2 * waveSurface.amplitude);
+const normalizer = (position) => (position.y + surface.amplitude) / (2 * surface.amplitude);
 const surfaceView = new PlaneSurfaceView({
     uSegments: 100,
     vSegments: 100,
@@ -65,8 +78,8 @@ const contoursView = new IsoparametricContoursView({
     normalizer: normalizer
 });
 
-renderer.synchronize(waveSurface.alwaysWith(surfaceView));
-renderer.synchronize(waveSurface.alwaysWith(contoursView));
+renderer.synchronize(surface.alwaysWith(surfaceView));
+renderer.synchronize(surface.alwaysWith(contoursView));
 
 renderer.provideAxesFor(surfaceView);
 
@@ -75,7 +88,7 @@ renderer.provideAxesFor(surfaceView);
 //
 const simulation = Simulation
     .with(renderer)
-    .onClockTick((clockTime, simulatedTime) => waveSurface.update(0.016), 1)
+    .onClockTick((clockTime, simulatedTime) => surface.update(0.016), 1)
     .start();
 
 const eventController = EventController.for(simulation);
@@ -90,6 +103,12 @@ eventController.attach(HtmlControl
     .forType("click")
     .to(contoursView)
     .withProperty("visible"));
+
+eventController.attach(HtmlControl
+    .withElementId("animate")
+    .forType("click")
+    .to(surface)
+    .withProperty("animate"));
 
 eventController.attach(HtmlControl
     .withElementId("showWireframe")
