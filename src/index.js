@@ -5,9 +5,10 @@ export {
 } from "./phys/physics.js";
 
 export {
-    VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface, DiscreteScalarField, FFT,
-    PDESurface, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid,
-    factorial, linspace, FieldStatistics, DiscreteComplexField, HeightFieldSurface
+    VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface, DiscreteScalarField,
+    FFT, PDESurface, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid,
+    factorial, linspace, FieldStatistics, DiscreteComplexField, HeightFieldSurface,
+    ParametricSurface, Interval
 } from "./math/math.js";
 
 export { Integrators } from "./numerics/integrators/integrators.js";

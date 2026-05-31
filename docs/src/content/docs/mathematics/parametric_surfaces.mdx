@@ -1,0 +1,84 @@
+---
+title: "🌐 Parametric surfaces"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div className="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div class="header_line"></div>
+
+🎯 Illustration of surface drawing facilities in Helion<br/>
+
+### Live demo
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/parametric_surfaces.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=parametric_surfaces.js"/>
+    </a>
+</div>
+
+<div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
+    <canvas id="parametricSurfacesCanvas" class="applicationCanvas"></canvas>
+</div>
+    <div class="buttonRow">
+    <label for="colorMapSelect">Color map:</label>
+    <select name="colorMaps" id="colorMapSelect">
+        <option value="seismic">Seismic</option>
+        <option value="viridis">Viridis</option>
+        <option value="jet">Jet</option>
+        <option value="inferno">Inferno</option>
+        <option value="RdYlBu">RdYlBu</option>
+        <option value="water">Water</option>
+        <option value="water alternative">Water alternative</option>
+        <option value="gradient">Gradient</option>
+    </select>
+</div>
+    <div class="buttonRow">
+    <label for="showContours">Contours</label>
+    <input type="checkbox" name="showContours" id="showContours" checked="checked" />
+    <label for="showWireframe">Wireframe</label>
+    <input type="checkbox" name="showWireframe" id="showWireframe" />
+</div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/parametric_surfaces.js"}></script>
+
+## Introduction to manifolds
+<div class="header_line"><br/></div>
+
+From: [Behold the Manifold, the Concept that Changed How Mathematicians View Space](https://www.wired.com/story/behold-the-manifold-the-concept-that-changed-how-mathematicians-view-space/):
+
+> The term “manifold” comes from Riemann’s Mannigfaltigkeit, which is German for “variety” or “multiplicity.”
+>
+> A manifold is a space that looks Euclidean when you zoom in on any one of its points.
+For instance, a circle is a one-dimensional manifold.
+Zoom in anywhere on it, and it will look like a straight line.
+An ant living on the circle will never know that it’s actually round.
+But zoom in on a figure eight, right at the point where it crosses itself,
+and it will never look like a straight line. The ant will realize at that intersection point
+that it’s not in a Euclidean space. A figure eight is therefore not a manifold.
+>
+> Similarly, in two dimensions, the surface of the Earth is a manifold;
+zoom in far enough anywhere on it, and it’ll look like a flat 2D plane.
+But the surface of a double cone — a shape consisting of two cones connected
+at their tips — is not a manifold.
+
+<p style="clear: both;"></p>
+<figure>
+    <img alt="Introduction to manifolds" src={import.meta.env.BASE_URL + "/images/mathematics/manifold.jpg"}/>
+    <figcaption>From
+        <a href="https://www.wired.com/story/behold-the-manifold-the-concept-that-changed-how-mathematicians-view-space/">Behold the Manifold, the Concept that Changed How Mathematicians View Space.</a>.</figcaption>
+
+</figure>
+<p style="clear: both;"></p>
+
+## References
+
+- [The core of differential geometry](https://dibeos.net/2025/04/12/the-core-of-differential-geometry/)

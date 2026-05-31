@@ -6,8 +6,33 @@
 </head>
 <body>
     <!--
-       - P A R A M E T R I C   S U R F A C E
+       - P A R A M E T R I C   S U R F A C E S
        -->
+    <div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
+        <canvas class="applicationCanvas" id="parametricSurfacesCanvas" width="500" height="500"></canvas><br/>
+    </div>
+    <div class="buttonRow">
+        <label for="colorMapSelect">Color map:</label>
+        <select name="colorMaps" id="colorMapSelect">
+            <option value="seismic">Seismic</option>
+            <option value="viridis">Viridis</option>
+            <option value="jet">Jet</option>
+            <option value="inferno">Inferno</option>
+            <option value="RdYlBu">RdYlBu</option>
+            <option value="water">Water</option>
+            <option value="water alternative">Water alternative</option>
+            <option value="gradient">Gradient</option>
+        </select>
+    </div>
+    <div class="buttonRow">
+        <label for="showContours">Contours</label>
+        <input type="checkbox" name="showContours" id="showContours" checked="checked" />
+        <label for="showWireframe">Wireframe</label>
+        <input type="checkbox" name="showWireframe" id="showWireframe" />
+    </div>
+    <script type="module" src="scenes/parametric_surfaces.js"></script>
+    <!--
+       - R E A L   S U R F A C E S
     <div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
         <canvas class="applicationCanvas" id="parametricSurfacesCanvas" width="500" height="500"></canvas><br/>
     </div>
@@ -33,6 +58,7 @@
         <input type="checkbox" name="animate" id="animate" />
     </div>
     <script type="module" src="scenes/real_surfaces.js"></script>
+       -->
     <!--
        - F O U R I E R   T R A N S F O R M
     <div class="canvasWrapper" id="waveCanvasWrapper">

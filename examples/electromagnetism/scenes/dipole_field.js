@@ -32,7 +32,7 @@ class DipoleField extends VectorField {
         super();
 
         this._dipole = dipole;
-        this._fieldStrength = 0.5;
+        this._fieldStrength = 0.3;
     }
 
     vectorAt(position) {
@@ -93,7 +93,7 @@ eventController.attach(HtmlControl
     .withProperty("fieldStrength"));
 
 eventController.attach(HtmlControl
-    .withElementId("autoRotate")
+    .withElementId("autoRotateDipole")
     .forType("click")
     .to(renderer)
     .withProperty("autoRotate"));

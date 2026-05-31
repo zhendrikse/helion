@@ -105,7 +105,6 @@ renderer.synchronize(magneticField.alwaysWith(new ArrowField({
 })));
 
 const eventController = new EventController();
-
 eventController.attach(HtmlControl
     .withElementId("fieldStrength")
     .forType("input")
@@ -114,20 +113,11 @@ eventController.attach(HtmlControl
     .withProperty("fieldStrength"));
 
 eventController.attach(HtmlControl
-    .withElementId("autoRotate")
+    .withElementId("autoRotateSolenoid")
     .forType("click")
     .to(renderer)
     .withProperty("autoRotate"));
 
-const simulation = Simulation
+Simulation
     .with(renderer)
     .onClockTick();
-
-export function createSolenoidScene() {
-    return {
-        run() {
-        },
-        stop() {
-        }
-    };
-}
