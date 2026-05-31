@@ -8,10 +8,10 @@ import {
 // Physics model
 //
 const planeWave = new OneDimensionalComplexPlaneWave({
-    position: new Vec3(-25, 0, 0),
+    position: new Vec3(-100, 0, 0),
     amplitude: 10,
     omega: -3 * Math.PI,
-    lambda: 2 * Math.PI
+    lambda: 10 * Math.PI
 });
 
 //
@@ -31,13 +31,13 @@ renderer2d.synchronize(planeWave.alwaysWith(waveView2d));
 //
 const canvas3d = Canvas.withElementId("planeWaveCanvas3d");
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(75, 75, 75),
-    fieldOfView: 10
+    cameraPosition: new Vec3(100, 100, 200),
+    fieldOfView: 20
 });
 const renderer3d = ThreeJsRenderer
     .on(HtmlDiv.withElementId("planeWaveCanvasWrapper3d").contains(canvas3d))
     .with(threeJsRendererOptions);
-renderer3d.synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({size: .8, numArrows: 100})));
+renderer3d.synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({numArrows: 100})));
 
 const simulation = Simulation
     .with(new CompositeRenderer([renderer2d, renderer3d]))

@@ -253,7 +253,7 @@ export class OneDimensionalComplexPlaneWave3D extends Group {
     constructor({
                     size = 1,
                     numArrows = 70,
-                    round = false
+                    round = true
                 } = {}) {
         super();
         this._arrows = [];
@@ -273,11 +273,11 @@ export class OneDimensionalComplexPlaneWave3D extends Group {
 
         const position = new Vector3().copy(complexPlaneWave.position);
         for (let i = 0; i < this._numArrows; i++)
-            this._createArrowAt(position, i);
+            this._createArrowAt(position, i * 2);
     }
 
     _createArrowAt(position, index) {
-        const x = position.x + index * 0.5;
+        const x = position.x + index;
         const arrow = new Arrow({
             round: this._round,
             size: this._size,
