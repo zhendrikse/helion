@@ -270,7 +270,7 @@ export class Simulation {
         this._substepsCount = substepsCount;
 
         // For rendering static objects once
-        this._renderer.initialize(this._transform);
+        this._renderer.initialize();
 
         const animate = (clockTime) => {
             // Physics update
@@ -279,7 +279,7 @@ export class Simulation {
             this._onAfterPhysicsUpdate(clockTime, this._simulatedTime);
 
             // Rendering
-            this._renderer.render(this._transform, clockTime);
+            this._renderer.render(clockTime);
             requestAnimationFrame(animate);
         };
 

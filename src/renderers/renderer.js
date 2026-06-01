@@ -2,6 +2,9 @@ export class Renderer {
     constructor(canvasWrapperDiv) {
         this._canvasWrapperDiv = canvasWrapperDiv;
     }
+
+    get canvasWrapperDiv() { return this._canvasWrapperDiv; }
+
     /**
      * Add objects to simulation with synchronization of the physics state.
      */
@@ -13,7 +16,7 @@ export class Renderer {
      */
     onRunStatusChanged() {}
     initialize() {}
-    render(transform, time) {}
+    render(time) {}
     resize() {}
     reset() {}
 }
@@ -24,9 +27,9 @@ export class CompositeRenderer extends Renderer {
         this._renderers = renderers; // array van Renderer-instanties
     }
 
-    initialize(transform) {
+    initialize() {
         for (const renderer of this._renderers)
-            renderer.initialize?.(transform);
+            renderer.initialize?.();
     }
 
     synchronize(viewObject) {
@@ -34,9 +37,9 @@ export class CompositeRenderer extends Renderer {
             renderer.synchronize?.(viewObject);
     }
 
-    render(transform) {
+    render() {
         for (const renderer of this._renderers)
-            renderer.render?.(transform);
+            renderer.render?.();
     }
 
     reset() {

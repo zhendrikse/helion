@@ -114,14 +114,3 @@ simulation.onReset(() => {
 
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas);
-
-export function createMultiBodyOscillator() {
-    return {
-        run() {
-            simulation.start();
-        },
-        stop() {
-            simulation.stop();
-        }
-    };
-}

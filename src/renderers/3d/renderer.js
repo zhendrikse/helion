@@ -84,7 +84,7 @@ export class ThreeJsRenderer extends Renderer {
 
         this._renderer = new WebGLRenderer({
             antialias: true,
-            canvas: this._canvas,
+            canvas,
             alpha: options.background === ThreeJsRenderer.Background.TRANSPARENT
         });
 
@@ -197,16 +197,16 @@ export class ThreeJsRenderer extends Renderer {
         }
     }
 
-    initialize(transform) {
+    initialize() {
         // Sync new physics state with view
         for (const anObject of this._staticObjects)
-            anObject.render?.(transform);
+            anObject.render?.();
     }
 
-    render(transform, time) {
+    render(time) {
         // Sync new physics state with view
         for (const anObject of this._dynamicObjects)
-            anObject.render?.(transform);
+            anObject.render?.();
 
         this._renderer.render(this._scene, this._camera);
         this._controls?.update();
