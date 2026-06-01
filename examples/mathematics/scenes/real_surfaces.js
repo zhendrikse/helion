@@ -1,6 +1,6 @@
 import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl, HeightFieldSurface,
-    ScalarField, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3, SurfaceColorMapper
+    ScalarField, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3, colorMappers
 } from "helion";
 
 class MultiVariateFunction extends ScalarField {
@@ -74,28 +74,22 @@ const renderer = ThreeJsRenderer
 //
 // Surface view
 //
-const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.RDYLBU_COLOR_MAP);
-const normalizer = (position) => (position.y + scalarField.amplitude) / (2 * scalarField.amplitude);
 const surfaceView = new PlaneSurfaceView({
     uSegments: 100,
     vSegments: 100,
-    colorMapper: colorMapper,
-    normalizer: normalizer
+    colorMapper: colorMappers["RdYlBu"]
 });
 const contoursView = new IsoparametricContoursView({
     uSegments: 20,
     vSegments: 20,
-    colorMapper: colorMapper,
-    normalizer: normalizer
+    colorMapper: colorMappers["RdYlBu"]
 });
 
 renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));
 renderer.synchronize(heightFieldSurface.alwaysWith(contoursView));
 
-
 renderer.provideAxesAround(surfaceView.boundingBox);
 renderer.frameSceneOn(surfaceView.boundingBox, {padding: 0.9, translationY: -5});
-
 
 //
 // Simulation
@@ -110,8 +104,14 @@ const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl
     .withElementId("colorMapSelect")
     .forType("change")
-    .to(colorMapper)
-    .withProperty("mode"));
+    .to(contoursView)
+    .withProperty("colorMapper"));
+
+eventController.attach(HtmlControl
+    .withElementId("colorMapSelect")
+    .forType("change")
+    .to(surfaceView)
+    .withProperty("colorMapper"));
 
 eventController.attach(HtmlControl
     .withElementId("showContours")

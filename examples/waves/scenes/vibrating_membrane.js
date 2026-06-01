@@ -1,7 +1,7 @@
-import {ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation,
-    ScalarField, PlaneSurfaceView, IsoparametricContoursView,
-    HtmlControl, EventController, SurfaceColorMapper, Vec3 } from "helion";
-import {HeightFieldSurface} from "../../../src/index.js";
+import {
+    Canvas, colorMappers, EventController, HeightFieldSurface, HtmlControl, HtmlDiv, IsoparametricContoursView,
+    PlaneSurfaceView, ScalarField, Simulation, ThreeJsRenderer, ThreeJsRenderOptions, Vec3
+} from "../../../src/index.js";
 
 const gridSize = 15;
 
@@ -53,17 +53,13 @@ const renderer = ThreeJsRenderer
         fieldOfView: 45,
     }));
 
-const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.RDYLBU_COLOR_MAP);
-const normalizer = (position) => (position.y + scalarField.amplitude) / (2 * scalarField.amplitude);
 const surfaceView = new PlaneSurfaceView({
-    colorMapper: colorMapper,
-    normalizer: normalizer
+    colorMapper: colorMappers["RdYlBu"]
 });
 const contoursView = new IsoparametricContoursView({
     uSegments: 20,
     vSegments: 20,
-    colorMapper: colorMapper,
-    normalizer: normalizer
+    colorMapper: colorMappers["RdYlBu"]
 });
 renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));
 renderer.synchronize(heightFieldSurface.alwaysWith(contoursView));
@@ -82,8 +78,14 @@ const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl
     .withElementId("colorMapSelect")
     .forType("change")
-    .to(colorMapper)
-    .withProperty("mode"));
+    .to(contoursView)
+    .withProperty("colorMapper"));
+
+eventController.attach(HtmlControl
+    .withElementId("colorMapSelect")
+    .forType("change")
+    .to(surfaceView)
+    .withProperty("colorMapper"));
 
 eventController.attach(HtmlControl
     .withElementId("showContours")

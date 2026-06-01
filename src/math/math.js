@@ -278,107 +278,6 @@ export class FieldStatistics {
     }
 }
 
-/**
- * Abstract class representing a real/complex, continuous/discrete scalar field.
- */
-export class ScalarField {
-    scalarValueAt(x, y) {
-        throw new Error("You invoked the method of an abstract base class. Please create a subclass first.");
-    }
-
-    alwaysWith(view) { return { body: this, view: view, always: true }; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
-
-    updateWith(newTime) {}
-}
-
-/**
- * Discrete scalar field, i.e. a scalar field on a grid.
- */
-export class DiscreteScalarField extends ScalarField {
-    constructor({
-        nx = 100,
-        ny = 100
-    } = {}) {
-        super();
-        this._nx = nx;
-        this._ny = ny;
-        this._data = new Float32Array(nx * ny);
-    }
-
-    get nx() { return this._nx; }
-    get ny() { return this._ny; }
-
-    scalarValueAt(x, y) {
-        // bilinear interpolation
-    }
-
-    valueAt(i, j) {
-        return this._data[i + this._nx * j];
-    }
-
-    setValueAt(i, j, value) {
-        this._data[i + this._nx * j] = value;
-    }
-}
-
-/**
- * Discrete complex scalar field, i.e. a complex scalar field on a grid.
- */
-export class DiscreteComplexField extends ScalarField {
-    constructor({
-        nx = 128,
-        ny = 128,
-        real = Array.from({ length: nx },() => new Float32Array(ny)),
-        imag = Array.from({ length: nx },() => new Float32Array(ny)),
-    } = {}) {
-        super();
-        this.real = real;
-        this.imag = imag;
-        this.nx = nx;
-        this.ny = ny;
-    }
-
-    phaseAt(i, j) {
-        const re = this.real[i][j];
-        const im = this.imag[i][j];
-        return Math.atan2(im, re); // [-π, π]
-    }
-
-    magnitudeAt(i, j) {
-        const re = this.real[i][j];
-        const im = this.imag[i][j];
-        return Math.sqrt(re * re + im * im);
-    }
-
-    transformWith(transformation) {
-        transformation(this);
-        return this;
-    }
-}
-
-// TODO This is a vector representation of a complex scalar value,
-// rotating in the complex plane, coloured by its phase, and size
-// equal to the abs value.
-export class ComplexScalarFieldValue {
-    constructor({
-        position = new Vec3(),
-        value = new Complex(0, 0)
-    } = {})  {
-        this.position = position.clone();
-        this.value = value;
-    }
-
-    clone() {
-        return new VectorFieldValue({
-            position: this.position.clone(),
-            value: this.value.clone(),
-        });
-    }
-
-    get axis() { return new Vec3(0, this.value.re, this.value.im); }
-}
-
 export class VectorField {
     constructor() { }
 
@@ -474,191 +373,154 @@ export class Complex {
     // }
 }
 
-export class Surface {
-    sample(u, v, target) {
-        throw new Error("Abstract class: sample() must be implemented!");
+export class AdaptiveSymmetricNormalizer {
+    constructor({ smoothing = 0.05 } = {}) {
+        this._smoothing = smoothing;
+        this.reset();
+    }
+
+    observe(v) {
+        if (!Number.isFinite(v)) return;
+
+        const a = Math.abs(v);
+        this._maxAbs = Math.max(this._maxAbs * (1 - this._smoothing) + a * this._smoothing, a);
+    }
+
+    normalize(v) {
+        if (!Number.isFinite(v)) return 0.5;
+
+        const r = Math.max(this._maxAbs, 1e-9);
+        const clamped = Math.max(-r, Math.min(r, v));
+
+        return 0.5 + 0.5 * (clamped / r);
+    }
+
+    reset() {
+        this._maxAbs = 1;
+    }
+}
+
+/**
+ * Abstract class representing a real/complex, continuous/discrete scalar field.
+ */
+export class ScalarField {
+    scalarValueAt(x, y) {
+        throw new Error("You invoked the method of an abstract base class. Please create a subclass first.");
     }
 
     alwaysWith(view) { return { body: this, view: view, always: true }; };
     onceWith(view) { return { body: this, view: view, always: false}; };
+
+    updateWith(newTime) {}
 }
-
-export class HeightFieldSurface extends Surface {
-    constructor({
-        field,
-        width = 10,
-        depth = 10
-    } = {}) {
-        super();
-        this._field = field;
-        this._width = width;
-        this._depth = depth;
-    }
-
-    get width() { return this._width; }
-    get depth() { return this._depth; }
-
-    sample(u, v, target) {
-        const x = (u - 0.5) * this._width;
-        const z = (v - 0.5) * this._depth;
-        target.set(x, this._field.scalarValueAt(x, z), z);
-    }
-}
-
-export class ParametricSurface extends Surface {
-    constructor({
-        uRange = new Interval(-0.5, 0.5),
-        vRange = new Interval(-0.5, 0.5),
-        x = (u, v) => u,
-        y = (u, v) => v,
-        z = (u, v) => 0
-    } = {}) {
-        super();
-        this._uRange = uRange;
-        this._vRange = vRange;
-        this._x = x;
-        this._y = y;
-        this._z = z;
-    }
-
-    sample(u, v, target) {
-        const uu = this._uRange.scaleUnitParameter(u);
-        const vv = this._vRange.scaleUnitParameter(v);
-        target.set(this._x(uu, vv), this._z(uu, vv), this._y(uu, vv));
-    }
-}
-
-
-//
-// TODO WHAT FOLLOWS BELOW IS NOT OK ==> NEED TO BECOME FIELDS!!
-//
 
 /**
- * Field for a surface based on a lattice
+ * This is the “adapter” between the physics and rendering.
  */
-export class SurfaceField {
+export class NormalizedScalarField {
+    constructor(field, normalizer) {
+        this._field = field;
+        this._normalizer = normalizer;
+    }
+
+    set surface(surface) { this._field.surface = surface; }
+
+    reset() { this._normalizer.reset(); }
+
+    scalarValueAt(u, v) {
+        const raw = this._field.scalarValueAt(u, v);
+        this._normalizer.observe?.(raw);
+        return this._normalizer.normalize(raw);
+    }
+}
+
+/**
+ * Discrete scalar field, i.e. a scalar field on a grid.
+ */
+export class DiscreteScalarField extends ScalarField {
+    constructor({
+        nx = 100,
+        ny = 100
+    } = {}) {
+        super();
+        this._nx = nx;
+        this._ny = ny;
+        this._data = new Float32Array(nx * ny);
+    }
+
+    get nx() { return this._nx; }
+    get ny() { return this._ny; }
+
+    scalarValueAt(x, y) {
+        // bilinear interpolation
+    }
+
     valueAt(i, j) {
-        throw new Error("valueAt(i,j) not implemented");
-    }
-}
-
-export class PDESurfaceField extends SurfaceField {
-    constructor({
-        resolution = 50
-    } = {}) {
-        super();
-        this._resolution = resolution;
-        this._u = this._createGrid(resolution);
-        this._uPrev = this._createGrid(resolution);
-        this._uNext = this._createGrid(resolution);
-        this._time = 0;
+        return this._data[i + this._nx * j];
     }
 
-    _createGrid(n) {
-        return Array.from({ length: n }, () => new Float32Array(n));
+    setValueAt(i, j, value) {
+        this._data[i + this._nx * j] = value;
     }
-
-    update(dt) {
-        this._time += dt;
-        this.step(dt);
-        this._swap();
-    }
-
-    _swap() {
-        const tmp = this._uPrev;
-        this._uPrev = this._u;
-        this._u = this._uNext;
-        this._uNext = tmp;
-    }
-
-    // override in subclass
-    step(dt) {
-        throw new Error("step(dt) must be implemented in each concrete PDE surface");
-    }
-
-    valueAt(i, j) { return this._u[i][j]; }
-
-    size() { return this._resolution; }
-}
-
-export class FiniteDifferenceMethodField extends PDESurfaceField{
-    constructor({
-        resolution = 100,
-        damping = 0.999,
-        waveSpeed = 2
-    } = {}) {
-        super({resolution});
-        this._c = waveSpeed
-        this._damping = damping;
-        this._init();
-    }
-
-    _init() {
-        for (let i = 0; i < this._resolution; i++)
-            for (let j = 0; j < this._resolution; j++) {
-                const x = i / this._resolution;
-                const y = j / this._resolution;
-
-                this._u[i][j] = Math.sin(10 * x) * Math.cos(10 * y);
-                this._uPrev[i][j] = this._u[i][j];
-            }
-    }
-
-    step(dt) {
-        const resolution = this._resolution;
-        const c2 = this._c * this._c;
-        const dt_dt_c2 = dt * dt * c2;
-        for (let i = 1; i < resolution - 1; i++)
-            for (let j = 1; j < resolution - 1; j++) {
-                const laplacian =
-                    this._u[i+1][j] + this._u[i-1][j] + this._u[i][j+1] + this._u[i][j-1] - 4 * this._u[i][j];
-                this._uNext[i][j] = 2 * this._u[i][j] - this._uPrev[i][j] + dt_dt_c2 * laplacian;
-                this._uNext[i][j] *= this._damping;
-            }
-
-        this._applyBoundary();
-    }
-
-    _applyBoundary() {
-        const n = this._resolution - 1;
-        for (let i = 0; i < this._resolution; i++) {
-            this._uNext[0][i] = 0;
-            this._uNext[n][i] = 0;
-            this._uNext[i][0] = 0;
-            this._uNext[i][n] = 0;
-        }
-    }
-
 }
 
 /**
- * Partial different equation surface, a dynamic surface governed by a partial differential equation.
+ * Discrete complex scalar field, i.e. a complex scalar field on a grid.
  */
-export class PDESurface extends Surface {
+export class DiscreteComplexField extends ScalarField {
     constructor({
-        field,
-        width = 10,
-        depth = 10
+        nx = 128,
+        ny = 128,
+        real = Array.from({ length: nx },() => new Float32Array(ny)),
+        imag = Array.from({ length: nx },() => new Float32Array(ny)),
     } = {}) {
         super();
-        this._field = field;
-        this._width = width;
-        this._depth = depth;
+        this.real = real;
+        this.imag = imag;
+        this.nx = nx;
+        this.ny = ny;
     }
 
-    update(dt) {
-        this._field.update(dt);
+    phaseAt(i, j) {
+        const re = this.real[i][j];
+        const im = this.imag[i][j];
+        return Math.atan2(im, re); // [-π, π]
     }
 
-    sample(u, v, target) {
-        const i = Math.floor(u * (this._field.size() - 1));
-        const j = Math.floor(v * (this._field.size() - 1));
-        const x = (u - 0.5) * this._width;
-        const z = (v - 0.5) * this._depth;
+    magnitudeAt(i, j) {
+        const re = this.real[i][j];
+        const im = this.imag[i][j];
+        return Math.sqrt(re * re + im * im);
+    }
 
-        target.set(x, this._field.valueAt(i, j), z);
+    transformWith(transformation) {
+        transformation(this);
+        return this;
     }
 }
+
+// TODO This is a vector representation of a complex scalar value,
+// rotating in the complex plane, coloured by its phase, and size
+// equal to the abs value.
+export class ComplexScalarFieldValue {
+    constructor({
+        position = new Vec3(),
+        value = new Complex(0, 0)
+    } = {})  {
+        this.position = position.clone();
+        this.value = value;
+    }
+
+    clone() {
+        return new VectorFieldValue({
+            position: this.position.clone(),
+            value: this.value.clone(),
+        });
+    }
+
+    get axis() { return new Vec3(0, this.value.re, this.value.im); }
+}
+
 
 //
 // js/fft-esm.js

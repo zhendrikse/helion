@@ -12,22 +12,27 @@ import {
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
     DynamicDrawUsage, BufferAttribute, Box3
 } from "three";
-import {SurfaceColorMapper} from "../../colormappers.js";
+import { GradientColorMapper, colorMappers } from "../../colormappers.js";
+import { HeightScalarField } from "../../../math/surface.js";
+import {AdaptiveSymmetricNormalizer, NormalizedScalarField} from "../../../math/math.js";
 
 export class SurfaceView extends Group {
     constructor({
         uSegments = 100, // Resolution in u-direction
         vSegments = 100, // resolution in v-direction
-        colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.GRADIENT),
-        normalizer = (position) => position.y
+        scalarField = new NormalizedScalarField(new HeightScalarField(), new AdaptiveSymmetricNormalizer()),
+        colorMapper = new GradientColorMapper(),
     } = {}) {
         super();
         this._uSegments = uSegments;
         this._vSegments = vSegments;
-        this._normalizer = normalizer;
+        this._scalarField = scalarField;
         this._colorMapper = colorMapper;
         this._surface = null;
+        this._dirty = true;
     }
+
+    set colorMapper(colorMapperKey) { this._colorMapper = colorMappers[colorMapperKey]; }
 
     attachTo(mathSurfaceDefinition) {
         // Sanity checks
@@ -35,6 +40,10 @@ export class SurfaceView extends Group {
             throw new Error("Surface does not implement sample(), hence it cannot be attached to this view.");
 
         this._surface = mathSurfaceDefinition;
+        this._scalarField.surface = mathSurfaceDefinition;
+
+        this._scalarField.reset();
+        this._dirty = true;
     }
 
     get boundingBox() {
@@ -47,6 +56,19 @@ export class SurfaceView extends Group {
     }
 
     render() {}
+
+    dispose() {
+        this.traverse(obj => {
+            if (obj.geometry) obj.geometry.dispose?.();
+            if (obj.material)
+                if (Array.isArray(obj.material))
+                    obj.material.forEach(m => m.dispose?.());
+                else
+                    obj.material.dispose?.();
+        });
+
+        this.removeFromParent?.();
+    }
 }
 
 export class IsoparametricContoursView extends SurfaceView {
@@ -54,10 +76,10 @@ export class IsoparametricContoursView extends SurfaceView {
         uSegments = 20,
         vSegments = 20,
         segments = 100,
-        colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.GRADIENT),
-        normalizer = (position) => position.y
+        colorMapper = new GradientColorMapper(),
+        scalarField = new NormalizedScalarField(new HeightScalarField(), new AdaptiveSymmetricNormalizer())
     } = {}) {
-        super({uSegments, vSegments, colorMapper, normalizer});
+        super({uSegments, vSegments, colorMapper, scalarField});
         this._segments = segments;
         this._material = new LineBasicMaterial({
             vertexColors: true,
@@ -71,6 +93,21 @@ export class IsoparametricContoursView extends SurfaceView {
         this._target = new Vector3();
         this._color = new Color();
     }
+
+    get boundingBox() {
+        const box = new Box3();
+
+        for (const entry of [...this._uLines, ...this._vLines]) {
+            const geometry = entry.line.geometry;
+            geometry.computeBoundingBox();
+            const bbox = geometry.boundingBox;
+            if (bbox)
+                box.union(bbox);
+        }
+
+        return box;
+    }
+
     attachTo(surface) {
         super.attachTo(surface);
         this.#build();
@@ -104,7 +141,7 @@ export class IsoparametricContoursView extends SurfaceView {
         }
     }
 
-    #updateLine(entry, sampleFn) {
+    #updateLine(entry, sampleFn, colorFn) {
         const geometry = entry.line.geometry;
         const positions = geometry.attributes.position.array;
 
@@ -119,8 +156,7 @@ export class IsoparametricContoursView extends SurfaceView {
             positions[k + 2] = this._target.z;
 
             // color
-            const t = this._normalizer(this._target);
-            this._colorMapper.map(t, this._color);
+            this._colorMapper.map(colorFn(j / this._segments), this._color);
             colors[k] = this._color.r;
             colors[k + 1] = this._color.g;
             colors[k + 2] = this._color.b;
@@ -133,10 +169,17 @@ export class IsoparametricContoursView extends SurfaceView {
 
     render() {
         for (const entry of this._uLines)
-            this.#updateLine(entry, (v) => this._surface.sample(entry.u, v, this._target));
+            this.#updateLine(entry,
+                (v) => this._surface.sample(entry.u, v, this._target),
+                (v) => this._scalarField.scalarValueAt(entry.u, v));
 
         for (const entry of this._vLines)
-            this.#updateLine(entry, (u) => this._surface.sample(u, entry.v, this._target));
+            this.#updateLine(entry,
+                (u) => this._surface.sample(u, entry.v, this._target),
+                (u) => this._scalarField.scalarValueAt(u, entry.v));
+
+
+        this._dirty = false;
     }
 }
 
@@ -146,10 +189,10 @@ export class SphereSurfaceView extends SurfaceView {
         vSegments = 40,
         radius = 0.08,
         opacity = 1.0,
-        colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.GRADIENT),
-        normalizer = (position) => position.y
+        colorMapper = new GradientColorMapper(),
+        scalarField = new NormalizedScalarField(new HeightScalarField(), new AdaptiveSymmetricNormalizer())
     } = {}) {
-        super({uSegments, vSegments, colorMapper, normalizer});
+        super({uSegments, vSegments, colorMapper, scalarField});
         this._target = new Vector3();
         this._dummy = new Object3D();
         this._color = new Color();
@@ -171,6 +214,17 @@ export class SphereSurfaceView extends SurfaceView {
         this._mesh.instanceColor.setUsage(DynamicDrawUsage);
     }
 
+    get boundingBox() {
+        const box = new Box3();
+        for (let i = 0; i < this._mesh.count; i++) {
+            this._mesh.getMatrixAt(i, this._dummy.matrix);
+            this._dummy.position.setFromMatrixPosition(this._dummy.matrix);
+            box.expandByPoint(this._dummy.position);
+        }
+
+        return box;
+    }
+
     render() {
         let index = 0;
 
@@ -183,8 +237,7 @@ export class SphereSurfaceView extends SurfaceView {
                 this._dummy.updateMatrix();
                 this._mesh.setMatrixAt(index, this._dummy.matrix);
 
-                const t = this._normalizer(this._target);
-                this._colorMapper.map(t, this._color);
+                this._colorMapper.map(this._scalarField.scalarValueAt(u, v), this._color);
                 const k = 3 * index;
                 this._colorArray[k] = this._color.r;
                 this._colorArray[k + 1] = this._color.g;
@@ -196,6 +249,7 @@ export class SphereSurfaceView extends SurfaceView {
 
         this._mesh.instanceMatrix.needsUpdate = true;
         this._mesh.instanceColor.needsUpdate = true;
+        this._dirty = false;
     }
 }
 
@@ -204,10 +258,10 @@ export class PlaneSurfaceView extends SurfaceView {
         uSegments = 100,
         vSegments = 100,
         wireframe = false,
-        colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.GRADIENT),
-        normalizer = (position) => position.y
+        colorMapper = new GradientColorMapper(),
+        scalarField = new NormalizedScalarField(new HeightScalarField(), new AdaptiveSymmetricNormalizer())
     } = {}) {
-        super({uSegments, vSegments, colorMapper, normalizer});
+        super({uSegments, vSegments, colorMapper, scalarField});
         const geometry = new PlaneGeometry(1, 1, uSegments, vSegments);
         const material = new MeshStandardMaterial({
             side: DoubleSide,
@@ -239,8 +293,7 @@ export class PlaneSurfaceView extends SurfaceView {
                 this._positions[k++] = this._target.y;
                 this._positions[k++] = this._target.z;
 
-                const t = this._normalizer(this._target);
-                this._colorMapper.map(t, this._color);
+                this._colorMapper.map(this._scalarField.scalarValueAt(u, v), this._color);
                 this._colors[c++] = this._color.r;
                 this._colors[c++] = this._color.g;
                 this._colors[c++] = this._color.b;
@@ -251,5 +304,9 @@ export class PlaneSurfaceView extends SurfaceView {
         geometry.attributes.position.needsUpdate = true;
         geometry.attributes.color.needsUpdate = true;
         geometry.computeVertexNormals();
+        if (this._dirty) {
+            this._mesh.geometry.computeBoundingBox();
+        }
+        this._dirty = false;
     }
 }

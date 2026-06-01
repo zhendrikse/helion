@@ -1,10 +1,9 @@
-import {Vector3, Vector2, BufferGeometry, LineBasicMaterial, Line} from "three";
+import {Vector3, Vector2, BufferGeometry, LineBasicMaterial, Line, Color} from "three";
 import {
     Floor, Sphere, ThreeJsRenderer, ThreeJsRenderOptions, Trail, Canvas,
     EventController, HtmlDiv, Overlay, Simulation, Surface, IsoparametricContoursView,
-    RadialSymmetricBody
+    RadialSymmetricBody, UniformColorMapper
 } from "helion";
-import {SurfaceColorMapper} from "../../../src/index.js";
 
 const initialCometDistance = 33;
 const currentIsRingOrbitValue = false;
@@ -277,8 +276,7 @@ renderer.addObject3D(grid);
 renderer.addObject3D(photonRing);
 
 // Curved space-time
-const colorMapper = new SurfaceColorMapper(SurfaceColorMapper.Mode.UNIFORM);
-const spaceTimeCone = new IsoparametricContoursView({colorMapper});
+const spaceTimeCone = new IsoparametricContoursView({colorMapper: new UniformColorMapper(new Color(0xffff00))});
 renderer.synchronize(coneGeometry.onceWith(spaceTimeCone));
 
 // Comets with trails

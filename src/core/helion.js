@@ -305,11 +305,13 @@ export class Simulation {
     start() {
         this._running = true;
         this._renderer.onRunStatusChanged(this._running);
+        return this;
     }
 
     stop() {
         this._running = false;
         this._renderer.onRunStatusChanged(this._running);
+        return this;
     }
 
     get isRunning() { return this._running; }

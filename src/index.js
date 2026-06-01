@@ -5,11 +5,14 @@ export {
 } from "./phys/physics.js";
 
 export {
-    VectorField, Range, Vec3, FiniteDifferenceMethodField, Surface, DiscreteScalarField,
-    FFT, PDESurface, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid,
-    factorial, linspace, FieldStatistics, DiscreteComplexField, HeightFieldSurface,
-    ParametricSurface, Interval
+    VectorField, Range, Vec3, DiscreteScalarField,
+    FFT, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid,
+    factorial, linspace, FieldStatistics, DiscreteComplexField, Interval
 } from "./math/math.js";
+
+export {
+    FiniteDifferenceMethodField, Surface, PDESurface, ParametricSurface, HeightFieldSurface
+} from "./math/surface.js";
 
 export { Integrators } from "./numerics/integrators/integrators.js";
 
@@ -26,11 +29,7 @@ export {
 } from "./renderers/3d/primitives/primitives.js";
 
 export {
-    ArrowField
-} from "./renderers/3d/vectorfields/arrowfield.js";
-
-export {
-    OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial
+    OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial, ArrowField
 } from "./renderers/3d/composite/composites.js";
 
 export {
@@ -39,13 +38,17 @@ export {
 
 export { CompositeRenderer } from "./renderers/renderer.js";
 
-export { SurfaceColorMapper, wavelengthColor, wavelengthToRGBNormalized } from "./renderers/colormappers.js";
+export {
+    WaterAlternativeColorMapper, WaterColorMapper, GradientColorMapper, UniformColorMapper,
+    RdYlBuColorMapper, ViridisColorMapper, InfernoColorMapper, SeismicColorMapper, JetColorMapper,
+    wavelengthColor, wavelengthToRGBNormalized, colorMappers
+} from "./renderers/colormappers.js";
 
 export { ScalarFieldRaster, ComplexScalarFieldRaster } from "./renderers/2d/rasters/pixelrasters.js";
 
 export {
     SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView
-} from "./renderers/3d/scalarfields/surfaces.js"
+} from "./renderers/3d/surfaces/surfaces.js"
 
 export { Canvas2DRenderer } from "./renderers/2d/canvassim.js";
 
