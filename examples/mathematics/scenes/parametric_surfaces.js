@@ -75,13 +75,11 @@ const renderer = ThreeJsRenderer
 //
 const surfaceView = new PlaneSurfaceView({
     uSegments: 100,
-    vSegments: 100,
-    colorMapper: colorMappers["RdYlBu"]
+    vSegments: 100
 });
 const contoursView = new IsoparametricContoursView({
     uSegments: 20,
-    vSegments: 20,
-    colorMapper: colorMappers["RdYlBu"]
+    vSegments: 20
 });
 
 // surfaces: object met ParametricSurface instances
