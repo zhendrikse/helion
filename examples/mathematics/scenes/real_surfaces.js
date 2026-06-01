@@ -3,8 +3,7 @@ import {
     ScalarField, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3, SurfaceColorMapper
 } from "helion";
 
-
-class SurfaceScalarField extends ScalarField {
+class MultiVariateFunction extends ScalarField {
     constructor({
         amplitude = 2
     } = {}) {
@@ -19,29 +18,44 @@ class SurfaceScalarField extends ScalarField {
             this._time = newTime;
     }
 
-    set animate(value) { this._animate = value; }
-
-    f_x_y_t_1(x, y, t) {
-        const r2 = -x * x - y * y;
-        return this._amplitude * Math.exp(.25 * r2) * (1 - Math.sin(Math.PI * t));
-    }
-
-    f_x_y_t(x, y, t) {
-        const r = Math.sqrt(x * x + y * y);
-        return this._amplitude * Math.sin(Math.PI * r - Math.PI * t);
-    }
-
     scalarValueAt(x, y) {
-        return this.f_x_y_t(x, y, this._time);
+        return this.f(x, y, this._time);
+    }
+
+    f(x, y, t) {
+        throw new Error("Implement f(x, y, t)!")
     }
 
     get amplitude() { return this._amplitude; }
+    set animate(value) { this._animate = value; }
+}
+
+class Ripple extends MultiVariateFunction {
+    constructor() {
+        super({ amplitude: 2 });
+    }
+
+    f(x, y, t) {
+        const r = Math.sqrt(x * x + y * y);
+        return this._amplitude * Math.sin(Math.PI * r - Math.PI * t);
+    }
+}
+
+class Peak extends MultiVariateFunction {
+    constructor() {
+        super({ amplitude: 5 });
+    }
+
+    f(x, y, t) {
+        const r2 = -x * x - y * y;
+        return this._amplitude * Math.exp(.25 * r2) * (1 - Math.sin(Math.PI * t - Math.PI * 0.5));
+    }
 }
 
 //
 // Math objects
 //
-const scalarField = new SurfaceScalarField();
+const scalarField = new Peak();
 const heightFieldSurface = new HeightFieldSurface({
     field: scalarField
 });

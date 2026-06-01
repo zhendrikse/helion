@@ -7,7 +7,7 @@ import {
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Renderer } from "../renderer.js"
 import { Vec3 } from "../../math/math.js";
-import { AxesController, Axes } from "./primitives/decorations.js";
+import { Axes } from "./primitives/decorations.js";
 
 export class ThreeJsRenderOptions {
     constructor({
@@ -57,7 +57,7 @@ export class ThreeJsRenderer extends Renderer {
         this._world = new Group();
         this._skydome = null;
         this._scene.add(this._world);
-        this._axis = null;
+        this._axes = null;
     }
 
     _showOverlayMessage(message, duration = 1000) {
@@ -211,7 +211,7 @@ export class ThreeJsRenderer extends Renderer {
         this._renderer.render(this._scene, this._camera);
         this._controls?.update();
         this._skydome?.update(time, this._camera);
-        this._axis?.render(this._scene, this._camera);
+        this._axes?.render(this._scene, this._camera);
 
         if (this._autoRotate)
             this._doAutoRotate(this._camera.position.length());
@@ -251,15 +251,24 @@ export class ThreeJsRenderer extends Renderer {
         xzPlane = true,
         yzPlane = true,
         axisLabels = ["X", "Y", "Z"],
-        positiveXZ = false
+        positiveXZ = false,
+        bottomAlign = true
     } = {}) {
-        this._axesController = new AxesController({
-            parentGroup: this._world,
-            canvasContainer: this._canvasWrapperDiv.htmlDiv,
-            axesParameters: {layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ}
-        });
+        if (this._axes) {
+            this._axes.dispose();
+            this._world.remove(this._axes);
+        }
+        const canvasContainer = this._canvasWrapperDiv.htmlDiv
+        this._axes = Axes.from(anObject.boundingBox, divisions)
+            .withLayout(layoutType, positiveXZ)
+            .withAnnotations(canvasContainer, layoutType, axisLabels)
+            .withSettings({ frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels });
 
-        this._axis = this._axesController.createFromBoundingBox(anObject.boundingBox);
+        if (layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed
+            this._axes.frameTo(anObject.boundingBox, bottomAlign);
+        this._axes.onWindowResize();
+        this._world.add(this._axes);
+        return this._axes;
     }
 
     set autoRotate(autoRotate) { this._autoRotate = autoRotate; }

@@ -15,7 +15,7 @@ export { Integrators } from "./numerics/integrators/integrators.js";
 
 export {
     Simulation, Canvas, HtmlDiv, Overlay, EventController, HtmlControl, UPlotGraph, CallbackFunction
-} from "./simulation.js";
+} from "./core/helion.js";
 
 export {
     ThreeJsRenderOptions, ThreeJsRenderer

@@ -507,8 +507,6 @@ export class HeightFieldSurface extends Surface {
 
 export class ParametricSurface extends Surface {
     constructor({
-        width = 10,
-        depth = 10,
         uRange = new Interval(-0.5, 0.5),
         vRange = new Interval(-0.5, 0.5),
         x = (u, v) => u,
@@ -518,15 +516,10 @@ export class ParametricSurface extends Surface {
         super();
         this._uRange = uRange;
         this._vRange = vRange;
-        this._width = width;
-        this._depth = depth;
         this._x = x;
         this._y = y;
         this._z = z;
     }
-
-    get width() { return this._width; }
-    get depth() { return this._depth; }
 
     sample(u, v, target) {
         const uu = this._uRange.scaleUnitParameter(u);

@@ -4,23 +4,19 @@ import {
     SurfaceColorMapper, ParametricSurface, Interval
 } from "helion";
 
-const parametricSurface = new ParametricSurface({
+const parametricSurface1 = new ParametricSurface({
     uRange: new Interval(0, 2 * Math.PI),
     vRange: new Interval(0, 4 * Math.PI),
-    width: 4 * Math.PI,
-    depth: 4 * Math.PI,
     x: (u, v) => (1 * Math.sin(u) + 2) * Math.sin(v),
     y: (u, v) => (1 * Math.sin(u) + 2) * Math.cos(v),
     z: (u, v) => 1 * Math.cos(u) + 2 * Math.cos(0.5 * v)
 });
 
-const kleinBottle = new ParametricSurface({
+const parametricSurface = new ParametricSurface({
     uRange: new Interval(0, 2 * Math.PI),
     vRange: new Interval(0, 2 * Math.PI),
-    width: 4 * Math.PI,
-    depth: 4 * Math.PI,
     x: (u, v) => -(5 - 2 * Math.cos(u)) * Math.cos(v) + 6 * (Math.sin(u) + 1) * Math.cos(u),
-    y: (u, v) => (5 - 2 * Math.cos(u)) * Math.sin(v),
+    y: (u, v) =>  (5 - 2 * Math.cos(u)) * Math.sin(v),
     z: (u, v) => -16 * Math.sin(u)
 });
 

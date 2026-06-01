@@ -6,10 +6,9 @@
 </head>
 <body>
     <!--
-       - P A R A M E T R I C   S U R F A C E S
-       -->
-    <div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
-        <canvas class="applicationCanvas" id="parametricSurfacesCanvas" width="500" height="500"></canvas><br/>
+       - S P H E R I C A L   H A R M O N I C S
+    <div class="canvasWrapper" id="sphericalHarmonicsSurfacesCanvasWrapper">
+        <canvas class="applicationCanvas" id="sphericalHarmonicsSurfacesCanvas" width="500" height="500"></canvas>
     </div>
     <div class="buttonRow">
         <label for="colorMapSelect">Color map:</label>
@@ -30,11 +29,12 @@
         <label for="showWireframe">Wireframe</label>
         <input type="checkbox" name="showWireframe" id="showWireframe" />
     </div>
-    <script type="module" src="scenes/parametric_surfaces.js"></script>
+    <script type="module" src="scenes/spherical_harmonics.js"></script>
+       -->
     <!--
        - R E A L   S U R F A C E S
-    <div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
-        <canvas class="applicationCanvas" id="parametricSurfacesCanvas" width="500" height="500"></canvas><br/>
+    <div class="canvasWrapper" id="realSurfacesCanvasWrapper">
+        <canvas class="applicationCanvas" id="realSurfacesCanvas" width="500" height="500"></canvas>
     </div>
     <div class="buttonRow">
         <label for="colorMapSelect">Color map:</label>
@@ -60,9 +60,37 @@
     <script type="module" src="scenes/real_surfaces.js"></script>
        -->
     <!--
+       - R E A L   S U R F A C E S
+       -->
+    <div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
+        <canvas class="applicationCanvas" id="parametricSurfacesCanvas" width="500" height="500"></canvas>
+    </div>
+    <div class="buttonRow">
+        <label for="colorMapSelect">Color map:</label>
+        <select name="colorMaps" id="colorMapSelect">
+            <option value="seismic">Seismic</option>
+            <option value="viridis">Viridis</option>
+            <option value="jet">Jet</option>
+            <option value="inferno">Inferno</option>
+            <option value="RdYlBu">RdYlBu</option>
+            <option value="water">Water</option>
+            <option value="water alternative">Water alternative</option>
+            <option value="gradient">Gradient</option>
+        </select>
+    </div>
+    <div class="buttonRow">
+        <label for="showContours">Contours</label>
+        <input type="checkbox" name="showContours" id="showContours" checked="checked" />
+        <label for="showWireframe">Wireframe</label>
+        <input type="checkbox" name="showWireframe" id="showWireframe" />
+        <label for="animate">Animate</label>
+        <input type="checkbox" name="animate" id="animate" />
+    </div>
+    <script type="module" src="scenes/parametric_surfaces.js"></script>
+    <!--
        - F O U R I E R   T R A N S F O R M
     <div class="canvasWrapper" id="waveCanvasWrapper">
-        <canvas class="applicationCanvas" id="waveCanvas"></canvas><br/>
+        <canvas class="applicationCanvas" id="waveCanvas"></canvas>
     </div>
     <script type="module" src="scenes/fourier_transform.js"></script>
     <div class="canvasWrapper" id="fourierTransformCanvasWrapper">
