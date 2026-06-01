@@ -76,7 +76,7 @@ const renderer = ThreeJsRenderer
 // Surface view
 //
 const surfaceScalarField = new NormalizedScalarField(
-    new HeightScalarField(), new FixedIntervalNormalizer(new Interval(-scalarField.amplitude, scalarField.amplitude)));
+    new HeightScalarField(), new FixedIntervalNormalizer(new Interval(0, scalarField.amplitude)));
 
 const surfaceView = new PlaneSurfaceView({
     uSegments: 100,
