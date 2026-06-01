@@ -1,6 +1,7 @@
 import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl, HeightFieldSurface,
-    ScalarField, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3, colorMappers
+    ScalarField, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3,
+    FixedIntervalNormalizer, HeightScalarField, Interval, NormalizedScalarField
 } from "helion";
 
 class MultiVariateFunction extends ScalarField {
@@ -55,7 +56,7 @@ class Peak extends MultiVariateFunction {
 //
 // Math objects
 //
-const scalarField = new Peak();
+const scalarField = new Ripple();
 const heightFieldSurface = new HeightFieldSurface({
     field: scalarField
 });
@@ -74,15 +75,18 @@ const renderer = ThreeJsRenderer
 //
 // Surface view
 //
+const surfaceScalarField = new NormalizedScalarField(
+    new HeightScalarField(), new FixedIntervalNormalizer(new Interval(-scalarField.amplitude, scalarField.amplitude)));
+
 const surfaceView = new PlaneSurfaceView({
     uSegments: 100,
     vSegments: 100,
-    colorMapper: colorMappers["RdYlBu"]
+    scalarField: surfaceScalarField
 });
 const contoursView = new IsoparametricContoursView({
     uSegments: 20,
     vSegments: 20,
-    colorMapper: colorMappers["RdYlBu"]
+    scalarField: surfaceScalarField
 });
 
 renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));

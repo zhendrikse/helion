@@ -1,5 +1,6 @@
 import {
-    Canvas, colorMappers, EventController, HeightFieldSurface, HtmlControl, HtmlDiv, IsoparametricContoursView,
+    Canvas, HeightScalarField, EventController, HeightFieldSurface, HtmlControl, HtmlDiv,
+    IsoparametricContoursView, Interval, FixedIntervalNormalizer, NormalizedScalarField,
     PlaneSurfaceView, ScalarField, Simulation, ThreeJsRenderer, ThreeJsRenderOptions, Vec3
 } from "../../../src/index.js";
 
@@ -53,13 +54,15 @@ const renderer = ThreeJsRenderer
         fieldOfView: 45,
     }));
 
+const surfaceScalarField = new NormalizedScalarField(
+    new HeightScalarField(), new FixedIntervalNormalizer(new Interval(-scalarField.amplitude, scalarField.amplitude)));
 const surfaceView = new PlaneSurfaceView({
-    colorMapper: colorMappers["RdYlBu"]
+    scalarField: surfaceScalarField
 });
 const contoursView = new IsoparametricContoursView({
     uSegments: 20,
     vSegments: 20,
-    colorMapper: colorMappers["RdYlBu"]
+    scalarField: surfaceScalarField
 });
 renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));
 renderer.synchronize(heightFieldSurface.alwaysWith(contoursView));

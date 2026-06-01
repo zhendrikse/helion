@@ -5,13 +5,14 @@ export {
 } from "./phys/physics.js";
 
 export {
-    VectorField, Range, Vec3, DiscreteScalarField,
+    VectorField, Range, Vec3, DiscreteScalarField, FixedIntervalNormalizer, NormalizedScalarField,
     FFT, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid,
     factorial, linspace, FieldStatistics, DiscreteComplexField, Interval
 } from "./math/math.js";
 
 export {
-    FiniteDifferenceMethodField, Surface, PDESurface, ParametricSurface, HeightFieldSurface
+    FiniteDifferenceMethodField, Surface, PDESurface, ParametricSurface, HeightFieldSurface,
+    HeightScalarField
 } from "./math/surface.js";
 
 export { Integrators } from "./numerics/integrators/integrators.js";

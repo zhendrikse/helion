@@ -2,6 +2,8 @@
  * M A T H E M A T I C S *
  *************************/
 
+import {max, min} from "three/tsl";
+
 /**
  * Pick a number from a normal distribution using Box-Muller transform.
  *
@@ -223,14 +225,18 @@ export class Interval {
         if (this.to > value) this.to = value;
     }
 
-    scaleValue = (value) => this.to === this.from ? 0 : (value - this.from) / this.range();
-    range = () => (this.from === Infinity || this.to === Infinity) ? Infinity : this.to - this.from;
+    scaleValue = (value) => this.to === this.from ? 0 : (value - this.from) / this.range;
+
+    get range() {
+        return (this.from === Infinity || this.to === Infinity) ? Infinity : this.to - this.from;
+    }
+
     /**
      * Scale a unit parameter [0, 1] up to this interval
      * @param unitParameter the parameter that runs from [0, 1]
      * @returns {number} the scaled parameter
      */
-    scaleUnitParameter = (unitParameter) => this.range() * (unitParameter + this.from / this.range());
+    scaleUnitParameter = (unitParameter) => this.range * (unitParameter + this.from / this.range);
 }
 
 export class VectorFieldValue {
@@ -371,6 +377,18 @@ export class Complex {
     //     const imag = Math.sign(z.im || 1) * Math.sqrt((r - z.re) / 2);
     //     return new Complex(real, imag);
     // }
+}
+
+export class FixedIntervalNormalizer {
+    constructor(valueInterval) {
+        this._interval = valueInterval;
+    }
+
+    normalize(value) {
+        return this._interval.scaleValue(value);
+    }
+
+    reset() {}
 }
 
 export class AdaptiveSymmetricNormalizer {

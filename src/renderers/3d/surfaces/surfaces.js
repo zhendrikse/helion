@@ -41,7 +41,6 @@ export class SurfaceView extends Group {
 
         this._surface = mathSurfaceDefinition;
         this._scalarField.surface = mathSurfaceDefinition;
-
         this._scalarField.reset();
         this._dirty = true;
     }

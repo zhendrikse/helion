@@ -78,6 +78,8 @@ export class SurfaceScalarField {
 }
 
 export class HeightScalarField extends SurfaceScalarField {
+    static on = (surface) => new HeightScalarField(surface);
+
     constructor(surface) {
         super(surface);
     }
@@ -89,6 +91,8 @@ export class HeightScalarField extends SurfaceScalarField {
 }
 
 export class MeanCurvatureField extends SurfaceScalarField {
+    static on = (surface) => new MeanCurvatureField(surface);
+
     constructor(surface) {
         super(surface);
         this._geometry = new DifferentialGeometry(surface);
@@ -102,6 +106,8 @@ export class MeanCurvatureField extends SurfaceScalarField {
 }
 
 export class GaussianCurvatureField extends SurfaceScalarField {
+    static on = (surface) => new GaussianCurvatureField(surface);
+
     constructor(surface) {
         super(surface);
         this._geometry = new DifferentialGeometry(surface);
@@ -115,6 +121,8 @@ export class GaussianCurvatureField extends SurfaceScalarField {
 }
 
 export class PrincipalCurvatureField extends SurfaceScalarField {
+    static on = (surface) => new PrincipalCurvatureField(surface);
+
     constructor(surface, which = 1) {
         super(surface);
         this._which = which;
