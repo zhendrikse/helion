@@ -92,7 +92,10 @@ const contoursView = new IsoparametricContoursView({
 renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));
 renderer.synchronize(heightFieldSurface.alwaysWith(contoursView));
 
-renderer.provideAxesFor(surfaceView);
+
+renderer.provideAxesAround(surfaceView.boundingBox);
+renderer.frameSceneOn(surfaceView.boundingBox, {padding: 0.9, translationY: -5});
+
 
 //
 // Simulation

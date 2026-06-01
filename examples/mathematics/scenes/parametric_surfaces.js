@@ -4,7 +4,7 @@ import {
     SurfaceColorMapper, ParametricSurface, Interval
 } from "helion";
 
-const parametricSurface1 = new ParametricSurface({
+const parametricSurface = new ParametricSurface({
     uRange: new Interval(0, 2 * Math.PI),
     vRange: new Interval(0, 4 * Math.PI),
     x: (u, v) => (1 * Math.sin(u) + 2) * Math.sin(v),
@@ -12,7 +12,7 @@ const parametricSurface1 = new ParametricSurface({
     z: (u, v) => 1 * Math.cos(u) + 2 * Math.cos(0.5 * v)
 });
 
-const parametricSurface = new ParametricSurface({
+const parametricSurface1 = new ParametricSurface({
     uRange: new Interval(0, 2 * Math.PI),
     vRange: new Interval(0, 2 * Math.PI),
     x: (u, v) => -(5 - 2 * Math.cos(u)) * Math.cos(v) + 6 * (Math.sin(u) + 1) * Math.cos(u),
@@ -52,7 +52,8 @@ const contoursView = new IsoparametricContoursView({
 renderer.synchronize(parametricSurface.alwaysWith(surfaceView));
 renderer.synchronize(parametricSurface.alwaysWith(contoursView));
 
-renderer.provideAxesFor(surfaceView);
+renderer.provideAxesAround(surfaceView.boundingBox);
+renderer.frameSceneOn(surfaceView.boundingBox, {padding: 0.9, translationY: -5});
 
 //
 // Simulation

@@ -238,10 +238,45 @@ export class ThreeJsRenderer extends Renderer {
     }
 
     remove(anObject) {
-        throw new Error("Remove() method not implemented.");
+        anObject.dispose?.();
+        this._world.remove(anObject);
     }
 
-    provideAxesFor(anObject, {
+    #calculateCenter(boundingBox) {
+        const size = new Vector3();
+        let center = new Vector3();
+        boundingBox.getSize(size);
+        boundingBox.getCenter(center);
+        return { center, size };
+    }
+
+    frameSceneOn(boundingBox, {
+        padding = 1.2,
+        translationY = 0,
+        minDistance = 2,
+        viewDirection = new Vector3(1, 1, 1)
+    } = {}) {
+        const { center, size } = this.#calculateCenter(boundingBox);
+
+        // distance so that bounding box is always in view
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const verticalFieldOfView = Math.PI  * this._camera.fov / 180;
+        let distance = maxDim / Math.tan(verticalFieldOfView / 2);
+        distance = Math.max(distance * padding, minDistance);
+
+        const direction = viewDirection.clone().normalize();
+        this._camera.position
+            .copy(new Vector3(center.x, center.y + translationY, center.z))
+            .addScaledVector(direction, distance);
+        this._camera.near = distance / 100;
+        this._camera.far = distance * 10;
+        this._camera.updateProjectionMatrix();
+
+        this._controls.target.copy(center);
+        this._controls.update();
+    }
+
+    provideAxesAround(boundingBox, {
         layoutType = Axes.Type.MATLAB,
         divisions = 10,
         frame = true,
@@ -254,18 +289,17 @@ export class ThreeJsRenderer extends Renderer {
         positiveXZ = false,
         bottomAlign = true
     } = {}) {
-        if (this._axes) {
-            this._axes.dispose();
-            this._world.remove(this._axes);
-        }
+        if (this._axes)
+            this.remove(this._axes);
+
         const canvasContainer = this._canvasWrapperDiv.htmlDiv
-        this._axes = Axes.from(anObject.boundingBox, divisions)
+        this._axes = Axes.from(boundingBox, divisions)
             .withLayout(layoutType, positiveXZ)
             .withAnnotations(canvasContainer, layoutType, axisLabels)
             .withSettings({ frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels });
 
         if (layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed
-            this._axes.frameTo(anObject.boundingBox, bottomAlign);
+            this._axes.frameTo(boundingBox, bottomAlign);
         this._axes.onWindowResize();
         this._world.add(this._axes);
         return this._axes;
