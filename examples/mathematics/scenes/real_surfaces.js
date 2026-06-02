@@ -1,7 +1,7 @@
 import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl, ScalarFieldSurface,
     ScalarField, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3,
-    FixedIntervalNormalizer, HeightScalarField, Interval, GradientColorMapper
+    FixedIntervalNormalizer, Interval, GradientColorMapper
 } from "../../../src/index.js";
 
 class MultiVariateFunction extends ScalarField {

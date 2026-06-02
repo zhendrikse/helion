@@ -175,7 +175,7 @@ export const colorMappers = {
     "water": new WaterColorMapper(),
     "water alternative": new WaterAlternativeColorMapper(),
     "gradient": new GradientColorMapper(),
-    "uniform": new UniformColorMapper()
+    "uniform": new UniformColorMapper(new Color(0xffff00))
 };
 
 // TODO For shader

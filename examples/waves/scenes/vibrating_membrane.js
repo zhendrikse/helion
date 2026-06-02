@@ -1,5 +1,5 @@
 import {
-    Canvas, HeightScalarField, EventController, ScalarFieldSurface, HtmlControl, HtmlDiv,
+    Canvas, EventController, ScalarFieldSurface, HtmlControl, HtmlDiv,
     IsoparametricContoursView, Interval, FixedIntervalNormalizer,
     PlaneSurfaceView, ScalarField, Simulation, ThreeJsRenderer, ThreeJsRenderOptions, Vec3, GradientColorMapper
 } from "../../../src/index.js";

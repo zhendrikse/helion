@@ -77,9 +77,9 @@ export class ParametricSurface extends Surface {
  * ├── UserDefinedField
  */
 export class SurfaceScalarField extends ScalarField {
-    constructor(surface) {
+    constructor() {
         super();
-        this._surface = surface;
+        this._surface = null;
         this._target = new Vec3();
     }
 
@@ -87,12 +87,6 @@ export class SurfaceScalarField extends ScalarField {
 }
 
 export class HeightScalarField extends SurfaceScalarField {
-    static on = (surface) => new HeightScalarField(surface);
-
-    constructor(surface) {
-        super(surface);
-    }
-
     scalarValueAt(u, v) {
         this._surface.sample(u, v, this._target);
         return this._target.y;
@@ -100,14 +94,15 @@ export class HeightScalarField extends SurfaceScalarField {
 }
 
 export class MeanCurvatureField extends SurfaceScalarField {
-    static on = (surface) => new MeanCurvatureField(surface);
-
-    constructor(surface) {
-        super(surface);
-        this._geometry = new DifferentialGeometry(surface);
+    constructor() {
+        super();
+        this._geometry = null;
     }
 
-    set surface(newSurface) { this._surface = newSurface; this._geometry = new DifferentialGeometry(newSurface); }
+    set surface(newSurface) {
+        this._surface = newSurface;
+        this._geometry = new DifferentialGeometry(newSurface);
+    }
 
     scalarValueAt(u, v) {
         return this._geometry.normalMeanGaussian(u, v).H;
@@ -115,14 +110,15 @@ export class MeanCurvatureField extends SurfaceScalarField {
 }
 
 export class GaussianCurvatureField extends SurfaceScalarField {
-    static on = (surface) => new GaussianCurvatureField(surface);
-
-    constructor(surface) {
-        super(surface);
-        this._geometry = new DifferentialGeometry(surface);
+    constructor() {
+        super();
+        this._geometry = null;
     }
 
-    set surface(newSurface) { this._surface = newSurface; this._geometry = new DifferentialGeometry(newSurface); }
+    set surface(newSurface) {
+        this._surface = newSurface;
+        this._geometry = new DifferentialGeometry(newSurface);
+    }
 
     scalarValueAt(u, v) {
         return this._geometry.normalMeanGaussian(u, v).K;
@@ -130,14 +126,16 @@ export class GaussianCurvatureField extends SurfaceScalarField {
 }
 
 export class PrincipalCurvatureField extends SurfaceScalarField {
-    static on = (surface) => new PrincipalCurvatureField(surface);
-
-    constructor(surface, which = 1) {
-        super(surface);
+    constructor(which = 1) {
+        super();
+        this._geometry = null;
         this._which = which;
     }
 
-    set surface(newSurface) { this._surface = newSurface; this._geometry = new DifferentialGeometry(newSurface); }
+    set surface(newSurface) {
+        this._surface = newSurface;
+        this._geometry = new DifferentialGeometry(newSurface);
+    }
 
     scalarValueAt(u, v) {
         const { k1, k2 } =
