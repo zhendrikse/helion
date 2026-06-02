@@ -70,7 +70,6 @@
     <div class="buttonRow">
         <label for="colorMapSelect">Color map:</label>
         <select name="colorMaps" id="colorMapSelect">
-            <option value="uniform">Uniform</option>
             <option value="gradient">Gradient</option>
             <option value="seismic">Seismic</option>
             <option value="viridis">Viridis</option>
@@ -80,11 +79,26 @@
             <option value="water">Water</option>
             <option value="water alternative">Water alternative</option>
         </select>
+    </div>
+    <div class="buttonRow">
         <label for="surfaceSelect">Surface:</label>
         <select name="surfaceSelect" id="surfaceSelect">
+            <option value="Torus">Torus</option>
             <option value="Bow curve">Bow curve</option>
             <option value="Klein bottle">Klein bottle</option>
             <option value="Mobius strip">Möbius strip</option>
+        </select>
+    </div>
+    <div class="buttonRow">
+        <label for="scalarFieldSelect">Surface field:</label>
+        <select name="scalarFieldSelect" id="scalarFieldSelect">
+            <option value="gaussian curvature">Gaussian curvature</option>
+            <option value="mean curvature">Mean curvature</option>
+            <option value="principal curvature 1">Principal curvature 1</option>
+            <option value="principal curvature 2">Principal curvature 2</option>
+            <option value="shape index">Shape index field</option>
+            <option value="curvedness">Curvedness</option>
+            <option value="height">Height</option>
         </select>
     </div>
     <div class="buttonRow">
@@ -92,8 +106,6 @@
         <input type="checkbox" name="showContours" id="showContours" checked="checked" />
         <label for="showWireframe">Wireframe</label>
         <input type="checkbox" name="showWireframe" id="showWireframe" />
-        <label for="animate">Animate</label>
-        <input type="checkbox" name="animate" id="animate" />
     </div>
     <script type="module" src="scenes/parametric_surfaces.js"></script>
     <!--

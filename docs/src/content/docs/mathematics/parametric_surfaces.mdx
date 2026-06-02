@@ -1,5 +1,5 @@
 ---
-title: "🌐 Parametric surfaces"
+title: "📐 Differential geometry"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
@@ -17,8 +17,12 @@ layout: ../../../layouts/DocsLayout.astro
 
 🎯 Illustration of drawing surfaces with [Helion](https://www.hendrikse.name/helion/)<br/>
 
-### Parametric surfaces $\phi: \mathbb{R}^2 \rightarrow \mathbb{R}^3$
+### Parametric surfaces
 <div class="header_line"></div>
+
+$$
+\phi(u, v): \mathbb{R}^2 \rightarrow \mathbb{R}^3
+$$
 
 <div class="badgeRow">
     <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/parametric_surfaces.js">
@@ -29,12 +33,11 @@ layout: ../../../layouts/DocsLayout.astro
 <div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
     <canvas id="parametricSurfacesCanvas" class="applicationCanvas"></canvas>
 </div>
-<div class="buttonRow">
+    <div class="buttonRow">
     <label for="colorMapSelect">Color map:</label>
     <select name="colorMaps" id="colorMapSelect">
-        <option value="uniform">Uniform</option>
-        <option value="gradient">Gradient</option>
         <option value="seismic">Seismic</option>
+        <option value="gradient">Gradient</option>
         <option value="viridis">Viridis</option>
         <option value="jet">Jet</option>
         <option value="inferno">Inferno</option>
@@ -42,14 +45,29 @@ layout: ../../../layouts/DocsLayout.astro
         <option value="water">Water</option>
         <option value="water alternative">Water alternative</option>
     </select>
+</div>
+    <div class="buttonRow">
     <label for="surfaceSelect">Surface:</label>
     <select name="surfaceSelect" id="surfaceSelect">
         <option value="Bow curve">Bow curve</option>
+        <option value="Torus">Torus</option>
         <option value="Klein bottle">Klein bottle</option>
         <option value="Mobius strip">Möbius strip</option>
     </select>
 </div>
-<div class="buttonRow">
+    <div class="buttonRow">
+    <label for="scalarFieldSelect">Surface field:</label>
+    <select name="scalarFieldSelect" id="scalarFieldSelect">
+        <option value="gaussian curvature">Gaussian curvature</option>
+        <option value="mean curvature">Mean curvature</option>
+        <option value="principal curvature 1">Principal curvature 1</option>
+        <option value="principal curvature 2">Principal curvature 2</option>
+        <option value="shape index">Shape index field</option>
+        <option value="curvedness">Curvedness</option>
+        <option value="height">Height</option>
+    </select>
+</div>
+    <div class="buttonRow">
     <label for="showContours">Contours</label>
     <input type="checkbox" name="showContours" id="showContours" checked="checked" />
     <label for="showWireframe">Wireframe</label>
@@ -57,8 +75,158 @@ layout: ../../../layouts/DocsLayout.astro
 </div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/parametric_surfaces.js"}></script>
 
-## Introduction to manifolds
-<div class="header_line"><br/></div>
+## Calculation of classic shape invariants
+<div class="header_line"></div>
+
+The following shape invariants are (numerically) calculated and can subsequently be visualized:
+- Height
+- Gaussian curvature
+- Mean curvature
+- Principal curvature 1
+- Principal curvature 2
+- Shape Index
+- Curvedness
+
+Shape index and curvedness are often encountered together, because roughly
+speaking the shape index tells us something about the shape itself, and the
+curvedness tells us something about the magnitude of the curvature.
+
+$$
+S = \frac{2}{\pi} \arctan\left(\frac{k_1+k_2}{k_1-k_2}\right)
+$$
+
+$$
+C = \sqrt{\frac{k_1^2+k_2^2}{2}}
+$$
+
+### Numeric calculation of shape invariants
+<div class="header_line"></div>
+
+We use **central differences of second order** for *all* derivatives as these derivatives are
+
+* **translation-invariant**
+* **no preferred direction**
+* stable for curvature calculations
+
+This is essential for:
+
+* correct **signs** of $k_1$ and $k_2$
+* correct ratio between both $k_1$ and $k_2$
+
+Note that **forward differencing** is asymmetric and leads to an error in the curvature calculation.
+
+For central differences we use:
+
+$$
+X_{uu} = \frac{X(u+e)-2X(u)+X(u-e)}{e^2}
+$$
+
+$$
+X_{uv} = \frac{ X(u+e,v+e)-X(u+e,v-e)-X(u-e,v+e)+X(u-e,v-e)}{4e^2}
+$$
+
+### Comparison with analytic Gaussian curvature of a torus
+<div class="header_line"></div>
+
+For a torus with major radius $R$ and minor radius $r$ we have the following parametrization:
+
+$$
+X(u,v) = \begin{pmatrix} (R + r\cos v)\cos u \\ (R + r\cos v)\sin u \\ r\sin v \end{pmatrix}
+$$
+
+⭐ The **Gaussian curvature** is given by:
+
+$$
+K(v) = \frac{\cos v}{r (R + r \cos v)}
+$$
+
+👉 Note that this curvature
+
+* is **independent of u**,
+* is zero at $v = \pm\frac{\pi}{2}$,
+* and has a change of sign between the blue ↔ red transition.
+
+For the coloring this means that:
+
+🔴 **Outside** where $\theta = 0 \rightarrow \cos\theta = 1 \rightarrow K > 0$: **elliptic**, e.g. red<br/>
+🔵 **Inside** where $\theta = \pi \rightarrow \cos\theta = -1 \rightarrow K < 0$: **hyperbolic**, e.g. blue<br/>
+⚪ **Side lines** where $\theta = \pm \dfrac{\pi}{2} \rightarrow K = 0$: **parabolic**
+
+For the principal curvature $k_1$ we observe that
+
+🔴 **Outside** strongly positive (red)<br/>
+🔵 **Inside**: strongly negative (blue)
+
+and for $k_2$ that it has the same sign everywhere with varying intensity.
+
+🧠 Summarizing, a torus has
+
+* both **positive and negative Gaussian curvature**
+* **two closed K = 0-contours** (the so-called “equatorial” circles)
+* no contours where the _mean_ curvature $H = 0$
+
+## Helion implementation details
+<div class="header_line"></div>
+
+### Color mapping
+<div class="header_line"></div>
+
+There are three kinds of scalar fields. Depending on the scalar field,
+the program automatically changes to the preferred color mapping of the
+scalar field (shape invariant) of choice.
+
+#### 1. Sign-sensitive (positief / negatief)
+
+* Gaussian curvature ($K$)
+* Mean curvature ($H$)
+* Shape index (partly)
+
+This implies a divergent color mapping with zero as neutral is preferred.
+
+#### 2. Magnitude-only (alleen grootte)
+
+* Curvedness
+* $|H|$
+* $|K|$
+* velocity magnitude etc.
+
+This implies a preference for a monotonic colormap without "zero-centering".
+
+#### 3. Bounded semantic range
+
+* Shape index ∈ [-1, 1]
+
+Here a symmetric and perceptually uniform mapping is preferred.
+
+### Design
+<div class="header_line"></div>
+
+```
+=> ParametricSurface (math surface def, e.g. torus)
+          ↓
+        Feeds
+          ↓
+=> DifferentialGeometry
+          ↓
+      results in
+          ↓
+=> GaussianCurvatureField (scalar field)
+          ↓
+       value to
+          ↓
+=> NormalizedScalarField
+          ↓
+      value to
+          ↓
+=> ColorMapper (maps [0, 1] -> color)
+          ↓
+       used by
+          ↓
+=> PlaneSurfaceView (view on math surface)
+```
+
+## On manifolds
+<div class="header_line"></div>
 
 From: [Behold the Manifold, the Concept that Changed How Mathematicians View Space](https://www.wired.com/story/behold-the-manifold-the-concept-that-changed-how-mathematicians-view-space/):
 
@@ -86,6 +254,6 @@ at their tips — is not a manifold.
 </figure>
 <p style="clear: both;"></p>
 
-## References
+### References
 
 - [The core of differential geometry](https://dibeos.net/2025/04/12/the-core-of-differential-geometry/)

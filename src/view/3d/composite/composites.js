@@ -4,7 +4,7 @@ import {
     MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry
 } from "three";
 import { Arrow } from "../primitives/primitives.js";
-import { VectorFieldValue, ComplexScalarFieldValue, Complex} from "../../../math/math.js";
+import { VectorFieldValue, ComplexScalarFieldValue, Complex} from "../../../model/math/math.js";
 
 //
 // Point cloud

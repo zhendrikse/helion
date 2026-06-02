@@ -10,16 +10,15 @@ import {
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
     DynamicDrawUsage, BufferAttribute, Box3
 } from "three";
-import {GradientColorMapper, colorMappers, UniformColorMapper} from "../../colormappers.js";
-import { HeightScalarField } from "../../../math/surface.js";
-import {AdaptiveSymmetricNormalizer, NormalizedScalarField} from "../../../math/math.js";
+import { HeightScalarField } from "../../../model/math/surface.js";
+import {AdaptiveSymmetricNormalizer, NormalizedScalarField} from "../../../model/math/math.js";
 
 export class SurfaceView extends Group {
     constructor({
         uSegments = 100,
         vSegments = 100,
-        colorMapper = new UniformColorMapper(new Color(0xffff00)),
         scalarField = new HeightScalarField(),
+        colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super();
@@ -34,7 +33,14 @@ export class SurfaceView extends Group {
         this._dirty = true;                 // When surface definition has changed, this flag is raised
     }
 
-    set colorMapper(colorMapperKey) { this._colorMapper = colorMappers[colorMapperKey]; }
+    set colorMapper(colorMapper) { this._colorMapper = colorMapper; }
+    set scalarField(scalarField) {
+        this._scalarField = scalarField;
+        this._scalarField.surface = this._surface;
+        this._normalizedScalarField = new NormalizedScalarField(this._scalarField, this._normalizer);
+        this._normalizedScalarField.reset();
+        this._colorMapper = scalarField.recommendedColorMapper;
+    }
 
     attachTo(mathSurfaceDefinition) {
         // Sanity checks
@@ -78,8 +84,8 @@ export class IsoparametricContoursView extends SurfaceView {
         uSegments = 20,
         vSegments = 20,
         segments = 100,
-        colorMapper = new UniformColorMapper(new Color(0xffff00)),
         scalarField = new HeightScalarField(),
+        colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super({uSegments, vSegments, colorMapper, scalarField, normalizer});
@@ -192,8 +198,8 @@ export class SphereSurfaceView extends SurfaceView {
         vSegments = 40,
         radius = 0.08,
         opacity = 1.0,
-        colorMapper = new UniformColorMapper(new Color(0xffff00)),
         scalarField = new HeightScalarField(),
+        colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super({uSegments, vSegments, colorMapper, scalarField, normalizer});
@@ -262,8 +268,8 @@ export class PlaneSurfaceView extends SurfaceView {
         uSegments = 100,
         vSegments = 100,
         wireframe = false,
-        colorMapper = new UniformColorMapper(new Color(0xffff00)),
         scalarField = new HeightScalarField(),
+        colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super({uSegments, vSegments, colorMapper, scalarField, normalizer});

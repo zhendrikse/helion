@@ -1,5 +1,8 @@
 import {Interval, ScalarField, Vec3} from "./math.js";
-import {DifferentialGeometry} from "./diffgeometry.js";
+import {DifferentialGeometry} from "./numerics/diffgeometry.js";
+import {
+    InfernoColorMapper, JetColorMapper, RdYlBuColorMapper, SeismicColorMapper, ViridisColorMapper,
+} from "../../view/colormappers.js";
 
 /**
  * Mathematical definition of a surface.
@@ -91,12 +94,20 @@ export class HeightScalarField extends SurfaceScalarField {
         this._surface.sample(u, v, this._target);
         return this._target.y;
     }
+
+    get recommendedColorMapper() {
+        return new InfernoColorMapper();
+    }
 }
 
 export class MeanCurvatureField extends SurfaceScalarField {
     constructor() {
         super();
         this._geometry = null;
+    }
+
+    get recommendedColorMapper() {
+        return new JetColorMapper();
     }
 
     set surface(newSurface) {
@@ -113,6 +124,10 @@ export class GaussianCurvatureField extends SurfaceScalarField {
     constructor() {
         super();
         this._geometry = null;
+    }
+
+    get recommendedColorMapper() {
+        return new SeismicColorMapper();
     }
 
     set surface(newSurface) {
@@ -132,6 +147,10 @@ export class PrincipalCurvatureField extends SurfaceScalarField {
         this._which = which;
     }
 
+    get recommendedColorMapper() {
+        return this._which === 1 ? new ViridisColorMapper() : new InfernoColorMapper();
+    }
+
     set surface(newSurface) {
         this._surface = newSurface;
         this._geometry = new DifferentialGeometry(newSurface);
@@ -142,6 +161,53 @@ export class PrincipalCurvatureField extends SurfaceScalarField {
             this._geometry.principals(u, v);
 
         return this._which === 1 ? k1 : k2;
+    }
+}
+
+export class ShapeIndexField extends SurfaceScalarField {
+    constructor() {
+        super();
+        this._geometry = null;
+    }
+
+    get recommendedColorMapper() {
+        return new RdYlBuColorMapper();
+    }
+
+    set surface(newSurface) {
+        this._surface = newSurface;
+        this._geometry = new DifferentialGeometry(newSurface);
+    }
+
+    scalarValueAt(u, v) {
+        const { k1, k2 } = this._geometry.principals(u, v);
+        const denom = k1 - k2;
+
+        if (Math.abs(denom) < 1e-12)
+            return 0;
+
+        return (2 / Math.PI) * Math.atan((k1 + k2) / denom);
+    }
+}
+
+export class CurvednessField extends SurfaceScalarField {
+    constructor() {
+        super();
+        this._geometry = null;
+    }
+
+    set surface(newSurface) {
+        this._surface = newSurface;
+        this._geometry = new DifferentialGeometry(newSurface);
+    }
+
+    get recommendedColorMapper() {
+        return new ViridisColorMapper();
+    }
+
+    scalarValueAt(u, v) {
+        const { k1, k2 } =  this._geometry.principals(u, v);
+        return Math.sqrt(0.5 * (k1 * k1 + k2 * k2));
     }
 }
 

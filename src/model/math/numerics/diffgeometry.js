@@ -1,4 +1,4 @@
-import {Vec3} from "./math.js";
+import {Vec3} from "../math.js";
 
 export class PrincipalFrame {
     constructor({
@@ -32,7 +32,7 @@ export class DifferentialGeometry {
         const e = this.eps;
         const sample = (du, dv) => {
             this._surface.sample(u + du, v + dv, this._position);
-            return this._position;
+            return this._position.clone();
         };
 
         const p00 = sample(0, 0),

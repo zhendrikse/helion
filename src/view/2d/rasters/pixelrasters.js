@@ -1,4 +1,4 @@
-import {FieldStatistics} from "../../../math/math.js";
+import {FieldStatistics} from "../../../model/math/math.js";
 
 export class ScalarFieldRaster {
     static RenderMode = Object.freeze({

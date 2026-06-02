@@ -1,7 +1,7 @@
 import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
     PlaneSurfaceView, EventController, IsoparametricContoursView, Vec3,
-    ParametricSurface, Interval, GradientColorMapper
+    ParametricSurface, Interval, GaussianCurvatureField, scalarFields, colorMappers
 } from "../../../src/index.js";
 
 const surfaces = {
@@ -25,6 +25,13 @@ const surfaces = {
         x: (u, v) => (2 + u * Math.cos(v / 2)) * Math.cos(v),
         y: (u, v) => u * Math.sin(v / 2),
         z: (u, v) => (2 + u * Math.cos(v / 2)) * Math.sin(v)
+    }),
+    "Torus": new ParametricSurface({
+        uRange: new Interval(0, 2 * Math.PI),
+        vRange: new Interval(0, 2 * Math.PI),
+        x: (u, v) => Math.cos(u) * (3 + 1.5 * Math.cos(v)),
+        y: (u, v) => Math.sin(u) * (3 + 1.5 * Math.cos(v)),
+        z: (u, v) => 2 * Math.sin(v)
     })
 };
 
@@ -40,6 +47,14 @@ class SurfaceController {
 
     get surface() { return this._currentSurface; }
     set surface(surfaceName) { this.switchTo(surfaceName); }
+    set colorMapper(colorMapper) {
+        this._surfaceView.colorMapper = colorMappers[colorMapper];
+        this._contoursView.colorMapper = colorMappers[colorMapper];
+    }
+    set scalarField(scalarField) {
+        this._surfaceView.scalarField = scalarFields[scalarField];
+        this._contoursView.scalarField = scalarFields[scalarField];
+    }
 
     switchTo(surfaceName) {
         const newSurface = this._surfaces[surfaceName];
@@ -76,10 +91,12 @@ const renderer = ThreeJsRenderer
 const surfaceView = new PlaneSurfaceView({
     uSegments: 100,
     vSegments: 100,
+    scalarField: new GaussianCurvatureField(),
 });
 const contoursView = new IsoparametricContoursView({
     uSegments: 20,
-    vSegments: 20
+    vSegments: 40,
+    scalarField: new GaussianCurvatureField()
 });
 
 // surfaces: object met ParametricSurface instances
@@ -107,14 +124,14 @@ const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl
     .withElementId("colorMapSelect")
     .forType("change")
-    .to(contoursView)
+    .to(surfaceController)
     .withProperty("colorMapper"));
 
 eventController.attach(HtmlControl
-    .withElementId("colorMapSelect")
+    .withElementId("scalarFieldSelect")
     .forType("change")
-    .to(surfaceView)
-    .withProperty("colorMapper"));
+    .to(surfaceController)
+    .withProperty("scalarField"));
 
 eventController.attach(HtmlControl
     .withElementId("showContours")

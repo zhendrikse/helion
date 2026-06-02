@@ -1,2 +1,10 @@
 - Make surface view like [this](https://chrisboligprojects.pythonanywhere.com/fdm), see also [this link](https://discourse.threejs.org/t/finite-difference-method-for-wave-equation/52822) and [repo](https://github.com/chrismars91/fdm)
 - Make Fourier transform demo like this [WaveBuilder](https://physics.weber.edu/schroeder/software/WaveBuilder.html)
+- Dat betekent dat je waarschijnlijk zonder extra werk ook al deze dingen kunt bouwen:
+  - Mean curvature coloring
+  - Principal curvature coloring (k1, k2)
+  - Shape index coloring
+  - Curvature magnitude coloring
+  - Principal direction glyphs
+  - Principal curvature line tracing
+  - Geodesic fields

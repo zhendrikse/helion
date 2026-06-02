@@ -436,15 +436,15 @@ export class ScalarField {
  * This is the “adapter” between the physics and rendering.
  */
 export class NormalizedScalarField {
-    constructor(field, normalizer) {
-        this._field = field;
+    constructor(scalarField, normalizer) {
+        this._scalarField = scalarField;
         this._normalizer = normalizer;
     }
 
     reset() { this._normalizer.reset(); }
 
     scalarValueAt(u, v) {
-        const raw = this._field.scalarValueAt(u, v);
+        const raw = this._scalarField.scalarValueAt(u, v);
         this._normalizer.observe?.(raw);
         return this._normalizer.normalize(raw);
     }

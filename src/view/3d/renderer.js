@@ -5,7 +5,7 @@ import {
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Renderer } from "../renderer.js"
-import { Vec3 } from "../../math/math.js";
+import { Vec3 } from "../../model/math/math.js";
 import { Axes, SkyDome } from "./composite/backgrounds.js";
 
 export class ThreeJsRenderOptions {

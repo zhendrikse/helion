@@ -3,7 +3,7 @@
  *****************/
 
 import { Complex, Vec3 } from "../math/math.js";
-import { Integrators } from "../numerics/integrators/integrators.js";
+import { Integrators } from "../math/numerics/integrators/integrators.js";
 
 //
 // Constants
