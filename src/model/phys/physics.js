@@ -20,6 +20,29 @@ export function gravitationalForceBetween(twoBodies) {
     return radius.normalize().multiplyScalar(G * twoBodies.body1.mass * twoBodies.body2.mass / rSquared);
 }
 
+export class PhysicsState {
+    constructor({
+        position = new Vec3(),
+        velocity = new Vec3(),
+        mass = 1,
+        acceleration = new Vec3()
+    } = {}) {
+        this.position = position;
+        this.velocity = velocity;
+        this.mass = mass;
+        this.acceleration = acceleration;
+    }
+
+    clone() {
+        return new PhysicsState({
+            position: this.position.clone(),
+            velocity: this.velocity.clone(),
+            mass: this.mass,
+            acceleration: this.acceleration.clone()
+        });
+    }
+}
+
 //
 // Point cloud
 //
@@ -35,7 +58,25 @@ export class PointCloud {
         this._colors = colors;
         this._sizes = sizes;
         this._masses = masses;
-        this.velocities = velocities;
+        this._velocities = velocities;
+
+        this._particleState = new PhysicsState();
+    }
+
+    particleAt(index) {
+        this._particleState.position.copy(this._positions[index]);
+        this._particleState.velocity.copy(this._velocities[index]);
+        this._particleState.mass = this._masses[index];
+        return this._particleState;
+    }
+
+    apply(dt, accelerationFn, integrator = Integrators.symplecticEulerStep) {
+        for (let i = 0; i < this.length; i++) {
+            const particle = this.particleAt(i);
+            integrator(particle, dt, accelerationFn);
+            this._positions[i] = this._particleState.position;
+            this._velocities[i] = this._particleState.velocity;
+        }
     }
 
     alwaysWith(view) { return { body: this, view: view, always: true}; };
@@ -93,60 +134,25 @@ class VelocityVector {
     set axis(newAxis) { this._parent.velocity.copy(newAxis); }
 }
 
-export class PhysicsState {
-    constructor({
-        position = new Vec3(),
-        velocity = new Vec3(),
-        mass = 1,
-        acceleration = new Vec3()
-    }) {
-        this.position = position;
-        this.velocity = velocity;
-        this.mass = mass;
-        this.acceleration = acceleration;
-    }
-
-    clone() {
-        return new PhysicsState({
-            position: this.position.clone(),
-            velocity: this.velocity.clone(),
-            mass: this.mass,
-            acceleration: this.acceleration.clone()
-        });
-    }
-}
-
 export class Body {
     constructor({
         position = new Vec3(),
         velocity = new Vec3(),
         mass = 1
     } = {}) {
-        this.acceleration = new Vec3();     // Intentionally public
-        this.position = position.clone();   // Intentionally public
-        this.velocity = velocity.clone();   // Intentionally public
-        this.mass = mass;                   // Intentionally public
+        this.state = new PhysicsState({ position, velocity, mass });
         this.velocityVector = new VelocityVector(this);
         this.accelerationVector = new AccelerationVector(this);
     }
 
+    get position() { return this.state.position; }
+    get mass() { return this.state.mass; }
+    get velocity() { return this.state.velocity; }
+    get acceleration() { return this.state.acceleration; }
+
     apply(force, dt = 0.01, integrator = Integrators.symplecticEulerStep) {
         const accelerationFn = (bodyParam) => force.clone().multiplyScalar(1 / bodyParam.mass);
-        const updatedBody = integrator(this, dt, accelerationFn);
-        this.position = updatedBody.position;
-        this.velocity = updatedBody.velocity;
-        this.acceleration = updatedBody.acceleration;
-    }
-
-    clone() {
-        return new Body({
-            position: this.position.clone(),
-            velocity: this.velocity.clone(),
-            acceleration: this.acceleration.clone(),
-            mass: this.mass,
-            velocityVector: this.velocityVector.clone(),
-            accelerationVector: this.accelerationVector.clone()
-        });
+        integrator(this.state, dt, accelerationFn);
     }
 
     and(otherBody) { return new TwoBodies(this, otherBody) };
@@ -157,17 +163,20 @@ export class Body {
     positionVectorTo(other) { return other.position.clone().sub(this.position); }
     distanceToSquared(other) { return this.positionVectorTo(other).dot(this.positionVectorTo(other)); }
     distanceTo(other) { return this.positionVectorTo(other).length() }
+
+    get kineticEnergy() { return 0.5 * this.state.mass * this.state.velocity.dot(this.state.velocity); }
+    get momentum() { return this.state.mass * this.state.velocity; }
 }
 
 export class AxialSymmetricBody extends Body {
     constructor({
-                    position = new Vec3(),
-                    velocity = new Vec3(),
-                    axis = new Vec3(),
-                    radius = 1,
-                    mass = 1,
-                    charge = 0
-                } = {})  {
+        position = new Vec3(),
+        velocity = new Vec3(),
+        axis = new Vec3(),
+        radius = 1,
+        mass = 1,
+        charge = 0
+    } = {})  {
         super({ position, velocity, mass });
         this.charge = charge;
         this.radius = radius;
@@ -188,11 +197,11 @@ export class AxialSymmetricBody extends Body {
 
 export class RadialSymmetricBody extends Body {
     constructor({
-                    position = new Vec3(0, 0, 0),
-                    velocity = new Vec3(0, 0, 0),
-                    mass = 1,
-                    radius = 1
-                } = {}) {
+        position = new Vec3(0, 0, 0),
+        velocity = new Vec3(0, 0, 0),
+        mass = 1,
+        radius = 1
+    } = {}) {
         super( {position, velocity, mass})
         this.radius = radius;
     }
@@ -205,20 +214,16 @@ export class RadialSymmetricBody extends Body {
             mass: this.mass,
         });
     }
-
-    get kineticEnergy() { return 0.5 * this.mass * this.velocity.dot(this.velocity); }
-    get potentialEnergy() { return this.mass * G * this.position.y; }
-    get momentum() { return this.mass * this.velocity; }
 }
 
 export class Block extends Body {
     constructor({
-                    position = new Vec3(0, 0, 0),
-                    velocity = new Vec3(0, 0, 0),
-                    size = new Vec3(1, 1, 1),
-                    mass = 1,
-                    charge = 0
-                } = {}) {
+        position = new Vec3(0, 0, 0),
+        velocity = new Vec3(0, 0, 0),
+        size = new Vec3(1, 1, 1),
+        mass = 1,
+        charge = 0
+    } = {}) {
         super({position, velocity, mass});
         this.size = size;
         this.charge = charge;
@@ -268,9 +273,6 @@ export class Particle extends Body {
     }
 
     fieldAt(point) { return Particle.fieldAt(this, point); }
-
-    get kineticEnergy() { return 0.5 * this.mass * this.velocity.dot(this.velocity); }
-    get momentum() { return this.mass * this.velocity; }
 }
 
 export class Spring extends Body {

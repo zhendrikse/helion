@@ -1,6 +1,7 @@
 import { Vector2 } from "three";
-import { RadialSymmetricBody , Simulation, Canvas, Overlay, Sphere, Floor, Vec3,
-    ThreeJsRenderOptions, ThreeJsRenderer, Trail, EventController, HtmlDiv, UPlotGraph
+import {
+    RadialSymmetricBody, Simulation, Canvas, Overlay, Sphere, Floor, Vec3,
+    ThreeJsRenderOptions, ThreeJsRenderer, Trail, EventController, HtmlDiv, UPlotGraph, G
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -89,7 +90,7 @@ function updateGraph(simulatedTime) {
     plot.graphData[0].push(simulatedTime);
     plot.graphData[1].push(ball.position.y);
     plot.graphData[2].push(ball.kineticEnergy);
-    plot.graphData[3].push(ball.potentialEnergy);
+    plot.graphData[3].push(ball.mass * G * ball.position.y);
     plot.update();
 }
 

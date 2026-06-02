@@ -8,8 +8,8 @@ It is built around explicit mathematical semantics such as scalar fields, vector
 and parametric geometry, rather than ad-hoc visual scripting.
 
 It provides a low-cognitive-overhead environment for expressing mathematical and physical systems,
-where models, simulation, and visualization remain tightly coupled and
-directly executable in the web browser.
+where models, simulation, and visualization remain tightly synchronized in time and
+are directly executable in the web browser.
 
 ## 🧠 Core ideas
 
