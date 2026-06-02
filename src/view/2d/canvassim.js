@@ -64,7 +64,7 @@ export class Canvas2DRenderer extends Renderer {
         bodyAndView.view.attachTo(bodyAndView.body);
     }
 
-    render(transform) {
+    render(time, forceAllViewsToBeRendered) {
         this._context.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
         this._dynamicObjects.forEach(obj => obj.render?.(this._context));
     }

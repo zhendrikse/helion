@@ -147,6 +147,9 @@ export class EventController {
             if (control.htmlSpanElement)
                 this._updateValueInReadOut(control, event.target.value);
             control.callbackFunction(event);
+
+            // After user interaction, all views need to be rendered/updated, as static views may have changed too!
+            this._simulation.forceAllViewsToBeRendered = true;
         });
     }
 
@@ -171,6 +174,9 @@ export class EventController {
 
             if (control.htmlSpanElement)
                 this._updateValueInReadOut(control, value);
+
+            // After user interaction, all views need to be rendered/updated, as static views may have changed too!
+            this._simulation.forceAllViewsToBeRendered = true;
         });
     }
 }
@@ -183,10 +189,14 @@ export class Simulation {
         this._onBeforePhysicsUpdate = () => {};
         this._onAfterPhysicsUpdate = () => {};
         this._running = false;
+        this._forceAllViewsToBeRendered = false;
         this._simulatedTime = 0;
         this._dt = 0.01;
         this._substepsCount = 1;
     }
+
+    // After user interaction, all views need to be rendered/updated, as static views may have changed too!
+    set forceAllViewsToBeRendered(value) { this._forceAllViewsToBeRendered = value; }
 
     incrementsTimeBy(dt) {
         this._dt = dt;
@@ -225,7 +235,8 @@ export class Simulation {
             this._onAfterPhysicsUpdate(clockTime, this._simulatedTime);
 
             // Rendering
-            this._renderer.render(clockTime);
+            this._renderer.render(clockTime, this._forceAllViewsToBeRendered);
+            this._forceAllViewsToBeRendered = false;
             requestAnimationFrame(animate);
         };
 

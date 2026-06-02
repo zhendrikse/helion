@@ -315,17 +315,17 @@ const headGeometrySquare = new ConeGeometry(1, 1, 4);
 
 export class ArrowField extends Group {
     constructor({
-                    xRange,
-                    yRange,
-                    zRange,
-                    scaleFactor = 1,
-                    round = false,
-                    magnitudeMap = m => Math.log(1 + m),
-                    colorMap = (dir, mag) => new Color().setHSL(Math.min(Math.log(1 + mag) / 5, 1), 0.7, 0.5),
-                    shaftWidth = 0.08,
-                    headWidth = 2.0,
-                    headLength = 4.0,
-                } = {}) {
+        xRange,
+        yRange,
+        zRange,
+        scaleFactor = 1,
+        round = false,
+        magnitudeMap = m => Math.log(1 + m),
+        colorMap = (dir, mag) => new Color().setHSL(Math.min(Math.log(1 + mag) / 5, 1), 0.7, 0.5),
+        shaftWidth = 0.08,
+        headWidth = 2.0,
+        headLength = 4.0,
+    } = {}) {
         super();
 
         this._scaleFactor = scaleFactor;

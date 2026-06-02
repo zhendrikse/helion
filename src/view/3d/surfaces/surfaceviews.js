@@ -323,3 +323,34 @@ export class PlaneSurfaceView extends SurfaceView {
         this._dirty = false;
     }
 }
+
+export class SurfaceVectorFieldView extends Group {
+    constructor({
+        resolution = new SurfaceResolution(20, 20),
+        vectorField = null
+    } = {}) {
+        super();
+
+        this._resolution = resolution;
+        this._vectorField = vectorField;
+        this._surface = null;
+
+        this._arrowField = null;
+    }
+
+    attachTo(surface) {
+        this._surface = surface;
+
+        if (this._vectorField)
+            this._vectorField.surface = surface;
+
+        this._dirty = true;
+    }
+
+    render() {
+        if (!this._dirty)
+            return;
+
+        // later
+    }
+}

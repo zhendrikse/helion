@@ -3,11 +3,15 @@
 
 ### ❤️ Visualizing the beauty of math &amp; physics
 
-Helion is a modular math & physics visualization toolkit for the browser. It provides a low-cognitive-overhead 
-environment for visually expressing physical and mathematical ideas. These ideas can then easily be 
-translated into code and rendered on the web.
+Helion is a browser-native generative math & physics visualization engine.
+It is built around explicit mathematical semantics such as scalar fields, vector fields,
+and parametric geometry, rather than ad-hoc visual scripting.
 
-## 🧠 Core idea
+It provides a low-cognitive-overhead environment for expressing mathematical and physical systems,
+where models, simulation, and visualization remain tightly coupled and
+directly executable in the web browser.
+
+## 🧠 Core ideas
 
 A Helion program should read like a laboratory notebook with
 one or more scientific experiment scripts, that
@@ -16,10 +20,11 @@ you can read and understand almost without knowing the framework at all.
 If you cannot immediately explain what a line of code is doing in terms of 
 physics or mathematics, it is likely too abstract!
 
-👉 Experiments are meant to be **explicit, isolated, and readable**<br/>
-👉 Low cognitive overhead<br/>
+👉 JavaScript / Web-native (no installation or configuration)<br/>
 👉 Code expresses scientific intent directly<br/>
-👉 Purely browser based: **zero** installation nor configuration<br/>
+👉 It is model-driven (fields, surfaces, operators)<br/>
+👉 Supports multiple views per model (model / view / contoller) <br/>
+👉 Low cognitive overhead<br/>
 
 ## 📊 Code example
 

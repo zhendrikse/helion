@@ -202,10 +202,14 @@ export class ThreeJsRenderer extends Renderer {
             anObject.render?.();
     }
 
-    render(time) {
+    render(time, forceAllViewsToBeRendered) {
         // Sync new physics state with view
         for (const anObject of this._dynamicObjects)
             anObject.render?.();
+
+        if (forceAllViewsToBeRendered)
+            for (const anObject of this._staticObjects)
+                anObject.render?.();
 
         this._renderer.render(this._scene, this._camera);
         this._controls?.update();

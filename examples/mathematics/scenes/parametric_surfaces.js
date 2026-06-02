@@ -66,8 +66,8 @@ class SurfaceController {
         }
 
         this._currentSurface = newSurface;
-        this._renderer.synchronize(newSurface.alwaysWith(this._surfaceView));
-        this._renderer.synchronize(newSurface.alwaysWith(this._contoursView));
+        this._renderer.synchronize(newSurface.onceWith(this._surfaceView));
+        this._renderer.synchronize(newSurface.onceWith(this._contoursView));
 
         this._renderer.provideAxesAround(this._surfaceView);
         this._renderer.frameSceneOn(this._surfaceView, this._options);

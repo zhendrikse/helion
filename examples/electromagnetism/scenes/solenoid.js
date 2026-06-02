@@ -98,14 +98,18 @@ const renderer = ThreeJsRenderer
 for (const segment of solenoid.segments)
     renderer.synchronize(segment.onceWith(new Cylinder({ color: new Color("yellow") })));
 
-renderer.synchronize(magneticField.alwaysWith(new ArrowField({
+renderer.synchronize(magneticField.onceWith(new ArrowField({
     xRange: new Range(-20, 20, 4),
     yRange: new Range(-20, 20, 4),
     zRange: new Range(-20, 20, 4),
     scaleFactor:  1.25
 })));
 
-const eventController = new EventController();
+const simulation = Simulation
+    .with(renderer)
+    .onClockTick();
+
+const eventController = new EventController(simulation);
 eventController.attach(HtmlControl
     .withElementId("fieldStrength")
     .forType("input")
@@ -119,6 +123,3 @@ eventController.attach(HtmlControl
     .to(renderer)
     .withProperty("autoRotate"));
 
-Simulation
-    .with(renderer)
-    .onClockTick();

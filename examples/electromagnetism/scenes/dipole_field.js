@@ -65,8 +65,8 @@ const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("dipoleCanvasWrapper").contains(Canvas.withElementId("dipoleCanvas")))
     .with(threeJsRendererOptions);
 
-const positiveSphere = new Sphere({ color: new Color("red") });
-const negativeSphere = new Sphere({color: new Color("blue" )});
+const positiveSphere = new Sphere({ color: "red" });
+const negativeSphere = new Sphere({color: "blue" });
 const arrowField = new ArrowField({
     xRange: new Range(-20 / scale, 20 / scale, 2 / scale),
     yRange: new Range(-12 / scale, 12 / scale, 2 / scale),
@@ -79,12 +79,16 @@ const arrowField = new ArrowField({
 
 renderer.synchronize(dipole.positive.onceWith(positiveSphere));
 renderer.synchronize(dipole.negative.onceWith(negativeSphere));
-renderer.synchronize(dipoleField.alwaysWith(arrowField));
+renderer.synchronize(dipoleField.onceWith(arrowField));
+
+const simulation = Simulation
+    .with(renderer)
+    .onClockTick();
 
 //
 // Event controller
 //
-const eventController = new EventController();
+const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl
     .withElementId("fieldStrengthSlider")
     .forType("input")
@@ -97,8 +101,4 @@ eventController.attach(HtmlControl
     .forType("click")
     .to(renderer)
     .withProperty("autoRotate"));
-
-Simulation
-    .with(renderer)
-    .onClockTick();
 
