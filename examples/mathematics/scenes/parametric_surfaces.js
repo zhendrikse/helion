@@ -1,8 +1,8 @@
 import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
     PlaneSurfaceView, EventController, IsoparametricContoursView, Vec3,
-    colorMappers, ParametricSurface, Interval
-} from "helion";
+    ParametricSurface, Interval, GradientColorMapper
+} from "../../../src/index.js";
 
 const surfaces = {
     "Bow curve": new ParametricSurface({
@@ -54,8 +54,8 @@ class SurfaceController {
         this._renderer.synchronize(newSurface.alwaysWith(this._surfaceView));
         this._renderer.synchronize(newSurface.alwaysWith(this._contoursView));
 
-        this._renderer.provideAxesAround(this._surfaceView.boundingBox);
-        this._renderer.frameSceneOn(this._surfaceView.boundingBox, this._options);
+        this._renderer.provideAxesAround(this._surfaceView);
+        this._renderer.frameSceneOn(this._surfaceView, this._options);
     }
 }
 
@@ -75,7 +75,7 @@ const renderer = ThreeJsRenderer
 //
 const surfaceView = new PlaneSurfaceView({
     uSegments: 100,
-    vSegments: 100
+    vSegments: 100,
 });
 const contoursView = new IsoparametricContoursView({
     uSegments: 20,

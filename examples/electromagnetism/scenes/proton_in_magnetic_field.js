@@ -1,7 +1,8 @@
 import { Color } from "three";
 import { Particle, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
     EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
-    ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3 } from "helion";
+    ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3
+} from "../../../src/index.js";
 
 class MagneticField extends VectorField {
     constructor(fieldStrength) {

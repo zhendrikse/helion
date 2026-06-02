@@ -1,7 +1,7 @@
 import { Color } from "three";
 import { Particle, VectorField, Range , Simulation, Canvas, HtmlDiv, Vec3,
     EventController, HtmlControl, Sphere, ArrowField, ThreeJsRenderOptions,
-    ThreeJsRenderer } from "helion";
+    ThreeJsRenderer } from "../../../src/index.js";
 
 const scale = 1e15;
 const ec = 1.6e-19;

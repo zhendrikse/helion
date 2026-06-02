@@ -1,7 +1,7 @@
 import { Vector2 } from "three";
 import { EventController, HtmlDiv, UPlotGraph, RadialSymmetricBody, Vec3, HarmonicOscillator,
     Simulation, Canvas, Overlay, Sphere, ThreeJsRenderOptions, ThreeJsRenderer, Helix, Floor
-} from "helion";
+} from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
 //

@@ -3,7 +3,7 @@ import {
     Floor, Sphere, ThreeJsRenderer, ThreeJsRenderOptions, Trail, Canvas,
     EventController, HtmlDiv, Overlay, Simulation, Surface, IsoparametricContoursView,
     RadialSymmetricBody, UniformColorMapper
-} from "helion";
+} from "../../../src/index.js";
 
 const initialCometDistance = 33;
 const currentIsRingOrbitValue = false;

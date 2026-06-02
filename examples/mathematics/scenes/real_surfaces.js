@@ -1,8 +1,8 @@
 import {
-    ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl, HeightFieldSurface,
+    ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl, ScalarFieldSurface,
     ScalarField, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3,
-    FixedIntervalNormalizer, HeightScalarField, Interval, NormalizedScalarField
-} from "helion";
+    FixedIntervalNormalizer, HeightScalarField, Interval, GradientColorMapper
+} from "../../../src/index.js";
 
 class MultiVariateFunction extends ScalarField {
     constructor({
@@ -57,8 +57,10 @@ class Peak extends MultiVariateFunction {
 // Math objects
 //
 const scalarField = new Ripple();
-const heightFieldSurface = new HeightFieldSurface({
-    field: scalarField
+const heightFieldSurface = new ScalarFieldSurface({
+    scalarField,
+    uRange: new Interval(-2 * Math.PI, 2 * Math.PI),
+    vRange: new Interval(-2 * Math.PI, 2 * Math.PI),
 });
 
 //
@@ -73,27 +75,26 @@ const renderer = ThreeJsRenderer
     }));
 
 //
-// Surface view
+// Surface views
 //
-const surfaceScalarField = new NormalizedScalarField(
-    new HeightScalarField(), new FixedIntervalNormalizer(new Interval(0, scalarField.amplitude)));
-
 const surfaceView = new PlaneSurfaceView({
     uSegments: 100,
     vSegments: 100,
-    scalarField: surfaceScalarField
+    colorMapper: new GradientColorMapper(),
+    normalizer: new FixedIntervalNormalizer(new Interval(0, scalarField.amplitude))
 });
 const contoursView = new IsoparametricContoursView({
     uSegments: 20,
     vSegments: 20,
-    scalarField: surfaceScalarField
+    colorMapper: new GradientColorMapper(),
+    normalizer: new FixedIntervalNormalizer(new Interval(0, scalarField.amplitude))
 });
 
 renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));
 renderer.synchronize(heightFieldSurface.alwaysWith(contoursView));
 
-renderer.provideAxesAround(surfaceView.boundingBox);
-renderer.frameSceneOn(surfaceView.boundingBox, {padding: 0.9, translationY: -5});
+renderer.provideAxesAround(surfaceView);
+renderer.frameSceneOn(surfaceView, { padding: 0.9, translationY: -5 });
 
 //
 // Simulation

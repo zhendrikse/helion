@@ -2,7 +2,7 @@ import {
     Simulation, Canvas, CompositeRenderer, EventController, HtmlControl, CallbackFunction, HtmlDiv,
     Canvas2DRenderer, OneDimensionalComplexPlaneWave2D, OneDimensionalComplexPlaneWave,
     OneDimensionalComplexPlaneWave3D, ThreeJsRenderer, ThreeJsRenderOptions, Vec3
-} from "helion";
+} from "../../../src/index.js";
 
 //
 // Physics model

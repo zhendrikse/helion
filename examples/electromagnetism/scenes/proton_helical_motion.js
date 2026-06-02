@@ -2,7 +2,7 @@ import { Color } from "three";
 import { Particle, VectorField, Range, Sphere, Trail, Vec3,
     ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, CallbackFunction, Canvas,
     EventController, HtmlControl, HtmlDiv, Overlay, Simulation
-} from "helion";
+} from "../../../src/index.js";
 
 const initialSspeed = 50;
 const angle = 10 * Math.PI / 180;

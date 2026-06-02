@@ -254,12 +254,13 @@ export class ThreeJsRenderer extends Renderer {
         return { center, size };
     }
 
-    frameSceneOn(boundingBox, {
+    frameSceneOn(anObject, {
         padding = 1.2,
         translationY = 0,
         minDistance = 2,
         viewDirection = new Vector3(1, 1, 1)
     } = {}) {
+        const boundingBox = anObject.boundingBox;
         const { center, size } = this.#calculateCenter(boundingBox);
 
         // distance so that bounding box is always in view
@@ -280,7 +281,7 @@ export class ThreeJsRenderer extends Renderer {
         this._controls.update();
     }
 
-    provideAxesAround(boundingBox, {
+    provideAxesAround(anObject, {
         layoutType = Axes.Type.MATLAB,
         divisions = 10,
         frame = true,
@@ -296,6 +297,7 @@ export class ThreeJsRenderer extends Renderer {
         if (this._axes)
             this.remove(this._axes);
 
+        const boundingBox = anObject.boundingBox;
         const canvasContainer = this._canvasWrapperDiv.htmlDiv
         this._axes = Axes.from(boundingBox, divisions)
             .withLayout(layoutType, positiveXZ)

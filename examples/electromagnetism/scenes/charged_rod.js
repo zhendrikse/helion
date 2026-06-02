@@ -1,7 +1,7 @@
 import { Color } from "three";
 import { Particle, VectorField, Range, Sphere, ArrowField, Trail, ThreeJsRenderer,
     ThreeJsRenderOptions, Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
-} from "helion";
+} from "../../../src/index.js";
 
 //
 // Constants

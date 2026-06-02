@@ -1,6 +1,6 @@
 import {EventController, Vec3, HtmlDiv, UPlotGraph, Block,
     Simulation, Canvas, Overlay, Box, ThreeJsRenderOptions, ThreeJsRenderer, Aquarium
-} from "helion";
+} from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
 const liquidDensity = 1000;

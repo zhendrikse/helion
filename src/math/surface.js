@@ -1,37 +1,44 @@
-import {Interval, Vec3} from "./math.js";
+import {Interval, ScalarField, Vec3} from "./math.js";
 import {DifferentialGeometry} from "./diffgeometry.js";
 
+/**
+ * Mathematical definition of a surface.
+ */
 export class Surface {
     sample(u, v, target) {
         throw new Error("Abstract class: sample() must be implemented!");
     }
 
+    // Methods to tie/synchronize mathematical surfaces with their respective views
     alwaysWith(view) { return { body: this, view: view, always: true }; };
     onceWith(view) { return { body: this, view: view, always: false}; };
 }
 
-export class HeightFieldSurface extends Surface {
+/**
+ * A surface that is based on the values of a scalar field.
+ */
+export class ScalarFieldSurface extends Surface {
     constructor({
-        field,
-        width = 10,
-        depth = 10
+        scalarField,
+        uRange = new Interval(-0.5, 0.5),
+        vRange = new Interval(-0.5, 0.5),
     } = {}) {
         super();
-        this._field = field;
-        this._width = width;
-        this._depth = depth;
+        this._uRange = uRange;
+        this._vRange = vRange;
+        this._scalarField = scalarField;
     }
 
-    get width() { return this._width; }
-    get depth() { return this._depth; }
-
     sample(u, v, target) {
-        const x = (u - 0.5) * this._width;
-        const z = (v - 0.5) * this._depth;
-        target.set(x, this._field.scalarValueAt(x, z), z);
+        const x = this._uRange.scaleUnitParameter(u);
+        const z = this._vRange.scaleUnitParameter(v);
+        target.set(x, this._scalarField.scalarValueAt(x, z), z);
     }
 }
 
+/**
+ * A surface defined
+ */
 export class ParametricSurface extends Surface {
     constructor({
         uRange = new Interval(-0.5, 0.5),
@@ -56,25 +63,27 @@ export class ParametricSurface extends Surface {
 }
 
 /**
- * Scalar field on a surface.
+ * Scalar field on a surface. On any surface, we may define a scalar
+ * field using this class. These type of scalar fields may then be used
+ * for e.g. coloring surfaces.
+ *
+ * Examples:
  * │
  * ├── MeanCurvatureField
  * ├── GaussianCurvatureField
  * ├── PrincipalCurvatureField
  * ├── GeodesicDistanceField
+ * ├── HeightScalarField
  * ├── UserDefinedField
  */
-export class SurfaceScalarField {
+export class SurfaceScalarField extends ScalarField {
     constructor(surface) {
+        super();
         this._surface = surface;
         this._target = new Vec3();
     }
 
     set surface(newSurface) { this._surface = newSurface; }
-
-    scalarValueAt(u, v) {
-        throw new Error("scalarValueAt() must be implemented!");
-    }
 }
 
 export class HeightScalarField extends SurfaceScalarField {

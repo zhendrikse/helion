@@ -2,7 +2,7 @@ import { Color, Group } from "three";
 import { VectorField, Range , Cylinder, ArrowField, Sphere, ThreeJsRenderer, 
     ThreeJsRenderOptions, Arrow, Ring, Canvas, EventController, HtmlControl, 
     HtmlDiv, Overlay, Simulation, AxialSymmetricBody, Particle, Vec3
-} from "helion";
+} from "../../../src/index.js";
 
 const loopSegments = 10;
 const loopRadius = 0.5;   // pas aan voor visual scale

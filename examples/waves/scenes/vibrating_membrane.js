@@ -1,7 +1,7 @@
 import {
-    Canvas, HeightScalarField, EventController, HeightFieldSurface, HtmlControl, HtmlDiv,
-    IsoparametricContoursView, Interval, FixedIntervalNormalizer, NormalizedScalarField,
-    PlaneSurfaceView, ScalarField, Simulation, ThreeJsRenderer, ThreeJsRenderOptions, Vec3
+    Canvas, HeightScalarField, EventController, ScalarFieldSurface, HtmlControl, HtmlDiv,
+    IsoparametricContoursView, Interval, FixedIntervalNormalizer,
+    PlaneSurfaceView, ScalarField, Simulation, ThreeJsRenderer, ThreeJsRenderOptions, Vec3, GradientColorMapper
 } from "../../../src/index.js";
 
 const gridSize = 15;
@@ -38,10 +38,10 @@ class MembraneScalarField extends ScalarField {
 // Math objects
 //
 const scalarField = new MembraneScalarField();
-const heightFieldSurface = new HeightFieldSurface({
-    field: scalarField,
-    width: gridSize,
-    depth: gridSize,
+const heightFieldSurface = new ScalarFieldSurface({
+    scalarField,
+    uRange: new Interval(-0.5 * gridSize, 0.5 * gridSize),
+    vRange: new Interval(-0.5 * gridSize, 0.5 * gridSize)
 })
 
 //
@@ -54,15 +54,15 @@ const renderer = ThreeJsRenderer
         fieldOfView: 45,
     }));
 
-const surfaceScalarField = new NormalizedScalarField(
-    new HeightScalarField(), new FixedIntervalNormalizer(new Interval(-scalarField.amplitude, scalarField.amplitude)));
 const surfaceView = new PlaneSurfaceView({
-    scalarField: surfaceScalarField
+    normalizer: new FixedIntervalNormalizer(new Interval(-scalarField.amplitude, scalarField.amplitude)),
+    colorMapper: new GradientColorMapper()
 });
 const contoursView = new IsoparametricContoursView({
     uSegments: 20,
     vSegments: 20,
-    scalarField: surfaceScalarField
+    normalizer: new FixedIntervalNormalizer(new Interval(-scalarField.amplitude, scalarField.amplitude)),
+    colorMapper: new GradientColorMapper()
 });
 renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));
 renderer.synchronize(heightFieldSurface.alwaysWith(contoursView));

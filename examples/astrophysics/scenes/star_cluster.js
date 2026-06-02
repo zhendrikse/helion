@@ -3,7 +3,7 @@ import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
 import {
     ThreeJsRenderOptions, ThreeJsRenderer, Canvas, HtmlDiv, Simulation, Vec3,
     PointCloud, PointCloudView, PointCloudMaterial
-} from "helion";
+} from "../../../src/index.js";
 
 class StarCluster extends PointCloud {
     constructor(N=40000) {

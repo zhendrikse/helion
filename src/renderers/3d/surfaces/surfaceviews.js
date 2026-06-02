@@ -1,35 +1,37 @@
 /**
- * SurfaceView
- *     ↓
- * Surface.sample()
- *     ↓
- * ScalarField.scalarValueAt()
+ * Surface drawing:
+ *     SurfaceView -> Surface.sample() -> ScalarField.scalarValueAt()
  *
+ * Coloring:    ↓
+ *     ColorMapper -> NormalizedScalarField -> Normalizer.normalize() -> SurfaceScalarField.scalarValueAt()
  */
-
 import {
     Group, Vector3, LineBasicMaterial, Line, BufferGeometry, DoubleSide, PlaneGeometry, Color,
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
     DynamicDrawUsage, BufferAttribute, Box3
 } from "three";
-import { GradientColorMapper, colorMappers } from "../../colormappers.js";
+import {GradientColorMapper, colorMappers, UniformColorMapper} from "../../colormappers.js";
 import { HeightScalarField } from "../../../math/surface.js";
 import {AdaptiveSymmetricNormalizer, NormalizedScalarField} from "../../../math/math.js";
 
 export class SurfaceView extends Group {
     constructor({
-        uSegments = 100, // Resolution in u-direction
-        vSegments = 100, // resolution in v-direction
-        scalarField = new NormalizedScalarField(new HeightScalarField(), new AdaptiveSymmetricNormalizer()),
-        colorMapper = new GradientColorMapper(),
+        uSegments = 100,
+        vSegments = 100,
+        colorMapper = new UniformColorMapper(new Color(0xffff00)),
+        scalarField = new HeightScalarField(),
+        normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super();
-        this._uSegments = uSegments;
-        this._vSegments = vSegments;
-        this._scalarField = scalarField;
+        this._uSegments = uSegments;        // Resolution in u-direction
+        this._vSegments = vSegments;        // Resolution in v-direction
+        this._scalarField = scalarField;    // Scalar field that is defined by this surface (e.g. mean curvature)
+        this._normalizer = normalizer;      // Normalizes scalar field values used by the color mapper
         this._colorMapper = colorMapper;
-        this._surface = null;
-        this._dirty = true;
+
+        this._normalizedScalarField = null; // Scalar field used to generate scalar values for the color mapper
+        this._surface = null;               // Mathematical surface definition to generate surface with
+        this._dirty = true;                 // When surface definition has changed, this flag is raised
     }
 
     set colorMapper(colorMapperKey) { this._colorMapper = colorMappers[colorMapperKey]; }
@@ -40,8 +42,9 @@ export class SurfaceView extends Group {
             throw new Error("Surface does not implement sample(), hence it cannot be attached to this view.");
 
         this._surface = mathSurfaceDefinition;
-        this._scalarField.surface = mathSurfaceDefinition;
-        this._scalarField.reset();
+        this._scalarField.surface = mathSurfaceDefinition; // The scalar field that is defined by this surface
+        this._normalizedScalarField = new NormalizedScalarField(this._scalarField, this._normalizer);
+        this._normalizedScalarField.reset();
         this._dirty = true;
     }
 
@@ -75,10 +78,11 @@ export class IsoparametricContoursView extends SurfaceView {
         uSegments = 20,
         vSegments = 20,
         segments = 100,
-        colorMapper = new GradientColorMapper(),
-        scalarField = new NormalizedScalarField(new HeightScalarField(), new AdaptiveSymmetricNormalizer())
+        colorMapper = new UniformColorMapper(new Color(0xffff00)),
+        scalarField = new HeightScalarField(),
+        normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
-        super({uSegments, vSegments, colorMapper, scalarField});
+        super({uSegments, vSegments, colorMapper, scalarField, normalizer});
         this._segments = segments;
         this._material = new LineBasicMaterial({
             vertexColors: true,
@@ -170,12 +174,12 @@ export class IsoparametricContoursView extends SurfaceView {
         for (const entry of this._uLines)
             this.#updateLine(entry,
                 (v) => this._surface.sample(entry.u, v, this._target),
-                (v) => this._scalarField.scalarValueAt(entry.u, v));
+                (v) => this._normalizedScalarField.scalarValueAt(entry.u, v));
 
         for (const entry of this._vLines)
             this.#updateLine(entry,
                 (u) => this._surface.sample(u, entry.v, this._target),
-                (u) => this._scalarField.scalarValueAt(u, entry.v));
+                (u) => this._normalizedScalarField.scalarValueAt(u, entry.v));
 
 
         this._dirty = false;
@@ -188,10 +192,11 @@ export class SphereSurfaceView extends SurfaceView {
         vSegments = 40,
         radius = 0.08,
         opacity = 1.0,
-        colorMapper = new GradientColorMapper(),
-        scalarField = new NormalizedScalarField(new HeightScalarField(), new AdaptiveSymmetricNormalizer())
+        colorMapper = new UniformColorMapper(new Color(0xffff00)),
+        scalarField = new HeightScalarField(),
+        normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
-        super({uSegments, vSegments, colorMapper, scalarField});
+        super({uSegments, vSegments, colorMapper, scalarField, normalizer});
         this._target = new Vector3();
         this._dummy = new Object3D();
         this._color = new Color();
@@ -236,7 +241,7 @@ export class SphereSurfaceView extends SurfaceView {
                 this._dummy.updateMatrix();
                 this._mesh.setMatrixAt(index, this._dummy.matrix);
 
-                this._colorMapper.map(this._scalarField.scalarValueAt(u, v), this._color);
+                this._colorMapper.map(this._normalizedScalarField.scalarValueAt(u, v), this._color);
                 const k = 3 * index;
                 this._colorArray[k] = this._color.r;
                 this._colorArray[k + 1] = this._color.g;
@@ -257,10 +262,11 @@ export class PlaneSurfaceView extends SurfaceView {
         uSegments = 100,
         vSegments = 100,
         wireframe = false,
-        colorMapper = new GradientColorMapper(),
-        scalarField = new NormalizedScalarField(new HeightScalarField(), new AdaptiveSymmetricNormalizer())
+        colorMapper = new UniformColorMapper(new Color(0xffff00)),
+        scalarField = new HeightScalarField(),
+        normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
-        super({uSegments, vSegments, colorMapper, scalarField});
+        super({uSegments, vSegments, colorMapper, scalarField, normalizer});
         const geometry = new PlaneGeometry(1, 1, uSegments, vSegments);
         const material = new MeshStandardMaterial({
             side: DoubleSide,
@@ -292,7 +298,7 @@ export class PlaneSurfaceView extends SurfaceView {
                 this._positions[k++] = this._target.y;
                 this._positions[k++] = this._target.z;
 
-                this._colorMapper.map(this._scalarField.scalarValueAt(u, v), this._color);
+                this._colorMapper.map(this._normalizedScalarField.scalarValueAt(u, v), this._color);
                 this._colors[c++] = this._color.r;
                 this._colors[c++] = this._color.g;
                 this._colors[c++] = this._color.b;

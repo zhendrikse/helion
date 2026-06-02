@@ -1,7 +1,8 @@
 import { Color } from "three"
 import { AxialSymmetricBody, VectorField, Range, Simulation, Vec3,
     Canvas, HtmlDiv, EventController, HtmlControl, Cylinder, ArrowField,
-    ThreeJsRenderOptions, ThreeJsRenderer } from "helion";
+    ThreeJsRenderOptions, ThreeJsRenderer
+} from "../../../src/index.js";
 
 const MU0 = 4 * Math.PI * 1e-7;
 const CURRENT = 1e8;

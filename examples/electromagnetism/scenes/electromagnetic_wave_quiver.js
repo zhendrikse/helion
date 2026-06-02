@@ -1,7 +1,8 @@
 import { Color } from "three";
 
 import { Particle, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv, EventController,
-    Sphere, ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, Vec3 } from "helion";
+    Sphere, ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, Vec3
+} from "../../../src/index.js";
 
 const Q = 1.6e-19;
 const K = 9e9;

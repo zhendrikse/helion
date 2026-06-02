@@ -1,7 +1,8 @@
 import { Color } from "three";
 import { Particle, AxialSymmetricBody, VectorField, Range, Simulation, Canvas,
 	Overlay, EventController, HtmlDiv, Sphere, Cylinder, ArrowField, Vec3,
-	ThreeJsRenderer, ThreeJsRenderOptions, Trail } from "helion";
+	ThreeJsRenderer, ThreeJsRenderOptions, Trail
+} from "../../../src/index.js";
 
 //
 // Constants

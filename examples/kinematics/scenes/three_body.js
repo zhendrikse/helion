@@ -1,6 +1,6 @@
 import { Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation, Canvas, Vec3,
     Overlay, HtmlDiv, EventController, Sphere, ThreeJsRenderOptions, ThreeJsRenderer, Trail
-} from "helion";
+} from "../../../src/index.js";
 
 //
 // Physics model

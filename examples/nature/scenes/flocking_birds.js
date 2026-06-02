@@ -1,5 +1,6 @@
 import { Body, Simulation, Canvas, Vec3, HtmlDiv, EventController, HtmlControl, CallbackFunction,
-    Arrow, ThreeJsRenderOptions, ThreeJsRenderer } from "helion";
+    Arrow, ThreeJsRenderOptions, ThreeJsRenderer
+} from "../../../src/index.js";
 
 // Simulation parameters
 const speed = 6;  // initial horizontal speed

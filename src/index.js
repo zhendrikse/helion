@@ -5,13 +5,13 @@ export {
 } from "./phys/physics.js";
 
 export {
-    VectorField, Range, Vec3, DiscreteScalarField, FixedIntervalNormalizer, NormalizedScalarField,
+    VectorField, Range, Vec3, DiscreteScalarField, FixedIntervalNormalizer,
     FFT, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid,
     factorial, linspace, FieldStatistics, DiscreteComplexField, Interval
 } from "./math/math.js";
 
 export {
-    FiniteDifferenceMethodField, Surface, PDESurface, ParametricSurface, HeightFieldSurface,
+    FiniteDifferenceMethodField, Surface, PDESurface, ParametricSurface, ScalarFieldSurface,
     HeightScalarField
 } from "./math/surface.js";
 
@@ -49,7 +49,7 @@ export { ScalarFieldRaster, ComplexScalarFieldRaster } from "./renderers/2d/rast
 
 export {
     SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView
-} from "./renderers/3d/surfaces/surfaces.js"
+} from "./renderers/3d/surfaces/surfaceviews.js"
 
 export { Canvas2DRenderer } from "./renderers/2d/canvassim.js";
 

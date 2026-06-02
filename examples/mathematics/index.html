@@ -13,6 +13,7 @@
     <div class="buttonRow">
         <label for="colorMapSelect">Color map:</label>
         <select name="colorMaps" id="colorMapSelect">
+            <option value="gradient">Gradient</option>
             <option value="seismic">Seismic</option>
             <option value="viridis">Viridis</option>
             <option value="jet">Jet</option>
@@ -20,7 +21,7 @@
             <option value="RdYlBu">RdYlBu</option>
             <option value="water">Water</option>
             <option value="water alternative">Water alternative</option>
-            <option value="gradient">Gradient</option>
+            <option value="uniform">Uniform</option>
         </select>
     </div>
     <div class="buttonRow">
@@ -33,13 +34,13 @@
        -->
     <!--
        - R E A L   S U R F A C E S
-       -->
     <div class="canvasWrapper" id="realSurfacesCanvasWrapper">
         <canvas class="applicationCanvas" id="realSurfacesCanvas" width="500" height="500"></canvas>
     </div>
     <div class="buttonRow">
         <label for="colorMapSelect">Color map:</label>
         <select name="colorMaps" id="colorMapSelect">
+            <option value="gradient">Gradient</option>
             <option value="seismic">Seismic</option>
             <option value="viridis">Viridis</option>
             <option value="jet">Jet</option>
@@ -47,7 +48,7 @@
             <option value="RdYlBu">RdYlBu</option>
             <option value="water">Water</option>
             <option value="water alternative">Water alternative</option>
-            <option value="gradient">Gradient</option>
+            <option value="uniform">Uniform</option>
         </select>
     </div>
     <div class="buttonRow">
@@ -59,14 +60,17 @@
         <input type="checkbox" name="animate" id="animate" />
     </div>
     <script type="module" src="scenes/real_surfaces.js"></script>
+       -->
     <!--
        - P A R A M E T R I C   S U R F A C E S
+       -->
     <div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
         <canvas class="applicationCanvas" id="parametricSurfacesCanvas" width="500" height="500"></canvas>
     </div>
     <div class="buttonRow">
         <label for="colorMapSelect">Color map:</label>
         <select name="colorMaps" id="colorMapSelect">
+            <option value="uniform">Uniform</option>
             <option value="gradient">Gradient</option>
             <option value="seismic">Seismic</option>
             <option value="viridis">Viridis</option>
@@ -92,7 +96,6 @@
         <input type="checkbox" name="animate" id="animate" />
     </div>
     <script type="module" src="scenes/parametric_surfaces.js"></script>
-       -->
     <!--
        - F O U R I E R   T R A N S F O R M
     <div class="canvasWrapper" id="waveCanvasWrapper">

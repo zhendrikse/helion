@@ -2,7 +2,7 @@ import {Vector3, Color} from "three";
 import {
     normalDistribution, randomArbitrary, randomInt,ThreeJsRenderOptions, ThreeJsRenderer, Vec3,
     HtmlDiv, Canvas, Simulation, PointCloud, PointCloudMaterial, PointCloudView
-} from "helion";
+} from "../../../src/index.js";
 
 class SpiralGalaxy extends PointCloud {
     // Set the radius of the galactic disc (scaling factor):

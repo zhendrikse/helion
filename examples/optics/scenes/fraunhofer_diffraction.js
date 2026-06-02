@@ -2,7 +2,7 @@ import {
     linspace, meshgrid, ScalarFieldRaster, wavelengthColor, wavelengthToRGBNormalized,
     DiscreteScalarField, Canvas, Canvas2DRenderer, HtmlDiv, Simulation, EventController,
     HtmlControl
-} from "helion";
+} from "../../../src/index.js";
 
 class ColorMapper {
     constructor(lambdaInNanos = 500, showSpectralColor = true) {

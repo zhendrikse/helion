@@ -1,7 +1,7 @@
 import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Canvas, HtmlDiv,
     EventController, HtmlControl, Cylinder, ElectromagneticWave, ThreeJsRenderOptions,
     ThreeJsRenderer, Vec3, Overlay
-} from "helion";
+} from "../../../src/index.js";
 
 //
 // Physics model

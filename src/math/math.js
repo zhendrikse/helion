@@ -441,8 +441,6 @@ export class NormalizedScalarField {
         this._normalizer = normalizer;
     }
 
-    set surface(surface) { this._field.surface = surface; }
-
     reset() { this._normalizer.reset(); }
 
     scalarValueAt(u, v) {

@@ -1,7 +1,8 @@
 import { Color, AmbientLight, PointLight } from "three";
 import { Particle, EC , VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
     EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
-    ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3 } from "helion";
+    ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3
+} from "../../../src/index.js";
 
 const K = 9e9;
 const scale = 1e14;

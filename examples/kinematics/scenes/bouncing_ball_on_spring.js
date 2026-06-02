@@ -1,6 +1,7 @@
 import { RadialSymmetricBody, Spring , Simulation, Canvas, Overlay, HtmlDiv,
     EventController, HtmlControl, Arrow, Sphere, ThreeJsRenderOptions,
-    ThreeJsRenderer, Floor, Helix, Vec3 } from "helion";
+    ThreeJsRenderer, Floor, Helix, Vec3
+} from "../../../src/index.js";
 
 //
 // Physics model
