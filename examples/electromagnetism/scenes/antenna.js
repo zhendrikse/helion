@@ -39,7 +39,7 @@ const slit = new Vec3(0, 0, lambda)
 for (let wave of planeWaves)
     renderer.synchronize(wave.alwaysWith(new ElectromagneticWave({
         numArrows: 120,
-        arrowSize: 0.5,
+        arrowSize: 0.2,
         scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)
     })));
 

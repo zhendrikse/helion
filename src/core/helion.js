@@ -5,60 +5,6 @@ import { Color } from 'three';
  * S I M U L A T I O N  E N V I R O N M E N T *
  **********************************************/
 
-class Colour {
-    asThreeJsColor() {
-        return new Color();
-    }
-}
-
-export class HslColor extends Colour{
-    constructor(h, s, l) {
-        super();
-        this.h = h;
-        this.s = s;
-        this.l = l;
-    }
-
-    asThreeJsColor() {
-        return new Color().setHSL(this.h, this.s, this.l);
-    }
-}
-
-export class RgbHexColor extends Colour {
-    constructor(colorAsRgbHexNumber) {
-        super();
-        this.colorAsRgbHexNumber = colorAsRgbHexNumber;
-    }
-
-    asThreeJsColor() {
-        return new Color(this.colorAsRgbHexNumber);
-    }
-}
-
-export class RgbaColor extends Colour {
-    constructor(r, g, b) {
-        super();
-        this.r = r;
-        this.g = g;
-        this.b = b;
-    }
-
-    asThreeJsColor() {
-        return new Color(this.r, this.g, this.b);
-    }
-}
-
-export class StringColor extends Colour{
-    constructor(colorAsString) {
-        super();
-        this.colorAsString = colorAsString;
-    }
-
-    asThreeJsColor() {
-        return new Color(this.colorAsString);
-    }
-}
-
 export class HtmlDiv {
     static withElementId = (elementId) => new HtmlDiv(elementId);
 

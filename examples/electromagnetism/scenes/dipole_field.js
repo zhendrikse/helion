@@ -32,7 +32,7 @@ class DipoleField extends VectorField {
         super();
 
         this._dipole = dipole;
-        this._fieldStrength = 0.3;
+        this._fieldStrength = 0.1;
     }
 
     vectorAt(position) {

@@ -4,10 +4,6 @@ import {
     CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion
 } from "three";
 
-/*************
- * V I E W S *
- *************/
-
 //
 // T R A I L
 //
@@ -174,14 +170,14 @@ export class Sphere extends Mesh {
 // Arrow
 //
 export class Arrow extends Group {
-    static HEAD_RATIO = 0.3;   // part of total length
-    static SHAFT_RATIO = 1 - Arrow.HEAD_RATIO;
     static UP = new Vector3(0, 1, 0);
     static FORWARD = new Vector3(0, 0, 1);
-    static ShaftGeometryRound = new CylinderGeometry(1, 1, 1, 16);
-    static ShaftGeometrySquare = new BoxGeometry(1, 1, 1);
-    static HeadGeometryRound = new ConeGeometry(1, 1, 16);
-    static HeadGeometrySquare = new ConeGeometry(1, 1, 4);
+
+    static ShaftGeometryRound = new CylinderGeometry(1, 1, 1, 16).translate(0, 0.5, 0);
+    static ShaftGeometrySquare = new BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
+    static HeadGeometryRound = new ConeGeometry(1, 1, 16).translate(0, 0.5, 0);
+    static HeadGeometrySquare = new ConeGeometry(1, 1, 4).translate(0, 0.5, 0);
+
     constructor({
         color = 0xff0000,
         size = 1,
@@ -189,103 +185,123 @@ export class Arrow extends Group {
         round = false,
         visible = true,
         castShadow = false,
-        magnitudeMap = magnitude => Math.max(magnitude, .1),
-        colorMap = null  // use the unmodified base color by default
+        magnitudeMap = magnitude => Math.max(magnitude, 0.1),
+        colorMap = null
     } = {}) {
         super();
 
-        const shaftGeometry = round ? Arrow.ShaftGeometryRound : Arrow.ShaftGeometrySquare;
-        const headGeometry = round ? Arrow.HeadGeometryRound : Arrow.HeadGeometrySquare;
-        const material = new MeshStandardMaterial({
+        const shaftGeometry = round
+            ? Arrow.ShaftGeometryRound
+            : Arrow.ShaftGeometrySquare;
+
+        const headGeometry = round
+            ? Arrow.HeadGeometryRound
+            : Arrow.HeadGeometrySquare;
+
+        this._material = new MeshStandardMaterial({
             color,
             roughness: 0.25,
             metalness: 0.35,
-            emissive: new Color(0x333),
-            opacity: opacity,
-            transparent: true,
+            emissive: new Color(0x333333),
             emissiveIntensity: 0.2,
-            envMapIntensity: 1.2
+            envMapIntensity: 1.2,
+            transparent: true,
+            opacity
         });
-        this._shaft = new Mesh(shaftGeometry, material);
+
+        this._shaft = new Mesh(shaftGeometry, this._material);
+        this._head = new Mesh(headGeometry, this._material);
+
         this._shaft.castShadow = castShadow;
-        this._head = new Mesh(headGeometry, material);
         this._head.castShadow = castShadow;
+
         if (!round)
-            this._head.rotation.y = Math.PI / 4; // By default, the rotation of square-shaped head is 45 degrees off
+            this._head.rotation.y = Math.PI / 4;
 
         this.add(this._shaft, this._head);
-        this._initialState = null;
         this.visible = visible;
         this._body = null;
+        this._initialState = null;
         this._size = size;
-        this._colorMap = colorMap;
+        this._shaftRadius = 0.3 * size;
+        this._headRadius = 0.75 * size;
+        this._headLength = size;
         this._magnitudeMap = magnitudeMap;
-        this._tempAxisVector = new Vector3();
-    }
-
-    reset() {
-        this._body.position.copy(this._initialState.position);
-        this._body.axis.copy(this._initialState.axis);
+        this._colorMap = colorMap;
+        this._tempAxis = new Vector3();
     }
 
     attachTo(body) {
-        // Sanity checks
         if (!body.axis)
-            throw new Error("Body does not have an axis, hence it cannot be attached to this view.");
+            throw new Error(
+                "Body does not have an axis, hence it cannot be attached to this view."
+            );
 
         this._body = body;
         this._initialState = body.clone();
     }
-    get body() { return this._body; }
+
+    get body() {
+        return this._body;
+    }
+
+    reset() {
+        if (!this._body || !this._initialState)
+            return;
+
+        this._body.position.copy(this._initialState.position);
+        this._body.axis.copy(this._initialState.axis);
+    }
+
+    render() {
+        if (!this._body)
+            return;
+
+        this.position.copy(this._body.position);
+        this._tempAxis.copy(this._body.axis);
+        const magnitude = this._tempAxis.length();
+
+        if (magnitude < 1e-12) {
+            this._shaft.scale.set(0, 0, 0);
+            this._head.scale.set(0, 0, 0);
+            return;
+        }
+
+        this.visible = true;
+        const shaftLength = this._magnitudeMap(magnitude);
+
+        if (this._colorMap) {
+            const color = this._colorMap(this._tempAxis, magnitude);
+            this._material.color.copy(color);
+        }
+
+        this.quaternion.setFromUnitVectors(Arrow.UP, this._tempAxis.normalize());
+        this._shaft.scale.set(this._shaftRadius, shaftLength, this._shaftRadius);
+
+        this._head.scale.set(this._headRadius, this._headLength, this._headRadius);
+        this._head.position.y = shaftLength;
+    }
 
     dispose() {
-        // DO NOT dispose shared geometries
-        if (this._shaft) {
-            if (this._shaft.material)
-                this._shaft.material.dispose();
-            this.remove(this._shaft);
-            this._shaft = null;
-        }
+        this._material?.dispose();
 
-        if (this._head) { // head.material is the same object as share.material, so has already been disposed
-            this.remove(this._head);
-            this._head = null;
-        }
+        this.remove(this._shaft);
+        this.remove(this._head);
+
+        this._shaft = null;
+        this._head = null;
+        this._material = null;
 
         this.clear();
     }
 
-    render() {
-        this.position.copy(this._body.position);
-
-        this._tempAxisVector.copy(this._body.axis);
-        const magnitude = this._tempAxisVector.length();
-
-        const visualMagnitude = this._magnitudeMap(magnitude);
-        const length = visualMagnitude * this._size;
-
-        if (this._colorMap) {
-            const color = this._colorMap(this._tempAxisVector, magnitude);
-            this._shaft.material.color.copy(color);
-            this._head.material.color.copy(color);
-        }
-
-        this.quaternion.setFromUnitVectors(Arrow.UP, this._tempAxisVector.normalize());
-
-        const shaftLength = length * Arrow.SHAFT_RATIO;
-        const headLength = length * Arrow.HEAD_RATIO;
-        const shaftRadius = 0.08 * shaftLength;
-
-        this._shaft.scale.set(shaftRadius, shaftLength, shaftRadius);
-        this._shaft.position.y = shaftLength * 0.5;
-
-        this._head.scale.set(shaftRadius * 2.5, headLength, shaftRadius * 2.5);
-        this._head.position.y = shaftLength;
-
+    set opacity(opacity) {
+        this._material.opacity = opacity;
     }
 
-    set opacity(opacity) { this._shaft.material.opacity = opacity; }
-    set color(color) { this._shaft.material.color = color; }
+    set color(color) {
+        this._material.color.set(color);
+    }
 }
 
 //

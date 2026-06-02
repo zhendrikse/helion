@@ -48,7 +48,7 @@ const woodenBlock = new WoodenBlock( {size: new Vec3(0.4, 0.4, 0.1) });
 const water = new Aquarium({
     color: 0x1e90ff,
     size: new Vec3(2, 2, 0.75),
-    frameColor: 0xffff00,
+    frameColor: 0xffff00
 });
 
 const canvas = Canvas.withElementId("floatingBlockCanvas");

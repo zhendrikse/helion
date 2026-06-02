@@ -1,7 +1,8 @@
 import { Color } from "three";
-import { Particle, VectorField, Range, Sphere, Trail, Vec3,
+import {
+    Particle, VectorField, Range, Sphere, Trail, Vec3,
     ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, CallbackFunction, Canvas,
-    EventController, HtmlControl, HtmlDiv, Overlay, Simulation
+    EventController, HtmlControl, HtmlDiv, Overlay, Simulation, Aquarium
 } from "../../../src/index.js";
 
 const initialSspeed = 50;
@@ -63,6 +64,12 @@ renderer.synchronize(magneticField.alwaysWith(new ArrowField({
     },
     round: true
 })));
+renderer.addObject3D(new Aquarium({
+    color: 0x1e90ff,
+    opacity: 0.1,
+    size: new Vec3(boxSize, boxSize, boxSize).multiplyScalar(2.1),
+    frameColor: 0x779977
+}));
 
 //
 // Simulation

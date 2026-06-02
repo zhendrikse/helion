@@ -95,11 +95,11 @@ class VelocityVector {
 
 export class Body {
     constructor({
-                    position = new Vec3(),
-                    velocity = new Vec3(),
-                    mass = 1
-                } = {}) {
-        this.acceleration = new Vec3();  // Intentionally public
+        position = new Vec3(),
+        velocity = new Vec3(),
+        mass = 1
+    } = {}) {
+        this.acceleration = new Vec3();     // Intentionally public
         this.position = position.clone();   // Intentionally public
         this.velocity = velocity.clone();   // Intentionally public
         this.mass = mass;                   // Intentionally public

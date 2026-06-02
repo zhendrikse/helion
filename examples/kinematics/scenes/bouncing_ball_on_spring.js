@@ -63,8 +63,16 @@ const renderer = ThreeJsRenderer
 
 const helix = new Helix({ coils: 15, color: "yellow" });
 const sphere = new Sphere({ color: "orange" });
-const velocityArrow = new Arrow({ color: "cyan", size: .125 });
-const forceArrow = new Arrow({ color: "red", size: .03 });
+const velocityArrow = new Arrow({
+    color: "cyan",
+    size: .1,
+    magnitudeMap: mag => mag * .1
+});
+const forceArrow = new Arrow({
+    color: "red",
+    size: .1,
+    magnitudeMap: mag => mag *  2.5e-2
+});
 renderer.synchronize(world.ball.alwaysWith(sphere));
 renderer.synchronize(world.ball.velocityVector.alwaysWith(velocityArrow));
 renderer.synchronize(world.ball.accelerationVector.alwaysWith(forceArrow));

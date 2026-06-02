@@ -62,14 +62,14 @@ function createFaradayLoops(faradayLoopsGroup) {
             const theta = (i / loopSegments) * 2 * Math.PI;
             const tangent = new Vec3(-Math.sin(theta), Math.cos(theta), 0); // tangentiële direction (theta-hat)
             const body = new AxialSymmetricBody({
-                position: new Vec3(loopRadius * Math.cos(theta), loopRadius * Math.sin(theta), z),
-                axis: tangent.clone().multiplyScalar(1.75), // lengte van pijl
+                position: new Vec3(loopRadius * Math.cos(theta), loopRadius * Math.sin(theta), z + 0.5),
+                axis: tangent.clone().multiplyScalar(0.25), // lengte van pijl
                 radius: 0.01
             });
 
             const arrow = new Arrow({
                 color: new Color("green"),
-                size: 0.2,
+                size: 0.05,
                 round: true
             });
             renderer.synchronize(body.onceWith(arrow));
@@ -78,7 +78,7 @@ function createFaradayLoops(faradayLoopsGroup) {
 
         const ring = new Ring({ color: new Color("green"), thickness: 3e-2 });
         renderer.synchronize(new AxialSymmetricBody({
-            position: new Vec3(0, 0, z),
+            position: new Vec3(0, 0, z + .5),
             axis: new Vec3(0, 0, 1),
             radius: .5
         }).onceWith(ring));
@@ -118,7 +118,7 @@ for (const position of magneticFieldPositions) {
     magneticVectors.push(body);
     renderer.synchronize(body.alwaysWith(new Arrow({
         color: new Color("red"),
-        size: 0.4,
+        size: 7.5e-2,
         round: true
     })));
 }
@@ -128,7 +128,7 @@ const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, simulatedTime) => {
-        const fieldLength = (simulatedTime % 20) / 10 + 0.001;
+        const fieldLength = (simulatedTime % 20) / 25 + 0.001;
 
         for (const vec of magneticVectors)
             vec.axis.set(0, 0, fieldLength);
