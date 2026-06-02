@@ -51,7 +51,7 @@ export {
 export { ScalarFieldRaster, ComplexScalarFieldRaster } from "./view/2d/rasters/pixelrasters.js";
 
 export {
-    SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView
+    SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView, SurfaceResolution
 } from "./view/3d/surfaces/surfaceviews.js"
 
 export { Canvas2DRenderer } from "./view/2d/canvassim.js";

@@ -212,6 +212,10 @@ export class Range {
         for (let i = 0; i <= n; i++)
             yield this.from + i * this.stepSize;
     }
+
+    get count() {
+        return Math.floor((this.to - this.from) / this.stepSize) + 1;
+    }
 }
 
 export class Interval {

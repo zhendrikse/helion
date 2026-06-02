@@ -13,17 +13,22 @@ import {
 import { HeightScalarField } from "../../../model/math/surface.js";
 import {AdaptiveSymmetricNormalizer, NormalizedScalarField} from "../../../model/math/math.js";
 
+export class SurfaceResolution {
+    constructor(uSegments = 50, vSegments = 50) {
+        this.u = uSegments;
+        this.v = vSegments;
+    }
+}
+
 export class SurfaceView extends Group {
     constructor({
-        uSegments = 100,
-        vSegments = 100,
+        resolution = new SurfaceResolution(100, 100),
         scalarField = new HeightScalarField(),
         colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super();
-        this._uSegments = uSegments;        // Resolution in u-direction
-        this._vSegments = vSegments;        // Resolution in v-direction
+        this._resolution = resolution;
         this._scalarField = scalarField;    // Scalar field that is defined by this surface (e.g. mean curvature)
         this._normalizer = normalizer;      // Normalizes scalar field values used by the color mapper
         this._colorMapper = colorMapper;
@@ -81,14 +86,13 @@ export class SurfaceView extends Group {
 
 export class IsoparametricContoursView extends SurfaceView {
     constructor({
-        uSegments = 20,
-        vSegments = 20,
-        segments = 100,
+        resolution = new SurfaceResolution(20, 20),
+        segments = 100, // per line
         scalarField = new HeightScalarField(),
         colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
-        super({uSegments, vSegments, colorMapper, scalarField, normalizer});
+        super({resolution, scalarField, colorMapper, normalizer});
         this._segments = segments;
         this._material = new LineBasicMaterial({
             vertexColors: true,
@@ -136,17 +140,17 @@ export class IsoparametricContoursView extends SurfaceView {
 
     #build() {
         // u = constant
-        for (let i = 0; i <= this._uSegments; i++) {
+        for (let i = 0; i <= this._resolution.u; i++) {
             const line = this.#createLine();
             this.add(line);
-            this._uLines.push({ line: line, u: i / this._uSegments });
+            this._uLines.push({ line: line, u: i / this._resolution.u });
         }
 
         // v = constant
-        for (let i = 0; i <= this._vSegments; i++) {
+        for (let i = 0; i <= this._resolution.v; i++) {
             const line = this.#createLine();
             this.add(line);
-            this._vLines.push({ line: line, v: i / this._vSegments });
+            this._vLines.push({ line: line, v: i / this._resolution.v });
         }
     }
 
@@ -194,15 +198,14 @@ export class IsoparametricContoursView extends SurfaceView {
 
 export class SphereSurfaceView extends SurfaceView {
     constructor({
-        uSegments = 40,
-        vSegments = 40,
+        resolution = new SurfaceResolution(40, 40),
         radius = 0.08,
         opacity = 1.0,
         scalarField = new HeightScalarField(),
         colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
-        super({uSegments, vSegments, colorMapper, scalarField, normalizer});
+        super({resolution, colorMapper, scalarField, normalizer});
         this._target = new Vector3();
         this._dummy = new Object3D();
         this._color = new Color();
@@ -215,7 +218,7 @@ export class SphereSurfaceView extends SurfaceView {
             transparent: true,
             opacity: opacity
         });
-        const count = (uSegments + 1) * (vSegments + 1);
+        const count = (resolution.u + 1) * (resolution.v + 1);
         this._mesh = new InstancedMesh(geometry, material, count);
         this.add(this._mesh);
 
@@ -238,10 +241,10 @@ export class SphereSurfaceView extends SurfaceView {
     render() {
         let index = 0;
 
-        for (let i = 0; i <= this._uSegments; i++) {
-            const u = i / this._uSegments;
-            for (let j = 0; j <= this._vSegments; j++) {
-                const v = j / this._vSegments;
+        for (let i = 0; i <= this._resolution.u; i++) {
+            const u = i / this._resolution.u;
+            for (let j = 0; j <= this._resolution.v; j++) {
+                const v = j / this._resolution.v;
                 this._surface.sample(u, v, this._target);
                 this._dummy.position.copy(this._target);
                 this._dummy.updateMatrix();
@@ -265,15 +268,14 @@ export class SphereSurfaceView extends SurfaceView {
 
 export class PlaneSurfaceView extends SurfaceView {
     constructor({
-        uSegments = 100,
-        vSegments = 100,
+        resolution = new SurfaceResolution(100, 100),
         wireframe = false,
         scalarField = new HeightScalarField(),
         colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
-        super({uSegments, vSegments, colorMapper, scalarField, normalizer});
-        const geometry = new PlaneGeometry(1, 1, uSegments, vSegments);
+        super({resolution, colorMapper, scalarField, normalizer});
+        const geometry = new PlaneGeometry(1, 1, resolution.u, resolution.v);
         const material = new MeshStandardMaterial({
             side: DoubleSide,
             wireframe,
@@ -283,7 +285,7 @@ export class PlaneSurfaceView extends SurfaceView {
         this._mesh = new Mesh(geometry, material);
         this.add(this._mesh);
         this._positions = geometry.attributes.position.array;
-        this._colors = new Float32Array((uSegments + 1) * (vSegments + 1) * 3);
+        this._colors = new Float32Array((resolution.u + 1) * (resolution.v + 1) * 3);
         geometry.setAttribute("color", new BufferAttribute(this._colors, 3));
         this._target = new Vector3();
         this._color = new Color();
@@ -295,10 +297,10 @@ export class PlaneSurfaceView extends SurfaceView {
         let k = 0;
         let c = 0;
 
-        for (let i = 0; i <= this._uSegments; i++) {
-            const u = i / this._uSegments;
-            for (let j = 0; j <= this._vSegments; j++) {
-                const v = j / this._vSegments;
+        for (let i = 0; i <= this._resolution.u; i++) {
+            const u = i / this._resolution.u;
+            for (let j = 0; j <= this._resolution.v; j++) {
+                const v = j / this._resolution.v;
                 this._surface.sample(u, v, this._target);
                 this._positions[k++] = this._target.x;
                 this._positions[k++] = this._target.y;

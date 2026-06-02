@@ -66,6 +66,58 @@ export class ParametricSurface extends Surface {
 }
 
 /**
+ * Vector field on a surface. On any surface, we may define a vector
+ * field using this class. These type of vector fields may then be used
+ * for e.g. principal direction vectors.
+ *
+ * Examples:
+ * │
+ * ├── PrincipalDirectionField(1)
+ * ├── PrincipalDirectionField(2)
+ * ├── GradientField
+ * ├── NormalField
+ * ├── GeodesicField
+ * ├── MeanCurvatureFlowField
+ * ├── UserDefinedField
+ */
+export class SurfaceVectorField {
+    constructor() {
+        this._surface = null;
+    }
+
+    set surface(surface) {
+        this._surface = surface;
+    }
+
+    vectorValueAt(u, v, target) {
+        throw new Error("Not implemented");
+    }
+}
+
+export class PrincipalDirectionField extends SurfaceVectorField {
+    constructor(which = 1) {
+        super();
+
+        this._which = which;
+        this._geometry = null;
+    }
+
+    set surface(surface) {
+        this._surface = surface;
+        this._geometry = new DifferentialGeometry(surface);
+    }
+
+    vectorValueAt(u, v, target) {
+        const frame = this._geometry.principalFrame(u, v);
+
+        if (!frame)
+            return target.set(0, 0, 0);
+
+        return target.copy(this._which === 1 ? frame.d1 : frame.d2);
+    }
+}
+
+/**
  * Scalar field on a surface. On any surface, we may define a scalar
  * field using this class. These type of scalar fields may then be used
  * for e.g. coloring surfaces.

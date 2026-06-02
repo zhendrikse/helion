@@ -1,6 +1,6 @@
 import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
-    PlaneSurfaceView, EventController, IsoparametricContoursView, Vec3,
+    PlaneSurfaceView, EventController, IsoparametricContoursView, Vec3, SurfaceResolution,
     ParametricSurface, Interval, GaussianCurvatureField, scalarFields, colorMappers
 } from "../../../src/index.js";
 
@@ -89,13 +89,10 @@ const renderer = ThreeJsRenderer
 // Surface view
 //
 const surfaceView = new PlaneSurfaceView({
-    uSegments: 100,
-    vSegments: 100,
-    scalarField: new GaussianCurvatureField(),
+    scalarField: new GaussianCurvatureField()
 });
 const contoursView = new IsoparametricContoursView({
-    uSegments: 20,
-    vSegments: 40,
+    resolution: new SurfaceResolution(20, 40),
     scalarField: new GaussianCurvatureField()
 });
 

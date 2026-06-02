@@ -78,14 +78,10 @@ const renderer = ThreeJsRenderer
 // Surface views
 //
 const surfaceView = new PlaneSurfaceView({
-    uSegments: 100,
-    vSegments: 100,
     colorMapper: new GradientColorMapper(),
     normalizer: new FixedIntervalNormalizer(new Interval(0, scalarField.amplitude))
 });
 const contoursView = new IsoparametricContoursView({
-    uSegments: 20,
-    vSegments: 20,
     colorMapper: new GradientColorMapper(),
     normalizer: new FixedIntervalNormalizer(new Interval(0, scalarField.amplitude))
 });

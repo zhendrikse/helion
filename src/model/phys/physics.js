@@ -93,6 +93,29 @@ class VelocityVector {
     set axis(newAxis) { this._parent.velocity.copy(newAxis); }
 }
 
+export class PhysicsState {
+    constructor({
+        position = new Vec3(),
+        velocity = new Vec3(),
+        mass = 1,
+        acceleration = new Vec3()
+    }) {
+        this.position = position;
+        this.velocity = velocity;
+        this.mass = mass;
+        this.acceleration = acceleration;
+    }
+
+    clone() {
+        return new PhysicsState({
+            position: this.position.clone(),
+            velocity: this.velocity.clone(),
+            mass: this.mass,
+            acceleration: this.acceleration.clone()
+        });
+    }
+}
+
 export class Body {
     constructor({
         position = new Vec3(),

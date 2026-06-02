@@ -1,7 +1,7 @@
 import {
-    Canvas, EventController, ScalarFieldSurface, HtmlControl, HtmlDiv,
-    IsoparametricContoursView, Interval, FixedIntervalNormalizer,
-    PlaneSurfaceView, ScalarField, Simulation, ThreeJsRenderer, ThreeJsRenderOptions, Vec3, GradientColorMapper
+    Canvas, EventController, ScalarFieldSurface, HtmlControl, HtmlDiv, GradientColorMapper,
+    IsoparametricContoursView, Interval, FixedIntervalNormalizer, Vec3, colorMappers,
+    PlaneSurfaceView, ScalarField, Simulation, ThreeJsRenderer, ThreeJsRenderOptions
 } from "../../../src/index.js";
 
 const gridSize = 15;
@@ -34,6 +34,18 @@ class MembraneScalarField extends ScalarField {
     }
 }
 
+class MembraneController {
+    constructor(surfaceView, contoursView) {
+        this._surfaceView = surfaceView;
+        this._contoursView = contoursView;
+    }
+
+    set colorMapper(colorMapper) {
+        this._surfaceView.colorMapper = colorMappers[colorMapper];
+        this._contoursView.colorMapper = colorMappers[colorMapper];
+    }
+}
+
 //
 // Math objects
 //
@@ -59,8 +71,6 @@ const surfaceView = new PlaneSurfaceView({
     colorMapper: new GradientColorMapper()
 });
 const contoursView = new IsoparametricContoursView({
-    uSegments: 20,
-    vSegments: 20,
     normalizer: new FixedIntervalNormalizer(new Interval(-scalarField.amplitude, scalarField.amplitude)),
     colorMapper: new GradientColorMapper()
 });
@@ -78,16 +88,11 @@ const simulation = Simulation
     .start();
 
 const eventController = EventController.for(simulation);
+const membraneController = new MembraneController(surfaceView, contoursView);
 eventController.attach(HtmlControl
     .withElementId("colorMapSelect")
     .forType("change")
-    .to(contoursView)
-    .withProperty("colorMapper"));
-
-eventController.attach(HtmlControl
-    .withElementId("colorMapSelect")
-    .forType("change")
-    .to(surfaceView)
+    .to(membraneController)
     .withProperty("colorMapper"));
 
 eventController.attach(HtmlControl
