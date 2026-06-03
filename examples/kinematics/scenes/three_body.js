@@ -59,15 +59,14 @@ const dt = 5000;
 const subSteps = 50;
 const simulation = Simulation
     .with(ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions))
+    .synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
+    .synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
+    .synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })))
+    .synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
+    .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
+    .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta"})))
     .incrementsTimeBy(dt / subSteps)
     .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps);
-
-simulation.synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })));
-simulation.synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })));
-simulation.synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })));
-simulation.synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })));
-simulation.synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })));
-simulation.synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta"})));
 
 const eventController = new EventController(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas); // Controller passes event on to simulation and renderers
