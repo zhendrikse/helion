@@ -112,8 +112,9 @@ const renderer = ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions);
 for (let i = 0; i < birdCount; i++)
     renderer.synchronize(flock.bird(i).velocityVector.alwaysWith(new Arrow({
         round: true,
-        color: 0x77ff77,
-        size: .2
+        color: 0xffff77,
+        size: .25,
+        magnitudeMap: magnitude => magnitude * .1
     })));
 
 const dt = 0.02;

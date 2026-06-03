@@ -1,5 +1,5 @@
 import { Color } from "three";
-import { Particle, VectorField, Range, Sphere, ArrowField, Trail, ThreeJsRenderer,
+import { RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, ThreeJsRenderer,
     ThreeJsRenderOptions, Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
 } from "../../../src/index.js";
 
@@ -12,7 +12,7 @@ const C = 3e8;
 const electricScale = 0.002;
 const magneticScale = 2e15;
 
-class MovingPointCharge extends Particle {
+class MovingPointCharge extends RadialSymmetricBody {
     constructor({
         position,
         velocity,

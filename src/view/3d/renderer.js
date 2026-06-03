@@ -47,6 +47,7 @@ export class ThreeJsRenderer extends Renderer {
 
         this._staticObjects = [];  // Are static during the whole simulation hence do NOT need to be synchronized
         this._dynamicObjects = []; // Need to be synchronized every update
+        this._bodies = [];        // The physics / bodies in the simulation
 
         this._autoRotate = false;
         this._autoRotateTheta = Math.PI / 2;
@@ -133,9 +134,11 @@ export class ThreeJsRenderer extends Renderer {
     }
 
     reset() {
+        for (const body of this._bodies)
+            body.reset?.();
+
         for (const anObject of this._dynamicObjects)
-            if (anObject.reset)
-                anObject.reset();
+            anObject.reset?.(); // For example, object trails need to be cleaned up!
     }
 
     _doAutoRotate(distance) {
@@ -230,6 +233,7 @@ export class ThreeJsRenderer extends Renderer {
             throw new Error("Use addPlainObject() to attach regular Three.js objects!");
 
         this._world.add(bodyAndView.view);
+        this._bodies.push(bodyAndView.body);
 
         if (bodyAndView.always)
             this._dynamicObjects.push(bodyAndView.view);

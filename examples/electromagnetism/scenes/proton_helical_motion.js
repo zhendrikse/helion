@@ -1,8 +1,8 @@
 import { Color } from "three";
 import {
-    Particle, VectorField, Range, Sphere, Trail, Vec3,
+    VectorField, Range, Sphere, Trail, Vec3,
     ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, CallbackFunction, Canvas,
-    EventController, HtmlControl, HtmlDiv, Overlay, Simulation, Aquarium
+    EventController, HtmlControl, HtmlDiv, Overlay, Simulation, Aquarium, RadialSymmetricBody
 } from "../../../src/index.js";
 
 const initialSspeed = 50;
@@ -20,13 +20,12 @@ class UniformMagneticField extends VectorField {
     }
 
     vectorAt(position) { return this._field.clone().multiplyScalar(this._fieldStrength); }
-    get field() { return this._field; }
     get fieldStrength() { return this._fieldStrength; }
     set fieldStrength(strength) { this._fieldStrength = strength; }
 }
 
 const magneticField = new UniformMagneticField();
-const proton = new Particle({
+const proton = new RadialSymmetricBody({
     position: new Vec3(0, -boxSize, boxSize * .5),
     velocity: new Vec3(initialSspeed * Math.cos(angle), initialSspeed * Math.sin(angle), 0),
     mass: 1,
@@ -34,8 +33,21 @@ const proton = new Particle({
     radius: 1.5
 });
 
+const outOfBox= (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize || pos.z < -boxSize || pos.z > boxSize;
+function timeStep(dt) {
+    if (outOfBox(proton.position))
+        return;
+
+    // Lorentz force: F = q v × B
+    const force = proton.velocity.clone()
+        .cross(magneticField.vectorAt(proton.position))
+        .multiplyScalar(proton.charge);
+
+    proton.apply(force, dt);
+}
+
 //
-// View with renderer
+// View
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
     cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
@@ -48,10 +60,16 @@ const renderer = ThreeJsRenderer
         .containsBoth(canvas.and(Overlay.withElementId("helicalProtonCanvasOverlay"))))
     .with(threeJsRendererOptions);
 
+const dt = 5e-4;
+const simulation = Simulation
+    .with(renderer)
+    .incrementsTimeBy(dt)
+    .onClockTick((clockTime, simulatedTime) => timeStep(dt), 25);
+
 const protonSphere = new Sphere({ color: 0xff0000 });
 renderer.synchronize(proton.alwaysWith(protonSphere));
 renderer.synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })));
-renderer.synchronize(magneticField.alwaysWith(new ArrowField({
+renderer.synchronize(magneticField.onceWith(new ArrowField({
     xRange: new Range(-boxSize, boxSize, 10),
     yRange: new Range(-boxSize, boxSize, 10),
     zRange: new Range(-boxSize, boxSize, 10),
@@ -71,27 +89,6 @@ renderer.addObject3D(new Aquarium({
     frameColor: 0x779977
 }));
 
-//
-// Simulation
-//
-const dt = 5e-4;
-const outOfBox= (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize || pos.z < -boxSize || pos.z > boxSize;
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => timeStep(), 25);
-
-function timeStep() {
-    if (outOfBox(proton.position))
-        return;
-
-    // Lorentz force: F = q v × B
-    const force = proton.velocity.clone()
-        .cross(magneticField.vectorAt(proton.position))
-        .multiplyScalar(proton.charge);
-
-    proton.apply(force, dt);
-}
 
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas);

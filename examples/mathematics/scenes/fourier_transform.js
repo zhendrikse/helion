@@ -89,7 +89,7 @@ simulation.start()
 const eventController = new EventController();
 eventController.attach(HtmlControl
     .withElementId("diameterSlider")
-    .forType("change")
+    .forType("input")
     .withValueSpanId("diameterValue")
     .to(fourierSimulation).withProperty("diameter"));
 

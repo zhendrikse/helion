@@ -1,5 +1,5 @@
 import { Color, AmbientLight, PointLight } from "three";
-import { Particle, EC , VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
+import { RadialSymmetricBody, EC , VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
     EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
     ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3
 } from "../../../src/index.js";
@@ -14,7 +14,7 @@ class Capacitor {
         for (let x = -20; x <= 20; x += 2)
             for (let z = -20; z <= 20; z += 2)
                 for (const y of [topY, bottomY])
-                    this.charges.push(new Particle({
+                    this.charges.push(new RadialSymmetricBody({
                         position: new Vec3(x / scale, y, z / scale),
                         radius: 1e-14,
                         charge: EC * (y > 0 ? 1 : -1)
@@ -44,7 +44,7 @@ class CapacitorField extends VectorField {
 //
 const capacitor = new Capacitor();
 const capacitorField = new CapacitorField(capacitor);
-const movingCharge = new Particle({
+const movingCharge = new RadialSymmetricBody({
     position: new Vec3(-30, 4, 0).divideScalar(scale),
     velocity: new Vec3(15, 0, 0).divideScalar(scale),
     mass: 1.6e-27,

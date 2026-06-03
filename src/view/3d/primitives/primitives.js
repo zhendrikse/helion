@@ -57,13 +57,11 @@ export class Trail extends Group {
         this._trailAccumulator = 0;
         this._trailStep = trailStep;
         this._body = null;
-        this._initialState = null;
         this._previousPosition = null;
     }
 
     attachTo(body) {
         this._body = body;
-        this._initialState = body.clone();
         this._previousPosition = body.position.clone();
         this._renew();
     }
@@ -134,7 +132,6 @@ export class Sphere extends Mesh {
 
         super(new SphereGeometry(1, segments, segments), material);
         this._body = null;
-        this._initialState = null;
         this.visible = visible;
         this.castShadow = castShadow;
     }
@@ -145,13 +142,6 @@ export class Sphere extends Mesh {
             throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
 
         this._body = body;
-        this._initialState = body.clone(body);
-    }
-
-    reset() {
-        this._body.position = this._initialState.position;
-        this._body.velocity = this._initialState.velocity;
-        this._body.radius = this._initialState.radius;
     }
 
     render() {
@@ -221,7 +211,6 @@ export class Arrow extends Group {
         this.add(this._shaft, this._head);
         this.visible = visible;
         this._body = null;
-        this._initialState = null;
         this._size = size;
         this._shaftRadius = 0.3 * size;
         this._headRadius = 0.75 * size;
@@ -233,24 +222,9 @@ export class Arrow extends Group {
 
     attachTo(body) {
         if (!body.axis)
-            throw new Error(
-                "Body does not have an axis, hence it cannot be attached to this view."
-            );
+            throw new Error("Body does not have an axis, hence it cannot be attached to this view.");
 
         this._body = body;
-        this._initialState = body.clone();
-    }
-
-    get body() {
-        return this._body;
-    }
-
-    reset() {
-        if (!this._body || !this._initialState)
-            return;
-
-        this._body.position.copy(this._initialState.position);
-        this._body.axis.copy(this._initialState.axis);
     }
 
     render() {
@@ -295,13 +269,9 @@ export class Arrow extends Group {
         this.clear();
     }
 
-    set opacity(opacity) {
-        this._material.opacity = opacity;
-    }
-
-    set color(color) {
-        this._material.color.set(color);
-    }
+    get body() { return this._body; }
+    set opacity(opacity) { this._material.opacity = opacity; }
+    set color(color) { this._material.color.set(color); }
 }
 
 //
@@ -324,14 +294,7 @@ export class Cylinder extends Mesh {
         this.castShadow = castShadow;
 
         this._body = null;
-        this._initialState = null;
         this._direction = new Vector3();
-    }
-
-    reset() {
-        this._body.position.copy(this._initialState.position);
-        this._body.axis.copy(this._initialState.axis);
-        this._body.radius = this._initialState.radius;
     }
 
     attachTo(body) {
@@ -342,7 +305,6 @@ export class Cylinder extends Mesh {
             throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
 
         this._body = body;
-        this._initialState = body.clone();
     }
 
     render() {
@@ -376,12 +338,7 @@ export class Box extends Mesh {
             }));
         this.visible = visible;
         this.castShadow = castShadow;
-        this._initialState = null;
         this._body = null;
-    }
-
-    reset() {
-        this._body.position.copy(this._initialState.position);
     }
 
     attachTo(body) {
@@ -390,7 +347,6 @@ export class Box extends Mesh {
             throw new Error("Body does not have size (vector), hence it cannot be attached to this view.");
 
         this._body = body;
-        this._initialState = body.clone();
     }
 
     render() {
@@ -418,10 +374,6 @@ export class Ring extends Mesh {
         super(geometry, material);
     }
 
-    reset() {
-        this._body.position.copy(this._initialState.position);
-    }
-
     attachTo(body) {
         // Sanity checks
         if (!body.axis)
@@ -430,7 +382,6 @@ export class Ring extends Mesh {
             throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
 
         this._body = body;
-        this._initialState = body.clone();
         this._direction = new Vector3();
     }
 
@@ -513,14 +464,7 @@ export class Helix extends Mesh {
         this.castShadow = castShadow;
 
         this._body = null;
-        this._initialState = null;
         this._axis = new Vector3();
-    }
-
-    reset() {
-        this._body.position.copy(this._initialState.position);
-        this._body.axis.copy(this._initialState.axis);
-        this._body.radius = this._initialState.radius;
     }
 
     attachTo(body) {
@@ -531,14 +475,11 @@ export class Helix extends Mesh {
             throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
 
         this._body = body;
-        this._initialState = body.clone();
     }
 
     #regenerateTube() {
         this.geometry.dispose();
-        this.geometry = new TubeGeometry(
-            this._curve, this._tubularSegments, this._thickness, this._radialSegments, false
-        );
+        this.geometry = new TubeGeometry(this._curve, this._tubularSegments, this._thickness, this._radialSegments, false);
     }
 
     update(time) {
@@ -568,4 +509,3 @@ export class Helix extends Mesh {
             this.#updateWithoutLongitudinal();
     }
 }
-

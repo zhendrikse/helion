@@ -1,6 +1,6 @@
 import { Color } from "three";
 
-import { Particle, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv, EventController,
+import { RadialSymmetricBody, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv, EventController,
     Sphere, ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, Vec3
 } from "../../../src/index.js";
 
@@ -12,7 +12,7 @@ let frequency = 8e16;
 let amplitude = 1e-10;
 function omega() { return 2 * Math.PI * frequency; }
 
-class OscillatingCharge extends Particle {
+class OscillatingCharge extends RadialSymmetricBody {
     constructor(charge) {
         super({mass: 1, charge, radius: 0.25 * 1e-10});
         this._sign = Math.sign(charge);
@@ -21,7 +21,7 @@ class OscillatingCharge extends Particle {
     updateAt(time) {
         this.position.y = this._sign * amplitude * Math.sin(omega() * time);
         this.velocity.y = this._sign * amplitude * omega() * Math.cos(omega() * time);
-        this.acceleration = new Vec3(0, -this._sign * amplitude * omega() * omega() * Math.sin(omega() * time), 0);
+        this.state.acceleration .set(0, -this._sign * amplitude * omega() * omega() * Math.sin(omega() * time), 0);
     }
 }
 

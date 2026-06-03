@@ -185,11 +185,11 @@ export class Simulation {
     static with = (renderer) => new Simulation(renderer);
     constructor(renderer) {
         this._renderer = renderer;
-        this._onReset = () => {};
-        this._onBeforePhysicsUpdate = () => {};
-        this._onAfterPhysicsUpdate = () => {};
+        this._onReset = () => {};                // Callback function for client when a reset happens
+        this._onBeforePhysicsUpdate = () => {};  // Callback function for client before physics update
+        this._onAfterPhysicsUpdate = () => {};   // Callback function for client after physics update
         this._running = false;
-        this._forceAllViewsToBeRendered = false;
+        this._forceAllViewsToBeRendered = false; // When true, rerender world, _including_ static objects!
         this._simulatedTime = 0;
         this._dt = 0.01;
         this._substepsCount = 1;

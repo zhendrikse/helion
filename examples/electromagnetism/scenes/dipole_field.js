@@ -1,5 +1,5 @@
 import { Color } from "three";
-import { Particle, VectorField, Range , Simulation, Canvas, HtmlDiv, Vec3,
+import { RadialSymmetricBody, VectorField, Range , Simulation, Canvas, HtmlDiv, Vec3,
     EventController, HtmlControl, Sphere, ArrowField, ThreeJsRenderOptions,
     ThreeJsRenderer } from "../../../src/index.js";
 
@@ -8,12 +8,12 @@ const ec = 1.6e-19;
 
 class Dipole {
     constructor(distance = 1.2e-14, charge = ec) {
-        this.positive = new Particle({
+        this.positive = new RadialSymmetricBody({
             position: new Vec3(distance, 0, 0),
             radius: .1e-14,
             charge: +charge
         });
-        this.negative = new Particle({
+        this.negative = new RadialSymmetricBody({
             position: new Vec3(-distance, 0, 0),
             radius: 1e-14 * 0.05,
             charge: -charge

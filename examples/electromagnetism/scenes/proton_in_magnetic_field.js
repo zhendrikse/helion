@@ -1,5 +1,5 @@
 import { Color } from "three";
-import { Particle, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
+import { RadialSymmetricBody, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
     EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
     ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3
 } from "../../../src/index.js";
@@ -22,7 +22,7 @@ class MagneticField extends VectorField {
 //
 // Physics
 //
-const proton = new Particle({
+const proton = new RadialSymmetricBody({
     position: new Vec3(0, 1, 0),
     velocity: new Vec3(.5, 0, 0),
     mass: 1,
@@ -63,7 +63,7 @@ const arrowField = new ArrowField({
     magnitudeMap: (magnitude) => .5 * Math.sqrt(magnitude),
     colorMap: (axis, magnitude) => new Color().setHSL(.5 * Math.sqrt(magnitude), 1, 0.5)
 });
-renderer.synchronize(magneticField.alwaysWith(arrowField));
+renderer.synchronize(magneticField.onceWith(arrowField));
 
 const dt = 2.5e-3;
 const subSteps = 100;

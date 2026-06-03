@@ -1,7 +1,7 @@
 import { Color, Group } from "three";
 import { VectorField, Range , Cylinder, ArrowField, Sphere, ThreeJsRenderer, 
     ThreeJsRenderOptions, Arrow, Ring, Canvas, EventController, HtmlControl, 
-    HtmlDiv, Overlay, Simulation, AxialSymmetricBody, Particle, Vec3
+    HtmlDiv, Overlay, Simulation, AxialSymmetricBody, RadialSymmetricBody, Vec3
 } from "../../../src/index.js";
 
 const loopSegments = 10;
@@ -106,7 +106,7 @@ renderer.synchronize(new FaradayField().onceWith(new ArrowField({
 //
 const charges = [];
 for (let i = 0; i < numCharges; i++) {
-    const charge = new Particle({ position: new Vec3(0, 0, i), radius: 0.055 });
+    const charge = new RadialSymmetricBody({ position: new Vec3(0, 0, i), radius: 0.055 });
     charge.baseZ = i;
     charges.push(charge);
     renderer.synchronize(charge.alwaysWith(new Sphere({ color: new Color("yellow") })));

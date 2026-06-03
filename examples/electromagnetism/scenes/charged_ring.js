@@ -1,5 +1,5 @@
 import { Color } from "three";
-import { Particle, AxialSymmetricBody, VectorField, Range, Simulation, Canvas,
+import { RadialSymmetricBody, AxialSymmetricBody, VectorField, Range, Simulation, Canvas,
 	Overlay, EventController, HtmlDiv, Sphere, Cylinder, ArrowField, Vec3,
 	ThreeJsRenderer, ThreeJsRenderOptions, Trail
 } from "../../../src/index.js";
@@ -84,7 +84,7 @@ class RingElectricField extends VectorField {
 const radius = 0.5e-10;
 const ring = new ChargedRing({ radius, segments: 60 });
 const electricField = new RingElectricField(ring);
-const electron = new Particle({
+const electron = new RadialSymmetricBody({
     position: new Vec3(
         (Math.random() - 0.5) * radius * 3,
         (Math.random() - 0.5) * radius * 3,

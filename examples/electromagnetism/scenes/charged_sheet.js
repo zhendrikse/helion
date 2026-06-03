@@ -1,5 +1,5 @@
 import { Color } from "three";
-import {Block, Particle, VectorField, Range, Sphere, Trail, ArrowField, ThreeJsRenderer,
+import {Block, RadialSymmetricBody, VectorField, Range, Sphere, Trail, ArrowField, ThreeJsRenderer,
     ThreeJsRenderOptions, Box, Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
 } from "../../../src/index.js";
 
@@ -67,7 +67,7 @@ const sheet = new ChargedSheet({
 });
 
 const electricField = new SheetElectricField(sheet);
-const electron = new Particle({
+const electron = new RadialSymmetricBody({
     position: new Vec3((Math.random() - 0.5) * sheetSize, (Math.random() - 0.5) * sheetSize, sheetSize * 0.75),
     velocity: new Vec3(),
     mass: 9.11e-31,
