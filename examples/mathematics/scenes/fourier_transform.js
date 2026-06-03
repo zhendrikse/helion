@@ -79,8 +79,10 @@ const intensityRaster = new ComplexScalarFieldRaster({
     height: resolution
 });
 
-renderer2d.synchronize(fourierSimulation.field.alwaysWith(intensityRaster));
-const simulation = Simulation.with(renderer2d).onClockTick();
+const simulation = Simulation
+    .with(renderer2d)
+    .synchronize(fourierSimulation.field.alwaysWith(intensityRaster))
+    .onClockTick();
 simulation.start()
 
 //
