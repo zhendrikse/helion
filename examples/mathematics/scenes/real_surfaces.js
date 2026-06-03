@@ -98,8 +98,8 @@ const contoursView = new IsoparametricContoursView({
 simulation.synchronize(heightFieldSurface.alwaysWith(surfaceView));
 simulation.synchronize(heightFieldSurface.alwaysWith(contoursView));
 
-simulation.provideAxesAround(surfaceView);
-simulation.frameSceneOn(surfaceView, { padding: 0.9, translationY: -5 });
+renderer.provideAxesAround(surfaceView);
+renderer.frameSceneOn(surfaceView, { padding: 0.9, translationY: -5 });
 
 const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl
