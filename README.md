@@ -7,24 +7,25 @@ Helion is a browser-native generative math & physics visualization engine.
 It is built around explicit mathematical semantics such as scalar fields, vector fields,
 and parametric geometry, rather than ad-hoc visual scripting.
 
-It provides a [low-cognitive-overhead](https://en.wikipedia.org/wiki/Cognitive_load) environment for expressing mathematical and physical systems,
-where models, simulation, and visualization remain tightly synchronized in time and
-are directly executable in the web browser.
+It provides a [low-cognitive-overhead](https://en.wikipedia.org/wiki/Cognitive_load) environment for expressing
+mathematical and physical systems, where models, simulation, and visualization remain tightly synchronized
+in time and are directly executable in the web browser.
 
 ## 🧠 Core ideas
 
-A Helion program should read like a laboratory notebook with
+Helion provides a semantic layer for mathematics and physics visualization
+on the web. A Helion program should read like a laboratory notebook with
 one or more scientific experiment scripts, that
 you can read and understand almost without knowing the framework at all.
 
-If you cannot immediately explain what a line of code is doing in terms of 
+If you cannot immediately explain what a line of code is doing in terms of
 physics or mathematics, it is likely too abstract!
 
 👉 JavaScript / Web-native (no installation or configuration)<br/>
 👉 Code expresses scientific intent directly<br/>
-👉 It is model-driven (fields, surfaces, operators)<br/>
+👉 It is model-driven (scalar &amp; vector fields, surfaces, operators)<br/>
 👉 Supports multiple views per model (model / view / contoller) <br/>
-👉 Low cognitive overhead<br/>
+👉 Low [cognitive overhead](https://en.wikipedia.org/wiki/Cognitive_load)<br/>
 
 ## 💻 Helion code expresses intent
 
@@ -58,19 +59,20 @@ Helion is designed for:
 👨🏻‍🏫 educators building interactive explanations<br/>
 🧑‍💻 learners exploring physical intuition<br/>
 
-## 🧭 Design rule of thumb
 
-If a feature does not directly improve scientific understanding in code, it is not included.
+## 🎯 Positioning
 
-Helion is designed with the following guidelines in mind:
-
-📖 Readability over abstraction<br/>
-🧠 Cognitive clarity over architectural generality<br/>
-🔬 Scientific intent over software patterns<br/>
-🧩 Explicit composition over implicit orchestration<br/>
-🎯 Local reasoning over global framework state<br/>
-
-Complex orchestration layers are intentionally avoided.
+| Project         | Browser    | Nice 3D | Math semantics | Phys semantics | API        |
+| --------------- | ---------- | ------- | -------------- | -------------- | ---------- |
+| VPython         | 🤞         | 🤏     | 🤏             | 💪             | very basic |
+| Three.js        | ✔️         | 🎖️     | ❌             | ❌             | low level  |
+| p5.js           | ✔️         | 🤏     | ❌             | ❌             | basic      |
+| Babylon.js      | ✔️         | 🎖️     | ❌             | ❌             | low level  |
+| Observable Plot | ✔️         | 2D     | Statistics     | ❌             | high level  |
+| Mathematica     | ❌ (cloud) | 🎖️     | 💪💪💪        | 💪             | high level  |
+| MATLAB          | ❌         | 👍     | 💪             | 🤏             | high level |
+| Manim           | ❌         | 👍     | 💪             | ❌             | high level |
+| Helion          | ✔️         | 👍     | 💪             | 💪             | high level |
 
 ## 🧪 Live demos
 

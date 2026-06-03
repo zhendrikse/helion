@@ -17,7 +17,8 @@ in time and are directly executable in the web browser.
 #### 🧠 Core ideas
 <div class="header_line"></div>
 
-A Helion program should read like a laboratory notebook with
+Helion provides a semantic layer for mathematics and physics visualization
+on the web. A Helion program should read like a laboratory notebook with
 one or more scientific experiment scripts, that
 you can read and understand almost without knowing the framework at all.
 
@@ -26,9 +27,9 @@ physics or mathematics, it is likely too abstract!
 
 👉 JavaScript / Web-native (no installation or configuration)<br/>
 👉 Code expresses scientific intent directly<br/>
-👉 It is model-driven (fields, surfaces, operators)<br/>
+👉 It is model-driven (scalar &amp; vector fields, surfaces, operators)<br/>
 👉 Supports multiple views per model (model / view / contoller) <br/>
-👉 Low cognitive overhead<br/>
+👉 Low [cognitive overhead](https://en.wikipedia.org/wiki/Cognitive_load)<br/>
 
 
 #### 🎓 Focus on teaching &amp; learning
@@ -39,7 +40,7 @@ physics or mathematics, it is likely too abstract!
 👨🏻‍🏫 Educators building interactive explanations<br/>
 🧑‍💻 Exploring physical and geometric intuition for self-study<br/>
 
-#### 💻 Helion code expresses intent
+#### 💻 Code expresses intent
 <div class="header_line"></div>
 
 ```js
@@ -62,6 +63,22 @@ Simulation
     // physics update
 });
 ```
+
+#### 🎯 Positioning
+<div class="header_line"></div>
+
+| Project         | Browser    | Nice 3D | Math semantics | Phys semantics | API        |
+| --------------- | ---------- | ------- | -------------- | -------------- | ---------- |
+| VPython         | 🤞         | 🤏     | 🤏             | 💪             | very basic |
+| Three.js        | ✔️         | 🎖️     | ❌             | ❌             | low level  |
+| p5.js           | ✔️         | 🤏     | ❌             | ❌             | basic      |
+| Babylon.js      | ✔️         | 🎖️     | ❌             | ❌             | low level  |
+| Observable Plot | ✔️         | 2D     | Statistics     | ❌             | high level  |
+| Mathematica     | ❌ (cloud) | 🎖️     | 💪💪💪        | 💪             | high level  |
+| MATLAB          | ❌         | 👍     | 💪             | 🤏             | high level |
+| Manim           | ❌         | 👍     | 💪             | ❌             | high level |
+| Helion          | ✔️         | 👍     | 💪             | 💪             | high level |
+
 
 #### 🧪 Live demos
 <div class="header_line"></div>
