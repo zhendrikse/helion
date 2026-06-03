@@ -267,19 +267,19 @@ export class HarmonicOscillator extends MathPhysicsModelBehavior {
     }
 
     alwaysWith(view) {
-        return new Binding({
-            model: this.bond, // THIS IS DIFFERENT COMPARED TO THE DEFAULT BEHAVIOR!
-            view: view,
-            mode: Binding.Mode.ALWAYS
-        });
+        return new Binding(
+            this.bond, // THIS IS DIFFERENT COMPARED TO THE DEFAULT BEHAVIOR!
+            view,
+            Binding.Mode.ALWAYS
+        );
     }
 
     onceWith(view) {
-        return new Binding({
-            model: this.bond, // THIS IS DIFFERENT COMPARED TO THE DEFAULT BEHAVIOR!
-            view: view,
-            mode: Binding.Mode.ONCE
-        });
+        return new Binding(
+            this.bond, // THIS IS DIFFERENT COMPARED TO THE DEFAULT BEHAVIOR!
+            view,
+            Binding.Mode.ONCE
+        );
     }
 
     oscillate(dt, integrator = Integrators.symplecticEulerStep) {
