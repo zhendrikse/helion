@@ -107,19 +107,10 @@ export class HtmlControl {
 
 export class MathPhysicsModelBehavior {
     alwaysWith(view) {
-        return new Binding({
-            model: this,
-            view: view,
-            mode: Binding.Mode.ALWAYS
-        });
+        return new Binding(this, view, Binding.Mode.ALWAYS);
     }
-
     onceWith(view) {
-        return new Binding({
-            model: this,
-            view: view,
-            mode: Binding.Mode.ONCE
-        });
+        return new Binding(this, view, Binding.Mode.ONCE);
     }
 }
 
@@ -132,27 +123,22 @@ export class Binding {
         ONCE: "once"
     });
 
-    constructor({
-        model,
-        view,
-        mode = Binding.Mode.ALWAYS
-    }) {
+    constructor(model, view, mode = Binding.Mode.ALWAYS) {
         this.model = model;
         this.view = view;
         this.mode = mode;
-
-        // TODO MOVE ATTACH TO TO SYNC IN SIMULATION
-        // Tie the body state to its associated view
-        if (!view.attachTo)
-            throw new Error("Use addPlainObject() to attach regular Three.js objects!");
-
-        this.view.attachTo(this.model);
-        this.view.initialize?.();
     }
+
+    initialize() {
+        this.view.attachTo(this.model);
+        this.view.initialize?.(); // Necessary to generate geometries & correct bounding boxes
+    }
+
+    update() {}
 
     reset() {
         this.model.reset?.(); // Reset phys/math model to its original state
-        this.view.reset?.(); // For example, object trails need to be cleaned up!
+        this.view.reset?.();  // For example, object trails need to be cleaned up!
     }
 }
 
@@ -183,6 +169,7 @@ export class Simulation {
     synchronize(binding) {
         this._renderer.add(binding.view);
         this._bindings.push(binding);
+        binding.initialize();
         return this;
     }
 

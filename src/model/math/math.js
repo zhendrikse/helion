@@ -1,7 +1,3 @@
-/*************************
- * M A T H E M A T I C S *
- *************************/
-
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
 
 /**
