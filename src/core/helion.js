@@ -134,7 +134,9 @@ export class Binding {
         this.view.initialize?.(); // Necessary to generate geometries & correct bounding boxes
     }
 
-    update() {}
+    render() {
+        this.view.render();
+    }
 
     reset() {
         this.model.reset?.(); // Reset phys/math model to its original state
@@ -204,7 +206,7 @@ export class Simulation {
             // Rendering
             for (const binding of this._bindings)
                 if (binding.mode === Binding.Mode.ALWAYS || this._forceAllViewsToBeRendered)
-                    binding.view.render();
+                    binding.render();
             this._forceAllViewsToBeRendered = false;
 
             this._renderer.render(clockTime);
