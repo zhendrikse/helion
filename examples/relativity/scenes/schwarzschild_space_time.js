@@ -1,8 +1,8 @@
-import {Vector3, Vector2, BufferGeometry, LineBasicMaterial, Line, Color} from "three";
+import {Vector3, Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
     Floor, Sphere, ThreeJsRenderer, ThreeJsRenderOptions, Trail, Canvas,
     EventController, HtmlDiv, Overlay, Simulation, Surface, IsoparametricContoursView,
-    RadialSymmetricBody, UniformColorMapper
+    RadialSymmetricBody, Sun
 } from "../../../src/index.js";
 
 const initialCometDistance = 33;
@@ -236,6 +236,7 @@ function timeStep(clockTime) {
         realComet.updateRealMotion(sunMass, 0.001);
 
     photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1);
+    sun.update(clockTime * 0.001);
 
     comet.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sunMass));
     realComet.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
@@ -275,6 +276,9 @@ const grid = new Floor({
 renderer.add(grid);
 renderer.add(photonRing);
 
+const sun = new Sun({ radius: 10 });
+renderer.add(sun);
+
 // Curved space-time: Flamm's paraboloid
 const spaceTimeCone = new IsoparametricContoursView();
 const simulation = Simulation
@@ -290,6 +294,7 @@ const simulation = Simulation
 
 simulation.onBeforeClockTick((clockTime, simulatedTime) =>
     simulation.substepsCount = subSteps(currentIsRingOrbitValue));
+simulation.start();
 
 //
 // Event handling
