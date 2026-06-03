@@ -1,19 +1,19 @@
 import {
     FFT, ComplexScalarFieldRaster, DiscreteComplexField, EventController, HtmlControl,
     Simulation, HtmlDiv, Canvas, Canvas2DRenderer
-} from "helion";
+} from "../../../src/index.js";
+
+const Shape = Object.freeze({
+    CIRCULAR: "circular",
+    SQUARE: "square",
+    RECTANGLE: "rectangle"
+});
 
 class FourierSimulation {
-    static Type = Object.freeze({
-        CIRCULAR: "circular",
-        SQUARE: "square"
-    });
-
     constructor(diameter, N) {
-        this._type = FourierSimulation.Type.CIRCULAR;
+        this._type = Shape.CIRCULAR;
         this._N = N;
         this._diameter = diameter;
-        this._fft = new FFT(N);
         this._field = new DiscreteComplexField({nx: N, ny: N});
         this.doFft();
     }
@@ -32,25 +32,16 @@ class FourierSimulation {
 
     doFft() {
         this._buildShape();
-        this._fft.fft2D(this._field);
-        this._field.transformWith(this._fftShift2D); // Shift back to center
+        this._field.transformWith(FFT.fft2D);
+        this._field.transformWith(FFT.fftShift2D); // Shift back to center
     }
 
-    _fftShift2D(field) {
-        const N = field.real.length;
-        const half = N >> 1;
-        const real =  Array.from({ length: N },() => new Float32Array(N));
-        const imag = Array.from({ length: N },() => new Float32Array(N));
-
-        for (let i = 0; i < N; i++)
-            for (let j = 0; j < N; j++) {
-                real[i][j] = field.real[(i + half) % N][(j + half) % N];
-                imag[i][j] = field.imag[(i + half) % N][(j + half) % N];
-            }
-
-        field.real = real;
-        field.imag = imag;
-    }
+    // _pixelAt(i, j, type) {
+    //     switch (type) {
+    //         case FourierSimulation.Type.CIRCULAR:
+    //             return (x * x + y * y <= radius * radius);
+    //     }
+    // }
 
     _buildShape() {
         const N = this._N;
@@ -63,7 +54,7 @@ class FourierSimulation {
             for (let j = 0; j < N; j++) {
                 const x = i - cx;
                 const y = j - cy;
-                const inside = this._type === FourierSimulation.Type.CIRCULAR ?
+                const inside = this._type === Shape.CIRCULAR ?
                     (x * x + y * y <= radius * radius)
                     : (Math.abs(x) <= radius && Math.abs(y) <= radius);
 
