@@ -31,7 +31,7 @@ export class OneDimensionalComplexPlaneWave2D {
 
     set context(context) { this._context = context; }
 
-    attachTo(complexPlaneWave) {
+    bind(complexPlaneWave) {
         // Sanity checks
         if (!complexPlaneWave.valueAt)
             throw new Error("Body does not implement valueAt(), hence it cannot be attached to this view.");

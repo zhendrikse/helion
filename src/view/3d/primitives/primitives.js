@@ -60,7 +60,7 @@ export class Trail extends Group {
         this._previousPosition = null;
     }
 
-    attachTo(body) {
+    bind(body) {
         this._body = body;
         this._previousPosition = body.position.clone();
         this._renew();
@@ -136,7 +136,7 @@ export class Sphere extends Mesh {
         this.castShadow = castShadow;
     }
 
-    attachTo(body) {
+    bind(body) {
         // Sanity checks
         if (!body.radius)
             throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
@@ -220,7 +220,7 @@ export class Arrow extends Group {
         this._tempAxis = new Vector3();
     }
 
-    attachTo(body) {
+    bind(body) {
         if (!body.axis)
             throw new Error("Body does not have an axis, hence it cannot be attached to this view.");
 
@@ -297,7 +297,7 @@ export class Cylinder extends Mesh {
         this._direction = new Vector3();
     }
 
-    attachTo(body) {
+    bind(body) {
         // Sanity checks
         if (!body.axis)
             throw new Error("Body does not have an axis, hence it cannot be attached to this view.");
@@ -341,7 +341,7 @@ export class Box extends Mesh {
         this._body = null;
     }
 
-    attachTo(body) {
+    bind(body) {
         // Sanity checks
         if (!body.size || body.size.x === undefined)
             throw new Error("Body does not have size (vector), hence it cannot be attached to this view.");
@@ -374,7 +374,7 @@ export class Ring extends Mesh {
         super(geometry, material);
     }
 
-    attachTo(body) {
+    bind(body) {
         // Sanity checks
         if (!body.axis)
             throw new Error("Body does not have an axis, hence it cannot be attached to this view.");
@@ -467,7 +467,7 @@ export class Helix extends Mesh {
         this._axis = new Vector3();
     }
 
-    attachTo(body) {
+    bind(body) {
         // Sanity checks
         if (!body.axis)
             throw new Error("Body does not have an axis, hence it cannot be attached to this view.");

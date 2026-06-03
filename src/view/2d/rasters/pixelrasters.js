@@ -24,7 +24,7 @@ export class ScalarFieldRaster {
 
     set context(context) { this._context = context; }
 
-    attachTo(discreteScalarField) {
+    bind(discreteScalarField) {
         // Sanity checks
         if (!discreteScalarField.valueAt)
             throw new Error("Body does not implement valueAt(), hence it cannot be attached to this view.");
@@ -120,7 +120,7 @@ export class ComplexScalarFieldRaster {
 
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
-    attachTo(discreteComplexField) {
+    bind(discreteComplexField) {
         // Sanity checks
         if (!discreteComplexField.magnitudeAt)
             throw new Error("Field does not implement magnitudeAt(), hence it cannot be attached to this view.");

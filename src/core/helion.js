@@ -130,7 +130,7 @@ export class Binding {
     }
 
     initialize() {
-        this.view.attachTo(this.model);
+        this.view.bind(this.model);
         this.view.initialize?.(); // Necessary to generate geometries & correct bounding boxes
     }
 

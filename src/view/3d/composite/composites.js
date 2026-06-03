@@ -127,7 +127,7 @@ export class PointCloudView extends Points {
         this._radiusAttribute = null;
     }
 
-    attachTo(pointCloud) {
+    bind(pointCloud) {
         // Sanity checks
         if (!pointCloud.positionAt || !pointCloud.colorAt || !pointCloud.sizeAt)
             throw new Error("Body does not behave like a point cloud, hence it cannot be attached to this view.");
@@ -192,7 +192,7 @@ export class ElectromagneticWave extends Group {
         this._planeWave = null;
     }
 
-    attachTo(planeWave) {
+    bind(planeWave) {
         // Sanity checks
         if (!planeWave.valueAt)
             throw new Error("Body does not implement valueAt(), hence it cannot be attached to this view.");
@@ -243,8 +243,8 @@ export class ElectromagneticWave extends Group {
                 size: this._arrowSize,
                 round: true
             });
-            electricFieldArrow.attachTo(new VectorFieldValue({position}));
-            magneticFieldArrow.attachTo(new VectorFieldValue({position}));
+            electricFieldArrow.bind(new VectorFieldValue({position}));
+            magneticFieldArrow.bind(new VectorFieldValue({position}));
             this._magneticFieldArrows.push(magneticFieldArrow);
             this._electricFieldArrows.push(electricFieldArrow);
             this.add(electricFieldArrow, magneticFieldArrow);
@@ -269,7 +269,7 @@ export class OneDimensionalComplexPlaneWave3D extends Group {
         this._complexPlaneWave = null;
     }
 
-    attachTo(complexPlaneWave) {
+    bind(complexPlaneWave) {
         // Sanity checks
         if (!complexPlaneWave.valueAt)
             throw new Error("Body does not implement valueAt(), hence it cannot be attached to this view.");
@@ -289,7 +289,7 @@ export class OneDimensionalComplexPlaneWave3D extends Group {
             colorMap: (axis) => new Color().setHSL(1.0 - new Complex(axis.z, axis.y).phase / (2 * Math.PI), 1.0, 0.5)
         });
 
-        arrow.attachTo(new ComplexScalarFieldValue({ position: new Vector3(x, position.y, position.z) }));
+        arrow.bind(new ComplexScalarFieldValue({ position: new Vector3(x, position.y, position.z) }));
         this._arrows.push(arrow);
         this.add(arrow);
     }
@@ -370,7 +370,7 @@ export class ArrowField extends Group {
         this._headOffset = new Vector3();
     }
 
-    attachTo(vectorField) {
+    bind(vectorField) {
         if (!vectorField?.vectorAt)
             throw new Error("vectorField must implement vectorAt(position)");
 

@@ -47,7 +47,7 @@ export class SurfaceView extends Group {
         this._colorMapper = scalarField.recommendedColorMapper;
     }
 
-    attachTo(mathSurfaceDefinition) {
+    bind(mathSurfaceDefinition) {
         // Sanity checks
         if (!mathSurfaceDefinition.sample)
             throw new Error("Surface does not implement sample(), hence it cannot be attached to this view.");
@@ -121,8 +121,8 @@ export class IsoparametricContoursView extends SurfaceView {
         return box;
     }
 
-    attachTo(surface) {
-        super.attachTo(surface);
+    bind(surface) {
+        super.bind(surface);
         this.#build();
     }
 
