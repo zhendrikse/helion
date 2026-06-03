@@ -51,6 +51,8 @@ export class Canvas {
     get htmlCanvas() { return this._htmlCanvas; }
     get clientHeight() { return this._htmlCanvas.clientHeight; }
     get clientWidth() { return this._htmlCanvas.clientWidth; }
+    get height() { return this._htmlCanvas.height; }
+    get width() { return this._htmlCanvas.width; }
 }
 
 export class Overlay {

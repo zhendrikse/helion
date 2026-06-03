@@ -1,5 +1,29 @@
 import {FieldStatistics} from "../../../model/math/math.js";
 
+export function hsvToRgb(h, s, v) {
+    let r, g, b;
+    let i = Math.floor(h * 6);
+    let f = h * 6 - i;
+    let p = v * (1 - s);
+    let q = v * (1 - f * s);
+    let t = v * (1 - (1 - f) * s);
+
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+
+    return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+    };
+}
+
 export class ScalarFieldRaster {
     static RenderMode = Object.freeze({
         CLEAR_EACH_FRAME: "clearEachFrame",
@@ -69,30 +93,6 @@ export class ScalarFieldRaster {
     }
 }
 
-export function hsvToRgb(h, s, v) {
-    let r, g, b;
-    let i = Math.floor(h * 6);
-    let f = h * 6 - i;
-    let p = v * (1 - s);
-    let q = v * (1 - f * s);
-    let t = v * (1 - (1 - f) * s);
-
-    switch (i % 6) {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
-
-    return {
-        r: Math.round(r * 255),
-        g: Math.round(g * 255),
-        b: Math.round(b * 255)
-    };
-}
-
 export class ComplexScalarFieldRaster {
     constructor({
         width = 100,
@@ -116,9 +116,11 @@ export class ComplexScalarFieldRaster {
         this._width = width;
         this._height = height;
         this._discreteComplexField = null;
+        this._context = null;
     }
 
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
+    set context(context) { this._context = context; }
 
     bind(discreteComplexField) {
         // Sanity checks
@@ -130,8 +132,8 @@ export class ComplexScalarFieldRaster {
         this._discreteComplexField = discreteComplexField;
     }
 
-    render(context) {
-        const imageData = context.createImageData(this._width, this._height);
+    render() {
+        const imageData = this._context.createImageData(this._width, this._height);
         const max = FieldStatistics.maxMagnitude(this._discreteComplexField);
         for (let i = 0; i < this._width; i++)
             for (let j = 0; j < this._height; j++) {
@@ -152,9 +154,44 @@ export class ComplexScalarFieldRaster {
         const off = new OffscreenCanvas(this._width, this._height);
         off.getContext("2d").putImageData(imageData, 0, 0);
 
-        context.imageSmoothingEnabled = false;
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-        context.drawImage(off, 0, 0, context.canvas.width, context.canvas.height);
+        this._context.imageSmoothingEnabled = false;
+        this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+        this._context.drawImage(off, 0, 0, this._context.canvas.width, this._context.canvas.height);
+    }
+}
+
+export class ParticleRaster {
+    constructor({
+        clearEachFrame = true,
+        drawOutlines = true
+    } = {}) {
+        this._particleField = null;
+        this._clearEachFrame = clearEachFrame;
+        this._drawOutlines = drawOutlines;
+    }
+
+    set context(context) { this._context = context; }
+
+    bind(field) {
+        this._particleField = field;
+    }
+
+    render() {
+        if (this._clearEachFrame)
+            this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+
+        for (let i = 0; i < this._particleField.size; i++) {
+            const particle = this._particleField.particleAt(i);
+            this._context.fillStyle = particle.color;
+            this._context.strokeStyle = "#000000";
+            this._context.beginPath();
+            this._context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2, true);
+            this._context.closePath();
+            this._context.fill();
+
+            if (this._drawOutlines)
+                this._context.stroke(); // Gives outline to particle
+        }
     }
 }
 

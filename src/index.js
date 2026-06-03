@@ -1,5 +1,5 @@
 export {
-    AxialSymmetricBody, HarmonicOscillator, RadialSymmetricBody,
+    AxialSymmetricBody, HarmonicOscillator, RadialSymmetricBody, DiscreteParticleField,
     EC, Body, G, OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave, Spring,
     Block, gravitationalForceBetween, PointCloud
 } from "./model/phys/physics.js";
@@ -25,7 +25,8 @@ export { ThreeJsRenderOptions, ThreeJsRenderer } from "./view/3d/renderer.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { CompositeRenderer } from "./view/renderer.js";
-export { ScalarFieldRaster, ComplexScalarFieldRaster } from "./view/2d/rasters/pixelrasters.js";
+
+export { ParticleRaster, ScalarFieldRaster, ComplexScalarFieldRaster } from "./view/2d/rasters/pixelrasters.js";
 export { Canvas2DRenderer } from "./view/2d/renderer.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 

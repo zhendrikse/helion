@@ -88,7 +88,7 @@ simulation.start()
 //
 // Event listeners
 //
-const eventController = new EventController();
+const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl
     .withElementId("diameterSlider")
     .forType("input")

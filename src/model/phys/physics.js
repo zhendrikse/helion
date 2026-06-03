@@ -358,3 +358,29 @@ export class OneDimensionalComplexPlaneWave extends OneDimensionalPlaneWave {
         return new Complex( Math.cos(phase) * this.amplitude, Math.sin(phase) * this.amplitude);
     }
 }
+
+//
+// 2D
+//
+
+export class DiscreteParticleField extends MathPhysicsModelBehavior {
+    constructor() {
+        super();
+        this._particles = [];
+    }
+
+    update() {
+        for (const particle of this._particles)
+            particle.update();
+    }
+
+    add(particle) {
+        this._particles.push(particle);
+    }
+
+    particleAt(index) {
+        return this._particles[index];
+    }
+
+    get size() { return this._particles.length; }
+}

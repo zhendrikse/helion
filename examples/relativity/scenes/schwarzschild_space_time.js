@@ -236,7 +236,7 @@ function timeStep(clockTime) {
         realComet.updateRealMotion(sunMass, 0.001);
 
     photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1);
-    sun.update(clockTime * 0.001);
+    sun.update(clockTime * 0.002);
 
     comet.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sunMass));
     realComet.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
@@ -294,7 +294,6 @@ const simulation = Simulation
 
 simulation.onBeforeClockTick((clockTime, simulatedTime) =>
     simulation.substepsCount = subSteps(currentIsRingOrbitValue));
-simulation.start();
 
 //
 // Event handling

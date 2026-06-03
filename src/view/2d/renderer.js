@@ -41,8 +41,8 @@ export class Canvas2DRenderer extends Renderer {
 
     constructor(canvasWrapperDiv) {
         super(canvasWrapperDiv);
-        this._canvas = canvasWrapperDiv.canvas;
-        this._context = this._canvasWrapperDiv.canvas.htmlCanvas.getContext("2d");
+        this._canvasWrapper = canvasWrapperDiv;
+        this._context = canvasWrapperDiv.canvas.htmlCanvas.getContext("2d");
     }
 
     add(view) {
