@@ -1,9 +1,6 @@
-/*****************
- * P H Y S I C S *
- *****************/
-
 import { Complex, Vec3 } from "../math/math.js";
 import { Integrators } from "../math/numerics/integrators/integrators.js";
+import { Binding } from "../../core/helion.js";
 
 //
 // Constants
@@ -176,8 +173,21 @@ export class Body {
 
     and(otherBody) { return new TwoBodies(this, otherBody) };
 
-    alwaysWith(view) { return { body: this, view: view, always: true }; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
+    alwaysWith(view) {
+        return new Binding({
+            source: this,
+            target: view,
+            mode: Binding.Mode.ALWAYS
+        });
+    }
+
+    onceWith(view) {
+        return new Binding({
+            source: this,
+            target: view,
+            mode: Binding.Mode.ONCE
+        });
+    }
 
     positionVectorTo(other) { return other.position.clone().sub(this.position); }
     distanceToSquared(other) { return this.positionVectorTo(other).dot(this.positionVectorTo(other)); }

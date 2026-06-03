@@ -7,6 +7,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Renderer } from "../renderer.js"
 import { Vec3 } from "../../model/math/math.js";
 import { Axes, SkyDome } from "./composite/backgrounds.js";
+import {Binding} from "../../core/helion.js";
 
 export class ThreeJsRenderOptions {
     constructor({
@@ -45,9 +46,8 @@ export class ThreeJsRenderer extends Renderer {
         this._canvas = this._canvasWrapperDiv.canvas.htmlCanvas;
         this._overlay = this._canvasWrapperDiv.overlay?.htmlOverlay;
 
-        this._staticObjects = [];  // Are static during the whole simulation hence do NOT need to be synchronized
-        this._dynamicObjects = []; // Need to be synchronized every update
         this._bodies = [];        // The physics / bodies in the simulation
+        this._bindings = [];
 
         this._autoRotate = false;
         this._autoRotateTheta = Math.PI / 2;
@@ -201,18 +201,14 @@ export class ThreeJsRenderer extends Renderer {
 
     initialize() {
         // Sync new physics state with view
-        for (const anObject of this._staticObjects)
-            anObject.render?.();
+        for (const binding of this._bindings)
+            binding.view.render?.();
     }
 
     render(time, forceAllViewsToBeRendered) {
-        // Sync new physics state with view
-        for (const anObject of this._dynamicObjects)
-            anObject.render?.();
-
-        if (forceAllViewsToBeRendered)
-            for (const anObject of this._staticObjects)
-                anObject.render?.();
+        for (const binding of this._bindings)
+            if (binding.mode === Binding.Mode.ALWAYS || forceAllViewsToBeRendered)
+                binding.view.render();
 
         this._renderer.render(this._scene, this._camera);
         this._controls?.update();
@@ -234,13 +230,7 @@ export class ThreeJsRenderer extends Renderer {
 
         this._world.add(bodyAndView.view);
         this._bodies.push(bodyAndView.body);
-
-        if (bodyAndView.always)
-            this._dynamicObjects.push(bodyAndView.view);
-        else
-            this._staticObjects.push(bodyAndView.view);
-
-        bodyAndView.view.attachTo(bodyAndView.body);
+        this._bindings.push(Binding.between(bodyAndView));
         bodyAndView.view.initialize?.();
     }
 
@@ -249,9 +239,7 @@ export class ThreeJsRenderer extends Renderer {
 
         view.dispose?.();
         this._world.remove(view);
-
-        this._dynamicObjects = this._dynamicObjects.filter(v => v !== view);
-        this._staticObjects = this._staticObjects.filter(v => v !== view);
+        this._bindings = this._bindings.filter(binding => binding.view !== view);
     }
 
     #calculateCenter(boundingBox) {

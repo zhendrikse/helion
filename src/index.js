@@ -21,7 +21,11 @@ export { scalarFields, colorMappers } from "./controller/selectors.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 
 export {
-    Simulation, Canvas, HtmlDiv, Overlay, EventController, HtmlControl, UPlotGraph, CallbackFunction
+    EventController, CallbackFunction
+} from "./controller/controller.js";
+
+export {
+    Simulation, Canvas, HtmlDiv, Overlay, HtmlControl, UPlotGraph,
 } from "./core/helion.js";
 
 export {

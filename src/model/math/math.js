@@ -2,8 +2,6 @@
  * M A T H E M A T I C S *
  *************************/
 
-import {max, min} from "three/tsl";
-
 /**
  * Pick a number from a normal distribution using Box-Muller transform.
  *
