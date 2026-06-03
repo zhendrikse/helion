@@ -117,7 +117,7 @@ const renderer = ThreeJsRenderer
         .containsBoth(canvas.and(Overlay.withElementId("chargedRingOverlay"))))
     .with(threeJsRendererOptions);
 
-const electronSphere = new Sphere({ color: "red"});
+const electronSphere = new Sphere({ color: "green"});
 const arrowField = new ArrowField({
     xRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     yRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
