@@ -43,33 +43,13 @@ export class Canvas2DRenderer extends Renderer {
         super(canvasWrapperDiv);
         this._canvas = canvasWrapperDiv.canvas;
         this._context = this._canvasWrapperDiv.canvas.htmlCanvas.getContext("2d");
-        this._dynamicObjects = [];
-        this._staticObjects = [];
     }
 
-    initialize() {
-        this._staticObjects.forEach(obj => obj.render?.(this._context));
+    add(view) {
+        view.context = this._context;
     }
 
-    synchronize(bodyAndView) {
-        // Tie the body state to its associated view
-        if (!bodyAndView.view.attachTo)
-            throw new Error("Use addPlainObject() to attach regular Three.js objects!");
-
-        if (bodyAndView.always)
-            this._dynamicObjects.push(bodyAndView.view);
-        else
-            this._staticObjects.push(bodyAndView.view);
-
-        bodyAndView.view.attachTo(bodyAndView.body);
-    }
-
-    render(time, forceAllViewsToBeRendered) {
-        this._context.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
-        this._dynamicObjects.forEach(obj => obj.render?.(this._context));
-    }
-
-    reset() {
-        this._dynamicObjects.forEach(obj => obj.reset?.());
+    render(time) {
+        // this._context.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
     }
 }

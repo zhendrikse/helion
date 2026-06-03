@@ -51,9 +51,6 @@ const renderer = ThreeJsRenderer.on(
     .with(threeJsRendererOptions);
 
 const sphere = new Sphere({ color: new Color("red")});
-renderer.synchronize(proton.alwaysWith(sphere));
-renderer.synchronize(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })));
-
 const arrowField = new ArrowField({
     xRange: new Range(-6, 6, .5),
     yRange: new Range(0, 0, .5),
@@ -63,12 +60,14 @@ const arrowField = new ArrowField({
     magnitudeMap: (magnitude) => .5 * Math.sqrt(magnitude),
     colorMap: (axis, magnitude) => new Color().setHSL(.5 * Math.sqrt(magnitude), 1, 0.5)
 });
-renderer.synchronize(magneticField.onceWith(arrowField));
 
 const dt = 2.5e-3;
 const subSteps = 100;
 const simulation = Simulation
     .with(renderer)
+    .synchronize(magneticField.onceWith(arrowField))
+    .synchronize(proton.alwaysWith(sphere))
+    .synchronize(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })))
     .incrementsTimeBy(dt)
     .onClockTick(() => timeStep(dt), subSteps);
 
@@ -87,7 +86,7 @@ eventController.attach(HtmlControl
 
 const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
 const speedCallback = new CallbackFunction((event) =>
-    proton.velocity = speedToVelocity(event.target.value * .01, proton.velocity));
+    proton.state.velocity.copy(speedToVelocity(event.target.value * .01, proton.velocity)));
 eventController.add(speedCallback
     .to(HtmlControl.withElementId("protonInFieldSpeedSlider")
         .forType("input")

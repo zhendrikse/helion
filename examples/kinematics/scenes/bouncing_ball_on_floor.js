@@ -55,11 +55,22 @@ const renderer = ThreeJsRenderer
         cameraPosition: new Vec3(2, 1, 0.5).multiplyScalar(2.25)
     }));
 
+const dt = 2.5e-3;
+const subSteps = 10;
 const sphere = new Sphere({ color: "cyan" });
-renderer.synchronize(ball.alwaysWith(sphere));
-renderer.synchronize(ball.alwaysWith(new Trail({ color: sphere.color})));
+const simulation = Simulation
+    .with(renderer)
+    .synchronize(ball.alwaysWith(sphere))
+    .synchronize(ball.alwaysWith(new Trail({ color: sphere.color})))
+    .incrementsTimeBy(dt)
+    .onClockTick((clockTime, simulatedTime) => {
+        if (ball.reachedEnd())
+            return;
 
-renderer.addObject3D(new Floor({
+        ballStep(dt);
+    }, subSteps);
+
+renderer.add(new Floor({
     type: Floor.Type.GRID,
     planeSizeXy: new Vector2(5, 5),
     opacity: 0.3,
@@ -94,17 +105,6 @@ function updateGraph(simulatedTime) {
     plot.update();
 }
 
-const dt = 2.5e-3;
-const subSteps = 10;
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => {
-        if (ball.reachedEnd())
-            return;
-
-        ballStep(dt);
-    }, subSteps);
 
 // Update graph not inside simulation loop, as we do not want to update it with every physics update substep
 simulation.onAfterClockTick((clockTime, simulatedTime) => updateGraph(simulatedTime));

@@ -148,9 +148,11 @@ const intensityPixelRaster = new ScalarFieldRaster({
     height: resolution,
     colorMapper: fraunhoferSimulation.colorMapper
 });
-renderer2d.synchronize(intensityField.alwaysWith(intensityPixelRaster));
 
-const simulation = Simulation.with(renderer2d).onClockTick();
+const simulation = Simulation
+    .with(renderer2d)
+    .synchronize(intensityField.alwaysWith(intensityPixelRaster))
+    .onClockTick();
 
 const eventController = new EventController(simulation);
 eventController.attach(HtmlControl

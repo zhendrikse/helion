@@ -19,7 +19,10 @@ export class ScalarFieldRaster {
         this._colorMapper = colorMapper;
         this._scaleToCanvas = scaleToCanvas;
         this._discreteScalarField = null;
+        this._context = null;
     }
+
+    set context(context) { this._context = context; }
 
     attachTo(discreteScalarField) {
         // Sanity checks
@@ -44,15 +47,15 @@ export class ScalarFieldRaster {
         imageData.data[index++] = (color[3] ?? 255);
     }
 
-    render(context) {
-        const imageData = context.createImageData(this._width, this._height);
+    render() {
+        const imageData = this._context.createImageData(this._width, this._height);
         const maxValue = this._max(this._discreteScalarField);
         for (let i = 0; i < this._width; i++)
             for (let j = 0; j < this._height; j++)
                 this.setColourAt(i, j, imageData, maxValue);
 
         if (!this._scaleToCanvas) {
-            context.putImageData(imageData, 0, 0);
+            this._context.putImageData(imageData, 0, 0);
             return;
         }
 
@@ -60,9 +63,9 @@ export class ScalarFieldRaster {
         const off = new OffscreenCanvas(this._width, this._height);
         off.getContext("2d").putImageData(imageData, 0, 0);
 
-        context.imageSmoothingEnabled = false;
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-        context.drawImage(off, 0, 0, context.canvas.width, context.canvas.height);
+        this._context.imageSmoothingEnabled = false;
+        this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+        this._context.drawImage(off, 0, 0, this._context.canvas.width, this._context.canvas.height);
     }
 }
 

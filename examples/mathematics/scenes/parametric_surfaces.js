@@ -36,8 +36,8 @@ const surfaces = {
 };
 
 class SurfaceController {
-    constructor(renderer, surfaces, surfaceView, contoursView, options = {}) {
-        this._renderer = renderer;
+    constructor(simulation, surfaces, surfaceView, contoursView, options = {}) {
+        this._simulation = simulation;
         this._surfaces = surfaces;          // object: { name: ParametricSurface, ... }
         this._surfaceView = surfaceView;    // PlaneSurfaceView
         this._contoursView = contoursView;  // IsoparametricContoursView
@@ -66,11 +66,11 @@ class SurfaceController {
         }
 
         this._currentSurface = newSurface;
-        this._renderer.synchronize(newSurface.onceWith(this._surfaceView));
-        this._renderer.synchronize(newSurface.onceWith(this._contoursView));
+        this._simulation.synchronize(newSurface.onceWith(this._surfaceView));
+        this._simulation.synchronize(newSurface.onceWith(this._contoursView));
 
-        this._renderer.provideAxesAround(this._surfaceView);
-        this._renderer.frameSceneOn(this._surfaceView, this._options);
+        this._simulation.renderer.provideAxesAround(this._surfaceView);
+        this._simulation.renderer.frameSceneOn(this._surfaceView, this._options);
     }
 }
 
@@ -96,9 +96,15 @@ const contoursView = new IsoparametricContoursView({
     scalarField: new GaussianCurvatureField()
 });
 
+const simulation = Simulation
+    .with(renderer)
+    .incrementsTimeBy(0.016)
+    .onClockTick()
+    .start();
+
 // surfaces: object met ParametricSurface instances
 const surfaceController = new SurfaceController(
-    renderer,
+    simulation,
     surfaces,
     surfaceView,
     contoursView,
@@ -107,15 +113,6 @@ const surfaceController = new SurfaceController(
 
 // Initial surface
 surfaceController.switchTo("Bow curve");
-
-//
-// Simulation
-//
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(0.016)
-    .onClockTick()
-    .start();
 
 const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl

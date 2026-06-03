@@ -35,28 +35,28 @@ const renderer = ThreeJsRenderer
         .containsBoth(canvas.and(Overlay.withElementId("antennaOverlay"))))
     .with(threeJsRendererOptions);
 
-const slit = new Vec3(0, 0, lambda)
-for (let wave of planeWaves)
-    renderer.synchronize(wave.alwaysWith(new ElectromagneticWave({
-        numArrows: 120,
-        arrowSize: 0.2,
-        scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)
-    })));
-
 const antenna = new AxialSymmetricBody({
     position: new Vec3(0, -lambda, 0),
     axis: new Vec3(0, 2 * lambda, 0),
     radius: 0.5
 });
-renderer.synchronize(antenna.onceWith(new Cylinder({color: 0xcccc77})));
 
 const simulation = Simulation
     .with(renderer)
+    .synchronize(antenna.onceWith(new Cylinder({color: 0xcccc77})))
     .incrementsTimeBy(lambda / OneDimensionalPlaneWave.c / 100.0)
     .onClockTick((clockTime, simulatedTime) => {
         for (let wave of planeWaves)
             wave.propagate(simulatedTime);
     }, 2);
+
+const slit = new Vec3(0, 0, lambda)
+for (let wave of planeWaves)
+    simulation.synchronize(wave.alwaysWith(new ElectromagneticWave({
+        numArrows: 120,
+        arrowSize: 0.2,
+        scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)
+    })));
 
 //
 // Event controller

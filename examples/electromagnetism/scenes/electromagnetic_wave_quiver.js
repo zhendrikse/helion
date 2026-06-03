@@ -131,30 +131,6 @@ const renderer = ThreeJsRenderer
         .containsBoth(canvas.and(Overlay.withElementId("electromagneticWaveOverlay"))))
     .with(threeJsRendererOptions);
 
-//
-// Charge rendering
-//
-renderer.synchronize(electron.alwaysWith(new Sphere({color: new Color("red")})));
-renderer.synchronize(proton.alwaysWith(new Sphere({color: new Color("yellow") })));
-renderer.synchronize(electricField.alwaysWith(new ArrowField({
-        xRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        yRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        zRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        scaleFactor: 2.5e-12,
-        magnitudeMap: magnitude => Math.log(magnitude + 1),
-        //colorMap: (axis, magnitude) => new Color().setHSL(0.15, 1, Math.min(Math.log(magnitude + 1), 0.6)),
-        colorMap: (axis, magnitude) => new Color(0xbbbb55),
-        round: true
-})));
-renderer.synchronize(magneticField.alwaysWith(new ArrowField({
-        xRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        yRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        zRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        scaleFactor: 2.5e-11,
-        magnitudeMap: magnitude => Math.log(magnitude  + 1),
-        colorMap: () => new Color("cyan"),
-        round: true
-})));
 
 //
 // Animation
@@ -163,6 +139,8 @@ const dt = 2e-19;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
+    .synchronize(electron.alwaysWith(new Sphere({color: new Color("red")})))
+    .synchronize(proton.alwaysWith(new Sphere({color: new Color("yellow") })))
     .onClockTick((clockTime, simulatedTime) => {
         electron.updateAt(simulatedTime);
         proton.updateAt(simulatedTime);
@@ -173,6 +151,27 @@ const simulation = Simulation
         for (const field of magneticField._fields)
             field.time = simulatedTime;
     }, 2);
+
+simulation.synchronize(electricField.alwaysWith(new ArrowField({
+        xRange: new Range(-6e-10, 6e-10, 1.25e-10),
+        yRange: new Range(-6e-10, 6e-10, 1.25e-10),
+        zRange: new Range(-6e-10, 6e-10, 1.25e-10),
+        scaleFactor: 2.5e-12,
+        magnitudeMap: magnitude => Math.log(magnitude + 1),
+        //colorMap: (axis, magnitude) => new Color().setHSL(0.15, 1, Math.min(Math.log(magnitude + 1), 0.6)),
+        colorMap: (axis, magnitude) => new Color(0xbbbb55),
+        round: true
+})));
+simulation.synchronize(magneticField.alwaysWith(new ArrowField({
+        xRange: new Range(-6e-10, 6e-10, 1.25e-10),
+        yRange: new Range(-6e-10, 6e-10, 1.25e-10),
+        zRange: new Range(-6e-10, 6e-10, 1.25e-10),
+        scaleFactor: 2.5e-11,
+        magnitudeMap: magnitude => Math.log(magnitude  + 1),
+        colorMap: () => new Color("cyan"),
+        round: true
+})));
+
 
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas);

@@ -117,20 +117,28 @@ const renderer = ThreeJsRenderer
         .containsBoth(canvas.and(Overlay.withElementId("chargedRingOverlay"))))
     .with(threeJsRendererOptions);
 
+// Simulation
+const dt = 2e-19;
+const subSteps = 20;
+const simulation = Simulation
+    .with(renderer)
+    .incrementsTimeBy(dt)
+    .onClockTick((clockTime, simulatedTime) => timeStep(dt), subSteps);
+
 // Ring rendering
 for (const segment of ring.segments)
-    renderer.synchronize(segment.onceWith(new Cylinder({ color: "orange" })));
+    simulation.synchronize(segment.onceWith(new Cylinder({ color: "orange" })));
 
 // Electron + trail rendering
 const electronSphere = new Sphere({ color: "red"});
-renderer.synchronize(electron.alwaysWith(electronSphere));
-renderer.synchronize(electron.alwaysWith(new Trail({
+simulation.synchronize(electron.alwaysWith(electronSphere));
+simulation.synchronize(electron.alwaysWith(new Trail({
     maxPoints: 150,
     color: electronSphere.color
 })));
 
 // Field visualization
-renderer.synchronize(electricField.onceWith(new ArrowField({
+simulation.synchronize(electricField.onceWith(new ArrowField({
     xRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     yRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     zRange: new Range(-radius * 1.5, radius * 1.5, radius / 6),
@@ -146,14 +154,6 @@ renderer.synchronize(electricField.onceWith(new ArrowField({
     // colorMap: (axis, magnitude) => new Color().setHSL(Math.min(Math.sqrt(1 + magnitude) * 5e-7, 1), 1, 0.5),
     round: true
 })));
-
-// Run simulation
-const dt = 2e-19;
-const subSteps = 20;
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => timeStep(dt), subSteps);
 
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas);

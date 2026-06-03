@@ -123,6 +123,7 @@ const rod = new ChargedRod({ length: 1, numCharges: 10 });
 const electricField = new RodElectricField(rod);
 const magneticField = new RodMagneticField(rod);
 
+
 //
 // Renderer + view model
 //
@@ -133,23 +134,8 @@ const renderer = ThreeJsRenderer.on(HtmlDiv.withElementId("chargedRodWrapper")
         fieldOfView: 30
     }));
 
-for (const charge of rod.charges) {
-    const sphere = new Sphere({ color: new Color("yellow") });
-    renderer.synchronize(charge.alwaysWith(sphere));
-    renderer.synchronize(charge.alwaysWith(new Trail({ maxPoints: 150, color: sphere.color })));
-}
 
-renderer.synchronize(electricField.alwaysWith(new ArrowField({
-    xRange: new Range(-0.4, 0.4, 0.12),
-    yRange: new Range(-0.5, 0.5, 0.2),
-    zRange: new Range(-0.4, 0.4, 0.12),
-    scaleFactor: 0.15,
-    magnitudeMap: m => m < 0.05 ? 0 : Math.sqrt(m), // set tiny arrows to zero
-    colorMap: () => new Color("red"),
-    round: true
-})));
-
-renderer.synchronize(magneticField.alwaysWith(new ArrowField({
+const magneticArrowField = new ArrowField({
     xRange: new Range(-0.4, 0.4, 0.12),
     yRange: new Range(-0.5, 0.5, 0.2),
     zRange: new Range(-0.4, 0.4, 0.12),
@@ -157,20 +143,35 @@ renderer.synchronize(magneticField.alwaysWith(new ArrowField({
     magnitudeMap: m => m < 0.05 ? 0 : Math.sqrt(m), // set tiny arrows to zero
     colorMap: () => new Color("cyan"),
     round: true
-})));
+});
 
-//
-// Simulation
-//
+const electricArrowField = new ArrowField({
+    xRange: new Range(-0.4, 0.4, 0.12),
+    yRange: new Range(-0.5, 0.5, 0.2),
+    zRange: new Range(-0.4, 0.4, 0.12),
+    scaleFactor: 0.15,
+    magnitudeMap: m => m < 0.05 ? 0 : Math.sqrt(m), // set tiny arrows to zero
+    colorMap: () => new Color("red"),
+    round: true
+});
+
 const dt = 0.01;
 const allGone = () => rod.charges.every(c => c.position.y > 1);
 const simulation = Simulation
     .with(renderer)
+    .synchronize(electricField.alwaysWith(electricArrowField))
+    .synchronize(magneticField.alwaysWith(magneticArrowField))
     .incrementsTimeBy(dt)
     .onClockTick(() => {
         if (!allGone())
             rod.update(dt);
     }, 2);
+
+for (const charge of rod.charges) {
+    const sphere = new Sphere({ color: new Color("yellow") });
+    simulation.synchronize(charge.alwaysWith(sphere));
+    simulation.synchronize(charge.alwaysWith(new Trail({ maxPoints: 150, color: sphere.color })));
+}
 
 //
 // Controls

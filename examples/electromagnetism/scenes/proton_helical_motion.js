@@ -60,16 +60,8 @@ const renderer = ThreeJsRenderer
         .containsBoth(canvas.and(Overlay.withElementId("helicalProtonCanvasOverlay"))))
     .with(threeJsRendererOptions);
 
-const dt = 5e-4;
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => timeStep(dt), 25);
-
 const protonSphere = new Sphere({ color: 0xff0000 });
-renderer.synchronize(proton.alwaysWith(protonSphere));
-renderer.synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })));
-renderer.synchronize(magneticField.onceWith(new ArrowField({
+const arrowField =  new ArrowField({
     xRange: new Range(-boxSize, boxSize, 10),
     yRange: new Range(-boxSize, boxSize, 10),
     zRange: new Range(-boxSize, boxSize, 10),
@@ -81,8 +73,17 @@ renderer.synchronize(magneticField.onceWith(new ArrowField({
         return new Color().setHSL(hue, 1, 0.5);
     },
     round: true
-})));
-renderer.addObject3D(new Aquarium({
+});
+
+const dt = 5e-4;
+const simulation = Simulation
+    .with(renderer)
+    .synchronize(proton.alwaysWith(protonSphere))
+    .synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
+    .synchronize(magneticField.onceWith(arrowField))
+    .incrementsTimeBy(dt)
+    .onClockTick((clockTime, simulatedTime) => timeStep(dt), 25);
+renderer.add(new Aquarium({
     color: 0x1e90ff,
     opacity: 0.1,
     size: new Vec3(boxSize, boxSize, boxSize).multiplyScalar(2.1),

@@ -77,12 +77,11 @@ const arrowField = new ArrowField({
     colorMap: (axis, magnitude) => new Color().setHSL(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.5)
 });
 
-renderer.synchronize(dipole.positive.onceWith(positiveSphere));
-renderer.synchronize(dipole.negative.onceWith(negativeSphere));
-renderer.synchronize(dipoleField.onceWith(arrowField));
-
 const simulation = Simulation
     .with(renderer)
+    .synchronize(dipole.positive.onceWith(positiveSphere))
+    .synchronize(dipole.negative.onceWith(negativeSphere))
+    .synchronize(dipoleField.onceWith(arrowField))
     .onClockTick();
 
 //

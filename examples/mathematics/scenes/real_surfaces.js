@@ -75,6 +75,15 @@ const renderer = ThreeJsRenderer
     }));
 
 //
+// Simulation
+//
+const simulation = Simulation
+    .with(renderer)
+    .incrementsTimeBy(0.016)
+    .onClockTick((clockTime, simulatedTime) => scalarField.updateWith(simulatedTime), 1)
+    .start();
+
+//
 // Surface views
 //
 const surfaceView = new PlaneSurfaceView({
@@ -86,20 +95,11 @@ const contoursView = new IsoparametricContoursView({
     normalizer: new FixedIntervalNormalizer(new Interval(0, scalarField.amplitude))
 });
 
-renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));
-renderer.synchronize(heightFieldSurface.alwaysWith(contoursView));
+simulation.synchronize(heightFieldSurface.alwaysWith(surfaceView));
+simulation.synchronize(heightFieldSurface.alwaysWith(contoursView));
 
-renderer.provideAxesAround(surfaceView);
-renderer.frameSceneOn(surfaceView, { padding: 0.9, translationY: -5 });
-
-//
-// Simulation
-//
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(0.016)
-    .onClockTick((clockTime, simulatedTime) => scalarField.updateWith(simulatedTime), 1)
-    .start();
+simulation.provideAxesAround(surfaceView);
+simulation.frameSceneOn(surfaceView, { padding: 0.9, translationY: -5 });
 
 const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl

@@ -90,24 +90,25 @@ const threeJsRendererOptions = new ThreeJsRenderOptions({
     cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
     fieldOfView: 45
 });
-const canvas = Canvas.withElementId("solenoidCanvas");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("solenoidCanvasWrapper").contains(canvas))
+    .on(HtmlDiv.withElementId("solenoidCanvasWrapper").contains(Canvas.withElementId("solenoidCanvas")))
     .with(threeJsRendererOptions);
 
-for (const segment of solenoid.segments)
-    renderer.synchronize(segment.onceWith(new Cylinder({ color: new Color("yellow") })));
-
-renderer.synchronize(magneticField.onceWith(new ArrowField({
+const arrowField = new ArrowField({
     xRange: new Range(-20, 20, 4),
     yRange: new Range(-20, 20, 4),
     zRange: new Range(-20, 20, 4),
     scaleFactor:  1.25
-})));
+});
 
 const simulation = Simulation
     .with(renderer)
+    .synchronize(magneticField.onceWith(arrowField))
     .onClockTick();
+
+for (const segment of solenoid.segments)
+    simulation.synchronize(segment.onceWith(new Cylinder({ color: new Color("yellow") })));
+
 
 const eventController = new EventController(simulation);
 eventController.attach(HtmlControl

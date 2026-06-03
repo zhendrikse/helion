@@ -105,6 +105,24 @@ export class HtmlControl {
     }
 }
 
+export class MathPhysicsModelBehavior {
+    alwaysWith(view) {
+        return new Binding({
+            model: this,
+            view: view,
+            mode: Binding.Mode.ALWAYS
+        });
+    }
+
+    onceWith(view) {
+        return new Binding({
+            model: this,
+            view: view,
+            mode: Binding.Mode.ONCE
+        });
+    }
+}
+
 /**
  * Binding between the phys/math model and view
  */
@@ -112,12 +130,6 @@ export class Binding {
     static Mode = Object.freeze({
         ALWAYS: "always",
         ONCE: "once"
-    });
-
-    static between = (bodyAndView) => new Binding({
-        model: bodyAndView.body,
-        view: bodyAndView.view,
-        mode: bodyAndView.always ? Binding.Mode.ALWAYS : Binding.Mode.ONCE
     });
 
     constructor({
@@ -128,7 +140,14 @@ export class Binding {
         this.model = model;
         this.view = view;
         this.mode = mode;
+
+        // TODO MOVE ATTACH TO TO SYNC IN SIMULATION
+        // Tie the body state to its associated view
+        if (!view.attachTo)
+            throw new Error("Use addPlainObject() to attach regular Three.js objects!");
+
         this.view.attachTo(this.model);
+        this.view.initialize?.();
     }
 
     reset() {
@@ -141,11 +160,12 @@ export class Simulation {
     static with = (renderer) => new Simulation(renderer);
     constructor(renderer) {
         this._renderer = renderer;
+        this._bindings = [];
         this._onReset = () => {};                // Callback function for client when a reset happens
         this._onBeforePhysicsUpdate = () => {};  // Callback function for client before physics update
         this._onAfterPhysicsUpdate = () => {};   // Callback function for client after physics update
         this._running = false;
-        this._forceAllViewsToBeRendered = false; // When true, rerender world, _including_ static objects!
+        this._forceAllViewsToBeRendered = true;  // When true, rerender world, _including_ static objects!
         this._simulatedTime = 0;
         this._dt = 0.01;
         this._substepsCount = 1;
@@ -153,9 +173,16 @@ export class Simulation {
 
     // After user interaction, all views need to be rendered/updated, as static views may have changed too!
     set forceAllViewsToBeRendered(value) { this._forceAllViewsToBeRendered = value; }
+    get renderer() { return this._renderer; }
 
     incrementsTimeBy(dt) {
         this._dt = dt;
+        return this;
+    }
+
+    synchronize(binding) {
+        this._renderer.add(binding.view);
+        this._bindings.push(binding);
         return this;
     }
 
@@ -181,9 +208,6 @@ export class Simulation {
         this._updateFunction = updateFunction;
         this._substepsCount = substepsCount;
 
-        // For rendering static objects once
-        this._renderer.initialize();
-
         const animate = (clockTime) => {
             // Physics update
             this._onBeforePhysicsUpdate(clockTime, this._simulatedTime);
@@ -191,8 +215,12 @@ export class Simulation {
             this._onAfterPhysicsUpdate(clockTime, this._simulatedTime);
 
             // Rendering
-            this._renderer.render(clockTime, this._forceAllViewsToBeRendered);
+            for (const binding of this._bindings)
+                if (binding.mode === Binding.Mode.ALWAYS || this._forceAllViewsToBeRendered)
+                    binding.view.render();
             this._forceAllViewsToBeRendered = false;
+
+            this._renderer.render(clockTime);
             requestAnimationFrame(animate);
         };
 
@@ -202,7 +230,8 @@ export class Simulation {
 
     reset() {
         this._simulatedTime = 0;
-        this._renderer.reset();
+        for (const binding of this._bindings)
+            binding.reset();
         this._onReset?.();
     }
 

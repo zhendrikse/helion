@@ -2,6 +2,8 @@
  * M A T H E M A T I C S *
  *************************/
 
+import {MathPhysicsModelBehavior} from "../../core/helion.js";
+
 /**
  * Pick a number from a normal distribution using Box-Muller transform.
  *
@@ -241,11 +243,12 @@ export class Interval {
     scaleUnitParameter = (unitParameter) => this.range * (unitParameter + this.from / this.range);
 }
 
-export class VectorFieldValue {
+export class VectorFieldValue extends MathPhysicsModelBehavior {
     constructor({
-                    position = new Vec3(),
-                    axis = new Vec3()
-                } = {})  {
+        position = new Vec3(),
+        axis = new Vec3()
+    } = {})  {
+        super();
         this.position = position.clone();
         this.axis = axis.clone();
     }
@@ -256,9 +259,6 @@ export class VectorFieldValue {
             axis: this.axis.clone(),
         });
     }
-
-    alwaysWith(view) { return { body: this, view: view, always: true}; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
 }
 
 export class FieldStatistics {
@@ -286,12 +286,7 @@ export class FieldStatistics {
     }
 }
 
-export class VectorField {
-    constructor() { }
-
-    alwaysWith(view) { return { body: this, view: view, always: true}; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
-
+export class VectorField extends MathPhysicsModelBehavior {
     vectorAt(positionVector) {
         throw new Error("You invoked the method of an abstract base class. Please create a subclass first.");
     }
@@ -423,13 +418,10 @@ export class AdaptiveSymmetricNormalizer {
 /**
  * Abstract class representing a real/complex, continuous/discrete scalar field.
  */
-export class ScalarField {
+export class ScalarField extends MathPhysicsModelBehavior {
     scalarValueAt(x, y) {
         throw new Error("You invoked the method of an abstract base class. Please create a subclass first.");
     }
-
-    alwaysWith(view) { return { body: this, view: view, always: true }; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
 
     updateWith(newTime) {}
 }
@@ -437,8 +429,9 @@ export class ScalarField {
 /**
  * This is the “adapter” between the physics and rendering.
  */
-export class NormalizedScalarField {
+export class NormalizedScalarField extends ScalarField {
     constructor(scalarField, normalizer) {
+        super();
         this._scalarField = scalarField;
         this._normalizer = normalizer;
     }

@@ -26,35 +26,30 @@ physics or mathematics, it is likely too abstract!
 👉 Supports multiple views per model (model / view / contoller) <br/>
 👉 Low cognitive overhead<br/>
 
-## 📊 Code example
-
-Helion code expresses intent:
+## 💻 Helion code expresses intent
 
 ```js
 // 1. Do your physics and math
 const coneGeometry = new SchwarzschildSurface(sunMass);
 const spring = new Spring();
-    ...
 
 // 2. Choose renderer (visual layer)
 const renderer = ThreeJsRenderer.on(HtmlDiv
-        .withElementId("canvasWrapper")
-        .contains(Canvas.withElementId("canvas")))
+    .withElementId("canvasWrapper")
+    .contains(Canvas.withElementId("canvas")))
 
 // 3. Bind physics objects to visual representations
-renderer.synchronize(spring.alwaysWith(new Helix()));
-renderer.synchronize(coneGeometry.onceWith(new IsoparametricContoursSurface()));
-
-// 4. Run simulation
 Simulation
     .with(renderer)
+    .synchronize(spring.alwaysWith(new Helix()))
+    .synchronize(coneGeometry.onceWith(new IsoparametricContoursView()))
     .onScale(1e-10)
     .onClockTick((clockTime, simulatedTime) => {
         // physics update
     });
 ```
 
-## 🎓 Educational focus
+## 🎓 Focus on teaching &amp; learning
 
 Helion is designed for:
 

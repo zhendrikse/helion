@@ -59,8 +59,23 @@ const threeJsRendererOptions = new ThreeJsRenderOptions({
 });
 const renderer = ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions);
 
-renderer.synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })));
-renderer.addObject3D(water);
+let t = 0;
+const dt = 0.001;
+const substeps = 20;
+const simulation = Simulation
+    .with(renderer)
+    .incrementsTimeBy(dt)
+    .onClockTick( () => {
+        woodenBlock.apply(woodenBlock.netForce(water), dt);
+
+        plot.graphData[0].push(t);
+        plot.graphData[1].push(woodenBlock.buoyancyForce(water));
+        plot.graphData[2].push(woodenBlock.dragForce());
+        plot.update();
+    }, substeps);
+
+simulation.synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })));
+renderer.add(water);
 
 //
 // Graph
@@ -83,20 +98,6 @@ plot.graphData[0] = [0]; // time
 plot.graphData[1] = [woodenBlock.buoyancyForce(water)];
 plot.graphData[2] = [woodenBlock.dragForce()];
 
-let t = 0;
-const dt = 0.001;
-const substeps = 20;
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(dt)
-    .onClockTick( () => {
-        woodenBlock.apply(woodenBlock.netForce(water), dt);
-
-        plot.graphData[0].push(t);
-        plot.graphData[1].push(woodenBlock.buoyancyForce(water));
-        plot.graphData[2].push(woodenBlock.dragForce());
-        plot.update();
-}, substeps);
 
 //
 // Event controller

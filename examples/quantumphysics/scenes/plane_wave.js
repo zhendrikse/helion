@@ -24,7 +24,6 @@ const waveView2d = new OneDimensionalComplexPlaneWave2D({
     width: canvas2d.clientWidth,
     height: canvas2d.clientHeight
 });
-renderer2d.synchronize(planeWave.alwaysWith(waveView2d));
 
 //
 // View for 3D canvas
@@ -37,10 +36,11 @@ const threeJsRendererOptions = new ThreeJsRenderOptions({
 const renderer3d = ThreeJsRenderer
     .on(HtmlDiv.withElementId("planeWaveCanvasWrapper3d").contains(canvas3d))
     .with(threeJsRendererOptions);
-renderer3d.synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({numArrows: 100})));
 
 const simulation = Simulation
     .with(new CompositeRenderer([renderer2d, renderer3d]))
+    .synchronize(planeWave.alwaysWith(waveView2d))
+    .synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({numArrows: 100})))
     .incrementsTimeBy(0.01)
     .onClockTick((clockTime, simulatedTime) => planeWave.propagate(simulatedTime));
 

@@ -45,7 +45,7 @@ function updateForces(dt) {
 }
 
 //
-// Attach view models
+// View
 //
 const canvas = new Canvas("threeBodyCanvas");
 const overlay = new Overlay("overlayText");
@@ -55,26 +55,19 @@ const threeJsRendererOptions = new ThreeJsRenderOptions({
     scale: 1e-9
 });
 
-const renderer = ThreeJsRenderer
-    .on(canvasWrapper)
-    .with(threeJsRendererOptions);
-
-renderer.synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })));
-renderer.synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })));
-renderer.synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })));
-renderer.synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })));
-renderer.synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })));
-renderer.synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta"})));
-
 const dt = 5000;
 const subSteps = 50;
 const simulation = Simulation
-    .with(renderer)
+    .with(ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions))
     .incrementsTimeBy(dt / subSteps)
     .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps);
 
-//
-// Event controller
-//
+simulation.synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })));
+simulation.synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })));
+simulation.synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })));
+simulation.synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })));
+simulation.synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })));
+simulation.synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta"})));
+
 const eventController = new EventController(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas); // Controller passes event on to simulation and renderers

@@ -94,7 +94,7 @@ class Flock {
 
     startleBirds() {
         for (let i = 0; i < this._bird_count; i++)
-            this._birds[i].velocity = new Vec3().random().multiplyScalar(2 * speed);
+            this._birds[i].state.velocity = new Vec3().random().multiplyScalar(2 * speed);
     }
 }
 
@@ -107,21 +107,20 @@ const threeJsRendererOptions = new ThreeJsRenderOptions({
 });
 const canvas = Canvas.withElementId("birdsCanvas");
 const canvasWrapper = HtmlDiv.withElementId("birdsCanvasWrapper").contains(canvas);
-const renderer = ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions);
+
+const dt = 0.02;
+const simulation = Simulation
+    .with(ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions))
+    .incrementsTimeBy(dt)
+    .onClockTick( () => flock.update(dt));
 
 for (let i = 0; i < birdCount; i++)
-    renderer.synchronize(flock.bird(i).velocityVector.alwaysWith(new Arrow({
+    simulation.synchronize(flock.bird(i).velocityVector.alwaysWith(new Arrow({
         round: true,
         color: 0xffff77,
         size: .25,
         magnitudeMap: magnitude => magnitude * .1
     })));
-
-const dt = 0.02;
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(dt)
-    .onClockTick( () => flock.update(dt));
 
 //
 // Event listeners

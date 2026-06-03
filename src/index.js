@@ -58,6 +58,6 @@ export {
     SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView, SurfaceResolution
 } from "./view/3d/surfaces/surfaceviews.js"
 
-export { Canvas2DRenderer } from "./view/2d/canvassim.js";
+export { Canvas2DRenderer } from "./view/2d/renderer.js";
 
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";

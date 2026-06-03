@@ -5,7 +5,7 @@ import { EventController, HtmlDiv, UPlotGraph, RadialSymmetricBody, Vec3, Harmon
 import 'uplot/dist/uPlot.min.css';
 
 //
-// Physics
+// Physics model
 //
 function createBallsAndSprings(numBalls = 5, k = 300) {
     const balls = [];
@@ -33,7 +33,7 @@ const {balls, springs} = createBallsAndSprings();
 initialDisturbance(7);
 
 //
-// Simulation
+// Renderer & simulation
 //
 const canvas = Canvas.withElementId("oscillatorCanvas");
 const overlay = Overlay.withElementId("oscillatorOverlay");
@@ -49,48 +49,6 @@ const renderer = ThreeJsRenderer.on(
         .containsBoth(canvas.and(overlay)))
     .with(threeJsRendererOptions);
 
-// Floor
-renderer.addObject3D(new Floor({
-    type: Floor.Type.WOOD_WICKER,
-    planeSizeXy: new Vector2(200, 200),
-    granularity: 5
-}));
-
-// Attach spheres and helices to balls and springs
-for (let i = 0; i < balls.length; i++) {
-    const color = i ===0 || i === balls.length - 1 ? 0x3333ff : 0xff0000;
-    const sphere = new Sphere({ color, castShadow: true });
-    renderer.synchronize(balls[i].alwaysWith(sphere));
-    if (i === 0)
-        continue;
-
-    const helix = new Helix({
-        thickness: 0.075,
-        coils: 30,
-        color: 0xffff4d,
-        castShadow: true
-    });
-    renderer.synchronize(springs[i - 1].alwaysWith(helix));
-}
-
-//
-// Graph
-//
-const plot = new UPlotGraph({
-    plotDiv: document.getElementById("oscillatorPlot"),
-    dataDefinition: [
-        {label: "t"}, {label: "ball1", color: "blue"},
-        {label: "ball2", color: "red"},
-        {label: "ball3", color: "red"},
-        {label: "ball4", color: "red"},
-        {label: "ball5", color: "blue"},
-    ],
-    width: canvas.clientWidth,
-    height: canvas.clientHeight * 1.5,
-    title: "Kinetic Energy vs Time",
-    xLabel: "Time [s]",
-    yLabel: "Displacement"
-});
 
 const dt = 1e-3;
 const subSteps = 10;
@@ -110,6 +68,51 @@ simulation.onReset(() => {
     plot.graphData[0] = [0];
     for (let i = 0; i < balls.length; i++)
         plot.graphData[i + 1] = [balls[i].position.x];
+});
+
+//
+// View
+//
+renderer.add(new Floor({
+    type: Floor.Type.WOOD_WICKER,
+    planeSizeXy: new Vector2(200, 200),
+    granularity: 5
+}));
+
+// Attach spheres and helices to balls and springs
+for (let i = 0; i < balls.length; i++) {
+    const color = i ===0 || i === balls.length - 1 ? 0x3333ff : 0xff0000;
+    const sphere = new Sphere({ color, castShadow: true });
+    simulation.synchronize(balls[i].alwaysWith(sphere));
+    if (i === 0)
+        continue;
+
+    const helix = new Helix({
+        thickness: 0.075,
+        coils: 30,
+        color: 0xffff4d,
+        castShadow: true
+    });
+    simulation.synchronize(springs[i - 1].alwaysWith(helix));
+}
+
+//
+// Graph
+//
+const plot = new UPlotGraph({
+    plotDiv: document.getElementById("oscillatorPlot"),
+    dataDefinition: [
+        {label: "t"}, {label: "ball1", color: "blue"},
+        {label: "ball2", color: "red"},
+        {label: "ball3", color: "red"},
+        {label: "ball4", color: "red"},
+        {label: "ball5", color: "blue"},
+    ],
+    width: canvas.clientWidth,
+    height: canvas.clientHeight * 1.5,
+    title: "Kinetic Energy vs Time",
+    xLabel: "Time [s]",
+    yLabel: "Displacement"
 });
 
 const eventController = EventController.for(simulation);

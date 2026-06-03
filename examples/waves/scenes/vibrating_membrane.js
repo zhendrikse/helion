@@ -47,7 +47,7 @@ class MembraneController {
 }
 
 //
-// Math objects
+// Math objects / model
 //
 const scalarField = new MembraneScalarField();
 const heightFieldSurface = new ScalarFieldSurface({
@@ -57,7 +57,7 @@ const heightFieldSurface = new ScalarFieldSurface({
 })
 
 //
-// Surface view
+// View
 //
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("membraneCanvasWrapper").contains(Canvas.withElementId("membraneCanvas")))
@@ -74,16 +74,12 @@ const contoursView = new IsoparametricContoursView({
     normalizer: new FixedIntervalNormalizer(new Interval(-scalarField.amplitude, scalarField.amplitude)),
     colorMapper: new GradientColorMapper()
 });
-renderer.synchronize(heightFieldSurface.alwaysWith(surfaceView));
-renderer.synchronize(heightFieldSurface.alwaysWith(contoursView));
 
-//
-// Simulation
-//
-const dt = 0.016;
 const simulation = Simulation
     .with(renderer)
-    .incrementsTimeBy(dt)
+    .synchronize(heightFieldSurface.alwaysWith(surfaceView))
+    .synchronize(heightFieldSurface.alwaysWith(contoursView))
+    .incrementsTimeBy(0.016)
     .onClockTick((clockTime, simulatedTime) => scalarField.updateWith(simulatedTime), 3)
     .start();
 

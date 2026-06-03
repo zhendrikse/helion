@@ -69,20 +69,10 @@ const renderer = ThreeJsRenderer.on(
 
 const dirLight = new PointLight(0xffffff, 2e3);
 dirLight.position.set(0, 0, 0);
-renderer.addObject3D(dirLight);
-renderer.addObject3D(new AmbientLight(0xffffff, 0.8));
-
-for (const charge of capacitor.charges) {
-    const sphere = new Sphere({
-        color: charge.charge > 0 ? new Color(0x4444ff) : new Color(0xff0000)
-    });
-    renderer.synchronize(charge.onceWith(sphere)); // Prevent unnecessary updates!
-}
+renderer.add(dirLight);
+renderer.add(new AmbientLight(0xffffff, 0.8));
 
 const sphere = new Sphere({ color: new Color(0x44ff44)});
-renderer.synchronize(movingCharge.alwaysWith(sphere));
-renderer.synchronize(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })));
-
 const arrowField = new ArrowField({
     xRange: new Range(-18 / scale, 18 / scale, 8 / scale),
     yRange: new Range(-9 / scale, 9 / scale, 4 / scale),
@@ -92,12 +82,14 @@ const arrowField = new ArrowField({
     magnitudeMap: magnitude => Math.log(1 + magnitude),
     colorMap: (axis, magnitude) => new Color(1, Math.sqrt(magnitude) * 1e-10, 0)
 });
-renderer.synchronize(capacitorField.onceWith(arrowField));
 
 const dt = 0.01;
 const subSteps = 3;
 const simulation = Simulation
     .with(renderer)
+    .synchronize(movingCharge.alwaysWith(sphere))
+    .synchronize(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })))
+    .synchronize(capacitorField.onceWith(arrowField))
     .incrementsTimeBy(dt)
     .onClockTick(() => {
         if (movingCharge.position.x > 60 / scale)
@@ -108,21 +100,29 @@ const simulation = Simulation
         movingCharge.apply(force, dt);
     }, subSteps);
 
+for (const charge of capacitor.charges) {
+    const sphere = new Sphere({
+        color: charge.charge > 0 ? new Color(0x4444ff) : new Color(0xff0000)
+    });
+    simulation.synchronize(charge.onceWith(sphere)); // Prevent unnecessary updates!
+}
+
 //
 // Event listeners
 //
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas);
 
-const chargeCallback = new CallbackFunction((event) =>
-    movingCharge.charge = event.target.value * 5e-42 * EC);
+const chargeCallback = new CallbackFunction((event) => {
+    movingCharge.state.charge = Number(event.target.value) * 5e-42 * EC
+});
 eventController.add(chargeCallback
     .to(HtmlControl.withElementId("chargeSlider")
         .forType("input")
         .withValueSpanId("chargeSliderValue")));
 
 const speedCallback = new CallbackFunction((event) =>
-    movingCharge.velocity.x = event.target.value / scale);
+    movingCharge.state.velocity.x = event.target.value / scale);
 eventController.add(speedCallback
     .to(HtmlControl.withElementId("speedSlider")
         .forType("input")

@@ -3,18 +3,15 @@ import {DifferentialGeometry} from "./numerics/diffgeometry.js";
 import {
     InfernoColorMapper, JetColorMapper, RdYlBuColorMapper, SeismicColorMapper, ViridisColorMapper,
 } from "../../view/colormappers.js";
+import {MathPhysicsModelBehavior} from "../../core/helion.js";
 
 /**
  * Mathematical definition of a surface.
  */
-export class Surface {
+export class Surface extends MathPhysicsModelBehavior {
     sample(u, v, target) {
         throw new Error("Abstract class: sample() must be implemented!");
     }
-
-    // Methods to tie/synchronize mathematical surfaces with their respective views
-    alwaysWith(view) { return { body: this, view: view, always: true }; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
 }
 
 /**

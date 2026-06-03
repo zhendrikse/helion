@@ -46,9 +46,6 @@ export class ThreeJsRenderer extends Renderer {
         this._canvas = this._canvasWrapperDiv.canvas.htmlCanvas;
         this._overlay = this._canvasWrapperDiv.overlay?.htmlOverlay;
 
-        this._bodies = [];        // The physics / bodies in the simulation
-        this._bindings = [];
-
         this._autoRotate = false;
         this._autoRotateTheta = Math.PI / 2;
         this._autoRotatePhi = 0;
@@ -133,14 +130,6 @@ export class ThreeJsRenderer extends Renderer {
         this._camera.updateProjectionMatrix();
     }
 
-    reset() {
-        for (const body of this._bodies)
-            body.reset?.();
-
-        for (const anObject of this._dynamicObjects)
-            anObject.reset?.(); // For example, object trails need to be cleaned up!
-    }
-
     _doAutoRotate(distance) {
         this._autoRotateTheta += -Math.PI / (7.5 * 100);
         this._autoRotatePhi +=  Math.PI / (7.5 * 100) * 2;
@@ -199,17 +188,7 @@ export class ThreeJsRenderer extends Renderer {
         }
     }
 
-    initialize() {
-        // Sync new physics state with view
-        for (const binding of this._bindings)
-            binding.view.render?.();
-    }
-
-    render(time, forceAllViewsToBeRendered) {
-        for (const binding of this._bindings)
-            if (binding.mode === Binding.Mode.ALWAYS || forceAllViewsToBeRendered)
-                binding.view.render();
-
+    render(time) {
         this._renderer.render(this._scene, this._camera);
         this._controls?.update();
         this._skydome?.update(time, this._camera);
@@ -219,19 +198,8 @@ export class ThreeJsRenderer extends Renderer {
             this._doAutoRotate(this._camera.position.length());
     }
 
-    addObject3D(threeJsObject) {
+    add(threeJsObject) {
         this._world.add(threeJsObject);
-    }
-
-    synchronize(bodyAndView) {
-        // Tie the body state to its associated view
-        if (!bodyAndView.view.attachTo)
-            throw new Error("Use addPlainObject() to attach regular Three.js objects!");
-
-        this._world.add(bodyAndView.view);
-        this._bodies.push(bodyAndView.body);
-        this._bindings.push(Binding.between(bodyAndView));
-        bodyAndView.view.initialize?.();
     }
 
     remove(view) {
@@ -239,6 +207,7 @@ export class ThreeJsRenderer extends Renderer {
 
         view.dispose?.();
         this._world.remove(view);
+        // TODO bindings zit nu in simulation
         this._bindings = this._bindings.filter(binding => binding.view !== view);
     }
 

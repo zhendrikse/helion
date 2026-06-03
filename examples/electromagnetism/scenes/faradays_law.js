@@ -54,7 +54,22 @@ const renderer = ThreeJsRenderer
 //
 const faradayLoopsGroup = new Group(); // Needed to toggle this group on and off via the GUI
 faradayLoopsGroup.visible = false;
-renderer.addObject3D(faradayLoopsGroup);
+renderer.add(faradayLoopsGroup);
+
+const dt = 0.05;
+const simulation = Simulation
+    .with(renderer)
+    .synchronize(wire.onceWith(new Cylinder({color: new Color( "yellow" )})))
+    .incrementsTimeBy(dt)
+    .onClockTick((clockTime, simulatedTime) => {
+        const fieldLength = (simulatedTime % 20) / 25 + 0.001;
+
+        for (const vec of magneticVectors)
+            vec.axis.set(0, 0, fieldLength);
+
+        for (const charge of charges)
+            charge.position.z = zStart + ((charge.baseZ + simulatedTime * dt) % numCharges);
+    }, 10);
 
 function createFaradayLoops(faradayLoopsGroup) {
     for (const z of loopZs) {
@@ -72,12 +87,12 @@ function createFaradayLoops(faradayLoopsGroup) {
                 size: 0.05,
                 round: true
             });
-            renderer.synchronize(body.onceWith(arrow));
+            simulation.synchronize(body.onceWith(arrow));
             faradayLoopsGroup.add(arrow);
         }
 
         const ring = new Ring({ color: new Color("green"), thickness: 3e-2 });
-        renderer.synchronize(new AxialSymmetricBody({
+        simulation.synchronize(new AxialSymmetricBody({
             position: new Vec3(0, 0, z + .5),
             axis: new Vec3(0, 0, 1),
             radius: .5
@@ -87,8 +102,7 @@ function createFaradayLoops(faradayLoopsGroup) {
 }
 createFaradayLoops(faradayLoopsGroup);
 
-renderer.synchronize(wire.onceWith(new Cylinder({color: new Color( "yellow" )})));
-renderer.synchronize(new FaradayField().onceWith(new ArrowField({
+simulation.synchronize(new FaradayField().onceWith(new ArrowField({
     xRange: new Range(-1, 1, 0.25),
     yRange: new Range(-1, 1, 0.25),
     zRange: new Range(-2, 2, 1),
@@ -101,42 +115,24 @@ renderer.synchronize(new FaradayField().onceWith(new ArrowField({
     round: true
 })));
 
-//
-// View that does change in time: charges and arrows
-//
 const charges = [];
 for (let i = 0; i < numCharges; i++) {
     const charge = new RadialSymmetricBody({ position: new Vec3(0, 0, i), radius: 0.055 });
     charge.baseZ = i;
     charges.push(charge);
-    renderer.synchronize(charge.alwaysWith(new Sphere({ color: new Color("yellow") })));
+    simulation.synchronize(charge.alwaysWith(new Sphere({ color: new Color("yellow") })));
 }
 
 const magneticVectors = [];
 for (const position of magneticFieldPositions) {
     const body = new AxialSymmetricBody({position});
     magneticVectors.push(body);
-    renderer.synchronize(body.alwaysWith(new Arrow({
+    simulation.synchronize(body.alwaysWith(new Arrow({
         color: new Color("red"),
         size: 7.5e-2,
         round: true
     })));
 }
-
-const dt = 0.05;
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => {
-        const fieldLength = (simulatedTime % 20) / 25 + 0.001;
-
-        for (const vec of magneticVectors)
-            vec.axis.set(0, 0, fieldLength);
-
-        for (const charge of charges)
-            charge.position.z = zStart + ((charge.baseZ + simulatedTime * dt) % numCharges);
-    }, 10);
-
 
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas);

@@ -1,6 +1,6 @@
 import { Complex, Vec3 } from "../math/math.js";
 import { Integrators } from "../math/numerics/integrators/integrators.js";
-import { Binding } from "../../core/helion.js";
+import {Binding, MathPhysicsModelBehavior} from "../../core/helion.js";
 
 //
 // Constants
@@ -46,7 +46,7 @@ export class PhysicsState {
 //
 // Point cloud
 //
-export class PointCloud {
+export class PointCloud extends MathPhysicsModelBehavior {
     constructor({
         positions = [],
         velocities = [],
@@ -54,6 +54,7 @@ export class PointCloud {
         colors = [],
         sizes = [],
     } = {}) {
+        super();
         this._positions = positions;
         this._colors = colors;
         this._sizes = sizes;
@@ -79,9 +80,6 @@ export class PointCloud {
         }
     }
 
-    alwaysWith(view) { return { body: this, view: view, always: true}; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
-
     get length() { return this._positions.length; }
 
     positionAt(index) { return this._positions[index]; }
@@ -89,15 +87,13 @@ export class PointCloud {
     sizeAt(index) { return this._sizes[index]; }
 }
 
-class AccelerationVector {
+class AccelerationVector extends MathPhysicsModelBehavior {
     constructor(parent) {
+        super();
         this._parent = parent;
     }
 
     clone() { return new AccelerationVector(this._parent); }
-
-    alwaysWith(view) { return { body: this, view: view, always: true}; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
 
     get position() { return this._parent.position; }
     get velocity() { return this._parent.velocity; }
@@ -106,15 +102,13 @@ class AccelerationVector {
     set axis(newAxis) { this._parent.acceleration.copy(newAxis); }
 }
 
-class VelocityVector {
+class VelocityVector extends MathPhysicsModelBehavior {
     constructor(parent) {
+        super();
         this._parent = parent;
     }
 
     clone() { return new VelocityVector(this._parent); }
-
-    alwaysWith(view) { return { body: this, view: view, always: true}; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
 
     get position() { return this._parent.position; }
     get velocity() { return this._parent.velocity; }
@@ -133,13 +127,14 @@ class TwoBodies {
     }
 }
 
-export class Body {
+export class Body extends MathPhysicsModelBehavior{
     constructor({
         position = new Vec3(),
         velocity = new Vec3(),
         mass = 1,
         charge = 0
     } = {}) {
+        super();
         this._state = new PhysicsState({ position, velocity, mass, charge });
         this._initialState = this._state.clone();
         this.velocityVector = new VelocityVector(this);
@@ -172,22 +167,6 @@ export class Body {
     }
 
     and(otherBody) { return new TwoBodies(this, otherBody) };
-
-    alwaysWith(view) {
-        return new Binding({
-            source: this,
-            target: view,
-            mode: Binding.Mode.ALWAYS
-        });
-    }
-
-    onceWith(view) {
-        return new Binding({
-            source: this,
-            target: view,
-            mode: Binding.Mode.ONCE
-        });
-    }
 
     positionVectorTo(other) { return other.position.clone().sub(this.position); }
     distanceToSquared(other) { return this.positionVectorTo(other).dot(this.positionVectorTo(other)); }
@@ -274,20 +253,34 @@ export class Spring extends Body {
     get endPosition() { return this.position.clone().add(this.axis); }
 }
 
-export class HarmonicOscillator {
+export class HarmonicOscillator extends MathPhysicsModelBehavior {
     static between = (twoBodies, k=200, radius=1, damping=0.2) => {
         return new HarmonicOscillator(twoBodies.body1, twoBodies.body2, k, radius, damping);
     }
 
     constructor(body1, body2, k, radius, damping) {
+        super();
         this.body1 = body1;
         this.body2 = body2;
         this.bond = Spring.between(body1.and(body2), k, radius);
         this._damping = damping;
     }
 
-    alwaysWith(view) { return { body: this.bond, view: view, always: true}; };
-    onceWith(view) { return { body: this.bond, view: view, always: false}; };
+    alwaysWith(view) {
+        return new Binding({
+            model: this.bond, // THIS IS DIFFERENT COMPARED TO THE DEFAULT BEHAVIOR!
+            view: view,
+            mode: Binding.Mode.ALWAYS
+        });
+    }
+
+    onceWith(view) {
+        return new Binding({
+            model: this.bond, // THIS IS DIFFERENT COMPARED TO THE DEFAULT BEHAVIOR!
+            view: view,
+            mode: Binding.Mode.ONCE
+        });
+    }
 
     oscillate(dt, integrator = Integrators.symplecticEulerStep) {
         const delta = this.body1.positionVectorTo(this.body2);
@@ -320,7 +313,7 @@ export class HarmonicOscillator {
     }
 }
 
-export class OneDimensionalPlaneWave {
+export class OneDimensionalPlaneWave extends MathPhysicsModelBehavior {
     static c = 3e8;
 
     constructor({
@@ -329,6 +322,7 @@ export class OneDimensionalPlaneWave {
         lambda = 2,
         omega = 2 * Math.PI * OneDimensionalPlaneWave.c / lambda
     } = {}) {
+        super();
         this.position = position.clone();
         this.amplitude = amplitude;
         this.omega = omega;
@@ -341,9 +335,6 @@ export class OneDimensionalPlaneWave {
     set k(kValue) { this._k = kValue; this._lambda = kValue / 2 * Math.PI; }
     get lambda() { return this._lambda; }
     get k() { return this._k; }
-
-    alwaysWith(view) { return { body: this, view: view, always: true}; };
-    onceWith(view) { return { body: this, view: view, always: false}; };
 
     propagate(t) { this._time = t; }
 

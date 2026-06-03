@@ -136,9 +136,8 @@ const renderer = ThreeJsRenderer
 
 const spiralGalaxy = new SpiralGalaxy();
 const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() });
-renderer.synchronize(spiralGalaxy.onceWith(pointCloud));
-
 Simulation
     .with(renderer)
+    .synchronize(spiralGalaxy.onceWith(pointCloud))
     .onClockTick((clockTime, simulatedTime) => {pointCloud.rotation.z += 2.5e-3})
     .start();

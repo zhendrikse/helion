@@ -272,23 +272,20 @@ const grid = new Floor({
     opacity: 0.05,
     granularity: 20
 });
-renderer.addObject3D(grid);
-renderer.addObject3D(photonRing);
+renderer.add(grid);
+renderer.add(photonRing);
 
-// Curved space-time
-const spaceTimeCone = new IsoparametricContoursView({colorMapper: new UniformColorMapper(new Color(0xffff00))});
-renderer.synchronize(coneGeometry.onceWith(spaceTimeCone));
-
-// Comets with trails
-renderer.synchronize(realComet.alwaysWith(new Sphere({ color: 0xff8800 })));
-renderer.synchronize(realComet.alwaysWith(new Trail( { color: 0xff8800 })));
-renderer.synchronize(flatComet.alwaysWith(new Sphere({ color: 0xff0000 })));
-renderer.synchronize(flatComet.alwaysWith(new Trail( { color: 0xff0000 })));
-renderer.synchronize(comet.alwaysWith(new Sphere({ color: 0x00ffff })));
-renderer.synchronize(comet.alwaysWith(new Trail( { color: 0x00ffff })));
-
+// Curved space-time: Flamm's paraboloid
+const spaceTimeCone = new IsoparametricContoursView();
 const simulation = Simulation
     .with(renderer)
+    .synchronize(coneGeometry.onceWith(spaceTimeCone))
+    .synchronize(realComet.alwaysWith(new Sphere({ color: 0xff8800 })))
+    .synchronize(realComet.alwaysWith(new Trail( { color: 0xff8800 })))
+    .synchronize(flatComet.alwaysWith(new Sphere({ color: 0xff0000 })))
+    .synchronize(flatComet.alwaysWith(new Trail( { color: 0xff0000 })))
+    .synchronize(comet.alwaysWith(new Sphere({ color: 0x00ffff })))
+    .synchronize(comet.alwaysWith(new Trail( { color: 0x00ffff })))
     .onClockTick((clockTime, simulatedTime) => timeStep(clockTime));
 
 simulation.onBeforeClockTick((clockTime, simulatedTime) =>

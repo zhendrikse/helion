@@ -87,29 +87,8 @@ const renderer = ThreeJsRenderer.on(
         scale: 5e10
     }));
 
-//
-// Sheet rendering
-//
-for (const segment of sheet.segments)
-    renderer.synchronize(segment.onceWith(new Box({
-        color: new Color(0xffffff),
-        opacity: 0.6
-    })));
-
-//
-// Electron rendering
-//
 const electronSphere = new Sphere({ color: "yellow" });
-renderer.synchronize(electron.alwaysWith(electronSphere));
-renderer.synchronize(electron.alwaysWith(new Trail({
-    maxPoints: 250,
-    color: electronSphere.color
-})));
-
-//
-// Electric field rendering
-//
-renderer.synchronize(electricField.onceWith(new ArrowField({
+const arrowField = new ArrowField({
     xRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
     yRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
     zRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
@@ -120,14 +99,14 @@ renderer.synchronize(electricField.onceWith(new ArrowField({
             ? new Color(0xff4444)
             : new Color(0x4444ff),
     round: true
-})));
+});
 
-//
-// Simulation
-//
 const dt = 5e-20;
 const simulation = Simulation
     .with(renderer)
+    .synchronize(electricField.onceWith(arrowField))
+    .synchronize(electron.alwaysWith(electronSphere))
+    .synchronize(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
     .incrementsTimeBy(dt)
     .onClockTick(() => {
         const field = electricField.vectorAt(electron.position);
@@ -136,7 +115,13 @@ const simulation = Simulation
     }, 10);
 
 //
-// Controls
+// Sheet rendering
 //
+for (const segment of sheet.segments)
+    simulation.synchronize(segment.onceWith(new Box({
+        color: new Color(0xffffff),
+        opacity: 0.6
+    })));
+
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(Canvas.withElementId("chargedSheetCanvas"));

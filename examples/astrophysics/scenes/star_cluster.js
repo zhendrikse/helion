@@ -63,9 +63,8 @@ const renderer = ThreeJsRenderer
 
 const starCluster = new StarCluster();
 const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
-renderer.synchronize(starCluster.onceWith(cloud));
-
 Simulation
     .with(renderer)
+    .synchronize(starCluster.onceWith(cloud))
     .onClockTick((clockTime, simulatedTime) => {cloud.rotation.y += 2.5e-3})
     .start();
