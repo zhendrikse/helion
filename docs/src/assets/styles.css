@@ -88,7 +88,18 @@
     border-radius: 8px;
 }
 
-button, select {
+select {
+    border: 2px solid rgba(255, 255, 0, 0.2);
+    color: white;
+    padding: 3px 3px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin: 0px;
+    line-height: 1;
+}
+
+button {
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 0, 0.2);
     color: white;
