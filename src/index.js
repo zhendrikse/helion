@@ -18,7 +18,7 @@ export {
 
 export { scalarFields, colorMappers } from "./controller/selectors.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
-export { Sun } from "./view/3d/astro/Sun.js";
+export { Sun } from "./view/3d/astro/sun.js";
 export { EventController, CallbackFunction } from "./controller/controller.js";
 export { Simulation, Canvas, HtmlDiv, Overlay, HtmlControl, UPlotGraph } from "./core/helion.js";
 export { ThreeJsRenderOptions, ThreeJsRenderer } from "./view/3d/renderer.js";
