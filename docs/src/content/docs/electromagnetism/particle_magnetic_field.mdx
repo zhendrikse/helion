@@ -3,7 +3,7 @@ title: "🧲 Particle in magnetic field"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://en.wikipedia.org/wiki/JavaScript">
         <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
     </a>
@@ -13,34 +13,34 @@ layout: ../../../layouts/DocsLayout.astro
 </div>
 
 ## Circular motion
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 ## About
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 🎯 Circular motion of a proton in a magnetic field<br/>
 🧠 Inspired by [this example](https://www.glowscript.org/#/user/wlane/folder/PHYS152/program/magnetic-field) by [Let&apos;s code physics](https://www.youtube.com/@LetsCodePhysics)<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/ProtonInMagneticField) is available as well, see [proton_in_magnetic_field.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/proton_in_magnetic_field.py)<br/>
 
 ### Live experiment
-<div className="header_line"></div>
+<div class="header_line"></div>
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://github.com/zhendrikse/helion/blob/main/examples/electromagnetism/scenes/charged_ring.js">
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=charged_ring.js"/>
     </a>
 </div>
 
-<div className="canvasWrapper" id="protonInFieldWrapper" style="aspect-ratio: 19/12">
-    <canvas id="protonInFieldCanvas" className="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
-    <div className="overlayText" id="protonInFieldOverlayText">Click to start the animation!</div>
+<div class="canvasWrapper" id="protonInFieldWrapper" style="aspect-ratio: 19/12">
+    <canvas id="protonInFieldCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
+    <div class="overlayText" id="protonInFieldOverlayText">Click to start the animation!</div>
 </div>
-<div className="buttonRow">
+<div class="buttonRow">
     <label>🧲 Field: </label>
     <input type="range" id="protonInFieldStrengthSlider" min=".1" max="1" step="any" value=".2"/>
     <span id="protonInFieldStrengthSliderValue">10</span>
 </div>
-<div className="buttonRow">
+<div class="buttonRow">
     <label>🚀 Speed: </label>
     <input type="range" id="protonInFieldSpeedSlider" min="1" max="100" step="any" value="50"/>
     <span id="protonInFieldSpeedSliderValue">50</span>
@@ -50,39 +50,39 @@ layout: ../../../layouts/DocsLayout.astro
 
 
 ## Helical motion
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 ## About
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 🎯 Circular motion of a proton in a magnetic field<br/>
 🧠 Based on [Simple Physics Animations Using VPython](https://towardsdatascience.com/simple-physics-animations-using-vpython-1fce0284606) by Zhiheng Jiang<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/Helicalmotion) is available as well, see [proton_helical_motion.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/proton_helical_motion.py)<br/>
 
 ## Live experiment
-<div className="header_line"></div>
+<div class="header_line"></div>
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://github.com/zhendrikse/helion/blob/main/examples/electromagnetism/scenes/helical_motion.js">
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=helical_motion.js"/>
     </a>
 </div>
 
-<div className="canvasWrapper" id="helicalProtonCanvasWrapper">
-    <canvas id="helicalProtonCanvas" className="applicationCanvas"></canvas>
-    <div className="overlayText" id="helicalProtonCanvasOverlay">Click to start the animation!</div>
+<div class="canvasWrapper" id="helicalProtonCanvasWrapper">
+    <canvas id="helicalProtonCanvas" class="applicationCanvas"></canvas>
+    <div class="overlayText" id="helicalProtonCanvasOverlay">Click to start the animation!</div>
 </div>
-<div className="buttonRow">
+<div class="buttonRow">
     <label>🧲 Field: </label>
     <input type="range" id="helicalProtonFieldStrengthSlider" min=".5" max="5" step="any" value="1"/>
     <span id="helicalProtonFieldStrengthSliderValue">1</span>
 </div>
-<div className="buttonRow">
+<div class="buttonRow">
     <label>🚀 Speed: </label>
     <input type="range" id="helicalProtonSpeedSlider" min="1" max="100" step="any" value="50"/>
     <span id="helicalProtonSpeedSliderValue">50</span>
 </div>
-<div className="buttonRow">
+<div class="buttonRow">
     <label>🪫 charge: </label>
     <input type="range" id="helicalProtonChargeSlider" min=".25" max="5" step="any" value="0.8"/>
     <span id="helicalProtonChargeSliderValue">0.8</span>

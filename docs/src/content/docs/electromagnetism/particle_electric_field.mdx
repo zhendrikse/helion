@@ -3,7 +3,7 @@ title: "⚡ Particle in electric field"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://en.wikipedia.org/wiki/JavaScript">
         <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
     </a>
@@ -13,87 +13,87 @@ layout: ../../../layouts/DocsLayout.astro
 </div>
 
 ## Field of a charged plate
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 ### About
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 🎯 Movement of a charged particle in a field of a charged plate<br/>
 🧠 Inspired by [this demo](https://trinket.io/glowscript/38fbc7b2d01d) Byron Philhour<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/ChargedSheet) is available as well, see [charged_sheet.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/charged_sheet.py)<br/>
 
 ### Live experiment
-<div className="header_line"></div>
+<div class="header_line"></div>
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://github.com/zhendrikse/helion/blob/main/examples/electromagnetism/scenes/charged_sheet.js">
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=charged_sheet.js"/>
     </a>
 </div>
 
-<div className="canvasWrapper" id="chargedSheetWrapper">
-    <canvas className="applicationCanvas" id="chargedSheetCanvas"></canvas>
-    <div className="overlayText" id="chargedSheetOverlay">Click to start the animation!</div>
+<div class="canvasWrapper" id="chargedSheetWrapper">
+    <canvas class="applicationCanvas" id="chargedSheetCanvas"></canvas>
+    <div class="overlayText" id="chargedSheetOverlay">Click to start the animation!</div>
 </div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/charged_sheet.js"}></script>
 <p style="clear: both;"></p>
 
 
 ## Field of a charged ring
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 ### About
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 🎯 Visualization of electron in a field of a charged ring<br/>
 🧠 Based on [this example](https://www.glowscript.org/#/user/wlane/folder/PHYS152/program/magnetic-field) by Byron Philhour<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/Chargedring) is available as well, see [charged_ring.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/charged_ring.py)<br/>
 
 ### Live experiment
-<div className="header_line"></div>
+<div class="header_line"></div>
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://github.com/zhendrikse/helion/blob/main/examples/electromagnetism/scenes/charged_ring.js">
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=charged_ring.js"/>
     </a>
 </div>
 
-<div className="canvasWrapper" id="chargedRingWrapper">
-    <canvas className="applicationCanvas" id="chargedRingCanvas"></canvas>
-    <div className="overlayText" id="chargedRingOverlay">Click to start the animation!</div>
+<div class="canvasWrapper" id="chargedRingWrapper">
+    <canvas class="applicationCanvas" id="chargedRingCanvas"></canvas>
+    <div class="overlayText" id="chargedRingOverlay">Click to start the animation!</div>
 </div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/charged_ring.js"}></script>
 <p style="clear: both;"></p>
 
 
 ## Field within a capacitor
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 ### About
-<div className="header_line"></div>
+<div class="header_line"></div>
 
 🎯 Movement of a charged particle in a capacitor field<br/>
 🧠 Inspired by [8_Charge_Motion.py](https://github.com/Physics-Morris/Physics-Vpython/blob/master/8_Charge_Motion.py)<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/Movingcharge) is available as well, see [moving_charge.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/moving_charge.py)<br/>
 
 ### Live experiment
-<div className="header_line"></div>
+<div class="header_line"></div>
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://github.com/zhendrikse/helion/blob/main/examples/electromagnetism/scenes/moving_charge.js">
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=moving_charge.js"/>
     </a>
 </div>
 
-<div className="canvasWrapper" id="movingChargeWrapper" style="aspect-ratio: 19/12">
-    <canvas id="movingChargeCanvas" className="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
-    <div className="overlayText" id="movingChargeOverlayText">Click to start the animation!</div>
+<div class="canvasWrapper" id="movingChargeWrapper" style="aspect-ratio: 19/12">
+    <canvas id="movingChargeCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
+    <div class="overlayText" id="movingChargeOverlayText">Click to start the animation!</div>
 </div>
-<div className="buttonRow">
+<div class="buttonRow">
     <label>🪫Charge: </label><input type="range" id="chargeSlider" min="0" max="5" step="0.1" value="1"/>
     <span id="chargeSliderValue">1</span> electron charge(s)
 </div>
-<div className="buttonRow">
+<div class="buttonRow">
     <label >🚀 Speed: </label><input type="range" id="speedSlider" min="1" max="50" step="1" value="15"/>
     <span id="speedSliderValue">15</span> x 1E-14 m/s
 </div>
