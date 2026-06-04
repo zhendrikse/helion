@@ -240,10 +240,40 @@ export class Interval {
 }
 
 
-export class Field {
+export class Field extends MathPhysicsModelBehavior {
     sample(point) {}
 }
 
+export class Domain {
+    constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
+        this.xRange = new Interval(xRange[0], xRange[1]);
+        this.yRange = new Interval(yRange[0], yRange[1]);
+    }
+}
+
+/**
+ * A surface defined as (u, v) => (x, y, z)
+ */
+export class ParametricSurface extends Field {
+    constructor({
+        domain = new Domain(),
+        x = (u, v) => u,
+        y = (u, v) => v,
+        z = (u, v) => 0
+    } = {}) {
+        super();
+        this._domain = domain;
+        this._x = x;
+        this._y = y;
+        this._z = z;
+    }
+
+    sample(u, v, target) {
+        const uu = this._domain.xRange.scaleUnitParameter(u);
+        const vv = this._domain.yRange.scaleUnitParameter(v);
+        target.set(this._x(uu, vv), this._z(uu, vv), this._y(uu, vv));
+    }
+}
 
 
 export class VectorFieldValue extends MathPhysicsModelBehavior {

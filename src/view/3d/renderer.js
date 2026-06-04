@@ -204,12 +204,8 @@ export class ThreeJsRenderer extends Renderer {
     }
 
     remove(view) {
-        if (!view) return;
-
         view.dispose?.();
         this._world.remove(view);
-        // TODO bindings zit nu in simulation
-        this._bindings = this._bindings.filter(binding => binding.view !== view);
     }
 
     #calculateCenter(boundingBox) {

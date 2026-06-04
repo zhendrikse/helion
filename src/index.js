@@ -7,11 +7,12 @@ export {
 export {
     VectorField, Range, Vec3, DiscreteScalarField, FixedIntervalNormalizer,
     FFT, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid,
-    factorial, linspace, FieldStatistics, DiscreteComplexField, Interval
+    factorial, linspace, FieldStatistics, DiscreteComplexField, Interval,
+    ParametricSurface, Domain
 } from "./model/math/math.js";
 
 export {
-    FiniteDifferenceMethodField, Surface, PDESurface, ParametricSurface, ScalarFieldSurface,
+    FiniteDifferenceMethodField, Surface, PDESurface, ScalarFieldSurface,
     GaussianCurvatureField, MeanCurvatureField, PrincipalCurvatureField, HeightScalarField,
     ShapeIndexField, CurvednessField
 } from "./model/math/surface.js";

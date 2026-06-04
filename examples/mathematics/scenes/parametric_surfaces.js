@@ -1,34 +1,30 @@
 import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
     PlaneSurfaceView, EventController, IsoparametricContoursView, Vec3, SurfaceResolution,
-    ParametricSurface, Interval, GaussianCurvatureField, scalarFields, colorMappers
+    ParametricSurface, Interval, GaussianCurvatureField, scalarFields, colorMappers, Domain
 } from "../../../src/index.js";
 
 const surfaces = {
     "Bow curve": new ParametricSurface({
-        uRange: new Interval(0, 2 * Math.PI),
-        vRange: new Interval(0, 4 * Math.PI),
+        domain: new Domain([0, 2 * Math.PI], [0, 4 * Math.PI]),
         x: (u, v) => (1 * Math.sin(u) + 2) * Math.sin(v),
         y: (u, v) => (1 * Math.sin(u) + 2) * Math.cos(v),
         z: (u, v) => 1 * Math.cos(u) + 2 * Math.cos(0.5 * v)
     }),
     "Klein bottle": new ParametricSurface({
-        uRange: new Interval(0, 2 * Math.PI),
-        vRange: new Interval(0, 2 * Math.PI),
+        domain: new Domain([0, 2 * Math.PI], [0, 2 * Math.PI]),
         x: (u, v) => -(5 - 2 * Math.cos(u)) * Math.cos(v) + 6 * (Math.sin(u) + 1) * Math.cos(u),
         y: (u, v) =>  (5 - 2 * Math.cos(u)) * Math.sin(v),
         z: (u, v) => -16 * Math.sin(u)
     }),
     "Mobius strip": new ParametricSurface({
-        uRange: new Interval(-1, 1),
-        vRange: new Interval(0, 2 * Math.PI),
+        domain: new Domain([-1, 1], [0, 2 * Math.PI]),
         x: (u, v) => (2 + u * Math.cos(v / 2)) * Math.cos(v),
         y: (u, v) => u * Math.sin(v / 2),
         z: (u, v) => (2 + u * Math.cos(v / 2)) * Math.sin(v)
     }),
     "Torus": new ParametricSurface({
-        uRange: new Interval(0, 2 * Math.PI),
-        vRange: new Interval(0, 2 * Math.PI),
+        domain: new Domain([0, 2 * Math.PI], [0, 2 * Math.PI]),
         x: (u, v) => Math.cos(u) * (3 + 1.5 * Math.cos(v)),
         y: (u, v) => Math.sin(u) * (3 + 1.5 * Math.cos(v)),
         z: (u, v) => 2 * Math.sin(v)

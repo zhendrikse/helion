@@ -36,31 +36,7 @@ export class ScalarFieldSurface extends Surface {
     }
 }
 
-/**
- * A surface defined
- */
-export class ParametricSurface extends Surface {
-    constructor({
-        uRange = new Interval(-0.5, 0.5),
-        vRange = new Interval(-0.5, 0.5),
-        x = (u, v) => u,
-        y = (u, v) => v,
-        z = (u, v) => 0
-    } = {}) {
-        super();
-        this._uRange = uRange;
-        this._vRange = vRange;
-        this._x = x;
-        this._y = y;
-        this._z = z;
-    }
 
-    sample(u, v, target) {
-        const uu = this._uRange.scaleUnitParameter(u);
-        const vv = this._vRange.scaleUnitParameter(v);
-        target.set(this._x(uu, vv), this._z(uu, vv), this._y(uu, vv));
-    }
-}
 
 /**
  * Vector field on a surface. On any surface, we may define a vector
