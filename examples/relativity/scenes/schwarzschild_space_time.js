@@ -1,6 +1,6 @@
-import {Vector3, Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
+import {Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
-    Floor, Sphere, ThreeJsRenderer, ThreeJsRenderOptions, Trail, Canvas,
+    Floor, Sphere, ThreeJsRenderer, ThreeJsRenderOptions, Trail, Canvas, Vec3,
     EventController, HtmlDiv, Overlay, Simulation, Surface, IsoparametricContoursView,
     RadialSymmetricBody, Sun
 } from "../../../src/index.js";
@@ -13,12 +13,12 @@ const subSteps = (isRingOrbit) => isRingOrbit ? 1000 : 20;
 class SchwarzschildSurface extends Surface {
     static yOffset = -10;
     static zAsFunctionOf = (r, M) => Math.sqrt(Math.max(0, 8 * M * r - 16 * M * M));
-    static surfacePointAt = (r, phi, M) => new Vector3(
+    static surfacePointAt = (r, phi, M) => new Vec3(
         r * Math.cos(phi),
         SchwarzschildSurface.zAsFunctionOf(r, M),
         r * Math.sin(phi)
     );
-    static gridPointAt = (r, phi) => new Vector3(
+    static gridPointAt = (r, phi) => new Vec3(
         r * Math.cos(phi),
         SchwarzschildSurface.yOffset,
         r * Math.sin(phi)
@@ -84,7 +84,7 @@ class StateVector {
 
 class Comet extends RadialSymmetricBody {
     static initialPosition = (distance) =>
-        new Vector3(distance, SchwarzschildSurface.zAsFunctionOf(distance, sunMass), 0);
+        new Vec3(distance, SchwarzschildSurface.zAsFunctionOf(distance, sunMass), 0);
 
     constructor({
         position,
@@ -182,9 +182,10 @@ class Comet extends RadialSymmetricBody {
     start() { this._isMoving = true; }
     stop() { this._isMoving = false; }
 
-    reset(distance) {
+    reset() {
         super.reset();
-        this.position = Comet.initialPosition(distance);
+	const distance = initialCometDistance;
+        this._state.position = Comet.initialPosition(distance);
         this.visible = true;
         this._stateVector = this._startStateVector ? this._startStateVector.clone() : null;
         if (this._stateVector)
@@ -202,13 +203,13 @@ const comet = new Comet({
 });
 
 const flatComet = new Comet({
-    position: new Vector3(initialCometDistance, SchwarzschildSurface.yOffset, 0),
+    position: new Vec3(initialCometDistance, SchwarzschildSurface.yOffset, 0),
     radius: 1.75,
     stateVector: null // important: no own dynamics, just follows comet
 });
 
 const realComet = new Comet({
-    position: new Vector3(initialCometDistance, SchwarzschildSurface.yOffset, 0),
+    position: new Vec3(initialCometDistance, SchwarzschildSurface.yOffset, 0),
     radius: 1.75,
     stateVector: StateVector.initial(currentIsRingOrbitValue)
 });
@@ -238,9 +239,9 @@ function timeStep(clockTime) {
     photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1);
     sun.update(clockTime * 0.002);
 
-    comet.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sunMass));
-    realComet.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
-    flatComet.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
+    comet._state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sunMass));
+    realComet._state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
+    flatComet._state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
 }
 
 //
@@ -255,7 +256,7 @@ const cometInsideCone = () =>
 // Set up renderer and views
 //
 const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vector3(5, 7.5, 15).multiplyScalar(11),
+    cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(11),
     fieldOfView: 45,
     background: ThreeJsRenderer.Background.STARS
 });
@@ -267,7 +268,7 @@ const renderer = ThreeJsRenderer
 
 // Grid
 const grid = new Floor({
-    position: new Vector3(0, SchwarzschildSurface.yOffset, 0),
+    position: new Vec3(0, SchwarzschildSurface.yOffset, 0),
     type: Floor.Type.GRID,
     planeSizeXy: new Vector2(185, 185),
     opacity: 0.05,
