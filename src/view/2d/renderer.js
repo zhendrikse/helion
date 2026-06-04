@@ -49,7 +49,6 @@ export class Canvas2DRenderer extends Renderer {
         view.context = this._context;
     }
 
-    render(view, time) {
-        view.render(time);
+    render(time) {
     }
 }

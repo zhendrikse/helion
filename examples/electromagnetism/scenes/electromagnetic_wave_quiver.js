@@ -95,14 +95,15 @@ class CombinedField extends VectorField {
     constructor(fields) {
         super();
         this._fields = fields;
+        this._totalField = new Vec3();
     }
 
     vectorAt(position) {
-        const result = new Vec3();
+        this._totalField.set(0, 0, 0);
         for (const field of this._fields)
-            result.add(field.vectorAt(position));
+            this._totalField.add(field.vectorAt(position));
 
-        return result;
+        return this._totalField;
     }
 }
 
@@ -131,15 +132,34 @@ const renderer = ThreeJsRenderer
         .containsBoth(canvas.and(Overlay.withElementId("electromagneticWaveOverlay"))))
     .with(threeJsRendererOptions);
 
+const electricArrowField = new ArrowField({
+    xRange: new Range(-6e-10, 6e-10, 1.25e-10),
+    yRange: new Range(-6e-10, 6e-10, 1.25e-10),
+    zRange: new Range(-6e-10, 6e-10, 1.25e-10),
+    scaleFactor: 2.5e-12,
+    magnitudeMap: magnitude => Math.log(magnitude + 1),
+    //colorMap: (axis, magnitude) => new Color().setHSL(0.15, 1, Math.min(Math.log(magnitude + 1), 0.6)),
+    colorMap: (axis, magnitude) => new Color(0xbbbb55),
+    round: true
+});
 
-//
-// Animation
-//
+const magneticArrowField = new ArrowField({
+    xRange: new Range(-6e-10, 6e-10, 1.25e-10),
+    yRange: new Range(-6e-10, 6e-10, 1.25e-10),
+    zRange: new Range(-6e-10, 6e-10, 1.25e-10),
+    scaleFactor: 2.5e-11,
+    magnitudeMap: magnitude => Math.log(magnitude  + 1),
+    colorMap: () => new Color("cyan"),
+    round: true
+});
+
 const dt = 2e-19;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
     .synchronize(electron.alwaysWith(new Sphere({color: new Color("red")})))
+    .synchronize(electricField.alwaysWith(electricArrowField))
+    .synchronize(magneticField.alwaysWith(magneticArrowField))
     .synchronize(proton.alwaysWith(new Sphere({color: new Color("yellow") })))
     .onClockTick((clockTime, simulatedTime) => {
         electron.updateAt(simulatedTime);
@@ -151,27 +171,6 @@ const simulation = Simulation
         for (const field of magneticField._fields)
             field.time = simulatedTime;
     }, 2);
-
-simulation.synchronize(electricField.alwaysWith(new ArrowField({
-        xRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        yRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        zRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        scaleFactor: 2.5e-12,
-        magnitudeMap: magnitude => Math.log(magnitude + 1),
-        //colorMap: (axis, magnitude) => new Color().setHSL(0.15, 1, Math.min(Math.log(magnitude + 1), 0.6)),
-        colorMap: (axis, magnitude) => new Color(0xbbbb55),
-        round: true
-})));
-simulation.synchronize(magneticField.alwaysWith(new ArrowField({
-        xRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        yRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        zRange: new Range(-6e-10, 6e-10, 1.25e-10),
-        scaleFactor: 2.5e-11,
-        magnitudeMap: magnitude => Math.log(magnitude  + 1),
-        colorMap: () => new Color("cyan"),
-        round: true
-})));
-
 
 const eventController = EventController.for(simulation);
 eventController.addStartStopMouseClickEventListenerTo(canvas);

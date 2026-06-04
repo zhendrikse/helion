@@ -188,8 +188,7 @@ export class ThreeJsRenderer extends Renderer {
         }
     }
 
-    render(view, time) {
-        view.render(time);
+    render(time) {
         this._renderer.render(this._scene, this._camera);
         this._controls?.update();
         this._skydome?.update(time, this._camera);

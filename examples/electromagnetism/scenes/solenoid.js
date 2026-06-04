@@ -103,8 +103,7 @@ const arrowField = new ArrowField({
 
 const simulation = Simulation
     .with(renderer)
-    .synchronize(magneticField.onceWith(arrowField))
-    .onClockTick();
+    .synchronize(magneticField.onceWith(arrowField));
 
 for (const segment of solenoid.segments)
     simulation.synchronize(segment.onceWith(new Cylinder({ color: new Color("yellow") })));

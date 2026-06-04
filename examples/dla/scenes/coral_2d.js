@@ -160,15 +160,10 @@ const renderer2d = Canvas2DRenderer.on(canvasWrapper.contains(canvas2d));
 
 const particleRaster = new ParticleRaster();
 
-let lastTime = 0;
 const simulation = Simulation
     .with(renderer2d)
     .synchronize(particleField.alwaysWith(particleRaster))
     .onClockTick((clockTime, simulatedTime) => {
-        if (clockTime < lastTime + 10)
-            return; // throttling
-
         particleField.update();
-        lastTime = clockTime;
     });
 simulation.start()

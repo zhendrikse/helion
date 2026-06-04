@@ -27,8 +27,8 @@ export class CompositeRenderer extends Renderer {
             renderer.add(viewObject);
     }
 
-    render(view, time) {
+    render(time) {
         for (const renderer of this._renderers)
-            renderer.render(view, time);
+            renderer.render(time);
     }
 }

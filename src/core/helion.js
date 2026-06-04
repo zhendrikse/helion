@@ -155,6 +155,7 @@ export class Simulation {
         this._simulatedTime = 0;
         this._dt = 0.01;
         this._substepsCount = 1;
+        requestAnimationFrame(this.animate);
     }
 
     // After user interaction, all views need to be rendered/updated, as static views may have changed too!
@@ -191,26 +192,25 @@ export class Simulation {
         this._onAfterPhysicsUpdate = customFunction;
     }
 
+    animate = (clockTime) => {
+        // Physics update
+        this._onBeforePhysicsUpdate(clockTime, this._simulatedTime);
+        this._updatePhysics(clockTime);
+        this._onAfterPhysicsUpdate(clockTime, this._simulatedTime);
+
+        // Rendering
+        for (const binding of this._bindings)
+            if (binding.mode === Binding.Mode.ALWAYS || this._forceAllViewsToBeRendered)
+                binding.view.render(clockTime);
+        this._forceAllViewsToBeRendered = false;
+
+        this._renderer.render(clockTime);
+        requestAnimationFrame(this.animate);
+    };
+
     onClockTick(updateFunction = () => {}, substepsCount = 1) {
         this._updateFunction = updateFunction;
         this._substepsCount = substepsCount;
-
-        const animate = (clockTime) => {
-            // Physics update
-            this._onBeforePhysicsUpdate(clockTime, this._simulatedTime);
-            this._updatePhysics(clockTime);
-            this._onAfterPhysicsUpdate(clockTime, this._simulatedTime);
-
-            // Rendering
-            for (const binding of this._bindings)
-                if (binding.mode === Binding.Mode.ALWAYS || this._forceAllViewsToBeRendered)
-                    this._renderer.render(binding.view, clockTime);
-            this._forceAllViewsToBeRendered = false;
-
-            requestAnimationFrame(animate);
-        };
-
-        requestAnimationFrame(animate);
         return this;
     }
 

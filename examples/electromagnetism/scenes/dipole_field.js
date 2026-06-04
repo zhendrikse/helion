@@ -81,8 +81,7 @@ const simulation = Simulation
     .with(renderer)
     .synchronize(dipole.positive.onceWith(positiveSphere))
     .synchronize(dipole.negative.onceWith(negativeSphere))
-    .synchronize(dipoleField.onceWith(arrowField))
-    .onClockTick();
+    .synchronize(dipoleField.onceWith(arrowField));
 
 //
 // Event controller
