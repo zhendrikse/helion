@@ -5,7 +5,8 @@
 
 Helion is a browser-native generative math & physics visualization engine.
 It is built around explicit mathematical semantics such as scalar fields, vector fields,
-and parametric geometry, rather than ad-hoc visual scripting.
+and [parametric geometry](https://www.hendrikse.name/helion/mathematics/parametric_surfaces/), 
+rather than ad-hoc visual scripting.
 
 It provides a [low-cognitive-overhead](https://en.wikipedia.org/wiki/Cognitive_load) environment for expressing
 mathematical and physical systems, where models, simulation, and visualization remain tightly synchronized

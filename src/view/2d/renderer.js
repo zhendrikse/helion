@@ -49,7 +49,7 @@ export class Canvas2DRenderer extends Renderer {
         view.context = this._context;
     }
 
-    render(time) {
-        // this._context.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    render(view, time) {
+        view.render(time);
     }
 }

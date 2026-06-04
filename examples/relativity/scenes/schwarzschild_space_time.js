@@ -7,8 +7,12 @@ import {
 
 const initialCometDistance = 33;
 const currentIsRingOrbitValue = false;
-const sunMass = 5;
 const subSteps = (isRingOrbit) => isRingOrbit ? 1000 : 20;
+
+const sun = new RadialSymmetricBody({
+    mass: 5,
+    radius: 10
+});
 
 class SchwarzschildSurface extends Surface {
     static yOffset = -10;
@@ -55,9 +59,9 @@ class StateVector {
         const r = initialCometDistance;
         const t = 0;
         const phi = 0;
-        const tDot = 1 / Math.sqrt(1 - 3 * sunMass / r);
+        const tDot = 1 / Math.sqrt(1 - 3 * sun.mass / r);
         const phiDot = isOrbit
-            ? Math.sqrt(sunMass) / (r ** 1.5 * Math.sqrt(1 - 3 * sunMass / r))
+            ? Math.sqrt(sun.mass) / (r ** 1.5 * Math.sqrt(1 - 3 * sun.mass / r))
             : 0.489374;
         const rDot = isOrbit ? 0 : -25.2;
 
@@ -84,7 +88,7 @@ class StateVector {
 
 class Comet extends RadialSymmetricBody {
     static initialPosition = (distance) =>
-        new Vec3(distance, SchwarzschildSurface.zAsFunctionOf(distance, sunMass), 0);
+        new Vec3(distance, SchwarzschildSurface.zAsFunctionOf(distance, sun.mass), 0);
 
     constructor({
         position,
@@ -184,8 +188,7 @@ class Comet extends RadialSymmetricBody {
 
     reset() {
         super.reset();
-	const distance = initialCometDistance;
-        this._state.position = Comet.initialPosition(distance);
+        const distance = initialCometDistance;
         this.visible = true;
         this._stateVector = this._startStateVector ? this._startStateVector.clone() : null;
         if (this._stateVector)
@@ -227,19 +230,19 @@ function createPhotonSphere(M, segments = 300) {
     const material = new LineBasicMaterial({ color: 0x00aaff });
     return new Line(geometry, material);
 }
-const photonRing = createPhotonSphere(sunMass);
+
+const photonRing = createPhotonSphere(sun.mass);
 photonRing.visible = false;
 
 function timeStep(clockTime) {
     if (cometInsideCone())
-        comet.update(sunMass, 0.001); // 3D geodesic
+        comet.update(sun.mass, 0.001); // 3D geodesic
     if (cometInsideCone() || subSteps(currentIsRingOrbitValue))
-        realComet.updateRealMotion(sunMass, 0.001);
+        realComet.updateRealMotion(sun.mass, 0.001);
 
     photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1);
-    sun.update(clockTime * 0.002);
 
-    comet._state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sunMass));
+    comet._state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
     realComet._state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
     flatComet._state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
 }
@@ -247,7 +250,7 @@ function timeStep(clockTime) {
 //
 // Math (surface) model
 //
-const coneGeometry = new SchwarzschildSurface(sunMass);
+const coneGeometry = new SchwarzschildSurface(sun.mass);
 
 const cometInsideCone = () =>
     coneGeometry.rMin < comet.distance && comet.distance < coneGeometry.rMax;
@@ -277,14 +280,12 @@ const grid = new Floor({
 renderer.add(grid);
 renderer.add(photonRing);
 
-const sun = new Sun({ radius: 10 });
-renderer.add(sun);
-
 // Curved space-time: Flamm's paraboloid
 const spaceTimeCone = new IsoparametricContoursView();
 const simulation = Simulation
     .with(renderer)
     .synchronize(coneGeometry.onceWith(spaceTimeCone))
+    .synchronize(sun.alwaysWith(new Sun()))
     .synchronize(realComet.alwaysWith(new Sphere({ color: 0xff8800 })))
     .synchronize(realComet.alwaysWith(new Trail( { color: 0xff8800 })))
     .synchronize(flatComet.alwaysWith(new Sphere({ color: 0xff0000 })))
@@ -300,16 +301,16 @@ simulation.onBeforeClockTick((clockTime, simulatedTime) =>
 // Event handling
 //
 const controller = EventController.for(simulation);
-controller.addStartStopMouseClickEventListenerTo(canvas, () => {
-    simulation.toggleRunStatus();
-    if (comet.isMoving) {
-        realComet.stop();
-        comet.stop();
-    } else {
-        realComet.start();
-        comet.start();
-    }
-});
+// controller.addStartStopMouseClickEventListenerTo(canvas, () => {
+//     simulation.toggleRunStatus();
+//     if (comet.isMoving) {
+//         realComet.stop();
+//         comet.stop();
+//     } else {
+//         realComet.start();
+//         comet.start();
+//     }
+// });
 
 // TODO naar event handler klasse omzetten
 document.getElementById('gridButton').addEventListener('click',

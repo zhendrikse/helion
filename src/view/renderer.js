@@ -11,7 +11,7 @@ export class Renderer {
      */
     onRunStatusChanged() {}
 
-    render(time) {}
+    render(view, time) {}
 
     resize() {}
 }
@@ -27,8 +27,8 @@ export class CompositeRenderer extends Renderer {
             renderer.add(viewObject);
     }
 
-    render(time, forceAllViewsToBeRendered) {
+    render(view, time) {
         for (const renderer of this._renderers)
-            renderer.render?.();
+            renderer.render(view, time);
     }
 }

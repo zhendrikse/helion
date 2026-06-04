@@ -62,13 +62,13 @@ class SurfaceMaterial {
 
                 float n0 = mix(
                     mix(
-                        mix(aa,ab,t.x),
-                        mix(ac,ad,t.x),
+                        mix(aa, ab, t.x),
+                        mix(ac, ad, t.x),
                         t.y
                     ),
                     mix(
-                        mix(ae,af,t.x),
-                        mix(ag,ah,t.x),
+                        mix(ae, af, t.x),
+                        mix(ag, ah, t.x),
                         t.y
                     ),
                     t.z
@@ -76,13 +76,13 @@ class SurfaceMaterial {
 
                 float n1 = mix(
                     mix(
-                        mix(ba,bb,t.x),
-                        mix(bc,bd,t.x),
+                        mix(ba, bb, t.x),
+                        mix(bc, bd, t.x),
                         t.y
                     ),
                     mix(
-                        mix(be,bf,t.x),
-                        mix(bg,bh,t.x),
+                        mix(be, bf, t.x),
+                        mix(bg, bh, t.x),
                         t.y
                     ),
                     t.z
@@ -99,23 +99,23 @@ class SurfaceMaterial {
                 
                 mat3 rotX = mat3(
                     1,0,0,
-                    0,cos(angle.x),-sin(angle.x),
-                    0,sin(angle.x), cos(angle.x)
+                    0, cos(angle.x), -sin(angle.x),
+                    0, sin(angle.x),  cos(angle.x)
                 );
 
                 mat3 rotY = mat3(
-                    cos(angle.y),0,sin(angle.y),
-                    0,1,0,
-                    -sin(angle.y),0,cos(angle.y)
+                    cos(angle.y), 0 ,sin(angle.y),
+                    0, 1, 0,
+                    -sin(angle.y), 0, cos(angle.y)
                 );
 
                 mat3 rotZ = mat3(
-                    cos(angle.z),-sin(angle.z),0,
-                    sin(angle.z), cos(angle.z),0,
-                    0,0,1
+                    cos(angle.z), -sin(angle.z),0,
+                    sin(angle.z),  cos(angle.z),0,
+                    0, 0, 1
                 );
 
-                for(int i=0;i<NUM_OCTAVES;i++){
+                for(int i = 0; i < NUM_OCTAVES; i++){
                     value += amp * noise(p);
                     p = rotX * rotY * rotZ * p * 2.0;
                     amp *= 0.8;
@@ -130,20 +130,9 @@ class SurfaceMaterial {
                 q.x = fBm(st, 5.);
                 q.y = fBm(st + vec3(1.2,3.2,1.52), 5.);
                 q.z = fBm(st + vec3(0.02,0.12,0.152), 5.);
-                float n = fBm(st + q + vec3(1.82,1.32,1.09), 5.);
-
-                vec3 color = mix(
-                        vec3(1.0,0.4,0.0),
-                        vec3(1.0),
-                        n*n
-                    );
-
-                color = mix(
-                        color,
-                        vec3(1.0,0.0,0.0),
-                        q * 0.7
-                    );
-
+                float n = fBm(st + q + vec3(1.82, 1.32, 1.09), 5.);
+                vec3 color = mix(vec3(1.0, 0.4, 0.0), vec3(1.0), n * n);
+                color = mix(color, vec3(1.0, 0.0, 0.0), q * 0.7);
                 gl_FragColor = vec4(color * 1.6, 1.0);
             }
         `
@@ -200,20 +189,9 @@ class GlowMaterial {
                 varying vec3 vNormalView;
 
                 void main(){
-                    vPosition =
-                        normalize(
-                            vec3(
-                                modelViewMatrix *
-                                vec4(position,1.)
-                            )
-                        );
-
+                    vPosition = normalize( vec3(modelViewMatrix * vec4(position,1.)) );
                     vNormalView = normalize(normalMatrix * normal);
-
-                    gl_Position =
-                        projectionMatrix *
-                        modelViewMatrix *
-                        vec4(position,1.);
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.);
                 }
                 `,
 
@@ -223,17 +201,8 @@ class GlowMaterial {
                 varying vec3 vNormalView;
 
                 void main(){
-                    float rawIntensity =
-                        max(
-                            dot(
-                                vPosition,
-                                vNormalView
-                            ),
-                            0.0
-                        );
-
+                    float rawIntensity = max( dot(vPosition, vNormalView), 0.0 );
                     float intensity = pow(rawIntensity,4.0);
-
                     gl_FragColor = vec4(uColor, intensity);
                 }
                 `
@@ -243,7 +212,6 @@ class GlowMaterial {
 
 export class Sun extends Group {
     constructor({
-        radius = 1,
         color = new Color("#ffcc66")
     } = {}) {
         super();
@@ -252,7 +220,7 @@ export class Sun extends Group {
             uColor: { value: color }
         };
 
-        const geometry = new SphereGeometry(radius, 128, 128);
+        const geometry = new SphereGeometry(1, 128, 128);
         const surface = new Mesh(geometry, new SurfaceMaterial(uniforms).material);
         const fresnel = new Mesh(geometry, new FresnelMaterial(uniforms).material);
         const glow = new Mesh(geometry, new GlowMaterial(uniforms).material);
@@ -262,10 +230,20 @@ export class Sun extends Group {
         this.add(surface);
         this.add(fresnel);
         this.add(glow);
-        this.uniforms = uniforms;
+        this._uniforms = uniforms;
+        this._body = null;
     }
 
-    update(time) {
-        this.uniforms.uTime.value = time;
+    bind(body) {
+        // Sanity checks
+        if (!body.radius)
+            throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
+
+        this._body = body;
+    }
+
+    render(time) {
+        this._uniforms.uTime.value = time * 0.002;
+        this.scale.setScalar(this._body.radius);
     }
 }

@@ -136,10 +136,6 @@ export class Binding {
         this.view.initialize?.(); // Necessary to generate geometries & correct bounding boxes
     }
 
-    render() {
-        this.view.render();
-    }
-
     reset() {
         this.model.reset?.(); // Reset phys/math model to its original state
         this.view.reset?.();  // For example, object trails need to be cleaned up!
@@ -208,10 +204,9 @@ export class Simulation {
             // Rendering
             for (const binding of this._bindings)
                 if (binding.mode === Binding.Mode.ALWAYS || this._forceAllViewsToBeRendered)
-                    binding.render();
+                    this._renderer.render(binding.view, clockTime);
             this._forceAllViewsToBeRendered = false;
 
-            this._renderer.render(clockTime);
             requestAnimationFrame(animate);
         };
 
