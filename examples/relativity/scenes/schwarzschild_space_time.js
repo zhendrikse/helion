@@ -98,7 +98,6 @@ class Comet extends RadialSymmetricBody {
         super({ position, radius });
         this._stateVector = stateVector  ? stateVector.clone() : null;
         this._startStateVector = stateVector ? stateVector.clone() : null;
-        this._isMoving = false;
     }
 
     _derivativeSurface(state, M) {
@@ -162,8 +161,6 @@ class Comet extends RadialSymmetricBody {
     }
 
     updateRealMotion(M, dt) {
-        if (!this._isMoving) return;
-
         if (this._stateVector.r <= 2*M + 0.01) {
             this.stop();
             this.visible = false;
@@ -174,17 +171,12 @@ class Comet extends RadialSymmetricBody {
     }
 
     update(M, dt) {
-        if (!this._isMoving) return;
         this._stateVector = this._rk4Step(this._stateVector, this._derivativeSurface, M, dt);
     }
 
     get r() { return this._stateVector.r; }
     get phi() { return this._stateVector.phi; }
     get distance() { return Math.sqrt(this.position.x * this.position.x + this.position.z * this.position.z); }
-    get isMoving() { return this._isMoving; }
-
-    start() { this._isMoving = true; }
-    stop() { this._isMoving = false; }
 
     reset() {
         super.reset();
@@ -301,6 +293,7 @@ simulation.onBeforeClockTick((clockTime, simulatedTime) =>
 // Event handling
 //
 const controller = EventController.for(simulation);
+controller.addStartStopMouseClickEventListenerTo(canvas);
 // controller.addStartStopMouseClickEventListenerTo(canvas, () => {
 //     simulation.toggleRunStatus();
 //     if (comet.isMoving) {

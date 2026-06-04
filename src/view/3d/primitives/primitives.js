@@ -228,9 +228,6 @@ export class Arrow extends Group {
     }
 
     render() {
-        if (!this._body)
-            return;
-
         this.position.copy(this._body.position);
         this._tempAxis.copy(this._body.axis);
         const magnitude = this._tempAxis.length();
@@ -482,30 +479,19 @@ export class Helix extends Mesh {
         this.geometry = new TubeGeometry(this._curve, this._tubularSegments, this._thickness, this._radialSegments, false);
     }
 
-    update(time) {
-        if (this._longitudinalOscillation)
-            this._curve.wavePhase = time * 4;
-    }
-
-    #updateWithoutLongitudinal() {
-        this.#regenerateTube();
-    }
-
-    #updateWithLongitudinal(time) {
-        // Longitudinal wave amplitude coupled to spring elongation
-        const displacement = this._axis.y - this._curve.start.y;
-        this._curve.waveAmp = Math.min(Math.abs(displacement) / 10, 0.3); // max amplitude 0.3
-        this.#regenerateTube();
-    }
-
-    render() {
+    render(time) {
         this.position.copy(this._body.position);
         this._curve.radius = this._body.radius;
 
         this._axis.copy(this._body.axis);
         this._curve.updateAxis(this._axis);
-        this._longitudinalOscillation ?
-            this.#updateWithLongitudinal() :
-            this.#updateWithoutLongitudinal();
+
+        if (this._longitudinalOscillation) {
+            // Longitudinal wave amplitude coupled to spring elongation
+            this._curve.wavePhase = time * 4;
+            const displacement = this._axis.y - this._curve.start.y;
+            this._curve.waveAmp = Math.min(Math.abs(displacement) / 10, 0.3); // max amplitude 0.3
+        }
+        this.#regenerateTube();
     }
 }

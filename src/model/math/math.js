@@ -239,6 +239,13 @@ export class Interval {
     scaleUnitParameter = (unitParameter) => this.range * (unitParameter + this.from / this.range);
 }
 
+
+export class Field {
+    sample(point) {}
+}
+
+
+
 export class VectorFieldValue extends MathPhysicsModelBehavior {
     constructor({
         position = new Vec3(),

@@ -5,30 +5,22 @@
 
 Helion is a browser-native generative math & physics visualization engine.
 It is built around explicit mathematical semantics such as scalar fields, vector fields,
-and [parametric geometry](https://www.hendrikse.name/helion/mathematics/parametric_surfaces/), 
-rather than ad-hoc visual scripting.
+and [parametric geometry](mathematics/parametric_surfaces/), rather than ad-hoc visual scripting.
 
 It provides a [low-cognitive-overhead](https://en.wikipedia.org/wiki/Cognitive_load) environment for expressing
 mathematical and physical systems, where models, simulation, and visualization remain tightly synchronized
 in time and are directly executable in the web browser.
 
-## 🧠 Core ideas
+Helion is the product of decades of exploration in mathematics, physics, programming,
+and education, driven by a lifelong fascination with the beauty and patterns of nature.
 
-Helion provides a semantic layer for mathematics and physics visualization
+### 🧠 Core ideas
+<div class="header_line"></div>
+
+Helion provides a _semantic_ layer for mathematics and physics visualization
 on the web. A Helion program should read like a laboratory notebook with
 one or more scientific experiment scripts, that
 you can read and understand almost without knowing the framework at all.
-
-If you cannot immediately explain what a line of code is doing in terms of
-physics or mathematics, it is likely too abstract!
-
-👉 JavaScript / Web-native (no installation or configuration)<br/>
-👉 Code expresses scientific intent directly<br/>
-👉 It is model-driven (scalar &amp; vector fields, surfaces, operators)<br/>
-👉 Supports multiple views per model (model / view / contoller) <br/>
-👉 Low [cognitive overhead](https://en.wikipedia.org/wiki/Cognitive_load)<br/>
-
-## 💻 Helion code expresses intent
 
 ```js
 // 1. Do your physics and math
@@ -37,19 +29,24 @@ const spring = new Spring();
 
 // 2. Choose renderer (visual layer)
 const renderer = ThreeJsRenderer.on(HtmlDiv
-    .withElementId("canvasWrapper")
-    .contains(Canvas.withElementId("canvas")))
+  .withElementId("canvasWrapper")
+  .contains(Canvas.withElementId("canvas")))
 
 // 3. Bind physics objects to visual representations
 Simulation
-    .with(renderer)
-    .synchronize(spring.alwaysWith(new Helix()))
-    .synchronize(coneGeometry.onceWith(new IsoparametricContoursView()))
-    .onScale(1e-10)
-    .onClockTick((clockTime, simulatedTime) => {
-        // physics update
-    });
+  .with(renderer)
+  .synchronize(spring.alwaysWith(new Helix()))
+  .synchronize(coneGeometry.onceWith(new IsoparametricContoursView()))
+  .onScale(1e-10)
+  .onClockTick((clockTime, simulatedTime) => {
+    // physics update
+});
 ```
+
+👉 JavaScript / Web-native (no installation or configuration)<br/>
+👉 Code expresses scientific intent directly<br/>
+👉 It is model-driven (scalar &amp; vector fields, surfaces, operators)<br/>
+👉 Supports multiple views per model (model / view / contoller) <br/>
 
 ## 🎓 Focus on teaching &amp; learning
 
