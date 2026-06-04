@@ -138,6 +138,6 @@ const spiralGalaxy = new SpiralGalaxy();
 const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() });
 Simulation
     .with(renderer)
-    .synchronize(spiralGalaxy.onceWith(pointCloud))
+    .synchronize(spiralGalaxy.alwaysWith(pointCloud))
     .onClockTick((clockTime, simulatedTime) => {pointCloud.rotation.z += 2.5e-3})
     .start();

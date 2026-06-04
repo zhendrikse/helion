@@ -65,6 +65,6 @@ const starCluster = new StarCluster();
 const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
 Simulation
     .with(renderer)
-    .synchronize(starCluster.onceWith(cloud))
+    .synchronize(starCluster.alwaysWith(cloud))
     .onClockTick((clockTime, simulatedTime) => {cloud.rotation.y += 2.5e-3})
     .start();
