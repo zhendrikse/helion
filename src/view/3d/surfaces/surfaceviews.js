@@ -21,7 +21,7 @@ export class SurfaceResolution {
     }
 }
 
-export class SurfaceView extends Group {
+class View extends Group {
     constructor({
         resolution = new SurfaceResolution(100, 100),
         scalarField = new HeightScalarField(),
@@ -86,118 +86,7 @@ export class SurfaceView extends Group {
     }
 }
 
-export class IsoparametricContoursView extends SurfaceView {
-    constructor({
-        resolution = new SurfaceResolution(20, 20),
-        segments = 100, // per line
-        scalarField = new HeightScalarField(),
-        colorMapper = scalarField.recommendedColorMapper,
-        normalizer = new AdaptiveSymmetricNormalizer()
-    } = {}) {
-        super({resolution, scalarField, colorMapper, normalizer});
-        this._segments = segments;
-        this._material = new LineBasicMaterial({
-            vertexColors: true,
-            transparent: true,
-            depthWrite: true,
-            depthTest: true
-        });
-        this._uLines = [];
-        this._vLines = [];
-
-        this._positionSample = new Vector3();
-        this._scalarSample = new Vector3();
-        this._color = new Color();
-    }
-
-    get boundingBox() {
-        const box = new Box3();
-
-        for (const entry of [...this._uLines, ...this._vLines]) {
-            const geometry = entry.line.geometry;
-            geometry.computeBoundingBox();
-            const bbox = geometry.boundingBox;
-            if (bbox)
-                box.union(bbox);
-        }
-
-        return box;
-    }
-
-    bind(surface) {
-        super.bind(surface);
-        this.#build();
-    }
-
-    #createLine() {
-        const geometry = new BufferGeometry();
-
-        const positions = new Float32Array((this._segments + 1) * 3);
-        geometry.setAttribute("position", new BufferAttribute(positions, 3));
-
-        const colors = new Float32Array((this._segments + 1) * 3);
-        geometry.setAttribute("color", new BufferAttribute(colors, 3));
-
-        return new Line(geometry, this._material);
-    }
-
-    #build() {
-        // u = constant
-        for (let i = 0; i <= this._resolution.u; i++) {
-            const line = this.#createLine();
-            this.add(line);
-            this._uLines.push({ line: line, u: i / this._resolution.u });
-        }
-
-        // v = constant
-        for (let i = 0; i <= this._resolution.v; i++) {
-            const line = this.#createLine();
-            this.add(line);
-            this._vLines.push({ line: line, v: i / this._resolution.v });
-        }
-    }
-
-    #updateLine(entry, sampleFn, colorFn) {
-        const geometry = entry.line.geometry;
-        const positions = geometry.attributes.position.array;
-
-        const colors = geometry.attributes.color.array;
-        for (let j = 0; j <= this._segments; j++) {
-            const k = 3 * j;
-            sampleFn(j / this._segments); // This call updates this._positionSample
-            positions[k] = this._positionSample.x;
-            positions[k + 1] = this._positionSample.y;
-            positions[k + 2] = this._positionSample.z;
-
-            colorFn(j / this._segments);  // this call updates this._colorSample
-            this._colorMapper.map(this._scalarSample.z, this._color);
-            colors[k] = this._color.r;
-            colors[k + 1] = this._color.g;
-            colors[k + 2] = this._color.b;
-        }
-
-        geometry.attributes.position.needsUpdate = true;
-        geometry.attributes.color.needsUpdate = true;
-        geometry.computeBoundingSphere();
-    }
-
-    render() {
-        for (const entry of this._uLines)
-            this.#updateLine(entry,
-                (v) => this._surface.sample(entry.u, v, this._positionSample),
-                (v) => this._normalizedScalarField.sample(entry.u, v, this._scalarSample));
-
-        for (const entry of this._vLines)
-            this.#updateLine(entry,
-                (u) => this._surface.sample(u, entry.v, this._positionSample),
-                (u) => this._normalizedScalarField.sample(u, entry.v, this._scalarSample));
-
-
-        this._dirty = false;
-    }
-}
-
-export class SphereSurfaceView extends SurfaceView {
+export class SphereSurfaceView extends View {
     constructor({
         resolution = new SurfaceResolution(40, 40),
         radius = 0.08,
@@ -269,23 +158,37 @@ export class SphereSurfaceView extends SurfaceView {
     }
 }
 
-export class PlaneSurfaceView extends SurfaceView {
+export class StandardSurfaceView extends View {
     constructor({
         resolution = new SurfaceResolution(100, 100),
+        contourResolution = new SurfaceResolution(20, 20),
+        contourSegments = 100, // per line
         wireframe = false,
         scalarField = new HeightScalarField(),
         colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super({resolution, colorMapper, scalarField, normalizer});
+
+        // Contours
+        this._contourSegments = contourSegments;
+        this._contourResolution = contourResolution;
+        this._contourMaterial = new LineBasicMaterial({
+            vertexColors: true,
+            transparent: true,
+            depthWrite: true,
+            depthTest: true
+        });
+        this._uLines = [];
+        this._vLines = [];
+
+        // Surface
         const geometry = new PlaneGeometry(1, 1, resolution.u, resolution.v);
-        const material = new MeshStandardMaterial({
+        this._mesh = new Mesh(geometry, new MeshStandardMaterial({
             side: DoubleSide,
             wireframe,
             vertexColors: true
-        });
-
-        this._mesh = new Mesh(geometry, material);
+        }));
         this.add(this._mesh);
         this._positions = geometry.attributes.position.array;
         this._colors = new Float32Array((resolution.u + 1) * (resolution.v + 1) * 3);
@@ -295,9 +198,92 @@ export class PlaneSurfaceView extends SurfaceView {
         this._color = new Color();
     }
 
+    set surfaceVisible(value) {
+        this._showSurface = value;
+        this._mesh.visible = value;
+    }
+
+    get surfaceVisible() { return this._showSurface; }
+    get contoursVisible() { return this._showContours; }
+
+    set contoursVisible(value) {
+        this._showContours = value;
+
+        for (const entry of this._uLines)
+            entry.line.visible = value;
+
+        for (const entry of this._vLines)
+            entry.line.visible = value;
+    }
+
     set wireframe(value) { this._mesh.material.wireframe = value; }
 
-    render() {
+    #createLine() {
+        const geometry = new BufferGeometry();
+
+        const positions = new Float32Array((this._contourSegments + 1) * 3);
+        geometry.setAttribute("position", new BufferAttribute(positions, 3));
+
+        const colors = new Float32Array((this._contourSegments + 1) * 3);
+        geometry.setAttribute("color", new BufferAttribute(colors, 3));
+
+        return new Line(geometry, this._contourMaterial);
+    }
+
+    initialize() {
+        super.initialize();
+        // u = constant
+        for (let i = 0; i <= this._contourResolution.u; i++) {
+            const line = this.#createLine();
+            this.add(line);
+            this._uLines.push({ line: line, u: i / this._contourResolution.u });
+        }
+
+        // v = constant
+        for (let i = 0; i <= this._contourResolution.v; i++) {
+            const line = this.#createLine();
+            this.add(line);
+            this._vLines.push({ line: line, v: i / this._contourResolution.v });
+        }
+    }
+
+    #updateLine(entry, sampleFn, colorFn) {
+        const geometry = entry.line.geometry;
+        const positions = geometry.attributes.position.array;
+
+        const colors = geometry.attributes.color.array;
+        for (let j = 0; j <= this._contourSegments; j++) {
+            const k = 3 * j;
+            sampleFn(j / this._contourSegments); // This call updates this._positionSample
+            positions[k] = this._positionSample.x;
+            positions[k + 1] = this._positionSample.y;
+            positions[k + 2] = this._positionSample.z;
+
+            colorFn(j / this._contourSegments);  // this call updates this._colorSample
+            this._colorMapper.map(this._scalarSample.z, this._color);
+            colors[k] = this._color.r;
+            colors[k + 1] = this._color.g;
+            colors[k + 2] = this._color.b;
+        }
+
+        geometry.attributes.position.needsUpdate = true;
+        geometry.attributes.color.needsUpdate = true;
+        geometry.computeBoundingSphere();
+    }
+
+    #renderContours() {
+        for (const entry of this._uLines)
+            this.#updateLine(entry,
+                (v) => this._surface.sample(entry.u, v, this._positionSample),
+                (v) => this._normalizedScalarField.sample(entry.u, v, this._scalarSample));
+
+        for (const entry of this._vLines)
+            this.#updateLine(entry,
+                (u) => this._surface.sample(u, entry.v, this._positionSample),
+                (u) => this._normalizedScalarField.sample(u, entry.v, this._scalarSample));
+    }
+
+    #renderSurface() {
         let k = 0;
         let c = 0;
 
@@ -325,57 +311,11 @@ export class PlaneSurfaceView extends SurfaceView {
         if (this._dirty) {
             this._mesh.geometry.computeBoundingBox();
         }
-        this._dirty = false;
-    }
-}
-
-//
-// TODO DOES NOT WORK!
-//
-export class SurfaceWithContoursView extends Group {
-    constructor({
-        surfaceResolution = new SurfaceResolution(100, 100),
-        contourResolution = new SurfaceResolution(20, 20),
-        scalarField = new HeightScalarField(),
-        colorMapper = scalarField.recommendedColorMapper,
-        normalizer = new AdaptiveSymmetricNormalizer()
-    } = {}) {
-        super();
-        this._contourSurface = new IsoparametricContoursView({
-            resolution: contourResolution, scalarField, colorMapper, normalizer
-        });
-        this._planeSurface = new PlaneSurfaceView({
-            resolution: contourResolution, scalarField, colorMapper, normalizer
-        });
-        this.add(this._contourSurface, this._planeSurface);
-    }
-
-    bind(mathSurfaceDefinition) {
-        this._contourSurface.bind(mathSurfaceDefinition);
-        this._planeSurface.bind(mathSurfaceDefinition);
     }
 
     render() {
-        this._contourSurface.render();
-        this._planeSurface.render();
-    }
-
-    set colorMapper(colorMapper) {
-        this._contourSurface.colorMapper = colorMapper;
-        this._planeSurface.colorMapper = colorMapper;
-    }
-
-    set scalarField(scalarField) {
-        this._contourSurface.scalarField = scalarField;
-        this._planeSurface.scalarField = scalarField;
-    }
-
-    get boundingBox() {
-        const box = new Box3();
-
-        box.union(this._planeSurface.boundingBox);
-        box.union(this._contourSurface.boundingBox);
-
-        return box;
+        this.#renderSurface();
+        this.#renderContours();
+        this._dirty = false;
     }
 }

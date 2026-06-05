@@ -1,7 +1,7 @@
 import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
-    PlaneSurfaceView, EventController, IsoparametricContoursView, Vec3, SurfaceResolution,
-    ParametricSurface, Interval, GaussianCurvatureField, scalarFields, colorMappers, Domain
+    EventController, Vec3, ParametricSurface, GaussianCurvatureField, scalarFields,
+    colorMappers, Domain, StandardSurfaceView
 } from "../../../src/index.js";
 
 const sin = Math.sin;
@@ -36,38 +36,30 @@ class SurfaceController {
         })
     };
 
-    constructor(simulation, surfaceView, contoursView, options = {}) {
+    constructor(simulation, surfaceView, options = {
+        padding: 0.9,
+        translationY: -5
+    }) {
         this._simulation = simulation;
         this._surfaceView = surfaceView;    // PlaneSurfaceView
-        this._contoursView = contoursView;  // IsoparametricContoursView
         this._options = options;
         this._currentSurface = null;
     }
 
     get surface() { return this._currentSurface; }
     set surface(surfaceName) { this.switchTo(surfaceName); }
-    set colorMapper(colorMapper) {
-        this._surfaceView.colorMapper = colorMappers[colorMapper];
-        this._contoursView.colorMapper = colorMappers[colorMapper];
-    }
-    set scalarField(scalarField) {
-        this._surfaceView.scalarField = scalarFields[scalarField];
-        this._contoursView.scalarField = scalarFields[scalarField];
-    }
+    set colorMapper(colorMapper) { this._surfaceView.colorMapper = colorMappers[colorMapper]; }
+    set scalarField(scalarField) { this._surfaceView.scalarField = scalarFields[scalarField]; }
 
     switchTo(surfaceName) {
         const newSurface = SurfaceController.surfaces[surfaceName];
         if (!newSurface) throw new Error(`Surface "${surfaceName}" not found`);
 
-        if (this._currentSurface) {
+        if (this._currentSurface)
             this._surfaceView.dispose();
-            this._contoursView.dispose();
-        }
 
         this._currentSurface = newSurface;
         this._simulation.synchronize(newSurface.onceWith(this._surfaceView));
-        this._simulation.synchronize(newSurface.onceWith(this._contoursView));
-
         this._simulation.renderer.provideAxesAround(this._surfaceView);
         this._simulation.renderer.frameSceneOn(this._surfaceView, this._options);
     }
@@ -81,14 +73,8 @@ const renderer = ThreeJsRenderer
         fieldOfView: 20
     }));
 
-//
-// Surface view
-//
-const surfaceView = new PlaneSurfaceView({
-    scalarField: new GaussianCurvatureField()
-});
-const contoursView = new IsoparametricContoursView({
-    resolution: new SurfaceResolution(20, 40),
+
+const surfaceView = new StandardSurfaceView({
     scalarField: new GaussianCurvatureField()
 });
 
@@ -98,13 +84,8 @@ const simulation = Simulation
     .onClockTick()
     .start();
 
-const surfaceController = new SurfaceController(simulation, surfaceView, contoursView, {
-    padding: 0.9,
-    translationY: -5
-});
-
-// Initial surface
-surfaceController.switchTo("Bow curve");
+const surfaceController = new SurfaceController(simulation, surfaceView);
+surfaceController.switchTo("Bow curve"); // Initial surface
 
 const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl
@@ -122,8 +103,8 @@ eventController.attach(HtmlControl
 eventController.attach(HtmlControl
     .withElementId("showContours")
     .forType("click")
-    .to(contoursView)
-    .withProperty("visible"));
+    .to(surfaceView)
+    .withProperty("contoursVisible"));
 
 eventController.attach(HtmlControl
     .withElementId("showWireframe")

@@ -3,10 +3,11 @@
 
 ### ❤️ Visualizing the beauty of math &amp; physics
 
-
 Helion is a browser-native framework for mathematical and physical modeling,
 simulation, and visualization. It is built around high-level mathematical
 concepts such as fields, parametric geometries, operators, and numerical solvers.
+The genuine abstraction in Helion is not based on "objects" but on
+transformations between mathematical representations instead.
 
 Helion provides a [low-cognitive-overhead](https://en.wikipedia.org/wiki/Cognitive_load) environment for expressing
 mathematical and physical systems, where models, simulations, and visualizations
@@ -15,11 +16,10 @@ remain tightly synchronized and can be explored interactively in the browser.
 Helion is the product of decades of exploration in mathematics, physics, programming,
 and education, driven by a lifelong fascination with the beauty and patterns of nature.
 
-### 🧠 Core ideas
+#### 🧠 Core ideas
 <div class="header_line"></div>
 
-Helion provides a _semantic_ layer for mathematics and physics visualization
-on the web. A Helion program should read like a laboratory notebook with
+A Helion program should read like a laboratory notebook with
 one or more scientific experiment scripts, that
 you can read and understand almost without knowing the framework at all.
 

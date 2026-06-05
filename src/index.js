@@ -41,6 +41,6 @@ export {
 } from "./view/colormappers.js";
 
 export {
-    SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView, SurfaceWithContoursView, SurfaceResolution
+    SphereSurfaceView, SurfaceResolution, StandardSurfaceView
 } from "./view/3d/surfaces/surfaceviews.js"
 

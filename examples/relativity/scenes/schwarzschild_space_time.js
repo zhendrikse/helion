@@ -1,7 +1,7 @@
 import {Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
     Floor, Sphere, ThreeJsRenderer, ThreeJsRenderOptions, Trail, Canvas, Vec3,
-    EventController, HtmlDiv, Overlay, Simulation, Surface, IsoparametricContoursView,
+    EventController, HtmlDiv, Overlay, Simulation, Surface, StandardSurfaceView,
     RadialSymmetricBody, Sun
 } from "../../../src/index.js";
 
@@ -273,7 +273,8 @@ renderer.add(grid);
 renderer.add(photonRing);
 
 // Curved space-time: Flamm's paraboloid
-const spaceTimeCone = new IsoparametricContoursView();
+const spaceTimeCone = new StandardSurfaceView();
+spaceTimeCone.surfaceVisible = false;
 const simulation = Simulation
     .with(renderer)
     .synchronize(coneGeometry.onceWith(spaceTimeCone))

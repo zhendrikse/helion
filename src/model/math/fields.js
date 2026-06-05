@@ -18,16 +18,18 @@ export class Domain {
 
 /**
  * Generic field type.
- *
- * Examples:
- * │
- * ├── ParametricSurface
- * ├── HeightScalarField
- * ├── MeanCurvatureField
- * ├── GaussianCurvatureField
- * ├── GeodesicDistanceField
- * ├── HeightScalarField
- * ├── ...
+ * 
+ * Field
+ *  ├─ Surface
+ *  │   ├─ ParametricSurface
+ *  │   └─ MultivariateFunctionSurface
+ *  │
+ *  ├─ HeightScalarField
+ *  ├─ MeanCurvatureField
+ *  ├─ GaussianCurvatureField
+ *  ├─ ...
+ *  │
+ *  └─ DiscreteScalarField
  */
 export class Field extends MathPhysicsModelBehavior {
     sample(u, v, target) {}
