@@ -7,17 +7,12 @@ import '../../assets/styles.css';
 #### ❤️ Visualizing the beauty of math &amp; physics
 <div class="header_line"></div>
 
-
 Helion is a browser-native framework for mathematical and physical modeling,
 simulation, and visualization. It is built around high-level mathematical
 concepts such as fields, parametric geometries, operators, and numerical solvers.
 
 The genuine abstraction in Helion is not based on objects but on
 transformations between mathematical representations instead:
-
-```
-Field → Operator → Solver → Visualization
-```
 
 Helion is the product of decades of exploration in mathematics, physics, programming,
 and education, driven by a lifelong fascination with the beauty and patterns of nature.
@@ -29,25 +24,21 @@ Helion provides a [low-cognitive-overhead](https://en.wikipedia.org/wiki/Cogniti
 mathematical and physical systems, where models, simulations, and visualizations
 remain tightly synchronized and can be explored interactively in the browser.
 
-```js
-// 1. Do your physics and math
-const coneGeometry = new SchwarzschildSurface(sunMass);
-const spring = new Spring();
-
-// 2. Choose renderer (visual layer)
-const renderer = ThreeJsRenderer.on(HtmlDiv
-  .withElementId("canvasWrapper")
-  .contains(Canvas.withElementId("canvas")))
-
-// 3. Bind physics objects to visual representations
-Simulation
-  .with(renderer)
-  .synchronize(spring.alwaysWith(new Helix()))
-  .synchronize(coneGeometry.onceWith(new IsoparametricContoursView()))
-  .onScale(1e-10)
-  .onClockTick((clockTime, simulatedTime) => {
-    // physics update
-});
+```
+   ┌──────────────┐
+   │    View      │
+   └──────┬───────┘
+          │ reads
+          ▼
+┌──────────────┐     applies    ┌──────────────┐
+│ Field/object │◄───────────────│   Solver     │
+│   (state)    │                │ (evolution)  │
+└──────┬───────┘                └──────┬───────┘
+       │ uses                          │ uses
+       ▼                               ▼
+   Operator(s)                  Equation (law)
+ (Laplace, FFT,                 (physics model)
+  gradient, etc.)
 ```
 
 👉 JavaScript / browser-native (no installation or configuration)<br/>

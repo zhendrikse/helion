@@ -40,7 +40,7 @@ class View extends Group {
     }
 
     set colorMapper(colorMapper) { this._colorMapper = colorMapper; }
-
+    set normalizer(normalizer) { this._normalizer = normalizer; }
     set scalarField(scalarField) {
         this._scalarField = scalarField;
         this._scalarField.surface = this._surface;
@@ -217,6 +217,25 @@ export class StandardSurfaceView extends View {
     }
 
     set wireframe(value) { this._mesh.material.wireframe = value; }
+
+    get boundingBox() {
+        const box = new Box3();
+
+        if (this._mesh.visible) {
+            this._mesh.geometry.computeBoundingBox();
+            if (this._mesh.geometry.boundingBox)
+                box.union(this._mesh.geometry.boundingBox);
+        }
+
+        for (const entry of [...this._uLines, ...this._vLines]) {
+            const geometry = entry.line.geometry;
+            geometry.computeBoundingBox();
+            if (geometry.boundingBox)
+                box.union(geometry.boundingBox);
+        }
+
+        return box;
+    }
 
     #createLine() {
         const geometry = new BufferGeometry();
