@@ -10,8 +10,9 @@ import {
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
     DynamicDrawUsage, BufferAttribute, Box3
 } from "three";
-import { HeightScalarField } from "../../../model/math/surface.js";
-import {AdaptiveSymmetricNormalizer, NormalizedScalarField} from "../../../model/math/math.js";
+import { HeightScalarField } from "../../../model/math/fields.js";
+import { AdaptiveSymmetricNormalizer } from "../../../model/math/math.js";
+import { NormalizedScalarField } from "../../../model/math/fields.js";
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) {
@@ -39,6 +40,7 @@ export class SurfaceView extends Group {
     }
 
     set colorMapper(colorMapper) { this._colorMapper = colorMapper; }
+
     set scalarField(scalarField) {
         this._scalarField = scalarField;
         this._scalarField.surface = this._surface;
@@ -103,7 +105,8 @@ export class IsoparametricContoursView extends SurfaceView {
         this._uLines = [];
         this._vLines = [];
 
-        this._target = new Vector3();
+        this._positionSample = new Vector3();
+        this._scalarSample = new Vector3();
         this._color = new Color();
     }
 
@@ -160,16 +163,14 @@ export class IsoparametricContoursView extends SurfaceView {
 
         const colors = geometry.attributes.color.array;
         for (let j = 0; j <= this._segments; j++) {
-            sampleFn(j / this._segments);
             const k = 3 * j;
+            sampleFn(j / this._segments); // This call updates this._positionSample
+            positions[k] = this._positionSample.x;
+            positions[k + 1] = this._positionSample.y;
+            positions[k + 2] = this._positionSample.z;
 
-            // position
-            positions[k] = this._target.x;
-            positions[k + 1] = this._target.y;
-            positions[k + 2] = this._target.z;
-
-            // color
-            this._colorMapper.map(colorFn(j / this._segments), this._color);
+            colorFn(j / this._segments);  // this call updates this._colorSample
+            this._colorMapper.map(this._scalarSample.z, this._color);
             colors[k] = this._color.r;
             colors[k + 1] = this._color.g;
             colors[k + 2] = this._color.b;
@@ -183,13 +184,13 @@ export class IsoparametricContoursView extends SurfaceView {
     render() {
         for (const entry of this._uLines)
             this.#updateLine(entry,
-                (v) => this._surface.sample(entry.u, v, this._target),
-                (v) => this._normalizedScalarField.scalarValueAt(entry.u, v));
+                (v) => this._surface.sample(entry.u, v, this._positionSample),
+                (v) => this._normalizedScalarField.sample(entry.u, v, this._scalarSample));
 
         for (const entry of this._vLines)
             this.#updateLine(entry,
-                (u) => this._surface.sample(u, entry.v, this._target),
-                (u) => this._normalizedScalarField.scalarValueAt(u, entry.v));
+                (u) => this._surface.sample(u, entry.v, this._positionSample),
+                (u) => this._normalizedScalarField.sample(u, entry.v, this._scalarSample));
 
 
         this._dirty = false;
@@ -206,7 +207,8 @@ export class SphereSurfaceView extends SurfaceView {
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super({resolution, colorMapper, scalarField, normalizer});
-        this._target = new Vector3();
+        this._positionSample = new Vector3();
+        this._scalarSample = new Vector3();
         this._dummy = new Object3D();
         this._color = new Color();
 
@@ -245,12 +247,13 @@ export class SphereSurfaceView extends SurfaceView {
             const u = i / this._resolution.u;
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
-                this._surface.sample(u, v, this._target);
-                this._dummy.position.copy(this._target);
+                this._surface.sample(u, v, this._positionSample);
+                this._dummy.position.copy(this._positionSample);
                 this._dummy.updateMatrix();
                 this._mesh.setMatrixAt(index, this._dummy.matrix);
 
-                this._colorMapper.map(this._normalizedScalarField.scalarValueAt(u, v), this._color);
+                this._normalizedScalarField.sample(u, v, this._scalarSample);
+                this._colorMapper.map(this._scalarSample.z, this._color);
                 const k = 3 * index;
                 this._colorArray[k] = this._color.r;
                 this._colorArray[k + 1] = this._color.g;
@@ -287,7 +290,8 @@ export class PlaneSurfaceView extends SurfaceView {
         this._positions = geometry.attributes.position.array;
         this._colors = new Float32Array((resolution.u + 1) * (resolution.v + 1) * 3);
         geometry.setAttribute("color", new BufferAttribute(this._colors, 3));
-        this._target = new Vector3();
+        this._positionSample = new Vector3();
+        this._scalarSample = new Vector3();
         this._color = new Color();
     }
 
@@ -301,12 +305,13 @@ export class PlaneSurfaceView extends SurfaceView {
             const u = i / this._resolution.u;
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
-                this._surface.sample(u, v, this._target);
-                this._positions[k++] = this._target.x;
-                this._positions[k++] = this._target.y;
-                this._positions[k++] = this._target.z;
+                this._surface.sample(u, v, this._positionSample);
+                this._positions[k++] = this._positionSample.x;
+                this._positions[k++] = this._positionSample.y;
+                this._positions[k++] = this._positionSample.z;
 
-                this._colorMapper.map(this._normalizedScalarField.scalarValueAt(u, v), this._color);
+                this._normalizedScalarField.sample(u, v, this._scalarSample);
+                this._colorMapper.map(this._scalarSample.z, this._color);
                 this._colors[c++] = this._color.r;
                 this._colors[c++] = this._color.g;
                 this._colors[c++] = this._color.b;
@@ -321,5 +326,56 @@ export class PlaneSurfaceView extends SurfaceView {
             this._mesh.geometry.computeBoundingBox();
         }
         this._dirty = false;
+    }
+}
+
+//
+// TODO DOES NOT WORK!
+//
+export class SurfaceWithContoursView extends Group {
+    constructor({
+        surfaceResolution = new SurfaceResolution(100, 100),
+        contourResolution = new SurfaceResolution(20, 20),
+        scalarField = new HeightScalarField(),
+        colorMapper = scalarField.recommendedColorMapper,
+        normalizer = new AdaptiveSymmetricNormalizer()
+    } = {}) {
+        super();
+        this._contourSurface = new IsoparametricContoursView({
+            resolution: contourResolution, scalarField, colorMapper, normalizer
+        });
+        this._planeSurface = new PlaneSurfaceView({
+            resolution: contourResolution, scalarField, colorMapper, normalizer
+        });
+        this.add(this._contourSurface, this._planeSurface);
+    }
+
+    bind(mathSurfaceDefinition) {
+        this._contourSurface.bind(mathSurfaceDefinition);
+        this._planeSurface.bind(mathSurfaceDefinition);
+    }
+
+    render() {
+        this._contourSurface.render();
+        this._planeSurface.render();
+    }
+
+    set colorMapper(colorMapper) {
+        this._contourSurface.colorMapper = colorMapper;
+        this._planeSurface.colorMapper = colorMapper;
+    }
+
+    set scalarField(scalarField) {
+        this._contourSurface.scalarField = scalarField;
+        this._planeSurface.scalarField = scalarField;
+    }
+
+    get boundingBox() {
+        const box = new Box3();
+
+        box.union(this._planeSurface.boundingBox);
+        box.union(this._contourSurface.boundingBox);
+
+        return box;
     }
 }

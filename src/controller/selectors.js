@@ -1,7 +1,7 @@
 import {
     CurvednessField,
     GaussianCurvatureField, HeightScalarField, MeanCurvatureField, PrincipalCurvatureField, ShapeIndexField
-} from "../model/math/surface.js";
+} from "../model/math/fields.js";
 import {
     GradientColorMapper, InfernoColorMapper, JetColorMapper, RdYlBuColorMapper,
     SeismicColorMapper, UniformColorMapper, ViridisColorMapper, WaterAlternativeColorMapper,

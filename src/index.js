@@ -5,18 +5,17 @@ export {
 } from "./model/phys/physics.js";
 
 export {
-    VectorField, Range, Vec3, DiscreteScalarField, FixedIntervalNormalizer,
-    FFT, ScalarField, normalDistribution, randomArbitrary, randomInt, meshgrid,
-    factorial, linspace, FieldStatistics, DiscreteComplexField, Interval,
-    ParametricSurface, Domain
+    VectorField, Range, Vec3, factorial, linspace, Interval,
+    normalDistribution, randomArbitrary, randomInt, meshgrid,
 } from "./model/math/math.js";
 
 export {
-    FiniteDifferenceMethodField, Surface, PDESurface, ScalarFieldSurface,
     GaussianCurvatureField, MeanCurvatureField, PrincipalCurvatureField, HeightScalarField,
-    ShapeIndexField, CurvednessField
-} from "./model/math/surface.js";
+    ShapeIndexField, CurvednessField, ParametricSurface, MultivariateFunctionSurface, Domain,
+    Surface, DiscreteScalarField, FieldStatistics, DiscreteComplexField
+} from "./model/math/fields.js"
 
+export { FFT } from "./model/math/numerics/operators/fourier.js";
 export { scalarFields, colorMappers } from "./controller/selectors.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { Sun } from "./view/3d/astro/sun.js";
@@ -42,6 +41,6 @@ export {
 } from "./view/colormappers.js";
 
 export {
-    SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView, SurfaceResolution
+    SphereSurfaceView, IsoparametricContoursView, PlaneSurfaceView, SurfaceWithContoursView, SurfaceResolution
 } from "./view/3d/surfaces/surfaceviews.js"
 

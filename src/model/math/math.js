@@ -225,7 +225,7 @@ export class Interval {
         if (this.to > value) this.to = value;
     }
 
-    scaleValue = (value) => this.to === this.from ? 0 : (value - this.from) / this.range;
+    normalize = (value) => this.to === this.from ? 0 : (value - this.from) / this.range;
 
     get range() {
         return (this.from === Infinity || this.to === Infinity) ? Infinity : this.to - this.from;
@@ -240,40 +240,12 @@ export class Interval {
 }
 
 
-export class Field extends MathPhysicsModelBehavior {
-    sample(point) {}
-}
 
-export class Domain {
-    constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
-        this.xRange = new Interval(xRange[0], xRange[1]);
-        this.yRange = new Interval(yRange[0], yRange[1]);
-    }
-}
 
-/**
- * A surface defined as (u, v) => (x, y, z)
- */
-export class ParametricSurface extends Field {
-    constructor({
-        domain = new Domain(),
-        x = (u, v) => u,
-        y = (u, v) => v,
-        z = (u, v) => 0
-    } = {}) {
-        super();
-        this._domain = domain;
-        this._x = x;
-        this._y = y;
-        this._z = z;
-    }
 
-    sample(u, v, target) {
-        const uu = this._domain.xRange.scaleUnitParameter(u);
-        const vv = this._domain.yRange.scaleUnitParameter(v);
-        target.set(this._x(uu, vv), this._z(uu, vv), this._y(uu, vv));
-    }
-}
+
+
+
 
 
 export class VectorFieldValue extends MathPhysicsModelBehavior {
@@ -291,31 +263,6 @@ export class VectorFieldValue extends MathPhysicsModelBehavior {
             position: this.position.clone(),
             axis: this.axis.clone(),
         });
-    }
-}
-
-export class FieldStatistics {
-    static max(scalarField) {
-        let max = -Infinity;
-
-        for (let i = 0; i < scalarField.nx; i++)
-            for (let j = 0; j < scalarField.ny; j++) {
-                const value = scalarField.valueAt(i, j);
-                if (value > max)
-                    max = value;
-            }
-
-        return max;
-    }
-
-    static maxMagnitude(field) {
-        let max = 0;
-        for (let i = 0; i < field.nx; i++)
-            for (let j = 0; j < field.ny; j++)
-                if (field.magnitudeAt(i, j) > max)
-                    max = field.magnitudeAt(i, j);
-
-        return max;
     }
 }
 
@@ -409,18 +356,6 @@ export class Complex {
     // }
 }
 
-export class FixedIntervalNormalizer {
-    constructor(valueInterval) {
-        this._interval = valueInterval;
-    }
-
-    normalize(value) {
-        return this._interval.scaleValue(value);
-    }
-
-    reset() {}
-}
-
 export class AdaptiveSymmetricNormalizer {
     constructor({ smoothing = 0.05 } = {}) {
         this._smoothing = smoothing;
@@ -448,101 +383,6 @@ export class AdaptiveSymmetricNormalizer {
     }
 }
 
-/**
- * Abstract class representing a real/complex, continuous/discrete scalar field.
- */
-export class ScalarField extends MathPhysicsModelBehavior {
-    scalarValueAt(x, y) {
-        throw new Error("You invoked the method of an abstract base class. Please create a subclass first.");
-    }
-
-    updateWith(newTime) {}
-}
-
-/**
- * This is the “adapter” between the physics and rendering.
- */
-export class NormalizedScalarField extends ScalarField {
-    constructor(scalarField, normalizer) {
-        super();
-        this._scalarField = scalarField;
-        this._normalizer = normalizer;
-    }
-
-    reset() { this._normalizer.reset(); }
-
-    scalarValueAt(u, v) {
-        const raw = this._scalarField.scalarValueAt(u, v);
-        this._normalizer.observe?.(raw);
-        return this._normalizer.normalize(raw);
-    }
-}
-
-/**
- * Discrete scalar field, i.e. a scalar field on a grid.
- */
-export class DiscreteScalarField extends ScalarField {
-    constructor({
-        nx = 100,
-        ny = 100
-    } = {}) {
-        super();
-        this._nx = nx;
-        this._ny = ny;
-        this._data = new Float32Array(nx * ny);
-    }
-
-    get nx() { return this._nx; }
-    get ny() { return this._ny; }
-
-    scalarValueAt(x, y) {
-        // bilinear interpolation
-    }
-
-    valueAt(i, j) {
-        return this._data[i + this._nx * j];
-    }
-
-    setValueAt(i, j, value) {
-        this._data[i + this._nx * j] = value;
-    }
-}
-
-/**
- * Discrete complex scalar field, i.e. a complex scalar field on a grid.
- */
-export class DiscreteComplexField extends ScalarField {
-    constructor({
-        nx = 128,
-        ny = 128,
-        real = Array.from({ length: nx },() => new Float32Array(ny)),
-        imag = Array.from({ length: nx },() => new Float32Array(ny)),
-    } = {}) {
-        super();
-        this.real = real;
-        this.imag = imag;
-        this.nx = nx;
-        this.ny = ny;
-    }
-
-    phaseAt(i, j) {
-        const re = this.real[i][j];
-        const im = this.imag[i][j];
-        return Math.atan2(im, re); // [-π, π]
-    }
-
-    magnitudeAt(i, j) {
-        const re = this.real[i][j];
-        const im = this.imag[i][j];
-        return Math.sqrt(re * re + im * im);
-    }
-
-    transformWith(transformation) {
-        transformation(this);
-        return this;
-    }
-}
-
 // TODO This is a vector representation of a complex scalar value,
 // rotating in the complex plane, coloured by its phase, and size
 // equal to the abs value.
@@ -565,121 +405,3 @@ export class ComplexScalarFieldValue {
     get axis() { return new Vec3(0, this.value.re, this.value.im); }
 }
 
-
-//
-// js/fft-esm.js
-// ESM-versie van fft.js suitable for browser
-//
-export class FFT {
-    constructor(size) {
-        this._size = size | 0;
-        if (this._size <= 1) throw new Error("Size must be > 1");
-
-        this._twiddles = new Array(this._size);
-        for (let i = 0; i < this._size; i++) {
-            const phase = -2 * Math.PI * i / this._size;
-            this._twiddles[i] = [Math.cos(phase), Math.sin(phase)];
-        }
-
-        this._bitReverse = new Array(this._size);
-        const n = this._size;
-        const bits = Math.floor(Math.log2(n));
-        for (let i = 0; i < n; i++) {
-            let x = i;
-            let y = 0;
-            for (let j = 0; j < bits; j++) {
-                y = (y << 1) | (x & 1);
-                x >>= 1;
-            }
-            this._bitReverse[i] = y;
-        }
-    }
-
-    transform(outRe, outIm, inRe, inIm) {
-        const n = this._size;
-        for (let i = 0; i < n; i++) {
-            outRe[i] = inRe[this._bitReverse[i]];
-            outIm[i] = inIm[this._bitReverse[i]];
-        }
-
-        for (let size = 2; size <= n; size <<= 1) {
-            const half = size >> 1;
-            const step = n / size;
-            for (let i = 0; i < n; i += size) {
-                for (let j = 0; j < half; j++) {
-                    const k = j * step;
-                    const [twRe, twIm] = this._twiddles[k];
-                    const l = i + j;
-                    const r = i + j + half;
-
-                    const tRe = outRe[r] * twRe - outIm[r] * twIm;
-                    const tIm = outRe[r] * twIm + outIm[r] * twRe;
-
-                    outRe[r] = outRe[l] - tRe;
-                    outIm[r] = outIm[l] - tIm;
-                    outRe[l] += tRe;
-                    outIm[l] += tIm;
-                }
-            }
-        }
-    }
-
-    inverseTransform(outRe, outIm, inRe, inIm) {
-        const n = this._size;
-        // conjugate
-        const tempRe = inRe.slice();
-        const tempIm = inIm.map(x => -x);
-        this.transform(outRe, outIm, tempRe, tempIm);
-        // normalize and conjugate back
-        for (let i = 0; i < n; i++) {
-            outRe[i] /= n;
-            outIm[i] = -outIm[i] / n;
-        }
-    }
-
-
-    static fftShift2D(field) {
-        const N = field.real.length;
-        const half = N >> 1;
-        const real =  Array.from({ length: N },() => new Float32Array(N));
-        const imag = Array.from({ length: N },() => new Float32Array(N));
-
-        for (let i = 0; i < N; i++)
-            for (let j = 0; j < N; j++) {
-                real[i][j] = field.real[(i + half) % N][(j + half) % N];
-                imag[i][j] = field.imag[(i + half) % N][(j + half) % N];
-            }
-
-        field.real = real;
-        field.imag = imag;
-    }
-
-    static fft2D(gridField) {
-        const size = gridField.real.length;
-        const fft = new FFT(size);
-        // rows
-        for (let i = 0; i < size; i++)
-            fft.transform(gridField.real[i], gridField.imag[i], gridField.real[i].slice(), gridField.imag[i].slice());
-
-        // columns
-        for (let j = 0; j < size; j++) {
-            const colRe = new Array(size);
-            const colIm = new Array(size);
-
-            for (let i = 0; i < size; i++) {
-                colRe[i] = gridField.real[i][j];
-                colIm[i] = gridField.imag[i][j];
-            }
-
-            const outRe = new Array(size);
-            const outIm = new Array(size);
-
-            fft.transform(outRe, outIm, colRe, colIm);
-
-            for (let i = 0; i < size; i++) {
-                gridField.real[i][j] = outRe[i];
-                gridField.imag[i][j] = outIm[i];
-            }
-        }
-    }
-}

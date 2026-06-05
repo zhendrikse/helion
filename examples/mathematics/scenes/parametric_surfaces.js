@@ -4,37 +4,40 @@ import {
     ParametricSurface, Interval, GaussianCurvatureField, scalarFields, colorMappers, Domain
 } from "../../../src/index.js";
 
-const surfaces = {
-    "Bow curve": new ParametricSurface({
-        domain: new Domain([0, 2 * Math.PI], [0, 4 * Math.PI]),
-        x: (u, v) => (1 * Math.sin(u) + 2) * Math.sin(v),
-        y: (u, v) => (1 * Math.sin(u) + 2) * Math.cos(v),
-        z: (u, v) => 1 * Math.cos(u) + 2 * Math.cos(0.5 * v)
-    }),
-    "Klein bottle": new ParametricSurface({
-        domain: new Domain([0, 2 * Math.PI], [0, 2 * Math.PI]),
-        x: (u, v) => -(5 - 2 * Math.cos(u)) * Math.cos(v) + 6 * (Math.sin(u) + 1) * Math.cos(u),
-        y: (u, v) =>  (5 - 2 * Math.cos(u)) * Math.sin(v),
-        z: (u, v) => -16 * Math.sin(u)
-    }),
-    "Mobius strip": new ParametricSurface({
-        domain: new Domain([-1, 1], [0, 2 * Math.PI]),
-        x: (u, v) => (2 + u * Math.cos(v / 2)) * Math.cos(v),
-        y: (u, v) => u * Math.sin(v / 2),
-        z: (u, v) => (2 + u * Math.cos(v / 2)) * Math.sin(v)
-    }),
-    "Torus": new ParametricSurface({
-        domain: new Domain([0, 2 * Math.PI], [0, 2 * Math.PI]),
-        x: (u, v) => Math.cos(u) * (3 + 1.5 * Math.cos(v)),
-        y: (u, v) => Math.sin(u) * (3 + 1.5 * Math.cos(v)),
-        z: (u, v) => 2 * Math.sin(v)
-    })
-};
+const sin = Math.sin;
+const cos = Math.cos;
+const PI = Math.PI;
 
 class SurfaceController {
-    constructor(simulation, surfaces, surfaceView, contoursView, options = {}) {
+    static surfaces = {
+        "Bow curve": new ParametricSurface({
+            domain: new Domain([0, 2 * PI], [0, 4 * PI]),
+            x: (u, v) => (1 * sin(u) + 2) * sin(v),
+            y: (u, v) => (1 * sin(u) + 2) * cos(v),
+            z: (u, v) => 1 * cos(u) + 2 * cos(0.5 * v)
+        }),
+        "Klein bottle": new ParametricSurface({
+            domain: new Domain([0, 2 * PI], [0, 2 * PI]),
+            x: (u, v) => -(5 - 2 * cos(u)) * cos(v) + 6 * (sin(u) + 1) * cos(u),
+            y: (u, v) =>  (5 - 2 * cos(u)) * sin(v),
+            z: (u, v) => -16 * sin(u)
+        }),
+        "Mobius strip": new ParametricSurface({
+            domain: new Domain([-1, 1], [0, 2 * PI]),
+            x: (u, v) => (2 + u * cos(v / 2)) * cos(v),
+            y: (u, v) => u * sin(v / 2),
+            z: (u, v) => (2 + u * cos(v / 2)) * sin(v)
+        }),
+        "Torus": new ParametricSurface({
+            domain: new Domain([0, 2 * PI], [0, 2 * PI]),
+            x: (u, v) => cos(u) * (3 + 1.5 * cos(v)),
+            y: (u, v) => sin(u) * (3 + 1.5 * cos(v)),
+            z: (u, v) => 2 * sin(v)
+        })
+    };
+
+    constructor(simulation, surfaceView, contoursView, options = {}) {
         this._simulation = simulation;
-        this._surfaces = surfaces;          // object: { name: ParametricSurface, ... }
         this._surfaceView = surfaceView;    // PlaneSurfaceView
         this._contoursView = contoursView;  // IsoparametricContoursView
         this._options = options;
@@ -53,7 +56,7 @@ class SurfaceController {
     }
 
     switchTo(surfaceName) {
-        const newSurface = this._surfaces[surfaceName];
+        const newSurface = SurfaceController.surfaces[surfaceName];
         if (!newSurface) throw new Error(`Surface "${surfaceName}" not found`);
 
         if (this._currentSurface) {
@@ -70,9 +73,6 @@ class SurfaceController {
     }
 }
 
-//
-// Renderer
-//
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("parametricSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("parametricSurfacesCanvas")))
@@ -98,14 +98,10 @@ const simulation = Simulation
     .onClockTick()
     .start();
 
-// surfaces: object met ParametricSurface instances
-const surfaceController = new SurfaceController(
-    simulation,
-    surfaces,
-    surfaceView,
-    contoursView,
-    { padding: 0.9, translationY: -5 }
-);
+const surfaceController = new SurfaceController(simulation, surfaceView, contoursView, {
+    padding: 0.9,
+    translationY: -5
+});
 
 // Initial surface
 surfaceController.switchTo("Bow curve");

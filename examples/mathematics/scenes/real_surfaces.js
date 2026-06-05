@@ -1,71 +1,74 @@
 import {
-    ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl, ScalarFieldSurface,
-    ScalarField, EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3,
-    FixedIntervalNormalizer, Interval, GradientColorMapper
+    ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
+    EventController, IsoparametricContoursView, PlaneSurfaceView, Vec3,
+    Interval, GradientColorMapper, MultivariateFunctionSurface, Domain,
+    colorMappers, scalarFields
 } from "../../../src/index.js";
 
-class MultiVariateFunction extends ScalarField {
-    constructor({
-        amplitude = 2
-    } = {}) {
-        super();
-        this._amplitude = amplitude;
-        this._time = 0;
-        this._animate = false;
+const pi = Math.PI;
+const exp = Math.exp;
+const sin = Math.sin;
+const rSquared = (x, y) => x * x + y * y;
+
+class SurfaceController {
+    static surfaces = {
+        "Peak": {
+            "amplitude": 7.5,
+            "surface": new MultivariateFunctionSurface({
+                domain: new Domain([-2 * pi, 2 * pi], [-2 * pi, 2 * pi]),
+                z: (x, y, t) => SurfaceController.surfaces["Peak"].amplitude *
+                    exp(-rSquared(x, y) / 4) * (1 - sin(pi * (t - 0.5)))
+            }),
+        },
+        "Ripple": {
+            "amplitude": 1,
+            "surface": new MultivariateFunctionSurface({
+                domain: new Domain([-pi, pi], [-pi, pi]),
+                z: (x, y, t) => SurfaceController.surfaces["Ripple"].amplitude *
+                    sin(1.25 * rSquared(x, y) - pi * t)
+            })
+        }
+    };
+
+    constructor(simulation, surfaceView, contoursView, options = {}) {
+        this._simulation = simulation;
+        this._surfaceView = surfaceView;    // PlaneSurfaceView
+        this._contoursView = contoursView;  // IsoparametricContoursView
+        this._options = options;
+        this._currentSurface = null;
     }
 
-    updateWith(newTime) {
-        if (this._animate)
-            this._time = newTime;
+    get surface() { return this._currentSurface; }
+    set surface(surfaceName) { this.switchTo(surfaceName); }
+    set colorMapper(colorMapper) {
+        this._surfaceView.colorMapper = colorMappers[colorMapper];
+        this._contoursView.colorMapper = colorMappers[colorMapper];
+    }
+    set scalarField(scalarField) {
+        this._surfaceView.scalarField = scalarFields[scalarField];
+        this._contoursView.scalarField = scalarFields[scalarField];
     }
 
-    scalarValueAt(x, y) {
-        return this.f(x, y, this._time);
-    }
+    set time(time) { this._currentSurface.time = time; }
 
-    f(x, y, t) {
-        throw new Error("Implement f(x, y, t)!")
-    }
+    switchTo(surfaceName) {
+        const newSurface = SurfaceController.surfaces[surfaceName].surface;
+        if (!newSurface) throw new Error(`Surface "${surfaceName}" not found`);
 
-    get amplitude() { return this._amplitude; }
-    set animate(value) { this._animate = value; }
+        if (this._currentSurface) {
+            this._surfaceView.dispose();
+            this._contoursView.dispose();
+        }
+
+        this._currentSurface = newSurface;
+        this._simulation.synchronize(newSurface.alwaysWith(this._surfaceView));
+        this._simulation.synchronize(newSurface.alwaysWith(this._contoursView));
+
+        this._simulation.renderer.provideAxesAround(this._surfaceView);
+        this._simulation.renderer.frameSceneOn(this._surfaceView, this._options);
+    }
 }
 
-class Ripple extends MultiVariateFunction {
-    constructor() {
-        super({ amplitude: 2 });
-    }
-
-    f(x, y, t) {
-        const r = Math.sqrt(x * x + y * y);
-        return this._amplitude * Math.sin(Math.PI * r - Math.PI * t);
-    }
-}
-
-class Peak extends MultiVariateFunction {
-    constructor() {
-        super({ amplitude: 5 });
-    }
-
-    f(x, y, t) {
-        const r2 = -x * x - y * y;
-        return this._amplitude * Math.exp(.25 * r2) * (1 - Math.sin(Math.PI * t - Math.PI * 0.5));
-    }
-}
-
-//
-// Math objects
-//
-const scalarField = new Ripple();
-const heightFieldSurface = new ScalarFieldSurface({
-    scalarField,
-    uRange: new Interval(-2 * Math.PI, 2 * Math.PI),
-    vRange: new Interval(-2 * Math.PI, 2 * Math.PI),
-});
-
-//
-// Renderer
-//
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("realSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("realSurfacesCanvas")))
@@ -74,60 +77,52 @@ const renderer = ThreeJsRenderer
         fieldOfView: 20
     }));
 
-//
-// Simulation
-//
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(0.016)
-    .onClockTick((clockTime, simulatedTime) => scalarField.updateWith(simulatedTime), 1)
-    .start();
-
-//
-// Surface views
-//
 const surfaceView = new PlaneSurfaceView({
     colorMapper: new GradientColorMapper(),
-    normalizer: new FixedIntervalNormalizer(new Interval(0, scalarField.amplitude))
+    normalizer: new Interval(0, SurfaceController.surfaces["Peak"].amplitude)
 });
 const contoursView = new IsoparametricContoursView({
     colorMapper: new GradientColorMapper(),
-    normalizer: new FixedIntervalNormalizer(new Interval(0, scalarField.amplitude))
+    normalizer: new Interval(0, SurfaceController.surfaces["Peak"].amplitude)
 });
 
-simulation.synchronize(heightFieldSurface.alwaysWith(surfaceView));
-simulation.synchronize(heightFieldSurface.alwaysWith(contoursView));
+const simulation = Simulation
+    .with(renderer)
+    .incrementsTimeBy(0.016);
 
-renderer.provideAxesAround(surfaceView);
-renderer.frameSceneOn(surfaceView, { padding: 0.9, translationY: -5 });
+const surfaceController = new SurfaceController(simulation, surfaceView, contoursView, {
+    padding: 0.9,
+    translationY: -5
+});
+
+simulation
+    .onClockTick((clockTime, simulatedTime) => surfaceController.time = simulatedTime)
+    .start();
+
+// Initial surface
+surfaceController.switchTo("Peak");
 
 const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl
     .withElementId("colorMapSelect")
     .forType("change")
-    .to(contoursView)
-    .withProperty("colorMapper"));
-
-eventController.attach(HtmlControl
-    .withElementId("colorMapSelect")
-    .forType("change")
-    .to(surfaceView)
+    .to(surfaceController)
     .withProperty("colorMapper"));
 
 eventController.attach(HtmlControl
     .withElementId("showContours")
     .forType("click")
-    .to(contoursView)
+    .to(surfaceController)
     .withProperty("visible"));
 
-eventController.attach(HtmlControl
-    .withElementId("animate")
-    .forType("click")
-    .to(scalarField)
-    .withProperty("animate"));
+// eventController.attach(HtmlControl
+//     .withElementId("animate")
+//     .forType("click")
+//     .to(scalarField)
+//     .withProperty("animate"));
 
 eventController.attach(HtmlControl
     .withElementId("showWireframe")
     .forType("click")
-    .to(surfaceView)
+    .to(surfaceController)
     .withProperty("wireframe"));

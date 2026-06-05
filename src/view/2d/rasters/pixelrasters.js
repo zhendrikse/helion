@@ -1,4 +1,4 @@
-import {FieldStatistics} from "../../../model/math/math.js";
+import {FieldStatistics} from "../../../model/math/fields.js";
 
 export function hsvToRgb(h, s, v) {
     let r, g, b;

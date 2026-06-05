@@ -131,6 +131,10 @@ export class Binding {
         this.mode = mode;
     }
 
+    syncModelAndView() {
+        this.model.copyTo(view);
+    }
+
     initialize() {
         this.view.bind(this.model);
         this.view.initialize?.(); // Necessary to generate geometries & correct bounding boxes
