@@ -19,7 +19,7 @@ class UniformMagneticField extends VectorField {
         this._fieldStrength = strength;
     }
 
-    vectorAt(position) { return this._field.clone().multiplyScalar(this._fieldStrength); }
+    sample(position, target) { target.copy(this._field.clone().multiplyScalar(this._fieldStrength)); }
     get fieldStrength() { return this._fieldStrength; }
     set fieldStrength(strength) { this._fieldStrength = strength; }
 }
@@ -34,13 +34,15 @@ const proton = new RadialSymmetricBody({
 });
 
 const outOfBox= (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize || pos.z < -boxSize || pos.z > boxSize;
+const field = new Vec3();
 function timeStep(dt) {
     if (outOfBox(proton.position))
         return;
 
     // Lorentz force: F = q v × B
+    magneticField.sample(proton.position, field);
     const force = proton.velocity.clone()
-        .cross(magneticField.vectorAt(proton.position))
+        .cross(field)
         .multiplyScalar(proton.charge);
 
     proton.apply(force, dt);

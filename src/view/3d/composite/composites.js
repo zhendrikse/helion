@@ -368,11 +368,12 @@ export class ArrowField extends Group {
 
         this._shaftOffset = new Vector3();
         this._headOffset = new Vector3();
+        this.target = new Vector3();
     }
 
     bind(vectorField) {
-        if (!vectorField?.vectorAt)
-            throw new Error("vectorField must implement vectorAt(position)");
+        if (!vectorField?.sample)
+            throw new Error("vectorField must implement sample(positionVector, target)");
 
         this._vectorField = vectorField;
     }
@@ -397,8 +398,8 @@ export class ArrowField extends Group {
 
         for (let i = 0; i < count; i++) {
             const pos = this._positions[i];
-            const vec = this._vectorField.vectorAt(pos);
-            const mag = vec.length();
+            this._vectorField.sample(pos, this.target);
+            const mag = this.target.length();
 
             if (mag < 1e-9) {
                 this._shaftMesh.setMatrixAt(i, new Matrix4().makeScale(0,0,0));
@@ -407,7 +408,7 @@ export class ArrowField extends Group {
             }
 
             // Direction
-            this._dir.copy(vec).normalize();
+            this._dir.copy(this.target).normalize();
             this._q.setFromUnitVectors(UP, this._dir);
 
             const visualMag = this._matrixMagnitudeMap(mag) * this._scaleFactor;

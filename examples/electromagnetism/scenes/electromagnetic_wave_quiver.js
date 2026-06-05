@@ -42,7 +42,7 @@ class ElectromagneticWaveField extends VectorField {
         this._accelerationScratchVector = new Vec3();
     }
 
-    vectorAt(position) {
+    sample(position, target) {
         const sourcePos = this._source.position;
         const r = position.clone().sub(sourcePos);
         const distance = r.length();
@@ -77,11 +77,10 @@ class ElectromagneticWaveField extends VectorField {
             .multiplyScalar(1 / (C * distance * kappa3));
 
         const E = velocityTerm.add(radiationTerm).multiplyScalar(K * this._source.charge);
-
         if (this._electric)
-            return E;
-
-        return n.cross(E).multiplyScalar(1 / C);
+            target.copy(E);
+        else
+            target.copy(n.cross(E).multiplyScalar(1 / C));
     }
 }
 
@@ -98,12 +97,15 @@ class CombinedField extends VectorField {
         this._totalField = new Vec3();
     }
 
-    vectorAt(position) {
+    sample(position, target) {
         this._totalField.set(0, 0, 0);
-        for (const field of this._fields)
-            this._totalField.add(field.vectorAt(position));
+        const combinedField = new Vec3();
+        for (const field of this._fields) {
+            field.sample(position, combinedField);
+            this._totalField.add(combinedField);
+        }
 
-        return this._totalField;
+        target.copy(this._totalField);
     }
 }
 

@@ -54,7 +54,7 @@ class SheetElectricField extends VectorField {
         this._sheet = sheet;
     }
 
-    vectorAt(position) { return this._sheet.fieldAt(position); }
+    sample(position, target) { target.copy(this._sheet.fieldAt(position)); }
 }
 
 //
@@ -102,6 +102,7 @@ const arrowField = new ArrowField({
 });
 
 const dt = 5e-20;
+const field = new Vec3();
 const simulation = Simulation
     .with(renderer)
     .synchronize(electricField.onceWith(arrowField))
@@ -109,7 +110,7 @@ const simulation = Simulation
     .synchronize(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
     .incrementsTimeBy(dt)
     .onClockTick(() => {
-        const field = electricField.vectorAt(electron.position);
+        electricField.sample(electron.position, field);
         const force = field.clone().multiplyScalar(electron.charge);
         electron.apply(force, dt);
     }, 10);

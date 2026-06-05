@@ -21,12 +21,10 @@ class Capacitor {
                     }));
     }
 
-    fieldAt(position, out=new Vec3()) {
-        out.set(0, 0, 0);
+    fieldAt(position, target) {
+        target.set(0, 0, 0);
         for (const charge of this.charges)
-            out.add(charge.fieldAt(position).multiplyScalar(K));
-
-        return out;
+            target.add(charge.fieldAt(position).multiplyScalar(K));
     }
 }
 
@@ -36,7 +34,7 @@ class CapacitorField extends VectorField {
         this._capacitor = capacitor;
     }
 
-    vectorAt(position) { return this._capacitor.fieldAt(position); }
+    sample(positionVector, target) { this._capacitor.fieldAt(positionVector, target); }
 }
 
 //
@@ -85,6 +83,7 @@ const arrowField = new ArrowField({
 
 const dt = 0.01;
 const subSteps = 3;
+const field = new Vec3();
 const simulation = Simulation
     .with(renderer)
     .synchronize(movingCharge.alwaysWith(sphere))
@@ -95,7 +94,7 @@ const simulation = Simulation
         if (movingCharge.position.x > 60 / scale)
             return;
 
-        const field = capacitor.fieldAt(movingCharge.position)
+        capacitorField.sample(movingCharge.position, field);
         const force = field.multiplyScalar(movingCharge.charge);
         movingCharge.apply(force, dt);
     }, subSteps);

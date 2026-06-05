@@ -5,14 +5,14 @@ export {
 } from "./model/phys/physics.js";
 
 export {
-    VectorField, Range, Vec3, factorial, linspace, Interval,
+    Range, Vec3, factorial, linspace, Interval,
     normalDistribution, randomArbitrary, randomInt, meshgrid,
 } from "./model/math/math.js";
 
 export {
     GaussianCurvatureField, MeanCurvatureField, PrincipalCurvatureField, HeightScalarField,
     ShapeIndexField, CurvednessField, ParametricSurface, MultivariateFunctionSurface, Domain,
-    Surface, DiscreteScalarField, FieldStatistics, DiscreteComplexField
+    Surface, DiscreteScalarField, FieldStatistics, DiscreteComplexField, VectorField
 } from "./model/math/fields.js"
 
 export { FFT } from "./model/math/numerics/operators/fourier.js";

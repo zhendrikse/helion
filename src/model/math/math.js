@@ -266,52 +266,6 @@ export class VectorFieldValue extends MathPhysicsModelBehavior {
     }
 }
 
-export class VectorField extends MathPhysicsModelBehavior {
-    vectorAt(positionVector) {
-        throw new Error("You invoked the method of an abstract base class. Please create a subclass first.");
-    }
-
-    #centralDifferences(position, h) {
-        const dx = new Vec3(h, 0, 0);
-        const dy = new Vec3(0, h, 0);
-        const dz = new Vec3(0, 0, h);
-
-        const Fx1 = this.vectorAt(position.clone().add(dx));
-        const Fx0 = this.vectorAt(position.clone().sub(dx));
-
-        const Fy1 = this.vectorAt(position.clone().add(dy));
-        const Fy0 = this.vectorAt(position.clone().sub(dy));
-
-        const Fz1 = this.vectorAt(position.clone().add(dz));
-        const Fz0 = this.vectorAt(position.clone().sub(dz));
-        return { Fx0, Fy0, Fz0, Fx1, Fy1, Fz1 };
-    }
-
-    divergence(position, h = 1e-2) {
-        const { Fx0, Fy0, Fz0, Fx1, Fy1, Fz1 } = this.#centralDifferences(position, h);
-
-        return (
-            (Fx1.x - Fx0.x) +
-            (Fy1.y - Fy0.y) +
-            (Fz1.z - Fz0.z)
-        ) / (2 * h);
-    }
-
-    curl(position, h = 1e-2) {
-        const { Fx0, Fy0, Fz0, Fx1, Fy1, Fz1 } = this.#centralDifferences(position, h);
-
-        return new Vec3(
-            (Fy1.z - Fy0.z - (Fz1.y - Fz0.y)) / (2 * h),
-            (Fz1.x - Fz0.x - (Fx1.z - Fx0.z)) / (2 * h),
-            (Fx1.y - Fx0.y - (Fy1.x - Fy0.x)) / (2 * h)
-        );
-    }
-
-    curlMagnitude(position, h = 1e-2) {
-        return this.curl(position, h).length();
-    }
-}
-
 export class Complex {
     constructor(re, im) {
         this.re = re;

@@ -52,7 +52,7 @@ class View extends Group {
     bind(mathSurfaceDefinition) {
         // Sanity checks
         if (!mathSurfaceDefinition.sample)
-            throw new Error("Surface does not implement sample(), hence it cannot be attached to this view.");
+            throw new Error("Surface does not implement sample(u, v, target), so it cannot be attached to this view.");
 
         this._surface = mathSurfaceDefinition;
         this._scalarField.surface = mathSurfaceDefinition; // The scalar field that is defined by this surface

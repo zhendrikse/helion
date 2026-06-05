@@ -100,8 +100,8 @@ class RodElectricField extends VectorField {
         this._rod = rod;
     }
 
-    vectorAt(position) {
-        return this._rod.electricFieldAt(position).multiplyScalar(electricScale);
+    sample(position, target) {
+        target.copy(this._rod.electricFieldAt(position).multiplyScalar(electricScale));
     }
 }
 
@@ -111,8 +111,8 @@ class RodMagneticField extends VectorField {
         this._rod = rod;
     }
 
-    vectorAt(position) {
-        return this._rod.magneticFieldAt(position).multiplyScalar(magneticScale);
+    sample(position, target) {
+        target.copy(this._rod.magneticFieldAt(position).multiplyScalar(magneticScale));
     }
 }
 

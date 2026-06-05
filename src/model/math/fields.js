@@ -18,7 +18,7 @@ export class Domain {
 
 /**
  * Generic field type.
- * 
+ *
  * Field
  *  ├─ Surface
  *  │   ├─ ParametricSurface
@@ -33,6 +33,10 @@ export class Domain {
  */
 export class Field extends MathPhysicsModelBehavior {
     sample(u, v, target) {}
+}
+
+export class VectorField extends Field {
+    sample(positionVector, target) {}
 }
 
 export class FieldStatistics {

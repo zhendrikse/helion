@@ -20,10 +20,9 @@ class Dipole {
         });
     }
 
-    fieldAt(position) {
-        return this.positive
-            .fieldAt(position)
-            .add(this.negative.fieldAt(position));
+    fieldAt(position, out= new Vec3()) {
+        out.copy(this.positive.fieldAt(position)
+            .add(this.negative.fieldAt(position)));
     }
 }
 
@@ -35,10 +34,9 @@ class DipoleField extends VectorField {
         this._fieldStrength = 0.1;
     }
 
-    vectorAt(position) {
-        return this._dipole
-            .fieldAt(position)
-            .multiplyScalar(this._fieldStrength);
+    sample(position, target) {
+        this._dipole.fieldAt(position, target);
+        target.multiplyScalar(this._fieldStrength);
     }
 
     set fieldStrength(value) {

@@ -12,10 +12,10 @@ class MagneticField extends VectorField {
     
     set magnitude(newValue) { this._strength = newValue; }
 
-    vectorAt(position) {
+    sample(position, target) {
         const yComponent = Math.sqrt(position.x * position.x + position.z * position.z);
         // b_z = 5 if (abs(abs(position.x)-1) < 0.2 and abs(abs(position.y)-1) < 0.2) else 0
-        return new Vec3(0, yComponent, 0).multiplyScalar(this._strength);
+        target.set(0, yComponent * this._strength, 0);
     }
 }
 
@@ -32,8 +32,9 @@ const proton = new RadialSymmetricBody({
 
 const magneticField = new MagneticField(.2);
 
+const fieldVector = new Vec3();
 function timeStep(dt) {
-    const fieldVector = magneticField.vectorAt(proton.position);
+    magneticField.sample(proton.position, fieldVector);
     const force = fieldVector.cross(proton.velocity).multiplyScalar(proton.charge);
     proton.apply(force, dt);
 }

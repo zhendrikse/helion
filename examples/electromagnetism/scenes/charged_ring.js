@@ -74,8 +74,8 @@ class RingElectricField extends VectorField {
         this._strength = 1;
     }
 
-    vectorAt(position) {
-        return this._ring.fieldAt(position).multiplyScalar(this._strength);
+    sample(position, target) {
+        target.copy(this._ring.fieldAt(position).multiplyScalar(this._strength));
     }
 
     set strength(value) { this._strength = value; }
@@ -96,8 +96,9 @@ const electron = new RadialSymmetricBody({
     radius: radius / 20
 });
 
+const field = new Vec3();
 function timeStep(dt) {
-    const field = electricField.vectorAt(electron.position);
+    electricField.sample(electron.position, field);
     const force = field.clone().multiplyScalar(electron.charge);
     electron.apply(force, dt);
 }
@@ -117,7 +118,7 @@ const renderer = ThreeJsRenderer
         .containsBoth(canvas.and(Overlay.withElementId("chargedRingOverlay"))))
     .with(threeJsRendererOptions);
 
-const electronSphere = new Sphere({ color: "green"});
+const electronSphere = new Sphere({ color: "yellow"});
 const arrowField = new ArrowField({
     xRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     yRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),

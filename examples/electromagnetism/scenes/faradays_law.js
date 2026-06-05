@@ -28,10 +28,10 @@ for (const z of loopZs) {
 }
 
 class FaradayField extends VectorField {
-    vectorAt(position) {
+    sample(position, target) {
         const r = Math.sqrt(position.x * position.x + position.y * position.y); // r = constant along z-dir!
         const thetaHat = new Vec3(-position.y / r, position.x / r, 0);
-        return thetaHat.multiplyScalar(-dBdtMax / r);
+        target.copy(thetaHat.multiplyScalar(-dBdtMax / r));
     }
 }
 
