@@ -113,8 +113,8 @@ eventController.attach(HtmlControl
 eventController.attach(HtmlControl
     .withElementId("showContours")
     .forType("click")
-    .to(surfaceController)
-    .withProperty("visible"));
+    .to(surfaceView)
+    .withProperty("contoursVisible"));
 
 eventController.attach(HtmlControl
     .withElementId("animate")
@@ -125,7 +125,7 @@ eventController.attach(HtmlControl
 eventController.attach(HtmlControl
     .withElementId("showWireframe")
     .forType("click")
-    .to(surfaceController)
+    .to(surfaceView)
     .withProperty("wireframe"));
 
 eventController.attach(HtmlControl
