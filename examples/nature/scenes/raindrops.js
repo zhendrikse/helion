@@ -22,7 +22,7 @@ export class WaveEquation {
 }
 
 const field = new DiscreteScalarField({ nx: 256, ny: 256 });
-const equation = new WaveEquation({ velocity: 10 });
+const equation = new WaveEquation({ velocity: 5 });
 const solver = new WaveEquationSolver(field, equation);
 const surface = new ScalarFieldSurface(field);
 
@@ -39,7 +39,7 @@ const water = new StandardSurfaceView({
     // radius: .75,
     resolution: new SurfaceResolution(128, 128),
     normalizer: new Interval(-0.25, .5),
-    colorMapper: ColorMappers.Viridis
+    colorMapper: ColorMappers.WaterAlternative
 });
 
 renderer.frameSceneOn(water, {padding: 175, translationY: -350});

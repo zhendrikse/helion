@@ -61,13 +61,6 @@ const renderer = ThreeJsRenderer
     cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
 }));
 
-const dt = 1.5e-3;
-const subSteps = 10;
-const simulation = Simulation
-    .with(renderer)
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => world.timeStep(dt), subSteps);
-
 const helix = new Helix({ coils: 15, color: "yellow" });
 const sphere = new Sphere({ color: "orange" });
 const velocityArrow = new Arrow({
@@ -81,10 +74,17 @@ const forceArrow = new Arrow({
     magnitudeMap: mag => mag *  2.5e-2
 });
 
-simulation.synchronize(world.ball.alwaysWith(sphere));
-simulation.synchronize(world.ball.velocityVector.alwaysWith(velocityArrow));
-simulation.synchronize(world.ball.accelerationVector.alwaysWith(forceArrow));
-simulation.synchronize(world.spring.alwaysWith(helix));
+const dt = 1.5e-3;
+const subSteps = 10;
+const simulation = Simulation
+    .with(renderer)
+    .synchronize(world.ball.alwaysWith(sphere))
+    .synchronize(world.ball.velocityVector.alwaysWith(velocityArrow))
+    .synchronize(world.ball.accelerationVector.alwaysWith(forceArrow))
+    .synchronize(world.spring.alwaysWith(helix))
+    .incrementsTimeBy(dt)
+    .onClockTick((clockTime, simulatedTime) => world.timeStep(dt), subSteps);
+
 renderer.add(floor);
 
 //
