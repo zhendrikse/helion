@@ -5,10 +5,18 @@
 
 Helion is a browser-native framework for mathematical and physical modeling,
 simulation, and visualization. It is built around high-level mathematical
-concepts such as fields, parametric geometries, operators, and numerical solvers.
+concepts such as fields<sup>
+<a href="https://www.hendrikse.name/helion/electromagnetism/">[1]</a>
+</sup>, parametric geometries<sup>
+  <a href="https://www.hendrikse.name/helion/mathematics/parametric_surfaces/">[2]</a>
+</sup>, 
+operators, and numerical solvers<sup>
+<a href="https://www.hendrikse.name/helion/mathematics/fourier_transform/">[3]</a>
+<a href="https://www.hendrikse.name/helion/nature/raindrops/">[4]</a>
+</sup>.
 
 The genuine abstraction in Helion is not based on objects but on
-transformations between mathematical representations instead:
+transformations between mathematical representations instead.
 
 Helion is the product of decades of exploration in mathematics, physics, programming,
 and education, driven by a lifelong fascination with the beauty and patterns of nature.
