@@ -21,15 +21,15 @@ mathematical and physical systems, where models, simulations, and visualizations
 remain tightly synchronized and can be explored interactively in the browser.
 
 ```
-   ┌──────────────┐
-   │    View      │
-   └──────┬───────┘
+   +--------------+
+   |    View      |
+   +--------------+
           │ reads
           ▼
-┌──────────────┐     applies    ┌──────────────┐
-│ Field/object │◄───────────────│   Solver     │
-│   (state)    │                │ (evolution)  │
-└──────┬───────┘                └──────┬───────┘
++--------------+               +-------------+
+| Field/object | <-- applies --|   Solver    |
+|   (state)    |               | (evolution) |
++--------------+               +-------------+
        │ uses                          │ uses
        ▼                               ▼
    Operator(s)                  Equation (law)

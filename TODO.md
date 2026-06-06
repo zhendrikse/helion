@@ -14,4 +14,5 @@
   regendruppelringen. Dat is meestal het verschil tussen "werkt" en "ziet eruit als water". 
   Je architectuur is inmiddels precies goed opgezet om dat later als een extra operator 
   toe te voegen.
-- 
+- Invloed van mass op curved space-time met dyn. surface Schwarzschild embedding  
+  vervangen door dynamische space-time deformation PDE
