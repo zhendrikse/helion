@@ -1,9 +1,8 @@
 import {
     Canvas, ColorMappers, DiscreteScalarField, HtmlDiv, Interval, Simulation, Vec3, StandardSurfaceView,
     SphereSurfaceView, ScalarFieldSurface, ThreeJsRenderer, ThreeJsRenderOptions, LaplaceOperator, SurfaceResolution,
-    WaveEquationSolver, GaussianImpulse
+    WaveEquationSolver, GaussianImpulse, BoxSurfaceView, ConeSurfaceView, CapsuleSurfaceView
 } from "../../../src/index.js";
-
 
 export class WaveEquation {
     constructor({
@@ -36,7 +35,7 @@ const renderer = ThreeJsRenderer
 
 const water = new StandardSurfaceView({
     contours: false,
-    // radius: .75,
+    //radius: .65,
     resolution: new SurfaceResolution(128, 128),
     normalizer: new Interval(-0.25, 2),
     colorMapper: ColorMappers.WaterAlternative

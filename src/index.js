@@ -42,6 +42,7 @@ export {
 } from "./view/colormappers.js";
 
 export {
-    SphereSurfaceView, SurfaceResolution, StandardSurfaceView
+    SphereSurfaceView, SurfaceResolution, StandardSurfaceView, BoxSurfaceView, ConeSurfaceView,
+    CapsuleSurfaceView
 } from "./view/3d/surfaces/surfaceviews.js"
 

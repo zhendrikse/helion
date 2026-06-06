@@ -65,11 +65,11 @@ export class FieldStatistics {
 }
 
 /**
- * Mathematical definition of a surface. This class has a role
- * to play in the semantic domain of mathematics. It happens
- * to have the characteristics of a field in its implementation.
+ * Mathematical definition of a surface.
  */
-export class Surface extends Field {}
+export class Surface extends Field {
+    normalAt(u, v, target) {}
+}
 
 /**
  * A 2D surface defined as (u, v) => (x, y, z)
@@ -127,6 +127,18 @@ export class ScalarFieldSurface extends Surface {
         const j = Math.floor(v * (this._field.ny - 1));
         const z = this._field.valueAt(i, j);
         target.set(i, z, j);
+    }
+
+    normalAt(i, j, target) {
+        const hL = this._field.valueAt(i - 1, j);
+        const hR = this._field.valueAt(i + 1, j);
+        const hD = this._field.valueAt(i, j - 1);
+        const hU = this._field.valueAt(i, j + 1);
+
+        const dHx = (hR - hL) * .5;
+        const dHy = (hU - hD) * .5;
+
+        target.set(-dHx, 1.0, -dHy).normalize();
     }
 }
 
