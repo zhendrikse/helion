@@ -48,12 +48,14 @@ const simulation = Simulation
     .synchronize(surface.alwaysWith(water))
     .onClockTick(() => {
         solver.step(0.02);
-        if (Math.random() < 0.02)
-            field.apply(new GaussianImpulse( {
-                centerX: Math.floor(Math.random() * 256),
-                centerY: Math.floor(Math.random() * 256),
-                amplitude: .75,
-                sigma: 1
-            }));
+        if (Math.random() > 0.02)
+            return;
+        
+        field.apply(new GaussianImpulse( {
+            centerX: Math.floor(Math.random() * 256),
+            centerY: Math.floor(Math.random() * 256),
+            amplitude: .75,
+            sigma: 1
+        }));
     }, 5)
     .start();
