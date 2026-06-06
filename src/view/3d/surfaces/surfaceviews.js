@@ -89,8 +89,8 @@ class View extends Group {
 
 export class SphereSurfaceView extends View {
     constructor({
-        resolution = new SurfaceResolution(40, 40),
-        radius = 0.08,
+        resolution = new SurfaceResolution(100, 100),
+        radius = 1,
         opacity = 1.0,
         scalarField = new HeightScalarField(),
         colorMapper = scalarField.recommendedColorMapper,
@@ -117,17 +117,6 @@ export class SphereSurfaceView extends View {
         this._colorArray = new Float32Array(count * 3);
         this._mesh.instanceColor = new InstancedBufferAttribute(this._colorArray, 3);
         this._mesh.instanceColor.setUsage(DynamicDrawUsage);
-    }
-
-    get boundingBox() {
-        const box = new Box3();
-        for (let i = 0; i < this._mesh.count; i++) {
-            this._mesh.getMatrixAt(i, this._dummy.matrix);
-            this._dummy.position.setFromMatrixPosition(this._dummy.matrix);
-            box.expandByPoint(this._dummy.position);
-        }
-
-        return box;
     }
 
     render() {

@@ -1,3 +1,30 @@
+export class GaussianImpulse {
+    constructor({
+        centerX = 100,
+        centerY = 100,
+        amplitude = 1,
+        sigma = 3
+    } = {}) {
+        this._centerX = centerX;
+        this._centerY = centerY;
+        this._sigma = sigma;
+        this._amplitude = amplitude;
+    }
+
+    apply(field) {
+        const sigma2 = this._sigma * this._sigma;
+        for (let i = this._centerX - 5; i <= this._centerX + 5; i++)
+            for (let j = this._centerY - 5; j <= this._centerY + 5; j++) {
+                if (i < 0 || j < 0 || i >= field.nx || j >= field.ny)
+                    continue;
+
+                const dx = i - this._centerX;
+                const dy = j - this._centerY;
+                const value = this._amplitude * Math.exp(-(dx * dx + dy * dy) / (2 * sigma2));
+                field.setValueAt(i, j, field.valueAt(i, j) + value);
+            }
+    }
+}
 
 //
 // js/fft-esm.js

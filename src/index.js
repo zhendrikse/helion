@@ -16,9 +16,10 @@ export {
     ScalarFieldSurface, SurfaceScalarFields
 } from "./model/math/fields.js"
 
-export { FFT, LaplaceOperator } from "./model/math/numerics/operators/operators.js";
+export { FFT, LaplaceOperator, GaussianImpulse } from "./model/math/numerics/operators/operators.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { Sun } from "./view/3d/astro/sun.js";
+export { WaveEquationSolver } from "./model/math/numerics/solvers/solvers.js";
 export { EventController, CallbackFunction } from "./controller/controller.js";
 export { Simulation, Canvas, HtmlDiv, Overlay, HtmlControl, UPlotGraph } from "./core/helion.js";
 export { ThreeJsRenderOptions, ThreeJsRenderer } from "./view/3d/renderer.js";
