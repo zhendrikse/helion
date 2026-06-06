@@ -314,6 +314,11 @@ export class DiscreteScalarField extends Field {
         return this._data;
     }
 
+    apply(operator) {
+        operator.apply(this);
+        return this;
+    }
+
     valueAt(i, j) {
         return this._data[i + this._nx * j];
     }
@@ -352,7 +357,7 @@ export class DiscreteComplexField extends MathPhysicsModelBehavior {
         return Math.sqrt(re * re + im * im);
     }
 
-    transformWith(transformation) {
+    apply(transformation) {
         transformation(this);
         return this;
     }

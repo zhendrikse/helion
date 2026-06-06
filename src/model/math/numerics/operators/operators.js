@@ -118,7 +118,7 @@ export class FFT {
 }
 
 export class LaplaceOperator {
-    static apply(field, i, j) {
+    static at(field, i, j) {
         return (
             field.valueAt(i + 1, j) +
             field.valueAt(i - 1, j) +

@@ -16,7 +16,7 @@ export class WaveEquation {
     get damping() { return this._damping; }
 
     acceleration(field, i, j) {
-        return this._velocity * this._velocity * LaplaceOperator.apply(field, i, j);
+        return this._velocity * this._velocity * LaplaceOperator.at(field, i, j);
     }
 }
 
@@ -58,15 +58,28 @@ export class WaveEquationSolver {
 }
 
 export class GaussianImpulse {
-    apply(field, cx, cy, amplitude = 1, sigma = 5) {
-        for (let i = cx - 5; i <= cx + 5; i++)
-            for (let j = cy - 5; j <= cy + 5; j++) {
+    constructor({
+        centerX = 100,
+        centerY = 100,
+        amplitude = 1,
+        sigma = 5
+    } = {}) {
+        this._centerX = centerX;
+        this._centerY = centerY;
+        this._sigma = sigma;
+        this._amplitude = amplitude;
+    }
+
+    apply(field) {
+        const sigma2 = this._sigma * this._sigma;
+        for (let i = this._centerX - 5; i <= this._centerX + 5; i++)
+            for (let j = this._centerY - 5; j <= this._centerY + 5; j++) {
                 if (i < 0 || j < 0 || i >= field.nx || j >= field.ny)
                     continue;
 
-                const dx = i - cx;
-                const dy = j - cy;
-                const value = amplitude * Math.exp(-(dx * dx + dy * dy) / (2 * sigma * sigma));
+                const dx = i - this._centerX;
+                const dy = j - this._centerY;
+                const value = this._amplitude * Math.exp(-(dx * dx + dy * dy) / (2 * sigma2));
                 field.setValueAt(i, j, field.valueAt(i, j) + value);
             }
         }
@@ -76,8 +89,7 @@ const field = new DiscreteScalarField({ nx: 256, ny: 256 });
 const equation = new WaveEquation({ velocity: 10 });
 
 const solver = new WaveEquationSolver(field, equation);
-const rain = new GaussianImpulse();
-rain.apply(field, 128, 128, .2);
+field.apply(new GaussianImpulse());
 const surface = new ScalarFieldSurface(field);
 
 const renderer = ThreeJsRenderer
@@ -90,8 +102,8 @@ const renderer = ThreeJsRenderer
 
 const water = new StandardSurfaceView({
     contours: false,
-    colorMapper: ColorMappers.WaterAlternative,
-    normalizer: new Interval(-2, 2)
+    normalizer: new Interval(-2, 2),
+    colorMapper: ColorMappers.WaterAlternative
 });
 
 renderer.frameSceneOn(water, {padding: 175, translationY: -400});
@@ -102,6 +114,9 @@ const simulation = Simulation
     .onClockTick(() => {
         solver.step(0.02);
         if (Math.random() < 0.02)
-            rain.apply(field, Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), .2);
+            field.apply(new GaussianImpulse( {
+                centerX: Math.floor(Math.random() * 256),
+                centerY: Math.floor(Math.random() * 256),
+                amplitude:.2}));
     }, 5)
     .start();

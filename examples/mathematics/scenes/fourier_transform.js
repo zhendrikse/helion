@@ -32,8 +32,8 @@ class FourierSimulation {
 
     doFft() {
         this._buildShape();
-        this._field.transformWith(FFT.fft2D);
-        this._field.transformWith(FFT.fftShift2D); // Shift back to center
+        this._field.apply(FFT.fft2D);
+        this._field.apply(FFT.fftShift2D); // Shift back to center
     }
 
     // _pixelAt(i, j, type) {
