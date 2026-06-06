@@ -12,11 +12,11 @@ export {
 export {
     GaussianCurvatureField, MeanCurvatureField, PrincipalCurvatureField, HeightScalarField,
     ShapeIndexField, CurvednessField, ParametricSurface, MultivariateFunctionSurface, Domain,
-    Surface, DiscreteScalarField, FieldStatistics, DiscreteComplexField, VectorField, ScalarFieldSurface
+    Surface, DiscreteScalarField, FieldStatistics, DiscreteComplexField, VectorField,
+    ScalarFieldSurface, SurfaceScalarFields
 } from "./model/math/fields.js"
 
 export { FFT, LaplaceOperator } from "./model/math/numerics/operators/operators.js";
-export { scalarFields, colorMappers } from "./controller/selectors.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { Sun } from "./view/3d/astro/sun.js";
 export { EventController, CallbackFunction } from "./controller/controller.js";
@@ -37,7 +37,7 @@ export {
 export {
     WaterAlternativeColorMapper, WaterColorMapper, GradientColorMapper, UniformColorMapper,
     RdYlBuColorMapper, ViridisColorMapper, InfernoColorMapper, SeismicColorMapper, JetColorMapper,
-    wavelengthColor, wavelengthToRGBNormalized
+    wavelengthColor, wavelengthToRGBNormalized, ColorMappers
 } from "./view/colormappers.js";
 
 export {

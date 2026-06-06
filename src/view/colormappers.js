@@ -156,6 +156,18 @@ export class UniformColorMapper extends ColorMapper {
     }
 }
 
+export const ColorMappers = Object.freeze({
+    RdYlBu: new RdYlBuColorMapper(),
+    Seismic: new SeismicColorMapper(),
+    Viridis: new ViridisColorMapper(),
+    Jet: new JetColorMapper(),
+    Inferno: new InfernoColorMapper(),
+    Water: new WaterColorMapper(),
+    WaterAlternative: new WaterAlternativeColorMapper(),
+    Gradient: new GradientColorMapper(),
+    Uniform: new UniformColorMapper()
+});
+
 // TODO For shader
 export function createColorMapTexture(colorArray) {
     const data = new Uint8Array(256 * 3);

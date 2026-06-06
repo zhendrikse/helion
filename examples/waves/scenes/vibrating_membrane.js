@@ -1,6 +1,6 @@
 import {
     Canvas, EventController, HtmlControl, HtmlDiv, GradientColorMapper, Domain,
-    StandardSurfaceView, Interval, colorMappers, MultivariateFunctionSurface,
+    StandardSurfaceView, Interval, MultivariateFunctionSurface,
     Simulation, ThreeJsRenderer, ThreeJsRenderOptions
 } from "../../../src/index.js";
 
@@ -28,14 +28,6 @@ class Membrane extends MultivariateFunctionSurface {
     set normalModeY(normalModeY) { this._normalModeY = normalModeY; }
 }
 
-class MembraneController {
-    constructor(surfaceView) {
-        this._surfaceView = surfaceView;
-    }
-
-    set colorMapper(colorMapper) { this._surfaceView.colorMapper = colorMappers[colorMapper]; }
-}
-
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("membraneCanvasWrapper").contains(Canvas.withElementId("membraneCanvas")))
     .with(new ThreeJsRenderOptions());
@@ -56,11 +48,10 @@ const simulation = Simulation
     .start();
 
 const eventController = EventController.for(simulation);
-const membraneController = new MembraneController(surfaceView);
 eventController.attach(HtmlControl
     .withElementId("colorMapSelect")
     .forType("change")
-    .to(membraneController)
+    .to(surfaceView)
     .withProperty("colorMapper"));
 
 eventController.attach(HtmlControl

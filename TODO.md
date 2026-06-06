@@ -8,3 +8,10 @@
   - Principal direction glyphs
   - Principal curvature line tracing
   - Geodesic fields
+- Overigens: als je straks wateroppervlakken wilt die echt mooi ogen, 
+  zou ik ook een klein beetje numerieke viscositeit toevoegen. Daardoor verdwijnen 
+  hoge frequenties sneller dan lage frequenties en krijg je veel natuurlijkere 
+  regendruppelringen. Dat is meestal het verschil tussen "werkt" en "ziet eruit als water". 
+  Je architectuur is inmiddels precies goed opgezet om dat later als een extra operator 
+  toe te voegen.
+- 

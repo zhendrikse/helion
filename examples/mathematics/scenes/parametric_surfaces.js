@@ -1,7 +1,7 @@
 import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
-    EventController, Vec3, ParametricSurface, GaussianCurvatureField, scalarFields,
-    colorMappers, Domain, StandardSurfaceView
+    EventController, Vec3, ParametricSurface, GaussianCurvatureField,
+    Domain, StandardSurfaceView
 } from "../../../src/index.js";
 
 const sin = Math.sin;
@@ -48,8 +48,6 @@ class SurfaceController {
 
     get surface() { return this._currentSurface; }
     set surface(surfaceName) { this.switchTo(surfaceName); }
-    set colorMapper(colorMapper) { this._surfaceView.colorMapper = colorMappers[colorMapper]; }
-    set scalarField(scalarField) { this._surfaceView.scalarField = scalarFields[scalarField]; }
 
     switchTo(surfaceName) {
         const newSurface = SurfaceController.surfaces[surfaceName];
@@ -91,13 +89,13 @@ const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl
     .withElementId("colorMapSelect")
     .forType("change")
-    .to(surfaceController)
+    .to(surfaceView)
     .withProperty("colorMapper"));
 
 eventController.attach(HtmlControl
     .withElementId("scalarFieldSelect")
     .forType("change")
-    .to(surfaceController)
+    .to(surfaceView)
     .withProperty("scalarField"));
 
 eventController.attach(HtmlControl

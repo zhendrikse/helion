@@ -2,7 +2,6 @@ import {
     ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
     EventController, StandardSurfaceView, Vec3,
     Interval, GradientColorMapper, MultivariateFunctionSurface, Domain,
-    colorMappers, scalarFields
 } from "../../../src/index.js";
 
 const pi = Math.PI;
@@ -59,8 +58,6 @@ class SurfaceController {
 
     get surface() { return this._currentSurface; }
     set surface(surfaceName) { this.switchTo(surfaceName); }
-    set colorMapper(colorMapper) { this._surfaceView.colorMapper = colorMappers[colorMapper]; }
-    set scalarField(scalarField) { this._surfaceView.scalarField = scalarFields[scalarField]; }
 
     set time(time) {
         if (this._animate)
@@ -115,7 +112,7 @@ const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl
     .withElementId("colorMapSelect")
     .forType("change")
-    .to(surfaceController)
+    .to(surfaceView)
     .withProperty("colorMapper"));
 
 eventController.attach(HtmlControl

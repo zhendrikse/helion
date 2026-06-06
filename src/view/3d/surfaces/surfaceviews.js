@@ -10,9 +10,10 @@ import {
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
     DynamicDrawUsage, BufferAttribute, Box3
 } from "three";
-import { HeightScalarField } from "../../../model/math/fields.js";
+import { HeightScalarField, SurfaceScalarFields } from "../../../model/math/fields.js";
 import { AdaptiveSymmetricNormalizer } from "../../../model/math/math.js";
 import { NormalizedScalarField } from "../../../model/math/fields.js";
+import { ColorMappers } from "../../colormappers.js";
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) {
@@ -39,14 +40,14 @@ class View extends Group {
         this._dirty = true;                 // When surface definition has changed, this flag is raised
     }
 
-    set colorMapper(colorMapper) { this._colorMapper = colorMapper; }
+    set colorMapper(colorMapper) { this._colorMapper = ColorMappers[colorMapper]; }
     set normalizer(normalizer) { this._normalizer = normalizer; }
     set scalarField(scalarField) {
-        this._scalarField = scalarField;
+        this._scalarField = SurfaceScalarFields[scalarField];
         this._scalarField.surface = this._surface;
         this._normalizedScalarField = new NormalizedScalarField(this._scalarField, this._normalizer);
         this._normalizedScalarField.reset();
-        this._colorMapper = scalarField.recommendedColorMapper;
+        this._colorMapper = this._scalarField.recommendedColorMapper;
     }
 
     bind(mathSurfaceDefinition) {

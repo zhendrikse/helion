@@ -1,7 +1,7 @@
-import {Canvas, colorMappers, DiscreteScalarField, HtmlDiv, Interval, Simulation, LaplaceOperator,
-    StandardSurfaceView, ScalarFieldSurface, ThreeJsRenderer, ThreeJsRenderOptions, Vec3
+import {
+    Canvas, ColorMappers, DiscreteScalarField, HtmlDiv, Interval, Simulation, Vec3,
+    StandardSurfaceView, ScalarFieldSurface, ThreeJsRenderer, ThreeJsRenderOptions, LaplaceOperator
 } from "../../../src/index.js";
-
 
 
 export class WaveEquation {
@@ -90,7 +90,7 @@ const renderer = ThreeJsRenderer
 
 const water = new StandardSurfaceView({
     contours: false,
-    colorMapper: colorMappers["water alternative"],
+    colorMapper: ColorMappers.WaterAlternative,
     normalizer: new Interval(-2, 2)
 });
 
