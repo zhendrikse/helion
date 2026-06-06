@@ -8,7 +8,7 @@ import {
 export class WaveEquation {
     constructor({
         velocity = 1,
-        damping = 0.2
+        damping = 0.1
     } = {}) {
         this._velocity = velocity;
         this._damping = damping;
@@ -38,7 +38,7 @@ const water = new StandardSurfaceView({
     contours: false,
     // radius: .75,
     resolution: new SurfaceResolution(128, 128),
-    normalizer: new Interval(-0.25, .5),
+    normalizer: new Interval(-0.25, 2),
     colorMapper: ColorMappers.WaterAlternative
 });
 
