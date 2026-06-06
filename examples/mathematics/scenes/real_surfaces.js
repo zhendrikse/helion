@@ -8,7 +8,9 @@ import {
 const pi = Math.PI;
 const exp = Math.exp;
 const sin = Math.sin;
+
 const rSquared = (x, y) => x * x + y * y;
+const modulation = (t) => (1 - sin(pi * (t - 0.5)));
 
 class SurfaceController {
     static surfaces = {
@@ -17,30 +19,36 @@ class SurfaceController {
             "surface": new MultivariateFunctionSurface({
                 domain: new Domain([-2 * pi, 2 * pi], [-2 * pi, 2 * pi]),
                 z: (x, y, t) => SurfaceController.surfaces["Peak"].amplitude *
-                    exp(-rSquared(x, y) / 4) * (1 - sin(pi * (t - 0.5)))
+                    exp(-rSquared(x, y) / 4) * modulation(t)
             }),
         },
         "Ricker": {
-            "amplitude": 3,
+            "amplitude": 2,
             "surface": new MultivariateFunctionSurface({
                 domain: new Domain([-2, 2], [-2, 2]),
-                z: (x, y, t) => SurfaceController.surfaces["Peak"].amplitude *
-                    (1 - rSquared(x, y)) * exp(-2 * rSquared(x, y)) * (1 - sin(pi * (t - 0.5)))
+                z: (x, y, t) => SurfaceController.surfaces["Ricker"].amplitude *
+                    (1 - rSquared(x, y)) * exp(-1 * rSquared(x, y)) * modulation(t)
             }),
         },
         "Ripple": {
             "amplitude": 1,
             "surface": new MultivariateFunctionSurface({
                 domain: new Domain([-pi, pi], [-pi, pi]),
-                z: (x, y, t) => SurfaceController.surfaces["Ripple"].amplitude *
-                    sin(1.25 * rSquared(x, y) - pi * t)
+                z: (x, y, t) => SurfaceController.surfaces["Ripple"].amplitude * sin(1.25 * rSquared(x, y) - pi * t)
+            })
+        },
+        "Polynomial": {
+            "amplitude": 1,
+            "surface": new MultivariateFunctionSurface({
+                domain: new Domain([-.55, .55], [-.55, .55]),
+                z: (x, y, t) => (x * x * x - y * y * y) * modulation(t)
             })
         }
     };
 
     constructor(simulation, surfaceView, options = {
         padding: 0.9,
-        translationY: -5
+        translationY: -1
     }) {
         this._simulation = simulation;
         this._surfaceView = surfaceView;

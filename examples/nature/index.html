@@ -7,7 +7,6 @@
 <body>
     <!--
        - F L O C K I N G  B I R D S
-       -->
     <div class="canvasWrapper" id="birdsCanvasWrapper">
         <canvas class="applicationCanvas" id="birdsCanvas" width="500" height="500"></canvas><br/>
     </div>
@@ -17,6 +16,14 @@
     <label for="avoidWeightSlider">Avoidance behavior: <input type="range" min="0" max="2" value="1" step="any" class="slider" id="avoidWeightSlider"/></label>
     <button class="button" id="startleButton">Startle birds</button>
     <script type="module" src="scenes/flocking_birds.js"></script>
+       -->
+    <!--
+       - R A I N D R O P S
+       -->
+    <div class="canvasWrapper" id="raindropCanvasWrapper" style="aspect-ratio: 19/12">
+        <canvas class="applicationCanvas" id="raindropCanvas" style="aspect-ratio: 19/12"></canvas>
+    </div>
+    <script type="module" src="scenes/raindrops.js"></script>
 </body>
 </html>
 

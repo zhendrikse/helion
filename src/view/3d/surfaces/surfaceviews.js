@@ -164,6 +164,8 @@ export class StandardSurfaceView extends View {
         contourResolution = new SurfaceResolution(20, 20),
         contourSegments = 100, // per line
         wireframe = false,
+        contours = true,
+        surface = true,
         scalarField = new HeightScalarField(),
         colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
@@ -196,6 +198,9 @@ export class StandardSurfaceView extends View {
         this._positionSample = new Vector3();
         this._scalarSample = new Vector3();
         this._color = new Color();
+
+        this._showContours = contours;
+        this._showSurface = surface;
     }
 
     set surfaceVisible(value) {
@@ -251,6 +256,9 @@ export class StandardSurfaceView extends View {
 
     initialize() {
         super.initialize();
+        if (!this._showContours)
+            return;
+
         // u = constant
         for (let i = 0; i <= this._contourResolution.u; i++) {
             const line = this.#createLine();
@@ -333,8 +341,10 @@ export class StandardSurfaceView extends View {
     }
 
     render() {
-        this.#renderSurface();
-        this.#renderContours();
+        if (this._showSurface)
+            this.#renderSurface();
+        if (this._showContours)
+            this.#renderContours();
         this._dirty = false;
     }
 }

@@ -1,4 +1,4 @@
-import { MathPhysicsModelBehavior } from "../../core/helion.js";
+import {HtmlDiv, MathPhysicsModelBehavior} from "../../core/helion.js";
 import { Interval, Vec3 } from "./math.js";
 import {
     InfernoColorMapper,
@@ -8,6 +8,8 @@ import {
     ViridisColorMapper
 } from "../../view/colormappers.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
+import {ThreeJsRenderer} from "../../view/3d/renderer.js";
+import {GaussianImpulse, WaveEquation, WaveEquationSolver} from "../../../examples/nature/scenes/raindrops.js";
 
 export class Domain {
     constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
@@ -114,6 +116,20 @@ export class MultivariateFunctionSurface extends ParametricSurface {
     }
 
     set time(time) { this._time = time; }
+}
+
+export class ScalarFieldSurface extends Surface {
+    constructor(field) {
+        super();
+        this._field = field;
+    }
+
+    sample(u, v, target) {
+        const i = Math.floor(u * (this._field.nx - 1));
+        const j = Math.floor(v * (this._field.ny - 1));
+        const z = this._field.valueAt(i, j);
+        target.set(i, z, j);
+    }
 }
 
 export class HeightScalarField extends Field {
@@ -283,6 +299,10 @@ export class DiscreteScalarField extends Field {
 
     sample(u, v, target) {
         // bilinear interpolation
+    }
+
+    get data() {
+        return this._data;
     }
 
     valueAt(i, j) {

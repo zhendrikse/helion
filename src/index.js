@@ -12,10 +12,10 @@ export {
 export {
     GaussianCurvatureField, MeanCurvatureField, PrincipalCurvatureField, HeightScalarField,
     ShapeIndexField, CurvednessField, ParametricSurface, MultivariateFunctionSurface, Domain,
-    Surface, DiscreteScalarField, FieldStatistics, DiscreteComplexField, VectorField
+    Surface, DiscreteScalarField, FieldStatistics, DiscreteComplexField, VectorField, ScalarFieldSurface
 } from "./model/math/fields.js"
 
-export { FFT } from "./model/math/numerics/operators/fourier.js";
+export { FFT, LaplaceOperator } from "./model/math/numerics/operators/operators.js";
 export { scalarFields, colorMappers } from "./controller/selectors.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { Sun } from "./view/3d/astro/sun.js";
