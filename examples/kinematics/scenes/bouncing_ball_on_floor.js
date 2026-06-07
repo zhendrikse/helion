@@ -51,9 +51,9 @@ const overlay = Overlay.withElementId("bouncingBallOnFloorOverlayText");
 const canvasWrapper = HtmlDiv.withElementId("bouncingBallOnFloorWrapper").containsBoth(canvas.and(overlay));
 const renderer = ThreeJsRenderer
     .on(canvasWrapper)
-    .with(new ThreeJsRenderOptions({
+    .with({
         cameraPosition: new Vec3(2, 1, 0.5).multiplyScalar(2.25)
-    }));
+    });
 
 const dt = 2.5e-3;
 const subSteps = 10;
