@@ -33,10 +33,10 @@ const surface = new ScalarFieldSurface(field);
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("raindropCanvasWrapper")
         .contains(Canvas.withElementId("raindropCanvas")))
-    .with(new ThreeJsRenderOptions({
+    .with({
         cameraPosition: new Vec3(25, 10, 10).multiplyScalar(50),
         fieldOfView: 20
-    }));
+    });
 
 const water = new StandardSurfaceView({
     contours: false,
