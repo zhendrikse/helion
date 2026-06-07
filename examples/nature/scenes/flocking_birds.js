@@ -1,5 +1,6 @@
-import { Body, Simulation, Canvas, Vec3, HtmlDiv, EventController, HtmlControl, CallbackFunction,
-    Arrow, ThreeJsRenderOptions, ThreeJsRenderer
+import {
+    Body, Simulation, Canvas, Vec3, HtmlDiv, EventController, HtmlControl, CallbackFunction,
+    Arrow, ThreeJsRenderer
 } from "../../../src/index.js";
 
 // Simulation parameters
@@ -20,7 +21,7 @@ class Flock {
         this._center = new Vec3();
         this._direction = new Vec3();
 
-        const initialPhysicalFlockRadius= 3;
+        const initialPhysicalFlockRadius = 3;
         for (let i = 0; i < bird_count; i++)
             this._birds.push(new Body({
                 position: new Vec3().random().multiplyScalar(initialPhysicalFlockRadius),
@@ -101,18 +102,17 @@ class Flock {
 const birdCount = 250;
 const flock = new Flock(birdCount);
 
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
-    fieldOfView: 30
-});
 const canvas = Canvas.withElementId("birdsCanvas");
 const canvasWrapper = HtmlDiv.withElementId("birdsCanvasWrapper").contains(canvas);
 
 const dt = 0.02;
 const simulation = Simulation
-    .with(ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions))
+    .with(ThreeJsRenderer.on(canvasWrapper).with({
+        cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
+        fieldOfView: 30
+    }))
     .incrementsTimeBy(dt)
-    .onClockTick( () => flock.update(dt));
+    .onClockTick(() => flock.update(dt));
 
 for (let i = 0; i < birdCount; i++)
     simulation.synchronize(flock.bird(i).velocityVector.alwaysWith(new Arrow({

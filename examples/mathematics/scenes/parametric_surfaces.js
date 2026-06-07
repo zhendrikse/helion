@@ -1,5 +1,5 @@
 import {
-    ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
+    ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
     EventController, Vec3, ParametricSurface, GaussianCurvatureField,
     Domain, StandardSurfaceView
 } from "../../../src/index.js";
@@ -18,7 +18,7 @@ const surfaces = {
     "Klein bottle": new ParametricSurface({
         domain: new Domain([0, 2 * PI], [0, 2 * PI]),
         x: (u, v) => -(5 - 2 * cos(u)) * cos(v) + 6 * (sin(u) + 1) * cos(u),
-        y: (u, v) =>  (5 - 2 * cos(u)) * sin(v),
+        y: (u, v) => (5 - 2 * cos(u)) * sin(v),
         z: (u, v) => -16 * sin(u)
     }),
     "Mobius strip": new ParametricSurface({
@@ -67,9 +67,9 @@ class SurfaceController {
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("parametricSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("parametricSurfacesCanvas")))
-    .with(new ThreeJsRenderOptions({
+    .with({
         fieldOfView: 20
-    }));
+    });
 
 
 const surfaceView = new StandardSurfaceView({

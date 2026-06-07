@@ -1,7 +1,7 @@
 import { Color, Vector3 } from "three";
 import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
 import {
-    ThreeJsRenderOptions, ThreeJsRenderer, Canvas, HtmlDiv, Simulation, Vec3,
+    ThreeJsRenderer, Canvas, HtmlDiv, Simulation, Vec3,
     PointCloud, PointCloudView, PointCloudMaterial
 } from "../../../src/index.js";
 
@@ -50,16 +50,15 @@ class StarCluster extends PointCloud {
     }
 }
 
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(7, 14, 21),
-    background: ThreeJsRenderer.Background.STARS,
-    fov: 35,
-    light: false
-});
 const canvas = Canvas.withElementId("starClusterCanvas");
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("starClusterCanvasWrapper").contains(canvas))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(7, 14, 21),
+        background: ThreeJsRenderer.Background.STARS,
+        fov: 35,
+        light: false
+});
 
 const starCluster = new StarCluster();
 const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });

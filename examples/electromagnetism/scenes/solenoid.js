@@ -1,7 +1,8 @@
 import { Color } from "three"
-import { AxialSymmetricBody, VectorField, Range, Simulation, Vec3,
+import {
+    AxialSymmetricBody, VectorField, Range, Simulation, Vec3,
     Canvas, HtmlDiv, EventController, HtmlControl, Cylinder, ArrowField,
-    ThreeJsRenderOptions, ThreeJsRenderer
+    ThreeJsRenderer
 } from "../../../src/index.js";
 
 const MU0 = 4 * Math.PI * 1e-7;
@@ -32,7 +33,7 @@ class Solenoid {
             const p2 = points[i + 1];
             const position = p1.clone().add(p2).multiplyScalar(0.5);
             const axis = direct ? p2.clone().sub(p1) : p1.clone().sub(p2);
-            segments.push(new AxialSymmetricBody({position, axis, radius: 0.5 }));
+            segments.push(new AxialSymmetricBody({ position, axis, radius: 0.5 }));
         }
 
         return segments;
@@ -86,19 +87,18 @@ const magneticField = new SolenoidField(solenoid);
 //
 // View
 //
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
-    fieldOfView: 45
-});
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("solenoidCanvasWrapper").contains(Canvas.withElementId("solenoidCanvas")))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
+        fieldOfView: 45
+    });
 
 const arrowField = new ArrowField({
     xRange: new Range(-20, 20, 4),
     yRange: new Range(-20, 20, 4),
     zRange: new Range(-20, 20, 4),
-    scaleFactor:  1.25
+    scaleFactor: 1.25
 });
 
 const simulation = Simulation

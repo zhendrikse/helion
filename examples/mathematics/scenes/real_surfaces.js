@@ -1,5 +1,5 @@
 import {
-    ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
+    ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
     EventController, StandardSurfaceView, Vec3,
     Interval, GradientColorMapper, MultivariateFunctionSurface, Domain,
 } from "../../../src/index.js";
@@ -85,10 +85,10 @@ class SurfaceController {
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("realSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("realSurfacesCanvas")))
-    .with(new ThreeJsRenderOptions({
+    .with({
         cameraPosition: new Vec3(25, 10, 10).multiplyScalar(1.6),
         fieldOfView: 20
-    }));
+    });
 
 const surfaceView = new StandardSurfaceView({
     colorMapper: new GradientColorMapper(),

@@ -1,5 +1,6 @@
-import { Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation, Canvas, Vec3,
-    Overlay, HtmlDiv, EventController, Sphere, ThreeJsRenderOptions, ThreeJsRenderer, Trail
+import {
+    Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation, Canvas, Vec3,
+    Overlay, HtmlDiv, EventController, Sphere, ThreeJsRenderer, Trail
 } from "../../../src/index.js";
 
 //
@@ -50,21 +51,20 @@ function updateForces(dt) {
 const canvas = new Canvas("threeBodyCanvas");
 const overlay = new Overlay("overlayText");
 const canvasWrapper = HtmlDiv.withElementId("threeBodyWrapper").containsBoth(canvas.and(overlay));
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(30, 30, 30),
-    scale: 1e-9
-});
 
 const dt = 5000;
 const subSteps = 50;
 const simulation = Simulation
-    .with(ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions))
+    .with(ThreeJsRenderer.on(canvasWrapper).with({
+        cameraPosition: new Vec3(30, 30, 30),
+        scale: 1e-9
+    }))
     .synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
     .synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
     .synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })))
     .synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
     .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
-    .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta"})))
+    .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
     .incrementsTimeBy(dt / subSteps)
     .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps);
 

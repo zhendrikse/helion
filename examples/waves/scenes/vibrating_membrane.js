@@ -1,7 +1,7 @@
 import {
     Canvas, EventController, HtmlControl, HtmlDiv, GradientColorMapper, Domain,
     StandardSurfaceView, Interval, MultivariateFunctionSurface,
-    Simulation, ThreeJsRenderer, ThreeJsRenderOptions
+    Simulation, ThreeJsRenderer
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -15,7 +15,7 @@ class Membrane extends MultivariateFunctionSurface {
         amplitude = .5,
         domain = new Domain([-PI / 2, PI / 2], [-PI / 2, PI / 2])
     } = {}) {
-        super({domain});
+        super({ domain });
         this._amplitude = amplitude;
         this._normalModeX = normalModeX;
         this._normalModeY = normalModeY;
@@ -29,8 +29,7 @@ class Membrane extends MultivariateFunctionSurface {
 }
 
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("membraneCanvasWrapper").contains(Canvas.withElementId("membraneCanvas")))
-    .with(new ThreeJsRenderOptions());
+    .on(HtmlDiv.withElementId("membraneCanvasWrapper").contains(Canvas.withElementId("membraneCanvas")));
 
 const membrane = new Membrane();
 const surfaceView = new StandardSurfaceView({
@@ -38,13 +37,13 @@ const surfaceView = new StandardSurfaceView({
     colorMapper: new GradientColorMapper()
 });
 
-renderer.frameSceneOn(surfaceView, {padding: 2, translationY: -1.25});
+renderer.frameSceneOn(surfaceView, { padding: 2, translationY: -1.25 });
 
 const simulation = Simulation
     .with(renderer)
     .synchronize(membrane.alwaysWith(surfaceView))
     .incrementsTimeBy(0.016)
-    .onClockTick((clockTime, simulatedTime) => membrane.time =simulatedTime, 3)
+    .onClockTick((clockTime, simulatedTime) => membrane.time = simulatedTime, 3)
     .start();
 
 const eventController = EventController.for(simulation);

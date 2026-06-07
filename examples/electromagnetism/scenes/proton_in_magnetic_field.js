@@ -1,7 +1,8 @@
 import { Color } from "three";
-import { RadialSymmetricBody, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
+import {
+    RadialSymmetricBody, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
     EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
-    ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3
+    ThreeJsRenderer, Trail, Vec3
 } from "../../../src/index.js";
 
 class MagneticField extends VectorField {
@@ -9,7 +10,7 @@ class MagneticField extends VectorField {
         super();
         this._strength = fieldStrength;
     }
-    
+
     set magnitude(newValue) { this._strength = newValue; }
 
     sample(position, target) {
@@ -44,14 +45,11 @@ function timeStep(dt) {
 //
 const canvas = Canvas.withElementId("protonInFieldCanvas");
 const overlay = Overlay.withElementId("protonInFieldOverlayText");
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(0, 5, -10)
-});
 const renderer = ThreeJsRenderer.on(
     HtmlDiv.withElementId("protonInFieldWrapper").containsBoth(canvas.and(overlay)))
-    .with(threeJsRendererOptions);
+    .with({ cameraPosition: new Vec3(0, 5, -10) });
 
-const sphere = new Sphere({ color: new Color("red")});
+const sphere = new Sphere({ color: new Color("red") });
 const arrowField = new ArrowField({
     xRange: new Range(-6, 6, .5),
     yRange: new Range(0, 0, .5),

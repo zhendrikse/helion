@@ -1,6 +1,6 @@
 import {
     Canvas, ColorMappers, DiscreteScalarField, HtmlDiv, Interval, Simulation, Vec3, StandardSurfaceView,
-    SphereSurfaceView, ScalarFieldSurface, ThreeJsRenderer, ThreeJsRenderOptions, LaplaceOperator, SurfaceResolution,
+    SphereSurfaceView, ScalarFieldSurface, ThreeJsRenderer, LaplaceOperator, SurfaceResolution,
     WaveEquationSolver, GaussianImpulse, BoxSurfaceView, ConeSurfaceView, CapsuleSurfaceView
 } from "../../../src/index.js";
 
@@ -20,6 +20,10 @@ export class WaveEquation {
     }
 }
 
+//
+// First, declare a (discrete) scalar field and a wave equation.
+// Next, define a solver that for this field and equation.
+// Finally, define a surface can visualize the (scalar) field.
 const field = new DiscreteScalarField({ nx: 256, ny: 256 });
 const equation = new WaveEquation({ velocity: 5 });
 const solver = new WaveEquationSolver(field, equation);

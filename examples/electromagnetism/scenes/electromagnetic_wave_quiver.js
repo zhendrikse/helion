@@ -1,7 +1,8 @@
 import { Color } from "three";
 
-import { RadialSymmetricBody, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv, EventController,
-    Sphere, ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, Vec3
+import {
+    RadialSymmetricBody, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
+    EventController, Sphere, ArrowField, ThreeJsRenderer, Vec3
 } from "../../../src/index.js";
 
 const Q = 1.6e-19;
@@ -14,14 +15,14 @@ function omega() { return 2 * Math.PI * frequency; }
 
 class OscillatingCharge extends RadialSymmetricBody {
     constructor(charge) {
-        super({mass: 1, charge, radius: 0.25 * 1e-10});
+        super({ mass: 1, charge, radius: 0.25 * 1e-10 });
         this._sign = Math.sign(charge);
     }
 
     updateAt(time) {
         this.position.y = this._sign * amplitude * Math.sin(omega() * time);
         this.velocity.y = this._sign * amplitude * omega() * Math.cos(omega() * time);
-        this.state.acceleration .set(0, -this._sign * amplitude * omega() * omega() * Math.sin(omega() * time), 0);
+        this.state.acceleration.set(0, -this._sign * amplitude * omega() * omega() * Math.sin(omega() * time), 0);
     }
 }
 
@@ -64,7 +65,7 @@ class ElectromagneticWaveField extends VectorField {
         const n = r.normalize();
         const beta = this._velocityScratchVector.multiplyScalar(1 / C);
         const beta2 = beta.lengthSq();
-        const kappa =1 - n.dot(beta);
+        const kappa = 1 - n.dot(beta);
         const kappa3 = kappa * kappa * kappa;
 
         // Velocity field
@@ -110,29 +111,28 @@ class CombinedField extends VectorField {
 }
 
 const electricField = new CombinedField([
-        new ElectromagneticWaveField({ source: electron, electric: true }),
-        new ElectromagneticWaveField({ source: proton, electric: true })
-    ]);
+    new ElectromagneticWaveField({ source: electron, electric: true }),
+    new ElectromagneticWaveField({ source: proton, electric: true })
+]);
 
 const magneticField = new CombinedField([
-        new ElectromagneticWaveField({ source: electron, electric: false }),
-        new ElectromagneticWaveField({ source: proton, electric: false })
-    ]);
+    new ElectromagneticWaveField({ source: electron, electric: false }),
+    new ElectromagneticWaveField({ source: proton, electric: false })
+]);
 
 //
 // Renderer
 //
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(15, 5, 20),
-    fieldOfView: 45,
-    scale: 1e10
-});
-const canvas= Canvas.withElementId("electromagneticWaveCanvas");
+const canvas = Canvas.withElementId("electromagneticWaveCanvas");
 const renderer = ThreeJsRenderer
     .on(HtmlDiv
         .withElementId("electromagneticWaveWrapper")
         .containsBoth(canvas.and(Overlay.withElementId("electromagneticWaveOverlay"))))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(15, 5, 20),
+        fieldOfView: 45,
+        scale: 1e10
+    });
 
 const electricArrowField = new ArrowField({
     xRange: new Range(-6e-10, 6e-10, 1.25e-10),
@@ -150,7 +150,7 @@ const magneticArrowField = new ArrowField({
     yRange: new Range(-6e-10, 6e-10, 1.25e-10),
     zRange: new Range(-6e-10, 6e-10, 1.25e-10),
     scaleFactor: 2.5e-11,
-    magnitudeMap: magnitude => Math.log(magnitude  + 1),
+    magnitudeMap: magnitude => Math.log(magnitude + 1),
     colorMap: () => new Color("cyan"),
     round: true
 });
@@ -159,10 +159,10 @@ const dt = 2e-19;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .synchronize(electron.alwaysWith(new Sphere({color: new Color("red")})))
+    .synchronize(electron.alwaysWith(new Sphere({ color: new Color("red") })))
     .synchronize(electricField.alwaysWith(electricArrowField))
     .synchronize(magneticField.alwaysWith(magneticArrowField))
-    .synchronize(proton.alwaysWith(new Sphere({color: new Color("yellow") })))
+    .synchronize(proton.alwaysWith(new Sphere({ color: new Color("yellow") })))
     .onClockTick((clockTime, simulatedTime) => {
         electron.updateAt(simulatedTime);
         proton.updateAt(simulatedTime);

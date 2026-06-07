@@ -1,6 +1,7 @@
 import { Color } from "three";
-import { RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, ThreeJsRenderer,
-    ThreeJsRenderOptions, Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
+import { 
+    RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, ThreeJsRenderer,
+    Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
 } from "../../../src/index.js";
 
 //
@@ -129,11 +130,10 @@ const magneticField = new RodMagneticField(rod);
 //
 const renderer = ThreeJsRenderer.on(HtmlDiv.withElementId("chargedRodWrapper")
     .containsBoth(Canvas.withElementId("chargedRodCanvas").and(Overlay.withElementId("chargedRodOverlay"))))
-    .with(new ThreeJsRenderOptions({
+    .with({
         cameraPosition: new Vec3(2, 1.5, 2.5),
         fieldOfView: 30
-    }));
-
+    });
 
 const magneticArrowField = new ArrowField({
     xRange: new Range(-0.4, 0.4, 0.12),

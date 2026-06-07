@@ -1,5 +1,5 @@
 import {
-    ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
+    ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
     EventController, Vec3, ParametricSurface,
     Domain, StandardSurfaceView, SurfaceResolution, ColorMappers
 } from "../../../src/index.js";
@@ -20,25 +20,25 @@ const surfaces = {
         domain: new Domain([-10, 1], [0, 2 * PI]),
         x: (u, v) => (0.75 + 0.85 * cos(v)) * exp(0.06 * u) * cos(1 * u),
         y: (u, v) => (0.75 + 0.85 * cos(v)) * exp(0.06 * u) * sin(1 * u),
-        z: (u, v) => (0  +  1.2  * sin(v)) * exp(0.06 * u)
+        z: (u, v) => (0 + 1.2 * sin(v)) * exp(0.06 * u)
     }),
     "Conchoidal": new ParametricSurface({
         domain: new Domain([0, 6 * PI], [0, 2 * PI]),
-        x: (u, v) => 1.2 **u * (1 + cos(v)) * cos(u),
-        y: (u, v) => 1.2 **u * (1 + cos(v)) * sin(u),
-        z: (u, v) => 1.2 **u * sin(v) - 1.5 * 1.2 **u
+        x: (u, v) => 1.2 ** u * (1 + cos(v)) * cos(u),
+        y: (u, v) => 1.2 ** u * (1 + cos(v)) * sin(u),
+        z: (u, v) => 1.2 ** u * sin(v) - 1.5 * 1.2 ** u
     }),
     "Euhoplites": new ParametricSurface({
         domain: new Domain([-40, -1], [0, 2 * PI]),
         x: (u, v) => (0.9 + 0.6 * cos(v)) * exp(0.1626 * u) * cos(1 * u),
         y: (u, v) => (0.9 + 0.6 * cos(v)) * exp(0.1626 * u) * sin(1 * u),
-        z: (u, v) => (0  +  0.4 * sin(v)) * exp(0.1626 * u)
+        z: (u, v) => (0 + 0.4 * sin(v)) * exp(0.1626 * u)
     }),
     "Mya arenaria": new ParametricSurface({
         domain: new Domain([-1, 0.52], [0, 2 * PI]),
         x: (u, v) => (0.9 + 0.85 * cos(v)) * exp(2.5 * u) * cos(3 * u),
         y: (u, v) => (0.9 + 0.85 * cos(v)) * exp(2.5 * u) * sin(3 * u),
-        z: (u, v) => (0  + 1.6 * sin(v)) * exp(2.5 * u)
+        z: (u, v) => (0 + 1.6 * sin(v)) * exp(2.5 * u)
     }),
     "Nautilus": new ParametricSurface({
         domain: new Domain([-20, 1], [0, 2 * PI]),
@@ -50,7 +50,7 @@ const surfaces = {
         domain: new Domain([-45, -1], [0, 2 * PI]),
         x: (u, v) => (1.5 + 1.6 * cos(v)) * exp(0.075 * u) * cos(1 * u),
         y: (u, v) => (1.5 + 1.6 * cos(v)) * exp(0.075 * u) * sin(1 * u),
-        z: (u, v) => (-7  + 1.6 * sin(v)) * exp(0.075 * u)
+        z: (u, v) => (-7 + 1.6 * sin(v)) * exp(0.075 * u)
     }),
     "Sea shell": new ParametricSurface({
         domain: new Domain([0, 2 * PI], [0, 2 * PI]),
@@ -90,10 +90,7 @@ class SurfaceController {
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("shellsCanvasWrapper")
         .contains(Canvas.withElementId("shellsCanvas")))
-    .with(new ThreeJsRenderOptions({
-        fieldOfView: 20
-    }));
-
+    .with({ fieldOfView: 20 });
 
 const surfaceView = new StandardSurfaceView({
     opacity: 0.95,

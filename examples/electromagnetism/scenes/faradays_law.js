@@ -1,6 +1,7 @@
 import { Color, Group } from "three";
-import { VectorField, Range , Cylinder, ArrowField, Sphere, ThreeJsRenderer, 
-    ThreeJsRenderOptions, Arrow, Ring, Canvas, EventController, HtmlControl, 
+import {
+    VectorField, Range, Cylinder, ArrowField, Sphere, ThreeJsRenderer,
+    Arrow, Ring, Canvas, EventController, HtmlControl,
     HtmlDiv, Overlay, Simulation, AxialSymmetricBody, RadialSymmetricBody, Vec3
 } from "../../../src/index.js";
 
@@ -38,16 +39,15 @@ class FaradayField extends VectorField {
 //
 // Renderer en ArrowField view
 //
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(3, 1, 4),
-    fieldOfView: 45
-});
-const canvas= Canvas.withElementId("faradayLawCanvas");
+const canvas = Canvas.withElementId("faradayLawCanvas");
 const renderer = ThreeJsRenderer
     .on(HtmlDiv
         .withElementId("faradayLawCanvasWrapper")
         .containsBoth(canvas.and(Overlay.withElementId("faradayLawCanvasOverlay"))))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(3, 1, 4),
+        fieldOfView: 45
+    });
 
 //
 // Views that do not change in time: cylinder, Faraday loops and arrow field
@@ -59,7 +59,7 @@ renderer.add(faradayLoopsGroup);
 const dt = 0.05;
 const simulation = Simulation
     .with(renderer)
-    .synchronize(wire.onceWith(new Cylinder({color: new Color( "yellow" )})))
+    .synchronize(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, simulatedTime) => {
         const fieldLength = (simulatedTime % 20) / 25 + 0.001;
@@ -125,7 +125,7 @@ for (let i = 0; i < numCharges; i++) {
 
 const magneticVectors = [];
 for (const position of magneticFieldPositions) {
-    const body = new AxialSymmetricBody({position});
+    const body = new AxialSymmetricBody({ position });
     magneticVectors.push(body);
     simulation.synchronize(body.alwaysWith(new Arrow({
         color: new Color("red"),

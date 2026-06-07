@@ -1,7 +1,8 @@
 import { Color, AmbientLight, PointLight } from "three";
-import { RadialSymmetricBody, EC , VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
+import {
+    RadialSymmetricBody, EC, VectorField, Range, Simulation, Canvas, Overlay,
     EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
-    ThreeJsRenderOptions, ThreeJsRenderer, Trail, Vec3
+    ThreeJsRenderer, Trail, Vec3, HtmlDiv
 } from "../../../src/index.js";
 
 const K = 9e9;
@@ -55,22 +56,21 @@ const movingCharge = new RadialSymmetricBody({
 //
 const canvas = Canvas.withElementId("movingChargeCanvas");
 const overlay = Overlay.withElementId("movingChargeOverlayText");
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    light: false, // setting our own lights
-    cameraPosition: new Vec3(-50, 0, 75).multiplyScalar(0.5),
-    fieldOfView: 60,
-    scale: scale
-});
 const renderer = ThreeJsRenderer.on(
     HtmlDiv.withElementId("movingChargeWrapper").containsBoth(canvas.and(overlay)))
-    .with(threeJsRendererOptions);
+    .with({
+        light: false, // setting our own lights
+        cameraPosition: new Vec3(-50, 0, 75).multiplyScalar(0.5),
+        fieldOfView: 60,
+        scale: scale
+    });
 
 const dirLight = new PointLight(0xffffff, 2e3);
 dirLight.position.set(0, 0, 0);
 renderer.add(dirLight);
 renderer.add(new AmbientLight(0xffffff, 0.8));
 
-const sphere = new Sphere({ color: new Color(0x44ff44)});
+const sphere = new Sphere({ color: new Color(0x44ff44) });
 const arrowField = new ArrowField({
     xRange: new Range(-18 / scale, 18 / scale, 8 / scale),
     yRange: new Range(-9 / scale, 9 / scale, 4 / scale),

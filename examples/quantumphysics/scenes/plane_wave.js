@@ -1,7 +1,7 @@
 import {
     Simulation, Canvas, CompositeRenderer, EventController, HtmlControl, CallbackFunction, HtmlDiv,
     Canvas2DRenderer, OneDimensionalComplexPlaneWave2D, OneDimensionalComplexPlaneWave,
-    OneDimensionalComplexPlaneWave3D, ThreeJsRenderer, ThreeJsRenderOptions, Vec3
+    OneDimensionalComplexPlaneWave3D, ThreeJsRenderer, Vec3
 } from "../../../src/index.js";
 
 //
@@ -29,18 +29,17 @@ const waveView2d = new OneDimensionalComplexPlaneWave2D({
 // View for 3D canvas
 //
 const canvas3d = Canvas.withElementId("planeWaveCanvas3d");
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(100, 100, 200),
-    fieldOfView: 20
-});
 const renderer3d = ThreeJsRenderer
     .on(HtmlDiv.withElementId("planeWaveCanvasWrapper3d").contains(canvas3d))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(100, 100, 200),
+        fieldOfView: 20
+    });
 
 const simulation = Simulation
     .with(new CompositeRenderer([renderer2d, renderer3d]))
     .synchronize(planeWave.alwaysWith(waveView2d))
-    .synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({numArrows: 100})))
+    .synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({ numArrows: 100 })))
     .incrementsTimeBy(0.01)
     .onClockTick((clockTime, simulatedTime) => planeWave.propagate(simulatedTime));
 

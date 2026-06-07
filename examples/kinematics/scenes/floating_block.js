@@ -1,5 +1,6 @@
-import {EventController, Vec3, HtmlDiv, UPlotGraph, Block,
-    Simulation, Canvas, Overlay, Box, ThreeJsRenderOptions, ThreeJsRenderer, Aquarium
+import {
+    EventController, Vec3, HtmlDiv, UPlotGraph, Block,
+    Simulation, Canvas, Overlay, Box, ThreeJsRenderer, Aquarium
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -8,7 +9,7 @@ const g = -9.8;
 
 class WoodenBlock extends Block {
     constructor({ density = 500, size = new Vec3(1, 1, 1) } = {}) {
-        super({size: size, mass: density * size.x * size.y * size.z});
+        super({ size: size, mass: density * size.x * size.y * size.z });
         this._force = new Vec3();
     }
 
@@ -44,7 +45,7 @@ class WoodenBlock extends Block {
     }
 }
 
-const woodenBlock = new WoodenBlock( {size: new Vec3(0.4, 0.4, 0.1) });
+const woodenBlock = new WoodenBlock({ size: new Vec3(0.4, 0.4, 0.1) });
 const water = new Aquarium({
     color: 0x1e90ff,
     size: new Vec3(2, 2, 0.75),
@@ -54,10 +55,9 @@ const water = new Aquarium({
 const canvas = Canvas.withElementId("floatingBlockCanvas");
 const overlay = Overlay.withElementId("floatingBlockOverlayText");
 const canvasWrapper = HtmlDiv.withElementId("floatingBlockContainer").containsBoth(canvas.and(overlay));
-const threeJsRendererOptions = new ThreeJsRenderOptions({
+const renderer = ThreeJsRenderer.on(canvasWrapper).with({
     cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
 });
-const renderer = ThreeJsRenderer.on(canvasWrapper).with(threeJsRendererOptions);
 
 let t = 0;
 const dt = 0.001;
@@ -65,7 +65,7 @@ const substeps = 20;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onClockTick( () => {
+    .onClockTick(() => {
         woodenBlock.apply(woodenBlock.netForce(water), dt);
 
         plot.graphData[0].push(t);

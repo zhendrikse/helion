@@ -1,6 +1,7 @@
 import { Color } from "three";
-import {Block, RadialSymmetricBody, VectorField, Range, Sphere, Trail, ArrowField, ThreeJsRenderer,
-    ThreeJsRenderOptions, Box, Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
+import {
+    Block, RadialSymmetricBody, VectorField, Range, Sphere, Trail, ArrowField, ThreeJsRenderer,
+    Box, Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
 } from "../../../src/index.js";
 
 const Q = 1.6e-19;
@@ -81,11 +82,11 @@ const electron = new RadialSymmetricBody({
 const renderer = ThreeJsRenderer.on(
     HtmlDiv.withElementId("chargedSheetWrapper")
         .containsBoth(Canvas.withElementId("chargedSheetCanvas").and(Overlay.withElementId("chargedSheetOverlay"))))
-    .with(new ThreeJsRenderOptions({
+    .with({
         cameraPosition: new Vec3(12, 8, 16),
         fieldOfView: 20,
         scale: 5e10
-    }));
+    });
 
 const electronSphere = new Sphere({ color: "yellow" });
 const arrowField = new ArrowField({

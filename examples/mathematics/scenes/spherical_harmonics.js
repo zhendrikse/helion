@@ -24,15 +24,13 @@ const surface = new ParametricSurface({
     domain: new Domain([-PI, PI], [0, PI]),
     x: (u, v) => sin(u) * cos(v) * r(u, v),
     y: (u, v) => sin(u) * sin(v) * r(u, v),
-    z: (u, v) => cos(u)          * r(u, v),
+    z: (u, v) => cos(u) * r(u, v),
 })
 
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("sphericalHarmonicsCanvasWrapper")
         .contains(Canvas.withElementId("sphericalHarmonicsCanvas")))
-    .with(new ThreeJsRenderOptions({
-        fieldOfView: 20
-    }));
+    .with({ fieldOfView: 20 });
 
 const surfaceView = new StandardSurfaceView({
     colorMapper: ColorMappers.RdYlBu,
@@ -46,7 +44,7 @@ const simulation = Simulation
     .start();
 
 renderer.provideAxesAround(surfaceView);
-renderer.frameSceneOn(surfaceView, {translationY: -10});
+renderer.frameSceneOn(surfaceView, { translationY: -10 });
 
 const eventController = EventController.for(simulation);
 eventController.attach(HtmlControl

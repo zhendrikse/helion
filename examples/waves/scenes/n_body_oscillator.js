@@ -1,6 +1,7 @@
 import { Vector2 } from "three";
-import { EventController, HtmlDiv, UPlotGraph, RadialSymmetricBody, Vec3, HarmonicOscillator,
-    Simulation, Canvas, Overlay, Sphere, ThreeJsRenderOptions, ThreeJsRenderer, Helix, Floor
+import {
+    EventController, HtmlDiv, UPlotGraph, RadialSymmetricBody, Vec3, HarmonicOscillator,
+    Simulation, Canvas, Overlay, Sphere, ThreeJsRenderer, Helix, Floor
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -24,12 +25,12 @@ function createBallsAndSprings(numBalls = 5, k = 300) {
     return { balls, springs };
 }
 
-function initialDisturbance(displacement=5) {
+function initialDisturbance(displacement = 5) {
     balls[0].position.add(new Vec3(displacement, 0, 0));
     springs[0].bond.position.copy(balls[0].position);
 }
 
-const {balls, springs} = createBallsAndSprings();
+const { balls, springs } = createBallsAndSprings();
 initialDisturbance(7);
 
 //
@@ -37,17 +38,16 @@ initialDisturbance(7);
 //
 const canvas = Canvas.withElementId("oscillatorCanvas");
 const overlay = Overlay.withElementId("oscillatorOverlay");
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(17, 6, 17),
-    light: true,
-    shadowsEnabled: true,
-    fieldOfView: 45,
-    background: ThreeJsRenderer.Background.FOG
-});
 const renderer = ThreeJsRenderer.on(
     HtmlDiv.withElementId("oscillatorCanvasWrapper")
         .containsBoth(canvas.and(overlay)))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(17, 6, 17),
+        light: true,
+        shadowsEnabled: true,
+        fieldOfView: 45,
+        background: ThreeJsRenderer.Background.FOG
+    });
 
 
 const dt = 1e-3;
@@ -81,7 +81,7 @@ renderer.add(new Floor({
 
 // Attach spheres and helices to balls and springs
 for (let i = 0; i < balls.length; i++) {
-    const color = i ===0 || i === balls.length - 1 ? 0x3333ff : 0xff0000;
+    const color = i === 0 || i === balls.length - 1 ? 0x3333ff : 0xff0000;
     const sphere = new Sphere({ color, castShadow: true });
     simulation.synchronize(balls[i].alwaysWith(sphere));
     if (i === 0)
@@ -102,11 +102,11 @@ for (let i = 0; i < balls.length; i++) {
 const plot = new UPlotGraph({
     plotDiv: document.getElementById("oscillatorPlot"),
     dataDefinition: [
-        {label: "t"}, {label: "ball1", color: "blue"},
-        {label: "ball2", color: "red"},
-        {label: "ball3", color: "red"},
-        {label: "ball4", color: "red"},
-        {label: "ball5", color: "blue"},
+        { label: "t" }, { label: "ball1", color: "blue" },
+        { label: "ball2", color: "red" },
+        { label: "ball3", color: "red" },
+        { label: "ball4", color: "red" },
+        { label: "ball5", color: "blue" },
     ],
     width: canvas.clientWidth,
     height: canvas.clientHeight * 1.5,

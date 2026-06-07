@@ -1,7 +1,8 @@
 import { Color } from "three";
-import { RadialSymmetricBody, VectorField, Range , Simulation, Canvas, HtmlDiv, Vec3,
-    EventController, HtmlControl, Sphere, ArrowField, ThreeJsRenderOptions,
-    ThreeJsRenderer } from "../../../src/index.js";
+import {
+    RadialSymmetricBody, VectorField, Range, Simulation, Canvas, HtmlDiv, Vec3,
+    EventController, HtmlControl, Sphere, ArrowField, ThreeJsRenderer
+} from "../../../src/index.js";
 
 const scale = 1e15;
 const ec = 1.6e-19;
@@ -20,7 +21,7 @@ class Dipole {
         });
     }
 
-    fieldAt(position, out= new Vec3()) {
+    fieldAt(position, out = new Vec3()) {
         out.copy(this.positive.fieldAt(position)
             .add(this.negative.fieldAt(position)));
     }
@@ -53,18 +54,16 @@ const dipoleField = new DipoleField(dipole);
 //
 // View
 //
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(32, 16, 48),
-    scale: scale,
-    fieldOfView: 40
-});
-
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("dipoleCanvasWrapper").contains(Canvas.withElementId("dipoleCanvas")))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(32, 16, 48),
+        scale: scale,
+        fieldOfView: 40
+    });
 
 const positiveSphere = new Sphere({ color: "red" });
-const negativeSphere = new Sphere({color: "blue" });
+const negativeSphere = new Sphere({ color: "blue" });
 const arrowField = new ArrowField({
     xRange: new Range(-20 / scale, 20 / scale, 2 / scale),
     yRange: new Range(-12 / scale, 12 / scale, 2 / scale),

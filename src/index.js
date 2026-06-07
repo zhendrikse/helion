@@ -22,7 +22,7 @@ export { Sun } from "./view/3d/astro/sun.js";
 export { WaveEquationSolver } from "./model/math/numerics/solvers/solvers.js";
 export { EventController, CallbackFunction } from "./controller/controller.js";
 export { Simulation, Canvas, HtmlDiv, Overlay, HtmlControl, UPlotGraph } from "./core/helion.js";
-export { ThreeJsRenderOptions, ThreeJsRenderer } from "./view/3d/renderer.js";
+export { ThreeJsRenderer } from "./view/3d/renderer.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { CompositeRenderer } from "./view/renderer.js";

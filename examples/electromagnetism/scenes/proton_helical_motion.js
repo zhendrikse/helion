@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     VectorField, Range, Sphere, Trail, Vec3,
-    ArrowField, ThreeJsRenderer, ThreeJsRenderOptions, CallbackFunction, Canvas,
+    ArrowField, ThreeJsRenderer, CallbackFunction, Canvas,
     EventController, HtmlControl, HtmlDiv, Overlay, Simulation, Aquarium, RadialSymmetricBody
 } from "../../../src/index.js";
 
@@ -33,7 +33,7 @@ const proton = new RadialSymmetricBody({
     radius: 1.5
 });
 
-const outOfBox= (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize || pos.z < -boxSize || pos.z > boxSize;
+const outOfBox = (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize || pos.z < -boxSize || pos.z > boxSize;
 const field = new Vec3();
 function timeStep(dt) {
     if (outOfBox(proton.position))
@@ -51,19 +51,18 @@ function timeStep(dt) {
 //
 // View
 //
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
-    fieldOfView: 30
-});
-const canvas= Canvas.withElementId("helicalProtonCanvas");
+const canvas = Canvas.withElementId("helicalProtonCanvas");
 const renderer = ThreeJsRenderer
     .on(HtmlDiv
         .withElementId("helicalProtonCanvasWrapper")
         .containsBoth(canvas.and(Overlay.withElementId("helicalProtonCanvasOverlay"))))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
+        fieldOfView: 30
+    });
 
 const protonSphere = new Sphere({ color: 0xff0000 });
-const arrowField =  new ArrowField({
+const arrowField = new ArrowField({
     xRange: new Range(-boxSize, boxSize, 10),
     yRange: new Range(-boxSize, boxSize, 10),
     zRange: new Range(-boxSize, boxSize, 10),

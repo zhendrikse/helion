@@ -1,6 +1,6 @@
-import {Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
+import { Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
-    Floor, Sphere, ThreeJsRenderer, ThreeJsRenderOptions, Trail, Canvas, Vec3,
+    Floor, Sphere, ThreeJsRenderer, Trail, Canvas, Vec3,
     EventController, HtmlDiv, Overlay, Simulation, Surface, StandardSurfaceView,
     RadialSymmetricBody, Sun
 } from "../../../src/index.js";
@@ -55,7 +55,7 @@ class StateVector {
         this.phiDot = phiDot;
     }
 
-    static initial(isOrbit=false) {
+    static initial(isOrbit = false) {
         const r = initialCometDistance;
         const t = 0;
         const phi = 0;
@@ -76,12 +76,12 @@ class StateVector {
     }
 
     addScaled(other, scale) {
-        this.t     += scale * other.t;
-        this.r     += scale * other.r;
-        this.phi   += scale * other.phi;
-        this.tDot  += scale * other.tDot;
-        this.rDot  += scale * other.rDot;
-        this.phiDot+= scale * other.phiDot;
+        this.t += scale * other.t;
+        this.r += scale * other.r;
+        this.phi += scale * other.phi;
+        this.tDot += scale * other.tDot;
+        this.rDot += scale * other.rDot;
+        this.phiDot += scale * other.phiDot;
         return this;
     }
 }
@@ -96,7 +96,7 @@ class Comet extends RadialSymmetricBody {
         stateVector = null
     } = {}) {
         super({ position, radius });
-        this._stateVector = stateVector  ? stateVector.clone() : null;
+        this._stateVector = stateVector ? stateVector.clone() : null;
         this._startStateVector = stateVector ? stateVector.clone() : null;
     }
 
@@ -104,7 +104,7 @@ class Comet extends RadialSymmetricBody {
         const bracket = state.r - 2 * M;
 
         if (bracket <= 0.01)
-            return new StateVector(0,0,0,0,0,0);
+            return new StateVector(0, 0, 0, 0, 0, 0);
 
         // This is the "embedding dynamics"
         return new StateVector(
@@ -122,7 +122,7 @@ class Comet extends RadialSymmetricBody {
         const bracket = state.r - 2 * M;
 
         if (bracket <= 0.01)
-            return new StateVector(0,0,0,0,0,0);
+            return new StateVector(0, 0, 0, 0, 0, 0);
 
         return new StateVector(
             state.tDot,
@@ -150,18 +150,18 @@ class Comet extends RadialSymmetricBody {
         const k4 = derivativeOf(s4, M);
 
         // combine IN PLACE
-        state.t     += (dt/6)*(k1.t     + 2*k2.t     + 2*k3.t     + k4.t);
-        state.r     += (dt/6)*(k1.r     + 2*k2.r     + 2*k3.r     + k4.r);
-        state.phi   += (dt/6)*(k1.phi   + 2*k2.phi   + 2*k3.phi   + k4.phi);
-        state.tDot  += (dt/6)*(k1.tDot  + 2*k2.tDot  + 2*k3.tDot  + k4.tDot);
-        state.rDot  += (dt/6)*(k1.rDot  + 2*k2.rDot  + 2*k3.rDot  + k4.rDot);
-        state.phiDot+= (dt/6)*(k1.phiDot+ 2*k2.phiDot+ 2*k3.phiDot+ k4.phiDot);
+        state.t += (dt / 6) * (k1.t + 2 * k2.t + 2 * k3.t + k4.t);
+        state.r += (dt / 6) * (k1.r + 2 * k2.r + 2 * k3.r + k4.r);
+        state.phi += (dt / 6) * (k1.phi + 2 * k2.phi + 2 * k3.phi + k4.phi);
+        state.tDot += (dt / 6) * (k1.tDot + 2 * k2.tDot + 2 * k3.tDot + k4.tDot);
+        state.rDot += (dt / 6) * (k1.rDot + 2 * k2.rDot + 2 * k3.rDot + k4.rDot);
+        state.phiDot += (dt / 6) * (k1.phiDot + 2 * k2.phiDot + 2 * k3.phiDot + k4.phiDot);
 
         return state;
     }
 
     updateRealMotion(M, dt) {
-        if (this._stateVector.r <= 2*M + 0.01) {
+        if (this._stateVector.r <= 2 * M + 0.01) {
             this.stop();
             this.visible = false;
             return;
@@ -250,16 +250,15 @@ const cometInsideCone = () =>
 //
 // Set up renderer and views
 //
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(11),
-    fieldOfView: 45,
-    background: ThreeJsRenderer.Background.STARS
-});
 const canvas = Canvas.withElementId("spaceTimeCanvas");
 const overlay = Overlay.withElementId("spaceTimeOverlay")
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("spaceTimeCanvasWrapper").containsBoth(canvas.and(overlay)))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(11),
+        fieldOfView: 45,
+        background: ThreeJsRenderer.Background.STARS
+    });
 
 // Grid
 const grid = new Floor({
@@ -280,11 +279,11 @@ const simulation = Simulation
     .synchronize(coneGeometry.onceWith(spaceTimeCone))
     .synchronize(sun.alwaysWith(new Sun()))
     .synchronize(realComet.alwaysWith(new Sphere({ color: 0xff8800 })))
-    .synchronize(realComet.alwaysWith(new Trail( { color: 0xff8800 })))
+    .synchronize(realComet.alwaysWith(new Trail({ color: 0xff8800 })))
     .synchronize(flatComet.alwaysWith(new Sphere({ color: 0xff0000 })))
-    .synchronize(flatComet.alwaysWith(new Trail( { color: 0xff0000 })))
+    .synchronize(flatComet.alwaysWith(new Trail({ color: 0xff0000 })))
     .synchronize(comet.alwaysWith(new Sphere({ color: 0x00ffff })))
-    .synchronize(comet.alwaysWith(new Trail( { color: 0x00ffff })))
+    .synchronize(comet.alwaysWith(new Trail({ color: 0x00ffff })))
     .onClockTick((clockTime, simulatedTime) => timeStep(clockTime));
 
 simulation.onBeforeClockTick((clockTime, simulatedTime) =>
@@ -308,7 +307,7 @@ controller.addStartStopMouseClickEventListenerTo(canvas);
 
 // TODO naar event handler klasse omzetten
 document.getElementById('gridButton').addEventListener('click',
-    () => grid.visible = !grid.visible );
+    () => grid.visible = !grid.visible);
 
 document.getElementById('coneButton').addEventListener('click', () => {
     spaceTimeCone.visible = !spaceTimeCone.visible;

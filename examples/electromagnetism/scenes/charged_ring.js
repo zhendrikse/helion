@@ -1,7 +1,8 @@
 import { Color } from "three";
-import { RadialSymmetricBody, AxialSymmetricBody, VectorField, Range, Simulation, Canvas,
-	Overlay, EventController, HtmlDiv, Sphere, Cylinder, ArrowField, Vec3,
-	ThreeJsRenderer, ThreeJsRenderOptions, Trail
+import {
+    RadialSymmetricBody, AxialSymmetricBody, VectorField, Range, Simulation, Canvas,
+    Overlay, EventController, HtmlDiv, Sphere, Cylinder, ArrowField, Vec3,
+    ThreeJsRenderer, Trail
 } from "../../../src/index.js";
 
 //
@@ -12,10 +13,10 @@ const K = 9e9;
 
 class ChargedRing {
     constructor({
-                    radius = 0.5e-10,
-                    segments = 60,
-                    charge = Q
-                } = {}) {
+        radius = 0.5e-10,
+        segments = 60,
+        charge = Q
+    } = {}) {
         this.radius = radius;
         this.charge = charge;
         this._segments = [];
@@ -106,19 +107,18 @@ function timeStep(dt) {
 //
 // View model
 //
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(15, 5, 20),
-    fieldOfView: 22,
-    scale: 5e10
-});
-const canvas= Canvas.withElementId("chargedRingCanvas");
+const canvas = Canvas.withElementId("chargedRingCanvas");
 const renderer = ThreeJsRenderer
     .on(HtmlDiv
         .withElementId("chargedRingWrapper")
         .containsBoth(canvas.and(Overlay.withElementId("chargedRingOverlay"))))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(15, 5, 20),
+        fieldOfView: 22,
+        scale: 5e10
+    });
 
-const electronSphere = new Sphere({ color: "yellow"});
+const electronSphere = new Sphere({ color: "yellow" });
 const arrowField = new ArrowField({
     xRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     yRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
@@ -129,7 +129,7 @@ const arrowField = new ArrowField({
         const radial = axis.clone().normalize();
         const t = Math.min(Math.sqrt(1 + magnitude) * 1.25e-6, 1);
         return radial.z > 0
-            ? new Color().setHSL(0.0,  1, -0.5 * t + 1)
+            ? new Color().setHSL(0.0, 1, -0.5 * t + 1)
             : new Color().setHSL(0.66, 1, -0.5 * t + 1);
     },
     // colorMap: (axis, magnitude) => new Color().setHSL(Math.min(Math.sqrt(1 + magnitude) * 5e-7, 1), 1, 0.5),

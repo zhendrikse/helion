@@ -1,5 +1,5 @@
 import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Canvas, HtmlDiv,
-    EventController, HtmlControl, Cylinder, ElectromagneticWave, ThreeJsRenderOptions,
+    EventController, HtmlControl, Cylinder, ElectromagneticWave,
     ThreeJsRenderer, Vec3, Overlay
 } from "../../../src/index.js";
 
@@ -23,17 +23,15 @@ for (let position of range)
 //
 // View
 //
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(-1, 4, -9).multiplyScalar(2.5),
-    fieldOfView: 25
-});
-
 const canvas= Canvas.withElementId("antennaCanvas");
 const renderer = ThreeJsRenderer
     .on(HtmlDiv
         .withElementId("antennaCanvasWrapper")
         .containsBoth(canvas.and(Overlay.withElementId("antennaOverlay"))))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(-1, 4, -9).multiplyScalar(2.5),
+        fieldOfView: 25
+});
 
 const antenna = new AxialSymmetricBody({
     position: new Vec3(0, -lambda, 0),

@@ -1,7 +1,7 @@
 import { Vector2 } from "three";
 import {
     RadialSymmetricBody, Simulation, Canvas, Overlay, Sphere, Floor, Vec3,
-    ThreeJsRenderOptions, ThreeJsRenderer, Trail, EventController, HtmlDiv, UPlotGraph, G
+    ThreeJsRenderer, Trail, EventController, HtmlDiv, UPlotGraph, G
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 

@@ -1,6 +1,6 @@
-import {Vector3, Color} from "three";
+import { Vector3, Color } from "three";
 import {
-    normalDistribution, randomArbitrary, randomInt,ThreeJsRenderOptions, ThreeJsRenderer, Vec3,
+    normalDistribution, randomArbitrary, randomInt, ThreeJsRenderer, Vec3,
     HtmlDiv, Canvas, Simulation, PointCloud, PointCloudMaterial, PointCloudView
 } from "../../../src/index.js";
 
@@ -14,9 +14,9 @@ class SpiralGalaxy extends PointCloud {
     // Assign scale factor, rotation factor and fuzz factor for spiral arms.
     // Each arm is a pair: leading arm + trailing arm:
     static ArmsInfo = [[SpiralGalaxy.ScaleFactor, 2, 1.5], [SpiralGalaxy.ScaleFactor, 1.91, 1.5],
-        [-SpiralGalaxy.ScaleFactor, 2, 1.5], [-SpiralGalaxy.ScaleFactor, -2.09, 1.5],
-        [-SpiralGalaxy.ScaleFactor, 0.5, 1.5], [-SpiralGalaxy.ScaleFactor, 0.4, 1.5],
-        [-SpiralGalaxy.ScaleFactor, -0.5, 1.5], [-SpiralGalaxy.ScaleFactor, -0.6, 1.5]];
+    [-SpiralGalaxy.ScaleFactor, 2, 1.5], [-SpiralGalaxy.ScaleFactor, -2.09, 1.5],
+    [-SpiralGalaxy.ScaleFactor, 0.5, 1.5], [-SpiralGalaxy.ScaleFactor, 0.4, 1.5],
+    [-SpiralGalaxy.ScaleFactor, -0.5, 1.5], [-SpiralGalaxy.ScaleFactor, -0.6, 1.5]];
 
     constructor() {
         super();
@@ -37,7 +37,7 @@ class SpiralGalaxy extends PointCloud {
     }
 
     add(starPositions, starRadius) {
-        for (let i = 0, n=starPositions.length; i < n; i++) {
+        for (let i = 0, n = starPositions.length; i < n; i++) {
             this._positions.push(starPositions[i]);
             this._colors.push(SpiralGalaxy.colorAt(starPositions[i]));
             this._sizes.push(starRadius);
@@ -123,21 +123,20 @@ class SpiralGalaxy extends PointCloud {
     }
 }
 
-const threeJsRendererOptions = new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(1, -12, 4).multiplyScalar(50),
-    background: ThreeJsRenderer.Background.STARS,
-    fov: 25,
-    light: false
-});
 const canvas = Canvas.withElementId("galaxyCanvas");
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("galaxyCanvasWrapper").contains(canvas))
-    .with(threeJsRendererOptions);
+    .with({
+        cameraPosition: new Vec3(1, -12, 4).multiplyScalar(50),
+        background: ThreeJsRenderer.Background.STARS,
+        fov: 25,
+        light: false
+    });
 
 const spiralGalaxy = new SpiralGalaxy();
 const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() });
 Simulation
     .with(renderer)
     .synchronize(spiralGalaxy.onceWith(pointCloud))
-    .onClockTick((clockTime, simulatedTime) => {pointCloud.rotation.z += 2.5e-3})
+    .onClockTick((clockTime, simulatedTime) => { pointCloud.rotation.z += 2.5e-3 })
     .start();

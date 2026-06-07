@@ -9,28 +9,6 @@ import { Vec3 } from "../../model/math/math.js";
 import { Axes, SkyDome } from "./composite/backgrounds.js";
 import {Binding} from "../../core/helion.js";
 
-export class ThreeJsRenderOptions {
-    constructor({
-        background = ThreeJsRenderer.Background.TRANSPARENT,
-        backgroundColor = 0x0088ff,
-        scale = 1,
-        controls = true,
-        light = true,
-        cameraPosition = new Vec3(3, 3, 3),
-        shadowsEnabled = false,
-        fieldOfView = 50
-    } = {}) {
-        this.background = background;
-        this.backgroundColor = backgroundColor;
-        this.controls = controls;
-        this.light = light;
-        this.scale = scale;
-        this.cameraPosition = cameraPosition;
-        this.shadowsEnabled = shadowsEnabled;
-        this.fieldOfView = fieldOfView;
-    }
-}
-
 export class ThreeJsRenderer extends Renderer {
     static Background = Object.freeze({
         PLAIN: "Plain",
@@ -76,32 +54,41 @@ export class ThreeJsRenderer extends Renderer {
             this._showOverlayMessage("Reset"); // Canvas clicked during execution ==> we need to reset the simulation
     }
 
-    with(options) {
+    with({
+        background = ThreeJsRenderer.Background.TRANSPARENT,
+        backgroundColor = 0x0088ff,
+        scale = 1,
+        controls = true,
+        light = true,
+        cameraPosition = new Vec3(3, 3, 3),
+        shadowsEnabled = false,
+        fieldOfView = 50
+    } = {}) {
         const canvas = this._canvas;
 
         this._renderer = new WebGLRenderer({
             antialias: true,
             canvas,
-            alpha: options.background === ThreeJsRenderer.Background.TRANSPARENT
+            alpha: background === ThreeJsRenderer.Background.TRANSPARENT
         });
 
-        if (options.shadowsEnabled) {
+        if (shadowsEnabled) {
             this._renderer.shadowMap.enabled = true;
             this._renderer.shadowMap.type = PCFShadowMap;
         }
 
-        this._world.scale.setScalar(options.scale);
+        this._world.scale.setScalar(scale);
 
-        this._camera = new PerspectiveCamera(options.fieldOfView, canvas.clientWidth / canvas.clientHeight, 0.1, 1e6);
-        this._camera.position.set(options.cameraPosition.x, options.cameraPosition.y, options.cameraPosition.z);
+        this._camera = new PerspectiveCamera(fieldOfView, canvas.clientWidth / canvas.clientHeight, 0.1, 1e6);
+        this._camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
-        if (options.controls)
+        if (controls)
             this._controls = new OrbitControls(this._camera, canvas);
 
-        if (options.light)
-            this._initLights(options.shadowsEnabled);
+        if (light)
+            this._initLights(shadowsEnabled);
 
-        this._initBackground(options.background, options.backgroundColor);
+        this._initBackground(background, backgroundColor);
 
         this.resize();
         window.addEventListener("resize", () => this.resize());

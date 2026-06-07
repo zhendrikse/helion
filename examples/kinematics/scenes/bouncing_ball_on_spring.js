@@ -1,6 +1,6 @@
-import { RadialSymmetricBody, Spring , Simulation, Canvas, Overlay, HtmlDiv,
-    EventController, HtmlControl, Arrow, Sphere, ThreeJsRenderOptions,
-    ThreeJsRenderer, Floor, Helix, Vec3
+import {
+    RadialSymmetricBody, Spring, Simulation, Canvas, Overlay, HtmlDiv,
+    EventController, HtmlControl, Arrow, Sphere, ThreeJsRenderer, Floor, Helix, Vec3
 } from "../../../src/index.js";
 
 //
@@ -25,7 +25,7 @@ class PhysicsWorld {
         this._springTopAtRest = this._spring.endPosition;
     }
 
-    _ballHitsSpring = (epsilon=1e-2) =>
+    _ballHitsSpring = (epsilon = 1e-2) =>
         this._springTopAtRest.clone().sub(this._ball.position).length() < epsilon;
 
     timeStep(dt) {
@@ -57,9 +57,9 @@ const overlay = Overlay.withElementId("bouncingBallOnSpringOverlay");
 const canvasWrapper = HtmlDiv.withElementId("bouncingBallOnSpringWrapper").containsBoth(canvas.and(overlay));
 const renderer = ThreeJsRenderer
     .on(canvasWrapper)
-    .with(new ThreeJsRenderOptions({
-    cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
-}));
+    .with({
+        cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
+    });
 
 const helix = new Helix({ coils: 15, color: "yellow" });
 const sphere = new Sphere({ color: "orange" });
@@ -71,7 +71,7 @@ const velocityArrow = new Arrow({
 const forceArrow = new Arrow({
     color: "red",
     size: .1,
-    magnitudeMap: mag => mag *  2.5e-2
+    magnitudeMap: mag => mag * 2.5e-2
 });
 
 const dt = 1.5e-3;
