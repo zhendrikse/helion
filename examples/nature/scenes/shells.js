@@ -1,8 +1,9 @@
 import {
     ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
-    EventController, Vec3, ParametricSurface,
+    EventController, ParametricSurface,
     Domain, StandardSurfaceView, SurfaceResolution, ColorMappers
 } from "../../../src/index.js";
+import {MeshStandardMaterial} from "three";
 
 const sin = Math.sin;
 const cos = Math.cos;
@@ -62,7 +63,7 @@ const surfaces = {
 
 class SurfaceController {
     constructor(simulation, surfaceView, options = {
-        padding: 0.65,
+        padding: 0.7,
         translationY: -1
     }) {
         this._simulation = simulation;
@@ -93,6 +94,10 @@ const renderer = ThreeJsRenderer
     .with({ fieldOfView: 20 });
 
 const surfaceView = new StandardSurfaceView({
+    material: new MeshStandardMaterial({
+        metalness: 0.5,
+        roughness: 0.5,
+    }),
     opacity: 0.95,
     surfaceResolution: new SurfaceResolution(200, 200),
     contourResolution: new SurfaceResolution(100, 50),

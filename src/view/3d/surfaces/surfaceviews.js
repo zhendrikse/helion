@@ -24,6 +24,12 @@ export class SurfaceResolution {
 
 class SurfaceView extends Group {
     static UP = new Vector3(0, 1, 0);
+    static material = new MeshStandardMaterial({
+        side: DoubleSide,
+        roughness: 0.25,
+        metalness: 0.0,
+        transparent: true,
+    });
     constructor({
         resolution = new SurfaceResolution(100, 100),
         scalarField = new HeightScalarField(),
@@ -89,13 +95,6 @@ class SurfaceView extends Group {
 }
 
 export class InstancedMeshSurfaceView extends SurfaceView {
-    static material = (opacity) => new MeshStandardMaterial({
-        side: DoubleSide,
-        roughness: 0.25,
-        metalness: 0.0,
-        transparent: true,
-        opacity: opacity
-    });
     constructor({
         geometry,
         alignWithSurfaceNormal = true,
@@ -113,7 +112,8 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         this._normalVector = new Vector3();
 
         const count = (resolution.u + 1) * (resolution.v + 1);
-        this._mesh = new InstancedMesh(geometry, InstancedMeshView.material(opacity), count);
+        this._mesh = new InstancedMesh(geometry, SurfaceView.material, count);
+        this._mesh.material.opacity = opacity;
         this.add(this._mesh);
 
         this._colorArray = new Float32Array(count * 3);
@@ -224,6 +224,7 @@ export class CapsuleSurfaceView extends InstancedMeshSurfaceView {
 
 export class StandardSurfaceView extends SurfaceView {
     constructor({
+        material = SurfaceView.material,
         resolution = new SurfaceResolution(100, 100),
         contourResolution = new SurfaceResolution(20, 20),
         contourSegments = 100, // per line
@@ -251,13 +252,12 @@ export class StandardSurfaceView extends SurfaceView {
 
         // Surface
         const geometry = new PlaneGeometry(1, 1, resolution.u, resolution.v);
-        this._mesh = new Mesh(geometry, new MeshStandardMaterial({
-            side: DoubleSide,
-            wireframe,
-            vertexColors: true,
-            transparent: true,
-            opacity: opacity,
-        }));
+        this._mesh = new Mesh(geometry, material);
+        this._mesh.material.wireframe = wireframe;
+        this._mesh.material.opacity = opacity;
+        this._mesh.material.vertexColors = true;
+        this._mesh.material.transparent = true;
+        this._mesh.material.side = DoubleSide;
         this.add(this._mesh);
         this._positions = geometry.attributes.position.array;
         this._colors = new Float32Array((resolution.u + 1) * (resolution.v + 1) * 3);
