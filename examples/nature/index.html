@@ -19,11 +19,31 @@
        -->
     <!--
        - R A I N D R O P S
-       -->
     <div class="canvasWrapper" id="raindropCanvasWrapper" style="width: 1000px; aspect-ratio: 19/12">
         <canvas class="applicationCanvas" id="raindropCanvas" style="width: 1000px; aspect-ratio: 19/12"></canvas>
     </div>
     <script type="module" src="scenes/raindrops.js"></script>
+       -->
+    <!--
+       - S H A P E S
+       -->
+    <div class="canvasWrapper" id="shellsCanvasWrapper" style="width: 1000px; aspect-ratio: 19/12">
+        <canvas class="applicationCanvas" id="shellsCanvas" style="width: 1000px; aspect-ratio: 19/12"></canvas>
+    </div>
+    <script type="module" src="scenes/shells.js"></script>
+    <div class="buttonRow">
+        <label for="surfaceSelect">Surface:</label>
+        <select name="surfaceSelect" id="surfaceSelect">
+            <option value="Sea shell">Sea shell</option>
+            <option value="Astroceras">Astroceras</option>
+            <option value="Bellerophina">Bellerophina</option>
+            <option value="Conchoidal">Conchoidal</option>
+            <option value="Euhoplites">Euhoplites</option>
+            <option value="Mya arenaria">Mya arenaria</option>
+            <option value="Nautilus">Nautilus</option>
+            <option value="Pseudoheliceras subcatenatum">Pseudoheliceras subcatenatum</option>
+        </select>
+    </div>
 </body>
 </html>
 

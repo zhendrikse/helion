@@ -1,5 +1,5 @@
 import { MathPhysicsModelBehavior} from "../../core/helion.js";
-import { Interval, Vec3 } from "./math.js";
+import {Complex, Interval, Vec3} from "./math.js";
 import {
     InfernoColorMapper,
     JetColorMapper,
@@ -343,7 +343,7 @@ export class DiscreteScalarField extends Field {
 /**
  * Discrete complex scalar field, i.e. a complex scalar field on a grid.
  */
-export class DiscreteComplexField extends MathPhysicsModelBehavior {
+export class DiscreteComplexField extends Field {
     constructor({
         nx = 128,
         ny = 128,
@@ -357,12 +357,14 @@ export class DiscreteComplexField extends MathPhysicsModelBehavior {
         this.ny = ny;
     }
 
+    // TODO verwijder => gebruik sample()
     phaseAt(i, j) {
         const re = this.real[i][j];
         const im = this.imag[i][j];
         return Math.atan2(im, re); // [-π, π]
     }
 
+    // TODO verwijder => gebruik sample()
     magnitudeAt(i, j) {
         const re = this.real[i][j];
         const im = this.imag[i][j];
@@ -372,6 +374,10 @@ export class DiscreteComplexField extends MathPhysicsModelBehavior {
     apply(transformation) {
         transformation(this);
         return this;
+    }
+
+    sample(i, j, target) {
+        target.set(this.real[i][j], this.imag[i][j]);
     }
 }
 

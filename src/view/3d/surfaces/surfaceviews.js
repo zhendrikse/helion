@@ -88,7 +88,7 @@ class SurfaceView extends Group {
     }
 }
 
-class InstancedMeshView extends SurfaceView {
+export class InstancedMeshSurfaceView extends SurfaceView {
     static material = (opacity) => new MeshStandardMaterial({
         side: DoubleSide,
         roughness: 0.25,
@@ -98,6 +98,7 @@ class InstancedMeshView extends SurfaceView {
     });
     constructor({
         geometry,
+        alignWithSurfaceNormal = true,
         resolution = new SurfaceResolution(100, 100),
         opacity = 1.0,
         scalarField = new HeightScalarField(),
@@ -119,7 +120,7 @@ class InstancedMeshView extends SurfaceView {
         this._mesh.instanceColor = new InstancedBufferAttribute(this._colorArray, 3);
         this._mesh.instanceColor.setUsage(DynamicDrawUsage);
 
-        this._alignWithSurfaceNormal = true;
+        this._alignWithSurfaceNormal = alignWithSurfaceNormal;
     }
 
     render() {
@@ -160,7 +161,7 @@ class InstancedMeshView extends SurfaceView {
     }
 }
 
-export class BoxSurfaceView extends InstancedMeshView {
+export class BoxSurfaceView extends InstancedMeshSurfaceView {
     constructor({
         resolution = new SurfaceResolution(100, 100),
         size = 1,
@@ -170,12 +171,11 @@ export class BoxSurfaceView extends InstancedMeshView {
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         const geometry = new BoxGeometry(size, size, size);
-        super({resolution, colorMapper, scalarField, normalizer, opacity, geometry});
-        this._alignWithSurfaceNormal = true;
+        super({resolution, colorMapper, scalarField, normalizer, opacity, geometry, alignWithSurfaceNormal: true});
     }
 }
 
-export class SphereSurfaceView extends InstancedMeshView {
+export class SphereSurfaceView extends InstancedMeshSurfaceView {
     constructor({
         resolution = new SurfaceResolution(100, 100),
         radius = 1,
@@ -190,7 +190,7 @@ export class SphereSurfaceView extends InstancedMeshView {
     }
 }
 
-export class ConeSurfaceView extends InstancedMeshView {
+export class ConeSurfaceView extends InstancedMeshSurfaceView {
     constructor({
         resolution = new SurfaceResolution(100, 100),
         radius = 8,
@@ -206,7 +206,7 @@ export class ConeSurfaceView extends InstancedMeshView {
     }
 }
 
-export class CapsuleSurfaceView extends InstancedMeshView {
+export class CapsuleSurfaceView extends InstancedMeshSurfaceView {
     constructor({
         resolution = new SurfaceResolution(100, 100),
         radius = 8,
@@ -230,6 +230,7 @@ export class StandardSurfaceView extends SurfaceView {
         wireframe = false,
         contours = true,
         surface = true,
+        opacity = 1,
         scalarField = new HeightScalarField(),
         colorMapper = scalarField.recommendedColorMapper,
         normalizer = new AdaptiveSymmetricNormalizer()
@@ -253,7 +254,9 @@ export class StandardSurfaceView extends SurfaceView {
         this._mesh = new Mesh(geometry, new MeshStandardMaterial({
             side: DoubleSide,
             wireframe,
-            vertexColors: true
+            vertexColors: true,
+            transparent: true,
+            opacity: opacity,
         }));
         this.add(this._mesh);
         this._positions = geometry.attributes.position.array;

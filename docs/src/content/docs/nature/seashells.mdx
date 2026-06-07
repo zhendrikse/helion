@@ -1,0 +1,45 @@
+---
+title: "🐚 Shells"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div className="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div class="header_line"></div>
+
+🎯 Drawing natural shapes using the Helion library
+
+### Live demo
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/nature/scenes/shells.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=shells.js"/>
+    </a>
+</div>
+
+<div class="canvasWrapper" id="shellsCanvasWrapper">
+    <canvas class="applicationCanvas" id="shellsCanvas"></canvas>
+</div>
+<div class="buttonRow">
+    <label for="surfaceSelect">Surface:</label>
+    <select name="surfaceSelect" id="surfaceSelect">
+        <option value="Sea shell">Sea shell</option>
+        <option value="Astroceras">Astroceras</option>
+        <option value="Bellerophina">Bellerophina</option>
+        <option value="Conchoidal">Conchoidal</option>
+        <option value="Euhoplites">Euhoplites</option>
+        <option value="Mya arenaria">Mya arenaria</option>
+        <option value="Nautilus">Nautilus</option>
+        <option value="Pseudoheliceras subcatenatum">Pseudoheliceras subcatenatum</option>
+    </select>
+</div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/shells.js"}></script>

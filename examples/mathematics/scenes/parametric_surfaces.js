@@ -8,34 +8,35 @@ const sin = Math.sin;
 const cos = Math.cos;
 const PI = Math.PI;
 
-class SurfaceController {
-    static surfaces = {
-        "Bow curve": new ParametricSurface({
-            domain: new Domain([0, 2 * PI], [0, 4 * PI]),
-            x: (u, v) => (1 * sin(u) + 2) * sin(v),
-            y: (u, v) => (1 * sin(u) + 2) * cos(v),
-            z: (u, v) => 1 * cos(u) + 2 * cos(0.5 * v)
-        }),
-        "Klein bottle": new ParametricSurface({
-            domain: new Domain([0, 2 * PI], [0, 2 * PI]),
-            x: (u, v) => -(5 - 2 * cos(u)) * cos(v) + 6 * (sin(u) + 1) * cos(u),
-            y: (u, v) =>  (5 - 2 * cos(u)) * sin(v),
-            z: (u, v) => -16 * sin(u)
-        }),
-        "Mobius strip": new ParametricSurface({
-            domain: new Domain([-1, 1], [0, 2 * PI]),
-            x: (u, v) => (2 + u * cos(v / 2)) * cos(v),
-            y: (u, v) => u * sin(v / 2),
-            z: (u, v) => (2 + u * cos(v / 2)) * sin(v)
-        }),
-        "Torus": new ParametricSurface({
-            domain: new Domain([0, 2 * PI], [0, 2 * PI]),
-            x: (u, v) => cos(u) * (3 + 1.5 * cos(v)),
-            y: (u, v) => sin(u) * (3 + 1.5 * cos(v)),
-            z: (u, v) => 2 * sin(v)
-        })
-    };
+const surfaces = {
+    "Bow curve": new ParametricSurface({
+        domain: new Domain([0, 2 * PI], [0, 4 * PI]),
+        x: (u, v) => (1 * sin(u) + 2) * sin(v),
+        y: (u, v) => (1 * sin(u) + 2) * cos(v),
+        z: (u, v) => 1 * cos(u) + 2 * cos(0.5 * v)
+    }),
+    "Klein bottle": new ParametricSurface({
+        domain: new Domain([0, 2 * PI], [0, 2 * PI]),
+        x: (u, v) => -(5 - 2 * cos(u)) * cos(v) + 6 * (sin(u) + 1) * cos(u),
+        y: (u, v) =>  (5 - 2 * cos(u)) * sin(v),
+        z: (u, v) => -16 * sin(u)
+    }),
+    "Mobius strip": new ParametricSurface({
+        domain: new Domain([-1, 1], [0, 2 * PI]),
+        x: (u, v) => (2 + u * cos(v / 2)) * cos(v),
+        y: (u, v) => u * sin(v / 2),
+        z: (u, v) => (2 + u * cos(v / 2)) * sin(v)
+    }),
+    "Torus": new ParametricSurface({
+        domain: new Domain([0, 2 * PI], [0, 2 * PI]),
+        x: (u, v) => cos(u) * (3 + 1.5 * cos(v)),
+        y: (u, v) => sin(u) * (3 + 1.5 * cos(v)),
+        z: (u, v) => 2 * sin(v)
+    })
+};
 
+
+class SurfaceController {
     constructor(simulation, surfaceView, options = {
         padding: 0.9,
         translationY: -5
@@ -50,7 +51,7 @@ class SurfaceController {
     set surface(surfaceName) { this.switchTo(surfaceName); }
 
     switchTo(surfaceName) {
-        const newSurface = SurfaceController.surfaces[surfaceName];
+        const newSurface = surfaces[surfaceName];
         if (!newSurface) throw new Error(`Surface "${surfaceName}" not found`);
 
         if (this._currentSurface)
@@ -67,18 +68,17 @@ const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("parametricSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("parametricSurfacesCanvas")))
     .with(new ThreeJsRenderOptions({
-        cameraPosition: new Vec3(25, 10, 10),
         fieldOfView: 20
     }));
 
 
 const surfaceView = new StandardSurfaceView({
-    scalarField: new GaussianCurvatureField()
+    scalarField: new GaussianCurvatureField(),
+    opacity: 0.925
 });
 
 const simulation = Simulation
     .with(renderer)
-    .incrementsTimeBy(0.016)
     .onClockTick()
     .start();
 

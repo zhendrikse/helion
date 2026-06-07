@@ -73,3 +73,79 @@ export class EventController {
         });
     }
 }
+//
+// export class HtmlSelect {
+//     static populate(selectId, values) {
+//         const select = document.getElementById(selectId);
+//
+//         select.innerHTML = "";
+//
+//         for (const key of Object.keys(values)) {
+//             const option = document.createElement("option");
+//             option.value = key;
+//             option.textContent = key;
+//             select.appendChild(option);
+//         }
+//     }
+// }
+//
+// export class Registry {
+//     constructor(entries = {}) {
+//         this._entries = entries;
+//     }
+//
+//     get(name) {
+//         return this._entries[name];
+//     }
+//
+//     names() {
+//         return Object.keys(this._entries);
+//     }
+//
+//     add(name, value) {
+//         this._entries[name] = value;
+//     }
+// }
+//
+// export const ColorMappers = new Registry({
+//     RdYlBu: new RdYlBuColorMapper(),
+//     Seismic: new SeismicColorMapper(),
+//     Viridis: new ViridisColorMapper(),
+//     ...
+// });
+//
+// HtmlSelect.populate(
+//     "colorMapSelect",
+//     ColorMappers.names()
+// );
+//
+// export const SurfaceViews = new Registry({
+//     Surface: StandardSurfaceView,
+//     Spheres: SphereSurfaceView,
+//     Points: PointSurfaceView,
+//     Squares: SquareSurfaceView
+// });
+//
+// export const SurfaceViews = {
+//     Surface: {
+//         label: "Surface",
+//         constructor: StandardSurfaceView
+//     },
+//
+//     Spheres: {
+//         label: "Spheres",
+//         constructor: SphereSurfaceView
+//     },
+//
+//     Points: {
+//         label: "Points",
+//         constructor: PointSurfaceView
+//     }
+// };
+//
+// {
+//     label: "Spheres",
+//         icon: "⚫",
+//     category: "Discrete",
+//     constructor: SphereSurfaceView
+// }

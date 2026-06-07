@@ -33,6 +33,7 @@ export default defineConfig({
                 real_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/real_surfaces.js'),
                 solenoid: path.resolve(__dirname, 'examples/electromagnetism/scenes/solenoid.js'),
                 schwarzschild_space_time: path.resolve(__dirname, 'examples/relativity/scenes/schwarzschild_space_time.js'),
+                shells: path.resolve(__dirname, 'examples/nature/scenes/shells.js'),
                 spiral_galaxy: path.resolve(__dirname, 'examples/astrophysics/scenes/spiral_galaxy.js'),
                 star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js'),
                 three_body: path.resolve(__dirname, 'examples/kinematics/scenes/three_body.js'),
