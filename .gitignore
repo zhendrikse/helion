@@ -1,7 +1,9 @@
 node_modules/
 dist/
 docs/.vscode/
+docs/.astro/
 docs/public/examples/
+docs/public/assets/
 examples/astrophysics/node_modules
 examples/astrophysics/dist
 examples/kinematics/node_modules
