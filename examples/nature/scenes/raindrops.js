@@ -22,8 +22,9 @@ export class WaveEquation {
 
 //
 // First, declare a (discrete) scalar field and a wave equation.
-// Next, define a solver that for this field and equation.
-// Finally, define a surface can visualize the (scalar) field.
+// Next, define a solver on this field for this equation.
+// Finally, define a surface that can visualize the (scalar) field.
+//
 const field = new DiscreteScalarField({ nx: 256, ny: 256 });
 const equation = new WaveEquation({ velocity: 5 });
 const solver = new WaveEquationSolver(field, equation);
