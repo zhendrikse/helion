@@ -7,7 +7,6 @@
 <body>
     <!--
        - S P H E R I C A L   H A R M O N I C S
-       -->
     <div class="canvasWrapper" id="sphericalHarmonicsCanvasWrapper">
         <canvas class="applicationCanvas" id="sphericalHarmonicsCanvas" width="500" height="500"></canvas>
     </div>
@@ -32,6 +31,7 @@
         <input type="checkbox" name="showWireframe" id="showWireframe" />
     </div>
     <script type="module" src="scenes/spherical_harmonics.js"></script>
+       -->
     <!--
        - R E A L   S U R F A C E S
     <div class="canvasWrapper" id="realSurfacesCanvasWrapper">
@@ -72,20 +72,21 @@
        -->
     <!--
        - P A R A M E T R I C   S U R F A C E S
+       -->
     <div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
         <canvas class="applicationCanvas" id="parametricSurfacesCanvas" width="500" height="500"></canvas>
     </div>
     <div class="buttonRow">
         <label for="colorMapSelect">Color map:</label>
         <select name="colorMaps" id="colorMapSelect">
-            <option value="gradient">Gradient</option>
-            <option value="seismic">Seismic</option>
-            <option value="viridis">Viridis</option>
-            <option value="jet">Jet</option>
-            <option value="inferno">Inferno</option>
+            <option value="Gradient">Gradient</option>
+            <option value="Seismic">Seismic</option>
+            <option value="Viridis">Viridis</option>
+            <option value="Jet">Jet</option>
+            <option value="Inferno">Inferno</option>
             <option value="RdYlBu">RdYlBu</option>
-            <option value="water">Water</option>
-            <option value="water alternative">Water alternative</option>
+            <option value="Water">Water</option>
+            <option value="WaterAlternative">Water alternative</option>
         </select>
     </div>
     <div class="buttonRow">
@@ -100,13 +101,13 @@
     <div class="buttonRow">
         <label for="scalarFieldSelect">Surface field:</label>
         <select name="scalarFieldSelect" id="scalarFieldSelect">
-            <option value="gaussian curvature">Gaussian curvature</option>
-            <option value="mean curvature">Mean curvature</option>
-            <option value="principal curvature 1">Principal curvature 1</option>
-            <option value="principal curvature 2">Principal curvature 2</option>
-            <option value="shape index">Shape index field</option>
-            <option value="curvedness">Curvedness</option>
-            <option value="height">Height</option>
+            <option value="GaussianCurvature">Gaussian curvature</option>
+            <option value="MeanCurvature">Mean curvature</option>
+            <option value="PrincipalCurvature1">Principal curvature 1</option>
+            <option value="PrincipalCurvature2">Principal curvature 2</option>
+            <option value="ShapeIndex">Shape index field</option>
+            <option value="Curvedness">Curvedness</option>
+            <option value="Height">Height</option>
         </select>
     </div>
     <div class="buttonRow">
@@ -116,7 +117,6 @@
         <input type="checkbox" name="showWireframe" id="showWireframe" />
     </div>
     <script type="module" src="scenes/parametric_surfaces.js"></script>
-       -->
     <!--
        - F O U R I E R   T R A N S F O R M
     <div class="canvasWrapper" id="waveCanvasWrapper">
