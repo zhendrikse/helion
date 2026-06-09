@@ -114,13 +114,10 @@ export class Trail extends Group {
 export class Sphere extends Mesh {
     constructor({
         color = 0xffff00,
-        visible = true,
-        segments = 24,
         opacity = 1,
-        castShadow = false,
-        wireframe = false
-    } = {}) {
-        const material = new MeshStandardMaterial({
+        wireframe = false,
+        visible = true,
+        material = new MeshStandardMaterial({
             color: color,
             opacity: opacity,
             transparent: true,
@@ -128,7 +125,10 @@ export class Sphere extends Mesh {
             visible: visible,
             roughness: 0.2,
             metalness: 0.8
-        })
+        }),
+        segments = 24,
+        castShadow = false,
+    } = {}) {
 
         super(new SphereGeometry(1, segments, segments), material);
         this._body = null;

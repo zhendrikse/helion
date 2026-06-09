@@ -352,8 +352,6 @@ export class StandardSurfaceView extends SurfaceView {
 
     initialize() {
         super.initialize();
-        if (!this._showContours)
-            return;
 
         // u = constant
         for (let i = 0; i <= this._contourResolution.u; i++) {
@@ -368,6 +366,8 @@ export class StandardSurfaceView extends SurfaceView {
             this.add(line);
             this._vLines.push({ line: line, v: i / this._contourResolution.v });
         }
+
+        this.contoursVisible = this._showContours;
     }
 
     #updateLine(entry, sampleFn, colorFn) {

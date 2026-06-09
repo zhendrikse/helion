@@ -40,10 +40,19 @@ layout: ../../../layouts/DocsLayout.astro
 ### 🌍 Earth
 <div class="header_line"></div>
 
-In the making.
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/astrophysics/scenes/planets/earth.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=earth.js"/>
+    </a>
+</div>
+
+<div class="canvasWrapper" id="earthCanvasWrapper">
+    <canvas class="applicationCanvas" id="earthCanvas" ></canvas>
+</div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/earth.js"}></script>
 
 
-### 🌍 Saturn
+### 🪐 Saturn
 <div class="header_line"></div>
 
 <div class="badgeRow">
@@ -53,6 +62,6 @@ In the making.
 </div>
 
 <div class="canvasWrapper" id="saturnCanvasWrapper">
-    <canvas class="applicationCanvas" id="saturnCanvas" width="600" height="600" ></canvas>
+    <canvas class="applicationCanvas" id="saturnCanvas"></canvas>
 </div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/saturn.js"}></script>

@@ -1,7 +1,10 @@
 import {
-    Group, BufferAttribute, BufferGeometry, DoubleSide, Mesh, MeshPhongMaterial, TextureLoader
+    BufferAttribute, BufferGeometry, DoubleSide, Mesh, MeshPhongMaterial,
+    TextureLoader, Group, SphereGeometry, Vector3
 } from "three";
 import saturnRingsUrl from '../../../textures/planets/saturnringcolor.jpg';
+import saturnMap from '../../../textures/planets/saturnmap.jpg';
+import { Sphere } from "../primitives/primitives.js";
 
 //
 // Port to new Three.js from https://github.com/jeromeetienne/threex.planets/blob/master/threex.planets.js
@@ -92,12 +95,22 @@ const PlanetRingGeometry = function (innerRadius, outerRadius, thetaSegments) {
 };
 
 export class Saturn extends Group {
+    static loader = new TextureLoader();
+    static material = new MeshPhongMaterial({
+        map: Saturn.loader.load(saturnMap),
+        bumpMap: Saturn.loader.load(saturnMap),
+        bumpScale: 0.05,
+        shininess: 0
+    });
+
     constructor() {
         super();
-        // super(planetData, {
-        //     bumpScale: 0.05,
-        //     identicalBumpMap: true,
-        // });
+        const geometry = new SphereGeometry(1, 64, 64);
+        this._mesh = new Mesh(geometry, Saturn.material);
+        this.add(this._mesh);
+        this._mesh.castShadow = true;
+        this._mesh.receiveShadow = false;
+
         this._body = null;
     }
 
@@ -109,18 +122,21 @@ export class Saturn extends Group {
             throw new Error("Body does not have a tilt, hence it cannot be attached to Saturn view.");
 
         this._body = body;
+
+        // Set the axis of rotation (Y-axis) equal to the tilt
+        this.quaternion.setFromAxisAngle(new Vector3(0, 0, 1), body.tilt);
     }
 
     initialize() {
-        const innerRingRadius = 1.11 * this._body.radius;
-        const outerRingRadius = 2.1 * this._body.radius;
+        const innerRingRadius = 1.11;
+        const outerRingRadius = 2.1;
         const ringMesh = this.#createRings(innerRingRadius, outerRingRadius);
         this.add(ringMesh);
     }
 
     #createRings(innerRadius, outerRadius) {
         const geometry = new PlanetRingGeometry(innerRadius, outerRadius, 128);
-        const texture = new TextureLoader().load(saturnRingsUrl);
+        const texture = Saturn.loader.load(saturnRingsUrl);
         const material = new MeshPhongMaterial({
             map: texture,
             side: DoubleSide,
@@ -135,6 +151,7 @@ export class Saturn extends Group {
     }
 
     render() {
-        
+        this.position.copy(this._body.position);
+        this.scale.setScalar(this._body.radius);
     }
 }

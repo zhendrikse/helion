@@ -17,6 +17,7 @@ import earthSpecUrl from '../../../textures/planets/earthspec1k.jpg';
 import earthCloudsUrl from '../../../textures/planets/Earth-clouds.png';
 import earthNormalMapUrl from '../../../textures/planets/2k_earth_normal_map.png';
 import moonmapUrl from '../../../textures/planets/moonmap1k.jpg';
+import {Sphere} from "../primitives/primitives.js";
 
 const canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
@@ -152,3 +153,9 @@ function animate (msec) {
     renderer.render(scene, camera);
 }
 animate();
+
+export class Earth extends Sphere {
+    constructor() {
+        super();
+    }
+}

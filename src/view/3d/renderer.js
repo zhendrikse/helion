@@ -30,8 +30,9 @@ export class ThreeJsRenderer extends Renderer {
 
         this._scene = new Scene();
         this._world = new Group();
+        this._background = new Group();
         this._skydome = null;
-        this._scene.add(this._world);
+        this._scene.add(this._world, this._background);
         this._axes = null;
     }
 
@@ -167,7 +168,7 @@ export class ThreeJsRenderer extends Renderer {
                     skyRadius: this._camera.position.clone().length() * 10,
                     blinkSpeed: 2.5
                 });
-                this._world.add(this._skydome);
+                this._background.add(this._skydome);
                 break;
             case ThreeJsRenderer.Background.TRANSPARENT:
             default:
