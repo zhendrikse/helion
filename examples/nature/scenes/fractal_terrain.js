@@ -1,4 +1,6 @@
-import {DiscreteScalarField} from "../../../src/index.js";
+import {
+    Canvas, DiscreteScalarField, HtmlDiv, ScalarFieldSurface, Simulation, StandardSurfaceView, ThreeJsRenderer, Vec3
+} from "../../../src/index.js";
 
 export class DiamondSquareOperator {
     constructor({
@@ -7,6 +9,53 @@ export class DiamondSquareOperator {
     } = {}) {
         this._roughness = roughness;
         this._amplitude = amplitude;
+    }
+
+    #diamondStep(step, size, scale) {
+        const half = step >> 1;
+        for (let x = half; x < size; x += step)
+            for (let y = half; y < size; y += step) {
+                const average = 0.25 * (
+                    field.valueAt(x - half, y - half) +
+                    field.valueAt(x + half, y - half) +
+                    field.valueAt(x - half, y + half) +
+                    field.valueAt(x + half, y + half)
+                );
+
+                field.setValueAt(x, y, average + this.#random(scale));
+            }
+    }
+
+    #squareStep(step, size, scale) {
+        const half = step >> 1;
+        for (let x = 0; x <= size; x += half)
+            for (let y = (x + half) % step; y <= size; y += step) {
+                let sum = 0;
+                let count = 0;
+
+                if (x >= half) {
+                    sum += field.valueAt(x - half, y);
+                    count++;
+                }
+
+                if (x + half <= size) {
+                    sum += field.valueAt(x + half, y);
+                    count++;
+                }
+
+                if (y >= half) {
+                    sum += field.valueAt(x, y - half);
+                    count++;
+                }
+
+                if (y + half <= size) {
+                    sum += field.valueAt(x, y + half);
+                    count++;
+                }
+
+                field.setValueAt(x, y, sum / count + this.#random(scale));
+            }
+
     }
 
     apply(field) {
@@ -23,53 +72,8 @@ export class DiamondSquareOperator {
 
         while (step > 1) {
             const half = step >> 1;
-
-            //
-            // diamond step
-            //
-            for (let x = half; x < size; x += step)
-                for (let y = half; y < size; y += step) {
-                    const average = 0.25 * (
-                        field.valueAt(x - half, y - half) +
-                        field.valueAt(x + half, y - half) +
-                        field.valueAt(x - half, y + half) +
-                        field.valueAt(x + half, y + half)
-                    );
-
-                    field.setValueAt(x, y, average + this.#random(scale));
-                }
-
-            //
-            // square step
-            //
-            for (let x = 0; x <= size; x += half)
-                for (let y = (x + half) % step; y <= size; y += step) {
-                    let sum = 0;
-                    let count = 0;
-
-                    if (x >= half) {
-                        sum += field.valueAt(x - half, y);
-                        count++;
-                    }
-
-                    if (x + half <= size) {
-                        sum += field.valueAt(x + half, y);
-                        count++;
-                    }
-
-                    if (y >= half) {
-                        sum += field.valueAt(x, y - half);
-                        count++;
-                    }
-
-                    if (y + half <= size) {
-                        sum += field.valueAt(x, y + half);
-                        count++;
-                    }
-
-                    field.setValueAt(x, y, sum / count + this.#random(scale));
-                }
-
+            this.#diamondStep(step, size, scale);
+            this.#squareStep(step, size, scale);
             step >>= 1;
             scale *= Math.pow(2, -this._roughness);
         }
@@ -88,3 +92,21 @@ field.apply(new DiamondSquareOperator({
     roughness: 1.1
 }));
 
+const surface = new ScalarFieldSurface(field);
+const surfaceView = new StandardSurfaceView();
+surfaceView.position.set(-128, 0, -128);
+
+const renderer = ThreeJsRenderer
+    .on(HtmlDiv.withElementId("terrainCanvasWrapper")
+        .contains(Canvas.withElementId("terrainCanvas")))
+    .with({
+        cameraPosition: new Vec3(300, 300, 300),
+        fieldOfView: 30,
+    });
+
+Simulation
+    .with(renderer)
+    .synchronize(surface.onceWith(surfaceView));
+
+surfaceView.showSurfaceControls();
+surfaceView.showColormapSelector();

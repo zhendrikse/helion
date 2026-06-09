@@ -1,0 +1,35 @@
+---
+title: "🌄 Fractal terrain"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div className="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div class="header_line"></div>
+
+🎯 Generation of a landscape by applying a (statistical) operator on a (discrete scalar) field<br/>
+🧠 Inspired by [RandomFractalTerrain-Vpython](https://github.com/ragnraok/RandomFractalTerrain-Vpython)<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/FractalTerrain) is available as well, see [fractal_terrain.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/fractal_terrain.py), but significantly slower!<br/>
+
+### Live demo
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/nature/scenes/fractal_terrain.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=fractal_terrain.js"/>
+    </a>
+</div>
+
+<div class="canvasWrapper" id="terrainCanvasWrapper" >
+    <canvas class="applicationCanvas" id="terrainCanvas" ></canvas>
+</div>
+<div id="helionControls"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/fractal_terrain.js"}></script>
