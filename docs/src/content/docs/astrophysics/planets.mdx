@@ -46,8 +46,8 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="earthCanvasWrapper">
-    <canvas class="applicationCanvas" id="earthCanvas" ></canvas>
+<div class="canvasWrapper" id="earthCanvasWrapper" style="aspect-ratio: 4/3">
+    <canvas class="applicationCanvas" id="earthCanvas" style="aspect-ratio: 4/3" ></canvas>
 </div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/earth.js"}></script>
 
@@ -61,7 +61,7 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="saturnCanvasWrapper">
-    <canvas class="applicationCanvas" id="saturnCanvas"></canvas>
+<div class="canvasWrapper" id="saturnCanvasWrapper" style="aspect-ratio: 4/3">
+    <canvas class="applicationCanvas" id="saturnCanvas" style="aspect-ratio: 4/3"></canvas>
 </div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/saturn.js"}></script>
