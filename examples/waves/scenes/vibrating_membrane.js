@@ -1,7 +1,6 @@
 import {
-    Canvas, EventController, HtmlControl, HtmlDiv, GradientColorMapper, Domain,
-    StandardSurfaceView, Interval, MultivariateFunctionSurface,
-    Simulation, ThreeJsRenderer
+    Canvas, HtmlDiv, GradientColorMapper, Domain, StandardSurfaceView, Interval,
+    MultivariateFunctionSurface, Simulation, ThreeJsRenderer, Button
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -24,12 +23,13 @@ class Membrane extends MultivariateFunctionSurface {
     }
 
     get amplitude() { return this._amplitude; }
-    set normalModeX(normalModeX) { this._normalModeX = normalModeX; }
+    set normalModeX(normalModeX) { this._normalModeX = Number(normalModeX); }
     set normalModeY(normalModeY) { this._normalModeY = normalModeY; }
 }
 
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("membraneCanvasWrapper").contains(Canvas.withElementId("membraneCanvas")));
+    .on(HtmlDiv.withElementId("membraneCanvasWrapper").contains(Canvas.withElementId("membraneCanvas")))
+    .with({});
 
 const membrane = new Membrane();
 const surfaceView = new StandardSurfaceView({
@@ -39,36 +39,34 @@ const surfaceView = new StandardSurfaceView({
 
 renderer.frameSceneOn(surfaceView, { padding: 2, translationY: -1.25 });
 
-const simulation = Simulation
+Simulation
     .with(renderer)
     .synchronize(membrane.alwaysWith(surfaceView))
     .incrementsTimeBy(0.016)
     .onClockTick((clockTime, simulatedTime) => membrane.time = simulatedTime, 3)
     .start();
 
-const eventController = EventController.for(simulation);
-eventController.attach(HtmlControl
-    .withElementId("colorMapSelect")
-    .forType("change")
-    .to(surfaceView)
-    .withProperty("colorMapper"));
+surfaceView.showColormapSelector();
+surfaceView.showSurfaceControls();
 
-eventController.attach(HtmlControl
-    .withElementId("showContours")
-    .forType("click")
-    .to(surfaceView)
-    .withProperty("contoursVisible"));
+const normalModeXButton = new Button()
+    .on(membrane)
+    .withText(" 1 ")
+    .withLabel("Mode-x: ")
+    .withProperty("normalModeX");
+for (let i = 2; i < 6; i++)
+    Button.togetherWith(normalModeXButton)
+        .on(membrane)
+        .withText(` ${i} `)
+        .withProperty("normalModeX");
 
-for (let i = 1; i < 6; i++) {
-    eventController.attach(HtmlControl
-        .withElementId("x" + i)
-        .forType("click")
-        .to(membrane)
-        .withProperty("normalModeX"));
-
-    eventController.attach(HtmlControl
-        .withElementId("y" + i)
-        .forType("click")
-        .to(membrane)
-        .withProperty("normalModeY"));
-}
+const normalModeYButton = new Button()
+    .on(membrane)
+    .withText(" 1 ")
+    .withLabel("Mode-y: ")
+    .withProperty("normalModeY");
+for (let i = 2; i < 6; i++)
+    Button.togetherWith(normalModeYButton)
+        .on(membrane)
+        .withText(` ${i} `)
+        .withProperty("normalModeY");

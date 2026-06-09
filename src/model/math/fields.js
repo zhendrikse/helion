@@ -1,11 +1,12 @@
-import { MathPhysicsModelBehavior} from "../../core/helion.js";
+import {MathPhysicsModelBehavior, Registry} from "../../core/helion.js";
 import {Complex, Interval, Vec3} from "./math.js";
 import {
+    GradientColorMapper,
     InfernoColorMapper,
     JetColorMapper,
     RdYlBuColorMapper,
-    SeismicColorMapper,
-    ViridisColorMapper
+    SeismicColorMapper, UniformColorMapper,
+    ViridisColorMapper, WaterAlternativeColorMapper, WaterColorMapper
 } from "../../view/colormappers.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
 
@@ -270,14 +271,18 @@ export class CurvednessField extends Field {
     }
 }
 
-export const SurfaceScalarFields = Object.freeze({
-    Height: new HeightScalarField(),
-    MeanCurvature: new MeanCurvatureField(),
-    PrincipalCurvature1: new PrincipalCurvatureField(1),
-    PrincipalCurvature2: new PrincipalCurvatureField(2),
-    GaussianCurvature: new GaussianCurvatureField(),
-    ShapeIndex: new ShapeIndexField(),
-    Curvedness: new CurvednessField()
+export const SurfaceScalarFields = new Registry({
+    id: "surfaceScalarFieldSelect",
+    label: "Surface field ",
+    entries: {
+        Height: new HeightScalarField(),
+        MeanCurvature: new MeanCurvatureField(),
+        PrincipalCurvature1: new PrincipalCurvatureField(1),
+        PrincipalCurvature2: new PrincipalCurvatureField(2),
+        GaussianCurvature: new GaussianCurvatureField(),
+        ShapeIndex: new ShapeIndexField(),
+        Curvedness: new CurvednessField()
+    }
 });
 
 

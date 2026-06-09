@@ -1,4 +1,5 @@
 import {Color, DataTexture, RGBFormat, LinearFilter, Group} from "three";
+import {Registry} from "../core/helion.js";
 
 //
 // Color mapping functions
@@ -156,16 +157,20 @@ export class UniformColorMapper extends ColorMapper {
     }
 }
 
-export const ColorMappers = Object.freeze({
-    RdYlBu: new RdYlBuColorMapper(),
-    Seismic: new SeismicColorMapper(),
-    Viridis: new ViridisColorMapper(),
-    Jet: new JetColorMapper(),
-    Inferno: new InfernoColorMapper(),
-    Water: new WaterColorMapper(),
-    WaterAlternative: new WaterAlternativeColorMapper(),
-    Gradient: new GradientColorMapper(),
-    Uniform: new UniformColorMapper()
+export const ColorMappers = new Registry({
+    id: "colorMapSelect",
+    label: "Color map ",
+    entries: {
+        RdYlBu: new RdYlBuColorMapper(),
+        Seismic: new SeismicColorMapper(),
+        Viridis: new ViridisColorMapper(),
+        Jet: new JetColorMapper(),
+        Inferno: new InfernoColorMapper(),
+        Water: new WaterColorMapper(),
+        WaterAlternative: new WaterAlternativeColorMapper(),
+        Gradient: new GradientColorMapper(),
+        Uniform: new UniformColorMapper()
+    }
 });
 
 // TODO For shader

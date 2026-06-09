@@ -20,8 +20,8 @@ export { FFT, LaplaceOperator, GaussianImpulse } from "./model/math/numerics/ope
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { Sun } from "./view/3d/astro/sun.js";
 export { WaveEquationSolver } from "./model/math/numerics/solvers/solvers.js";
-export { EventController, CallbackFunction } from "./controller/controller.js";
-export { Simulation, Canvas, HtmlDiv, Overlay, HtmlControl, UPlotGraph } from "./core/helion.js";
+export { EventController, CallbackFunction, DropdownMenu, Checkbox, Button } from "./controller/controller.js";
+export { Simulation, Canvas, HtmlDiv, Overlay, HtmlControl, UPlotGraph, Registry } from "./core/helion.js";
 export { ThreeJsRenderer } from "./view/3d/renderer.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";

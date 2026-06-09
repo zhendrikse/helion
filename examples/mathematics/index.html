@@ -34,89 +34,20 @@
        -->
     <!--
        - R E A L   S U R F A C E S
+       -->
     <div class="canvasWrapper" id="realSurfacesCanvasWrapper">
         <canvas class="applicationCanvas" id="realSurfacesCanvas" width="500" height="500"></canvas>
     </div>
-    <div class="buttonRow">
-        <label for="surfaceSelect">Surface:</label>
-        <select name="surfaceSelect" id="surfaceSelect">
-            <option value="Ripple">Ripple</option>
-            <option value="Peak">Peak</option>
-            <option value="Ricker">Ricker wavelet</option>
-            <option value="Polynomial">Polynomial</option>
-        </select>
-    </div>
-    <div class="buttonRow">
-        <label for="colorMapSelect">Color map:</label>
-        <select name="colorMaps" id="colorMapSelect">
-            <option value="Gradient">Gradient</option>
-            <option value="Seismic">Seismic</option>
-            <option value="Viridis">Viridis</option>
-            <option value="Jet">Jet</option>
-            <option value="Inferno">Inferno</option>
-            <option value="RdYlBu">RdYlBu</option>
-            <option value="Water">Water</option>
-            <option value="WaterAlternative">Water alternative</option>
-            <option value="Uniform">Uniform</option>
-        </select>
-    </div>
-    <div class="buttonRow">
-        <label for="showContours">Contours</label>
-        <input type="checkbox" name="showContours" id="showContours" checked="checked" />
-        <label for="showWireframe">Wireframe</label>
-        <input type="checkbox" name="showWireframe" id="showWireframe" />
-        <label for="animate">Animate</label>
-        <input type="checkbox" name="animate" id="animate" checked />
-    </div>
+    <div id="helionControls"></div>
     <script type="module" src="scenes/real_surfaces.js"></script>
-       -->
     <!--
        - P A R A M E T R I C   S U R F A C E S
-       -->
     <div class="canvasWrapper" id="parametricSurfacesCanvasWrapper">
         <canvas class="applicationCanvas" id="parametricSurfacesCanvas" width="500" height="500"></canvas>
     </div>
-    <div class="buttonRow">
-        <label for="colorMapSelect">Color map:</label>
-        <select name="colorMaps" id="colorMapSelect">
-            <option value="Gradient">Gradient</option>
-            <option value="Seismic">Seismic</option>
-            <option value="Viridis">Viridis</option>
-            <option value="Jet">Jet</option>
-            <option value="Inferno">Inferno</option>
-            <option value="RdYlBu">RdYlBu</option>
-            <option value="Water">Water</option>
-            <option value="WaterAlternative">Water alternative</option>
-        </select>
-    </div>
-    <div class="buttonRow">
-        <label for="surfaceSelect">Surface:</label>
-        <select name="surfaceSelect" id="surfaceSelect">
-            <option value="Torus">Torus</option>
-            <option value="Bow curve">Bow curve</option>
-            <option value="Klein bottle">Klein bottle</option>
-            <option value="Mobius strip">Möbius strip</option>
-        </select>
-    </div>
-    <div class="buttonRow">
-        <label for="scalarFieldSelect">Surface field:</label>
-        <select name="scalarFieldSelect" id="scalarFieldSelect">
-            <option value="GaussianCurvature">Gaussian curvature</option>
-            <option value="MeanCurvature">Mean curvature</option>
-            <option value="PrincipalCurvature1">Principal curvature 1</option>
-            <option value="PrincipalCurvature2">Principal curvature 2</option>
-            <option value="ShapeIndex">Shape index field</option>
-            <option value="Curvedness">Curvedness</option>
-            <option value="Height">Height</option>
-        </select>
-    </div>
-    <div class="buttonRow">
-        <label for="showContours">Contours</label>
-        <input type="checkbox" name="showContours" id="showContours" checked="checked" />
-        <label for="showWireframe">Wireframe</label>
-        <input type="checkbox" name="showWireframe" id="showWireframe" />
-    </div>
+    <div id="helionControls"></div>
     <script type="module" src="scenes/parametric_surfaces.js"></script>
+       -->
     <!--
        - F O U R I E R   T R A N S F O R M
     <div class="canvasWrapper" id="waveCanvasWrapper">

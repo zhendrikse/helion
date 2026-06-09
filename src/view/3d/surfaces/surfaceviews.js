@@ -14,6 +14,7 @@ import { HeightScalarField, SurfaceScalarFields } from "../../../model/math/fiel
 import {AdaptiveSymmetricNormalizer } from "../../../model/math/math.js";
 import { NormalizedScalarField } from "../../../model/math/fields.js";
 import { ColorMappers } from "../../colormappers.js";
+import {Checkbox, DropdownMenu} from "../../../controller/controller.js";
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) {
@@ -26,10 +27,11 @@ class SurfaceView extends Group {
     static UP = new Vector3(0, 1, 0);
     static material = new MeshStandardMaterial({
         side: DoubleSide,
-        roughness: 0.25,
-        metalness: 0.0,
+        roughness: 0.45,
+        metalness: 0.1,
         transparent: true,
     });
+
     constructor({
         resolution = new SurfaceResolution(100, 100),
         scalarField = new HeightScalarField(),
@@ -47,15 +49,40 @@ class SurfaceView extends Group {
         this._dirty = true;                 // When surface definition has changed, this flag is raised
     }
 
-    set colorMapper(colorMapper) { this._colorMapper = ColorMappers[colorMapper]; }
-    set normalizer(normalizer) { this._normalizer = normalizer; }
-    set scalarField(scalarField) {
-        this._scalarField = SurfaceScalarFields[scalarField];
-        this._scalarField.surface = this._surface;
-        this._normalizedScalarField = new NormalizedScalarField(this._scalarField, this._normalizer);
-        this._normalizedScalarField.reset();
-        this._colorMapper = this._scalarField.recommendedColorMapper;
+    get dirty() { return this._dirty; }
+
+    showColormapSelector() {
+        new DropdownMenu().for(ColorMappers).addEventListener("change", (event) => {
+            this._colorMapper = ColorMappers.get(event.target.value);
+            this._dirty = true;
+        });
     }
+
+    showScalarFieldSelector() {
+        new DropdownMenu().for(SurfaceScalarFields).addEventListener("change", (event) => {
+            this._scalarField = SurfaceScalarFields.get(event.target.value);
+            this._scalarField.surface = this._surface;
+            this._normalizedScalarField = new NormalizedScalarField(this._scalarField, this._normalizer);
+            this._normalizedScalarField.reset();
+            this._colorMapper = this._scalarField.recommendedColorMapper;
+            this._dirty = true;
+        });
+    }
+
+    showSurfaceControls() {
+        const contoursCheckbox = new Checkbox()
+            .on(this)
+            .withLabel("Contours ")
+            .checked(true)
+            .withProperty("contoursVisible");
+
+        Checkbox.togetherWith(contoursCheckbox)
+            .on(this)
+            .withLabel("Wireframe ")
+            .withProperty("wireframe");
+    }
+
+    set normalizer(normalizer) { this._normalizer = normalizer; }
 
     bind(mathSurfaceDefinition) {
         // Sanity checks

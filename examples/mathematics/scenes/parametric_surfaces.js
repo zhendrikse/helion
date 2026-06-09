@@ -1,19 +1,38 @@
 import {
-    ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
-    EventController, Vec3, ParametricSurface, GaussianCurvatureField,
-    Domain, StandardSurfaceView
+    ThreeJsRenderer, Canvas, HtmlDiv, Simulation, ParametricSurface,
+    GaussianCurvatureField, Domain, StandardSurfaceView, DropdownMenu, Registry
 } from "../../../src/index.js";
 
 const sin = Math.sin;
 const cos = Math.cos;
+const tan = Math.tan;
+const log = Math.log;
 const PI = Math.PI;
 
 const surfaces = {
     "Bow curve": new ParametricSurface({
         domain: new Domain([0, 2 * PI], [0, 4 * PI]),
         x: (u, v) => (1 * sin(u) + 2) * sin(v),
-        y: (u, v) => (1 * sin(u) + 2) * cos(v),
-        z: (u, v) => 1 * cos(u) + 2 * cos(0.5 * v)
+        y: (u, v) => 1 * cos(u) + 2 * cos(0.5 * v),
+        z: (u, v) => (1 * sin(u) + 2) * cos(v)
+    }),
+    "Dini's spiral": new ParametricSurface({
+        domain: new Domain([0, 4 * PI], [0.1, 2 - 0.1]),
+        x: (u, v) => 1.5 * cos(u) * sin(v),
+        y: (u, v) => 1.5 * sin(u) * sin(v),
+        z: (u, v) => (cos(v) + log(tan(v / 2))) + 1 / 10 * u
+    }),
+    "Enneper's surface": new ParametricSurface({
+        domain: new Domain([-2, 2], [-2, 2]),
+        x: (u, v) => u - u * u * u / 3 + u * v * v,
+        y: (u, v) => v - v * v * v / 3 + v * u * u,
+        z: (u, v) => u * u - v * v
+    }),
+    "Folium": new ParametricSurface({
+        domain: new Domain([-PI, PI], [-PI, PI]),
+        x: (u, v) => cos(u + 2 * PI/3) / Math.cosh(v),
+        y: (u, v) => cos(u - 2 * PI/3) / Math.cosh(v),
+        z: (u, v) => cos(u) * (2 * v/PI - Math.tanh(v)),
     }),
     "Klein bottle": new ParametricSurface({
         domain: new Domain([0, 2 * PI], [0, 2 * PI]),
@@ -32,37 +51,14 @@ const surfaces = {
         x: (u, v) => cos(u) * (3 + 1.5 * cos(v)),
         y: (u, v) => sin(u) * (3 + 1.5 * cos(v)),
         z: (u, v) => 2 * sin(v)
+    }),
+    "Trefoil knot": new ParametricSurface({
+        domain: new Domain([0, 2 * PI], [0, 2 * PI]),
+        x: (u, v) => (3 * (1 + 1/4 * sin(3 * v)) + cos(u)) * cos(2 * v),
+        y: (u, v) => (3 * (1 + 1/4 * sin(3 * v)) + cos(u)) * sin(2 * v),
+        z: (u, v) => sin(u) + 2 * cos(3 * v)
     })
 };
-
-
-class SurfaceController {
-    constructor(simulation, surfaceView, options = {
-        padding: 0.9,
-        translationY: -5
-    }) {
-        this._simulation = simulation;
-        this._surfaceView = surfaceView;    // PlaneSurfaceView
-        this._options = options;
-        this._currentSurface = null;
-    }
-
-    get surface() { return this._currentSurface; }
-    set surface(surfaceName) { this.switchTo(surfaceName); }
-
-    switchTo(surfaceName) {
-        const newSurface = surfaces[surfaceName];
-        if (!newSurface) throw new Error(`Surface "${surfaceName}" not found`);
-
-        if (this._currentSurface)
-            this._surfaceView.dispose();
-
-        this._currentSurface = newSurface;
-        this._simulation.synchronize(newSurface.onceWith(this._surfaceView));
-        this._simulation.renderer.provideAxesAround(this._surfaceView);
-        this._simulation.renderer.frameSceneOn(this._surfaceView, this._options);
-    }
-}
 
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("parametricSurfacesCanvasWrapper")
@@ -71,48 +67,32 @@ const renderer = ThreeJsRenderer
         fieldOfView: 20
     });
 
-
 const surfaceView = new StandardSurfaceView({
     scalarField: new GaussianCurvatureField(),
     opacity: 0.925
 });
 
-const simulation = Simulation
-    .with(renderer)
-    .onClockTick()
-    .start();
+const simulation = Simulation.with(renderer);
 
-const surfaceController = new SurfaceController(simulation, surfaceView);
-surfaceController.switchTo("Bow curve"); // Initial surface
+const surfacesRegistry = new Registry({
+    id: "parametricSurfaceSelect",
+    label: "Surface: ",
+    entries: surfaces
+});
 
-const eventController = EventController.for(simulation);
-eventController.attach(HtmlControl
-    .withElementId("colorMapSelect")
-    .forType("change")
-    .to(surfaceView)
-    .withProperty("colorMapper"));
+function changeSurface(surfaceId) {
+    const newSurface = surfacesRegistry.get(surfaceId);
+    surfaceView.dispose();
+    simulation.synchronize(newSurface.onceWith(surfaceView));
+    simulation.renderer.provideAxesAround(surfaceView);
+    simulation.renderer.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
+}
 
-eventController.attach(HtmlControl
-    .withElementId("scalarFieldSelect")
-    .forType("change")
-    .to(surfaceView)
-    .withProperty("scalarField"));
+new DropdownMenu()
+    .for(surfacesRegistry)
+    .addEventListener("change", event => changeSurface(event.target.value));
+surfaceView.showColormapSelector();
+surfaceView.showScalarFieldSelector();
+surfaceView.showSurfaceControls();
 
-eventController.attach(HtmlControl
-    .withElementId("showContours")
-    .forType("click")
-    .to(surfaceView)
-    .withProperty("contoursVisible"));
-
-eventController.attach(HtmlControl
-    .withElementId("showWireframe")
-    .forType("click")
-    .to(surfaceView)
-    .withProperty("wireframe"));
-
-eventController.attach(HtmlControl
-    .withElementId("surfaceSelect")
-    .forType("change")
-    .to(surfaceController)
-    .withProperty("surface"));
-
+changeSurface("Bow curve");

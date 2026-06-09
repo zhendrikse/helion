@@ -107,6 +107,26 @@ export class HtmlControl {
     }
 }
 
+export class Registry {
+    constructor({
+        id = "registryId",
+        label = "registryLabel",
+        entries = {}
+    }) {
+        this._entries = entries;
+        this._label = label;
+        this._id = id;
+    }
+
+    get(name) { return this._entries[name]; }
+    get label() { return this._label; }
+    get id() { return this._id; }
+
+    names() { return Object.keys(this._entries); }
+
+    add(name, value) { this._entries[name] = value; }
+}
+
 export class MathPhysicsModelBehavior {
     alwaysWith(view) {
         return new Binding(this, view, Binding.Mode.ALWAYS);
@@ -135,6 +155,10 @@ export class Binding {
         this.model.copyTo(view);
     }
 
+    needsRendering() {
+        return this.mode === Binding.Mode.ALWAYS || this.view?.dirty
+    }
+
     initialize() {
         this.view.bind(this.model);
         this.view.initialize?.(); // Necessary to generate geometries & correct bounding boxes
@@ -155,15 +179,12 @@ export class Simulation {
         this._onBeforePhysicsUpdate = () => {};  // Callback function for client before physics update
         this._onAfterPhysicsUpdate = () => {};   // Callback function for client after physics update
         this._running = false;
-        this._forceAllViewsToBeRendered = true;  // When true, rerender world, _including_ static objects!
         this._simulatedTime = 0;
         this._dt = 0.01;
         this._substepsCount = 1;
         requestAnimationFrame(this.animate);
     }
 
-    // After user interaction, all views need to be rendered/updated, as static views may have changed too!
-    set forceAllViewsToBeRendered(value) { this._forceAllViewsToBeRendered = value; }
     get renderer() { return this._renderer; }
 
     incrementsTimeBy(dt) {
@@ -204,9 +225,8 @@ export class Simulation {
 
         // Rendering
         for (const binding of this._bindings)
-            if (binding.mode === Binding.Mode.ALWAYS || this._forceAllViewsToBeRendered)
+            if (binding.needsRendering)
                 binding.view.render(clockTime);
-        this._forceAllViewsToBeRendered = false;
 
         this._renderer.render(clockTime);
         requestAnimationFrame(this.animate);

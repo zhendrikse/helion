@@ -1,3 +1,151 @@
+class HtmlControl {
+    constructor(htmlButtonRow = null) {
+        this._buttonRow = htmlButtonRow ? htmlButtonRow : this._createButtonRow();
+    }
+
+    get buttonRow() { return this._buttonRow; }
+
+    _createButtonRow() {
+        const buttonRow = document.createElement("div");
+        buttonRow.className = "buttonRow";
+        document.getElementById("helionControls").appendChild(buttonRow);
+        return buttonRow;
+    }
+
+    generateUUID() {
+        let // Public Domain/MIT
+            d = new Date().getTime(),
+            d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            let r = Math.random() * 16;
+            if (d > 0) {
+                r = (d + r) % 16 | 0;
+                d = Math.floor(d / 16);
+            } else {
+                r = (d2 + r) % 16 | 0;
+                d2 = Math.floor(d2 / 16);
+            }
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    };
+
+}
+
+export class DropdownMenu extends HtmlControl {
+    static togetherWith = (htmlControl) => new DropdownMenu(htmlControl.buttonRow);
+
+    constructor(htmlButtonRow = null) {
+        super(htmlButtonRow);
+    }
+
+    for(registry) {
+        const label = document.createElement("label");
+        label.htmlFor = registry.id;
+        label.textContent = registry.label;
+
+        const select = document.createElement("select");
+        select.name = registry.id;
+        select.id = registry.id;
+
+        this._buttonRow.appendChild(label);
+        this._buttonRow.appendChild(select);
+
+        for (const value of Object.values(registry.names())) {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = value;
+            select.appendChild(option);
+        }
+
+        return select;
+    }
+}
+
+export class Checkbox extends HtmlControl {
+    static togetherWith = (htmlControl) => new Checkbox(htmlControl.buttonRow);
+
+    constructor(htmlButtonRow = null) {
+        super(htmlButtonRow);
+        this._targetObject = null;
+
+        const checkboxId = this.generateUUID();
+        this._label = document.createElement("label");
+        this._label.htmlFor = checkboxId;
+
+        this._checkbox = document.createElement("input");
+        this._checkbox.type = "checkbox";
+        this._checkbox.id = checkboxId;
+
+        this._buttonRow.appendChild(this._label);
+        this._buttonRow.appendChild(this._checkbox);
+    }
+
+    checked(value) {
+        this._checkbox.checked = !!value;
+        return this;
+    }
+
+    on(anObject) {
+        this._targetObject = anObject;
+        return this;
+    }
+
+    withLabel(label) {
+        this._label.textContent = label;
+        return this;
+    }
+
+    withProperty(name) {
+        this._checkbox.addEventListener("click",
+            (event) => this._targetObject[name] = event.target.checked
+        );
+        return this;
+    }
+}
+
+
+export class Button extends HtmlControl {
+    static togetherWith = (htmlControl) => new Button(htmlControl.buttonRow);
+
+    constructor(htmlButtonRow = null) {
+        super(htmlButtonRow);
+        this._targetObject = null;
+
+        const buttonId = this.generateUUID();
+        this._label = document.createElement("label");
+        this._label.htmlFor = buttonId;
+
+        this._button = document.createElement("button");
+        this._button.id = buttonId;
+
+        this._buttonRow.appendChild(this._label);
+        this._buttonRow.appendChild(this._button);
+    }
+
+    on(anObject) {
+        this._targetObject = anObject;
+        return this;
+    }
+
+    withText(text) {
+        this._button.textContent = text;
+        this._button.value = text;
+        return this;
+    }
+
+    withLabel(label) {
+        this._label.textContent = label;
+        return this;
+    }
+
+    withProperty(name) {
+        this._button.addEventListener("click",
+            (event) => this._targetObject[name] = event.target.value
+        );
+        return this;
+    }
+}
+
 export class CallbackFunction {
     constructor(callback) {
         this._callbackFunction = callback;
@@ -73,79 +221,3 @@ export class EventController {
         });
     }
 }
-//
-// export class HtmlSelect {
-//     static populate(selectId, values) {
-//         const select = document.getElementById(selectId);
-//
-//         select.innerHTML = "";
-//
-//         for (const key of Object.keys(values)) {
-//             const option = document.createElement("option");
-//             option.value = key;
-//             option.textContent = key;
-//             select.appendChild(option);
-//         }
-//     }
-// }
-//
-// export class Registry {
-//     constructor(entries = {}) {
-//         this._entries = entries;
-//     }
-//
-//     get(name) {
-//         return this._entries[name];
-//     }
-//
-//     names() {
-//         return Object.keys(this._entries);
-//     }
-//
-//     add(name, value) {
-//         this._entries[name] = value;
-//     }
-// }
-//
-// export const ColorMappers = new Registry({
-//     RdYlBu: new RdYlBuColorMapper(),
-//     Seismic: new SeismicColorMapper(),
-//     Viridis: new ViridisColorMapper(),
-//     ...
-// });
-//
-// HtmlSelect.populate(
-//     "colorMapSelect",
-//     ColorMappers.names()
-// );
-//
-// export const SurfaceViews = new Registry({
-//     Surface: StandardSurfaceView,
-//     Spheres: SphereSurfaceView,
-//     Points: PointSurfaceView,
-//     Squares: SquareSurfaceView
-// });
-//
-// export const SurfaceViews = {
-//     Surface: {
-//         label: "Surface",
-//         constructor: StandardSurfaceView
-//     },
-//
-//     Spheres: {
-//         label: "Spheres",
-//         constructor: SphereSurfaceView
-//     },
-//
-//     Points: {
-//         label: "Points",
-//         constructor: PointSurfaceView
-//     }
-// };
-//
-// {
-//     label: "Spheres",
-//         icon: "⚫",
-//     category: "Discrete",
-//     constructor: SphereSurfaceView
-// }
