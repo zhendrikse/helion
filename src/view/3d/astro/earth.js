@@ -1,14 +1,22 @@
+/**
+ * Original code by Sangil Lee:
+ *    https://sangillee.com/2024-06-07-create-realistic-earth-with-shaders/
+ */
+
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-// import vertex from PATH_TO_EARTH_VERTEX;
-// import fragment from PATH_TO_EARTH_FRAGMENT;
-// import addon_vertex from PATH_TO_ADDON_VERTEX;
-// import atmosphere from PATH_TO_ATMOSPHERE_FRAGMENT;
-// import fresnel from PATH_TO_FRESNEL_FRAGMENT;
+import vertex from './shaders/earth_vertex_shader.glsl?raw';
+import fragment from './shaders/earth_fragment_shader.glsl?raw';
+import addon_vertex from './shaders/add_on_vertex_shader.glsl?raw';
+import atmosphere from './shaders/atmosphere_fragment_shader.glsl?raw';
+import fresnel from './shaders/fresnel_fragment_shader.glsl?raw';
 
-import earthDayMapUrl from '../../../textures/Solarsystemscope_texture_2k_earth_daymap.jpg';
-import earthNightMapUrl from '../../../textures/Solarsystemscope_texture_2k_earth_nightmap.jpg';
-import earthSpecUrl from '../../../textures/earthspec1k.jpg';
+import earthDayMapUrl from '../../../textures/planets/Solarsystemscope_texture_2k_earth_daymap.jpg';
+import earthNightMapUrl from '../../../textures/planets/Solarsystemscope_texture_2k_earth_nightmap.jpg';
+import earthSpecUrl from '../../../textures/planets/earthspec1k.jpg';
+import earthCloudsUrl from '../../../textures/planets/Earth-clouds.png';
+import earthNormalMapUrl from '../../../textures/planets/2k_earth_normal_map.png';
+import moonmapUrl from '../../../textures/planets/moonmap1k.jpg';
 
 const canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
@@ -29,10 +37,10 @@ const sun = new THREE.Mesh(geometry_sphere, material_sun);
 const material_earth = new THREE.ShaderMaterial({
     uniforms: {
         u_dayTexture: { value: new THREE.TextureLoader().load( earthDayMapUrl) },
-        u_nightTexture: { value: new THREE.TextureLoader().load( './assets/earthlights2k.jpg') },
-        u_normalTexture: { value: new THREE.TextureLoader().load( './assets/earthnormal2k.jpg') },
-        u_specTexture: { value: new THREE.TextureLoader().load( './assets/2k_earth_specular_map.tif') },
-        u_cloudTexture: { value: new THREE.TextureLoader().load( './assets/earthcloud.png')},
+        u_nightTexture: { value: new THREE.TextureLoader().load( earthNightMapUrl) },
+        u_normalTexture: { value: new THREE.TextureLoader().load( earthNormalMapUrl) },
+        u_specTexture: { value: new THREE.TextureLoader().load( earthSpecUrl) },
+        u_cloudTexture: { value: new THREE.TextureLoader().load( earthCloudsUrl)},
         u_normalPower: { value: 5.0 },
         u_sunRelPosition: { value: new THREE.Vector3(0,0,0)},
         u_position: { value: new THREE.Vector3(0,0,0)},
@@ -82,7 +90,7 @@ const moon = new THREE.Mesh(geometry_sphere, material_moon);
 moon.scale.set(0.05, 0.05, 0.05);
 
 const loader = new THREE.TextureLoader();
-loader.load('./assets/moonmap2k.jpg', (texture)=>{
+loader.load(moonmapUrl, (texture)=>{
     material_moon.map = texture;
     material_moon.needsUpdate = true;
 });

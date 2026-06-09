@@ -36,3 +36,214 @@ and many early flight simulators<br/>
 </div>
 <div id="helionControls"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/fractal_terrain.js"}></script>
+
+## On landscape generation
+<div class="header_line"></div>
+
+```text
+Fractal height-field (`DiscreteScalarField`)
+↳ Apply Diamond-Square operator/algorithm
+  ↳ Hand over to a surface  (`ScalarFieldSurface`)
+    ↳ Synchronize field in surface with `StandardSurfaceView`
+      ↳ Color vertices based on height
+```
+
+### The diamond-square operator
+<div class="header_line"></div>
+
+The diamond-square operator is an implementation of the [diamond-square algorithm](https://en.wikipedia.org/wiki/Diamond-square_algorithm),
+one of the most famous algorithms used for the generation of fractal terrains. It became popular in the eighties
+for procedure landscape generation and is closely related to the work of Benoît Mandelbrot on fractals
+and the natural roughness.
+
+#### Central idea
+
+We start with a square raster, e.g.
+
+```text
+A-------B
+|       |
+|       |
+|       |
+D-------C
+```
+
+where only the four corners are known. Next we fill in more points by taking averages and
+adding random deviations to those averages. Without the randomness, everything would end
+up completely flat, as we would have implemented a plain bilinear interpolation. It is
+the randomness that creates the valleys and the crests.
+
+This process consists of two steps:
+
+1. Diamond step
+2. Square step
+
+Thereafter, we repeat the same on a smaller scale.
+
+#### Diamond Step
+
+Suppose we have a square:
+
+```text
+A-------B
+|       |
+|   X   |
+|       |
+D-------C
+```
+
+Then the middle point is calculated with:
+
+$$
+X = \dfrac{A + B + C + D)}{4} + \text{random}
+$$
+
+Which translates to:
+
+```js
+const average = 0.25 * (
+    field.valueAt(x - half, y - half) +
+    field.valueAt(x + half, y - half) +
+    field.valueAt(x - half, y + half) +
+    field.valueAt(x + half, y + half)
+);
+
+field.setValueAt(x, y, average + this.#random(scale));
+```
+
+The name derives from the fact that the four points used form a diamond around the new point.
+
+#### Square Step
+
+After performing the diamond step, we end up with:
+
+```text
+A-------B
+|   X   |
+|       |
+|   X   |
+D-------C
+```
+
+The points on the edges are lacking still. For a point on the edge we take the averages of the
+available neighbors:
+
+```text
+    T
+    |
+L -- P -- R
+    |
+    B
+```
+
+Which is equivalent to:
+
+$$
+P = \dfrac{(L + R + T + B)}{4} + \text{random}
+$$
+
+On the edges there are fewer neighbors, so that's why we have:
+
+```js
+let sum = 0;
+let count = 0;
+```
+
+and subsequently:
+
+```js
+sum / count
+```
+
+so that only existing neighbors count.
+
+#### Why scale becomes smaller
+
+This is the most important idea behind the algorithm, as in
+nature we frequently observe:
+
+> Big structures are rough
+> Little structures contain many details.
+
+```text
+Big mountains
+  ↳ Small hills
+       ↳ Little ledges
+            ↳ Pebbles
+```
+
+This is why in the code we use:
+
+```js
+scale *= Math.pow(2, -this._roughness);
+```
+
+After every iteration the roughness becomes smaller.
+
+For example, if `roughness = 0.5`, the noise decreases slowly. This results
+in a chaotic, raw and rocklike landscape, where as with `roughness = 2`
+the noise decays quickly which results in a soft, undulating and hill like
+landscape.
+
+#### Why the grid is 257 × 257
+
+A requirement of the algorithm is that the grid needs to be given by $2^n + 1$, as
+each iteration divides the raster exactly in half (`step >>= 1``), e.g.
+
+```text
+257 → 129 → 65 → 33 → 17 → 9 → 5 → 3 → 2 → 1
+```
+
+#### Why we recognize this from nature
+
+Natural terrains often exhibit fractal behavior. Zooming in on
+a mountain, we observe:
+
+```text
+Mountain
+ ↳ hill
+    ↳ ledge
+       ↳ rock formation
+```
+
+The same structure appears on many different scales. The diamond-square algorithm
+mimics this behavior.
+
+#### Concluding remarks
+
+Fractal Geometry
+
+waar de hoogte wordt beschreven als een stochastisch proces met zelfgelijkende eigenschappen.
+
+De parameter `roughness` bepaalt in feite hoeveel hoogfrequente details behouden blijven.
+
+---
+
+# Waarom wordt het tegenwoordig minder gebruikt?
+
+Diamond-Square is:
+
+✅ simpel
+
+✅ snel
+
+✅ weinig geheugen
+
+✅ makkelijk uit te leggen
+
+Maar moderne engines gebruiken vaak:
+
+* Perlin Noise
+* Simplex Noise
+* Fractal Brownian Motion gecombineerd met meerdere noise-lagen
+
+omdat die minder zichtbare rasterartefacten hebben.
+
+---
+
+# Wat je programma eigenlijk doet
+
+Je code genereert:
+
+
+Dus feitelijk bouw je een kleine procedurele terrain generator, vergelijkbaar met de technieken die vroeger werden gebruikt in games zoals The Elder Scrolls II: Daggerfall en veel vroege flight simulators.
