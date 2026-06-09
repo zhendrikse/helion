@@ -12,17 +12,11 @@ import {
     IcosahedronGeometry
 } from "three";
 import { HeightScalarField, SurfaceScalarFields } from "../../../model/math/fields.js";
-import {AdaptiveSymmetricNormalizer } from "../../../model/math/math.js";
+import { AdaptiveSymmetricNormalizer } from "../../../model/math/math.js";
 import { NormalizedScalarField } from "../../../model/math/fields.js";
-import {
-    ColorMappers, GradientColorMapper, InfernoColorMapper,
-    JetColorMapper,
-    RdYlBuColorMapper,
-    SeismicColorMapper, UniformColorMapper,
-    ViridisColorMapper, WaterAlternativeColorMapper, WaterColorMapper
-} from "../../colormappers.js";
-import {Checkbox, DropdownMenu} from "../../../controller/controller.js";
-import {Registry} from "../../../core/helion.js";
+import { ColorMappers } from "../../colormappers.js";
+import { Checkbox, DropdownMenu} from "../../../controller/controller.js";
+import { Registry } from "../../../core/helion.js";
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) {

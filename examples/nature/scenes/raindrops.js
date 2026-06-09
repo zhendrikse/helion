@@ -35,7 +35,8 @@ const renderer = ThreeJsRenderer
         .contains(Canvas.withElementId("raindropCanvas")))
     .with({
         cameraPosition: new Vec3(4, .6, 4.2).multiplyScalar(45),
-        fieldOfView: 19
+        fieldOfView: 19,
+        background: ThreeJsRenderer.Background.STARS
     });
 
 const water = new InstancedMeshSurfaceView({

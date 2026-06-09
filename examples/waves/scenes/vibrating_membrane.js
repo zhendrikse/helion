@@ -37,7 +37,7 @@ const surfaceView = new StandardSurfaceView({
     colorMapper: new GradientColorMapper()
 });
 
-renderer.frameSceneOn(surfaceView, { padding: 2, translationY: -1.25 });
+renderer.frameSceneOn(surfaceView, { padding: 1.75, translationY: -1.25 });
 
 Simulation
     .with(renderer)

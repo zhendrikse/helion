@@ -82,7 +82,6 @@ const simulation = Simulation
     .onClockTick(() => surfaceView.rotation.y += 0.0167)
     .start();
 
-
 const surfacesRegistry = new Registry({
     id: "shellsSelect",
     label: "Specie: ",

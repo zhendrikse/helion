@@ -255,7 +255,7 @@ const overlay = Overlay.withElementId("spaceTimeOverlay")
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("spaceTimeCanvasWrapper").containsBoth(canvas.and(overlay)))
     .with({
-        cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(11),
+        cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(13),
         fieldOfView: 45,
         background: ThreeJsRenderer.Background.STARS
     });
