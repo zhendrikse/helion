@@ -93,8 +93,8 @@ export class HtmlControl {
         return this;
     }
 
-    to(object) {
-        this.objectToModify = object;
+    to(objectToModify) {
+        this.objectToModify = objectToModify;
         return this;
     }
 

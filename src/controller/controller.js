@@ -85,8 +85,8 @@ export class Checkbox extends HtmlControl {
         return this;
     }
 
-    on(anObject) {
-        this._targetObject = anObject;
+    on(targetObject) {
+        this._targetObject = targetObject;
         return this;
     }
 

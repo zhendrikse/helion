@@ -1,7 +1,7 @@
 import {
     ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
     EventController, StandardSurfaceView, Vec3,
-    Interval, GradientColorMapper, MultivariateFunctionSurface, Domain, Registry, DropdownMenu,
+    Interval, GradientColorMapper, MultivariateFunctionSurface, Domain, Registry, DropdownMenu, Checkbox,
 } from "../../../src/index.js";
 
 const pi = Math.PI;
@@ -61,6 +61,38 @@ const surfaces = {
     }
 };
 
+const surfacesRegistry = new Registry({
+    id: "realSurfaceSelect",
+    label: "Surface: ",
+    entries: surfaces
+});
+
+class SurfaceController {
+    constructor(simulation, surfaceView) {
+        this._simulation = simulation;
+        this._surfaceView = surfaceView;
+        this._currentSurface = surfacesRegistry.get("Ripple").surface;
+        this._animate = false;
+    }
+
+    changeSurface(surfaceId) {
+        this._currentSurface = surfacesRegistry.get(surfaceId).surface;
+        const amplitude = surfacesRegistry.get(surfaceId).amplitude;
+        this._surfaceView.normalizer = new Interval(0, amplitude);
+        this._surfaceView.dispose();
+        this._simulation.synchronize(this._currentSurface.onceWith(surfaceView));
+        this._simulation.renderer.provideAxesAround(surfaceView);
+        this._simulation.renderer.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5 * amplitude});
+    }
+
+    set animate(value) { this._animate = value; }
+
+    set time(time) {
+        if (this._animate)
+            this._currentSurface.time = time;
+    }
+}
+
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("realSurfacesCanvasWrapper")
         .contains(Canvas.withElementId("realSurfacesCanvas")))
@@ -78,32 +110,19 @@ const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(0.016);
 
+const surfaceController = new SurfaceController(simulation, surfaceView);
 simulation
-    .onClockTick((clockTime, simulatedTime) => currentSurface.time = simulatedTime)
+    .onClockTick((clockTime, simulatedTime) => surfaceController.time = simulatedTime)
     .start();
-
-
-const surfacesRegistry = new Registry({
-    id: "realSurfaceSelect",
-    label: "Surface: ",
-    entries: surfaces
-});
-
-let currentSurface = surfacesRegistry.get("Ripple").surface;
-function changeSurface(surfaceId) {
-    currentSurface = surfacesRegistry.get(surfaceId).surface;
-    const amplitude = surfacesRegistry.get(surfaceId).amplitude;
-    surfaceView.normalizer = new Interval(0, amplitude);
-    surfaceView.dispose();
-    simulation.synchronize(currentSurface.onceWith(surfaceView));
-    simulation.renderer.provideAxesAround(surfaceView);
-    simulation.renderer.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5 * amplitude});
-}
 
 new DropdownMenu()
     .for(surfacesRegistry)
-    .addEventListener("change", event => changeSurface(event.target.value));
-changeSurface("Ripple");
+    .addEventListener("change", event => surfaceController.changeSurface(event.target.value));
+surfaceController.changeSurface("Ripple");
 surfaceView.showColormapSelector();
 surfaceView.showSurfaceControls();
 surfaceView.showScalarFieldSelector();
+new Checkbox()
+    .on(surfaceController)
+    .withLabel("Animate surface ")
+    .withProperty("animate");
