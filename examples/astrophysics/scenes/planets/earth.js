@@ -17,17 +17,16 @@ import earthCloudsUrl from '../../../../src/textures/planets/Earth-clouds.png';
 import earthNormalMapUrl from '../../../../src/textures/planets/2k_earth_normal_map.png';
 import moonmapUrl from '../../../../src/textures/planets/moonmap1k.jpg';
 
-//const container = document.getElementById("earthCanvasWrapper");
-//const canvas = document.createElement("canvas");
-//document.body.appendChild(canvas);
+const container = document.getElementById("earthContainer");
+const canvas = document.createElement('canvas');
+canvas.class = "applicationCanvas";
+container.appendChild(canvas);
 
-const canvas = document.getElementById('earthCanvas');
-
-const renderer = new WebGLRenderer({canvas: canvas, alpha: true, antialias: true});
-renderer.setSize( canvas.clientWidth, canvas.clientHeight );
+const renderer = new WebGLRenderer({alpha: true, canvas, antialias: true});
 renderer.shadowMap.enabled = true;
+renderer.setSize(container.clientWidth, container.clientHeight);
 
-const camera = new PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+const camera = new PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
 camera.position.set(0, 0, 5);
 
 const material_sun = new MeshBasicMaterial({color: 0xffaa00, opacity: 0, transparent: true});
