@@ -157,19 +157,42 @@ export class UniformColorMapper extends ColorMapper {
     }
 }
 
+export class TerrainColorMapper extends ColorMapper {
+    static water  = new Color(0x1f4aa8);
+    static sand   = new Color(0xd8c68a);
+    static grass  = new Color(0x3c9d3c);
+    static forest = new Color(0x1f5f1f);
+    static rock   = new Color(0x777777);
+    static snow   = new Color(0xffffff);
+
+    map(value, targetColor) {
+        if (value < 0.2)
+            targetColor.copy(TerrainColorMapper.water).lerp(TerrainColorMapper.sand, value / 0.2);
+        else if (value < 0.4)
+            targetColor.copy(TerrainColorMapper.sand).lerp(TerrainColorMapper.grass, (value - 0.2) / 0.2);
+        else if (value < 0.6)
+            targetColor.copy(TerrainColorMapper.grass).lerp(TerrainColorMapper.forest, (value - 0.4) / 0.2);
+        else if (value < 0.8)
+            targetColor.copy(TerrainColorMapper.forest).lerp(TerrainColorMapper.rock, (value - 0.6) / 0.2);
+        else
+            targetColor.copy(TerrainColorMapper.rock).lerp(TerrainColorMapper.snow, (value - 0.8) / 0.2);
+    }
+}
+
 export const ColorMappers = new Registry({
     id: "colorMapSelect",
     label: "Color map ",
     entries: {
+        Gradient: new GradientColorMapper(),
+        Inferno: new InfernoColorMapper(),
+        Jet: new JetColorMapper(),
         RdYlBu: new RdYlBuColorMapper(),
         Seismic: new SeismicColorMapper(),
+        Terrain: new TerrainColorMapper(),
+        Uniform: new UniformColorMapper(),
         Viridis: new ViridisColorMapper(),
-        Jet: new JetColorMapper(),
-        Inferno: new InfernoColorMapper(),
         Water: new WaterColorMapper(),
-        WaterAlternative: new WaterAlternativeColorMapper(),
-        Gradient: new GradientColorMapper(),
-        Uniform: new UniformColorMapper()
+        WaterAlternative: new WaterAlternativeColorMapper()
     }
 });
 

@@ -71,19 +71,6 @@ class SurfaceView extends Group {
         });
     }
 
-    showSurfaceControls() {
-        const contoursCheckbox = new Checkbox()
-            .on(this)
-            .withLabel("Contours ")
-            .checked(true)
-            .withProperty("contoursVisible");
-
-        Checkbox.togetherWith(contoursCheckbox)
-            .on(this)
-            .withLabel("Wireframe ")
-            .withProperty("wireframe");
-    }
-
     set normalizer(normalizer) { this._normalizer = normalizer; }
 
     bind(mathSurfaceDefinition) {
@@ -297,6 +284,19 @@ export class StandardSurfaceView extends SurfaceView {
 
         this._showContours = contours;
         this._showSurface = surface;
+    }
+
+    showSurfaceControls() {
+        const contoursCheckbox = new Checkbox()
+            .on(this)
+            .withLabel("Contours ")
+            .checked(this._showContours)
+            .withProperty("contoursVisible");
+
+        Checkbox.togetherWith(contoursCheckbox)
+            .on(this)
+            .withLabel("Wireframe ")
+            .withProperty("wireframe");
     }
 
     set surfaceVisible(value) {

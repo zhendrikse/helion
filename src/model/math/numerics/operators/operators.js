@@ -1,3 +1,84 @@
+import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
+
+export class DiamondSquareOperator {
+    constructor({
+                    roughness = 1,
+                    amplitude = 100
+                } = {}) {
+        this._roughness = roughness;
+        this._amplitude = amplitude;
+    }
+
+    #diamondStep(field, step, size, scale) {
+        const half = step >> 1;
+        for (let x = half; x < size; x += step)
+            for (let y = half; y < size; y += step) {
+                const average = 0.25 * (
+                    field.valueAt(x - half, y - half) +
+                    field.valueAt(x + half, y - half) +
+                    field.valueAt(x - half, y + half) +
+                    field.valueAt(x + half, y + half)
+                );
+
+                field.setValueAt(x, y, average + this.#random(scale));
+            }
+    }
+
+    #squareStep(field, step, size, scale) {
+        const half = step >> 1;
+        for (let x = 0; x <= size; x += half)
+            for (let y = (x + half) % step; y <= size; y += step) {
+                let sum = 0;
+                let count = 0;
+
+                if (x >= half) {
+                    sum += field.valueAt(x - half, y);
+                    count++;
+                }
+
+                if (x + half <= size) {
+                    sum += field.valueAt(x + half, y);
+                    count++;
+                }
+
+                if (y >= half) {
+                    sum += field.valueAt(x, y - half);
+                    count++;
+                }
+
+                if (y + half <= size) {
+                    sum += field.valueAt(x, y + half);
+                    count++;
+                }
+
+                field.setValueAt(x, y, sum / count + this.#random(scale));
+            }
+
+    }
+
+    apply(field) {
+        const size = field.nx - 1;
+
+        // corners
+        field.setValueAt(0, 0, 0);
+        field.setValueAt(size, 0, 0);
+        field.setValueAt(0, size, 0);
+        field.setValueAt(size, size, 0);
+
+        let step = size;
+        let scale = this._amplitude;
+
+        while (step > 1) {
+            this.#diamondStep(field, step, size, scale);
+            this.#squareStep(field, step, size, scale);
+            step >>= 1;
+            scale *= Math.pow(2, -this._roughness);
+        }
+    }
+
+    #random(scale) { return (Math.random() * 2 - 1) * scale; }
+}
+
 export class GaussianImpulse {
     constructor({
         centerX = 100,
@@ -22,6 +103,44 @@ export class GaussianImpulse {
                 const dy = j - this._centerY;
                 const value = this._amplitude * Math.exp(-(dx * dx + dy * dy) / (2 * sigma2));
                 field.setValueAt(i, j, field.valueAt(i, j) + value);
+            }
+    }
+}
+
+export class PerlinNoiseOperator {
+    constructor({
+                    scale = 50,
+                    frequency = 0.02,
+                    octaves = 6,
+                    persistence = 0.5,
+                    z = 0
+                } = {}) {
+        this._scale = scale;
+        this._frequency = frequency;
+        this._octaves = octaves;
+        this._persistence = persistence;
+        this._z = z;
+
+        this._noise = new ImprovedNoise();
+    }
+
+    apply(field) {
+        for (let x = 0; x < field.nx; x++)
+            for (let y = 0; y < field.ny; y++) {
+                let value = 0;
+                let amplitude = 1;
+                let frequency = this._frequency;
+                let amplitudeSum = 0;
+
+                for (let octave = 0; octave < this._octaves; octave++) {
+                    value += amplitude * this._noise.noise(x * frequency, y * frequency, this._z);
+                    amplitudeSum += amplitude;
+                    amplitude *= this._persistence;
+                    frequency *= 2;
+                }
+
+                value /= amplitudeSum;
+                field.setValueAt(x, y, value * this._scale);
             }
     }
 }

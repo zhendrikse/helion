@@ -16,7 +16,10 @@ export {
     ScalarFieldSurface, SurfaceScalarFields
 } from "./model/math/fields.js"
 
-export { FFT, LaplaceOperator, GaussianImpulse } from "./model/math/numerics/operators/operators.js";
+export {
+    FFT, LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator
+} from "./model/math/numerics/operators/operators.js";
+
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { Sun } from "./view/3d/astro/sun.js";
 export { WaveEquationSolver } from "./model/math/numerics/solvers/solvers.js";
@@ -38,7 +41,7 @@ export {
 export {
     WaterAlternativeColorMapper, WaterColorMapper, GradientColorMapper, UniformColorMapper,
     RdYlBuColorMapper, ViridisColorMapper, InfernoColorMapper, SeismicColorMapper, JetColorMapper,
-    wavelengthColor, wavelengthToRGBNormalized, ColorMappers
+    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper
 } from "./view/colormappers.js";
 
 export {
