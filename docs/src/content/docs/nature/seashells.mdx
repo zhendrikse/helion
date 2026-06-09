@@ -29,17 +29,5 @@ layout: ../../../layouts/DocsLayout.astro
 <div class="canvasWrapper" id="shellsCanvasWrapper">
     <canvas class="applicationCanvas" id="shellsCanvas"></canvas>
 </div>
-<div class="buttonRow">
-    <label for="surfaceSelect">Surface:</label>
-    <select name="surfaceSelect" id="surfaceSelect">
-        <option value="Sea shell">Sea shell</option>
-        <option value="Astroceras">Astroceras</option>
-        <option value="Bellerophina">Bellerophina</option>
-        <option value="Conchoidal">Conchoidal</option>
-        <option value="Euhoplites">Euhoplites</option>
-        <option value="Mya arenaria">Mya arenaria</option>
-        <option value="Nautilus">Nautilus</option>
-        <option value="Pseudoheliceras subcatenatum">Pseudoheliceras subcatenatum</option>
-    </select>
-</div>
+<div id="helionControls"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/shells.js"}></script>

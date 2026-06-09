@@ -1,7 +1,7 @@
 import {
-    Canvas, ColorMappers, DiscreteScalarField, HtmlDiv, Interval, Simulation, Vec3, StandardSurfaceView,
-    SphereSurfaceView, ScalarFieldSurface, ThreeJsRenderer, LaplaceOperator, SurfaceResolution,
-    WaveEquationSolver, GaussianImpulse, BoxSurfaceView, ConeSurfaceView, CapsuleSurfaceView
+    Canvas, ColorMappers, DiscreteScalarField, HtmlDiv, Interval, Simulation, Vec3,
+    ScalarFieldSurface, ThreeJsRenderer, LaplaceOperator, SurfaceResolution,
+    WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView
 } from "../../../src/index.js";
 
 export class WaveEquation {
@@ -34,19 +34,16 @@ const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("raindropCanvasWrapper")
         .contains(Canvas.withElementId("raindropCanvas")))
     .with({
-        cameraPosition: new Vec3(25, 10, 10).multiplyScalar(50),
-        fieldOfView: 20
+        cameraPosition: new Vec3(4, .6, 4.2).multiplyScalar(45),
+        fieldOfView: 19
     });
 
-const water = new StandardSurfaceView({
-    contours: false,
-    //radius: .65,
-    resolution: new SurfaceResolution(128, 128),
+const water = new InstancedMeshSurfaceView({
+    resolution: new SurfaceResolution(256, 256),
     normalizer: new Interval(-0.25, 2),
-    colorMapper: ColorMappers.WaterAlternative
+    colorMapper: ColorMappers.get("WaterAlternative")
 });
-
-renderer.frameSceneOn(water, {padding: 175, translationY: -350});
+water.position.set(-128, 0, -128);
 
 const simulation = Simulation
     .with(renderer)
@@ -64,3 +61,6 @@ const simulation = Simulation
         }));
     }, 5)
     .start();
+
+water.showColormapSelector();
+water.showShapeSelector();

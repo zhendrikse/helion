@@ -8,13 +8,21 @@
 import {
     Group, Vector3, LineBasicMaterial, Line, BufferGeometry, DoubleSide, PlaneGeometry, Color,
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
-    DynamicDrawUsage, BufferAttribute, Box3, BoxGeometry, ConeGeometry, CapsuleGeometry
+    DynamicDrawUsage, BufferAttribute, Box3, BoxGeometry, ConeGeometry, CapsuleGeometry, CylinderGeometry,
+    IcosahedronGeometry
 } from "three";
 import { HeightScalarField, SurfaceScalarFields } from "../../../model/math/fields.js";
 import {AdaptiveSymmetricNormalizer } from "../../../model/math/math.js";
 import { NormalizedScalarField } from "../../../model/math/fields.js";
-import { ColorMappers } from "../../colormappers.js";
+import {
+    ColorMappers, GradientColorMapper, InfernoColorMapper,
+    JetColorMapper,
+    RdYlBuColorMapper,
+    SeismicColorMapper, UniformColorMapper,
+    ViridisColorMapper, WaterAlternativeColorMapper, WaterColorMapper
+} from "../../colormappers.js";
 import {Checkbox, DropdownMenu} from "../../../controller/controller.js";
+import {Registry} from "../../../core/helion.js";
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) {
@@ -122,9 +130,49 @@ class SurfaceView extends Group {
 }
 
 export class InstancedMeshSurfaceView extends SurfaceView {
+    static Shape = Object.freeze({
+        Box: {
+            geometry: new BoxGeometry(.65, .65, .65),
+            orientationAxis: new Vector3(0, 1, 0)
+        },
+        Capsule: {
+            geometry: new CapsuleGeometry(.35, 1, 4, 8),
+            orientationAxis: new Vector3(0, 1, 0)
+        },
+        Cylinder: {
+            geometry: new CylinderGeometry(.35, .35, 2, 8),
+            orientationAxis: new Vector3(0, 1, 0)
+        },
+        Cone: {
+            geometry: new ConeGeometry(.5, 1, 8),
+            orientationAxis: new Vector3(0, 1, 0)
+        },
+        Icosahedron: {
+            geometry: new IcosahedronGeometry(.5),
+            orientationAxis: new Vector3(0, 1, 0)
+        },
+        Plane: {
+            geometry: new PlaneGeometry(1.25, 1.25),
+            orientationAxis: new Vector3(0, 0, 1)
+        },
+        Sphere: {
+            geometry: new SphereGeometry(.5, 6, 6),
+            orientationAxis: null
+        }
+        // Box: "🟥 Box",
+        // Capsule: "💊 Capsule",
+        // Cone: "▲ Cone",
+        // Sphere: "🔴 Sphere",
+    });
+
+    static Shapes = new Registry({
+        id: "surfaceShapeSelect",
+        label: "Element shape ",
+        entries: InstancedMeshSurfaceView.Shape
+    })
+
     constructor({
-        geometry,
-        alignWithSurfaceNormal = true,
+        shape = "Box",
         resolution = new SurfaceResolution(100, 100),
         opacity = 1.0,
         scalarField = new HeightScalarField(),
@@ -139,7 +187,7 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         this._normalVector = new Vector3();
 
         const count = (resolution.u + 1) * (resolution.v + 1);
-        this._mesh = new InstancedMesh(geometry, SurfaceView.material, count);
+        this._mesh = new InstancedMesh(new BoxGeometry(.65, .65, .65), SurfaceView.material, count);
         this._mesh.material.opacity = opacity;
         this.add(this._mesh);
 
@@ -147,7 +195,31 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         this._mesh.instanceColor = new InstancedBufferAttribute(this._colorArray, 3);
         this._mesh.instanceColor.setUsage(DynamicDrawUsage);
 
-        this._alignWithSurfaceNormal = alignWithSurfaceNormal;
+        this._orientationAxis = new Vector3(0, 0, 1);
+        this.shape = shape;
+    }
+
+    showShapeSelector() {
+        new DropdownMenu().for(InstancedMeshSurfaceView.Shapes).addEventListener("change",
+            event => this.shape = event.target.value
+        );
+    }
+
+    setGeometry(geometry) {
+        const oldGeometry = this._mesh.geometry;
+        this._mesh.geometry = geometry;
+
+        if (oldGeometry)
+            oldGeometry.dispose();
+
+        this._dirty = true;
+    }
+
+    set shape(shapeType) {
+        const shape = InstancedMeshSurfaceView.Shape[shapeType];
+        if (shape.orientationAxis)
+            this._orientationAxis.copy(shape.orientationAxis);
+        this.setGeometry(shape.geometry);
     }
 
     render() {
@@ -160,12 +232,9 @@ export class InstancedMeshSurfaceView extends SurfaceView {
                 this._surface.sample(u, v, this._positionSample);
                 this._dummy.position.copy(this._positionSample);
 
-                if (this._alignWithSurfaceNormal) {
+                if (this._orientationAxis) {
                     this._surface.normalAt(i, j, this._normalVector);
-                    this._dummy.quaternion.setFromUnitVectors(
-                        SurfaceView.UP,
-                        this._normalVector
-                    );
+                    this._dummy.quaternion.setFromUnitVectors(this._orientationAxis, this._normalVector);
                 }
 
                 this._dummy.updateMatrix();
@@ -185,67 +254,6 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         this._mesh.instanceMatrix.needsUpdate = true;
         this._mesh.instanceColor.needsUpdate = true;
         this._dirty = false;
-    }
-}
-
-export class BoxSurfaceView extends InstancedMeshSurfaceView {
-    constructor({
-        resolution = new SurfaceResolution(100, 100),
-        size = 1,
-        opacity = 1.0,
-        scalarField = new HeightScalarField(),
-        colorMapper = scalarField.recommendedColorMapper,
-        normalizer = new AdaptiveSymmetricNormalizer()
-    } = {}) {
-        const geometry = new BoxGeometry(size, size, size);
-        super({resolution, colorMapper, scalarField, normalizer, opacity, geometry, alignWithSurfaceNormal: true});
-    }
-}
-
-export class SphereSurfaceView extends InstancedMeshSurfaceView {
-    constructor({
-        resolution = new SurfaceResolution(100, 100),
-        radius = 1,
-        opacity = 1.0,
-        scalarField = new HeightScalarField(),
-        colorMapper = scalarField.recommendedColorMapper,
-        normalizer = new AdaptiveSymmetricNormalizer()
-    } = {}) {
-        const geometry = new SphereGeometry(radius, 8, 8);
-        super({resolution, colorMapper, scalarField, normalizer, opacity, geometry});
-        this._alignWithSurfaceNormal = false;
-    }
-}
-
-export class ConeSurfaceView extends InstancedMeshSurfaceView {
-    constructor({
-        resolution = new SurfaceResolution(100, 100),
-        radius = 8,
-        height = 1,
-        opacity = 1.0,
-        scalarField = new HeightScalarField(),
-        colorMapper = scalarField.recommendedColorMapper,
-        normalizer = new AdaptiveSymmetricNormalizer()
-    } = {}) {
-        const geometry = new ConeGeometry(radius, height, 8, 1);
-        super({resolution, colorMapper, scalarField, normalizer, opacity, geometry});
-        this._alignWithSurfaceNormal = true;
-    }
-}
-
-export class CapsuleSurfaceView extends InstancedMeshSurfaceView {
-    constructor({
-        resolution = new SurfaceResolution(100, 100),
-        radius = 8,
-        height = 1,
-        opacity = 1.0,
-        scalarField = new HeightScalarField(),
-        colorMapper = scalarField.recommendedColorMapper,
-        normalizer = new AdaptiveSymmetricNormalizer()
-    } = {}) {
-        const geometry = new CapsuleGeometry(radius, height, 4, 8);
-        super({resolution, colorMapper, scalarField, normalizer, opacity, geometry});
-        this._alignWithSurfaceNormal = true;
     }
 }
 

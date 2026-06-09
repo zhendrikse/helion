@@ -1,7 +1,7 @@
 import {
     ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
     EventController, ParametricSurface,
-    Domain, StandardSurfaceView, SurfaceResolution, ColorMappers
+    Domain, StandardSurfaceView, SurfaceResolution, ColorMappers, Registry, DropdownMenu
 } from "../../../src/index.js";
 import {MeshStandardMaterial} from "three";
 
@@ -61,33 +61,6 @@ const surfaces = {
     })
 };
 
-class SurfaceController {
-    constructor(simulation, surfaceView, options = {
-        padding: 0.7,
-        translationY: -1
-    }) {
-        this._simulation = simulation;
-        this._surfaceView = surfaceView;
-        this._options = options;
-        this._currentSurface = null;
-    }
-
-    get surface() { return this._currentSurface; }
-    set surface(surfaceName) { this.switchTo(surfaceName); }
-
-    switchTo(surfaceName) {
-        const newSurface = surfaces[surfaceName];
-        if (!newSurface) throw new Error(`Surface "${surfaceName}" not found`);
-
-        if (this._currentSurface)
-            this._surfaceView.dispose();
-
-        this._currentSurface = newSurface;
-        this._simulation.synchronize(newSurface.onceWith(this._surfaceView));
-        this._simulation.renderer.frameSceneOn(this._surfaceView, this._options);
-    }
-}
-
 const renderer = ThreeJsRenderer
     .on(HtmlDiv.withElementId("shellsCanvasWrapper")
         .contains(Canvas.withElementId("shellsCanvas")))
@@ -101,7 +74,7 @@ const surfaceView = new StandardSurfaceView({
     opacity: 0.95,
     surfaceResolution: new SurfaceResolution(200, 200),
     contourResolution: new SurfaceResolution(100, 50),
-    colorMapper: ColorMappers.RdYlBu
+    colorMapper: ColorMappers.get("RdYlBu")
 });
 
 const simulation = Simulation
@@ -109,27 +82,26 @@ const simulation = Simulation
     .onClockTick(() => surfaceView.rotation.y += 0.0167)
     .start();
 
-const surfaceController = new SurfaceController(simulation, surfaceView);
-surfaceController.switchTo("Sea shell"); // Initial surface
 
-const eventController = EventController.for(simulation);
-surfaceView.contoursVisible = false;
+const surfacesRegistry = new Registry({
+    id: "shellsSelect",
+    label: "Specie: ",
+    entries: surfaces
+});
 
-eventController.attach(HtmlControl
-    .withElementId("surfaceSelect")
-    .forType("change")
-    .to(surfaceController)
-    .withProperty("surface"));
+function changeSurface(surfaceId) {
+    const newSurface = surfacesRegistry.get(surfaceId);
+    surfaceView.dispose();
+    simulation.synchronize(newSurface.onceWith(surfaceView));
+    simulation.renderer.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
+}
 
-eventController.attach(HtmlControl
-    .withElementId("showContours")
-    .forType("click")
-    .to(surfaceView)
-    .withProperty("contoursVisible"));
+new DropdownMenu()
+    .for(surfacesRegistry)
+    .addEventListener("change", event => changeSurface(event.target.value));
 
-eventController.attach(HtmlControl
-    .withElementId("showWireframe")
-    .forType("click")
-    .to(surfaceView)
-    .withProperty("wireframe"));
+changeSurface("Sea shell");
+
+surfaceView.showColormapSelector();
+surfaceView.showSurfaceControls();
 

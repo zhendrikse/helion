@@ -13,6 +13,13 @@ const rSquared = (x, y) => x * x + y * y;
 const modulation = (t) => (1 - sin(pi * (t - 0.5)));
 
 const surfaces = {
+    "Ripple": {
+        "amplitude": 1,
+        "surface": new MultivariateFunctionSurface({
+            domain: new Domain([-pi, pi], [-pi, pi]),
+            z: (x, y, t) => surfaces["Ripple"].amplitude * sin(1.25 * rSquared(x, y) - pi * t)
+        })
+    },
     "Monkey saddle": {
         "amplitude": 0.3,
         "surface": new MultivariateFunctionSurface({
@@ -36,13 +43,6 @@ const surfaces = {
             z: (x, y, t) => surfaces["Ricker"].amplitude *
                 (1 - rSquared(x, y)) * exp(-1 * rSquared(x, y)) * modulation(t)
         }),
-    },
-    "Ripple": {
-        "amplitude": 1,
-        "surface": new MultivariateFunctionSurface({
-            domain: new Domain([-pi, pi], [-pi, pi]),
-            z: (x, y, t) => surfaces["Ripple"].amplitude * sin(1.25 * rSquared(x, y) - pi * t)
-        })
     },
     "Polynomial": {
         "amplitude": .1,
