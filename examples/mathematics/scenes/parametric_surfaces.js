@@ -1,5 +1,5 @@
 import {
-    ThreeJsRenderer, Canvas, HtmlDiv, Simulation, ParametricSurface,
+    ThreeJsRenderer, Simulation, ParametricSurface,
     GaussianCurvatureField, Domain, StandardSurfaceView, DropdownMenu, Registry
 } from "../../../src/index.js";
 
@@ -60,9 +60,9 @@ const surfaces = {
     })
 };
 
+const container = document.getElementById("parametricSurfacesContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("parametricSurfacesCanvasWrapper")
-        .contains(Canvas.withElementId("parametricSurfacesCanvas")))
+    .in(container)
     .with({
         fieldOfView: 20
     });
@@ -72,7 +72,7 @@ const surfaceView = new StandardSurfaceView({
     opacity: 0.925
 });
 
-const simulation = Simulation.with(renderer);
+const simulation = Simulation.with(renderer).start();
 
 const surfacesRegistry = new Registry({
     id: "parametricSurfaceSelect",
@@ -88,11 +88,11 @@ function changeSurface(surfaceId) {
     simulation.renderer.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
 }
 
-new DropdownMenu()
+new DropdownMenu(container)
     .for(surfacesRegistry)
     .addEventListener("change", event => changeSurface(event.target.value));
-surfaceView.showColormapSelector();
-surfaceView.showScalarFieldSelector();
-surfaceView.showSurfaceControls();
+surfaceView.showColormapSelectorIn(container);
+surfaceView.showScalarFieldSelectorIn(container);
+surfaceView.showSurfaceControlsIn(container);
 
 changeSurface("Bow curve");

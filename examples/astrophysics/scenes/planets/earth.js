@@ -143,18 +143,18 @@ const w_rotate = 0.0;
 function updateSystem(sec) {
     moon.position.set(0.4*Math.cos(w_moon*sec), 0, -0.4*Math.sin(w_moon*sec));
     sun.position.set(3*Math.cos(w_orbit*sec), 0, -3*Math.sin(w_orbit*sec));
-    Earth.material.uniforms.u_sunRelPosition.withValue.x = 3*Math.cos(w_orbit*sec);
-    Earth.material.uniforms.u_sunRelPosition.withValue.y = 0;
-    Earth.material.uniforms.u_sunRelPosition.withValue.z = -3*Math.sin(w_orbit*sec);
+    Earth.material.uniforms.u_sunRelPosition.value.x = 3*Math.cos(w_orbit*sec);
+    Earth.material.uniforms.u_sunRelPosition.value.y = 0;
+    Earth.material.uniforms.u_sunRelPosition.value.z = -3*Math.sin(w_orbit*sec);
     Earth.material.uniforms.u_moonPosition.value.x = 0.4*Math.cos(w_moon*sec);
     Earth.material.uniforms.u_moonPosition.value.y = 0;
     Earth.material.uniforms.u_moonPosition.value.z = -0.4*Math.sin(w_moon*sec);
-    Earth.atmosphereMaterial.uniforms.u_sunRelPosition.withValue.x = 3*Math.cos(w_orbit*sec);
-    Earth.atmosphereMaterial.uniforms.u_sunRelPosition.withValue.y = 0;
-    Earth.atmosphereMaterial.uniforms.u_sunRelPosition.withValue.z = -3*Math.sin(w_orbit*sec);
-    Earth.fresnelMaterial.uniforms.u_sunRelPosition.withValue.x = 3*Math.cos(w_orbit*sec);
-    Earth.fresnelMaterial.uniforms.u_sunRelPosition.withValue.y = 0;
-    Earth.fresnelMaterial.uniforms.u_sunRelPosition.withValue.z = -3*Math.sin(w_orbit*sec);
+    Earth.atmosphereMaterial.uniforms.u_sunRelPosition.value.x = 3*Math.cos(w_orbit*sec);
+    Earth.atmosphereMaterial.uniforms.u_sunRelPosition.value.y = 0;
+    Earth.atmosphereMaterial.uniforms.u_sunRelPosition.value.z = -3*Math.sin(w_orbit*sec);
+    Earth.fresnelMaterial.uniforms.u_sunRelPosition.value.x = 3*Math.cos(w_orbit*sec);
+    Earth.fresnelMaterial.uniforms.u_sunRelPosition.value.y = 0;
+    Earth.fresnelMaterial.uniforms.u_sunRelPosition.value.z = -3*Math.sin(w_orbit*sec);
     // earth.rotateY(w_rotate);
     sun.rotateY(w_rotate);
 }

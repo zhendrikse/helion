@@ -1,7 +1,6 @@
 import {
-    ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
-    EventController, StandardSurfaceView, Vec3,
-    Interval, GradientColorMapper, MultivariateFunctionSurface, Domain, Registry, DropdownMenu, Checkbox,
+    ThreeJsRenderer, Simulation, StandardSurfaceView, Vec3, DropdownMenu, Checkbox,
+    Interval, GradientColorMapper, MultivariateFunctionSurface, Domain, Registry
 } from "../../../src/index.js";
 
 const pi = Math.PI;
@@ -93,9 +92,9 @@ class SurfaceController {
     }
 }
 
+const container = document.getElementById("realSurfacesContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("realSurfacesCanvasWrapper")
-        .contains(Canvas.withElementId("realSurfacesCanvas")))
+    .in(container)
     .with({
         cameraPosition: new Vec3(25, 10, 10).multiplyScalar(1.6),
         fieldOfView: 20
@@ -115,14 +114,14 @@ simulation
     .onClockTick((clockTime, simulatedTime) => surfaceController.time = simulatedTime)
     .start();
 
-new DropdownMenu()
+new DropdownMenu(container)
     .for(surfacesRegistry)
     .addEventListener("change", event => surfaceController.changeSurface(event.target.value));
 surfaceController.changeSurface("Ripple");
-surfaceView.showColormapSelector();
-surfaceView.showSurfaceControls();
-surfaceView.showScalarFieldSelector();
-new Checkbox()
+surfaceView.showColormapSelectorIn(container);
+surfaceView.showSurfaceControlsIn(container);
+surfaceView.showScalarFieldSelectorIn(container);
+new Checkbox(container)
     .on(surfaceController)
     .withLabel("Animate surface ")
     .withProperty("animate");

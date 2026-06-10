@@ -249,7 +249,7 @@ export class ThreeJsRenderer extends Renderer {
             this.remove(this._axes);
 
         const boundingBox = anObject.boundingBox;
-        const canvasContainer = this._canvasWrapperDiv.htmlDiv
+        const canvasContainer = this._container;
         this._axes = Axes.from(boundingBox, divisions)
             .withLayout(layoutType, positiveXZ)
             .withAnnotations(canvasContainer, layoutType, axisLabels)
