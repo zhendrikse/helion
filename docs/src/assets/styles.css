@@ -23,38 +23,11 @@
 .badgeRow {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px; /* ruimte tussen badges */
+    gap: 8px; /* space between badges */
     margin-bottom: 1rem;
 }
 .badgeRow a img {
-    height: 24px; /* consistente hoogte */
-}
-
-.overlayText {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: yellow;
-    font-size: 24px;
-    pointer-events: none;
-    user-select: none;
-    text-align: center;
-}
-
-.applicationCanvas {
-    display: block;
-    background-color: transparent;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    margin: 0;
-}
-
-.canvasWrapper {
-    position: relative;
-    width: 100%;
-    margin: 0 auto;
-    aspect-ratio: 1 / 1;
+    height: 24px; /* consistent height */
 }
 
 .header_line {
@@ -76,16 +49,6 @@
     float: right;
     width: 50%;
     text-align: center
-}
-
-.buttonRow {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 2px;
-    left: 10px;
-    margin-bottom: -5px;
-    border-radius: 8px;
 }
 
 select {

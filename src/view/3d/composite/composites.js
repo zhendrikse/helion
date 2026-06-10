@@ -296,7 +296,7 @@ export class OneDimensionalComplexPlaneWave3D extends Group {
 
     render() {
         for (let arrow of this._arrows)
-            arrow.body.value = this._complexPlaneWave.valueAt(arrow.body.position.x);
+            arrow.body.withValue = this._complexPlaneWave.valueAt(arrow.body.position.x);
 
         for (let arrow of this._arrows)
             arrow.render();

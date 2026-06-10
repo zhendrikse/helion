@@ -44,13 +44,7 @@ Instead, they define the positive circulation direction according to the right-h
     </a>
 </div>
 
-<div class="canvasWrapper" id="faradayLawCanvasWrapper" style="aspect-ratio: 19 / 12;">
-    <canvas class="applicationCanvas" id="faradayLawCanvas" style="aspect-ratio: 19/12"></canvas>
-    <div class="overlayText" id="faradayLawCanvasOverlay">Click to start the animation!</div>
-</div>
-<div class="buttonRow">
-    <label for="faradayLoopButton">Show Faraday loop <input type="checkbox" id="faradayLoopButton"/></label>
-</div>
+<div id="faradayLawContainer" style="aspect-ratio: 19 / 12;"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/faradays_law.js"}></script>
 <p style="clear: both;"></p>
 
@@ -101,9 +95,6 @@ This is the essence of electromagnetic induction and energy conservation.
     </a>
 </div>
 
-<div class="canvasWrapper" id="chargedRodWrapper" style="aspect-ratio: 3/4">
-    <canvas id="chargedRodCanvas" class="applicationCanvas" style="aspect-ratio: 3/4"></canvas>
-    <div class="overlayText" id="chargedRodOverlay">Click to start the animation!</div>
-</div>
+<div id="chargedRodContainer" style="aspect-ratio: 3/4"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/charged_rod.js"}></script>
 <p style="clear: both;"></p>

@@ -1,8 +1,7 @@
 import { Color } from "three";
 import {
-    RadialSymmetricBody, AxialSymmetricBody, VectorField, Range, Simulation, Canvas,
-    Overlay, EventController, HtmlDiv, Sphere, Cylinder, ArrowField, Vec3,
-    ThreeJsRenderer, Trail
+    RadialSymmetricBody, AxialSymmetricBody, VectorField, Range, Simulation,
+    EventController, Sphere, Cylinder, ArrowField, Vec3, ThreeJsRenderer, Trail
 } from "../../../src/index.js";
 
 //
@@ -107,11 +106,8 @@ function timeStep(dt) {
 //
 // View model
 //
-const canvas = Canvas.withElementId("chargedRingCanvas");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv
-        .withElementId("chargedRingWrapper")
-        .containsBoth(canvas.and(Overlay.withElementId("chargedRingOverlay"))))
+    .in(document.getElementById("chargedRingContainer"))
     .with({
         cameraPosition: new Vec3(15, 5, 20),
         fieldOfView: 22,
@@ -151,5 +147,5 @@ for (const segment of ring.segments)
     simulation.synchronize(segment.onceWith(new Cylinder({ color: "orange" })));
 
 const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas);
+eventController.addStartStopMouseClickEventListener();
 

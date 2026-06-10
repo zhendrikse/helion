@@ -1,6 +1,5 @@
-import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Canvas, HtmlDiv,
-    EventController, HtmlControl, Cylinder, ElectromagneticWave,
-    ThreeJsRenderer, Vec3, Overlay
+import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Vec3, Range,
+    EventController, Cylinder, ElectromagneticWave, ThreeJsRenderer, Slider
 } from "../../../src/index.js";
 
 //
@@ -23,11 +22,9 @@ for (let position of range)
 //
 // View
 //
-const canvas= Canvas.withElementId("antennaCanvas");
+const container= document.getElementById("antennaContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv
-        .withElementId("antennaCanvasWrapper")
-        .containsBoth(canvas.and(Overlay.withElementId("antennaOverlay"))))
+    .in(container)
     .with({
         cameraPosition: new Vec3(-1, 4, -9).multiplyScalar(2.5),
         fieldOfView: 25
@@ -56,17 +53,14 @@ for (let wave of planeWaves)
         scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)
     })));
 
-//
-// Event controller
-//
 const eventController = new EventController(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas);
+eventController.addStartStopMouseClickEventListener();
 
-for (let wave of planeWaves)
-    eventController.attach(HtmlControl
-        .withElementId("antennaFieldStrengthSlider")
-        .forType("input")
-        .withValueSpanId("antennaFieldStrengthSliderValue")
-        .to(wave)
-        .withProperty("amplitude"));
-
+new Slider(container)
+    .withLabel("🧲 Field strength: ")
+    .addEventListener(event => {
+        for (let wave of planeWaves)
+            wave.amplitude = event.target.value;
+    })
+    .withValue(10)
+    .withRange(new Range(1, 20, .1));

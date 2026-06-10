@@ -1,8 +1,7 @@
 import { Color } from "three";
 import {
-    VectorField, Range, Sphere, Trail, Vec3,
-    ArrowField, ThreeJsRenderer, CallbackFunction, Canvas,
-    EventController, HtmlControl, HtmlDiv, Overlay, Simulation, Aquarium, RadialSymmetricBody
+    VectorField, Range, Sphere, Trail, Vec3, ArrowField, ThreeJsRenderer,
+    EventController, HtmlControl, Slider, Simulation, Aquarium, RadialSymmetricBody
 } from "../../../src/index.js";
 
 const initialSspeed = 50;
@@ -51,11 +50,9 @@ function timeStep(dt) {
 //
 // View
 //
-const canvas = Canvas.withElementId("helicalProtonCanvas");
+const container = document.getElementById("helicalProtonContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv
-        .withElementId("helicalProtonCanvasWrapper")
-        .containsBoth(canvas.and(Overlay.withElementId("helicalProtonCanvasOverlay"))))
+    .in(container)
     .with({
         cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
         fieldOfView: 30
@@ -84,6 +81,7 @@ const simulation = Simulation
     .synchronize(magneticField.onceWith(arrowField))
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, simulatedTime) => timeStep(dt), 25);
+
 renderer.add(new Aquarium({
     color: 0x1e90ff,
     opacity: 0.1,
@@ -91,28 +89,28 @@ renderer.add(new Aquarium({
     frameColor: 0x779977
 }));
 
-
 const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas);
+eventController.addStartStopMouseClickEventListener();
 
-eventController.attach(HtmlControl
-    .withElementId("helicalProtonChargeSlider")
-    .forType("input")
-    .to(proton)
-    .withValueSpanId("helicalProtonChargeSliderValue")
-    .withProperty("charge"));
+new Slider(container)
+    .withRange(new Range(.25, 5, .1))
+    .on(proton.state)
+    .withValue(0.8)
+    .withProperty("charge")
+    .withLabel("🪫 Charge: ");
 
-eventController.attach(HtmlControl
-    .withElementId("helicalProtonFieldStrengthSlider")
-    .forType("input")
-    .to(magneticField)
-    .withValueSpanId("helicalProtonFieldStrengthSliderValue")
-    .withProperty("fieldStrength"));
+new Slider(container)
+    .withRange(new Range(.5, 5, .1))
+    .on(magneticField)
+    .withValue(1)
+    .withProperty("fieldStrength")
+    .withLabel("🧲 Field: ");
 
 const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
-const speedCallback = new CallbackFunction((event) =>
-    proton.velocity = speedToVelocity(event.target.value, proton.velocity));
-eventController.add(speedCallback
-    .to(HtmlControl.withElementId("helicalProtonSpeedSlider")
-        .forType("input")
-        .withValueSpanId("helicalProtonSpeedSliderValue")));
+const speedCallback = event => proton.state.velocity = speedToVelocity(event.target.value, proton.velocity);
+new Slider(container)
+    .withRange(new Range(1, 100, 1))
+    .withValue(50)
+    .withLabel("🚀 Speed: ")
+    .addEventListener(speedCallback);
+

@@ -1,7 +1,7 @@
 import { Vector2 } from "three";
 import {
-    RadialSymmetricBody, Simulation, Canvas, Overlay, Sphere, Floor, Vec3,
-    ThreeJsRenderer, Trail, EventController, HtmlDiv, UPlotGraph, G
+    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3,
+    ThreeJsRenderer, Trail, EventController, UPlotGraph, G
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -46,11 +46,8 @@ function ballStep(dt) {
 //
 // Attach view models
 //
-const canvas = Canvas.withElementId("bouncingBallOnFloorCanvas");
-const overlay = Overlay.withElementId("bouncingBallOnFloorOverlayText");
-const canvasWrapper = HtmlDiv.withElementId("bouncingBallOnFloorWrapper").containsBoth(canvas.and(overlay));
-const renderer = ThreeJsRenderer
-    .on(canvasWrapper)
+const container = document.getElementById("bouncingBallContainer");
+const renderer = new ThreeJsRenderer(container)
     .with({
         cameraPosition: new Vec3(2, 1, 0.5).multiplyScalar(2.25)
     });
@@ -81,15 +78,15 @@ renderer.add(new Floor({
 // Graph
 //
 const plot = new UPlotGraph({
-    plotDiv: document.getElementById("chart"),
+    plotDiv: container,
     dataDefinition: [
         {label: "t"}, {label: "ball1", color: "blue"},
         { label: "Y-position", color: "cyan" },
         { label: "Kinetic Energy", color: "red" },
         { label: "Potential Energy", color: "green" }
     ],
-    width: canvas.clientWidth,
-    height: canvas.clientHeight,
+    width: container.clientWidth,
+    height: container.clientHeight,
     title: "Bouncing ball",
     xLabel: "Simulation time",
     yLabel: "Displacement"
@@ -113,4 +110,4 @@ simulation.onAfterClockTick((clockTime, simulatedTime) => updateGraph(simulatedT
 // Event controller
 //
 const eventController = new EventController(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas); // Controller passes event on to simulation and renderers
+eventController.addStartStopMouseClickEventListener();

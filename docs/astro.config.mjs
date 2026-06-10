@@ -13,6 +13,9 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: '☀️ Helion',
+			social: [
+				{ icon: 'github', label: 'GitHub', href: 'https://github.com/zhendrikse/' },
+			],
 			sidebar: [
 				{
 					label: 'Guides',

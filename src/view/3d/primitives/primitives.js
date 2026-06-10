@@ -238,14 +238,12 @@ export class Arrow extends Group {
             return;
         }
 
-        this.visible = true;
-        const shaftLength = this._magnitudeMap(magnitude);
-
         if (this._colorMap) {
             const color = this._colorMap(this._tempAxis, magnitude);
             this._material.color.copy(color);
         }
 
+        const shaftLength = this._magnitudeMap(magnitude);
         this.quaternion.setFromUnitVectors(Arrow.UP, this._tempAxis.normalize());
         this._shaft.scale.set(this._shaftRadius, shaftLength, this._shaftRadius);
 

@@ -7,47 +7,24 @@
 <body>
     <!--
        - B O U N C I N G   B A L L   O N   S P R I N G
-    <div class="canvasWrapper" id="bouncingBallOnSpringWrapper">
-        <canvas class="applicationCanvas" id="bouncingBallOnSpringCanvas" width="600" height="600"></canvas>
-        <div class="overlayText" id="bouncingBallOnSpringOverlay">Click to start the animation!</div>
-    </div>
-    <div class="buttonRow">
-        <label><span style="color: cyan">🚀 Velocity: </span></label><input type="checkbox" id="velocityArrow" checked/>
-        <label><span style="color: red">💪🏻 Force: </span></label><input type="checkbox" id="forceArrow" checked/>
-    </div>
-    <div class="buttonRow">
-        <label for ="dampingSlider">🍃 Air resistance: </label>
-        <input type="range" id="dampingSlider" min="0" max="1" step="0.1" value=".2"/>
-    </div>
+    <div id="bouncingBallOnSpringContainer" style="width: 500px; height: 500px; background: black"></div>
     <script type="module" src="scenes/bouncing_ball_on_spring.js"></script>
     -->
     <!--
        - B O U N C I N G   B A L L   O N   F L O O R
-    <link rel="stylesheet" href="https://unpkg.com/uplot/dist/uPlot.min.css">
-    <script src="https://unpkg.com/uplot/dist/uPlot.iife.min.js"></script>
-    <div class="canvasWrapper" id="bouncingBallOnFloorWrapper">
-        <canvas class="applicationCanvas" id="bouncingBallOnFloorCanvas" style="aspect-ratio: 19/12"></canvas>
-        <div class="overlayText" id="bouncingBallOnFloorOverlayText">Click to start the animation!</div>
-    </div>
+    <div id="bouncingBallContainer" style="width: 500px; height: 500px; background: black;"></div>
     <script type="module" src="scenes/bouncing_ball_on_floor.js"></script>
        -->
     <!--
        - T H R E E   B O D Y   P R O B L E M
-       -->
-    <div class="canvasWrapper" id="threeBodyWrapper">
-        <canvas class="applicationCanvas" id="threeBodyCanvas"></canvas>
-        <div class="overlayText" id="overlayText">Click to start the animation!</div>
-    </div>
+    <div id="threeBodyContainer" style="width: 500px; height: 500px; background: black;"></div>
     <script type="module" src="scenes/three_body.js"></script></body>
+       -->
     <!--
        - F L O A T I N G   B L O C K
-    <div class="canvasWrapper" id="floatingBlockContainer">
-        <canvas id="floatingBlockCanvas" class="applicationCanvas"></canvas>
-        <div class="overlayText" id="floatingBlockOverlayText">Click to start the animation!</div>
-    </div>
-    <div id="forceChart" style="margin:auto;"></div>
-    <script type="module" src="scenes/floating_block.js"></script>
        -->
+    <div id="floatingBlockContainer" style="width: 500px; height: 500px; background: black;"></div>
+    <script type="module" src="scenes/floating_block.js"></script>
 </body>
 </html>
 

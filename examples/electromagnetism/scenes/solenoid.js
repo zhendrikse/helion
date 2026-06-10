@@ -1,8 +1,7 @@
 import { Color } from "three"
 import {
-    AxialSymmetricBody, VectorField, Range, Simulation, Vec3,
-    Canvas, HtmlDiv, EventController, HtmlControl, Cylinder, ArrowField,
-    ThreeJsRenderer
+    AxialSymmetricBody, VectorField, Range, Simulation, Vec3, Cylinder, ArrowField,
+    ThreeJsRenderer, Slider, Checkbox
 } from "../../../src/index.js";
 
 const MU0 = 4 * Math.PI * 1e-7;
@@ -87,8 +86,9 @@ const magneticField = new SolenoidField(solenoid);
 //
 // View
 //
+const container = document.getElementById("solenoidContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("solenoidCanvasWrapper").contains(Canvas.withElementId("solenoidCanvas")))
+    .in(container)
     .with({
         cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
         fieldOfView: 45
@@ -103,23 +103,21 @@ const arrowField = new ArrowField({
 
 const simulation = Simulation
     .with(renderer)
-    .synchronize(magneticField.onceWith(arrowField));
+    .synchronize(magneticField.onceWith(arrowField))
+    .start();
 
 for (const segment of solenoid.segments)
     simulation.synchronize(segment.onceWith(new Cylinder({ color: new Color("yellow") })));
 
 
-const eventController = new EventController(simulation);
-eventController.attach(HtmlControl
-    .withElementId("fieldStrength")
-    .forType("input")
-    .withValueSpanId("fieldStrengthSliderValue")
-    .to(magneticField)
-    .withProperty("fieldStrength"));
+const slider = new Slider(container)
+    .on(magneticField)
+    .withProperty("fieldStrength")
+    .withRange(new Range(0, 1, 0.01))
+    .withValue(.5)
+    .withLabel("️⚡ Field strength: ");
 
-eventController.attach(HtmlControl
-    .withElementId("autoRotateSolenoid")
-    .forType("click")
-    .to(renderer)
-    .withProperty("autoRotate"));
-
+Checkbox.togetherWith(slider)
+    .on(renderer)
+    .withProperty("autoRotate")
+    .withLabel("↻ Rotate: ")

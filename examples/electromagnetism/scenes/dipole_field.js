@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
-    RadialSymmetricBody, VectorField, Range, Simulation, Canvas, HtmlDiv, Vec3,
-    EventController, HtmlControl, Sphere, ArrowField, ThreeJsRenderer
+    RadialSymmetricBody, VectorField, Range, Simulation, Vec3, Slider,
+    Sphere, ArrowField, ThreeJsRenderer, Checkbox
 } from "../../../src/index.js";
 
 const scale = 1e15;
@@ -54,8 +54,9 @@ const dipoleField = new DipoleField(dipole);
 //
 // View
 //
+const container = document.getElementById("dipoleContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("dipoleCanvasWrapper").contains(Canvas.withElementId("dipoleCanvas")))
+    .in(container)
     .with({
         cameraPosition: new Vec3(32, 16, 48),
         scale: scale,
@@ -74,26 +75,22 @@ const arrowField = new ArrowField({
     colorMap: (axis, magnitude) => new Color().setHSL(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.5)
 });
 
-const simulation = Simulation
+Simulation
     .with(renderer)
     .synchronize(dipole.positive.onceWith(positiveSphere))
     .synchronize(dipole.negative.onceWith(negativeSphere))
-    .synchronize(dipoleField.onceWith(arrowField));
+    .synchronize(dipoleField.onceWith(arrowField))
+    .start();
 
-//
-// Event controller
-//
-const eventController = EventController.for(simulation);
-eventController.attach(HtmlControl
-    .withElementId("fieldStrengthSlider")
-    .forType("input")
-    .withValueSpanId("fieldStrengthSliderValue")
-    .to(dipoleField)
-    .withProperty("fieldStrength"));
+const slider = new Slider(container)
+    .on(dipoleField)
+    .withProperty("fieldStrength")
+    .withRange(new Range(0, 1, 0.01))
+    .withValue(.5)
+    .withLabel("️⚡ Field strength: ");
 
-eventController.attach(HtmlControl
-    .withElementId("autoRotateDipole")
-    .forType("click")
-    .to(renderer)
-    .withProperty("autoRotate"));
+Checkbox.togetherWith(slider)
+    .on(renderer)
+    .withProperty("autoRotate")
+    .withLabel("↻ Rotate: ")
 

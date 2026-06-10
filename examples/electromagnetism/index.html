@@ -7,143 +7,57 @@
   <body>
     <!--
        - A N T E N N A
-    <div class="canvasWrapper" id="antennaCanvasWrapper">
-      <canvas id="antennaCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
-      <div class="overlayText" id="antennaOverlay">Click to start the animation!</div>
-    </div>
-    <div class="buttonRow">
-      <label for="antennaFieldStrengthSlider">🧲 Field strength: </label>
-      <input type="range" id="antennaFieldStrengthSlider" min="1" max="20" step="0.1" value="10"/>
-      <span id="antennaFieldStrengthSliderValue">10</span>
-    </div>
+    <div id="antennaContainer"  style="aspect-ratio: 19 / 12;"></div>
     <script type="module" src="scenes/antenna.js"></script>
     -->
     <!--
        - C H A R G E D  R I N G
-    <div class="canvasWrapper" id="chargedRingWrapper">
-      <canvas class="applicationCanvas" id="chargedRingCanvas"></canvas>
-      <div class="overlayText" id="chargedRingOverlay">Click to start the animation!</div>
-    </div>
+    <div id="chargedRingContainer"></div>
     <script type="module" src="scenes/charged_ring.js"></script>
        -->
     <!--
        - C H A R G E D  R O D
-    <div class="applicationCanvasWrapper" id="chargedRodWrapper" style="aspect-ratio: 3/4">
-      <canvas id="chargedRodCanvas" class="applicationCanvas" style="aspect-ratio: 3/4"></canvas>
-      <div class="overlayText" id="chargedRodOverlay">Click to start the animation!</div>
-    </div>
+    <div id="chargedRodContainer" style="aspect-ratio: 3/4"></div>
     <script type="module" src="scenes/charged_rod.js"></script>
        -->
     <!--
        - C H A R G E D  S H E E T
-    <div class="canvasWrapper" id="chargedSheetWrapper">
-      <canvas class="applicationCanvas" id="chargedSheetCanvas"></canvas>
-      <div class="overlayText" id="chargedSheetOverlay">Click to start the animation!</div>
-    </div>
+    <div id="chargedSheetContainer"></div>
     <script type="module" src="scenes/charged_sheet.js"></script>
        -->
       <!--
        - D I P O L E  F I E L D
-    <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">
-      <canvas id="solenoidCanvas" class="applicationCanvas"></canvas>
-    </div>
-    <div class="applicationCanvasWrapper" id="dipoleCanvasWrapper">
-      <canvas id="dipoleCanvas" class="applicationCanvas"></canvas>
-    </div>
-    <div class="buttonRow">
-      <label for="fieldStrengthSlider">Field </label><input type="range" id="fieldStrengthSlider" min="0" max="1" step="any" value="0.5"/>
-      <span id="fieldStrengthSliderValue">0.5</span>
-      <label for="autoRotateDipole">Auto-rotate </label><input type="checkbox" id="autoRotateDiple"/>
-    </div>
+    <div id="dipoleContainer"></div>
     <script type="module" src="scenes/dipole_field.js"></script>
        -->
     <!--
        - E L E C T R O M A G N E T I C   W A V E
-       -->
-    <div class="canvasWrapper" id="electromagneticWaveWrapper">
-      <canvas class="applicationCanvas" id="electromagneticWaveCanvas"></canvas>
-      <div class="overlayText" id="electromagneticWaveOverlay">Click to start the animation!</div>
-    </div>
+    <div id="electromagneticWaveContainer"></div>
     <script type="module" src="scenes/electromagnetic_wave_quiver.js"></script>
+       -->
     <!--
        - F A R A D A Y ' S   L A W
-    <div class="canvasWrapper" id="faradayLawCanvasWrapper" style="aspect-ratio: 19 / 12;">
-      <canvas class="applicationCanvas" id="faradayLawCanvas" style="aspect-ratio: 19/12"></canvas>
-      <div class="overlayText" id="faradayLawCanvasOverlay">Click to start the animation!</div>
-    </div>
-    <div class="buttonRow">
-      <label for="faradayLoopButton">Show Faraday loop <input type="checkbox" id="faradayLoopButton"/></label>
-    </div>
+    <div id="faradayLawContainer" style="aspect-ratio: 19 / 12;"></div>
     <script type="module" src="scenes/faradays_law.js"></script>
        -->
     <!--
        - S O L E N O I D
-    <div class="applicationCanvasWrapper" id="solenoidCanvasWrapper">
-      <canvas id="solenoidCanvas" class="applicationCanvas" ></canvas>
-    </div>
-    <div class="buttonRow">
-      <label for="fieldStrength">Field </label><input type="range" id="fieldStrength" min="0" max="2" step="any" value=".5"/>
-      <span id="fieldStrengthSliderValue">.5</span>
-      <label for="autoRotateSolenoid">Auto-rotate </label><input type="checkbox" id="autoRotateSolenoid"/>
-    </div>
+    <div id="solenoidContainer"></div>
     <script type="module" src="scenes/solenoid.js"></script>
      -->
     <!--
        - P R O T O N  I N  M A G N E T I C  F I E L D
-    <div class="canvasWrapper" id="protonInFieldWrapper" style="aspect-ratio: 19/12">
-      <canvas id="protonInFieldCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
-      <div class="overlayText" id="protonInFieldOverlayText">Click to start the animation!</div>
-    </div>
-    <div class="buttonRow">
-      <label for="protonInFieldStrengthSlider">🧲 Field: </label>
-      <input type="range" id="protonInFieldStrengthSlider" min=".1" max="1" step="any" value=".2"/>
-      <span id="protonInFieldStrengthSliderValue">10</span>
-    </div>
-    <div class="buttonRow">
-      <label for="protonInFieldSpeedSlider" >🚀 Speed: </label>
-      <input type="range" id="protonInFieldSpeedSlider" min="1" max="100" step="any" value="50"/>
-      <span id="protonInFieldSpeedSliderValue">50</span>
-    </div>
+     -->
+    <div id="protonInFieldContainer" style="aspect-ratio: 19/12"></div>
     <script type="module" src="scenes/proton_in_magnetic_field.js"></script>
-    <p style="clear: both;"></p>
-    -->
     <!--
        - H E L I C A L  M O T I O N
-    <div class="canvasWrapper" id="helicalProtonCanvasWrapper">
-      <canvas id="helicalProtonCanvas" class="applicationCanvas"></canvas>
-      <div class="overlayText" id="helicalProtonCanvasOverlay">Click to start the animation!</div>
-    </div>
-    <div class="buttonRow">
-      <label>🧲 Field: </label>
-      <input type="range" id="helicalProtonFieldStrengthSlider" min=".5" max="5" step="any" value="1"/>
-      <span id="helicalProtonFieldStrengthSliderValue">1</span>
-    </div>
-    <div class="buttonRow">
-      <label>🚀 Speed: </label>
-      <input type="range" id="helicalProtonSpeedSlider" min="1" max="100" step="any" value="50"/>
-      <span id="helicalProtonSpeedSliderValue">50</span>
-    </div>
-    <div class="buttonRow">
-      <label>🪫 charge: </label>
-      <input type="range" id="helicalProtonChargeSlider" min=".25" max="5" step="any" value="0.8"/>
-      <span id="helicalProtonChargeSliderValue">0.8</span>
-    </div>
+    <div id="helicalProtonContainer"></div>
     <script type="module" src="scenes/proton_helical_motion.js"></script>
       -->
     <!--
        - M O V I N G   C H A R G E   B E T W E E N   C A P A C I T O R   P L A T E S
-    <div class="canvasWrapper" id="movingChargeWrapper" style="aspect-ratio: 19/12">
-      <canvas id="movingChargeCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
-      <div class="overlayText" id="movingChargeOverlayText">Click to start the animation!</div>
-    </div>
-    <div class="buttonRow">
-      <label for="chargeSlider">🪫Charge: </label><input type="range" id="chargeSlider" min="0" max="5" step="0.1" value="1"/>
-      <span id="chargeSliderValue">1</span> electron charge(s)
-    </div>
-    <div class="buttonRow">
-      <label for="speedSlider" >🚀 Speed: </label><input type="range" id="speedSlider" min="1" max="50" step="1" value="15"/>
-      <span id="speedSliderValue">15</span> x 1E-14 m/s
-    </div>
+    <div id="movingChargeContainer" style="aspect-ratio: 19/12"></div>
     <script type="module" src="scenes/moving_charge.js"></script>
       -->
 </body>

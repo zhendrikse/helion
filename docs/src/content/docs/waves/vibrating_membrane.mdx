@@ -28,8 +28,5 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="membraneCanvasWrapper" style="aspect-ratio: 19/12">
-  <canvas class="applicationCanvas" id="membraneCanvas" style="aspect-ratio: 19/12"></canvas><br/>
-</div>
-<div id="helionControls"></div>
+<div id="membraneContainer" style="aspect-ratio: 19/12"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/vibrating_membrane.js"}></script>

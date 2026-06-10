@@ -1,7 +1,7 @@
 import { Vector3, Color } from "three";
 import {
     normalDistribution, randomArbitrary, randomInt, ThreeJsRenderer, Vec3,
-    HtmlDiv, Canvas, Simulation, PointCloud, PointCloudMaterial, PointCloudView
+    Simulation, PointCloud, PointCloudMaterial, PointCloudView
 } from "../../../src/index.js";
 
 class SpiralGalaxy extends PointCloud {
@@ -123,9 +123,8 @@ class SpiralGalaxy extends PointCloud {
     }
 }
 
-const canvas = Canvas.withElementId("galaxyCanvas");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("galaxyCanvasWrapper").contains(canvas))
+    .in(document.getElementById("galaxyContainer"))
     .with({
         cameraPosition: new Vec3(1, -12, 4).multiplyScalar(50),
         background: ThreeJsRenderer.Background.STARS,

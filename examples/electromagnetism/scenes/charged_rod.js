@@ -1,7 +1,7 @@
 import { Color } from "three";
 import { 
     RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, ThreeJsRenderer,
-    Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
+    Simulation, Canvas, EventController, Vec3
 } from "../../../src/index.js";
 
 //
@@ -128,8 +128,7 @@ const magneticField = new RodMagneticField(rod);
 //
 // Renderer + view model
 //
-const renderer = ThreeJsRenderer.on(HtmlDiv.withElementId("chargedRodWrapper")
-    .containsBoth(Canvas.withElementId("chargedRodCanvas").and(Overlay.withElementId("chargedRodOverlay"))))
+const renderer = ThreeJsRenderer.in(document.getElementById("chargedRodContainer"))
     .with({
         cameraPosition: new Vec3(2, 1.5, 2.5),
         fieldOfView: 30
@@ -173,8 +172,5 @@ for (const charge of rod.charges) {
     simulation.synchronize(charge.alwaysWith(new Trail({ maxPoints: 150, color: sphere.color })));
 }
 
-//
-// Controls
-//
 const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListenerTo(Canvas.withElementId("chargedRodCanvas"));
+eventController.addStartStopMouseClickEventListener();

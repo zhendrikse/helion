@@ -1,8 +1,7 @@
 import { Color, AmbientLight, PointLight } from "three";
 import {
-    RadialSymmetricBody, EC, VectorField, Range, Simulation, Canvas, Overlay,
-    EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
-    ThreeJsRenderer, Trail, Vec3, HtmlDiv
+    RadialSymmetricBody, EC, VectorField, Range, Simulation, Trail, Vec3, Slider,
+    EventController, Sphere, ArrowField, ThreeJsRenderer
 } from "../../../src/index.js";
 
 const K = 9e9;
@@ -54,10 +53,9 @@ const movingCharge = new RadialSymmetricBody({
 //
 // Simulation
 //
-const canvas = Canvas.withElementId("movingChargeCanvas");
-const overlay = Overlay.withElementId("movingChargeOverlayText");
-const renderer = ThreeJsRenderer.on(
-    HtmlDiv.withElementId("movingChargeWrapper").containsBoth(canvas.and(overlay)))
+const container = document.getElementById("movingChargeContainer");
+const renderer = ThreeJsRenderer
+    .in(container)
     .with({
         light: false, // setting our own lights
         cameraPosition: new Vec3(-50, 0, 75).multiplyScalar(0.5),
@@ -81,6 +79,24 @@ const arrowField = new ArrowField({
     colorMap: (axis, magnitude) => new Color(1, Math.sqrt(magnitude) * 1e-10, 0)
 });
 
+const chargeCallback = (event) => {
+    movingCharge.state.charge = Number(event.target.value) * 5e-42 * EC;
+}
+const chargeSlider = new Slider(container)
+    .withLabel("🪫 Charge: ")
+    .withUnits(" electron charge(s)")
+    .withValue(1)
+    .withRange(new Range(0, 5, .1))
+    .addEventListener(chargeCallback);
+
+const speedCallback = (event) => movingCharge.state.velocity.x = event.target.value / scale;
+const speedSlider = new Slider(container)
+    .withLabel("🚀 Speed: ")
+    .withUnits(" x 1E-14 m/s")
+    .withValue(25)
+    .withRange(new Range(1, 50, 1))
+    .addEventListener(speedCallback);
+
 const dt = 0.01;
 const subSteps = 3;
 const field = new Vec3();
@@ -97,7 +113,11 @@ const simulation = Simulation
         capacitorField.sample(movingCharge.position, field);
         const force = field.multiplyScalar(movingCharge.charge);
         movingCharge.apply(force, dt);
-    }, subSteps);
+    }, subSteps)
+    .onReset(() => {
+        movingCharge.state.charge = Number(chargeSlider.value) * 5e-42 * EC;
+        movingCharge.state.velocity.x = Number(speedSlider.value) / scale;
+    })
 
 for (const charge of capacitor.charges) {
     const sphere = new Sphere({
@@ -106,23 +126,5 @@ for (const charge of capacitor.charges) {
     simulation.synchronize(charge.onceWith(sphere)); // Prevent unnecessary updates!
 }
 
-//
-// Event listeners
-//
 const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas);
-
-const chargeCallback = new CallbackFunction((event) => {
-    movingCharge.state.charge = Number(event.target.value) * 5e-42 * EC
-});
-eventController.add(chargeCallback
-    .to(HtmlControl.withElementId("chargeSlider")
-        .forType("input")
-        .withValueSpanId("chargeSliderValue")));
-
-const speedCallback = new CallbackFunction((event) =>
-    movingCharge.state.velocity.x = event.target.value / scale);
-eventController.add(speedCallback
-    .to(HtmlControl.withElementId("speedSlider")
-        .forType("input")
-        .withValueSpanId("speedSliderValue")));
+eventController.addStartStopMouseClickEventListener();

@@ -1,13 +1,13 @@
 import {
-    ThreeJsRenderer, HtmlDiv, Canvas, Simulation, Saturn, Vec3, Planets,
+    ThreeJsRenderer, Simulation, Saturn, Vec3, Planets,
 } from "../../../../src/index.js";
 import {AmbientLight} from "three";
 
 const saturn = Planets.saturn;
 
-const canvas = Canvas.withElementId("saturnCanvas");
+const container = document.getElementById("saturnContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("saturnCanvasWrapper").contains(canvas))
+    .in(container)
     .with({
         cameraPosition: new Vec3(1, 1.5, 4).multiplyScalar(.8),
         fieldOfView: 45,

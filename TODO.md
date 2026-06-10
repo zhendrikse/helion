@@ -2083,12 +2083,16 @@ export class Body {
 Voor ergonomie:
 
 ```js id="m77kjk"
-get position() {
+get
+position()
+{
     return this.state.position;
 }
 
-set position(value) {
-    this.state.position = value;
+set
+position(withValue)
+{
+    this.state.position = withValue;
 }
 ```
 
@@ -3084,8 +3088,8 @@ surface + scalarField + normalizedScalarField + mapper
 maar:
 
 ```js
-field.value(u,v)
-field.gradient(u,v)
+field.withValue(u, v)
+field.gradient(u, v)
 ```
 
 Normalizer wordt optioneel decorator.

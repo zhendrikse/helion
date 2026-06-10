@@ -1,8 +1,7 @@
 import { Color } from "three";
 import {
-    RadialSymmetricBody, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
-    EventController, HtmlControl, CallbackFunction, Sphere, ArrowField,
-    ThreeJsRenderer, Trail, Vec3
+    RadialSymmetricBody, VectorField, Range, Simulation, Slider, EventController, HtmlControl,
+    Sphere, ArrowField, ThreeJsRenderer, Trail, Vec3
 } from "../../../src/index.js";
 
 class MagneticField extends VectorField {
@@ -43,10 +42,8 @@ function timeStep(dt) {
 //
 // Simulation
 //
-const canvas = Canvas.withElementId("protonInFieldCanvas");
-const overlay = Overlay.withElementId("protonInFieldOverlayText");
-const renderer = ThreeJsRenderer.on(
-    HtmlDiv.withElementId("protonInFieldWrapper").containsBoth(canvas.and(overlay)))
+const container = document.getElementById("protonInFieldContainer");
+const renderer = ThreeJsRenderer.in(container)
     .with({ cameraPosition: new Vec3(0, 5, -10) });
 
 const sphere = new Sphere({ color: new Color("red") });
@@ -74,20 +71,20 @@ const simulation = Simulation
 // Event listeners
 //
 const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas);
+eventController.addStartStopMouseClickEventListener();
 
-eventController.attach(HtmlControl
-    .withElementId("protonInFieldStrengthSlider")
-    .forType("input")
-    .withValueSpanId("protonInFieldStrengthSliderValue")
-    .to(magneticField)
-    .withProperty("magnitude"));
+new Slider(container)
+    .withRange(new Range(.1, 1, .01))
+    .on(magneticField)
+    .withValue(.2)
+    .withProperty("magnitude")
+    .withLabel("🧲 Field: ");
 
 const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
-const speedCallback = new CallbackFunction((event) =>
-    proton.state.velocity.copy(speedToVelocity(event.target.value * .01, proton.velocity)));
-eventController.add(speedCallback
-    .to(HtmlControl.withElementId("protonInFieldSpeedSlider")
-        .forType("input")
-        .withValueSpanId("protonInFieldSpeedSliderValue")));
-
+const speedCallback = event =>
+    proton.state.velocity.copy(speedToVelocity(event.target.value * .01, proton.velocity));
+new Slider(container)
+    .withRange(new Range(1, 100, 1))
+    .withValue(50)
+    .withLabel("🚀 Speed: ")
+    .addEventListener(speedCallback);

@@ -1,8 +1,7 @@
 import { Color } from "three";
 
 import {
-    RadialSymmetricBody, VectorField, Range, Simulation, Canvas, Overlay, HtmlDiv,
-    EventController, Sphere, ArrowField, ThreeJsRenderer, Vec3
+    RadialSymmetricBody, VectorField, Range, Simulation, EventController, Sphere, ArrowField, ThreeJsRenderer, Vec3
 } from "../../../src/index.js";
 
 const Q = 1.6e-19;
@@ -123,11 +122,8 @@ const magneticField = new CombinedField([
 //
 // Renderer
 //
-const canvas = Canvas.withElementId("electromagneticWaveCanvas");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv
-        .withElementId("electromagneticWaveWrapper")
-        .containsBoth(canvas.and(Overlay.withElementId("electromagneticWaveOverlay"))))
+    .in(document.getElementById("electromagneticWaveContainer"))
     .with({
         cameraPosition: new Vec3(15, 5, 20),
         fieldOfView: 45,
@@ -175,4 +171,4 @@ const simulation = Simulation
     }, 2);
 
 const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas);
+eventController.addStartStopMouseClickEventListener();

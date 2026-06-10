@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     Block, RadialSymmetricBody, VectorField, Range, Sphere, Trail, ArrowField, ThreeJsRenderer,
-    Box, Simulation, Canvas, Overlay, EventController, HtmlDiv, Vec3
+    Box, Simulation, EventController, Vec3
 } from "../../../src/index.js";
 
 const Q = 1.6e-19;
@@ -79,9 +79,7 @@ const electron = new RadialSymmetricBody({
 //
 // Renderer
 //
-const renderer = ThreeJsRenderer.on(
-    HtmlDiv.withElementId("chargedSheetWrapper")
-        .containsBoth(Canvas.withElementId("chargedSheetCanvas").and(Overlay.withElementId("chargedSheetOverlay"))))
+const renderer = ThreeJsRenderer.in(document.getElementById("chargedSheetContainer"))
     .with({
         cameraPosition: new Vec3(12, 8, 16),
         fieldOfView: 20,
@@ -126,4 +124,4 @@ for (const segment of sheet.segments)
     })));
 
 const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListenerTo(Canvas.withElementId("chargedSheetCanvas"));
+eventController.addStartStopMouseClickEventListener();

@@ -1,8 +1,7 @@
 import { Color, Group } from "three";
 import {
-    VectorField, Range, Cylinder, ArrowField, Sphere, ThreeJsRenderer,
-    Arrow, Ring, Canvas, EventController, HtmlControl,
-    HtmlDiv, Overlay, Simulation, AxialSymmetricBody, RadialSymmetricBody, Vec3
+    VectorField, Range, Cylinder, ArrowField, Sphere, ThreeJsRenderer, RadialSymmetricBody, Vec3,
+    Arrow, Ring, Checkbox, EventController, HtmlControl, Simulation, AxialSymmetricBody
 } from "../../../src/index.js";
 
 const loopSegments = 10;
@@ -39,11 +38,9 @@ class FaradayField extends VectorField {
 //
 // Renderer en ArrowField view
 //
-const canvas = Canvas.withElementId("faradayLawCanvas");
+const container = document.getElementById("faradayLawContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv
-        .withElementId("faradayLawCanvasWrapper")
-        .containsBoth(canvas.and(Overlay.withElementId("faradayLawCanvasOverlay"))))
+    .in(container)
     .with({
         cameraPosition: new Vec3(3, 1, 4),
         fieldOfView: 45
@@ -135,9 +132,9 @@ for (const position of magneticFieldPositions) {
 }
 
 const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas);
-eventController.attach(HtmlControl
-    .withElementId("faradayLoopButton")
-    .forType("click")
-    .to(faradayLoopsGroup)
-    .withProperty("visible"));
+eventController.addStartStopMouseClickEventListener();
+
+new Checkbox(container)
+    .on(faradayLoopsGroup)
+    .withProperty("visible")
+    .withLabel("Show Faraday loop: ");

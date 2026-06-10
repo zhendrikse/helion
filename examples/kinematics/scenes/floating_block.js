@@ -1,6 +1,6 @@
 import {
-    EventController, Vec3, HtmlDiv, UPlotGraph, Block,
-    Simulation, Canvas, Overlay, Box, ThreeJsRenderer, Aquarium
+    EventController, Vec3, UPlotGraph, Block,
+    Simulation, Box, ThreeJsRenderer, Aquarium
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -52,10 +52,8 @@ const water = new Aquarium({
     frameColor: 0xffff00
 });
 
-const canvas = Canvas.withElementId("floatingBlockCanvas");
-const overlay = Overlay.withElementId("floatingBlockOverlayText");
-const canvasWrapper = HtmlDiv.withElementId("floatingBlockContainer").containsBoth(canvas.and(overlay));
-const renderer = ThreeJsRenderer.on(canvasWrapper).with({
+const container = document.getElementById("floatingBlockContainer");
+const renderer = ThreeJsRenderer.in(container).with({
     cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
 });
 
@@ -65,30 +63,29 @@ const substeps = 20;
 const simulation = Simulation
     .with(renderer)
     .incrementsTimeBy(dt)
-    .onClockTick(() => {
-        woodenBlock.apply(woodenBlock.netForce(water), dt);
-
-        plot.graphData[0].push(t);
+    .synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
+    .onClockTick((clockTime, simulationTime) => woodenBlock.apply(woodenBlock.netForce(water), dt), substeps)
+    .onAfterClockTick((clockTime, simulationTime) => {
+        plot.graphData[0].push(simulationTime);
         plot.graphData[1].push(woodenBlock.buoyancyForce(water));
         plot.graphData[2].push(woodenBlock.dragForce());
         plot.update();
-    }, substeps);
+    });
 
-simulation.synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })));
 renderer.add(water);
 
 //
 // Graph
 //
 const plot = new UPlotGraph({
-    plotDiv: document.getElementById("forceChart"),
+    plotDiv: container,
     dataDefinition: [
         { label: "t [s]", color: "yellow" },
         { label: "buoyancy", color: "magenta" },
         { label: "drag", color: "blue" }
     ],
-    width: canvas.clientWidth,
-    height: canvas.clientHeight * 0.5,
+    width: container.clientWidth,
+    height: container.clientHeight * 0.5,
     title: "Buoyancy & drag forces",
     xLabel: "Simulation time",
     yLabel: "y [m]"
@@ -98,9 +95,5 @@ plot.graphData[0] = [0]; // time
 plot.graphData[1] = [woodenBlock.buoyancyForce(water)];
 plot.graphData[2] = [woodenBlock.dragForce()];
 
-
-//
-// Event controller
-//
 const eventController = new EventController(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas); // Controller passes event on to simulation and renderers
+eventController.addStartStopMouseClickEventListener();

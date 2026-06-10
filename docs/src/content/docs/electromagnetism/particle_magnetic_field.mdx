@@ -31,20 +31,7 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="protonInFieldWrapper" style="aspect-ratio: 19/12">
-    <canvas id="protonInFieldCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
-    <div class="overlayText" id="protonInFieldOverlayText">Click to start the animation!</div>
-</div>
-<div class="buttonRow">
-    <label>🧲 Field: </label>
-    <input type="range" id="protonInFieldStrengthSlider" min=".1" max="1" step="any" value=".2"/>
-    <span id="protonInFieldStrengthSliderValue">10</span>
-</div>
-<div class="buttonRow">
-    <label>🚀 Speed: </label>
-    <input type="range" id="protonInFieldSpeedSlider" min="1" max="100" step="any" value="50"/>
-    <span id="protonInFieldSpeedSliderValue">50</span>
-</div>
+<div id="protonInFieldContainer" style="aspect-ratio: 19/12"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/proton_in_magnetic_field.js"}></script>
 <p style="clear: both;"></p>
 
@@ -68,24 +55,6 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="helicalProtonCanvasWrapper">
-    <canvas id="helicalProtonCanvas" class="applicationCanvas"></canvas>
-    <div class="overlayText" id="helicalProtonCanvasOverlay">Click to start the animation!</div>
-</div>
-<div class="buttonRow">
-    <label>🧲 Field: </label>
-    <input type="range" id="helicalProtonFieldStrengthSlider" min=".5" max="5" step="any" value="1"/>
-    <span id="helicalProtonFieldStrengthSliderValue">1</span>
-</div>
-<div class="buttonRow">
-    <label>🚀 Speed: </label>
-    <input type="range" id="helicalProtonSpeedSlider" min="1" max="100" step="any" value="50"/>
-    <span id="helicalProtonSpeedSliderValue">50</span>
-</div>
-<div class="buttonRow">
-    <label>🪫 charge: </label>
-    <input type="range" id="helicalProtonChargeSlider" min=".25" max="5" step="any" value="0.8"/>
-    <span id="helicalProtonChargeSliderValue">0.8</span>
-</div>
+<div id="helicalProtonContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/proton_helical_motion.js"}></script>
 <p style="clear: both;"></p>

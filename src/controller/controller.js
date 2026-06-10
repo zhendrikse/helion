@@ -1,14 +1,31 @@
 class HtmlControl {
-    constructor(htmlButtonRow = null) {
-        this._buttonRow = htmlButtonRow ? htmlButtonRow : this._createButtonRow();
+    constructor(container, htmlButtonRow = null) {
+        this._container = container;
+        this._buttonRow = htmlButtonRow ? htmlButtonRow : this._createButtonRow(container);
     }
 
     get buttonRow() { return this._buttonRow; }
+    get container() { return this._container;}
 
-    _createButtonRow() {
+    _createLabel() {
+        const id = this.generateUUID();
+        this._label = document.createElement("label");
+        this._label.htmlFor = id;
+        this._label.style.marginRight = "5px";
+        return id;
+    }
+
+    _createButtonRow(container) {
         const buttonRow = document.createElement("div");
-        buttonRow.className = "buttonRow";
-        document.getElementById("helionControls").appendChild(buttonRow);
+        buttonRow.classList.add("helionButtonRow");
+        buttonRow.style.display = "flex";
+        buttonRow.style.justifyContent = "flex-start";
+        buttonRow.style.flexWrap = "wrap";
+        buttonRow.style.gap = "2px";
+        buttonRow.style.left = "10px";
+        buttonRow.style.marginBottom = "5px";
+        buttonRow.style.borderRadius = "8px";
+        this._container.appendChild(buttonRow);
         return buttonRow;
     }
 
@@ -32,10 +49,10 @@ class HtmlControl {
 }
 
 export class DropdownMenu extends HtmlControl {
-    static togetherWith = (htmlControl) => new DropdownMenu(htmlControl.buttonRow);
+    static togetherWith = (htmlControl) => new DropdownMenu(htmlControl.container, htmlControl.buttonRow);
 
-    constructor(htmlButtonRow = null) {
-        super(htmlButtonRow);
+    constructor(container, htmlButtonRow = null) {
+        super(container, htmlButtonRow);
     }
 
     for(registry) {
@@ -61,20 +78,89 @@ export class DropdownMenu extends HtmlControl {
     }
 }
 
-export class Checkbox extends HtmlControl {
-    static togetherWith = (htmlControl) => new Checkbox(htmlControl.buttonRow);
+export class Slider extends HtmlControl {
+    static togetherWith = (htmlControl) => new Checkbox(htmlControl.container, htmlControl.buttonRow);
 
-    constructor(htmlButtonRow = null) {
-        super(htmlButtonRow);
+    constructor(container, htmlButtonRow = null) {
+        super(container, htmlButtonRow);
         this._targetObject = null;
 
-        const checkboxId = this.generateUUID();
-        this._label = document.createElement("label");
-        this._label.htmlFor = checkboxId;
+        const sliderId = this._createLabel();
+        this._slider = document.createElement("input");
+        this._slider.type = "range";
+        this._slider.id = sliderId;
+        this._slider.style.marginRight = "10px";
 
+        this._span = document.createElement("span");
+        this._span.style.marginRight = "25px";
+        this._span.style.borderRadius = "8px";
+
+        this._buttonRow.appendChild(this._label);
+        this._buttonRow.appendChild(this._slider);
+        this._buttonRow.appendChild(this._span);
+
+        this._units = "";
+    }
+
+    on(targetObject) {
+        this._targetObject = targetObject;
+        return this;
+    }
+
+    withUnits(units) {
+        this._units = units;
+        return this;
+    }
+
+    withLabel(label) {
+        this._label.textContent = label;
+        return this;
+    }
+
+    withValue(value) {
+        this._slider.value = value;
+        this._span.textContent = value + this._units;
+        return this;
+    }
+
+    get value() { return this._slider.value; }
+
+    withRange(range) {
+        this._slider.min = String(range.from);
+        this._slider.max = String(range.to);
+        this._slider.step = String(range.stepSize);
+        return this;
+    }
+
+    withProperty(name) {
+        this._slider.addEventListener("input", (event) => {
+            this._targetObject[name] = event.target.value;
+            this._span.textContent = event.target.value + this._units;
+        });
+        return this;
+    }
+
+    addEventListener(callback) {
+        this._slider.addEventListener("input", event => {
+            callback(event);
+            this._span.textContent = event.target.value + this._units;
+        });
+        return this;
+    }
+}
+
+export class Checkbox extends HtmlControl {
+    static togetherWith = (htmlControl) => new Checkbox(htmlControl.container, htmlControl.buttonRow);
+
+    constructor(container, htmlButtonRow = null) {
+        super(container, htmlButtonRow);
+        this._targetObject = null;
+
+        const checkboxId = this._createLabel();
         this._checkbox = document.createElement("input");
         this._checkbox.type = "checkbox";
         this._checkbox.id = checkboxId;
+        this._checkbox.style.marginRight = "10px";
 
         this._buttonRow.appendChild(this._label);
         this._buttonRow.appendChild(this._checkbox);
@@ -103,18 +189,14 @@ export class Checkbox extends HtmlControl {
     }
 }
 
-
 export class Button extends HtmlControl {
-    static togetherWith = (htmlControl) => new Button(htmlControl.buttonRow);
+    static togetherWith = (htmlControl) => new Button(htmlControl.container, htmlControl.buttonRow);
 
-    constructor(htmlButtonRow = null) {
-        super(htmlButtonRow);
+    constructor(container, htmlButtonRow = null) {
+        super(container, htmlButtonRow);
         this._targetObject = null;
 
-        const buttonId = this.generateUUID();
-        this._label = document.createElement("label");
-        this._label.htmlFor = buttonId;
-
+        const buttonId = this._createLabel();
         this._button = document.createElement("button");
         this._button.id = buttonId;
 
@@ -170,10 +252,10 @@ export class EventController {
      * When calling this function with a custom callback, the default start/stop functionality is
      * lost and needs to be re-added if needed!!
      */
-    addStartStopMouseClickEventListenerTo(canvas, callback = (event) => this._simulation.toggleRunStatus()) {
+    addStartStopMouseClickEventListener(callback = (event) => this._simulation.toggleRunStatus()) {
         // Pass a mouse click on the canvas on to the simulation:
         this._onCanvasClickEventHandler = callback;
-        canvas.htmlCanvas.addEventListener("click", (event) => callback(event) );
+        this._simulation.renderer.canvas.addEventListener("click", (event) => callback(event) );
     }
 
     removeStartStopMouseClickEventListenerFrom(canvas, callback = (event) => this._simulation.toggleRunStatus()) {

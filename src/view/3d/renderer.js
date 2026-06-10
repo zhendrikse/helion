@@ -17,12 +17,10 @@ export class ThreeJsRenderer extends Renderer {
         STARS: "Stars"
     });
 
-    static on = (canvasWrapperDiv) => new ThreeJsRenderer(canvasWrapperDiv);
+    static in = (htmlDiv) => new ThreeJsRenderer(htmlDiv);
 
-    constructor(canvasWrapperDiv) {
-        super(canvasWrapperDiv);
-        this._canvas = this._canvasWrapperDiv.canvas.htmlCanvas;
-        this._overlay = this._canvasWrapperDiv.overlay?.htmlOverlay;
+    constructor(htmlDiv) {
+        super(htmlDiv);
 
         this._autoRotate = false;
         this._autoRotateTheta = Math.PI / 2;
@@ -35,6 +33,8 @@ export class ThreeJsRenderer extends Renderer {
         this._scene.add(this._world, this._background);
         this._axes = null;
     }
+
+    get canvas() { return this._canvas; }
 
     _showOverlayMessage(message, duration = 1000) {
         if (!this._overlay)
@@ -65,13 +65,15 @@ export class ThreeJsRenderer extends Renderer {
         shadowsEnabled = false,
         fieldOfView = 50
     } = {}) {
-        const canvas = this._canvas;
+        const width = this._container.clientWidth;
+        const height = this._container.clientHeight;
 
         this._renderer = new WebGLRenderer({
-            antialias: true,
-            canvas,
-            alpha: background === ThreeJsRenderer.Background.TRANSPARENT
+            alpha: true,
+            canvas: this._canvas,
+            antialias: true
         });
+        this._renderer.setSize(width, height);
 
         if (shadowsEnabled) {
             this._renderer.shadowMap.enabled = true;
@@ -80,11 +82,11 @@ export class ThreeJsRenderer extends Renderer {
 
         this._world.scale.setScalar(scale);
 
-        this._camera = new PerspectiveCamera(fieldOfView, canvas.clientWidth / canvas.clientHeight, 0.1, 1e6);
+        this._camera = new PerspectiveCamera(fieldOfView, width / height, 0.1, 1e6);
         this._camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
         if (controls)
-            this._controls = new OrbitControls(this._camera, canvas);
+            this._controls = new OrbitControls(this._camera, this._canvas);
 
         if (light)
             this._initLights(shadowsEnabled);

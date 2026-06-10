@@ -1,5 +1,4 @@
 import uPlot from 'uplot';
-import { Color } from 'three';
 
 /**********************************************
  * S I M U L A T I O N  E N V I R O N M E N T *
@@ -211,10 +210,12 @@ export class Simulation {
 
     onBeforeClockTick(customFunction = (clockTime, simulatedTime) => {}) {
         this._onBeforePhysicsUpdate = customFunction;
+        return this;
     }
 
     onAfterClockTick(customFunction = (clockTime, simulatedTime) => {}) {
         this._onAfterPhysicsUpdate = customFunction;
+        return this;
     }
 
     animate = (clockTime) => {
@@ -268,9 +269,10 @@ export class Simulation {
 
     get isRunning() { return this._running; }
 
-    onReset(resetFunction = () => {}) { this._onReset = resetFunction; }
-
-    set substepsCount(substepsCount) { this._substepsCount = substepsCount; }
+    onReset(resetFunction = () => {}) {
+        this._onReset = resetFunction;
+        return this
+    }
 }
 
 /*******************************************

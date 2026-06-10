@@ -36,19 +36,9 @@ $$
     </a>
 </div>
 
-<div class="canvasWrapper" id="dipoleCanvasWrapper">
-    <canvas id="dipoleCanvas" class="applicationCanvas"></canvas>
-</div>
-<div class="buttonRow">
-    <label for="fieldStrengthSlider">⚡ Field </label>
-    <input type="range" id="fieldStrengthSlider" min="0" max="1" step="any" value="0.5"/>
-    <span id="fieldStrengthSliderValue">0.5</span>
-    <label for="autoRotateDipole">Rotate </label>
-    <input type="checkbox" id="autoRotateDipole"/>
-</div>
+<div id="dipoleContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/dipole_field.js"}></script>
 <p style="clear: both;"></p>
-
 
 
 ## Field of a solenoid ⅏
@@ -71,19 +61,9 @@ $$
     </a>
 </div>
 
-<div class="canvasWrapper" id="solenoidCanvasWrapper">
-    <canvas id="solenoidCanvas" class="applicationCanvas"></canvas>
-</div>
-<div class="buttonRow">
-    <label for="fieldStrength">Field </label>
-    <input type="range" id="fieldStrength" min="0.1" max="2" step="0.01" value=".75"/>
-    <span id="fieldStrengthSliderValue">.75</span>
-    <label for="autoRotateSolenoid">Auto-rotate </label><input type="checkbox" id="autoRotateSolenoid"/>
-</div>
+<div id="solenoidContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/solenoid.js"}></script>
 <p style="clear: both;"></p>
-
-
 
 ## Infographics
 <div class="header_line"></div>

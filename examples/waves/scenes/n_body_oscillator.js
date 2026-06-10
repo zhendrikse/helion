@@ -36,11 +36,8 @@ initialDisturbance(7);
 //
 // Renderer & simulation
 //
-const canvas = Canvas.withElementId("oscillatorCanvas");
-const overlay = Overlay.withElementId("oscillatorOverlay");
-const renderer = ThreeJsRenderer.on(
-    HtmlDiv.withElementId("oscillatorCanvasWrapper")
-        .containsBoth(canvas.and(overlay)))
+const container = document.getElementById("oscillatorContainer");
+const renderer = ThreeJsRenderer.in(container)
     .with({
         cameraPosition: new Vec3(17, 6, 17),
         light: true,
@@ -48,7 +45,6 @@ const renderer = ThreeJsRenderer.on(
         fieldOfView: 45,
         background: ThreeJsRenderer.Background.FOG
     });
-
 
 const dt = 1e-3;
 const subSteps = 10;
@@ -100,7 +96,7 @@ for (let i = 0; i < balls.length; i++) {
 // Graph
 //
 const plot = new UPlotGraph({
-    plotDiv: document.getElementById("oscillatorPlot"),
+    plotDiv: container,
     dataDefinition: [
         { label: "t" }, { label: "ball1", color: "blue" },
         { label: "ball2", color: "red" },
@@ -108,12 +104,12 @@ const plot = new UPlotGraph({
         { label: "ball4", color: "red" },
         { label: "ball5", color: "blue" },
     ],
-    width: canvas.clientWidth,
-    height: canvas.clientHeight * 1.5,
+    width: container.clientWidth,
+    height: container.clientHeight * 1.5,
     title: "Kinetic Energy vs Time",
     xLabel: "Time [s]",
     yLabel: "Displacement"
 });
 
 const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas);
+eventController.addStartStopMouseClickEventListener();

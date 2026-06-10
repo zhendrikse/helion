@@ -31,10 +31,7 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="chargedSheetWrapper">
-    <canvas class="applicationCanvas" id="chargedSheetCanvas"></canvas>
-    <div class="overlayText" id="chargedSheetOverlay">Click to start the animation!</div>
-</div>
+<div id="chargedSheetContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/charged_sheet.js"}></script>
 <p style="clear: both;"></p>
 
@@ -58,10 +55,7 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="chargedRingWrapper">
-    <canvas class="applicationCanvas" id="chargedRingCanvas"></canvas>
-    <div class="overlayText" id="chargedRingOverlay">Click to start the animation!</div>
-</div>
+<div id="chargedRingContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/charged_ring.js"}></script>
 <p style="clear: both;"></p>
 
@@ -85,17 +79,6 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="movingChargeWrapper" style="aspect-ratio: 19/12">
-    <canvas id="movingChargeCanvas" class="applicationCanvas" style="aspect-ratio: 19/12;"></canvas>
-    <div class="overlayText" id="movingChargeOverlayText">Click to start the animation!</div>
-</div>
-<div class="buttonRow">
-    <label>🪫Charge: </label><input type="range" id="chargeSlider" min="0" max="5" step="0.1" value="1"/>
-    <span id="chargeSliderValue">1</span> electron charge(s)
-</div>
-<div class="buttonRow">
-    <label >🚀 Speed: </label><input type="range" id="speedSlider" min="1" max="50" step="1" value="15"/>
-    <span id="speedSliderValue">15</span> x 1E-14 m/s
-</div>
+<div id="movingChargeContainer" style="aspect-ratio: 19/12"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/moving_charge.js"}></script>
 <p style="clear: both;"></p>

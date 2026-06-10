@@ -1,6 +1,6 @@
 import {
-    Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation, Canvas, Vec3,
-    Overlay, HtmlDiv, EventController, Sphere, ThreeJsRenderer, Trail
+    Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation,
+    Vec3, EventController, Sphere, ThreeJsRenderer, Trail
 } from "../../../src/index.js";
 
 //
@@ -48,17 +48,15 @@ function updateForces(dt) {
 //
 // View
 //
-const canvas = new Canvas("threeBodyCanvas");
-const overlay = new Overlay("overlayText");
-const canvasWrapper = HtmlDiv.withElementId("threeBodyWrapper").containsBoth(canvas.and(overlay));
-
 const dt = 5000;
 const subSteps = 50;
+const container = document.getElementById("threeBodyContainer");
 const simulation = Simulation
-    .with(ThreeJsRenderer.on(canvasWrapper).with({
-        cameraPosition: new Vec3(30, 30, 30),
-        scale: 1e-9
-    }))
+    .with(ThreeJsRenderer.in(container)
+        .with({
+            cameraPosition: new Vec3(30, 30, 30),
+            scale: 1e-9
+        }))
     .synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
     .synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
     .synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })))
@@ -69,4 +67,4 @@ const simulation = Simulation
     .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps);
 
 const eventController = new EventController(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas); // Controller passes event on to simulation and renderers
+eventController.addStartStopMouseClickEventListener();

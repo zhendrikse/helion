@@ -29,8 +29,5 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="threeBodyWrapper">
-    <canvas class="applicationCanvas" id="threeBodyCanvas"></canvas>
-    <div class="overlayText" id="overlayText">Click to start the animation!</div>
-</div>
+<div class="canvasWrapper" id="threeBodyContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/three_body.js"}></script>

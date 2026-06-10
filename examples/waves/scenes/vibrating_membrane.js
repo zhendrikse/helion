@@ -1,5 +1,5 @@
 import {
-    Canvas, HtmlDiv, GradientColorMapper, Domain, StandardSurfaceView, Interval,
+    GradientColorMapper, Domain, StandardSurfaceView, Interval,
     MultivariateFunctionSurface, Simulation, ThreeJsRenderer, Button
 } from "../../../src/index.js";
 
@@ -27,8 +27,9 @@ class Membrane extends MultivariateFunctionSurface {
     set normalModeY(normalModeY) { this._normalModeY = normalModeY; }
 }
 
+const container = document.getElementById("membraneContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("membraneCanvasWrapper").contains(Canvas.withElementId("membraneCanvas")))
+    .in(container)
     .with({});
 
 const membrane = new Membrane();
@@ -46,27 +47,27 @@ Simulation
     .onClockTick((clockTime, simulatedTime) => membrane.time = simulatedTime, 3)
     .start();
 
-surfaceView.showColormapSelector();
-surfaceView.showSurfaceControls();
+surfaceView.showColormapSelectorIn(container);
+surfaceView.showSurfaceControlsIn(container);
 
-const normalModeXButton = new Button()
+const normalModeXButton = new Button(container)
     .on(membrane)
+    .withProperty("normalModeX")
     .withText(" 1 ")
-    .withLabel("Mode-x: ")
-    .withProperty("normalModeX");
+    .withLabel("Mode-x: ");
 for (let i = 2; i < 6; i++)
     Button.togetherWith(normalModeXButton)
         .on(membrane)
-        .withText(` ${i} `)
-        .withProperty("normalModeX");
+        .withProperty("normalModeX")
+        .withText(` ${i} `);
 
-const normalModeYButton = new Button()
+const normalModeYButton = new Button(container)
     .on(membrane)
+    .withProperty("normalModeY")
     .withText(" 1 ")
-    .withLabel("Mode-y: ")
-    .withProperty("normalModeY");
+    .withLabel("Mode-y: ");
 for (let i = 2; i < 6; i++)
     Button.togetherWith(normalModeYButton)
         .on(membrane)
+        .withProperty("normalModeY")
         .withText(` ${i} `)
-        .withProperty("normalModeY");

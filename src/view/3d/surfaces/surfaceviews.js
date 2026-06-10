@@ -53,15 +53,15 @@ class SurfaceView extends Group {
 
     get dirty() { return this._dirty; }
 
-    showColormapSelector() {
-        new DropdownMenu().for(ColorMappers).addEventListener("change", (event) => {
+    showColormapSelectorIn(container) {
+        new DropdownMenu(container).for(ColorMappers).addEventListener("change", (event) => {
             this._colorMapper = ColorMappers.get(event.target.value);
             this._dirty = true;
         });
     }
 
-    showScalarFieldSelector() {
-        new DropdownMenu().for(SurfaceScalarFields).addEventListener("change", (event) => {
+    showScalarFieldSelectorIn(container) {
+        new DropdownMenu(container).for(SurfaceScalarFields).addEventListener("change", (event) => {
             this._scalarField = SurfaceScalarFields.get(event.target.value);
             this._scalarField.surface = this._surface;
             this._normalizedScalarField = new NormalizedScalarField(this._scalarField, this._normalizer);
@@ -180,8 +180,8 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         this.shape = shape;
     }
 
-    showShapeSelector() {
-        new DropdownMenu().for(InstancedMeshSurfaceView.Shapes).addEventListener("change",
+    showShapeSelectorIn(container) {
+        new DropdownMenu(container).for(InstancedMeshSurfaceView.Shapes).addEventListener("change",
             event => this.shape = event.target.value
         );
     }
@@ -286,8 +286,8 @@ export class StandardSurfaceView extends SurfaceView {
         this._showSurface = surface;
     }
 
-    showSurfaceControls() {
-        const contoursCheckbox = new Checkbox()
+    showSurfaceControlsIn(container) {
+        const contoursCheckbox = new Checkbox(container)
             .on(this)
             .withLabel("Contours ")
             .checked(this._showContours)

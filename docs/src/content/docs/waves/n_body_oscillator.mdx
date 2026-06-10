@@ -27,11 +27,5 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="oscillatorCanvasWrapper"  style="aspect-ratio: 19 / 12;">
-    <canvas id="oscillatorCanvas" class="applicationCanvas" style="aspect-ratio: 19 / 12;"></canvas>
-    <div class="overlayText" id="oscillatorOverlay">Click to start the animation!</div>
-</div>
-<p style="clear: both;"></p>
-
-<div id="oscillatorPlot" style="margin:auto;"></div>
+<div id="oscillatorContainer"  style="aspect-ratio: 19 / 12;"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/n_body_oscillator.js"}></script>

@@ -1,6 +1,6 @@
 import {
-    RadialSymmetricBody, Spring, Simulation, Canvas, Overlay, HtmlDiv,
-    EventController, HtmlControl, Arrow, Sphere, ThreeJsRenderer, Floor, Helix, Vec3
+    RadialSymmetricBody, Spring, Simulation, Vec3, Checkbox, Arrow, Sphere,
+    EventController, ThreeJsRenderer, Floor, Helix, Slider, Range
 } from "../../../src/index.js";
 
 //
@@ -52,11 +52,8 @@ const world = new PhysicsWorld(new RadialSymmetricBody({
 //
 // View objects
 //
-const canvas = Canvas.withElementId("bouncingBallOnSpringCanvas");
-const overlay = Overlay.withElementId("bouncingBallOnSpringOverlay");
-const canvasWrapper = HtmlDiv.withElementId("bouncingBallOnSpringWrapper").containsBoth(canvas.and(overlay));
-const renderer = ThreeJsRenderer
-    .on(canvasWrapper)
+const container = document.getElementById("bouncingBallOnSpringContainer");
+const renderer = new ThreeJsRenderer(container)
     .with({
         cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
     });
@@ -84,30 +81,37 @@ const simulation = Simulation
     .synchronize(world.spring.alwaysWith(helix))
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, simulatedTime) => world.timeStep(dt), subSteps);
-
 renderer.add(floor);
+
+const eventController = new EventController(simulation);
+eventController.addStartStopMouseClickEventListener();
+
+const velocityArrowCheckbox = new Checkbox(container)
+    .on(velocityArrow)
+    .withProperty("visible")
+    .withLabel("🚀 Velocity: ")
+    .checked(true);
+
+Checkbox.togetherWith(velocityArrowCheckbox)
+    .on(forceArrow)
+    .withProperty("visible")
+    .withLabel("💪🏻 Force: ")
+    .checked(true);
+
+new Slider(container)
+    .withRange(new Range(0, 1, 0.01))
+    .withValue(0.2)
+    .on(world)
+    .withProperty("damping")
+    .withLabel("🍃 Air resistance: ");
 
 //
 // Event controller
 //
-const eventController = new EventController(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas); // Controller passes event on to simulation and renderers
-
-eventController.attach(HtmlControl
-    .withElementId("velocityArrow")
-    .forType("click")
-    .to(velocityArrow)
-    .withProperty("visible"));
-
-eventController.attach(HtmlControl
-    .withElementId("forceArrow")
-    .forType("click")
-    .to(forceArrow)
-    .withProperty("visible"));
-
-eventController.attach(HtmlControl
-    .withElementId("dampingSlider")
-    .forType("input")
-    .to(world)
-    .withProperty("damping"));
+//
+// eventController.attach(HtmlControl
+//     .withElementId("dampingSlider")
+//     .forType("input")
+//     .to(world)
+//     .withProperty("damping"));
 
