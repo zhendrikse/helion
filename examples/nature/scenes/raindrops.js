@@ -1,5 +1,5 @@
 import {
-    Canvas, ColorMappers, DiscreteScalarField, HtmlDiv, Interval, Simulation, Vec3,
+    ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3,
     ScalarFieldSurface, ThreeJsRenderer, LaplaceOperator, SurfaceResolution,
     WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView
 } from "../../../src/index.js";
@@ -30,9 +30,9 @@ const equation = new WaveEquation({ velocity: 5 });
 const solver = new WaveEquationSolver(field, equation);
 const surface = new ScalarFieldSurface(field);
 
+const htmlDiv = document.getElementById("raindropContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("raindropCanvasWrapper")
-        .contains(Canvas.withElementId("raindropCanvas")))
+    .in(htmlDiv)
     .with({
         cameraPosition: new Vec3(4, .6, 4.2).multiplyScalar(45),
         fieldOfView: 19
@@ -45,8 +45,7 @@ const water = new InstancedMeshSurfaceView({
 });
 water.position.set(-128, 0, -128);
 
-const simulation = Simulation
-    .with(renderer)
+Simulation.with(renderer)
     .synchronize(surface.alwaysWith(water))
     .onClockTick(() => {
         solver.step(0.02);
@@ -62,5 +61,5 @@ const simulation = Simulation
     }, 5)
     .start();
 
-water.showColormapSelector();
-water.showShapeSelector();
+water.showColormapSelectorIn(htmlDiv);
+water.showShapeSelectorIn(htmlDiv);

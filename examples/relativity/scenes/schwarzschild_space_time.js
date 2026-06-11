@@ -1,8 +1,6 @@
 import { Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
-    Floor, Sphere, ThreeJsRenderer, Trail, Canvas, Vec3,
-    EventController, HtmlDiv, Overlay, Simulation, Surface, StandardSurfaceView,
-    RadialSymmetricBody, Sun
+    Floor, Sphere, ThreeJsRenderer, Trail, Vec3, Simulation, Surface, StandardSurfaceView, RadialSymmetricBody, Sun
 } from "../../../src/index.js";
 
 const initialCometDistance = 33;
@@ -228,9 +226,9 @@ photonRing.visible = false;
 
 function timeStep(clockTime) {
     if (cometInsideCone())
-        comet.update(sun.mass, 0.001); // 3D geodesic
+        comet.update(sun.mass, 2e-3); // 3D geodesic
     if (cometInsideCone() || subSteps(currentIsRingOrbitValue))
-        realComet.updateRealMotion(sun.mass, 0.001);
+        realComet.updateRealMotion(sun.mass, 2e-3);
 
     photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1);
 
@@ -250,10 +248,9 @@ const cometInsideCone = () =>
 //
 // Set up renderer and views
 //
-const canvas = Canvas.withElementId("spaceTimeCanvas");
-const overlay = Overlay.withElementId("spaceTimeOverlay")
+const htmlDiv = document.getElementById("spaceTimeContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("spaceTimeCanvasWrapper").containsBoth(canvas.and(overlay)))
+    .in(htmlDiv)
     .with({
         cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(13),
         fieldOfView: 45,
@@ -276,6 +273,7 @@ const spaceTimeCone = new StandardSurfaceView();
 spaceTimeCone.surfaceVisible = false;
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .synchronize(coneGeometry.onceWith(spaceTimeCone))
     .synchronize(sun.alwaysWith(new Sun()))
     .synchronize(realComet.alwaysWith(new Sphere({ color: 0xff8800 })))
@@ -284,7 +282,7 @@ const simulation = Simulation
     .synchronize(flatComet.alwaysWith(new Trail({ color: 0xff0000 })))
     .synchronize(comet.alwaysWith(new Sphere({ color: 0x00ffff })))
     .synchronize(comet.alwaysWith(new Trail({ color: 0x00ffff })))
-    .onClockTick((clockTime, simulatedTime) => timeStep(clockTime));
+    .onClockTick((clockTime, simulatedTime) => timeStep(clockTime), 10);
 
 simulation.onBeforeClockTick((clockTime, simulatedTime) =>
     simulation.substepsCount = subSteps(currentIsRingOrbitValue));
@@ -292,8 +290,6 @@ simulation.onBeforeClockTick((clockTime, simulatedTime) =>
 //
 // Event handling
 //
-const controller = EventController.for(simulation);
-controller.addStartStopMouseClickEventListenerTo(canvas);
 // controller.addStartStopMouseClickEventListenerTo(canvas, () => {
 //     simulation.toggleRunStatus();
 //     if (comet.isMoving) {

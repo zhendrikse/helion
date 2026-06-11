@@ -1,44 +1,71 @@
 import {
-    Canvas, DiscreteScalarField, HtmlDiv, ScalarFieldSurface, Simulation, PerlinNoiseOperator,
-    StandardSurfaceView, ThreeJsRenderer, Vec3, DiamondSquareOperator, ColorMappers
+    DiscreteScalarField, ScalarFieldSurface, Simulation, PerlinNoiseOperator,
+    StandardSurfaceView, ThreeJsRenderer, Vec3, DiamondSquareOperator, ColorMappers, RadioButton
 } from "../../../src/index.js";
 
+class Landscape {
+    static perlinNoiseOperator = new PerlinNoiseOperator({
+        scale: 75,
+        frequency: 0.01,
+        octaves: 8,
+        persistence: 0.55
+    });
+    static diamondSquareOperator = new DiamondSquareOperator({
+        amplitude: 50,
+        roughness: 1.1
+    });
 
-const field = new DiscreteScalarField({
-    nx: 257,
-    ny: 257
-});
+    constructor() {
+        const field = new DiscreteScalarField({ nx: 257,  ny: 257 });
+        this._surface = new ScalarFieldSurface(field);
+        this.noiseType = "diamondSquare";
+    }
 
-// field.apply(new PerlinNoiseOperator({
-//     scale: 75,
-//     frequency: 0.01,
-//     octaves: 8,
-//     persistence: 0.55
-// }));
+    get surface() { return this._surface; }
 
-field.apply(new DiamondSquareOperator({
-    amplitude: 50,
-    roughness: 1.1
-}));
+    set noiseType(operatorNameAsString) {
+        const field = new DiscreteScalarField({ nx: 257,  ny: 257 });
+        field.apply(operatorNameAsString === "perlin" ?
+            Landscape.perlinNoiseOperator :
+            Landscape.diamondSquareOperator);
+        this._surface = new ScalarFieldSurface(field);
+    }
+}
 
-const surface = new ScalarFieldSurface(field);
+const landscape = new Landscape();
 const surfaceView = new StandardSurfaceView({
     colorMapper: ColorMappers.get("Terrain"),
     contours: false
 });
 surfaceView.position.set(-128, 0, -128);
 
+const htmlDiv = document.getElementById("terrainContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("terrainCanvasWrapper")
-        .contains(Canvas.withElementId("terrainCanvas")))
+    .in(htmlDiv)
     .with({
         cameraPosition: new Vec3(300, 300, 300),
         fieldOfView: 30,
     });
 
-Simulation
+const simulation = Simulation
     .with(renderer)
-    .synchronize(surface.onceWith(surfaceView));
+    .synchronize(landscape.surface.onceWith(surfaceView))
+    .start();
 
-surfaceView.showSurfaceControls();
-surfaceView.showColormapSelector();
+surfaceView.showSurfaceControlsIn(htmlDiv);
+surfaceView.showColormapSelectorIn(htmlDiv);
+
+const radioButton = new RadioButton(htmlDiv)
+    .withValue("perlin")
+    .withLabel("Perlin noise: ")
+    .on(landscape)
+    .withProperty("noiseType")
+    .addEventListener("click", () => simulation.synchronize(landscape.surface.onceWith(surfaceView)));
+
+RadioButton.togetherWith(radioButton)
+    .withValue("diamondSquare")
+    .withLabel("Diamond-square: ")
+    .checked(true)
+    .on(landscape)
+    .withProperty("noiseType")
+    .addEventListener("click", () => simulation.synchronize(landscape.surface.onceWith(surfaceView)));

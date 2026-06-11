@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     RadialSymmetricBody, AxialSymmetricBody, VectorField, Range, Simulation,
-    EventController, Sphere, Cylinder, ArrowField, Vec3, ThreeJsRenderer, Trail
+    Sphere, Cylinder, ArrowField, Vec3, ThreeJsRenderer, Trail
 } from "../../../src/index.js";
 
 //
@@ -136,6 +136,7 @@ const dt = 2e-19;
 const subSteps = 20;
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .synchronize(electron.alwaysWith(electronSphere))
     .synchronize(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
     .synchronize(electricField.onceWith(arrowField))
@@ -146,6 +147,4 @@ const simulation = Simulation
 for (const segment of ring.segments)
     simulation.synchronize(segment.onceWith(new Cylinder({ color: "orange" })));
 
-const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListener();
 

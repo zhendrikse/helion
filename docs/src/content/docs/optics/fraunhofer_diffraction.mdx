@@ -31,29 +31,7 @@ calculated as the square of the amplitude of the electric field.
     </a>
 </div>
 
-<div id="fraunhoferCanvasWrapper" class="canvasWrapper">
-    <canvas id="fraunhoferCanvas" class="applicationCanvas"></canvas>
-</div>
-
-<div class="buttonRow">
-    <label for="squareButton">🟩 Square</label>
-    <input id="squareButton" name="apertureType" type="radio" value="square"/>
-    <label for="circleButton">🟢 Circle </label>
-    <input id="circleButton" name="apertureType" type="radio" value="circular" checked/>
-</div>
-<div class="buttonRow">
-    <label for="diameterSlider">Size:</label>
-    <input type="range" id="diameterSlider" min="20" max="200" value="200"/>
-    <span id="diameterValue">200</span> µm
-</div>
-<div class="buttonRow">
-    <label for="wavelengthSlider">Color:</label>
-    <input type="range" id="wavelengthSlider" min="380" max="700" value="500"/>
-    &nbsp;<span id="wavelengthProbe">&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;
-    <span id="wavelengthValue">500</span>&nbsp;nm
-    <label for="laserColor">🎨 </label><input type="checkbox" id="laserColor" checked/>
-</div>
-
+<div id="fraunhoferContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/fraunhofer_diffraction.js"}></script>
 <p style="clear:both;"></p>
 

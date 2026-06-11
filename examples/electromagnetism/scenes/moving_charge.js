@@ -1,7 +1,7 @@
 import { Color, AmbientLight, PointLight } from "three";
 import {
     RadialSymmetricBody, EC, VectorField, Range, Simulation, Trail, Vec3, Slider,
-    EventController, Sphere, ArrowField, ThreeJsRenderer
+    Sphere, ArrowField, ThreeJsRenderer
 } from "../../../src/index.js";
 
 const K = 9e9;
@@ -102,6 +102,7 @@ const subSteps = 3;
 const field = new Vec3();
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .synchronize(movingCharge.alwaysWith(sphere))
     .synchronize(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })))
     .synchronize(capacitorField.onceWith(arrowField))
@@ -126,5 +127,3 @@ for (const charge of capacitor.charges) {
     simulation.synchronize(charge.onceWith(sphere)); // Prevent unnecessary updates!
 }
 
-const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListener();

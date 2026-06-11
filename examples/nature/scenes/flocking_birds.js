@@ -1,6 +1,5 @@
 import {
-    Body, Simulation, Canvas, Vec3, HtmlDiv, EventController, HtmlControl, CallbackFunction,
-    Arrow, ThreeJsRenderer
+    Body, Simulation, Vec3, Arrow, ThreeJsRenderer, Slider, Range, Button
 } from "../../../src/index.js";
 
 // Simulation parameters
@@ -102,17 +101,19 @@ class Flock {
 const birdCount = 250;
 const flock = new Flock(birdCount);
 
-const canvas = Canvas.withElementId("birdsCanvas");
-const canvasWrapper = HtmlDiv.withElementId("birdsCanvasWrapper").contains(canvas);
-
+const htmlDiv = document.getElementById("birdsContainer");
 const dt = 0.02;
 const simulation = Simulation
-    .with(ThreeJsRenderer.on(canvasWrapper).with({
-        cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
-        fieldOfView: 30
-    }))
+    .with(ThreeJsRenderer
+        .in(htmlDiv)
+        .with({
+            cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
+            fieldOfView: 30
+        }))
+    .withStopMouseClickEventListener()
     .incrementsTimeBy(dt)
-    .onClockTick(() => flock.update(dt));
+    .onClockTick(() => flock.update(dt))
+    .start();
 
 for (let i = 0; i < birdCount; i++)
     simulation.synchronize(flock.bird(i).velocityVector.alwaysWith(new Arrow({
@@ -122,34 +123,34 @@ for (let i = 0; i < birdCount; i++)
         magnitudeMap: magnitude => magnitude * .1
     })));
 
-//
-// Event listeners
-//
-const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListenerTo(canvas);
+new Slider(htmlDiv)
+    .on(flock)
+    .withProperty("randomWeight")
+    .withRange(new Range(0, 50, 1))
+    .withValue(5)
+    .withLabel("Random behavior: ");
 
-eventController.attach(HtmlControl
-    .withElementId("randomWeightSlider")
-    .forType("input")
-    .to(flock)
-    .withProperty("randomWeight"));
-eventController.attach(HtmlControl
-    .withElementId("centerWeightSlider")
-    .forType("input")
-    .to(flock)
-    .withProperty("centeringWeight"));
-eventController.attach(HtmlControl
-    .withElementId("directionWeightSlider")
-    .forType("input")
-    .to(flock)
-    .withProperty("directionWeight"));
-eventController.attach(HtmlControl
-    .withElementId("avoidWeightSlider")
-    .forType("input")
-    .to(flock)
-    .withProperty("avoidWeight"));
+new Slider(htmlDiv)
+    .on(flock)
+    .withProperty("centeringWeight")
+    .withRange(new Range(0, 2, .01))
+    .withValue(.1)
+    .withLabel("Centering behavior: ");
 
-const startStopCallback = new CallbackFunction(() => flock.startleBirds());
-eventController.add(startStopCallback.to(HtmlControl.withElementId("startleButton").forType("click")));
+new Slider(htmlDiv)
+    .on(flock)
+    .withProperty("directionWeight")
+    .withRange(new Range(0, 2, .01))
+    .withValue(.1)
+    .withLabel("Direction behavior: ");
 
-simulation.start();
+new Slider(htmlDiv)
+    .on(flock)
+    .withProperty("avoidWeight")
+    .withRange(new Range(0, 2, .01))
+    .withValue(1)
+    .withLabel("Avoidance behavior: ");
+
+new Button(htmlDiv)
+    .withText("Startle birds")
+    .addEventListener("click", () => flock.startleBirds());

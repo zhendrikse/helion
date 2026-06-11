@@ -1,7 +1,6 @@
 import { Vector2 } from "three";
 import {
-    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3,
-    ThreeJsRenderer, Trail, EventController, UPlotGraph, G
+    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, ThreeJsRenderer, Trail, UPlotGraph, G
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -57,6 +56,7 @@ const subSteps = 10;
 const sphere = new Sphere({ color: "cyan" });
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .synchronize(ball.alwaysWith(sphere))
     .synchronize(ball.alwaysWith(new Trail({ color: sphere.color})))
     .incrementsTimeBy(dt)
@@ -102,12 +102,5 @@ function updateGraph(simulatedTime) {
     plot.update();
 }
 
-
 // Update graph not inside simulation loop, as we do not want to update it with every physics update substep
 simulation.onAfterClockTick((clockTime, simulatedTime) => updateGraph(simulatedTime));
-
-//
-// Event controller
-//
-const eventController = new EventController(simulation);
-eventController.addStartStopMouseClickEventListener();

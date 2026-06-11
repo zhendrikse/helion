@@ -1,10 +1,10 @@
 import {
-    FFT, ComplexScalarFieldRaster, DiscreteComplexField, EventController, HtmlControl,
-    Simulation, HtmlDiv, Canvas, Canvas2DRenderer
+    FFT, ComplexScalarFieldRaster, DiscreteComplexField, RadioButton,
+    Simulation, Slider, Canvas2DRenderer, Range, Checkbox
 } from "../../../src/index.js";
 
 const Shape = Object.freeze({
-    CIRCULAR: "circular",
+    CIRCULAR: "circle",
     SQUARE: "square",
     RECTANGLE: "rectangle"
 });
@@ -71,41 +71,42 @@ const fourierSimulation = new FourierSimulation(30, resolution);
 //
 // View for 2D canvas
 //
-const canvas2d = Canvas.withElementId("fourierTransformCanvas");
-const renderer2d = Canvas2DRenderer.on(HtmlDiv.withElementId("fourierTransformCanvasWrapper").contains(canvas2d));
+const htmlDiv = document.getElementById("fourierTransformContainer");
+const renderer2d = Canvas2DRenderer.in(htmlDiv);
 
 const intensityRaster = new ComplexScalarFieldRaster({
     width: resolution,
     height: resolution
 });
 
-const simulation = Simulation
-    .with(renderer2d)
+Simulation.with(renderer2d)
     .synchronize(fourierSimulation.field.alwaysWith(intensityRaster))
-    .onClockTick();
-simulation.start()
+    .onClockTick()
+    .start();
 
-//
-// Event listeners
-//
-const eventController = EventController.for(simulation);
-eventController.attach(HtmlControl
-    .withElementId("diameterSlider")
-    .forType("input")
-    .withValueSpanId("diameterValue")
-    .to(fourierSimulation).withProperty("diameter"));
+const slider = new Slider(htmlDiv)
+    .on(fourierSimulation)
+    .withLabel("📏 Size:")
+    .withRange(new Range(20, 50, .1))
+    .withValue(30)
+    .withUnits("pixels")
+    .withProperty("diameter");
 
-eventController.attach(HtmlControl
-    .withElementId("circleButton")
-    .forType("click")
-    .to(fourierSimulation).withProperty("type"));
+Checkbox.togetherWith(slider)
+    .withLabel("🎨 Phase: ")
+    .on(intensityRaster)
+    .checked(true)
+    .withProperty("phaseColor");
 
-eventController.attach(HtmlControl
-    .withElementId("squareButton")
-    .forType("click")
-    .to(fourierSimulation).withProperty("type"));
+const radioButton = new RadioButton(htmlDiv)
+    .on(fourierSimulation)
+    .withProperty("type")
+    .withValue("square")
+    .withLabel("🟩 Square");
 
-eventController.attach(HtmlControl
-    .withElementId("phaseColor")
-    .forType("click")
-    .to(intensityRaster).withProperty("phaseColor"));
+RadioButton.togetherWith(radioButton)
+    .on(fourierSimulation)
+    .withProperty("type")
+    .checked(true)
+    .withValue("circle")
+    .withLabel("🟢 Circle");

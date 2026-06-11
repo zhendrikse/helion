@@ -1,22 +1,21 @@
 import {
-    Canvas, Canvas2DRenderer, DiscreteParticleField, HtmlDiv, ParticleRaster, Simulation
+    Canvas2DRenderer, DiscreteParticleField, ParticleRaster, Simulation
 } from "../../../src/index.js";
 
-const canvas2d = Canvas.withElementId("coral2dCanvas");
-const canvasWrapper = HtmlDiv.withElementId("coral2dCanvasWrapper");
+const htmlDiv = document.getElementById("coralContainer");
 let maxDistance = 0;
 const PARTICLES_PER_10K_PIXELS = 75;
 let swarmSize = 0;
 
 function resizeCanvasToWrapper() {
-    const rectangle = canvasWrapper.htmlDiv.getBoundingClientRect();
+    const rectangle = htmlDiv.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    canvas2d.htmlCanvas.width  = Math.floor(rectangle.width * dpr);
-    canvas2d.htmlCanvas.height = Math.floor(rectangle.height * dpr);
-
-    canvas2d.htmlCanvas.style.width  = rectangle.width + "px";
-    canvas2d.htmlCanvas.style.height = rectangle.height + "px";
+    // canvas2d.htmlCanvas.width  = Math.floor(rectangle.width * dpr);
+    // canvas2d.htmlCanvas.height = Math.floor(rectangle.height * dpr);
+    //
+    // canvas2d.htmlCanvas.style.width  = rectangle.width + "px";
+    // canvas2d.htmlCanvas.style.height = rectangle.height + "px";
 }
 
 function scientificColorCodingFor(value, minVal, maxVal) {
@@ -51,8 +50,8 @@ function updateThreshold() {
 
 class Particle {
     constructor() {
-        this.x = canvas2d.width * Math.random();
-        this.y = canvas2d.height * Math.random();
+        this.x = htmlDiv.width * Math.random();
+        this.y = htmlDiv.height * Math.random();
         this.radius = this.#computeParticleRadius();
         this.frozen = false;
         this.color = scientificColorCodingFor(0, 0, maxDistance);
@@ -65,9 +64,9 @@ class Particle {
 
     makeSeed() {
         this.frozen = true;
-        this.x = canvas2d.width * .5;
+        this.x = htmlDiv.width * .5;
         // this.y = canvas2d.height * .5;
-        this.y = canvas2d.height - 2;
+        this.y = htmlDiv.height - 2;
     }
 
     distanceSquaredTo(otherParticle) {
@@ -109,11 +108,11 @@ class Particle {
         this.x += Math.random() < 0.5 ? dx : -dx;
         this.y += verticalDrift + (Math.random() < 0.5 ? dy : -dy);
 
-        this.x = (this.x + canvas2d.width) % canvas2d.width;
+        this.x = (this.x + htmlDiv.width) % htmlDiv.width;
         //this.y = (this.y + canvas2d.height) % canvas2d.height;
-        if (this.y > canvas2d.height) {
+        if (this.y > htmlDiv.height) {
             this.y = 0;
-            this.x = canvas2d.width * Math.random();
+            this.x = htmlDiv.width * Math.random();
         }
 
         this.checkForFreezing();
@@ -121,12 +120,12 @@ class Particle {
 }
 
 function updateMaxDistance() {
-    maxDistance = Math.sqrt(canvas2d.width * canvas2d.width + canvas2d.height * canvas2d.height);
+    maxDistance = Math.sqrt(htmlDiv.width * htmlDiv.width + htmlDiv.height * htmlDiv.height);
 }
 
 function computeSwarmSize() {
-    const cssWidth  = canvas2d.width;
-    const cssHeight = canvas2d.height;
+    const cssWidth  = htmlDiv.width;
+    const cssHeight = htmlDiv.height;
     const areaCSS = cssWidth * cssHeight;
 
     swarmSize = Math.floor(areaCSS / 10_000 * PARTICLES_PER_10K_PIXELS);
@@ -156,7 +155,7 @@ resizeAndResetSimulation();
 //
 // View for 2D canvas
 //
-const renderer2d = Canvas2DRenderer.on(canvasWrapper.contains(canvas2d));
+const renderer2d = Canvas2DRenderer.in(htmlDiv);
 
 const particleRaster = new ParticleRaster();
 

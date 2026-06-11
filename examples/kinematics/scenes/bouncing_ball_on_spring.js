@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Spring, Simulation, Vec3, Checkbox, Arrow, Sphere,
-    EventController, ThreeJsRenderer, Floor, Helix, Slider, Range
+    ThreeJsRenderer, Floor, Helix, Slider, Range
 } from "../../../src/index.js";
 
 //
@@ -75,6 +75,7 @@ const dt = 1.5e-3;
 const subSteps = 10;
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .synchronize(world.ball.alwaysWith(sphere))
     .synchronize(world.ball.velocityVector.alwaysWith(velocityArrow))
     .synchronize(world.ball.accelerationVector.alwaysWith(forceArrow))
@@ -82,9 +83,6 @@ const simulation = Simulation
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, simulatedTime) => world.timeStep(dt), subSteps);
 renderer.add(floor);
-
-const eventController = new EventController(simulation);
-eventController.addStartStopMouseClickEventListener();
 
 const velocityArrowCheckbox = new Checkbox(container)
     .on(velocityArrow)
@@ -105,13 +103,4 @@ new Slider(container)
     .withProperty("damping")
     .withLabel("🍃 Air resistance: ");
 
-//
-// Event controller
-//
-//
-// eventController.attach(HtmlControl
-//     .withElementId("dampingSlider")
-//     .forType("input")
-//     .to(world)
-//     .withProperty("damping"));
 

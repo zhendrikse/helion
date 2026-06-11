@@ -1,5 +1,5 @@
 import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Vec3, Range,
-    EventController, Cylinder, ElectromagneticWave, ThreeJsRenderer, Slider
+    Cylinder, ElectromagneticWave, ThreeJsRenderer, Slider
 } from "../../../src/index.js";
 
 //
@@ -38,6 +38,7 @@ const antenna = new AxialSymmetricBody({
 
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .synchronize(antenna.onceWith(new Cylinder({color: 0xcccc77})))
     .incrementsTimeBy(lambda / OneDimensionalPlaneWave.c / 100.0)
     .onClockTick((clockTime, simulatedTime) => {
@@ -52,9 +53,6 @@ for (let wave of planeWaves)
         arrowSize: 0.2,
         scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)
     })));
-
-const eventController = new EventController(simulation);
-eventController.addStartStopMouseClickEventListener();
 
 new Slider(container)
     .withLabel("🧲 Field strength: ")

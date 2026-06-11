@@ -14,7 +14,7 @@ export default defineConfig({
                 charged_ring: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_ring.js'),
                 charged_rod: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_rod.js'),
                 charged_sheet: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_sheet.js'),
-                coral_2d: path.resolve(__dirname, 'examples/dla/scenes/coral_2d.js'),
+                coral_2d: path.resolve(__dirname, 'examples/nature/scenes/coral_2d.js'),
                 dipole_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/dipole_field.js'),
                 earth: path.resolve(__dirname, 'examples/astrophysics/scenes/planets/earth.js'),
                 electromagnetic_wave_quiver: path.resolve(__dirname, 'examples/electromagnetism/scenes/electromagnetic_wave_quiver.js'),

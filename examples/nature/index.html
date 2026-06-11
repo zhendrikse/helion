@@ -6,39 +6,28 @@
 </head>
 <body>
     <!--
+       - 2 D  C O R A L  G R O W T H
+       -->
+    <div id="coralContainer"></div>
+    <script type="module" src="scenes/coral_2d.js"></script>
+    <!--
        - F L O C K I N G  B I R D S
-    <div class="canvasWrapper" id="birdsCanvasWrapper">
-        <canvas class="applicationCanvas" id="birdsCanvas" width="500" height="500"></canvas><br/>
-    </div>
-    <label for="randomWeightSlider">Random behavior: <input type="range" min="0" max="50" value="5" step="any" class="slider" id="randomWeightSlider"/></label>
-    <label for="centerWeightSlider">Centering behavior: <input type="range" min="0" max="2" value=".1" step="any" class="slider" id="centerWeightSlider"/></label>
-    <label for="directionWeightSlider">Direction behavior: <input type="range" min="0" max="2" value=".1" step="any" class="slider" id="directionWeightSlider"/></label>
-    <label for="avoidWeightSlider">Avoidance behavior: <input type="range" min="0" max="2" value="1" step="any" class="slider" id="avoidWeightSlider"/></label>
-    <button class="button" id="startleButton">Startle birds</button>
+    <div id="birdsContainer"></div>
     <script type="module" src="scenes/flocking_birds.js"></script>
        -->
     <!--
        - F R A C T A L  T E R R A I N
-       -->
-    <div class="canvasWrapper" id="terrainCanvasWrapper" style="width: 1000px; aspect-ratio: 19/12">
-        <canvas class="applicationCanvas" id="terrainCanvas" style="width: 1000px; aspect-ratio: 19/12"></canvas>
-    </div>
-    <div id="helionControls"></div>
+    <div id="terrainContainer"></div>
     <script type="module" src="scenes/fractal_terrain.js"></script>
+       -->
     <!--
        - R A I N D R O P S
-    <div class="canvasWrapper" id="raindropCanvasWrapper" style="width: 1000px; aspect-ratio: 19/12">
-        <canvas class="applicationCanvas" id="raindropCanvas" style="width: 1000px; aspect-ratio: 19/12"></canvas>
-    </div>
-    <div id="helionControls"></div>
+    <div id="raindropContainer" style="aspect-ratio: 19/12"></div>
     <script type="module" src="scenes/raindrops.js"></script>
        -->
     <!--
        - S H E L L S
-    <div class="canvasWrapper" id="shellsCanvasWrapper" style="width: 1000px; aspect-ratio: 19/12">
-        <canvas class="applicationCanvas" id="shellsCanvas" style="width: 1000px; aspect-ratio: 19/12"></canvas>
-    </div>
-    <div id="helionControls"></div>
+    <div id="shellsContainer"></div>
     <script type="module" src="scenes/shells.js"></script>
        -->
 </body>

@@ -1,7 +1,6 @@
 import {
-    Simulation, Canvas, CompositeRenderer, EventController, HtmlControl, CallbackFunction, HtmlDiv,
-    Canvas2DRenderer, OneDimensionalComplexPlaneWave2D, OneDimensionalComplexPlaneWave,
-    OneDimensionalComplexPlaneWave3D, ThreeJsRenderer, Vec3
+    Simulation, CompositeRenderer, Canvas2DRenderer, OneDimensionalComplexPlaneWave2D,
+    OneDimensionalComplexPlaneWave, OneDimensionalComplexPlaneWave3D, ThreeJsRenderer, Vec3
 } from "../../../src/index.js";
 
 //
@@ -17,20 +16,20 @@ const planeWave = new OneDimensionalComplexPlaneWave({
 //
 // View for 2D canvas
 //
-const canvas2d = Canvas.withElementId("planeWaveCanvas2d");
-const renderer2d = Canvas2DRenderer.on(HtmlDiv.withElementId("planeWaveCanvasWrapper2d").contains(canvas2d));
+const htmlDiv2d = document.getElementById("planeWaveContainer2d");
+const renderer2d = Canvas2DRenderer.in(htmlDiv2d);
 const waveView2d = new OneDimensionalComplexPlaneWave2D({
     scaleY: 10,
-    width: canvas2d.clientWidth,
-    height: canvas2d.clientHeight
+    width: htmlDiv2d.clientWidth,
+    height: htmlDiv2d.clientHeight
 });
 
 //
 // View for 3D canvas
 //
-const canvas3d = Canvas.withElementId("planeWaveCanvas3d");
+const htmlDiv3d = document.getElementById("planeWaveContainer3d");
 const renderer3d = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("planeWaveCanvasWrapper3d").contains(canvas3d))
+    .in(htmlDiv3d)
     .with({
         cameraPosition: new Vec3(100, 100, 200),
         fieldOfView: 20

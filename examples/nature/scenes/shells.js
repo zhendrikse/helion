@@ -1,6 +1,5 @@
 import {
-    ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
-    EventController, ParametricSurface,
+    ThreeJsRenderer, Simulation, ParametricSurface,
     Domain, StandardSurfaceView, SurfaceResolution, ColorMappers, Registry, DropdownMenu
 } from "../../../src/index.js";
 import {MeshStandardMaterial} from "three";
@@ -61,9 +60,9 @@ const surfaces = {
     })
 };
 
+const htmlDiv = document.getElementById("shellsContainer");
 const renderer = ThreeJsRenderer
-    .on(HtmlDiv.withElementId("shellsCanvasWrapper")
-        .contains(Canvas.withElementId("shellsCanvas")))
+    .in(htmlDiv)
     .with({ fieldOfView: 20 });
 
 const surfaceView = new StandardSurfaceView({
@@ -95,12 +94,12 @@ function changeSurface(surfaceId) {
     simulation.renderer.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
 }
 
-new DropdownMenu()
+new DropdownMenu(htmlDiv)
     .for(surfacesRegistry)
     .addEventListener("change", event => changeSurface(event.target.value));
 
 changeSurface("Sea shell");
 
-surfaceView.showColormapSelector();
-surfaceView.showSurfaceControls();
+surfaceView.showColormapSelectorIn(htmlDiv);
+surfaceView.showSurfaceControlsIn(htmlDiv);
 

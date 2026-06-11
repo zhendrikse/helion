@@ -35,26 +35,7 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-<div class="canvasWrapper" id="spaceTimeCanvasWrapper">
-    <canvas id="spaceTimeCanvas" class="applicationCanvas"></canvas>
-    <div class="overlayText" id="spaceTimeOverlay">
-        <span style="color: white">Click to start the animation!</span>
-    </div>
-</div>
-
-<div class="buttonRow">
-    <label for="gridButton">Grid: </label><input type="checkbox" checked id="gridButton"/>
-    <label for="coneButton">Cone: </label><input type="checkbox" checked id="coneButton"/>
-    <label for="orbitButton">Circular orbit: </label><input type="checkbox" id="orbitButton"/>
-    <label for="photonSphereButton">Photon ring: </label><input type="checkbox" id="photonSphereButton"/>
-</div>
-
-<div class="buttonRow">
-    <label for="distanceSlider">Distance:&nbsp;</label>
-    <input type="range" id="distanceSlider" min="25.1" max="64" step=".1" value="33"/>
-    <span id="distanceSliderValue">33</span>
-</div>
-
+<div id="spaceTimeContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/schwarzschild_space_time.js"}></script>
 <p style="clear: both;"></p>
 

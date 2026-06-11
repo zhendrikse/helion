@@ -1,7 +1,6 @@
 import { Color } from "three";
 import {
-    RadialSymmetricBody, VectorField, Range, Simulation, Slider, EventController, HtmlControl,
-    Sphere, ArrowField, ThreeJsRenderer, Trail, Vec3
+    RadialSymmetricBody, VectorField, Range, Simulation, Slider, Sphere, ArrowField, ThreeJsRenderer, Trail, Vec3
 } from "../../../src/index.js";
 
 class MagneticField extends VectorField {
@@ -59,19 +58,14 @@ const arrowField = new ArrowField({
 
 const dt = 2.5e-3;
 const subSteps = 100;
-const simulation = Simulation
+Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .synchronize(magneticField.onceWith(arrowField))
     .synchronize(proton.alwaysWith(sphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })))
     .incrementsTimeBy(dt)
     .onClockTick(() => timeStep(dt), subSteps);
-
-//
-// Event listeners
-//
-const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListener();
 
 new Slider(container)
     .withRange(new Range(.1, 1, .01))

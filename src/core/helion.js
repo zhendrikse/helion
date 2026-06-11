@@ -4,108 +4,6 @@ import uPlot from 'uplot';
  * S I M U L A T I O N  E N V I R O N M E N T *
  **********************************************/
 
-export class HtmlDiv {
-    static withElementId = (elementId) => new HtmlDiv(elementId);
-
-    constructor(elementId) {
-        this._htmlDiv = document.getElementById(elementId);
-        if (!this._htmlDiv)
-            throw new Error("HTML <div> with elementId '" + elementId + "' not found => check HTML page!");
-        this._canvas = null;
-        this._overlay = null;
-    }
-
-    contains(canvas) {
-        this._canvas = canvas;
-        return this;
-    }
-
-    containsBoth(canvasAndOverlay) {
-        this._canvas = canvasAndOverlay.canvas;
-        this._overlay = canvasAndOverlay.overlay;
-        return this;
-    }
-
-    get htmlDiv() { return this._htmlDiv; }
-    get overlay() { return this._overlay; }
-    get canvas() { return this._canvas; }
-}
-
-export class Canvas {
-    static withElementId = (elementId) => new Canvas(elementId);
-
-    constructor(elementId) {
-        this._htmlCanvas = document.getElementById(elementId);
-        this._overlay = null;
-        if (!this._htmlCanvas)
-            throw new Error("Canvas with elementId '" + elementId + "' not found => check HTML page!");
-    }
-
-    and(overlay) {
-        this._overlay = overlay;
-        return {canvas: this, overlay: this._overlay  };
-    }
-
-    get overlay() { return this._overlay; }
-    get htmlCanvas() { return this._htmlCanvas; }
-    get clientHeight() { return this._htmlCanvas.clientHeight; }
-    get clientWidth() { return this._htmlCanvas.clientWidth; }
-    get height() { return this._htmlCanvas.height; }
-    get width() { return this._htmlCanvas.width; }
-}
-
-export class Overlay {
-    static withElementId = (elementId) => new Overlay(elementId);
-
-    constructor(elementId) {
-        this._overlay = document.getElementById(elementId);
-        if (!this._overlay)
-            throw new Error("Overlay with elementId '" + elementId + "' not found => check HTML page!");
-    }
-    get htmlOverlay() { return this._overlay; }
-}
-
-export class HtmlControl {
-    static withElementId = (elementId) => new HtmlControl(elementId);
-
-    constructor(elementId) {
-        this.htmlElement = document.getElementById(elementId);
-        if (!this.htmlElement)
-            throw new Error("Control with elementId '" + elementId + "' not found => check HTML page!");
-
-        this.actionType = "Uninitialized";
-        this.objectToModify = null;
-        this.objectPropertyName = "Uninitialized";
-        this.callbackFunction = null;
-        this.htmlSpanElement = null;
-    }
-
-    withValueSpanId(htmlSpanElementId) {
-        this.htmlSpanElement = document.getElementById(htmlSpanElementId);
-        if (!this.htmlSpanElement)
-            throw new Error("HTML <span> with elementId '" + htmlSpanElementId + "' not found => check HTML page!");
-        return this;
-    }
-
-    forType(actionType) {
-        this.actionType = actionType;
-        return this;
-    }
-
-    to(objectToModify) {
-        this.objectToModify = objectToModify;
-        return this;
-    }
-
-    withProperty(propertyName) {
-        if (!propertyName in this.objectToModify)
-            throw new Error("Property with name '" + propertyName + "' does not exist on " + this.objectToModify);
-
-        this.objectPropertyName = propertyName;
-        return this;
-    }
-}
-
 export class Registry {
     constructor({
         id = "registryId",
@@ -244,6 +142,16 @@ export class Simulation {
         for (const binding of this._bindings)
             binding.reset();
         this._onReset?.();
+    }
+
+    /**
+     * Add a mouse-click event listener to a simulation canvas. It defaults to start/stop.
+     * When calling this function with a custom callback, the default start/stop functionality is
+     * lost and needs to be re-added if needed!!
+     */
+    withStopMouseClickEventListener(callback = (event) => this.toggleRunStatus()) {
+        this._renderer.canvas.addEventListener("click", (event) => callback(event) );
+        return this;
     }
 
     // When the user has clicked on the canvas, the running state of the application needs to be updated

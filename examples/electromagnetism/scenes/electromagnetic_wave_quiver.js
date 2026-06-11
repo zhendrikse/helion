@@ -1,7 +1,7 @@
 import { Color } from "three";
 
 import {
-    RadialSymmetricBody, VectorField, Range, Simulation, EventController, Sphere, ArrowField, ThreeJsRenderer, Vec3
+    RadialSymmetricBody, VectorField, Range, Simulation, Sphere, ArrowField, ThreeJsRenderer, Vec3
 } from "../../../src/index.js";
 
 const Q = 1.6e-19;
@@ -152,8 +152,9 @@ const magneticArrowField = new ArrowField({
 });
 
 const dt = 2e-19;
-const simulation = Simulation
+Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .incrementsTimeBy(dt)
     .synchronize(electron.alwaysWith(new Sphere({ color: new Color("red") })))
     .synchronize(electricField.alwaysWith(electricArrowField))
@@ -169,6 +170,3 @@ const simulation = Simulation
         for (const field of magneticField._fields)
             field.time = simulatedTime;
     }, 2);
-
-const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListener();

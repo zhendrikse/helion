@@ -1,7 +1,7 @@
 import { Vector2 } from "three";
 import {
-    EventController, HtmlDiv, UPlotGraph, RadialSymmetricBody, Vec3, HarmonicOscillator,
-    Simulation, Canvas, Overlay, Sphere, ThreeJsRenderer, Helix, Floor
+    UPlotGraph, RadialSymmetricBody, Vec3, HarmonicOscillator,
+    Simulation, Sphere, ThreeJsRenderer, Helix, Floor
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -50,6 +50,7 @@ const dt = 1e-3;
 const subSteps = 10;
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, _) => {
         for (let i = 0; i < balls.length - 1; i++)

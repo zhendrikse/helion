@@ -1,7 +1,6 @@
 import {
     linspace, meshgrid, ScalarFieldRaster, wavelengthColor, wavelengthToRGBNormalized,
-    DiscreteScalarField, Canvas, Canvas2DRenderer, HtmlDiv, Simulation, EventController,
-    HtmlControl
+    DiscreteScalarField, Canvas2DRenderer, Simulation, RadioButton, Slider, Checkbox, Range
 } from "../../../src/index.js";
 
 class ColorMapper {
@@ -136,12 +135,13 @@ const R = 1.0;
 const aperture = new Aperture(200, resolution);
 const intensityField = new DiscreteScalarField({nx: resolution, ny: resolution});
 const fraunhoferSimulation = new FraunhoferSimulation(aperture, intensityField);
+fraunhoferSimulation.lambdaInNanos = 500;
 
 //
 // View for 2D canvas
 //
-const canvas2d = Canvas.withElementId("fraunhoferCanvas");
-const renderer2d = Canvas2DRenderer.on(HtmlDiv.withElementId("fraunhoferCanvasWrapper").contains(canvas2d));
+const htmlDiv = document.getElementById("fraunhoferContainer");
+const renderer2d = Canvas2DRenderer.in(htmlDiv);
 
 const intensityPixelRaster = new ScalarFieldRaster({
     width: resolution,
@@ -149,53 +149,53 @@ const intensityPixelRaster = new ScalarFieldRaster({
     colorMapper: fraunhoferSimulation.colorMapper
 });
 
-const simulation = Simulation
+Simulation
     .with(renderer2d)
     .synchronize(intensityField.alwaysWith(intensityPixelRaster))
-    .onClockTick();
+    .onClockTick()
+    .start();
 
-const eventController = new EventController(simulation);
-eventController.attach(HtmlControl
-    .withElementId("wavelengthSlider")
-    .forType("change")
-    .withValueSpanId("wavelengthValue")
-    .to(fraunhoferSimulation).withProperty("lambdaInNanos"));
+const radioButton = new RadioButton(htmlDiv)
+    .on(fraunhoferSimulation)
+    .withProperty("apertureType")
+    .withValue("square")
+    .withLabel("🟩 Square");
 
-eventController.attach(HtmlControl
-    .withElementId("diameterSlider")
-    .forType("change")
-    .withValueSpanId("diameterValue")
-    .to(fraunhoferSimulation).withProperty("diameterInMicroMeter"));
+RadioButton.togetherWith(radioButton)
+    .on(fraunhoferSimulation)
+    .withProperty("apertureType")
+    .checked(true)
+    .withValue("circle")
+    .withLabel("🟢 Circle");
 
-eventController.attach(HtmlControl
-    .withElementId("circleButton")
-    .forType("click")
-    .to(fraunhoferSimulation).withProperty("apertureType"));
+new Slider(htmlDiv)
+    .on(fraunhoferSimulation)
+    .withProperty("diameterInMicroMeter")
+    .withLabel("Size: ")
+    .withValue(200)
+    .withRange(new Range(20, 200, 1));
 
-eventController.attach(HtmlControl
-    .withElementId("squareButton")
-    .forType("click")
-    .to(fraunhoferSimulation).withProperty("apertureType"));
-
-eventController.attach(HtmlControl
-    .withElementId("laserColor")
-    .forType("click")
-    .to(fraunhoferSimulation).withProperty("showSpectralColor"));
-
-
-// Custom wavelength -> color renderer
-const wavelengthSlider = document.getElementById("wavelengthSlider");
-const wavelengthProbe = document.getElementById("wavelengthProbe");
-document.getElementById("wavelengthSlider").addEventListener("input", e => {
-    const wavelength = Number(wavelengthSlider.value);
-    const color = wavelengthToRGBNormalized(wavelength);
-    const intensity = 1;
-    wavelengthProbe.style.backgroundColor =
-        `rgb(${color.r * intensity * 255},
+const slider = new Slider(htmlDiv)
+    .withLabel("Color: ")
+    .withValue(500)
+    .withRange(new Range(380, 700, 1))
+    .addEventListener("input", (event) => {
+        const wavelength = Number(event.target.value);
+        const color = wavelengthToRGBNormalized(wavelength);
+        const intensity = 1;
+        wavelengthProbe.style.backgroundColor =
+            `rgb(${color.r * intensity * 255},
              ${color.g * intensity * 255},
              ${color.b * intensity * 255})`;
+    })
+    .addEventListener("change", (event) => {
+        fraunhoferSimulation.lambdaInNanos = Number(event.target.value);
+    });
 
-})
+Checkbox
+    .togetherWith(slider)
+    .on(fraunhoferSimulation)
+    .withProperty("showSpectralColor")
+    .withLabel("🎨 ")
+    .checked(true);
 
-fraunhoferSimulation.lambdaInNanos = 500;
-simulation.start();

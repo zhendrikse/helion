@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     Block, RadialSymmetricBody, VectorField, Range, Sphere, Trail, ArrowField, ThreeJsRenderer,
-    Box, Simulation, EventController, Vec3
+    Box, Simulation, Vec3
 } from "../../../src/index.js";
 
 const Q = 1.6e-19;
@@ -104,6 +104,7 @@ const dt = 5e-20;
 const field = new Vec3();
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .synchronize(electricField.onceWith(arrowField))
     .synchronize(electron.alwaysWith(electronSphere))
     .synchronize(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
@@ -122,6 +123,3 @@ for (const segment of sheet.segments)
         color: new Color(0xffffff),
         opacity: 0.6
     })));
-
-const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListener();

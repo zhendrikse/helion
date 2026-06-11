@@ -73,7 +73,6 @@ export class ThreeJsRenderer extends Renderer {
             canvas: this._canvas,
             antialias: true
         });
-        this._renderer.setSize(width, height);
 
         if (shadowsEnabled) {
             this._renderer.shadowMap.enabled = true;
@@ -111,7 +110,7 @@ export class ThreeJsRenderer extends Renderer {
         const width = Math.floor(canvasWidth * pixelRatio);
         const height = Math.floor(canvasHeight * pixelRatio);
 
-        if (canvas.width === width || canvas.height === height)
+        if (canvas.width === width && canvas.height === height)
             return;
 
         this._renderer.setPixelRatio(pixelRatio);

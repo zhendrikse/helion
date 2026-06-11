@@ -1,6 +1,5 @@
 import {
-    EventController, Vec3, UPlotGraph, Block,
-    Simulation, Box, ThreeJsRenderer, Aquarium
+    Vec3, UPlotGraph, Block, Simulation, Box, ThreeJsRenderer, Aquarium
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -62,6 +61,7 @@ const dt = 0.001;
 const substeps = 20;
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .incrementsTimeBy(dt)
     .synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
     .onClockTick((clockTime, simulationTime) => woodenBlock.apply(woodenBlock.netForce(water), dt), substeps)
@@ -95,5 +95,3 @@ plot.graphData[0] = [0]; // time
 plot.graphData[1] = [woodenBlock.buoyancyForce(water)];
 plot.graphData[2] = [woodenBlock.dragForce()];
 
-const eventController = new EventController(simulation);
-eventController.addStartStopMouseClickEventListener();

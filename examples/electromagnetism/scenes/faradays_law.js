@@ -1,7 +1,7 @@
 import { Color, Group } from "three";
 import {
     VectorField, Range, Cylinder, ArrowField, Sphere, ThreeJsRenderer, RadialSymmetricBody, Vec3,
-    Arrow, Ring, Checkbox, EventController, HtmlControl, Simulation, AxialSymmetricBody
+    Arrow, Ring, Checkbox, Simulation, AxialSymmetricBody
 } from "../../../src/index.js";
 
 const loopSegments = 10;
@@ -56,6 +56,7 @@ renderer.add(faradayLoopsGroup);
 const dt = 0.05;
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .synchronize(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, simulatedTime) => {
@@ -130,9 +131,6 @@ for (const position of magneticFieldPositions) {
         round: true
     })));
 }
-
-const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListener();
 
 new Checkbox(container)
     .on(faradayLoopsGroup)

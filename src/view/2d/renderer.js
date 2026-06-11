@@ -37,12 +37,11 @@ export function toColorString(hue) {
 }
 
 export class Canvas2DRenderer extends Renderer {
-    static on = (canvasWrapperDiv) => new Canvas2DRenderer(canvasWrapperDiv);
+    static in = (canvasWrapperDiv) => new Canvas2DRenderer(canvasWrapperDiv);
 
     constructor(canvasWrapperDiv) {
         super(canvasWrapperDiv);
-        this._canvasWrapper = canvasWrapperDiv;
-        this._context = canvasWrapperDiv.canvas.htmlCanvas.getContext("2d");
+        this._context = this._canvas.getContext("2d");
     }
 
     add(view) {

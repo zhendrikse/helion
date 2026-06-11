@@ -1,6 +1,6 @@
 import {
     Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation,
-    Vec3, EventController, Sphere, ThreeJsRenderer, Trail
+    Vec3, Sphere, ThreeJsRenderer, Trail
 } from "../../../src/index.js";
 
 //
@@ -50,9 +50,9 @@ function updateForces(dt) {
 //
 const dt = 5000;
 const subSteps = 50;
-const container = document.getElementById("threeBodyContainer");
-const simulation = Simulation
-    .with(ThreeJsRenderer.in(container)
+Simulation
+    .with(ThreeJsRenderer
+        .in(document.getElementById("threeBodyContainer"))
         .with({
             cameraPosition: new Vec3(30, 30, 30),
             scale: 1e-9
@@ -64,7 +64,5 @@ const simulation = Simulation
     .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
     .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
     .incrementsTimeBy(dt / subSteps)
-    .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps);
-
-const eventController = new EventController(simulation);
-eventController.addStartStopMouseClickEventListener();
+    .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps)
+    .withStopMouseClickEventListener();

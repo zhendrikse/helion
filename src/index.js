@@ -5,8 +5,8 @@ export {
 } from "./model/phys/physics.js";
 
 export {
-    Range, Vec3, factorial, linspace, Interval,
-    normalDistribution, randomArbitrary, randomInt, meshgrid,
+    Range, Vec3, factorial, linspace, Interval, generateUUID,
+    normalDistribution, randomArbitrary, randomInt, meshgrid
 } from "./model/math/math.js";
 
 export {
@@ -25,8 +25,8 @@ export { Sun } from "./view/3d/astro/sun.js";
 export { Saturn } from "./view/3d/astro/saturn.js";
 export { Planets } from "./model/phys/planets.js";
 export { WaveEquationSolver } from "./model/math/numerics/solvers/solvers.js";
-export { EventController, CallbackFunction, DropdownMenu, Checkbox, Button, Slider } from "./controller/controller.js";
-export { Simulation, Canvas, HtmlDiv, Overlay, HtmlControl, UPlotGraph, Registry } from "./core/helion.js";
+export { DropdownMenu, Checkbox, Button, Slider, RadioButton } from "./controller/controller.js";
+export { Simulation, UPlotGraph, Registry } from "./core/helion.js";
 export { ThreeJsRenderer } from "./view/3d/renderer.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";

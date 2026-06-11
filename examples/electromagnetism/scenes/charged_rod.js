@@ -1,7 +1,6 @@
 import { Color } from "three";
 import { 
-    RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, ThreeJsRenderer,
-    Simulation, Canvas, EventController, Vec3
+    RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, ThreeJsRenderer, Simulation, Vec3
 } from "../../../src/index.js";
 
 //
@@ -161,6 +160,7 @@ const simulation = Simulation
     .synchronize(electricField.alwaysWith(electricArrowField))
     .synchronize(magneticField.alwaysWith(magneticArrowField))
     .incrementsTimeBy(dt)
+    .withStopMouseClickEventListener()
     .onClockTick(() => {
         if (!allGone())
             rod.update(dt);
@@ -171,6 +171,3 @@ for (const charge of rod.charges) {
     simulation.synchronize(charge.alwaysWith(sphere));
     simulation.synchronize(charge.alwaysWith(new Trail({ maxPoints: 150, color: sphere.color })));
 }
-
-const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListener();

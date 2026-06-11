@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     VectorField, Range, Sphere, Trail, Vec3, ArrowField, ThreeJsRenderer,
-    EventController, HtmlControl, Slider, Simulation, Aquarium, RadialSymmetricBody
+    Slider, Simulation, Aquarium, RadialSymmetricBody
 } from "../../../src/index.js";
 
 const initialSspeed = 50;
@@ -76,6 +76,7 @@ const arrowField = new ArrowField({
 const dt = 5e-4;
 const simulation = Simulation
     .with(renderer)
+    .withStopMouseClickEventListener()
     .synchronize(proton.alwaysWith(protonSphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
     .synchronize(magneticField.onceWith(arrowField))
@@ -88,9 +89,6 @@ renderer.add(new Aquarium({
     size: new Vec3(boxSize, boxSize, boxSize).multiplyScalar(2.1),
     frameColor: 0x779977
 }));
-
-const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListener();
 
 new Slider(container)
     .withRange(new Range(.25, 5, .1))
