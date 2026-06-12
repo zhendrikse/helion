@@ -1,6 +1,3 @@
-import uPlot from "uplot";
-import "uplot/dist/uPlot.min.css";
-
 /**********************************************
  * S I M U L A T I O N  E N V I R O N M E N T *
  **********************************************/
