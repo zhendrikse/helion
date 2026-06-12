@@ -7,7 +7,6 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Renderer } from "../renderer.js"
 import { Vec3 } from "../../model/math/math.js";
 import { Axes, SkyDome } from "./composite/backgrounds.js";
-import {Binding} from "../../core/helion.js";
 
 export class ThreeJsRenderer extends Renderer {
     static Background = Object.freeze({
@@ -34,27 +33,6 @@ export class ThreeJsRenderer extends Renderer {
         this._axes = null;
     }
 
-    get canvas() { return this._canvas; }
-
-    _showOverlayMessage(message, duration = 1000) {
-        if (!this._overlay)
-            return; // No overlay has been specified by the user, so we cannot render our information
-
-        this._overlay.textContent = message;
-        this._overlay.style.display = "block";
-
-        setTimeout(() => {
-            this._overlay.style.display = "none";
-        }, duration);
-    }
-
-    onRunStatusChanged(currentSimulationRunningState) {
-        if (currentSimulationRunningState)
-            this._showOverlayMessage("Started");
-        else
-            this._showOverlayMessage("Reset"); // Canvas clicked during execution ==> we need to reset the simulation
-    }
-
     with({
         background = ThreeJsRenderer.Background.TRANSPARENT,
         backgroundColor = 0x0088ff,
@@ -65,14 +43,13 @@ export class ThreeJsRenderer extends Renderer {
         shadowsEnabled = false,
         fieldOfView = 50
     } = {}) {
-        const width = this._container.clientWidth;
-        const height = this._container.clientHeight;
 
         this._renderer = new WebGLRenderer({
             alpha: true,
-            canvas: this._canvas,
-            antialias: true
+            antialias: true,
+            canvas: this._canvas
         });
+        this._canvasWrapperDiv.appendChild(this._renderer.domElement);
 
         if (shadowsEnabled) {
             this._renderer.shadowMap.enabled = true;
@@ -81,7 +58,7 @@ export class ThreeJsRenderer extends Renderer {
 
         this._world.scale.setScalar(scale);
 
-        this._camera = new PerspectiveCamera(fieldOfView, width / height, 0.1, 1e6);
+        this._camera = new PerspectiveCamera(fieldOfView, this._canvas.width / this._canvas.height, 0.1, 1e6);
         this._camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
         if (controls)
@@ -248,10 +225,9 @@ export class ThreeJsRenderer extends Renderer {
             this.remove(this._axes);
 
         const boundingBox = anObject.boundingBox;
-        const canvasContainer = this._container;
         this._axes = Axes.from(boundingBox, divisions)
             .withLayout(layoutType, positiveXZ)
-            .withAnnotations(canvasContainer, layoutType, axisLabels)
+            .withAnnotations(this._canvasWrapperDiv, layoutType, axisLabels)
             .withSettings({ frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels });
 
         if (layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed

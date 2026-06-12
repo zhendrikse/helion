@@ -45,8 +45,8 @@ function ballStep(dt) {
 //
 // Attach view models
 //
-const container = document.getElementById("bouncingBallContainer");
-const renderer = new ThreeJsRenderer(container)
+const containerDiv = document.getElementById("bouncingBallContainer");
+const renderer = new ThreeJsRenderer(containerDiv)
     .with({
         cameraPosition: new Vec3(2, 1, 0.5).multiplyScalar(2.25)
     });
@@ -56,6 +56,7 @@ const subSteps = 10;
 const sphere = new Sphere({ color: "cyan" });
 const simulation = Simulation
     .with(renderer)
+    .withHud()
     .withStopMouseClickEventListener()
     .synchronize(ball.alwaysWith(sphere))
     .synchronize(ball.alwaysWith(new Trail({ color: sphere.color})))
@@ -78,15 +79,15 @@ renderer.add(new Floor({
 // Graph
 //
 const plot = new UPlotGraph({
-    plotDiv: container,
+    plotParentDiv: containerDiv,
     dataDefinition: [
         {label: "t"}, {label: "ball1", color: "blue"},
         { label: "Y-position", color: "cyan" },
         { label: "Kinetic Energy", color: "red" },
         { label: "Potential Energy", color: "green" }
     ],
-    width: container.clientWidth,
-    height: container.clientHeight,
+    width: containerDiv.clientWidth,
+    height: containerDiv.clientHeight * .5,
     title: "Bouncing ball",
     xLabel: "Simulation time",
     yLabel: "Displacement"

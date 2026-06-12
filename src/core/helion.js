@@ -1,6 +1,4 @@
-/**********************************************
- * S I M U L A T I O N  E N V I R O N M E N T *
- **********************************************/
+import { Hud } from "./hud.js";
 
 export class Registry {
     constructor({
@@ -70,9 +68,10 @@ export class Simulation {
     constructor(renderer) {
         this._renderer = renderer;
         this._bindings = [];
-        this._onReset = () => {};                // Callback function for client when a reset happens
-        this._onBeforePhysicsUpdate = () => {};  // Callback function for client before physics update
-        this._onAfterPhysicsUpdate = () => {};   // Callback function for client after physics update
+        this._hud = null;                       // No head-up display by default
+        this._onReset = () => {};               // Callback function for client when a reset happens
+        this._onBeforePhysicsUpdate = () => {}; // Callback function for client before physics update
+        this._onAfterPhysicsUpdate = () => {};  // Callback function for client after physics update
         this._running = false;
         this._simulatedTime = 0;
         this._dt = 0.01;
@@ -91,6 +90,13 @@ export class Simulation {
         this._renderer.add(binding.view);
         this._bindings.push(binding);
         binding.initialize();
+        return this;
+    }
+
+    withHud() {
+        this._hud = new Hud(this._renderer.canvasWrapperDiv);
+        if (!this._running)
+            this._hud.show("Click to start the simulation");
         return this;
     }
 
@@ -148,28 +154,29 @@ export class Simulation {
      * lost and needs to be re-added if needed!!
      */
     withStopMouseClickEventListener(callback = (event) => this.toggleRunStatus()) {
-        this._renderer.canvas.addEventListener("click", (event) => callback(event) );
+        this._renderer.containerDiv.addEventListener("click", (event) => callback(event) );
         return this;
     }
 
     // When the user has clicked on the canvas, the running state of the application needs to be updated
     toggleRunStatus() {
-        if (this._running)
+        if (this._running) {
             this.reset(); // This function is called during execution ==> we need to reset the simulation
-
-        this._running = !this._running;
-        this._renderer.onRunStatusChanged(this._running);
+            this.stop();
+        } else
+            this.start();
     }
 
     start() {
         this._running = true;
-        this._renderer.onRunStatusChanged(this._running);
+        this._hud?.hide();
         return this;
     }
 
     stop() {
         this._running = false;
-        this._renderer.onRunStatusChanged(this._running);
+        this._hud?.show("Reset: click to restart");
+
         return this;
     }
 

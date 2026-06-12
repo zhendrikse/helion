@@ -36,8 +36,8 @@ initialDisturbance(7);
 //
 // Renderer & simulation
 //
-const container = document.getElementById("oscillatorContainer");
-const renderer = ThreeJsRenderer.in(container)
+const htmlContainerDiv = document.getElementById("oscillatorContainer");
+const renderer = ThreeJsRenderer.in(htmlContainerDiv)
     .with({
         cameraPosition: new Vec3(17, 6, 17),
         light: true,
@@ -55,17 +55,21 @@ const simulation = Simulation
     .onClockTick((clockTime, _) => {
         for (let i = 0; i < balls.length - 1; i++)
             springs[i].oscillate(dt);
+    }, subSteps)
+    .onAfterClockTick((clockTime, simulatedTime) => {
+        if (!simulation.isRunning)
+            return;
 
         plot.graphData[0].push(clockTime * 0.001);
         for (let i = 0; i < balls.length; i++)
             plot.graphData[i + 1].push(balls[i].position.x);
-    }, subSteps);
-simulation.onAfterClockTick((clockTime, simulatedTime) => plot.update());
-simulation.onReset(() => {
-    plot.graphData[0] = [0];
-    for (let i = 0; i < balls.length; i++)
-        plot.graphData[i + 1] = [balls[i].position.x];
-});
+        plot.update();
+    })
+    .onReset(() => {
+        plot.graphData[0] = [0];
+        for (let i = 0; i < balls.length; i++)
+            plot.graphData[i + 1] = [balls[i].position.x];
+    });
 
 //
 // View
@@ -97,7 +101,7 @@ for (let i = 0; i < balls.length; i++) {
 // Graph
 //
 const plot = new UPlotGraph({
-    plotDiv: container,
+    plotDiv: htmlContainerDiv,
     dataDefinition: [
         { label: "t" }, { label: "ball1", color: "blue" },
         { label: "ball2", color: "red" },
@@ -105,12 +109,9 @@ const plot = new UPlotGraph({
         { label: "ball4", color: "red" },
         { label: "ball5", color: "blue" },
     ],
-    width: container.clientWidth,
-    height: container.clientHeight * 1.5,
+    width: htmlContainerDiv.clientWidth,
+    height: htmlContainerDiv.clientHeight * .75,
     title: "Kinetic Energy vs Time",
     xLabel: "Time [s]",
     yLabel: "Displacement"
 });
-
-const eventController = EventController.for(simulation);
-eventController.addStartStopMouseClickEventListener();

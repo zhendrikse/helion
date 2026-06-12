@@ -2,7 +2,7 @@ import uPlot from "uplot";
 
 export class UPlotGraph {
     constructor({
-        plotDiv,
+        plotParentDiv,
         dataDefinition,
         width = 600,
         height = 300,
@@ -25,6 +25,8 @@ export class UPlotGraph {
         });
 
         const uPlotOptions = this._uplotOptions(title, width, height, labelColor, xLabel, yLabel, series);
+        const plotDiv = document.createElement("div");
+        plotParentDiv.appendChild(plotDiv);
         this._uplotChart = new uPlot(uPlotOptions, this._graphData, plotDiv);
     }
 
