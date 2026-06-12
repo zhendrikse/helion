@@ -1,0 +1,1 @@
+import{M as e,St as t,ct as n,mt as r,xt as i}from"../assets/src-DFZT9SiW.js";var a=new n({radius:1});i.in(document.getElementById(`sunContainer`)).with(new t({cameraPosition:new r(5,7.5,15).multiplyScalar(.3),fieldOfView:45,background:t.Background.STARS})).synchronize(a.alwaysWith(new e)).onClockTick().start();
