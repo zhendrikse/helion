@@ -56,6 +56,7 @@ Simulation
             cameraPosition: new Vec3(30, 30, 30),
             scale: 1e-9
         }))
+    .withHud()
     .synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
     .synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
     .synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })))
