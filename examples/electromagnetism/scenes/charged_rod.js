@@ -123,16 +123,9 @@ const rod = new ChargedRod({ length: 1, numCharges: 10 });
 const electricField = new RodElectricField(rod);
 const magneticField = new RodMagneticField(rod);
 
-
 //
 // Renderer + view model
 //
-const renderer = ThreeJsRenderer.in(document.getElementById("chargedRodContainer"))
-    .with({
-        cameraPosition: new Vec3(2, 1.5, 2.5),
-        fieldOfView: 30
-    });
-
 const magneticArrowField = new ArrowField({
     xRange: new Range(-0.4, 0.4, 0.12),
     yRange: new Range(-0.5, 0.5, 0.2),
@@ -156,11 +149,15 @@ const electricArrowField = new ArrowField({
 const dt = 0.01;
 const allGone = () => rod.charges.every(c => c.position.y > 1);
 const simulation = Simulation
-    .with(renderer)
+    .in(document.getElementById("chargedRodContainer"))
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(2, 1.5, 2.5),
+        fieldOfView: 30
+    }))
     .synchronize(electricField.alwaysWith(electricArrowField))
     .synchronize(magneticField.alwaysWith(magneticArrowField))
     .incrementsTimeBy(dt)
-    .withStopMouseClickEventListener()
+    .withMouseClickEventListener()
     .onClockTick(() => {
         if (!allGone())
             rod.update(dt);

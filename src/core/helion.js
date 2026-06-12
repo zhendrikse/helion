@@ -1,4 +1,5 @@
 import { Hud } from "./hud.js";
+import {ThreeJsRenderer} from "../view/3d/renderer.js";
 
 export class Registry {
     constructor({
@@ -63,10 +64,50 @@ export class Binding {
     }
 }
 
+/**
+ * Bridge between the simulation, browser DOM, and renderer.
+ */
+export class Viewport {
+    constructor(containerDiv) {
+        this._container = containerDiv;
+        this._container.classList.add('helionContainer');
+        this._container.style.position = "relative";
+        this._container.style.width = "100%";
+        this._container.style.margin = "auto";
+        if (this._container.style.aspectRatio === "")
+            this._container.style.aspectRatio  = "1/1";
+
+        this._canvasWrapperDiv = document.createElement("div");
+        this._canvasWrapperDiv.classList.add("helionCanvasWrapper");
+        this._canvasWrapperDiv.style.position = "relative";
+        this._canvasWrapperDiv.style.display = "block";
+        this._canvasWrapperDiv.style.backgroundColor = "transparent";
+        this._canvasWrapperDiv.style.width = this._container.clientWidth + "px";
+        this._canvasWrapperDiv.style.height = this._container.clientHeight + "px";
+        this._container.appendChild(this._canvasWrapperDiv);
+
+        this._canvas = document.createElement('canvas');
+        this._canvas.classList.add("helionCanvas");
+        this._canvas.style.display = "block";
+        this._canvas.style.backgroundColor = "transparent";
+        this._canvas.style.width = this._canvasWrapperDiv.clientWidth + "px";
+        this._canvas.style.height = this._canvasWrapperDiv.clientHeight + "px";
+        this._canvasWrapperDiv.appendChild(this._canvas);
+    }
+
+    get container() { return this._container; }
+    get canvasWrapper() { return this._canvasWrapperDiv; }
+    get canvas() { return this._canvas; }
+    get width() { return this._canvasWrapperDiv.clientWidth; }
+    get height() { return this._canvasWrapperDiv.clientHeight; }
+}
+
 export class Simulation {
-    static with = (renderer) => new Simulation(renderer);
-    constructor(renderer) {
-        this._renderer = renderer;
+    static in = (htmlDiv) => new Simulation(new Viewport(htmlDiv));
+
+    constructor(viewport) {
+        this._viewport = viewport;
+        this._renderer = new ThreeJsRenderer();
         this._bindings = [];
         this._hud = null;                       // No head-up display by default
         this._onReset = () => {};               // Callback function for client when a reset happens
@@ -77,6 +118,12 @@ export class Simulation {
         this._dt = 0.01;
         this._substepsCount = 1;
         requestAnimationFrame(this.animate);
+    }
+
+    with(renderer) {
+        this._renderer = renderer;
+        this._renderer.attach(this._viewport);
+        return this;
     }
 
     get renderer() { return this._renderer; }
@@ -94,7 +141,8 @@ export class Simulation {
     }
 
     withHud() {
-        this._hud = new Hud(this._renderer.canvasWrapperDiv);
+        this._hud = new Hud();
+        this._hud.attach(this._viewport)
         if (!this._running)
             this._hud.show("Click to start the simulation");
         return this;
@@ -153,8 +201,8 @@ export class Simulation {
      * When calling this function with a custom callback, the default start/stop functionality is
      * lost and needs to be re-added if needed!!
      */
-    withStopMouseClickEventListener(callback = (event) => this.toggleRunStatus()) {
-        this._renderer.containerDiv.addEventListener("click", (event) => callback(event) );
+    withMouseClickEventListener(callback = (event) => this.toggleRunStatus()) {
+        this._viewport.canvasWrapper.addEventListener("click", (event) => callback(event) );
         return this;
     }
 

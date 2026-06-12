@@ -54,14 +54,12 @@ const movingCharge = new RadialSymmetricBody({
 // Simulation
 //
 const container = document.getElementById("movingChargeContainer");
-const renderer = ThreeJsRenderer
-    .in(container)
-    .with({
-        light: false, // setting our own lights
-        cameraPosition: new Vec3(-50, 0, 75).multiplyScalar(0.5),
-        fieldOfView: 60,
-        scale: scale
-    });
+const renderer = new ThreeJsRenderer({
+    light: false, // setting our own lights
+    cameraPosition: new Vec3(-50, 0, 75).multiplyScalar(0.5),
+    fieldOfView: 60,
+    scale: scale
+});
 
 const dirLight = new PointLight(0xffffff, 2e3);
 dirLight.position.set(0, 0, 0);
@@ -101,8 +99,10 @@ const dt = 0.01;
 const subSteps = 3;
 const field = new Vec3();
 const simulation = Simulation
+    .in(container)
     .with(renderer)
-    .withStopMouseClickEventListener()
+    .withHud()
+    .withMouseClickEventListener()
     .synchronize(movingCharge.alwaysWith(sphere))
     .synchronize(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })))
     .synchronize(capacitorField.onceWith(arrowField))

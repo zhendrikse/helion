@@ -54,15 +54,6 @@ const dipoleField = new DipoleField(dipole);
 //
 // View
 //
-const container = document.getElementById("dipoleContainer");
-const renderer = ThreeJsRenderer
-    .in(container)
-    .with({
-        cameraPosition: new Vec3(32, 16, 48),
-        scale: scale,
-        fieldOfView: 40
-    });
-
 const positiveSphere = new Sphere({ color: "red" });
 const negativeSphere = new Sphere({ color: "blue" });
 const arrowField = new ArrowField({
@@ -75,7 +66,14 @@ const arrowField = new ArrowField({
     colorMap: (axis, magnitude) => new Color().setHSL(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.5)
 });
 
+const container = document.getElementById("dipoleContainer");
+const renderer = new ThreeJsRenderer({
+    cameraPosition: new Vec3(32, 16, 48),
+    scale: scale,
+    fieldOfView: 40
+});
 Simulation
+    .in(container)
     .with(renderer)
     .synchronize(dipole.positive.onceWith(positiveSphere))
     .synchronize(dipole.negative.onceWith(negativeSphere))

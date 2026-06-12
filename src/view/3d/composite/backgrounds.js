@@ -254,8 +254,8 @@ class AxesAnnotation extends Group {
         this._container = container;
         this._renderer = new CSS2DRenderer();
         this._renderer.domElement.style.position = "absolute";
-        this._renderer.domElement.style.top = 0;
-        this._renderer.domElement.style.left = 0;
+        this._renderer.domElement.style.top = "-20px";
+        this._renderer.domElement.style.left = "0px";
         this._renderer.domElement.style.width = "100%";
         this._renderer.domElement.style.height = "100%";
         this._renderer.domElement.style.pointerEvents = "none"; // do not process mouse events

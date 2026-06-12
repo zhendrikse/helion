@@ -86,14 +86,6 @@ const magneticField = new SolenoidField(solenoid);
 //
 // View
 //
-const container = document.getElementById("solenoidContainer");
-const renderer = ThreeJsRenderer
-    .in(container)
-    .with({
-        cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
-        fieldOfView: 45
-    });
-
 const arrowField = new ArrowField({
     xRange: new Range(-20, 20, 4),
     yRange: new Range(-20, 20, 4),
@@ -101,14 +93,19 @@ const arrowField = new ArrowField({
     scaleFactor: 1.25
 });
 
+const renderer = new ThreeJsRenderer({
+    cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
+    fieldOfView: 45
+});
+const container = document.getElementById("solenoidContainer");
 const simulation = Simulation
+    .in(container)
     .with(renderer)
     .synchronize(magneticField.onceWith(arrowField))
     .start();
 
 for (const segment of solenoid.segments)
     simulation.synchronize(segment.onceWith(new Cylinder({ color: new Color("yellow") })));
-
 
 const slider = new Slider(container)
     .on(magneticField)

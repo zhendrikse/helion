@@ -106,14 +106,6 @@ function timeStep(dt) {
 //
 // View model
 //
-const renderer = ThreeJsRenderer
-    .in(document.getElementById("chargedRingContainer"))
-    .with({
-        cameraPosition: new Vec3(15, 5, 20),
-        fieldOfView: 22,
-        scale: 5e10
-    });
-
 const electronSphere = new Sphere({ color: "yellow" });
 const arrowField = new ArrowField({
     xRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
@@ -135,8 +127,14 @@ const arrowField = new ArrowField({
 const dt = 2e-19;
 const subSteps = 20;
 const simulation = Simulation
-    .with(renderer)
-    .withStopMouseClickEventListener()
+    .in(document.getElementById("chargedRingContainer"))
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(15, 5, 20),
+        fieldOfView: 22,
+        scale: 5e10
+    }))
+    .withHud()
+    .withMouseClickEventListener()
     .synchronize(electron.alwaysWith(electronSphere))
     .synchronize(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
     .synchronize(electricField.onceWith(arrowField))

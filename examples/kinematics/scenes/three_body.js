@@ -51,9 +51,8 @@ function updateForces(dt) {
 const dt = 5000;
 const subSteps = 50;
 Simulation
-    .with(ThreeJsRenderer
-        .in(document.getElementById("threeBodyContainer"))
-        .with({
+    .in(document.getElementById("threeBodyContainer"))
+    .with(new ThreeJsRenderer({
             cameraPosition: new Vec3(30, 30, 30),
             scale: 1e-9
         }))
@@ -65,4 +64,4 @@ Simulation
     .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
     .incrementsTimeBy(dt / subSteps)
     .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps)
-    .withStopMouseClickEventListener();
+    .withMouseClickEventListener();

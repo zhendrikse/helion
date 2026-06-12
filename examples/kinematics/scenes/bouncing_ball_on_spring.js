@@ -49,15 +49,7 @@ const world = new PhysicsWorld(new RadialSymmetricBody({
     mass: 1.5
 }));
 
-//
-// View objects
-//
 const container = document.getElementById("bouncingBallOnSpringContainer");
-const renderer = new ThreeJsRenderer(container)
-    .with({
-        cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
-    });
-
 const helix = new Helix({ coils: 15, color: "yellow" });
 const sphere = new Sphere({ color: "orange" });
 const velocityArrow = new Arrow({
@@ -73,9 +65,14 @@ const forceArrow = new Arrow({
 
 const dt = 1.5e-3;
 const subSteps = 10;
-const simulation = Simulation
+const renderer = new ThreeJsRenderer({
+    cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
+});
+Simulation
+    .in(container)
     .with(renderer)
-    .withStopMouseClickEventListener()
+    .withHud()
+    .withMouseClickEventListener()
     .synchronize(world.ball.alwaysWith(sphere))
     .synchronize(world.ball.velocityVector.alwaysWith(velocityArrow))
     .synchronize(world.ball.accelerationVector.alwaysWith(forceArrow))

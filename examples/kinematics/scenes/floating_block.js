@@ -52,16 +52,18 @@ const water = new Aquarium({
 });
 
 const container = document.getElementById("floatingBlockContainer");
-const renderer = ThreeJsRenderer.in(container).with({
+const renderer = new ThreeJsRenderer({
     cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
 });
+renderer.add(water);
 
-let t = 0;
 const dt = 0.001;
 const substeps = 20;
-const simulation = Simulation
+Simulation
+    .in(container)
     .with(renderer)
-    .withStopMouseClickEventListener()
+    .withHud()
+    .withMouseClickEventListener()
     .incrementsTimeBy(dt)
     .synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
     .onClockTick((clockTime, simulationTime) => woodenBlock.apply(woodenBlock.netForce(water), dt), substeps)
@@ -72,13 +74,12 @@ const simulation = Simulation
         plot.update();
     });
 
-renderer.add(water);
 
 //
 // Graph
 //
 const plot = new UPlotGraph({
-    plotDiv: container,
+    plotParentDiv: container,
     dataDefinition: [
         { label: "t [s]", color: "yellow" },
         { label: "buoyancy", color: "magenta" },

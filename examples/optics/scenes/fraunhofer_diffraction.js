@@ -140,17 +140,16 @@ fraunhoferSimulation.lambdaInNanos = 500;
 //
 // View for 2D canvas
 //
-const htmlDiv = document.getElementById("fraunhoferContainer");
-const renderer2d = Canvas2DRenderer.in(htmlDiv);
-
 const intensityPixelRaster = new ScalarFieldRaster({
     width: resolution,
     height: resolution,
     colorMapper: fraunhoferSimulation.colorMapper
 });
 
+const htmlDiv = document.getElementById("fraunhoferContainer");
 Simulation
-    .with(renderer2d)
+    .in(htmlDiv)
+    .with(new Canvas2DRenderer())
     .synchronize(intensityField.alwaysWith(intensityPixelRaster))
     .onClockTick()
     .start();

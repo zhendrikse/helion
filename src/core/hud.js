@@ -15,8 +15,10 @@ export class Hud {
         this._element.style.color = "yellow";
         this._element.style.fontSize = "24px";
         this._element.style.textAlign = "center";
+    }
 
-        htmlDiv.appendChild(this._element);
+    attach(viewPort) {
+        viewPort.canvasWrapper.appendChild(this._element);
     }
 
     show(text) {

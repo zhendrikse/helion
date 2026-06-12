@@ -39,12 +39,10 @@ class FaradayField extends VectorField {
 // Renderer en ArrowField view
 //
 const container = document.getElementById("faradayLawContainer");
-const renderer = ThreeJsRenderer
-    .in(container)
-    .with({
-        cameraPosition: new Vec3(3, 1, 4),
-        fieldOfView: 45
-    });
+const renderer = new ThreeJsRenderer({
+    cameraPosition: new Vec3(3, 1, 4),
+    fieldOfView: 45
+});
 
 //
 // Views that do not change in time: cylinder, Faraday loops and arrow field
@@ -55,8 +53,9 @@ renderer.add(faradayLoopsGroup);
 
 const dt = 0.05;
 const simulation = Simulation
+    .in(container)
     .with(renderer)
-    .withStopMouseClickEventListener()
+    .withMouseClickEventListener()
     .synchronize(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, simulatedTime) => {

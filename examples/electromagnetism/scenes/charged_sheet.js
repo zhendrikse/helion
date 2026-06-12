@@ -76,16 +76,6 @@ const electron = new RadialSymmetricBody({
     radius: sheetSize / 35
 });
 
-//
-// Renderer
-//
-const renderer = ThreeJsRenderer.in(document.getElementById("chargedSheetContainer"))
-    .with({
-        cameraPosition: new Vec3(12, 8, 16),
-        fieldOfView: 20,
-        scale: 5e10
-    });
-
 const electronSphere = new Sphere({ color: "yellow" });
 const arrowField = new ArrowField({
     xRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
@@ -103,8 +93,14 @@ const arrowField = new ArrowField({
 const dt = 5e-20;
 const field = new Vec3();
 const simulation = Simulation
-    .with(renderer)
-    .withStopMouseClickEventListener()
+    .in(document.getElementById("chargedSheetContainer"))
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(12, 8, 16),
+        fieldOfView: 20,
+        scale: 5e10
+    }))
+    .withHud()
+    .withMouseClickEventListener()
     .synchronize(electricField.onceWith(arrowField))
     .synchronize(electron.alwaysWith(electronSphere))
     .synchronize(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))

@@ -93,12 +93,10 @@ class SurfaceController {
 }
 
 const container = document.getElementById("realSurfacesContainer");
-const renderer = ThreeJsRenderer
-    .in(container)
-    .with({
-        cameraPosition: new Vec3(25, 10, 10).multiplyScalar(1.6),
-        fieldOfView: 20
-    });
+const renderer = new ThreeJsRenderer({
+    cameraPosition: new Vec3(25, 10, 10).multiplyScalar(1.6),
+    fieldOfView: 20
+});
 
 const surfaceView = new StandardSurfaceView({
     colorMapper: new GradientColorMapper(),
@@ -106,6 +104,7 @@ const surfaceView = new StandardSurfaceView({
 });
 
 const simulation = Simulation
+    .in(container)
     .with(renderer)
     .incrementsTimeBy(0.016);
 

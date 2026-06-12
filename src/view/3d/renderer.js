@@ -16,10 +16,19 @@ export class ThreeJsRenderer extends Renderer {
         STARS: "Stars"
     });
 
-    static in = (htmlDiv) => new ThreeJsRenderer(htmlDiv);
+    constructor({
+            background = ThreeJsRenderer.Background.TRANSPARENT,
+            backgroundColor = 0x0088ff,
+            scale = 1,
+            controls = true,
+            light = true,
+            cameraPosition = new Vec3(3, 3, 3),
+            shadowsEnabled = false,
+            fieldOfView = 50
+        } = {}) {
+        super();
 
-    constructor(htmlDiv) {
-        super(htmlDiv);
+        this._options = { background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView };
 
         this._autoRotate = false;
         this._autoRotateTheta = Math.PI / 2;
@@ -31,25 +40,18 @@ export class ThreeJsRenderer extends Renderer {
         this._skydome = null;
         this._scene.add(this._world, this._background);
         this._axes = null;
+        this._viewport = null;
     }
 
-    with({
-        background = ThreeJsRenderer.Background.TRANSPARENT,
-        backgroundColor = 0x0088ff,
-        scale = 1,
-        controls = true,
-        light = true,
-        cameraPosition = new Vec3(3, 3, 3),
-        shadowsEnabled = false,
-        fieldOfView = 50
-    } = {}) {
-
+    attach(viewport) {
+        this._viewport = viewport;
         this._renderer = new WebGLRenderer({
             alpha: true,
             antialias: true,
-            canvas: this._canvas
+            canvas: viewport.canvas
         });
-        this._canvasWrapperDiv.appendChild(this._renderer.domElement);
+
+        const { background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView } = this._options;
 
         if (shadowsEnabled) {
             this._renderer.shadowMap.enabled = true;
@@ -58,11 +60,11 @@ export class ThreeJsRenderer extends Renderer {
 
         this._world.scale.setScalar(scale);
 
-        this._camera = new PerspectiveCamera(fieldOfView, this._canvas.width / this._canvas.height, 0.1, 1e6);
+        this._camera = new PerspectiveCamera(fieldOfView, viewport.width / viewport.height, 0.1, 1e6);
         this._camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
         if (controls)
-            this._controls = new OrbitControls(this._camera, this._canvas);
+            this._controls = new OrbitControls(this._camera, viewport.canvas);
 
         if (light)
             this._initLights(shadowsEnabled);
@@ -71,8 +73,6 @@ export class ThreeJsRenderer extends Renderer {
 
         this.resize();
         window.addEventListener("resize", () => this.resize());
-
-        return this;
     }
 
     resize() {
@@ -227,7 +227,7 @@ export class ThreeJsRenderer extends Renderer {
         const boundingBox = anObject.boundingBox;
         this._axes = Axes.from(boundingBox, divisions)
             .withLayout(layoutType, positiveXZ)
-            .withAnnotations(this._canvasWrapperDiv, layoutType, axisLabels)
+            .withAnnotations(this._viewport.canvasWrapper, layoutType, axisLabels)
             .withSettings({ frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels });
 
         if (layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed

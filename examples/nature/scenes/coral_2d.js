@@ -152,15 +152,10 @@ function resizeAndResetSimulation() {
 //
 resizeAndResetSimulation();
 
-//
-// View for 2D canvas
-//
-const renderer2d = Canvas2DRenderer.in(htmlDiv);
-
 const particleRaster = new ParticleRaster();
-
 const simulation = Simulation
-    .with(renderer2d)
+    .in(htmlDiv)
+    .with(new Canvas2DRenderer())
     .synchronize(particleField.alwaysWith(particleRaster))
     .onClockTick((clockTime, simulatedTime) => {
         particleField.update();

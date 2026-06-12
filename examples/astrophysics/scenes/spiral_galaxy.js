@@ -123,19 +123,16 @@ class SpiralGalaxy extends PointCloud {
     }
 }
 
-const renderer = ThreeJsRenderer
-    .in(document.getElementById("galaxyContainer"))
-    .with({
-        cameraPosition: new Vec3(1, -12, 4).multiplyScalar(50),
-        background: ThreeJsRenderer.Background.STARS,
-        fov: 25,
-        light: false
-    });
-
 const spiralGalaxy = new SpiralGalaxy();
 const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() });
 Simulation
-    .with(renderer)
+    .in(document.getElementById("galaxyContainer"))
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(1, -12, 4).multiplyScalar(55),
+        background: ThreeJsRenderer.Background.STARS,
+        fov: 30,
+        light: false
+    }))
     .synchronize(spiralGalaxy.onceWith(pointCloud))
     .onClockTick((clockTime, simulatedTime) => { pointCloud.rotation.z += 2.5e-3 })
     .start();

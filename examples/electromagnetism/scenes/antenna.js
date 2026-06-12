@@ -19,26 +19,21 @@ for (let position of range)
         amplitude: 7.5
     }));
 
-//
-// View
-//
-const container= document.getElementById("antennaContainer");
-const renderer = ThreeJsRenderer
-    .in(container)
-    .with({
-        cameraPosition: new Vec3(-1, 4, -9).multiplyScalar(2.5),
-        fieldOfView: 25
-});
-
 const antenna = new AxialSymmetricBody({
     position: new Vec3(0, -lambda, 0),
     axis: new Vec3(0, 2 * lambda, 0),
     radius: 0.5
 });
 
+const container= document.getElementById("antennaContainer");
 const simulation = Simulation
-    .with(renderer)
-    .withStopMouseClickEventListener()
+    .in(container)
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(-1, 4, -10).multiplyScalar(5),
+        fieldOfView: 25
+    }))
+    .withHud()
+    .withMouseClickEventListener()
     .synchronize(antenna.onceWith(new Cylinder({color: 0xcccc77})))
     .incrementsTimeBy(lambda / OneDimensionalPlaneWave.c / 100.0)
     .onClockTick((clockTime, simulatedTime) => {

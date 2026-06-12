@@ -30,14 +30,6 @@ const equation = new WaveEquation({ velocity: 5 });
 const solver = new WaveEquationSolver(field, equation);
 const surface = new ScalarFieldSurface(field);
 
-const htmlDiv = document.getElementById("raindropContainer");
-const renderer = ThreeJsRenderer
-    .in(htmlDiv)
-    .with({
-        cameraPosition: new Vec3(4, .6, 4.2).multiplyScalar(45),
-        fieldOfView: 19
-    });
-
 const water = new InstancedMeshSurfaceView({
     resolution: new SurfaceResolution(256, 256),
     normalizer: new Interval(-0.25, 2),
@@ -45,7 +37,13 @@ const water = new InstancedMeshSurfaceView({
 });
 water.position.set(-128, 0, -128);
 
-Simulation.with(renderer)
+const htmlDiv = document.getElementById("raindropContainer");
+Simulation
+    .in(htmlDiv)
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(4, .6, 4.2).multiplyScalar(45),
+        fieldOfView: 19
+    }))
     .synchronize(surface.alwaysWith(water))
     .onClockTick(() => {
         solver.step(0.02);

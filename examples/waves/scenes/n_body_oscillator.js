@@ -37,20 +37,21 @@ initialDisturbance(7);
 // Renderer & simulation
 //
 const htmlContainerDiv = document.getElementById("oscillatorContainer");
-const renderer = ThreeJsRenderer.in(htmlContainerDiv)
-    .with({
-        cameraPosition: new Vec3(17, 6, 17),
-        light: true,
-        shadowsEnabled: true,
-        fieldOfView: 45,
-        background: ThreeJsRenderer.Background.FOG
-    });
+const renderer = new ThreeJsRenderer({
+    cameraPosition: new Vec3(17, 6, 17),
+    light: true,
+    shadowsEnabled: true,
+    fieldOfView: 45,
+    background: ThreeJsRenderer.Background.FOG
+});
 
 const dt = 1e-3;
 const subSteps = 10;
 const simulation = Simulation
+    .in(htmlContainerDiv)
     .with(renderer)
-    .withStopMouseClickEventListener()
+    .withHud()
+    .withMouseClickEventListener()
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, _) => {
         for (let i = 0; i < balls.length - 1; i++)
@@ -101,7 +102,7 @@ for (let i = 0; i < balls.length; i++) {
 // Graph
 //
 const plot = new UPlotGraph({
-    plotDiv: htmlContainerDiv,
+    plotParentDiv: htmlContainerDiv,
     dataDefinition: [
         { label: "t" }, { label: "ball1", color: "blue" },
         { label: "ball2", color: "red" },

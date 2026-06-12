@@ -104,13 +104,12 @@ const flock = new Flock(birdCount);
 const htmlDiv = document.getElementById("birdsContainer");
 const dt = 0.02;
 const simulation = Simulation
-    .with(ThreeJsRenderer
-        .in(htmlDiv)
-        .with({
-            cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
-            fieldOfView: 30
-        }))
-    .withStopMouseClickEventListener()
+    .in(htmlDiv)
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
+        fieldOfView: 30
+    }))
+    .withMouseClickEventListener()
     .incrementsTimeBy(dt)
     .onClockTick(() => flock.update(dt))
     .start();

@@ -71,15 +71,15 @@ const fourierSimulation = new FourierSimulation(30, resolution);
 //
 // View for 2D canvas
 //
-const htmlDiv = document.getElementById("fourierTransformContainer");
-const renderer2d = Canvas2DRenderer.in(htmlDiv);
-
 const intensityRaster = new ComplexScalarFieldRaster({
     width: resolution,
     height: resolution
 });
 
-Simulation.with(renderer2d)
+const htmlDiv = document.getElementById("fourierTransformContainer");
+Simulation
+    .in(htmlDiv)
+    .with(new Canvas2DRenderer())
     .synchronize(fourierSimulation.field.alwaysWith(intensityRaster))
     .onClockTick()
     .start();

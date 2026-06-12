@@ -249,13 +249,11 @@ const cometInsideCone = () =>
 // Set up renderer and views
 //
 const htmlDiv = document.getElementById("spaceTimeContainer");
-const renderer = ThreeJsRenderer
-    .in(htmlDiv)
-    .with({
-        cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(13),
-        fieldOfView: 45,
-        background: ThreeJsRenderer.Background.STARS
-    });
+const renderer = new ThreeJsRenderer({
+    cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(13),
+    fieldOfView: 45,
+    background: ThreeJsRenderer.Background.STARS
+});
 
 // Grid
 const grid = new Floor({
@@ -272,8 +270,10 @@ renderer.add(photonRing);
 const spaceTimeCone = new StandardSurfaceView();
 spaceTimeCone.surfaceVisible = false;
 const simulation = Simulation
+    .in(htmlDiv)
     .with(renderer)
-    .withStopMouseClickEventListener()
+    .withHud()
+    .withMouseClickEventListener()
     .synchronize(coneGeometry.onceWith(spaceTimeCone))
     .synchronize(sun.alwaysWith(new Sun()))
     .synchronize(realComet.alwaysWith(new Sphere({ color: 0xff8800 })))

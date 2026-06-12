@@ -27,25 +27,25 @@ class Membrane extends MultivariateFunctionSurface {
     set normalModeY(normalModeY) { this._normalModeY = normalModeY; }
 }
 
-const container = document.getElementById("membraneContainer");
-const renderer = ThreeJsRenderer
-    .in(container)
-    .with({});
-
 const membrane = new Membrane();
 const surfaceView = new StandardSurfaceView({
     normalizer: new Interval(-membrane.amplitude, membrane.amplitude),
     colorMapper: new GradientColorMapper()
 });
 
-renderer.frameSceneOn(surfaceView, { padding: 1.75, translationY: -1.25 });
-
-Simulation
-    .with(renderer)
+const container = document.getElementById("membraneContainer");
+const renderer = new ThreeJsRenderer();
+const simulation = Simulation
+    .in(container)
+    .with(new ThreeJsRenderer())
     .synchronize(membrane.alwaysWith(surfaceView))
     .incrementsTimeBy(0.016)
     .onClockTick((clockTime, simulatedTime) => membrane.time = simulatedTime, 3)
     .start();
+simulation.renderer.frameSceneOn(surfaceView, {
+    padding: 0.7,
+    translationY: -1.25
+});
 
 surfaceView.showColormapSelectorIn(container);
 surfaceView.showSurfaceControlsIn(container);

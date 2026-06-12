@@ -49,19 +49,16 @@ class StarCluster extends PointCloud {
     }
 }
 
-const renderer = ThreeJsRenderer
+const starCluster = new StarCluster();
+const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
+Simulation
     .in(document.getElementById("starClusterContainer"))
-    .with({
+    .with(new ThreeJsRenderer({
         cameraPosition: new Vec3(7, 14, 21),
         background: ThreeJsRenderer.Background.STARS,
         fov: 35,
         light: false
-});
-
-const starCluster = new StarCluster();
-const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
-Simulation
-    .with(renderer)
+    }))
     .synchronize(starCluster.onceWith(cloud))
     .onClockTick((clockTime, simulatedTime) => {cloud.rotation.y += 2.5e-3})
     .start();

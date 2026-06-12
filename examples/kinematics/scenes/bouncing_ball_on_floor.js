@@ -4,6 +4,9 @@ import {
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
+//
+// Physics model
+//
 class BouncingBall extends RadialSymmetricBody {
     constructor({position, velocity, radius, mass}) {
         super({position, velocity, radius, mass});
@@ -25,9 +28,6 @@ class BouncingBall extends RadialSymmetricBody {
     }
 }
 
-//
-// Physics model
-//
 const ball = new BouncingBall({
     position: new Vec3(-1.5, 1.5, 1.5),
     velocity: new Vec3(.5, 0, -.4),
@@ -42,22 +42,19 @@ function ballStep(dt) {
         ball.bounceOffOfFloor(dt, 0.9);
 }
 
-//
-// Attach view models
-//
-const containerDiv = document.getElementById("bouncingBallContainer");
-const renderer = new ThreeJsRenderer(containerDiv)
-    .with({
-        cameraPosition: new Vec3(2, 1, 0.5).multiplyScalar(2.25)
-    });
+const renderer = new ThreeJsRenderer({
+    cameraPosition: new Vec3(2, 1, 0.5).multiplyScalar(2.25)
+});
 
 const dt = 2.5e-3;
 const subSteps = 10;
 const sphere = new Sphere({ color: "cyan" });
-const simulation = Simulation
+const containerDiv = document.getElementById("bouncingBallContainer");
+Simulation
+    .in(containerDiv)
     .with(renderer)
     .withHud()
-    .withStopMouseClickEventListener()
+    .withMouseClickEventListener()
     .synchronize(ball.alwaysWith(sphere))
     .synchronize(ball.alwaysWith(new Trail({ color: sphere.color})))
     .incrementsTimeBy(dt)
@@ -66,7 +63,8 @@ const simulation = Simulation
             return;
 
         ballStep(dt);
-    }, subSteps);
+    }, subSteps)
+    .onAfterClockTick((clockTime, simulatedTime) => updateGraph(simulatedTime));
 
 renderer.add(new Floor({
     type: Floor.Type.GRID,
@@ -103,5 +101,3 @@ function updateGraph(simulatedTime) {
     plot.update();
 }
 
-// Update graph not inside simulation loop, as we do not want to update it with every physics update substep
-simulation.onAfterClockTick((clockTime, simulatedTime) => updateGraph(simulatedTime));

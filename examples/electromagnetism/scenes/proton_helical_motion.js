@@ -51,12 +51,10 @@ function timeStep(dt) {
 // View
 //
 const container = document.getElementById("helicalProtonContainer");
-const renderer = ThreeJsRenderer
-    .in(container)
-    .with({
-        cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
-        fieldOfView: 30
-    });
+const renderer = new ThreeJsRenderer({
+    cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
+    fieldOfView: 30
+});
 
 const protonSphere = new Sphere({ color: 0xff0000 });
 const arrowField = new ArrowField({
@@ -74,9 +72,11 @@ const arrowField = new ArrowField({
 });
 
 const dt = 5e-4;
-const simulation = Simulation
+Simulation
+    .in(container)
     .with(renderer)
-    .withStopMouseClickEventListener()
+    .withHud()
+    .withMouseClickEventListener()
     .synchronize(proton.alwaysWith(protonSphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
     .synchronize(magneticField.onceWith(arrowField))

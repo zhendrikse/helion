@@ -40,15 +40,12 @@ const surfaceView = new StandardSurfaceView({
 surfaceView.position.set(-128, 0, -128);
 
 const htmlDiv = document.getElementById("terrainContainer");
-const renderer = ThreeJsRenderer
+const simulation = Simulation
     .in(htmlDiv)
-    .with({
+    .with(new ThreeJsRenderer({
         cameraPosition: new Vec3(300, 300, 300),
         fieldOfView: 30,
-    });
-
-const simulation = Simulation
-    .with(renderer)
+    }))
     .synchronize(landscape.surface.onceWith(surfaceView))
     .start();
 

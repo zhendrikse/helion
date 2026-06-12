@@ -41,10 +41,6 @@ function timeStep(dt) {
 //
 // Simulation
 //
-const container = document.getElementById("protonInFieldContainer");
-const renderer = ThreeJsRenderer.in(container)
-    .with({ cameraPosition: new Vec3(0, 5, -10) });
-
 const sphere = new Sphere({ color: new Color("red") });
 const arrowField = new ArrowField({
     xRange: new Range(-6, 6, .5),
@@ -58,9 +54,14 @@ const arrowField = new ArrowField({
 
 const dt = 2.5e-3;
 const subSteps = 100;
+const container = document.getElementById("protonInFieldContainer");
 Simulation
-    .with(renderer)
-    .withStopMouseClickEventListener()
+    .in(container)
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(0, 5, -10)
+    }))
+    .withHud()
+    .withMouseClickEventListener()
     .synchronize(magneticField.onceWith(arrowField))
     .synchronize(proton.alwaysWith(sphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })))

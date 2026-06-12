@@ -32,7 +32,6 @@ export class UPlotGraph {
 
     _uplotOptions(title, width, height, labelColor, xLabel, yLabel, series) {
         return { title, width, height,
-            bg: "transparent",
             scales: { x: { auto: true }, y: { auto: true } },
             axes: [{
                     stroke: labelColor,

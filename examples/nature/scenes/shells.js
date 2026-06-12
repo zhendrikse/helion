@@ -60,11 +60,6 @@ const surfaces = {
     })
 };
 
-const htmlDiv = document.getElementById("shellsContainer");
-const renderer = ThreeJsRenderer
-    .in(htmlDiv)
-    .with({ fieldOfView: 20 });
-
 const surfaceView = new StandardSurfaceView({
     material: new MeshStandardMaterial({
         metalness: 0.5,
@@ -76,8 +71,10 @@ const surfaceView = new StandardSurfaceView({
     colorMapper: ColorMappers.get("RdYlBu")
 });
 
+const htmlDiv = document.getElementById("shellsContainer");
 const simulation = Simulation
-    .with(renderer)
+    .in(htmlDiv)
+    .with(new ThreeJsRenderer({ fieldOfView: 20 }))
     .onClockTick(() => surfaceView.rotation.y += 0.0167)
     .start();
 

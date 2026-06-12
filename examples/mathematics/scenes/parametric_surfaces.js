@@ -60,23 +60,23 @@ const surfaces = {
     })
 };
 
-const container = document.getElementById("parametricSurfacesContainer");
-const renderer = ThreeJsRenderer
-    .in(container)
-    .with({
-        fieldOfView: 20
-    });
-
 const surfaceView = new StandardSurfaceView({
     scalarField: new GaussianCurvatureField(),
     opacity: 0.925
 });
 
-const simulation = Simulation.with(renderer).start();
+const container = document.getElementById("parametricSurfacesContainer");
+const renderer = new ThreeJsRenderer({
+    fieldOfView: 20
+});
+const simulation = Simulation
+    .in(container)
+    .with(renderer)
+    .start();
 
 const surfacesRegistry = new Registry({
     id: "parametricSurfaceSelect",
-    label: "Surface: ",
+    label: "Surface ",
     entries: surfaces
 });
 

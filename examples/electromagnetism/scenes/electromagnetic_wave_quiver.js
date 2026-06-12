@@ -119,17 +119,6 @@ const magneticField = new CombinedField([
     new ElectromagneticWaveField({ source: proton, electric: false })
 ]);
 
-//
-// Renderer
-//
-const renderer = ThreeJsRenderer
-    .in(document.getElementById("electromagneticWaveContainer"))
-    .with({
-        cameraPosition: new Vec3(15, 5, 20),
-        fieldOfView: 45,
-        scale: 1e10
-    });
-
 const electricArrowField = new ArrowField({
     xRange: new Range(-6e-10, 6e-10, 1.25e-10),
     yRange: new Range(-6e-10, 6e-10, 1.25e-10),
@@ -153,8 +142,14 @@ const magneticArrowField = new ArrowField({
 
 const dt = 2e-19;
 Simulation
-    .with(renderer)
-    .withStopMouseClickEventListener()
+    .in(document.getElementById("electromagneticWaveContainer"))
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(15, 5, 20),
+        fieldOfView: 45,
+        scale: 1e10
+    }))
+    .withHud()
+    .withMouseClickEventListener()
     .incrementsTimeBy(dt)
     .synchronize(electron.alwaysWith(new Sphere({ color: new Color("red") })))
     .synchronize(electricField.alwaysWith(electricArrowField))
