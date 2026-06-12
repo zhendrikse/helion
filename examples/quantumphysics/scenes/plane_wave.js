@@ -1,6 +1,7 @@
 import {
     Simulation, CompositeRenderer, Canvas2DRenderer, OneDimensionalComplexPlaneWave2D,
-    OneDimensionalComplexPlaneWave, OneDimensionalComplexPlaneWave3D, ThreeJsRenderer, Vec3
+    OneDimensionalComplexPlaneWave, OneDimensionalComplexPlaneWave3D, ThreeJsRenderer,
+    Vec3, Button, Slider, RadioButton, Range
 } from "../../../src/index.js";
 
 //
@@ -40,45 +41,54 @@ const simulation = Simulation
     .synchronize(planeWave.alwaysWith(waveView2d))
     .synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({ numArrows: 100 })))
     .incrementsTimeBy(0.01)
-    .onClockTick((clockTime, simulatedTime) => planeWave.propagate(simulatedTime));
+    .onClockTick((clockTime, simulatedTime) => planeWave.propagate(simulatedTime))
+    .start();
 
-//
-// Event controller
-//
-const eventController = new EventController();
+new Slider(htmlDiv3d)
+    .on(planeWave)
+    .withProperty("amplitude")
+    .withValue(10)
+    .withLabel("Amplitude: ")
+    .withRange(new Range(0.5, 20, .1));
 
-const startStopCallback = new CallbackFunction((event) => {
-    if (simulation.isRunning) simulation.stop(); else simulation.start();
-    event.target.innerText = event.target.innerText === "Pause" ? "Resume" : "Pause";
-});
-eventController.add(startStopCallback.to(HtmlControl.withElementId("pauseButton").forType("click")));
+new Slider(htmlDiv3d)
+    .on(planeWave)
+    .withProperty("omega")
+    .withValue(3.2)
+    .withLabel("Omega: ")
+    .withRange(new Range(0, 25, .1));
 
-eventController.attach(HtmlControl
-    .withElementId("amplitudeSlider")
-    .forType("input")
-    .to(planeWave).withProperty("amplitude"));
+new Slider(htmlDiv3d)
+    .on(planeWave)
+    .withProperty("k")
+    .withLabel("Wave number: ")
+    .withRange(new Range(-.1, .1, .01))
+    .withValue(0.1);
 
-eventController.attach(HtmlControl
-    .withElementId("omegaSlider")
-    .forType("input")
-    .to(planeWave).withProperty("omega"));
+const startStopButton = new Button(htmlDiv2d)
+    .withText("Stop")
+    .addEventListener("click", (event) => {
+        if (simulation.isRunning)
+            simulation.stop();
+        else
+            simulation.start();
 
-eventController.attach(HtmlControl
-    .withElementId("waveNumberSlider")
-    .forType("input")
-    .to(planeWave).withProperty("k"));
+        event.target.innerText = event.target.innerText === "Pause" ? "Resume" : "Pause";
+    })
 
-eventController.attach(HtmlControl
-    .withElementId("densityPhaseButton")
-    .forType("click")
-    .to(waveView2d).withProperty("mode"));
+RadioButton.togetherWith(startStopButton)
+    .on(waveView2d)
+    .withProperty("mode")
+    .withLabel("Real/imag ")
+    .withValue("realImag")
+    .checked(true);
 
-eventController.attach(HtmlControl
-    .withElementId("realImagButton")
-    .forType("click")
-    .to(waveView2d).withProperty("mode"));
+RadioButton.togetherWith(startStopButton)
+    .on(waveView2d)
+    .withProperty("mode")
+    .withLabel("Density/phase ")
+    .withValue("densityPhase");
 
-simulation.start();
 
 
 

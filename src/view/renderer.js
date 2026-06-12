@@ -44,9 +44,8 @@ export class Renderer {
     resize() {}
 }
 
-export class CompositeRenderer extends Renderer {
+export class CompositeRenderer {
     constructor(renderers = [] = {}) {
-        super();
         this._renderers = renderers; // array van Renderer-instanties
     }
 
@@ -55,8 +54,13 @@ export class CompositeRenderer extends Renderer {
             renderer.add(viewObject);
     }
 
-    render(time) {
+    onRunStatusChanged() {
         for (const renderer of this._renderers)
-            renderer.render(time);
+            renderer.onRunStatusChanged();
+    }
+
+    render(view, time) {
+        for (const renderer of this._renderers)
+            renderer.render(view, time);
     }
 }
