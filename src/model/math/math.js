@@ -199,6 +199,16 @@ export class Vec3 {
         this.z = Math.random();
         return this;
     }
+
+    distanceSquaredTo(position) {
+        return (position.x - this.x) * (position.x - this.x) +
+            (position.y - this.y) * (position.y - this.y) +
+            (position.z - this.z) * (position.z - this.z);
+    }
+
+    distanceTo(position) {
+        return Math.sqrt(this.distanceSquaredTo(position));
+    }
 }
 
 export class Range {

@@ -1,8 +1,8 @@
 import {
-    ColorMapper,
-    ParticleView2D, Simulation, ThreeJsRenderer, Vec3
+    ParticleCloudView, Simulation, ThreeJsRenderer, Vec3, JetColorMapper, DropdownMenu, ColorMappers
 } from "../../../src/index.js";
-import {MathPhysicsModelBehavior} from "../../../src/core/helion.js";
+import { MathPhysicsModelBehavior } from "../../../src/core/helion.js";
+import { Color } from "three";
 
 const swarmSize = 1500;
 const width = 500;
@@ -15,44 +15,11 @@ function normalize(value, minVal, maxVal) {
     return range === 0.0 ? 0.5 : (clampedValue - minVal) / range;
 }
 
-class ScientificColorMapper extends ColorMapper {
-    map(normalizedValue) {
-        const num = Math.floor(4 * normalizedValue);
-        const s = 4 * (normalizedValue - num / 4);
+let colorMapper = new JetColorMapper();
 
-        switch (num) {
-            case 0 :
-                return {r: 0, g: s, b: 1, a: 1};
-            case 1 :
-                return {r: 0, g: 1, b: 1 - s, a: 1};
-            case 2 :
-                return {r: s, g: 1 , b: 0, a: 1};
-            case 3 :
-                return {r: 1, g: 1 - s, b: 0, a: 1};
-        }
-    }
-}
-
-const colorMapper = new ScientificColorMapper();
-
-// TODO The value of the point cloud should be frozen or not
-// TODO The color mapper should map colors to frozen particles
-// TODO Frozen should become a generalized physical property
-// TODO Next, similar approach for star cluster and spiral galaxy
-// TODO Next, galactic collision as acid test
 export class ParticleCloud extends MathPhysicsModelBehavior {
-    static distanceSquared(position1, position2) {
-        return (position2.x - position1.x) * (position2.x - position1.x) +
-            (position2.y - position1.y) * (position2.y - position1.y) +
-            (position2.z - position1.z) * (position2.z - position1.z);
-    }
-
-    static distance(position1, position2) {
-        return Math.sqrt(ParticleCloud.distanceSquared(position1, position2));
-    }
-
     static areColliding(position1, position2) {
-        return ParticleCloud.distanceSquared(position1, position2) < thresholdDistanceSquared;
+        return position1.distanceSquaredTo(position2) < thresholdDistanceSquared;
     }
 
     constructor(N) {
@@ -98,11 +65,14 @@ export class ParticleCloud extends MathPhysicsModelBehavior {
     }
 
     particleStateAt(index) {
+        const color = new Color();
+        this._frozen[index] ?
+            colorMapper.map(normalize(1.75 * this._positions[index].distanceTo(this._positions[0]), 0, maxDistance), color) :
+            colorMapper.map(normalize(0, 0, maxDistance), color);
+
         return {
             position: this._positions[index],
-            color: this._frozen[index] ?
-                colorMapper.map(normalize(1.75 * ParticleCloud.distance(this._positions[index], this._positions[0]), 0, maxDistance)) :
-                colorMapper.map(normalize(0, 0, maxDistance)),
+            color: color,
             size: this._sizes[index],
             frozen: this._frozen[index]
         };
@@ -134,7 +104,11 @@ function updateThreshold() {
     thresholdDistanceSquared = thresholdDistance * thresholdDistance;
 }
 
-const particleView2D = new ParticleView2D({ particleCount: swarmSize });
+const particleView2D = new ParticleCloudView({
+    particleCount: swarmSize,
+    scalarField: particle => particle.position.distanceTo(particleField.particleStateAt(0).position)
+});
+
 let particleField = new ParticleCloud(swarmSize);
 const htmlDiv = document.getElementById("coralContainer");
 const simulation = Simulation
@@ -159,3 +133,6 @@ function resetSimulation() {
 }
 resetSimulation();
 particleView2D.showShapeSelectorIn(htmlDiv);
+new DropdownMenu(htmlDiv).for(ColorMappers).addEventListener("change", (event) =>
+    colorMapper = ColorMappers.get(event.target.value));
+

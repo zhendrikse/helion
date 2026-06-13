@@ -32,7 +32,7 @@ export { ThreeJsRenderer } from "./view/3d/renderer.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { CompositeRenderer } from "./view/renderer.js";
-export { ParticleView2D, ScalarFieldPixelRaster, ComplexScalarFieldRaster } from "./view/2d/views.js";
+export { ParticleCloudView, ScalarFieldPixelRaster, ComplexScalarFieldRaster } from "./view/2d/views.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 
 export {

@@ -169,8 +169,8 @@ export class Body extends MathPhysicsModelBehavior{
     and(otherBody) { return new TwoBodies(this, otherBody) };
 
     positionVectorTo(other) { return other.position.clone().sub(this.position); }
-    distanceToSquared(other) { return this.positionVectorTo(other).dot(this.positionVectorTo(other)); }
-    distanceTo(other) { return this.positionVectorTo(other).length() }
+    distanceToSquared(other) { return this.position.distanceSquaredTo(other.position); }
+    distanceTo(other) { return this.position.distanceTo(other.position) }
 
     get kineticEnergy() { return 0.5 * this.mass * this.velocity.dot(this.velocity); }
     get momentum() { return this.mass * this.velocity; }

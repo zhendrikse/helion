@@ -1,12 +1,13 @@
 import {
     Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, InstancedMesh,
     InstancedBufferAttribute, DynamicDrawUsage, CircleGeometry, Object3D, Color, SphereGeometry, MeshStandardMaterial,
-    DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry
+    DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry, ConeGeometry
 } from "three";
 import { Renderable3D } from "../renderer.js";
 import { Complex } from "../../model/math/math.js";
 import {DropdownMenu} from "../../controller/controller.js";
 import {Registry} from "../../core/helion.js";
+import {ColorMappers} from "../colormappers.js";
 
 export function hsvToRgb(h, s, v) {
     let r, g, b;
@@ -32,7 +33,7 @@ export function hsvToRgb(h, s, v) {
     };
 }
 
-export class ParticleView2D extends Renderable3D {
+export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
         side: DoubleSide,
         roughness: 0.25,
@@ -42,25 +43,26 @@ export class ParticleView2D extends Renderable3D {
 
     static Shape = Object.freeze({
         Box: new BoxGeometry(2, 2, 2),
-        Circle: new CircleGeometry(1.25, 16),
         Icosahedron: new IcosahedronGeometry(1.5),
+        Cone: new ConeGeometry(1.5, 3),
         Sphere: new SphereGeometry(1.25, 16, 16)
     });
 
     static Shapes = new Registry({
         id: "shapeSelector",
         label: "Particle shape ",
-        entries: ParticleView2D.Shape
+        entries: ParticleCloudView.Shape
     });
 
     constructor({
         particleCount = 5000,
         type = "Sphere",
-        colorMapper = null
+        scalarField = particle => particle.mass,
+        colorMapper = ColorMappers.get("Jet")
     } = {}) {
         super();
 
-        this._mesh = new InstancedMesh(ParticleView2D.Shape[type], ParticleView2D.material, particleCount);
+        this._mesh = new InstancedMesh(ParticleCloudView.Shape[type], ParticleCloudView.material, particleCount);
         this.add(this._mesh);
 
         this._colorArray = new Float32Array(particleCount * 3);
@@ -106,22 +108,22 @@ export class ParticleView2D extends Renderable3D {
         for (let i = 0; i < this._particleField.size; i++) {
             const p = this._particleField.particleStateAt(i).position;
             const r = this._particleField.particleStateAt(i).size;
-            box.expandByPoint(new Vector3(p.x - r, p.y - r, 0));
-            box.expandByPoint(new Vector3(p.x + r, p.y + r, 0));
+            box.expandByPoint(new Vector3(p.x - r, p.y - r, p.z - r));
+            box.expandByPoint(new Vector3(p.x + r, p.y + r, p.z + r));
         }
 
         return box;
     }
 
     showShapeSelectorIn(container) {
-        new DropdownMenu(container).for(ParticleView2D.Shapes).addEventListener("change",
+        new DropdownMenu(container).for(ParticleCloudView.Shapes).addEventListener("change",
             event => this.shape = event.target.value
         );
     }
 
     set shape(shapeType) {
         const oldGeometry = this._mesh.geometry;
-        this._mesh.geometry = ParticleView2D.Shape[shapeType];
+        this._mesh.geometry = ParticleCloudView.Shape[shapeType];
 
         if (oldGeometry)
             oldGeometry.dispose();
