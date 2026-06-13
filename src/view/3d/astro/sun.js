@@ -1,10 +1,11 @@
 import {
-    Group, Color, SphereGeometry, ShaderMaterial, AdditiveBlending, Mesh, BackSide
+    Color, SphereGeometry, ShaderMaterial, AdditiveBlending, Mesh, BackSide
 } from "three";
 import fresnelFragmentShader from "./shaders/fresnel_fragment_shader.glsl?raw";
 import fresnelVertexShader from "./shaders/fresnel_vertex_shader.glsl?raw";
 import sunFragmentShader from "./shaders/sun_fragment_shader.glsl?raw";
 import sunVertexShader from "./shaders/sun_vertex_shader.glsl?raw";
+import {Renderable3D} from "../../renderer.js";
 
 /**
  * Original code by Sangil Lee:
@@ -70,7 +71,7 @@ class GlowMaterial {
     }
 }
 
-export class Sun extends Group {
+export class Sun extends Renderable3D {
     bind(body) {
         // Sanity checks
         if (!body.radius)

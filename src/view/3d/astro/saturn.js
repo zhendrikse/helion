@@ -4,7 +4,7 @@ import {
 } from "three";
 import saturnRingsUrl from '../../../textures/planets/saturnringcolor.jpg';
 import saturnMap from '../../../textures/planets/saturnmap.jpg';
-import { Sphere } from "../primitives/primitives.js";
+import { Renderable3D } from "../../renderer.js";
 
 //
 // Port to new Three.js from https://github.com/jeromeetienne/threex.planets/blob/master/threex.planets.js
@@ -94,7 +94,7 @@ const PlanetRingGeometry = function (innerRadius, outerRadius, thetaSegments) {
     return geometry;
 };
 
-export class Saturn extends Group {
+export class Saturn extends Renderable3D {
     static loader = new TextureLoader();
     static material = new MeshPhongMaterial({
         map: Saturn.loader.load(saturnMap),

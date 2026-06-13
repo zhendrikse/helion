@@ -3,16 +3,17 @@ import {
     MeshStandardMaterial, SphereGeometry, Mesh, BufferGeometry, LineBasicMaterial, Line, TubeGeometry,
     CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion
 } from "three";
+import { Renderable3D } from "../../renderer.js";
 
 //
 // T R A I L
 //
 class TrailLine {
     constructor({
-                    maxPoints = 200,
-                    color = 0xffffff,
-                    linewidth = 1,
-                } = {}) {
+        maxPoints = 200,
+        color = 0xffffff,
+        linewidth = 1,
+    } = {}) {
         this._maxPoints = maxPoints;
         this._positions = [];
         this._geometry = new BufferGeometry();
@@ -43,7 +44,7 @@ class TrailLine {
     }
 }
 
-export class Trail extends Group {
+export class Trail extends Renderable3D {
     constructor({
         maxPoints = 200,
         trailStep = 1,
@@ -111,7 +112,7 @@ export class Trail extends Group {
 //
 // Sphere
 //
-export class Sphere extends Mesh {
+export class Sphere extends Renderable3D {
     constructor({
         color = 0xffff00,
         opacity = 1,
@@ -129,11 +130,12 @@ export class Sphere extends Mesh {
         segments = 24,
         castShadow = false,
     } = {}) {
-
-        super(new SphereGeometry(1, segments, segments), material);
+        super();
+        this._mesh = new Mesh(new SphereGeometry(1, segments, segments), material);
+        this._mesh.castShadow = castShadow;
+        this.add(this._mesh);
         this._body = null;
         this.visible = visible;
-        this.castShadow = castShadow;
     }
 
     bind(body) {
@@ -159,7 +161,7 @@ export class Sphere extends Mesh {
 //
 // Arrow
 //
-export class Arrow extends Group {
+export class Arrow extends Renderable3D {
     static UP = new Vector3(0, 1, 0);
     static FORWARD = new Vector3(0, 0, 1);
 
@@ -272,21 +274,23 @@ export class Arrow extends Group {
 //
 // Cylinder
 //
-export class Cylinder extends Mesh {
+export class Cylinder extends Renderable3D {
     constructor({
         color = 0xffff00,
         opacity = 1,
         segments = 24,
         castShadow = false
     } = {}) {
+        super();
         const geometry = new CylinderGeometry(1, 1, 1, segments);
         const material = new MeshStandardMaterial({
             color,
             opacity,
             transparent: opacity < 1
         });
-        super(geometry, material);
-        this.castShadow = castShadow;
+        this._mesh = new Mesh(geometry, material);
+        this._mesh.castShadow = castShadow;
+        this.add(this._mesh);
 
         this._body = null;
         this._direction = new Vector3();
@@ -316,14 +320,15 @@ export class Cylinder extends Mesh {
 //
 // Box
 //
-export class Box extends Mesh {
+export class Box extends Renderable3D {
     constructor({
         color = 0xff0000,
         opacity = 1,
         visible = true,
         castShadow = false
     } = {}) {
-        super(
+        super();
+        this._mesh = new Mesh(
             new BoxGeometry(1, 1, 1),
             new MeshStandardMaterial({
                 color: color,
@@ -331,8 +336,9 @@ export class Box extends Mesh {
                 opacity: opacity,
                 depthTest: true
             }));
+        this.add(this._mesh);
+        this._mesh.castShadow = castShadow;
         this.visible = visible;
-        this.castShadow = castShadow;
         this._body = null;
     }
 
@@ -353,20 +359,22 @@ export class Box extends Mesh {
 //
 // Ring
 //
-export class Ring extends Mesh {
+export class Ring extends Renderable3D {
     constructor({
         color = 0xffff00,
         thickness = 0.1,
         radialSegments = 16,
         tubularSegments = 32
     } = {}) {
+        super();
         const geometry = new TorusGeometry(1, thickness, radialSegments, tubularSegments);
         const material = new MeshStandardMaterial({
             color: color,
             roughness: 0.4,
             metalness: 0.75
         });
-        super(geometry, material);
+        this._mesh = new Mesh(geometry, material);
+        this.add(this._mesh);
     }
 
     bind(body) {
@@ -429,7 +437,7 @@ class Coils extends Curve {
     }
 }
 
-export class Helix extends Mesh {
+export class Helix extends Renderable3D {
     constructor({
         color = 0x00ffff,
         coils = 20,
@@ -441,6 +449,7 @@ export class Helix extends Mesh {
         visible = true,
         castShadow = false
     } = {}) {
+        super();
         const curve = new Coils(new Vector3(), new Vector3(), coils, radius, longitudinalOscillation ? 0.05 : 0);
         const geometry = new TubeGeometry(curve, tubularSegments, thickness, radialSegments, false);
         const material = new MeshStandardMaterial({
@@ -449,14 +458,15 @@ export class Helix extends Mesh {
             metalness: 0.3,
             roughness: 0.4,
         });
-        super(geometry, material);
+        this._mesh = new Mesh(geometry, material);
+        this._mesh.castShadow = castShadow;
+        this.add(this._mesh);
         this._curve = curve;
         this._longitudinalOscillation = longitudinalOscillation;
         this._radius = radius;
         this._tubularSegments = tubularSegments;
         this._radialSegments = radialSegments;
         this._thickness = thickness;
-        this.castShadow = castShadow;
 
         this._body = null;
         this._axis = new Vector3();
@@ -473,8 +483,8 @@ export class Helix extends Mesh {
     }
 
     #regenerateTube() {
-        this.geometry.dispose();
-        this.geometry = new TubeGeometry(this._curve, this._tubularSegments, this._thickness, this._radialSegments, false);
+        this._mesh.geometry.dispose();
+        this._mesh.geometry = new TubeGeometry(this._curve, this._tubularSegments, this._thickness, this._radialSegments, false);
     }
 
     render(time) {
