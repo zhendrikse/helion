@@ -104,7 +104,7 @@ export class ParticleView2D extends Renderable3D {
     }
 }
 
-export class ScalarFieldRaster extends Renderable3D {
+export class ScalarFieldPixelRaster extends Renderable3D {
     constructor({
         width = 512,
         height = 512,
@@ -120,7 +120,7 @@ export class ScalarFieldRaster extends Renderable3D {
         const texture = new DataTexture(pixels,  width, height, RGBAFormat);
         texture.needsUpdate = true;
         this._mesh = new Mesh(
-            new PlaneGeometry(1,1),
+            new PlaneGeometry(width,height),
             new MeshBasicMaterial({ map: texture, transparent: true })
         );
         this.add(this._mesh);
@@ -131,6 +131,8 @@ export class ScalarFieldRaster extends Renderable3D {
         this._texture = texture;
         this._colorMapper = colorMapper;
         this._scalarField = null;
+
+        this._colour = new Color();
     }
 
     set context(context) { this._context = context; }
@@ -162,17 +164,11 @@ export class ScalarFieldRaster extends Renderable3D {
 
         for(let j = 0; j < this._height; j++)
             for(let i = 0; i < this._width; i++) {
-                let color = this._colorMapper?.mapToColor(this._scalarField.valueAt(i, j) / max);
-                if (color === null) { // 👈 Intentional use of ==, not ===
-                    index += 3;
-                    this._pixels[index++] = 0; // completely transparant
-                    return;
-                }
-
-                this._pixels[index++] = color[0];
-                this._pixels[index++] = color[1];
-                this._pixels[index++] = color[2];
-                this._pixels[index++] = color[3];
+                const intensity = this._colorMapper?.map(this._scalarField.valueAt(i, j) / max, this._colour);
+                this._pixels[index++] = this._colour.r;
+                this._pixels[index++] = this._colour.g;
+                this._pixels[index++] = this._colour.b;
+                this._pixels[index++] = intensity;
             }
 
         this._texture.needsUpdate = true;

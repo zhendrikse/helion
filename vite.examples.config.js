@@ -23,7 +23,7 @@ export default defineConfig({
                 fractal_terrain: path.resolve(__dirname, 'examples/nature/scenes/fractal_terrain.js'),
                 fourier_transform: path.resolve(__dirname, 'examples/mathematics/scenes/fourier_transform.js'),
                 faradays_law: path.resolve(__dirname, 'examples/electromagnetism/scenes/faradays_law.js'),
-                fraunhofer_diffraction: path.resolve(__dirname, 'examples/optics/scenes/fraunhofer_diffraction.js'),
+                fraunhofer_diffraction: path.resolve(__dirname, 'examples/waves/scenes/fraunhofer_diffraction.js'),
                 proton_helical_motion: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_helical_motion.js'),
                 n_body_oscillator: path.resolve(__dirname, 'examples/waves/scenes/n_body_oscillator.js'),
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),

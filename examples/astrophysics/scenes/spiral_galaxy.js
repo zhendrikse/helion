@@ -1,6 +1,6 @@
 import { Vector3, Color } from "three";
 import {
-    normalDistribution, randomArbitrary, randomInt, ThreeJsRenderer, Vec3,
+    normalDistribution, uniform, randomInt, ThreeJsRenderer, Vec3,
     Simulation, PointCloud, PointCloudMaterial, PointCloudView
 } from "../../../src/index.js";
 
@@ -76,7 +76,7 @@ class SpiralGalaxy extends PointCloud {
             const theta = i * Math.PI / 180;
             const x = rScale * Math.exp(b * theta) * Math.cos(theta - Math.PI * rot_fac) - randomInt(-fuzz, fuzz) * fuz_fac;
             const y = rScale * Math.exp(b * theta) * Math.sin(theta - Math.PI * rot_fac) - randomInt(-fuzz, fuzz) * fuz_fac;
-            const z = randomArbitrary((-SCALE / (SCALE * 3)), (SCALE / (SCALE * 3)));
+            const z = uniform((-SCALE / (SCALE * 3)), (SCALE / (SCALE * 3)));
             spiral_stars.push(new Vector3(x, y, z));
         }
         return spiral_stars;
@@ -113,10 +113,10 @@ class SpiralGalaxy extends PointCloud {
         const haze_coordinates = [];
         for (let i = 0; i < scale_factor * density; i++) {
             const n = Math.random();
-            const theta = randomArbitrary(0, 2 * Math.PI);
+            const theta = uniform(0, 2 * Math.PI);
             const x = Math.round(Math.sqrt(n) * Math.cos(theta) * scale_factor) / r_mult;
             const y = Math.round(Math.sqrt(n) * Math.sin(theta) * scale_factor) / r_mult;
-            const z = randomArbitrary(-1, 1) * z_mult;
+            const z = uniform(-1, 1) * z_mult;
             haze_coordinates.push(new Vector3(x, y, z));
         }
         return haze_coordinates;

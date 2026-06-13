@@ -151,7 +151,7 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         id: "surfaceShapeSelect",
         label: "Element shape ",
         entries: InstancedMeshSurfaceView.Shape
-    })
+    });
 
     constructor({
         shape = "Box",

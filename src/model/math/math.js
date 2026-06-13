@@ -33,7 +33,7 @@ export function normalDistribution(mu, sigma) {
 /**
  * Returns a random number between min (inclusive) and max (exclusive)
  */
-export function randomArbitrary(min, max) {
+export function uniform(min, max) {
     return Math.random() * (max - min) + min;
 }
 

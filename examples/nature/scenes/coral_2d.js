@@ -109,29 +109,29 @@ class Particle {
     }
 }
 
-const particleField = new DiscreteParticleField();
-function setup() {
-    for (let i = 0; i < swarmSize; i++)
-        particleField.add(new Particle());
-    particleField.particleAt(0).makeSeed();
-}
-
-function resetSimulation() {
-    updateThreshold();
-    setup();
-}
-
-resetSimulation();
-
 const particleView2D = new ParticleView2D({ particleCount: swarmSize });
-Simulation
+let particleField = new DiscreteParticleField();
+const simulation = Simulation
     .in(htmlDiv)
     .with(new ThreeJsRenderer({ controls: false }))
     .withMouseClickEventListener()
     .withHud()
     .synchronize(particleField.alwaysWith(particleView2D))
-    .onClockTick((clockTime, simulatedTime) => particleField.update())
-    .frameSceneOn(particleView2D, {
-        padding: 0.5,
-        viewDirection: new Vec3(0, 0, 1)
-    });
+    .onReset(resetSimulation)
+    .onClockTick((clockTime, simulatedTime) => particleField.update());
+
+
+function resetSimulation() {
+    updateThreshold();
+    particleField = new DiscreteParticleField();
+    for (let i = 0; i < swarmSize; i++)
+        particleField.add(new Particle());
+    particleField.particleAt(0).makeSeed();
+    simulation.synchronize(particleField.alwaysWith(particleView2D))
+    simulation.frameSceneOn(particleView2D, {
+            padding: 0.5,
+            viewDirection: new Vec3(0, 0, 1)
+        });
+}
+resetSimulation();
+particleView2D.showShapeSelectorIn(htmlDiv);

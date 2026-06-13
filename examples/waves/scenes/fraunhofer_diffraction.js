@@ -1,20 +1,23 @@
 import {
-    linspace, meshgrid, ScalarFieldRaster, wavelengthColor, wavelengthToRGBNormalized, Vec3,
-    DiscreteScalarField, Simulation, RadioButton, Slider, Checkbox, Range, ThreeJsRenderer
+    linspace, meshgrid, ScalarFieldPixelRaster, wavelengthColor, wavelengthToRGBNormalized, Vec3,
+    DiscreteScalarField, Simulation, RadioButton, Slider, Checkbox, Range, ThreeJsRenderer, ColorMapper
 } from "../../../src/index.js";
 
 const initialLambda = 550;
 
-class ColorMapper {
+class WavelengthColorMapper extends ColorMapper {
     constructor(lambdaInNanos = initialLambda, showSpectralColor = true) {
+        super();
         this._showSpectralColor = showSpectralColor;
         this._lambdaInNanos = lambdaInNanos;
     }
 
-    mapToColor(intensity) {
-        return this._showSpectralColor ?
-            wavelengthColor(this._lambdaInNanos, intensity) : [255, 255, 255, 255 * Math.sqrt(intensity)]
+    map(intensity, targetColor) {
+        if (this._showSpectralColor)
+            return wavelengthColor(this._lambdaInNanos, intensity, targetColor);
 
+        targetColor.setRGB(255, 255, 255);
+        return 255 * Math.sqrt(intensity);
     }
 
     set showSpectralColor(value) { this._showSpectralColor = value; }
@@ -95,7 +98,7 @@ class FraunhoferSimulation {
     constructor(aperture, intensityField) {
         this._aperture = aperture;
         this._intensityField = intensityField;
-        this._colorMapper = new ColorMapper();
+        this._colorMapper = new WavelengthColorMapper();
         this.recompute();
     }
 
@@ -132,7 +135,7 @@ class FraunhoferSimulation {
     get colorMapper() { return this._colorMapper; }
 }
 
-const resolution = 100;
+const resolution = 128;
 const R = 1.0;
 const aperture = new Aperture(200, resolution);
 const intensityField = new DiscreteScalarField({nx: resolution, ny: resolution});
@@ -142,7 +145,7 @@ fraunhoferSimulation.lambdaInNanos = initialLambda;
 //
 // View for 2D canvas
 //
-const intensityPixelRaster = new ScalarFieldRaster({
+const intensityPixelRaster = new ScalarFieldPixelRaster({
     width: resolution,
     height: resolution,
     colorMapper: fraunhoferSimulation.colorMapper
@@ -152,7 +155,7 @@ const htmlDiv = document.getElementById("fraunhoferContainer");
 Simulation
     .in(htmlDiv)
     .with(new ThreeJsRenderer({
-        cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.25)
+        cameraPosition: new Vec3(2, .5, .75).multiplyScalar(50)
     }))
     .synchronize(intensityField.alwaysWith(intensityPixelRaster))
     .onClockTick()

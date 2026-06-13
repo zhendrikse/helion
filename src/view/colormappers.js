@@ -1,19 +1,38 @@
 import {Color, DataTexture, RGBFormat, LinearFilter, Group} from "three";
 import {Registry} from "../core/helion.js";
 
+// export class Colour {
+//     constructor(r=0, g=0, b=0, a=0) {
+//         this.r = r;
+//         this.g = g;
+//         this.b = b;
+//         this.a = a;
+//     }
+//
+//     set(r, g, b, a=0) {
+//         this.r = r;
+//         this.g = g;
+//         this.b = b;
+//         this.a = a;
+//     }
+//
+//     copy(colour) {
+//         this.r = colour.r;
+//         this.g = colour.g;
+//         this.b = colour.b;
+//         this.a = colour.a;
+//     }
+// }
+
 //
 // Color mapping functions
 //
-export function wavelengthColor(lambdaInNanos, intensity) {
+export function wavelengthColor(lambdaInNanos, intensity, targetColor) {
     const base = wavelengthToRGBNormalized(lambdaInNanos);
 
     // intensity → brightness modulation only
-    return [
-        base.r * 255,
-        base.g * 255,
-        base.b * 255,
-        Math.sqrt(intensity) * 255
-    ];
+    targetColor.setRGB(base.r * 255, base.g * 255, base.b * 255);
+    return Math.sqrt(intensity) * 255;
 }
 
 /** Utility function to convert a number to a two-digit hex string (from stackoverflow): */
