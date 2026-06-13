@@ -1,10 +1,12 @@
 import {
     Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, InstancedMesh,
     InstancedBufferAttribute, DynamicDrawUsage, CircleGeometry, Object3D, Color, SphereGeometry, MeshStandardMaterial,
-    DoubleSide, BoxGeometry, Vector3, Box3
+    DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry
 } from "three";
 import { Renderable3D } from "../renderer.js";
 import { Complex } from "../../model/math/math.js";
+import {DropdownMenu} from "../../controller/controller.js";
+import {Registry} from "../../core/helion.js";
 
 export function hsvToRgb(h, s, v) {
     let r, g, b;
@@ -37,9 +39,18 @@ export class ParticleView2D extends Renderable3D {
         metalness: 0.1,
         transparent: true,
     });
+
     static Shape = Object.freeze({
-        Circle: new CircleGeometry(1, 16),
-        Sphere: new SphereGeometry(1, 16, 16)
+        Box: new BoxGeometry(2, 2, 2),
+        Circle: new CircleGeometry(1.25, 16),
+        Icosahedron: new IcosahedronGeometry(1.5),
+        Sphere: new SphereGeometry(1.25, 16, 16)
+    });
+
+    static Shapes = new Registry({
+        id: "shapeSelector",
+        label: "Particle shape ",
+        entries: ParticleView2D.Shape
     });
 
     constructor({
@@ -64,17 +75,18 @@ export class ParticleView2D extends Renderable3D {
         let index = 0;
 
         for (let i = 0; i < this._particleField.size; i++) {
-            const particle = this._particleField.particleAt(i);
+            const pos = this._particleField.particleStateAt(i).position;
+            const color = this._particleField.particleStateAt(i).color;
 
-            this._dummy.position.set(particle.x, particle.y, 0);
-            this._dummy.scale.setScalar(particle.radius);
+            this._dummy.position.set(pos.x, pos.y, 0);
+            this._dummy.scale.setScalar(this._particleField.particleStateAt(i).size);
             this._dummy.updateMatrix();
             this._mesh.setMatrixAt(index, this._dummy.matrix);
 
             const k = 3 * index;
-            this._colorArray[k]     = particle.color.r;
-            this._colorArray[k + 1] = particle.color.g;
-            this._colorArray[k + 2] = particle.color.b;
+            this._colorArray[k]     = color.r;
+            this._colorArray[k + 1] = color.g;
+            this._colorArray[k + 2] = color.b;
 
             index++;
         }
@@ -92,15 +104,29 @@ export class ParticleView2D extends Renderable3D {
         const box = new Box3();
 
         for (let i = 0; i < this._particleField.size; i++) {
-            const p = this._particleField.particleAt(i);
-
-            const r = p.radius || 1;
-
+            const p = this._particleField.particleStateAt(i).position;
+            const r = this._particleField.particleStateAt(i).size;
             box.expandByPoint(new Vector3(p.x - r, p.y - r, 0));
             box.expandByPoint(new Vector3(p.x + r, p.y + r, 0));
         }
 
         return box;
+    }
+
+    showShapeSelectorIn(container) {
+        new DropdownMenu(container).for(ParticleView2D.Shapes).addEventListener("change",
+            event => this.shape = event.target.value
+        );
+    }
+
+    set shape(shapeType) {
+        const oldGeometry = this._mesh.geometry;
+        this._mesh.geometry = ParticleView2D.Shape[shapeType];
+
+        if (oldGeometry)
+            oldGeometry.dispose();
+
+        //this._dirty = true;
     }
 }
 

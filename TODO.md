@@ -8,6 +8,7 @@
   - Principal direction glyphs
   - Principal curvature line tracing
   - Geodesic fields
+- Veldlijnen representaties voor elektrische en magnetische velden
 - Overigens: als je straks wateroppervlakken wilt die echt mooi ogen, 
   zou ik ook een klein beetje numerieke viscositeit toevoegen. Daardoor verdwijnen 
   hoge frequenties sneller dan lage frequenties en krijg je veel natuurlijkere 
@@ -49,24 +50,7 @@ Wat je nu doet is eigenlijk de enige manier waarop dit soort systemen “gezond�
 
 # Waarom dit de juiste volgorde is
 
-## 1. Dynamische menus eerst
-
-Dat lijkt UI, maar is in werkelijkheid je **config layer**
-
-Daarmee ga je bereiken:
-
-* geen hardcoded HTML meer
-* geen duplicatie per demo
-* één bron van waarheid voor:
-
-  * color mappers
-  * surface types
-  * field types
-  * view types
-
-👉 Dit is in feite je “plugin registry”.
-
----
+## 1. Dynamische menus eerst: DONE
 
 ## 2. Simulatie + tijdsmodel daarna
 
@@ -97,38 +81,6 @@ Want:
 
 ---
 
-# Kleine waarschuwing (belangrijk)
-
-Let bij je refactor op dit patroon:
-
-> ❌ niet UI → physics → render gemixt houden
-
-Wat vaak misgaat in dit soort projecten:
-
-* menus muteren direct models
-* views muteren state
-* solvers zitten in views
-
-Hou strikt:
-
-```txt
-UI → Simulation config → Model → View
-```
-
----
-
-# Wat je nu eigenlijk bouwt (context)
-
-Je zit niet meer in “Three.js demos”.
-
-Je bouwt eigenlijk:
-
-> een kleine research-grade computational physics engine met visual front-end
-
-Dat is precies waarom die scheiding nu nodig is.
-
----
-
 # Samengevat
 
 Ja — volgorde klopt:
@@ -138,9 +90,6 @@ Ja — volgorde klopt:
 3. **Schrödinger solver (stress test + payoff)**
 
 ---
-
-Als je straks bij stap 2 zit en je wil sanity-checken of je tijdsmodel “goed voelt”, kan ik met je meekijken en het toetsen tegen standaard engines (Unity fixed timestep, GPU solvers, etc.).
-
 
 Mooi — dit is precies de stap waar je van “simulatie loop” naar een **echte physics engine core** gaat.
 
@@ -467,7 +416,7 @@ Als je dit nog verder wilt professionaliseren:
 
 Als je wil kan ik hierna je:
 
-👉 Schrödinger solver aanpassen naar dit time system
+👉 Schrödinger solver aanpassen naar dit time system<br/>
 👉 of je Simulation class volledig herschrijven naar “Helion Core v2” (clean production-ready versie)
 
 Maar dit is nu al de fundering waarop alles wat jij bouwt (GR, quantum, fluids) netjes kan blijven groeien zonder dat het spaghetti wordt.
@@ -491,6 +440,7 @@ simulation.synchronize(model.alwaysWith(view))
 
 ### Veldhiërarchie
 
+```text
 Field
 ├── DiscreteScalarField
 ├── DiscreteComplexField
@@ -508,6 +458,8 @@ View
 ├── PointCloudView
 ├── ...
 
+```
+
 ## DiscreteScalarField
 
 API:
@@ -520,9 +472,11 @@ field.apply(new GaussianImpulse(...))
 
 Mogelijk later:
 
+```js
 field.apply(new FFT())
 field.apply(new Laplacian())
 field.apply(new DiffusionStep())
+```
 
 ## Wave equation
 
@@ -578,27 +532,6 @@ dHy = (hU - hD)/2
 normal =
 (-dHx,1,-dHy).normalize()
 
-## Color mappers
-
-ColorMappers registry:
-
-ColorMappers.Jet
-ColorMappers.Viridis
-ColorMappers.Inferno
-ColorMappers.Water
-...
-
-HTML selects moeten automatisch gegenereerd worden uit registry.
-
-## Fractal terrain
-
-Diamond-Square algoritme moet worden omgezet naar:
-
-DiscreteScalarField
-+
-ScalarFieldSurface
-+
-SurfaceView
 
 ## Schrödinger
 

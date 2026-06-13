@@ -365,25 +365,3 @@ export class OneDimensionalComplexPlaneWave extends OneDimensionalPlaneWave {
     }
 }
 
-// TODO Refactor into PointCloud
-export class DiscreteParticleField extends MathPhysicsModelBehavior {
-    constructor() {
-        super();
-        this._particles = [];
-    }
-
-    update() {
-        for (const particle of this._particles)
-            particle.update();
-    }
-
-    add(particle) {
-        this._particles.push(particle);
-    }
-
-    particleAt(index) {
-        return this._particles[index];
-    }
-
-    get size() { return this._particles.length; }
-}

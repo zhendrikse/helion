@@ -1,5 +1,5 @@
 export {
-    AxialSymmetricBody, HarmonicOscillator, RadialSymmetricBody, DiscreteParticleField,
+    AxialSymmetricBody, HarmonicOscillator, RadialSymmetricBody,
     EC, Body, G, OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave, Spring,
     Block, gravitationalForceBetween, PointCloud
 } from "./model/phys/physics.js";
