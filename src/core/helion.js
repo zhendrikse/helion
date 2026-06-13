@@ -1,5 +1,7 @@
 import { Hud } from "./hud.js";
 import {ThreeJsRenderer} from "../view/3d/renderer.js";
+import {Vector3} from "three";
+import {Axes} from "../view/3d/composite/backgrounds.js";
 
 export class Registry {
     constructor({
@@ -28,6 +30,8 @@ export class MathPhysicsModelBehavior {
     onceWith(view) {
         return new Binding(this, view, Binding.Mode.ONCE);
     }
+
+    reset() {}
 }
 
 /**
@@ -45,8 +49,9 @@ export class Binding {
         this.mode = mode;
     }
 
-    syncModelAndView() {
-        this.model.copyTo(view);
+    synchronize(clockTime) {
+        if (this.needsRendering)
+            this.view.render(clockTime);
     }
 
     needsRendering() {
@@ -66,6 +71,17 @@ export class Binding {
 
 /**
  * Bridge between the simulation, browser DOM, and renderer.
+ *
+ * containerDiv
+ * ├── canvasWrapperDiv
+ * │   ├── canvas        (with simulation inside!)
+ * │   ├── HUD           (shows head-up display messages)
+ * │   └── CSS2D labels  (text labels in the simulation)
+ * │
+ * ├── uPlot graph
+ * ├── dropdowns
+ * ├── sliders
+ * └── controls
  */
 export class Viewport {
     constructor(containerDiv) {
@@ -82,16 +98,16 @@ export class Viewport {
         this._canvasWrapperDiv.style.position = "relative";
         this._canvasWrapperDiv.style.display = "block";
         this._canvasWrapperDiv.style.backgroundColor = "transparent";
-        this._canvasWrapperDiv.style.width = this._container.clientWidth + "px";
-        this._canvasWrapperDiv.style.height = this._container.clientHeight + "px";
+        this._canvasWrapperDiv.style.width = "100%";
+        this._canvasWrapperDiv.style.height = "100%";
         this._container.appendChild(this._canvasWrapperDiv);
 
         this._canvas = document.createElement('canvas');
         this._canvas.classList.add("helionCanvas");
         this._canvas.style.display = "block";
         this._canvas.style.backgroundColor = "transparent";
-        this._canvas.style.width = this._canvasWrapperDiv.clientWidth + "px";
-        this._canvas.style.height = this._canvasWrapperDiv.clientHeight + "px";
+        this._canvas.style.width = "100%";
+        this._canvas.style.height = "100%";
         this._canvasWrapperDiv.appendChild(this._canvas);
     }
 
@@ -126,8 +142,6 @@ export class Simulation {
         return this;
     }
 
-    get renderer() { return this._renderer; }
-
     incrementsTimeBy(dt) {
         this._dt = dt;
         return this;
@@ -145,6 +159,33 @@ export class Simulation {
         this._hud.attach(this._viewport)
         if (!this._running)
             this._hud.show("Click to start the simulation");
+        return this;
+    }
+
+    frameSceneOn(anObject, {
+        padding = 1.2,
+        translationY = 0,
+        minDistance = 2,
+        viewDirection = new Vector3(1, 1, 1)
+    } = {}) {
+        this._renderer.frameSceneOn(anObject, { padding, translationY, minDistance, viewDirection });
+        return this;
+    }
+
+    provideAxesAround(anObject, {
+        layoutType = Axes.Type.MATLAB,
+        divisions = 10,
+        frame = true,
+        annotations = true,
+        tickLabels = true,
+        xyPlane = true,
+        xzPlane = true,
+        yzPlane = true,
+        axisLabels = ["X", "Y", "Z"],
+        positiveXZ = false,
+        bottomAlign = true
+    } = {}) {
+        this._renderer.provideAxesAround(anObject, { layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ, bottomAlign } );
         return this;
     }
 
@@ -176,8 +217,7 @@ export class Simulation {
 
         // Rendering
         for (const binding of this._bindings)
-            if (binding.needsRendering)
-                binding.view.render(clockTime);
+            binding.synchronize(clockTime);
 
         this._renderer.render(clockTime);
         requestAnimationFrame(this.animate);

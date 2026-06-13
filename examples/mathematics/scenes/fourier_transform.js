@@ -1,6 +1,6 @@
 import {
-    FFT, ComplexScalarFieldRaster, DiscreteComplexField, RadioButton,
-    Simulation, Slider, Canvas2DRenderer, Range, Checkbox
+    FFT, DiscreteComplexField, RadioButton, Simulation, Slider, Vec3, Range,
+    Checkbox, ComplexScalarFieldRaster, ThreeJsRenderer
 } from "../../../src/index.js";
 
 const Shape = Object.freeze({
@@ -69,17 +69,20 @@ const resolution = 512;
 const fourierSimulation = new FourierSimulation(30, resolution);
 
 //
-// View for 2D canvas
+// View for 2D raster
 //
 const intensityRaster = new ComplexScalarFieldRaster({
     width: resolution,
-    height: resolution
+    height: resolution,
+    showPhaseColour: false
 });
 
 const htmlDiv = document.getElementById("fourierTransformContainer");
 Simulation
     .in(htmlDiv)
-    .with(new Canvas2DRenderer())
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.5)
+    }))
     .synchronize(fourierSimulation.field.alwaysWith(intensityRaster))
     .onClockTick()
     .start();
@@ -95,7 +98,7 @@ const slider = new Slider(htmlDiv)
 Checkbox.togetherWith(slider)
     .withLabel("🎨 Phase: ")
     .on(intensityRaster)
-    .checked(true)
+    .checked(false)
     .withProperty("phaseColor");
 
 const radioButton = new RadioButton(htmlDiv)

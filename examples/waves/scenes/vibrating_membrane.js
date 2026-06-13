@@ -34,18 +34,17 @@ const surfaceView = new StandardSurfaceView({
 });
 
 const container = document.getElementById("membraneContainer");
-const renderer = new ThreeJsRenderer();
 const simulation = Simulation
     .in(container)
     .with(new ThreeJsRenderer())
     .synchronize(membrane.alwaysWith(surfaceView))
     .incrementsTimeBy(0.016)
     .onClockTick((clockTime, simulatedTime) => membrane.time = simulatedTime, 3)
+    .frameSceneOn(surfaceView, {
+        padding: 0.7,
+        translationY: -1.25
+    })
     .start();
-simulation.renderer.frameSceneOn(surfaceView, {
-    padding: 0.7,
-    translationY: -1.25
-});
 
 surfaceView.showColormapSelectorIn(container);
 surfaceView.showSurfaceControlsIn(container);

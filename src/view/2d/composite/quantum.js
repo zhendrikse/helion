@@ -1,4 +1,4 @@
-import {toColorString} from "../renderer.js";
+import { toColorString } from "../../colormappers.js";
 
 export class OneDimensionalComplexPlaneWave2D {
     static Mode = Object.freeze({

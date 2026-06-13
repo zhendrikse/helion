@@ -12,7 +12,7 @@ export {
 export {
     GaussianCurvatureField, MeanCurvatureField, PrincipalCurvatureField, HeightScalarField,
     ShapeIndexField, CurvednessField, ParametricSurface, MultivariateFunctionSurface, Domain,
-    Surface, DiscreteScalarField, FieldStatistics, DiscreteComplexField, VectorField,
+    Surface, DiscreteScalarField, DiscreteComplexField, VectorField,
     ScalarFieldSurface, SurfaceScalarFields
 } from "./model/math/fields.js"
 
@@ -32,9 +32,7 @@ export { ThreeJsRenderer } from "./view/3d/renderer.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { CompositeRenderer } from "./view/renderer.js";
-
-export { ParticleRaster, ScalarFieldRaster, ComplexScalarFieldRaster } from "./view/2d/rasters/pixelrasters.js";
-export { Canvas2DRenderer } from "./view/2d/renderer.js";
+export { ParticleView2D, ScalarFieldRaster, ComplexScalarFieldRaster } from "./view/2d/views.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 
 export {
@@ -44,7 +42,7 @@ export {
 export {
     WaterAlternativeColorMapper, WaterColorMapper, GradientColorMapper, UniformColorMapper,
     RdYlBuColorMapper, ViridisColorMapper, InfernoColorMapper, SeismicColorMapper, JetColorMapper,
-    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper
+    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString
 } from "./view/colormappers.js";
 
 export {

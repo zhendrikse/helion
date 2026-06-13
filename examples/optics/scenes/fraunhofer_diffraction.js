@@ -1,10 +1,12 @@
 import {
-    linspace, meshgrid, ScalarFieldRaster, wavelengthColor, wavelengthToRGBNormalized,
-    DiscreteScalarField, Canvas2DRenderer, Simulation, RadioButton, Slider, Checkbox, Range
+    linspace, meshgrid, ScalarFieldRaster, wavelengthColor, wavelengthToRGBNormalized, Vec3,
+    DiscreteScalarField, Simulation, RadioButton, Slider, Checkbox, Range, ThreeJsRenderer
 } from "../../../src/index.js";
 
+const initialLambda = 550;
+
 class ColorMapper {
-    constructor(lambdaInNanos = 500, showSpectralColor = true) {
+    constructor(lambdaInNanos = initialLambda, showSpectralColor = true) {
         this._showSpectralColor = showSpectralColor;
         this._lambdaInNanos = lambdaInNanos;
     }
@@ -135,7 +137,7 @@ const R = 1.0;
 const aperture = new Aperture(200, resolution);
 const intensityField = new DiscreteScalarField({nx: resolution, ny: resolution});
 const fraunhoferSimulation = new FraunhoferSimulation(aperture, intensityField);
-fraunhoferSimulation.lambdaInNanos = 500;
+fraunhoferSimulation.lambdaInNanos = initialLambda;
 
 //
 // View for 2D canvas
@@ -149,7 +151,9 @@ const intensityPixelRaster = new ScalarFieldRaster({
 const htmlDiv = document.getElementById("fraunhoferContainer");
 Simulation
     .in(htmlDiv)
-    .with(new Canvas2DRenderer())
+    .with(new ThreeJsRenderer({
+        cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.25)
+    }))
     .synchronize(intensityField.alwaysWith(intensityPixelRaster))
     .onClockTick()
     .start();
@@ -168,28 +172,25 @@ RadioButton.togetherWith(radioButton)
     .withLabel("🟢 Circle");
 
 new Slider(htmlDiv)
-    .on(fraunhoferSimulation)
-    .withProperty("diameterInMicroMeter")
     .withLabel("Size: ")
     .withValue(200)
-    .withRange(new Range(20, 200, 1));
+    .withRange(new Range(50, 300, 1))
+    .addEventListener("change", event => fraunhoferSimulation.diameterInMicroMeter = event.target.value);
 
 const slider = new Slider(htmlDiv)
     .withLabel("Color: ")
-    .withValue(500)
+    .withValue(initialLambda)
     .withRange(new Range(380, 700, 1))
-    .addEventListener("input", (event) => {
-        const wavelength = Number(event.target.value);
-        const color = wavelengthToRGBNormalized(wavelength);
-        const intensity = 1;
-        wavelengthProbe.style.backgroundColor =
-            `rgb(${color.r * intensity * 255},
-             ${color.g * intensity * 255},
-             ${color.b * intensity * 255})`;
-    })
-    .addEventListener("change", (event) => {
-        fraunhoferSimulation.lambdaInNanos = Number(event.target.value);
-    });
+    // .addEventListener("input", (event) => {
+    //     const wavelength = Number(event.target.value);
+    //     const color = wavelengthToRGBNormalized(wavelength);
+    //     const intensity = 1;
+    //     wavelengthProbe.style.backgroundColor =
+    //         `rgb(${color.r * intensity * 255},
+    //          ${color.g * intensity * 255},
+    //          ${color.b * intensity * 255})`;
+    // })
+    .addEventListener("change", event => fraunhoferSimulation.lambdaInNanos = event.target.value);
 
 Checkbox
     .togetherWith(slider)

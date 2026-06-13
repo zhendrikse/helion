@@ -1,5 +1,5 @@
 import {
-    Simulation, CompositeRenderer, Canvas2DRenderer, OneDimensionalComplexPlaneWave2D,
+    Simulation, CompositeRenderer, OneDimensionalComplexPlaneWave2D,
     OneDimensionalComplexPlaneWave, OneDimensionalComplexPlaneWave3D, ThreeJsRenderer,
     Vec3, Button, Slider, RadioButton, Range
 } from "../../../src/index.js";
@@ -17,13 +17,13 @@ const planeWave = new OneDimensionalComplexPlaneWave({
 //
 // View for 2D canvas
 //
-const htmlDiv2d = document.getElementById("planeWaveContainer2d");
-const renderer2d = Canvas2DRenderer.in(htmlDiv2d);
-const waveView2d = new OneDimensionalComplexPlaneWave2D({
-    scaleY: 10,
-    width: htmlDiv2d.clientWidth,
-    height: htmlDiv2d.clientHeight
-});
+// const htmlDiv2d = document.getElementById("planeWaveContainer2d");
+// const renderer2d = Canvas2DRenderer.in(htmlDiv2d);
+// const waveView2d = new OneDimensionalComplexPlaneWave2D({
+//     scaleY: 10,
+//     width: htmlDiv2d.clientWidth,
+//     height: htmlDiv2d.clientHeight
+// });
 
 //
 // View for 3D canvas
@@ -37,6 +37,7 @@ const renderer3d = ThreeJsRenderer
     });
 
 const simulation = Simulation
+    .in(htmlDiv3d)
     .with(new CompositeRenderer([renderer2d, renderer3d]))
     .synchronize(planeWave.alwaysWith(waveView2d))
     .synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({ numArrows: 100 })))

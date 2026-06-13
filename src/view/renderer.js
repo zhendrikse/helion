@@ -1,15 +1,12 @@
-/**
- * containerDiv
- * ├── canvasWrapperDiv
- * │   ├── canvas        (with simulation inside!)
- * │   ├── HUD           (shows head-up display messages)
- * │   └── CSS2D labels  (text labels in the simulation)
- * │
- * ├── graph
- * ├── dropdowns
- * ├── sliders
- * └── controls
- */
+import { Object3D } from "three";
+
+export class Renderable3D extends Object3D {
+    bind(model) {}
+    initialize() {}
+    render() {}
+    reset() {}
+}
+
 export class Renderer {
     add(viewObject) {}
 

@@ -131,8 +131,8 @@ export class Slider extends HtmlControl {
         return this;
     }
 
-    addEventListener(callback) {
-        super.addEventListener("input", callback);
+    addEventListener(type, callback) {
+        super.addEventListener(type, callback);
         this._inputControl.addEventListener("input",
                 event => this._span.textContent = event.target.value + this._units
         );

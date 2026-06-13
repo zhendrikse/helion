@@ -88,7 +88,7 @@ function changeSurface(surfaceId) {
     const newSurface = surfacesRegistry.get(surfaceId);
     surfaceView.dispose();
     simulation.synchronize(newSurface.onceWith(surfaceView));
-    simulation.renderer.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
+    simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
 }
 
 new DropdownMenu(htmlDiv)

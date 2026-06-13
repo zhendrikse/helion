@@ -1,23 +1,14 @@
 import {
-    Canvas2DRenderer, DiscreteParticleField, ParticleRaster, Simulation
+    DiscreteParticleField, ParticleView2D, Simulation, ThreeJsRenderer, Vec3
 } from "../../../src/index.js";
 
 const htmlDiv = document.getElementById("coralContainer");
-let maxDistance = 0;
-const PARTICLES_PER_10K_PIXELS = 75;
-let swarmSize = 0;
+let swarmSize = 1500;
+const width = 500;
+const height = 500;
+let maxDistance = Math.sqrt(width * width + height * height);
 
-function resizeCanvasToWrapper() {
-    const rectangle = htmlDiv.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-
-    // canvas2d.htmlCanvas.width  = Math.floor(rectangle.width * dpr);
-    // canvas2d.htmlCanvas.height = Math.floor(rectangle.height * dpr);
-    //
-    // canvas2d.htmlCanvas.style.width  = rectangle.width + "px";
-    // canvas2d.htmlCanvas.style.height = rectangle.height + "px";
-}
-
+// TODO Make color mapper for this
 function scientificColorCodingFor(value, minVal, maxVal) {
     value = Math.min(Math.max(value, minVal), maxVal - 0.0001);
     const range = maxVal - minVal;
@@ -27,13 +18,13 @@ function scientificColorCodingFor(value, minVal, maxVal) {
 
     switch (num) {
         case 0 :
-            return "rgba(0, " + 255 * s + ", 255, 255)";
+            return {r: 0, g: s, b: 1, a: 1};
         case 1 :
-            return "rgba(0, 255, " + 255 * (1 - s) + ", 255)";
+            return {r: 0, g: 1, b: 1 - s, a: 1};
         case 2 :
-            return "rgba(" + 255 * s + ", 255, 0, 255)";
+            return {r: s, g: 1 , b: 0, a: 1};
         case 3 :
-            return "rgba(255, " +  255 * (1 - s)  + ", 0, 255)";
+            return {r: 1, g: 1 - s, b: 0, a: 1};
     }
 }
 
@@ -50,8 +41,8 @@ function updateThreshold() {
 
 class Particle {
     constructor() {
-        this.x = htmlDiv.width * Math.random();
-        this.y = htmlDiv.height * Math.random();
+        this.x = width * Math.random();
+        this.y = height * Math.random();
         this.radius = this.#computeParticleRadius();
         this.frozen = false;
         this.color = scientificColorCodingFor(0, 0, maxDistance);
@@ -64,9 +55,8 @@ class Particle {
 
     makeSeed() {
         this.frozen = true;
-        this.x = htmlDiv.width * .5;
-        // this.y = canvas2d.height * .5;
-        this.y = htmlDiv.height - 2;
+        this.x = width * .5;
+        this.y = 2;
     }
 
     distanceSquaredTo(otherParticle) {
@@ -106,29 +96,17 @@ class Particle {
         const dx = Math.random() * noise;
         const dy = Math.random() * noise;
         this.x += Math.random() < 0.5 ? dx : -dx;
-        this.y += verticalDrift + (Math.random() < 0.5 ? dy : -dy);
+        this.y -= verticalDrift + (Math.random() < 0.5 ? dy : -dy);
 
-        this.x = (this.x + htmlDiv.width) % htmlDiv.width;
+        this.x = (this.x + width) % width;
         //this.y = (this.y + canvas2d.height) % canvas2d.height;
-        if (this.y > htmlDiv.height) {
-            this.y = 0;
-            this.x = htmlDiv.width * Math.random();
+        if (this.y < 0) {
+            this.y = height;
+            this.x = width * Math.random();
         }
 
         this.checkForFreezing();
     }
-}
-
-function updateMaxDistance() {
-    maxDistance = Math.sqrt(htmlDiv.width * htmlDiv.width + htmlDiv.height * htmlDiv.height);
-}
-
-function computeSwarmSize() {
-    const cssWidth  = htmlDiv.width;
-    const cssHeight = htmlDiv.height;
-    const areaCSS = cssWidth * cssHeight;
-
-    swarmSize = Math.floor(areaCSS / 10_000 * PARTICLES_PER_10K_PIXELS);
 }
 
 const particleField = new DiscreteParticleField();
@@ -138,26 +116,22 @@ function setup() {
     particleField.particleAt(0).makeSeed();
 }
 
-function resizeAndResetSimulation() {
-    resizeCanvasToWrapper();
-    updateMaxDistance();
+function resetSimulation() {
     updateThreshold();
-    computeSwarmSize();
     setup();
 }
 
-// window.addEventListener('resize', () => {
-//     resizeAndResetSimulation();
-// });
-//
-resizeAndResetSimulation();
+resetSimulation();
 
-const particleRaster = new ParticleRaster();
-const simulation = Simulation
+const particleView2D = new ParticleView2D({ particleCount: swarmSize });
+Simulation
     .in(htmlDiv)
-    .with(new Canvas2DRenderer())
-    .synchronize(particleField.alwaysWith(particleRaster))
-    .onClockTick((clockTime, simulatedTime) => {
-        particleField.update();
+    .with(new ThreeJsRenderer({ controls: false }))
+    .withMouseClickEventListener()
+    .withHud()
+    .synchronize(particleField.alwaysWith(particleView2D))
+    .onClockTick((clockTime, simulatedTime) => particleField.update())
+    .frameSceneOn(particleView2D, {
+        padding: 0.5,
+        viewDirection: new Vec3(0, 0, 1)
     });
-simulation.start()

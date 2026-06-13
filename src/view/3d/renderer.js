@@ -181,12 +181,7 @@ export class ThreeJsRenderer extends Renderer {
         return { center, size };
     }
 
-    frameSceneOn(anObject, {
-        padding = 1.2,
-        translationY = 0,
-        minDistance = 2,
-        viewDirection = new Vector3(1, 1, 1)
-    } = {}) {
+    frameSceneOn(anObject, options) {
         const boundingBox = anObject.boundingBox;
         const { center, size } = this.#calculateCenter(boundingBox);
 
@@ -194,44 +189,39 @@ export class ThreeJsRenderer extends Renderer {
         const maxDim = Math.max(size.x, size.y, size.z);
         const verticalFieldOfView = Math.PI  * this._camera.fov / 180;
         let distance = maxDim / Math.tan(verticalFieldOfView / 2);
-        distance = Math.max(distance * padding, minDistance);
+        distance = Math.max(distance * options.padding, options.minDistance);
 
-        const direction = viewDirection.clone().normalize();
+        const direction = options.viewDirection.clone().normalize();
         this._camera.position
-            .copy(new Vector3(center.x, center.y + translationY, center.z))
-            .addScaledVector(direction, distance);
+            .set(center.x, center.y + options.translationY, center.z)
+            .addScaledVector(new Vector3(direction.x, direction.y, direction.z), distance);
         this._camera.near = distance / 100;
         this._camera.far = distance * 10;
         this._camera.updateProjectionMatrix();
 
-        this._controls.target.copy(center);
-        this._controls.update();
+        this._controls?.target.copy(center);
+        this._controls?.update();
     }
 
-    provideAxesAround(anObject, {
-        layoutType = Axes.Type.MATLAB,
-        divisions = 10,
-        frame = true,
-        annotations = true,
-        tickLabels = true,
-        xyPlane = true,
-        xzPlane = true,
-        yzPlane = true,
-        axisLabels = ["X", "Y", "Z"],
-        positiveXZ = false,
-        bottomAlign = true
-    } = {}) {
+    provideAxesAround(anObject, options) {
         if (this._axes)
             this.remove(this._axes);
 
         const boundingBox = anObject.boundingBox;
-        this._axes = Axes.from(boundingBox, divisions)
-            .withLayout(layoutType, positiveXZ)
-            .withAnnotations(this._viewport.canvasWrapper, layoutType, axisLabels)
-            .withSettings({ frame, annotations, xyPlane, xzPlane, yzPlane, tickLabels });
+        this._axes = Axes.from(boundingBox, options.divisions)
+            .withLayout(options.layoutType, options.positiveXZ)
+            .withAnnotations(this._viewport.canvasWrapper, options.layoutType, options.axisLabels)
+            .withSettings({
+                frame: options.frame,
+                annotations: options.annotations,
+                xyPlane: options.xyPlane,
+                xzPlane: options.xzPlane,
+                yzPlane: options.yzPlane,
+                tickLabels: options.tickLabels
+            });
 
-        if (layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed
-            this._axes.frameTo(boundingBox, bottomAlign);
+        if (options.layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed
+            this._axes.frameTo(boundingBox, options.bottomAlign);
         this._axes.onWindowResize();
         this._world.add(this._axes);
         return this._axes;

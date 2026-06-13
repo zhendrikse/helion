@@ -40,31 +40,6 @@ export class VectorField extends Field {
     sample(positionVector, target) {}
 }
 
-export class FieldStatistics {
-    static max(scalarField) {
-        let max = -Infinity;
-
-        for (let i = 0; i < scalarField.nx; i++)
-            for (let j = 0; j < scalarField.ny; j++) {
-                const value = scalarField.valueAt(i, j);
-                if (value > max)
-                    max = value;
-            }
-
-        return max;
-    }
-
-    static maxMagnitude(field) {
-        let max = 0;
-        for (let i = 0; i < field.nx; i++)
-            for (let j = 0; j < field.ny; j++)
-                if (field.magnitudeAt(i, j) > max)
-                    max = field.magnitudeAt(i, j);
-
-        return max;
-    }
-}
-
 /**
  * Mathematical definition of a surface.
  */
@@ -77,11 +52,11 @@ export class Surface extends Field {
  */
 export class ParametricSurface extends Surface {
     constructor({
-                    domain = new Domain(),
-                    x = (u, v) => u,
-                    y = (u, v) => v,
-                    z = (u, v) => 0
-                } = {}) {
+        domain = new Domain(),
+        x = (u, v) => u,
+        y = (u, v) => v,
+        z = (u, v) => 0
+    } = {}) {
         super();
         this._domain = domain;
         this._x = x;
@@ -144,10 +119,6 @@ export class ScalarFieldSurface extends Surface {
 }
 
 export class HeightScalarField extends Field {
-    constructor() {
-        super();
-    }
-
     set surface(newSurface) {
         this._surface = newSurface;
     }
@@ -362,27 +333,14 @@ export class DiscreteComplexField extends Field {
         this.ny = ny;
     }
 
-    // TODO verwijder => gebruik sample()
-    phaseAt(i, j) {
-        const re = this.real[i][j];
-        const im = this.imag[i][j];
-        return Math.atan2(im, re); // [-π, π]
-    }
-
-    // TODO verwijder => gebruik sample()
-    magnitudeAt(i, j) {
-        const re = this.real[i][j];
-        const im = this.imag[i][j];
-        return Math.sqrt(re * re + im * im);
-    }
-
     apply(transformation) {
         transformation(this);
         return this;
     }
 
     sample(i, j, target) {
-        target.set(this.real[i][j], this.imag[i][j]);
+        target.re = this.real[i][j];
+        target.im = this.imag[i][j];
     }
 }
 

@@ -282,6 +282,12 @@ export class HarmonicOscillator extends MathPhysicsModelBehavior {
         );
     }
 
+    reset() {
+        this.body1.reset();
+        this.body2.reset();
+        this.bond.reset();
+    }
+
     oscillate(dt, integrator = Integrators.symplecticEulerStep) {
         const delta = this.body1.positionVectorTo(this.body2);
         const length = delta.length();
@@ -359,10 +365,7 @@ export class OneDimensionalComplexPlaneWave extends OneDimensionalPlaneWave {
     }
 }
 
-//
-// 2D
-//
-
+// TODO Refactor into PointCloud
 export class DiscreteParticleField extends MathPhysicsModelBehavior {
     constructor() {
         super();

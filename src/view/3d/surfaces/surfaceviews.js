@@ -17,6 +17,7 @@ import { NormalizedScalarField } from "../../../model/math/fields.js";
 import { ColorMappers } from "../../colormappers.js";
 import { Checkbox, DropdownMenu} from "../../../controller/controller.js";
 import { Registry } from "../../../core/helion.js";
+import { Renderable3D } from "../../renderer.js";
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) {
@@ -25,7 +26,7 @@ export class SurfaceResolution {
     }
 }
 
-class SurfaceView extends Group {
+class SurfaceView extends Renderable3D {
     static UP = new Vector3(0, 1, 0);
     static material = new MeshStandardMaterial({
         side: DoubleSide,
@@ -168,7 +169,8 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         this._normalVector = new Vector3();
 
         const count = (resolution.u + 1) * (resolution.v + 1);
-        this._mesh = new InstancedMesh(new BoxGeometry(.65, .65, .65), SurfaceView.material, count);
+        const geometry = InstancedMeshSurfaceView.Shape[shape].geometry;
+        this._mesh = new InstancedMesh(geometry, SurfaceView.material, count);
         this._mesh.material.opacity = opacity;
         this.add(this._mesh);
 

@@ -80,8 +80,8 @@ class SurfaceController {
         this._surfaceView.normalizer = new Interval(0, amplitude);
         this._surfaceView.dispose();
         this._simulation.synchronize(this._currentSurface.onceWith(surfaceView));
-        this._simulation.renderer.provideAxesAround(surfaceView);
-        this._simulation.renderer.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5 * amplitude});
+        this._simulation.provideAxesAround(surfaceView);
+        this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5 * amplitude});
     }
 
     set animate(value) { this._animate = value; }

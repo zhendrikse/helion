@@ -16,6 +16,42 @@ export function wavelengthColor(lambdaInNanos, intensity) {
     ];
 }
 
+/** Utility function to convert a number to a two-digit hex string (from stackoverflow): */
+function numberToTwoDigitHexString(numberToConvert) {
+    const hex = numberToConvert.toString(16); // 16 is necessary for conversion to hex string!
+    return hex.length === 1 ? "0" + hex : hex;
+}
+
+/** Utility function to create a hex color string for a given hue (between 0 and 1): */
+export function toColorString(hue) {
+    let r, g, b;
+    if (hue < 1/6) { // red to yellow
+        r = 255; g = Math.round(hue * 6 * 255);
+        b = 0;
+    } else if (hue < 1/3) { // yellow to green
+        r = Math.round((1/3 - hue) * 6 * 255);
+        g = 255;
+        b = 0;
+    } else if (hue < 1/2) { // green to cyan
+        r = 0;
+        g = 255;
+        b = Math.round((hue - 1/3) * 6 * 255);
+    } else if (hue < 2/3) { // cyan to blue
+        r = 0;
+        g = Math.round((2/3 - hue) * 6 * 255);
+        b = 255;
+    } else if (hue < 5/6) { // blue to magenta
+        r = Math.round((hue - 2/3) * 6 * 255);
+        g = 0;
+        b = 255;
+    } else { // magenta to red
+        r = 255;
+        g = 0;
+        b = Math.round((1 - hue) * 6 * 255);
+    }
+    return "#" + numberToTwoDigitHexString(r) + numberToTwoDigitHexString(g) + numberToTwoDigitHexString(b);
+}
+
 export function wavelengthToRGBNormalized(wavelength) {
     let R = 0, G = 0, B = 0;
 
