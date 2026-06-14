@@ -50,16 +50,12 @@ export class Binding {
         this.model = model;
         this.view = view;
         this.mode = mode;
-        this._hasNeverBeenSynchronized = true;
     }
 
     synchronize(atClockTime) {
-        const viewNeedsSynchronization =
-            this.mode === Binding.Mode.ALWAYS || this.view?.dirty || this._hasNeverBeenSynchronized;
+        const viewNeedsSynchronization = this.mode === Binding.Mode.ALWAYS || this.view?.dirty;
         if (viewNeedsSynchronization)
             this.view.synchronizeWith(this.model, atClockTime);
-
-        this._hasNeverBeenSynchronized = false;
     }
 
     initialize() {
