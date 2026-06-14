@@ -32,7 +32,7 @@ const surfaceView = new StandardSurfaceView({
 });
 
 const container = document.getElementById("membraneContainer");
-const simulation = Simulation
+Simulation
     .in(container)
     .with({})
     .synchronize(membrane.alwaysWith(surfaceView))

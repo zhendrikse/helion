@@ -66,7 +66,8 @@ export class Binding {
         if (!this.view.canBindTo(this.model))
             throw new Error("Helion cannot bind this view to this model");
 
-        this.view.initialize(this.model); // E.g. to generate geometries & correct bounding boxes
+        this.view.initialize(this.model);
+        this.view.synchronizeWith(this.model, 0); // E.g. to generate geometries & correct bounding boxes
     }
 
     reset() {

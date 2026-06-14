@@ -98,7 +98,9 @@ const surfaceView = new StandardSurfaceView({
 const container = document.getElementById("realSurfacesContainer");
 const simulation = Simulation
     .in(container)
-    .with({})
+    .with({
+        fieldOfView: 20
+    })
     .incrementsTimeBy(0.016);
 
 const surfaceController = new SurfaceController(simulation, surfaceView);

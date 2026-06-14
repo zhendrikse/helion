@@ -86,20 +86,17 @@ const slider = new Slider(container)
     .withValue(.5)
     .withLabel("️⚡ Field strength: ");
 
-let autoRotateTheta = Math.PI / 2;
-let autoRotatePhi = 0;
+const distance = this._camera.position.length();
 
-function doAutoRotate(object) {
+function doAutoRotate(distance) {
+    let autoRotateTheta = Math.PI / 2;
+    let autoRotatePhi = 0;
     autoRotateTheta += -Math.PI / (7.5 * 100);
-    autoRotatePhi +=  Math.PI / (7.5 * 100) * 2;
-
-    object.rotation.order = 'YXZ';
-
-    object.rotation.y = -autoRotatePhi;
-    object.rotation.x = -autoRotateTheta;
+    autoRotatePhi += Math.PI / (7.5 * 100) * 2;
+    this._camera.position.set( distance * Math.sin(autoRotateTheta) * Math.sin(autoRotatePhi), distance * Math.cos(autoRotateTheta), distance * Math.sin(autoRotateTheta) * Math.cos(autoRotatePhi) );
+    this._camera.lookAt(0, 0, 0);
 }
 
-// TODO
 // Checkbox.togetherWith(slider)
 //     .withProperty("autoRotate")
 //     .withLabel("↻ Rotate: ")

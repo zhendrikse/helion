@@ -67,7 +67,9 @@ const surfaceView = new StandardSurfaceView({
 const container = document.getElementById("parametricSurfacesContainer");
 const simulation = Simulation
     .in(container)
-    .with({})
+    .with({
+        fieldOfView: 20
+    })
     .start();
 
 const surfacesRegistry = new Registry({
