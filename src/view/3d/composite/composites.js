@@ -371,6 +371,8 @@ export class ArrowField extends Renderable3D {
         this._shaftMesh.instanceColor = new InstancedBufferAttribute(colors, 3);
         this._headMesh.instanceColor = this._shaftMesh.instanceColor;
 
+        this._dirty = true;
+
         // reusable temp objects (CRUCIAL)
         this._matrix = new Matrix4();
         this._q = new Quaternion();
@@ -381,6 +383,8 @@ export class ArrowField extends Renderable3D {
         this._headOffset = new Vector3();
         this._target = new Vector3();
     }
+
+    get dirty() { return this._dirty }
 
     canBindTo(vectorField) {
         return vectorField.sample;
@@ -441,5 +445,7 @@ export class ArrowField extends Renderable3D {
         this._headMesh.instanceMatrix.needsUpdate = true;
         this._shaftMesh.instanceColor.needsUpdate = true;
         this._headMesh.instanceColor.needsUpdate = true;
+
+        this._dirty = false;
     }
 }
