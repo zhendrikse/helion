@@ -1,8 +1,8 @@
 export {
     AxialSymmetricBody, HarmonicOscillator, RadialSymmetricBody,
     EC, Body, G, OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave, Spring,
-    Block, gravitationalForceBetween, PointCloud
-} from "./model/phys/physics.js";
+    Block, gravitationalForceBetween
+} from "./model/phys/bodies.js";
 
 export {
     Range, Vec3, factorial, linspace, Interval, generateUUID,
@@ -10,16 +10,16 @@ export {
 } from "./model/math/math.js";
 
 export {
-    GaussianCurvatureField, MeanCurvatureField, PrincipalCurvatureField, HeightScalarField,
-    ShapeIndexField, CurvednessField, ParametricSurface, MultivariateFunctionSurface, Domain,
+    ParametricSurface, MultivariateFunctionSurface, Domain,
     Surface, DiscreteScalarField, DiscreteComplexField, VectorField,
-    ScalarFieldSurface, SurfaceScalarFields
+    DiscreteFieldSurface, SurfaceScalarFields
 } from "./model/math/fields.js"
 
 export {
     FFT, LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator
 } from "./model/math/numerics/operators/operators.js";
 
+export { PointCloud } from "./model/phys/clouds.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { Sun } from "./view/3d/astro/sun.js";
 export { Saturn } from "./view/3d/astro/saturn.js";
@@ -31,7 +31,6 @@ export { UPlotGraph } from "./core/uplot.js";
 export { ThreeJsRenderer } from "./view/3d/renderer.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
-export { CompositeRenderer } from "./view/renderer.js";
 export { ParticleCloudView, ScalarFieldPixelRaster, ComplexScalarFieldRaster } from "./view/2d/views.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 
@@ -40,9 +39,7 @@ export {
 } from "./view/3d/composite/composites.js";
 
 export {
-    WaterAlternativeColorMapper, WaterColorMapper, GradientColorMapper, UniformColorMapper,
-    RdYlBuColorMapper, ViridisColorMapper, InfernoColorMapper, SeismicColorMapper, JetColorMapper,
-    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString
+    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString, ColorMap
 } from "./view/colormappers.js";
 
 export {

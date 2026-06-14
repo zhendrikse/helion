@@ -1,4 +1,4 @@
-import {RadialSymmetricBody} from "./physics.js";
+import {RadialSymmetricBody} from "./bodies.js";
 
 export class Planet extends RadialSymmetricBody {
     constructor(planetData) {

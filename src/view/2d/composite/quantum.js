@@ -1,6 +1,7 @@
 import { toColorString } from "../../colormappers.js";
+import {Renderable3D} from "../../renderer.js";
 
-export class OneDimensionalComplexPlaneWave2D {
+export class OneDimensionalComplexPlaneWave2D extends Renderable3D {
     static Mode = Object.freeze({
         DENSITY_PHASE: "densityPhase",
         REAL_IMAG: "realImag"
@@ -13,7 +14,7 @@ export class OneDimensionalComplexPlaneWave2D {
         mode = OneDimensionalComplexPlaneWave2D.Mode.DENSITY_PHASE,
         nColors = 360
     } = {}) {
-        this._complexPlaneWave = null;
+        super();
         this._width = width;
         this._height = height;
         this._scaleY = scaleY;
@@ -31,12 +32,8 @@ export class OneDimensionalComplexPlaneWave2D {
 
     set context(context) { this._context = context; }
 
-    bind(complexPlaneWave) {
-        // Sanity checks
-        if (!complexPlaneWave.valueAt)
-            throw new Error("Body does not implement valueAt(), hence it cannot be attached to this view.");
-
-        this._complexPlaneWave = complexPlaneWave;
+    canBindTo(complexPlaneWave) {
+        return complexPlaneWave.valueAt;
     }
 
     set mode(mode) { this._mode = mode; }
@@ -94,7 +91,7 @@ export class OneDimensionalComplexPlaneWave2D {
             this._plotImag(centerY);
     }
 
-    render() {
+    synchronizeWith(model) {
         const centerY = this._height / 2;
 
         // Clear canvas

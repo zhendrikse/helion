@@ -1,6 +1,5 @@
 import {
-    ThreeJsRenderer, Simulation, ParametricSurface,
-    GaussianCurvatureField, Domain, StandardSurfaceView, DropdownMenu, Registry
+    ThreeJsRenderer, Simulation, ParametricSurface, Domain, StandardSurfaceView, DropdownMenu, Registry
 } from "../../../src/index.js";
 
 const sin = Math.sin;
@@ -61,7 +60,7 @@ const surfaces = {
 };
 
 const surfaceView = new StandardSurfaceView({
-    scalarField: new GaussianCurvatureField(),
+    scalarFieldType: "GaussianCurvature",
     opacity: 0.925
 });
 

@@ -72,19 +72,6 @@ class GlowMaterial {
 }
 
 export class Sun extends Renderable3D {
-    bind(body) {
-        // Sanity checks
-        if (!body.radius)
-            throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
-
-        this._body = body;
-    }
-
-    render(time) {
-        this.uniforms.uTime.value = time * 0.002;
-        this.scale.setScalar(this._body.radius);
-    }
-
     constructor({
         color = new Color("#ffcc66")
     } = {}) {
@@ -105,7 +92,12 @@ export class Sun extends Renderable3D {
         this.add(glow);
     }
 
-    update(deltaTime) {
-        this.uniforms.uTime.value += deltaTime;
+    canBindTo(model) {
+        return model.position && model.radius;
+    }
+
+    synchronizeWith(body, time) {
+        this.uniforms.uTime.value = time * 0.002;
+        this.scale.setScalar(body.radius);
     }
 }

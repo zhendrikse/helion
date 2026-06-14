@@ -5,6 +5,7 @@ import {
 } from "three";
 import { Arrow } from "../primitives/primitives.js";
 import { VectorFieldValue, ComplexScalarFieldValue, Complex} from "../../../model/math/math.js";
+import {Renderable3D} from "../../renderer.js";
 
 //
 // Point cloud
@@ -116,22 +117,22 @@ export class PointCloudMaterial {
 //
 // Point cloud
 //
+// TODO Should actually inherit from Renderable3D as well
 export class PointCloudView extends Points {
     constructor({
         material = PointCloudMaterial.stars()
     } = {}) {
         super(new BufferGeometry(), material);
-        this._pointCloud = null;
         this._positionAttribute = null;
         this._colorAttribute = null;
         this._radiusAttribute = null;
     }
 
-    bind(pointCloud) {
-        // Sanity checks
-        if (!pointCloud.positionAt || !pointCloud.colorAt || !pointCloud.sizeAt)
-            throw new Error("Body does not behave like a point cloud, hence it cannot be attached to this view.");
+    canBindTo(pointCloud) {
+        return pointCloud.positionAt && pointCloud.colorAt && pointCloud.sizeAt;
+    }
 
+    initialize(pointCloud) {
         const N = pointCloud.length;
         this._positionAttribute = new BufferAttribute(new Float32Array(3 * N), 3);
         this._colorAttribute = new BufferAttribute(new Float32Array(3 * N), 3);
@@ -153,9 +154,9 @@ export class PointCloudView extends Points {
         this._pointCloud = pointCloud;
     }
 
-    render() {
-        for (let i = 0; i < this._pointCloud.length; i++) {
-            const p = this._pointCloud.positionAt(i);
+    synchronizeWith(pointCloud, time) {
+        for (let i = 0; i < pointCloud.length; i++) {
+            const p = pointCloud.positionAt(i);
             this._positionAttribute.setXYZ(i, p.x, p.y, p.z);
         }
 
@@ -166,14 +167,14 @@ export class PointCloudView extends Points {
 //
 // Plane waves
 //
-export class ElectromagneticWave extends Group {
+export class ElectromagneticWave extends Renderable3D {
     constructor({
-                    electricFieldColor = new Color("orange"),
-                    magneticFieldColor = new Color("cyan"),
-                    arrowSize = 1,
-                    numArrows = 100,
-                    scalingFunction = (position, lambda) => .5, // default: fixed scaling with increasing distance
-                } = {}) {
+        electricFieldColor = new Color("orange"),
+        magneticFieldColor = new Color("cyan"),
+        arrowSize = 1,
+        numArrows = 100,
+        scalingFunction = (position, lambda) => .5, // default: fixed scaling with increasing distance
+    } = {}) {
         super();
         this._electricFieldArrows = [];
         this._magneticFieldArrows = [];
@@ -188,30 +189,23 @@ export class ElectromagneticWave extends Group {
         this._tempAxis = new Vector3();
         this._tempPosition = new Vector3();
         this._i_hat = new Vector3(1, 0, 0);
-
-        this._planeWave = null;
     }
 
-    bind(planeWave) {
-        // Sanity checks
-        if (!planeWave.valueAt)
-            throw new Error("Body does not implement valueAt(), hence it cannot be attached to this view.");
-
-        this._planeWave = planeWave;
-        this._createEmWaveFor(planeWave);
+    canBindTo(planeWave) {
+        return planeWave.valueAt;
     }
 
-    _updateFieldVectorAt(index) {
+    _updateFieldVectorAt(index, wave) {
         const fieldVector = this._electricFieldArrows[index].body;
 
         // x = distance along wave
         const x = this._tempPosition.copy(fieldVector.position)
-            .sub(this._planeWave.position)
+            .sub(wave.position)
             .length();
 
         // Field vectors haven't been added to the renderer by the application, so we need to sync state here:
         const scaling = this._scalingFunction(fieldVector.position);
-        fieldVector.axis.y = scaling * this._planeWave.valueAt(x);
+        fieldVector.axis.y = scaling * wave.valueAt(x);
 
         // Magnetic field (orthogonal)
         this._magneticFieldArrows[index].body.axis.copy(
@@ -219,16 +213,16 @@ export class ElectromagneticWave extends Group {
         );
     }
 
-    render() {
+    synchronizeWith(wave) {
         for (let index = 0; index < this._electricFieldArrows.length; index++)
-            this._updateFieldVectorAt(index);
+            this._updateFieldVectorAt(index, wave);
         for (const arrow of this._electricFieldArrows)
             arrow.render();
         for (const arrow of this._magneticFieldArrows)
             arrow.render();
     }
 
-    _createEmWaveFor(planeWave) {
+    initialize(planeWave) {
         const ds = planeWave.lambda / 10.0;
         const dr1 = planeWave.position.clone().normalize().multiplyScalar(ds);
         const position = planeWave.position.clone();
@@ -254,12 +248,12 @@ export class ElectromagneticWave extends Group {
     }
 }
 
-export class OneDimensionalComplexPlaneWave3D extends Group {
+export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
     constructor({
-                    size = 1,
-                    numArrows = 70,
-                    round = true
-                } = {}) {
+        size = 1,
+        numArrows = 70,
+        round = true
+    } = {}) {
         super();
         this._arrows = [];
 
@@ -269,11 +263,11 @@ export class OneDimensionalComplexPlaneWave3D extends Group {
         this._complexPlaneWave = null;
     }
 
-    bind(complexPlaneWave) {
-        // Sanity checks
-        if (!complexPlaneWave.valueAt)
-            throw new Error("Body does not implement valueAt(), hence it cannot be attached to this view.");
+    canBindTo(complexPlaneWave) {
+        return complexPlaneWave.valueAt;
+    }
 
+    initialize(complexPlaneWave) {
         this._complexPlaneWave = complexPlaneWave;
 
         const position = new Vector3().copy(complexPlaneWave.position);
@@ -294,7 +288,9 @@ export class OneDimensionalComplexPlaneWave3D extends Group {
         this.add(arrow);
     }
 
-    render() {
+    synchronizeWith(complexPlaneWave) {
+        // TODO Arrows still have to be mapped to the wave properly
+        throw new Error("TODO: Arrows still have to be mapped to the wave properly!!!!!!!!");
         for (let arrow of this._arrows)
             arrow.body.withValue = this._complexPlaneWave.valueAt(arrow.body.position.x);
 
@@ -313,7 +309,7 @@ const shaftGeometrySquare = new BoxGeometry(1, 1, 1);
 const headGeometryRound = new ConeGeometry(1, 1, 16);
 const headGeometrySquare = new ConeGeometry(1, 1, 4);
 
-export class ArrowField extends Group {
+export class ArrowField extends Renderable3D {
     constructor({
         xRange,
         yRange,
@@ -335,8 +331,6 @@ export class ArrowField extends Group {
         this._shaftWidth = shaftWidth;
         this._headWidth = headWidth;
         this._headLength = headLength;
-
-        this._vectorField = null;
 
         // ---- build positions
         this._positions = [];
@@ -371,11 +365,8 @@ export class ArrowField extends Group {
         this.target = new Vector3();
     }
 
-    bind(vectorField) {
-        if (!vectorField?.sample)
-            throw new Error("vectorField must implement sample(positionVector, target)");
-
-        this._vectorField = vectorField;
+    canBindTo(vectorField) {
+        return vectorField.sample;
     }
 
     #computeSizes(length) {
@@ -393,12 +384,12 @@ export class ArrowField extends Group {
         this._shaftMesh.instanceColor.setXYZ(index, c.r, c.g, c.b);
     }
 
-    render() {
+    synchronizeWith(vectorField) {
         const count = this._positions.length;
 
         for (let i = 0; i < count; i++) {
             const pos = this._positions[i];
-            this._vectorField.sample(pos, this.target);
+            vectorField.sample(pos, this.target);
             const mag = this.target.length();
 
             if (mag < 1e-9) {
@@ -432,6 +423,6 @@ export class ArrowField extends Group {
         this._shaftMesh.instanceMatrix.needsUpdate = true;
         this._headMesh.instanceMatrix.needsUpdate = true;
         this._shaftMesh.instanceColor.needsUpdate = true;
-        this._headMesh.instanceColor.needsUpdate = true;    }
-
+        this._headMesh.instanceColor.needsUpdate = true;
+    }
 }

@@ -1,5 +1,5 @@
 import {
-    GradientColorMapper, Domain, StandardSurfaceView, Interval,
+    Domain, StandardSurfaceView, Interval,
     MultivariateFunctionSurface, Simulation, ThreeJsRenderer, Button
 } from "../../../src/index.js";
 
@@ -29,8 +29,7 @@ class Membrane extends MultivariateFunctionSurface {
 
 const membrane = new Membrane();
 const surfaceView = new StandardSurfaceView({
-    normalizer: new Interval(-membrane.amplitude, membrane.amplitude),
-    colorMapper: new GradientColorMapper()
+    normalizer: new Interval(-membrane.amplitude, membrane.amplitude)
 });
 
 const container = document.getElementById("membraneContainer");

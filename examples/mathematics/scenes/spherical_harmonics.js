@@ -33,7 +33,7 @@ const renderer = ThreeJsRenderer
     .with({ fieldOfView: 20 });
 
 const surfaceView = new StandardSurfaceView({
-    colorMapper: ColorMappers.RdYlBu,
+    colorMapperType: ColorMappers.get("RdYlBu"),
     opacity: 0.9
 });
 

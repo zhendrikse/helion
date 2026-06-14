@@ -14,11 +14,13 @@ export class Registry {
         this._id = id;
     }
 
+
     get(name) { return this._entries[name]; }
+
     get label() { return this._label; }
     get id() { return this._id; }
 
-    names() { return Object.keys(this._entries); }
+    get names() { return Object.keys(this._entries); }
 
     add(name, value) { this._entries[name] = value; }
 }
@@ -51,7 +53,7 @@ export class Binding {
 
     synchronize(clockTime) {
         if (this.needsRendering)
-            this.view.render(clockTime);
+            this.view.synchronizeWith(this.model, clockTime);
     }
 
     needsRendering() {
@@ -59,8 +61,11 @@ export class Binding {
     }
 
     initialize() {
-        this.view.bind(this.model);
-        this.view.initialize?.(); // Necessary to generate geometries & correct bounding boxes
+        if (!this.view.canBindTo(this.model))
+            throw new Error("Helion cannot bind this view to this model");
+
+        this.view.initialize?.(this.model); // E.g. to generate geometries & correct bounding boxes
+        this.synchronize(0);
     }
 
     reset() {
@@ -210,12 +215,12 @@ export class Simulation {
     }
 
     animate = (clockTime) => {
-        // Physics update
+        // Physics / math model update
         this._onBeforePhysicsUpdate(clockTime, this._simulatedTime);
         this._updatePhysics(clockTime);
         this._onAfterPhysicsUpdate(clockTime, this._simulatedTime);
 
-        // Rendering
+        // Sync model and views after model update
         for (const binding of this._bindings)
             binding.synchronize(clockTime);
 

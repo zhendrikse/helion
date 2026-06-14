@@ -110,31 +110,23 @@ export class Saturn extends Renderable3D {
         this.add(this._mesh);
         this._mesh.castShadow = true;
         this._mesh.receiveShadow = false;
-
-        this._body = null;
     }
 
-    bind(body) {
-        // Sanity checks
-        if (!body.radius)
-            throw new Error("Body does not have a radius, hence it cannot be attached to Saturn view.");
-        if (!body.tilt)
-            throw new Error("Body does not have a tilt, hence it cannot be attached to Saturn view.");
+    canBindTo(body) {
+        return body.position && body.radius && body.tilt;
+    }
 
-        this._body = body;
-
+    initialize(body) {
         // Set the axis of rotation (Y-axis) equal to the tilt
         this.quaternion.setFromAxisAngle(new Vector3(0, 0, 1), body.tilt);
-    }
 
-    initialize() {
         const innerRingRadius = 1.11;
         const outerRingRadius = 2.1;
-        const ringMesh = this.#createRings(innerRingRadius, outerRingRadius);
+        const ringMesh = this.#createRings(body.tilt, innerRingRadius, outerRingRadius);
         this.add(ringMesh);
     }
 
-    #createRings(innerRadius, outerRadius) {
+    #createRings(tilt, innerRadius, outerRadius) {
         const geometry = new PlanetRingGeometry(innerRadius, outerRadius, 128);
         const texture = Saturn.loader.load(saturnRingsUrl);
         const material = new MeshPhongMaterial({
@@ -146,12 +138,12 @@ export class Saturn extends Renderable3D {
 
         const rings = new Mesh(geometry, material);
         rings.rotation.x = Math.PI / 2; // Ring lies in XY plane → tilt to XZ
-        this.rotation.z = this._body.tilt; // Axial tilt (set only once!)
+        this.rotation.z = tilt; // Axial tilt (set only once!)
         return rings;
     }
 
-    render() {
-        this.position.copy(this._body.position);
-        this.scale.setScalar(this._body.radius);
+    synchronizeWith(model) {
+        this.position.copy(model.position);
+        this.scale.setScalar(model.radius);
     }
 }

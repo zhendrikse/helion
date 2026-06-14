@@ -1,6 +1,6 @@
 import {
     ThreeJsRenderer, Simulation, StandardSurfaceView, Vec3, DropdownMenu, Checkbox,
-    Interval, GradientColorMapper, MultivariateFunctionSurface, Domain, Registry
+    Interval, ColorMappers, MultivariateFunctionSurface, Domain, Registry
 } from "../../../src/index.js";
 
 const pi = Math.PI;
@@ -99,7 +99,6 @@ const renderer = new ThreeJsRenderer({
 });
 
 const surfaceView = new StandardSurfaceView({
-    colorMapper: new GradientColorMapper(),
     normalizer: new Interval(0, surfaces["Ripple"].amplitude)
 });
 

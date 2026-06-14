@@ -1,6 +1,6 @@
 import {
     ThreeJsRenderer, Simulation, ParametricSurface,
-    Domain, StandardSurfaceView, SurfaceResolution, ColorMappers, Registry, DropdownMenu
+    Domain, StandardSurfaceView, SurfaceResolution, ColorMappers, Registry, DropdownMenu, ColorMap
 } from "../../../src/index.js";
 import {MeshStandardMaterial} from "three";
 
@@ -68,7 +68,7 @@ const surfaceView = new StandardSurfaceView({
     opacity: 0.95,
     surfaceResolution: new SurfaceResolution(200, 200),
     contourResolution: new SurfaceResolution(100, 50),
-    colorMapper: ColorMappers.get("RdYlBu")
+    colorMapper: ColorMappers.get(ColorMap.RdYlBu)
 });
 
 const htmlDiv = document.getElementById("shellsContainer");

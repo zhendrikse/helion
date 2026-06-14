@@ -1,12 +1,7 @@
 import {MathPhysicsModelBehavior, Registry} from "../../core/helion.js";
 import {Complex, Interval, Vec3} from "./math.js";
 import {
-    GradientColorMapper,
-    InfernoColorMapper,
-    JetColorMapper,
-    RdYlBuColorMapper,
-    SeismicColorMapper, UniformColorMapper,
-    ViridisColorMapper, WaterAlternativeColorMapper, WaterColorMapper
+    InfernoColorMapper, RdYlBuColorMapper, SeismicColorMapper, ViridisColorMapper
 } from "../../view/colormappers.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
 
@@ -44,7 +39,6 @@ export class VectorField extends Field {
  * Mathematical definition of a surface.
  */
 export class Surface extends Field {
-    normalAt(u, v, target) {}
 }
 
 /**
@@ -92,7 +86,11 @@ export class MultivariateFunctionSurface extends ParametricSurface {
     set time(time) { this._time = time; }
 }
 
-export class ScalarFieldSurface extends Surface {
+export class ComplexSurface extends ParametricSurface {
+    // TODO
+}
+
+export class DiscreteFieldSurface extends Surface {
     constructor(field) {
         super();
         this._field = field;
@@ -118,11 +116,18 @@ export class ScalarFieldSurface extends Surface {
     }
 }
 
-export class HeightScalarField extends Field {
-    set surface(newSurface) {
-        this._surface = newSurface;
+export class ScalarFieldOnSurface extends Field {
+    constructor(surface) {
+        super();
+        if (!surface)
+            throw new Error("Cannot initialize a scalar field on a surface that is null!");
+        this._surface = surface;
     }
 
+    get recommendedColorMapper() {}
+}
+
+export class HeightScalarField extends ScalarFieldOnSurface {
     sample(u, v, target) {
         this._surface.sample(u, v, target);
         target.set(u, v, target.y);
@@ -133,19 +138,14 @@ export class HeightScalarField extends Field {
     }
 }
 
-export class MeanCurvatureField extends Field {
-    constructor() {
-        super();
-        this._geometry = null;
+export class MeanCurvatureField extends ScalarFieldOnSurface {
+    constructor(surface) {
+        super(surface);
+        this._geometry = new DifferentialGeometry(surface);
     }
 
     get recommendedColorMapper() {
         return new JetColorMapper();
-    }
-
-    set surface(newSurface) {
-        this._surface = newSurface;
-        this._geometry = new DifferentialGeometry(newSurface);
     }
 
     sample(u, v, target) {
@@ -153,19 +153,14 @@ export class MeanCurvatureField extends Field {
     }
 }
 
-export class GaussianCurvatureField extends Field {
-    constructor() {
-        super();
-        this._geometry = null;
+export class GaussianCurvatureField extends ScalarFieldOnSurface {
+    constructor(surface) {
+        super(surface);
+        this._geometry = new DifferentialGeometry(surface);
     }
 
     get recommendedColorMapper() {
         return new SeismicColorMapper();
-    }
-
-    set surface(newSurface) {
-        this._surface = newSurface;
-        this._geometry = new DifferentialGeometry(newSurface);
     }
 
     sample(u, v, target) {
@@ -173,20 +168,15 @@ export class GaussianCurvatureField extends Field {
     }
 }
 
-export class PrincipalCurvatureField extends Field {
-    constructor(which = 1) {
-        super();
-        this._geometry = null;
+export class PrincipalCurvatureField extends ScalarFieldOnSurface {
+    constructor(surface, which=1) {
+        super(surface);
+        this._geometry = new DifferentialGeometry(surface);
         this._which = which;
     }
 
     get recommendedColorMapper() {
         return this._which === 1 ? new ViridisColorMapper() : new InfernoColorMapper();
-    }
-
-    set surface(newSurface) {
-        this._surface = newSurface;
-        this._geometry = new DifferentialGeometry(newSurface);
     }
 
     sample(u, v, target) {
@@ -195,19 +185,14 @@ export class PrincipalCurvatureField extends Field {
     }
 }
 
-export class ShapeIndexField extends Field {
-    constructor() {
-        super();
-        this._geometry = null;
+export class ShapeIndexField extends ScalarFieldOnSurface {
+    constructor(surface) {
+        super(surface);
+        this._geometry = new DifferentialGeometry(surface);
     }
 
     get recommendedColorMapper() {
         return new RdYlBuColorMapper();
-    }
-
-    set surface(newSurface) {
-        this._surface = newSurface;
-        this._geometry = new DifferentialGeometry(newSurface);
     }
 
     sample(u, v, target) {
@@ -221,15 +206,10 @@ export class ShapeIndexField extends Field {
     }
 }
 
-export class CurvednessField extends Field {
-    constructor() {
-        super();
-        this._geometry = null;
-    }
-
-    set surface(newSurface) {
-        this._surface = newSurface;
-        this._geometry = new DifferentialGeometry(newSurface);
+export class CurvednessField extends ScalarFieldOnSurface {
+    constructor(surface) {
+        super(surface);
+        this._geometry = new DifferentialGeometry(surface);
     }
 
     get recommendedColorMapper() {
@@ -246,13 +226,13 @@ export const SurfaceScalarFields = new Registry({
     id: "surfaceScalarFieldSelect",
     label: "Surface field ",
     entries: {
-        Height: new HeightScalarField(),
-        MeanCurvature: new MeanCurvatureField(),
-        PrincipalCurvature1: new PrincipalCurvatureField(1),
-        PrincipalCurvature2: new PrincipalCurvatureField(2),
-        GaussianCurvature: new GaussianCurvatureField(),
-        ShapeIndex: new ShapeIndexField(),
-        Curvedness: new CurvednessField()
+        Height: surface => new HeightScalarField(surface),
+        MeanCurvature: surface => new MeanCurvatureField(surface),
+        PrincipalCurvature1: surface => new PrincipalCurvatureField(surface,1),
+        PrincipalCurvature2: surface => new PrincipalCurvatureField(surface,2),
+        GaussianCurvature: surface => new GaussianCurvatureField(surface),
+        ShapeIndex: surface => new ShapeIndexField(surface),
+        Curvedness: surface => new CurvednessField(surface)
     }
 });
 

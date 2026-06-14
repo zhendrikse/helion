@@ -68,7 +68,7 @@ export class DropdownMenu extends HtmlControl {
         this._buttonRow.appendChild(label);
         this._buttonRow.appendChild(this._inputControl);
 
-        for (const value of Object.values(registry.names())) {
+        for (const value of Object.values(registry.names)) {
             const option = document.createElement("option");
             option.value = value;
             option.textContent = value;

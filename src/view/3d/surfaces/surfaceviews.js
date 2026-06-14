@@ -6,15 +6,15 @@
  *     ColorMapper -> NormalizedScalarField -> Normalizer.normalize() -> SurfaceScalarField.scalarValueAt()
  */
 import {
-    Group, Vector3, LineBasicMaterial, Line, BufferGeometry, DoubleSide, PlaneGeometry, Color,
+    Vector3, LineBasicMaterial, Line, BufferGeometry, DoubleSide, PlaneGeometry, Color,
     Object3D, Mesh, SphereGeometry, MeshStandardMaterial, InstancedMesh, InstancedBufferAttribute,
     DynamicDrawUsage, BufferAttribute, Box3, BoxGeometry, ConeGeometry, CapsuleGeometry, CylinderGeometry,
     IcosahedronGeometry
 } from "three";
-import { HeightScalarField, SurfaceScalarFields } from "../../../model/math/fields.js";
+import { SurfaceScalarFields } from "../../../model/math/fields.js";
 import { AdaptiveSymmetricNormalizer } from "../../../model/math/math.js";
 import { NormalizedScalarField } from "../../../model/math/fields.js";
-import { ColorMappers } from "../../colormappers.js";
+import {ColorMap, ColorMappers} from "../../colormappers.js";
 import { Checkbox, DropdownMenu} from "../../../controller/controller.js";
 import { Registry } from "../../../core/helion.js";
 import { Renderable3D } from "../../renderer.js";
@@ -37,50 +37,53 @@ class SurfaceView extends Renderable3D {
 
     constructor({
         resolution = new SurfaceResolution(100, 100),
-        scalarField = new HeightScalarField(),
-        colorMapper = scalarField.recommendedColorMapper,
+        scalarFieldType = "Height",
+        colorMapper = ColorMappers.get(ColorMap.Gradient),
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super();
+        this._scalarFieldType = scalarFieldType;
         this._resolution = resolution;
-        this._scalarField = scalarField;    // Scalar field that is defined by this surface (e.g. mean curvature)
+        this._scalarField = null;           // Scalar field that is defined by this surface (e.g. mean curvature)
         this._normalizer = normalizer;      // Normalizes scalar field values used by the color mapper
         this._colorMapper = colorMapper;
-
         this._normalizedScalarField = null; // Scalar field used to generate scalar values for the color mapper
-        this._surface = null;               // Mathematical surface definition to generate surface with
         this._dirty = true;                 // When surface definition has changed, this flag is raised
     }
 
     get dirty() { return this._dirty; }
 
     showColormapSelectorIn(container) {
-        new DropdownMenu(container).for(ColorMappers).addEventListener("change", (event) => {
-            this._colorMapper = ColorMappers.get(event.target.value);
-            this._dirty = true;
-        });
+        new DropdownMenu(container)
+            .for(ColorMappers)
+            .addEventListener("change", (event) => {
+                this._colorMapper = ColorMappers.get(event.target.value);
+                this._dirty = true;
+            });
     }
 
     showScalarFieldSelectorIn(container) {
-        new DropdownMenu(container).for(SurfaceScalarFields).addEventListener("change", (event) => {
-            this._scalarField = SurfaceScalarFields.get(event.target.value);
-            this._scalarField.surface = this._surface;
-            this._normalizedScalarField = new NormalizedScalarField(this._scalarField, this._normalizer);
-            this._normalizedScalarField.reset();
-            this._colorMapper = this._scalarField.recommendedColorMapper;
-            this._dirty = true;
+        new DropdownMenu(container)
+            .for(SurfaceScalarFields)
+            .addEventListener("change", (event) => {
+                const newScalarField = SurfaceScalarFields.get(event.target.value);
+                newScalarField.surface = this._scalarField._surface;
+                this._normalizedScalarField = new NormalizedScalarField(newScalarField, this._normalizer);
+                this._normalizedScalarField.reset();
+                this._colorMapper = newScalarField.recommendedColorMapper;
+                this._scalarField = newScalarField;
+                this._dirty = true;
         });
     }
 
     set normalizer(normalizer) { this._normalizer = normalizer; }
 
-    bind(mathSurfaceDefinition) {
-        // Sanity checks
-        if (!mathSurfaceDefinition.sample)
-            throw new Error("Surface does not implement sample(u, v, target), so it cannot be attached to this view.");
+    canBindTo(model) {
+        return model.sample;
+    }
 
-        this._surface = mathSurfaceDefinition;
-        this._scalarField.surface = mathSurfaceDefinition; // The scalar field that is defined by this surface
+    initialize(mathSurfaceDefinition) {
+        this._scalarField = SurfaceScalarFields.get(this._scalarFieldType)(mathSurfaceDefinition);
         this._normalizedScalarField = new NormalizedScalarField(this._scalarField, this._normalizer);
         this._normalizedScalarField.reset();
         this._dirty = true;
@@ -90,12 +93,6 @@ class SurfaceView extends Renderable3D {
         this.updateMatrixWorld(true);
         return new Box3().setFromObject(this);
     }
-
-    initialize() {
-        this.render();
-    }
-
-    render() {}
 
     dispose() {
         this.traverse(obj => {
@@ -157,11 +154,11 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         shape = "Box",
         resolution = new SurfaceResolution(100, 100),
         opacity = 1.0,
-        scalarField = new HeightScalarField(),
-        colorMapper = scalarField.recommendedColorMapper,
+        scalarFieldType = "Height",
+        colorMapper = ColorMappers.get(ColorMap.Gradient),
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
-        super({resolution, colorMapper, scalarField, normalizer});
+        super({resolution, colorMapper, scalarFieldType, normalizer});
         this._positionSample = new Vector3();
         this._scalarSample = new Vector3();
         this._dummy = new Object3D();
@@ -205,18 +202,22 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         this.setGeometry(shape.geometry);
     }
 
-    render() {
+    initialize(mathSurfaceDefinition) {
+        super.initialize(mathSurfaceDefinition);
+    }
+
+    synchronizeWith(model) {
         let index = 0;
 
         for (let i = 0; i <= this._resolution.u; i++) {
             const u = i / this._resolution.u;
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
-                this._surface.sample(u, v, this._positionSample);
+                model.sample(u, v, this._positionSample);
                 this._dummy.position.copy(this._positionSample);
 
                 if (this._orientationAxis) {
-                    this._surface.normalAt(i, j, this._normalVector);
+                    model.normalAt(i, j, this._normalVector);
                     this._dummy.quaternion.setFromUnitVectors(this._orientationAxis, this._normalVector);
                 }
 
@@ -250,11 +251,11 @@ export class StandardSurfaceView extends SurfaceView {
         contours = true,
         surface = true,
         opacity = 1,
-        scalarField = new HeightScalarField(),
-        colorMapper = scalarField.recommendedColorMapper,
+        scalarFieldType = "Height",
+        colorMapper = ColorMappers.get(ColorMap.Gradient),
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
-        super({resolution, colorMapper, scalarField, normalizer});
+        super({resolution, colorMapper, scalarFieldType, normalizer});
 
         // Contours
         this._contourSegments = contourSegments;
@@ -352,8 +353,8 @@ export class StandardSurfaceView extends SurfaceView {
         return new Line(geometry, this._contourMaterial);
     }
 
-    initialize() {
-        super.initialize();
+    initialize(model) {
+        super.initialize(model);
 
         // u = constant
         for (let i = 0; i <= this._contourResolution.u; i++) {
@@ -396,19 +397,19 @@ export class StandardSurfaceView extends SurfaceView {
         geometry.computeBoundingSphere();
     }
 
-    #renderContours() {
+    #renderContours(model) {
         for (const entry of this._uLines)
             this.#updateLine(entry,
-                (v) => this._surface.sample(entry.u, v, this._positionSample),
+                (v) => model.sample(entry.u, v, this._positionSample),
                 (v) => this._normalizedScalarField.sample(entry.u, v, this._scalarSample));
 
         for (const entry of this._vLines)
             this.#updateLine(entry,
-                (u) => this._surface.sample(u, entry.v, this._positionSample),
+                (u) => model.sample(u, entry.v, this._positionSample),
                 (u) => this._normalizedScalarField.sample(u, entry.v, this._scalarSample));
     }
 
-    #renderSurface() {
+    #renderSurface(model) {
         let k = 0;
         let c = 0;
 
@@ -416,7 +417,7 @@ export class StandardSurfaceView extends SurfaceView {
             const u = i / this._resolution.u;
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
-                this._surface.sample(u, v, this._positionSample);
+                model.sample(u, v, this._positionSample);
                 this._positions[k++] = this._positionSample.x;
                 this._positions[k++] = this._positionSample.y;
                 this._positions[k++] = this._positionSample.z;
@@ -438,11 +439,11 @@ export class StandardSurfaceView extends SurfaceView {
         }
     }
 
-    render() {
+    synchronizeWith(model) {
         if (this._showSurface)
-            this.#renderSurface();
+            this.#renderSurface(model);
         if (this._showContours)
-            this.#renderContours();
+            this.#renderContours(model);
         this._dirty = false;
     }
 }

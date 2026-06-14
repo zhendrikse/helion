@@ -1,13 +1,13 @@
 import {
     Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, InstancedMesh,
     InstancedBufferAttribute, DynamicDrawUsage, CircleGeometry, Object3D, Color, SphereGeometry, MeshStandardMaterial,
-    DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry, ConeGeometry
+    DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry, ConeGeometry, CylinderGeometry, CapsuleGeometry
 } from "three";
 import { Renderable3D } from "../renderer.js";
 import { Complex } from "../../model/math/math.js";
 import {DropdownMenu} from "../../controller/controller.js";
 import {Registry} from "../../core/helion.js";
-import {ColorMappers} from "../colormappers.js";
+import {ColorMap, ColorMappers} from "../colormappers.js";
 
 export function hsvToRgb(h, s, v) {
     let r, g, b;
@@ -43,8 +43,10 @@ export class ParticleCloudView extends Renderable3D {
 
     static Shape = Object.freeze({
         Box: new BoxGeometry(2, 2, 2),
-        Icosahedron: new IcosahedronGeometry(1.5),
+        Capsule: new CapsuleGeometry(.75, 2.5),
         Cone: new ConeGeometry(1.5, 3),
+        Cylinder: new CylinderGeometry(.75, .75, 2.5, 16),
+        Icosahedron: new IcosahedronGeometry(1.5),
         Sphere: new SphereGeometry(1.25, 16, 16)
     });
 
@@ -58,7 +60,7 @@ export class ParticleCloudView extends Renderable3D {
         particleCount = 5000,
         type = "Sphere",
         scalarField = particle => particle.mass,
-        colorMapper = ColorMappers.get("Jet")
+        colorMapper = ColorMappers.get(ColorMap.Scientific)
     } = {}) {
         super();
 
@@ -71,17 +73,22 @@ export class ParticleCloudView extends Renderable3D {
 
         this._dummy = new Object3D();
         this._color = new Color();
+        this._boundingBox = new Box3();
     }
 
-    render() {
+    synchronizeWith(particleField) {
         let index = 0;
+        this._boundingBox = new Box3();
+        for (let i = 0; i < particleField.size; i++) {
+            const pos = particleField.particleStateAt(i).position;
+            const r = particleField.particleStateAt(i).size;
+            const color = particleField.particleStateAt(i).color;
 
-        for (let i = 0; i < this._particleField.size; i++) {
-            const pos = this._particleField.particleStateAt(i).position;
-            const color = this._particleField.particleStateAt(i).color;
+            this._boundingBox.expandByPoint(new Vector3(pos.x - r, pos.y - r, pos.z - r));
+            this._boundingBox.expandByPoint(new Vector3(pos.x + r, pos.y + r, pos.z + r));
 
             this._dummy.position.set(pos.x, pos.y, 0);
-            this._dummy.scale.setScalar(this._particleField.particleStateAt(i).size);
+            this._dummy.scale.setScalar(particleField.particleStateAt(i).size);
             this._dummy.updateMatrix();
             this._mesh.setMatrixAt(index, this._dummy.matrix);
 
@@ -98,22 +105,11 @@ export class ParticleCloudView extends Renderable3D {
         this._mesh.instanceColor.needsUpdate = true;
     }
 
-    bind(field) {
-        this._particleField = field;
+    canBindTo(model) {
+        return model.particleStateAt;
     }
 
-    get boundingBox() {
-        const box = new Box3();
-
-        for (let i = 0; i < this._particleField.size; i++) {
-            const p = this._particleField.particleStateAt(i).position;
-            const r = this._particleField.particleStateAt(i).size;
-            box.expandByPoint(new Vector3(p.x - r, p.y - r, p.z - r));
-            box.expandByPoint(new Vector3(p.x + r, p.y + r, p.z + r));
-        }
-
-        return box;
-    }
+    get boundingBox() { return this._boundingBox; }
 
     showShapeSelectorIn(container) {
         new DropdownMenu(container).for(ParticleCloudView.Shapes).addEventListener("change",
@@ -158,19 +154,13 @@ export class ScalarFieldPixelRaster extends Renderable3D {
         this._pixels = pixels;
         this._texture = texture;
         this._colorMapper = colorMapper;
-        this._scalarField = null;
-
         this._colour = new Color();
     }
 
     set context(context) { this._context = context; }
 
-    bind(discreteScalarField) {
-        // Sanity checks
-        if (!discreteScalarField.valueAt)
-            throw new Error("Body does not implement valueAt(), hence it cannot be attached to this view.");
-
-        this._scalarField = discreteScalarField;
+    canBindTo(discreteScalarField) {
+        return discreteScalarField.valueAt;
     }
 
     _maxMagnitude() {
@@ -186,13 +176,13 @@ export class ScalarFieldPixelRaster extends Renderable3D {
         return max;
     }
 
-    render() {
+    synchronizeWith(scalarField) {
         const max =  this._maxMagnitude();
         let index = 0;
 
         for(let j = 0; j < this._height; j++)
             for(let i = 0; i < this._width; i++) {
-                const intensity = this._colorMapper?.map(this._scalarField.valueAt(i, j) / max, this._colour);
+                const intensity = this._colorMapper?.map(scalarField.valueAt(i, j) / max, this._colour);
                 this._pixels[index++] = this._colour.r;
                 this._pixels[index++] = this._colour.g;
                 this._pixels[index++] = this._colour.b;
@@ -239,20 +229,17 @@ export class ComplexScalarFieldRaster extends Renderable3D {
         this._complexValue = new Complex();
     }
 
-    bind(field) {
-        if (!field.sample)
-            throw new Error("Field does not implement sample(x, y, target), so it cannot be attached to this view.");
-
-        this._field = field;
+    canBindTo(field) {
+        return field.sample && field.nx && field.ny;
     }
 
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
-    _maxMagnitude() {
+    _maxMagnitude(field) {
         let max = 0;
-        for (let i = 0; i < this._field.nx; i++)
-            for (let j = 0; j < this._field.ny; j++) {
-                this._field.sample(i, j, this._complexValue);
+        for (let i = 0; i < field.nx; i++)
+            for (let j = 0; j < field.ny; j++) {
+                field.sample(i, j, this._complexValue);
                 if (this._complexValue.magnitude > max)
                     max = this._complexValue.magnitude;
             }
@@ -260,13 +247,13 @@ export class ComplexScalarFieldRaster extends Renderable3D {
         return max;
     }
 
-    render() {
-        const max =  this._maxMagnitude();
+    synchronizeWith(field) {
+        const max =  this._maxMagnitude(field);
         let index = 0;
 
         for(let j = 0; j < this._height; j++)
             for(let i = 0; i < this._width; i++) {
-                this._field.sample(i, j, this._complexValue);
+                field.sample(i, j, this._complexValue);
                 const mag = this._complexValue.magnitude / max;
                 const phase = this._complexValue.phase;
                 const color = this._phaseColor ?

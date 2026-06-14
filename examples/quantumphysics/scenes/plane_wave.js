@@ -1,5 +1,5 @@
 import {
-    Simulation, CompositeRenderer, OneDimensionalComplexPlaneWave2D,
+    Simulation, OneDimensionalComplexPlaneWave2D,
     OneDimensionalComplexPlaneWave, OneDimensionalComplexPlaneWave3D, ThreeJsRenderer,
     Vec3, Button, Slider, RadioButton, Range
 } from "../../../src/index.js";
@@ -38,8 +38,8 @@ const renderer3d = ThreeJsRenderer
 
 const simulation = Simulation
     .in(htmlDiv3d)
-    .with(new CompositeRenderer([renderer2d, renderer3d]))
-    .synchronize(planeWave.alwaysWith(waveView2d))
+    .with(renderer3d)
+    // .synchronize(planeWave.alwaysWith(waveView2d))
     .synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({ numArrows: 100 })))
     .incrementsTimeBy(0.01)
     .onClockTick((clockTime, simulatedTime) => planeWave.propagate(simulatedTime))

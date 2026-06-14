@@ -57,14 +57,16 @@ export class Trail extends Renderable3D {
         this._lineWidth = lineWidth;
         this._trailAccumulator = 0;
         this._trailStep = trailStep;
-        this._body = null;
         this._previousPosition = null;
     }
 
-    bind(body) {
-        this._body = body;
+    initialize(body) {
         this._previousPosition = body.position.clone();
         this._renew();
+    }
+
+    canBindTo(model) {
+        return model.position;
     }
 
     reset() {
@@ -72,16 +74,16 @@ export class Trail extends Renderable3D {
         this._renew();
     }
 
-    render(increment = 1) {
-        if (this._previousPosition.x === this._body.position.x &&
-            this._previousPosition.y === this._body.position.y &&
-            this._previousPosition.z === this._body.position.z)
+    synchronizeWith(body) {
+        if (this._previousPosition.x === body.position.x &&
+            this._previousPosition.y === body.position.y &&
+            this._previousPosition.z === body.position.z)
             return; // When body's position remains unchanged, do NOT update the trail
 
-        this._trailAccumulator += increment;
+        this._trailAccumulator++;
         if (this._trailAccumulator >= this._trailStep) {
-            this._trail.addPoint(this._body.position);
-            this._previousPosition.copy(this._body.position);
+            this._trail.addPoint(body.position);
+            this._previousPosition.copy(body.position);
             this._trailAccumulator = 0;
         }
     }
@@ -134,28 +136,23 @@ export class Sphere extends Renderable3D {
         this._mesh = new Mesh(new SphereGeometry(1, segments, segments), material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
-        this._body = null;
         this.visible = visible;
     }
 
-    bind(body) {
-        // Sanity checks
-        if (!body.radius)
-            throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
-
-        this._body = body;
+    canBindTo(body) {
+        return body.position && body.radius;
     }
 
-    render() {
-        this.position.copy(this._body.position);
-        this.scale.setScalar(this._body.radius);
+    synchronizeWith(body) {
+        this.position.copy(body.position);
+        this.scale.setScalar(body.radius);
     }
 
     get radius() { return this._radius; }
-    get color() { return this.material.color; }
+    get color() { return this._mesh.material.color; }
 
     set radius(newRadius) { this._radius = newRadius; }
-    set color(newColor) { this.material.color.set(newColor); }
+    set color(newColor) { this._mesh.material.color.set(newColor); }
 }
 
 //
@@ -212,7 +209,6 @@ export class Arrow extends Renderable3D {
 
         this.add(this._shaft, this._head);
         this.visible = visible;
-        this._body = null;
         this._size = size;
         this._shaftRadius = 0.3 * size;
         this._headRadius = 0.75 * size;
@@ -222,16 +218,13 @@ export class Arrow extends Renderable3D {
         this._tempAxis = new Vector3();
     }
 
-    bind(body) {
-        if (!body.axis)
-            throw new Error("Body does not have an axis, hence it cannot be attached to this view.");
-
-        this._body = body;
+    canBindTo(body) {
+        return body.position && body.axis;
     }
 
-    render() {
-        this.position.copy(this._body.position);
-        this._tempAxis.copy(this._body.axis);
+    synchronizeWith(body) {
+        this.position.copy(body.position);
+        this._tempAxis.copy(body.axis);
         const magnitude = this._tempAxis.length();
 
         if (magnitude < 1e-12) {
@@ -266,7 +259,6 @@ export class Arrow extends Renderable3D {
         this.clear();
     }
 
-    get body() { return this._body; }
     set opacity(opacity) { this._material.opacity = opacity; }
     set color(color) { this._material.color.set(color); }
 }
@@ -291,27 +283,19 @@ export class Cylinder extends Renderable3D {
         this._mesh = new Mesh(geometry, material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
-
-        this._body = null;
         this._direction = new Vector3();
     }
 
-    bind(body) {
-        // Sanity checks
-        if (!body.axis)
-            throw new Error("Body does not have an axis, hence it cannot be attached to this view.");
-        if (!body.radius)
-            throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
-
-        this._body = body;
+    canBindTo(body) {
+        return body.position && body.axis && body.radius;
     }
 
-    render() {
-        this.position.copy(this._body.position);
-        this._direction.copy(this._body.axis);
+    synchronizeWith(body) {
+        this.position.copy(body.position);
+        this._direction.copy(body.axis);
 
         const length = this._direction.length();
-        this.scale.set(this._body.radius, this._direction.length(), this._body.radius);
+        this.scale.set(body.radius, this._direction.length(), body.radius);
         this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
         this.position.add(this._direction.multiplyScalar(length * .5));
     }
@@ -339,20 +323,15 @@ export class Box extends Renderable3D {
         this.add(this._mesh);
         this._mesh.castShadow = castShadow;
         this.visible = visible;
-        this._body = null;
     }
 
-    bind(body) {
-        // Sanity checks
-        if (!body.size || body.size.x === undefined)
-            throw new Error("Body does not have size (vector), hence it cannot be attached to this view.");
-
-        this._body = body;
+    canBindTo(body) {
+        return body.position && body.size && body.size.x;
     }
 
-    render() {
-        this.position.copy(this._body.position);
-        this.scale.copy(this._body.size);
+    synchronizeWith(body) {
+        this.position.copy(body.position);
+        this.scale.copy(body.size);
     }
 }
 
@@ -377,23 +356,14 @@ export class Ring extends Renderable3D {
         this.add(this._mesh);
     }
 
-    bind(body) {
-        // Sanity checks
-        if (!body.axis)
-            throw new Error("Body does not have an axis, hence it cannot be attached to this view.");
-        if (!body.radius)
-            throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
-
-        this._body = body;
-        this._direction = new Vector3();
+    canBindTo(body) {
+        return body.position && body.axis && body.radius;
     }
 
-    render() {
-        this.position.copy(this._body.position);
-
-        this.scale.setScalar(this._body.radius);
-
-        this._direction.copy(this._body.axis);
+    synchronizeWith(body) {
+        this.position.copy(body.position);
+        this.scale.setScalar(body.radius);
+        this._direction.copy(body.axis);
         this._direction.normalize();
         this.quaternion.setFromUnitVectors(Arrow.FORWARD, this._direction);
     }
@@ -467,19 +437,11 @@ export class Helix extends Renderable3D {
         this._tubularSegments = tubularSegments;
         this._radialSegments = radialSegments;
         this._thickness = thickness;
-
-        this._body = null;
         this._axis = new Vector3();
     }
 
-    bind(body) {
-        // Sanity checks
-        if (!body.axis)
-            throw new Error("Body does not have an axis, hence it cannot be attached to this view.");
-        if (!body.radius)
-            throw new Error("Body does not have a radius, hence it cannot be attached to this view.");
-
-        this._body = body;
+    canBindTo(body) {
+        return body.position && body.axis && body.radius;
     }
 
     #regenerateTube() {
@@ -487,11 +449,10 @@ export class Helix extends Renderable3D {
         this._mesh.geometry = new TubeGeometry(this._curve, this._tubularSegments, this._thickness, this._radialSegments, false);
     }
 
-    render(time) {
-        this.position.copy(this._body.position);
-        this._curve.radius = this._body.radius;
-
-        this._axis.copy(this._body.axis);
+    synchronizeWith(body, time) {
+        this.position.copy(body.position);
+        this._curve.radius = body.radius;
+        this._axis.copy(body.axis);
         this._curve.updateAxis(this._axis);
 
         if (this._longitudinalOscillation) {

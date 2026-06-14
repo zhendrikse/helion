@@ -1,5 +1,5 @@
 import {
-    DiscreteScalarField, ScalarFieldSurface, Simulation, PerlinNoiseOperator,
+    DiscreteScalarField, DiscreteFieldSurface, Simulation, PerlinNoiseOperator, ColorMap,
     StandardSurfaceView, ThreeJsRenderer, Vec3, DiamondSquareOperator, ColorMappers, RadioButton
 } from "../../../src/index.js";
 
@@ -17,7 +17,7 @@ class Landscape {
 
     constructor() {
         const field = new DiscreteScalarField({ nx: 257,  ny: 257 });
-        this._surface = new ScalarFieldSurface(field);
+        this._surface = new DiscreteFieldSurface(field);
         this.noiseType = "diamondSquare";
     }
 
@@ -28,13 +28,13 @@ class Landscape {
         field.apply(operatorNameAsString === "perlin" ?
             Landscape.perlinNoiseOperator :
             Landscape.diamondSquareOperator);
-        this._surface = new ScalarFieldSurface(field);
+        this._surface = new DiscreteFieldSurface(field);
     }
 }
 
 const landscape = new Landscape();
 const surfaceView = new StandardSurfaceView({
-    colorMapper: ColorMappers.get("Terrain"),
+    colorMapper: ColorMappers.get(ColorMap.Terrain),
     contours: false
 });
 surfaceView.position.set(-128, 0, -128);
