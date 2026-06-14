@@ -163,12 +163,12 @@ export class ScalarFieldPixelRaster extends Renderable3D {
         return discreteScalarField.valueAt;
     }
 
-    _maxMagnitude() {
+    _maxMagnitude(scalarField) {
         let max = -Infinity;
 
-        for (let i = 0; i < this._scalarField.nx; i++)
-            for (let j = 0; j < this._scalarField.ny; j++) {
-                const value = this._scalarField.valueAt(i, j);
+        for (let i = 0; i < scalarField.nx; i++)
+            for (let j = 0; j < scalarField.ny; j++) {
+                const value = scalarField.valueAt(i, j);
                 if (value > max)
                     max = value;
             }
@@ -177,7 +177,7 @@ export class ScalarFieldPixelRaster extends Renderable3D {
     }
 
     synchronizeWith(scalarField) {
-        const max =  this._maxMagnitude();
+        const max =  this._maxMagnitude(scalarField);
         let index = 0;
 
         for(let j = 0; j < this._height; j++)

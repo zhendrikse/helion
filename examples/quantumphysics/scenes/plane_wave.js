@@ -1,6 +1,5 @@
 import {
-    Simulation, OneDimensionalComplexPlaneWave2D,
-    OneDimensionalComplexPlaneWave, OneDimensionalComplexPlaneWave3D, ThreeJsRenderer,
+    Simulation, OneDimensionalComplexPlaneWave, OneDimensionalComplexPlaneWave3D,
     Vec3, Button, Slider, RadioButton, Range
 } from "../../../src/index.js";
 
@@ -29,16 +28,12 @@ const planeWave = new OneDimensionalComplexPlaneWave({
 // View for 3D canvas
 //
 const htmlDiv3d = document.getElementById("planeWaveContainer3d");
-const renderer3d = ThreeJsRenderer
+const simulation = Simulation
     .in(htmlDiv3d)
     .with({
         cameraPosition: new Vec3(100, 100, 200),
         fieldOfView: 20
-    });
-
-const simulation = Simulation
-    .in(htmlDiv3d)
-    .with(renderer3d)
+    })
     // .synchronize(planeWave.alwaysWith(waveView2d))
     .synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({ numArrows: 100 })))
     .incrementsTimeBy(0.01)

@@ -1,6 +1,6 @@
 import { Vector2 } from "three";
 import {
-    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, ThreeJsRenderer, Trail, UPlotGraph, G
+    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, Trail, UPlotGraph, G
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -42,17 +42,15 @@ function ballStep(dt) {
         ball.bounceOffOfFloor(dt, 0.9);
 }
 
-const renderer = new ThreeJsRenderer({
-    cameraPosition: new Vec3(2, 1, 0.5).multiplyScalar(2.25)
-});
-
 const dt = 2.5e-3;
 const subSteps = 10;
 const sphere = new Sphere({ color: "cyan" });
 const containerDiv = document.getElementById("bouncingBallContainer");
 Simulation
     .in(containerDiv)
-    .with(renderer)
+    .with({
+        cameraPosition: new Vec3(2, 1, 0.5).multiplyScalar(2.25)
+    })
     .withHud()
     .withMouseClickEventListener()
     .synchronize(ball.alwaysWith(sphere))
@@ -64,14 +62,13 @@ Simulation
 
         ballStep(dt);
     }, subSteps)
-    .onAfterClockTick((clockTime, simulatedTime) => updateGraph(simulatedTime));
-
-renderer.add(new Floor({
-    type: Floor.Type.GRID,
-    planeSizeXy: new Vector2(5, 5),
-    opacity: 0.3,
-    granularity: 20
-}));
+    .onAfterClockTick((clockTime, simulatedTime) => updateGraph(simulatedTime))
+    .addObject3D(new Floor({
+        type: Floor.Type.GRID,
+        planeSizeXy: new Vector2(5, 5),
+        opacity: 0.3,
+        granularity: 20
+    }));
 
 //
 // Graph

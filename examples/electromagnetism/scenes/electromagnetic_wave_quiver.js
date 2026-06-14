@@ -1,7 +1,7 @@
 import { Color } from "three";
 
 import {
-    RadialSymmetricBody, VectorField, Range, Simulation, Sphere, ArrowField, ThreeJsRenderer, Vec3
+    RadialSymmetricBody, VectorField, Range, Simulation, Sphere, ArrowField, Vec3
 } from "../../../src/index.js";
 
 const Q = 1.6e-19;
@@ -143,11 +143,11 @@ const magneticArrowField = new ArrowField({
 const dt = 2e-19;
 Simulation
     .in(document.getElementById("electromagneticWaveContainer"))
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(15, 5, 20),
         fieldOfView: 45,
         scale: 1e10
-    }))
+    })
     .withHud()
     .withMouseClickEventListener()
     .incrementsTimeBy(dt)

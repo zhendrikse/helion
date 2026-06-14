@@ -1,6 +1,6 @@
 import { Color, Group } from "three";
 import {
-    VectorField, Range, Cylinder, ArrowField, Sphere, ThreeJsRenderer, RadialSymmetricBody, Vec3,
+    VectorField, Range, Cylinder, ArrowField, Sphere, RadialSymmetricBody, Vec3,
     Arrow, Ring, Checkbox, Simulation, AxialSymmetricBody
 } from "../../../src/index.js";
 
@@ -36,28 +36,23 @@ class FaradayField extends VectorField {
 }
 
 //
-// Renderer en ArrowField view
-//
-const container = document.getElementById("faradayLawContainer");
-const renderer = new ThreeJsRenderer({
-    cameraPosition: new Vec3(3, 1, 4),
-    fieldOfView: 45
-});
-
-//
 // Views that do not change in time: cylinder, Faraday loops and arrow field
 //
 const faradayLoopsGroup = new Group(); // Needed to toggle this group on and off via the GUI
 faradayLoopsGroup.visible = false;
-renderer.add(faradayLoopsGroup);
 
 const dt = 0.05;
+const container = document.getElementById("faradayLawContainer");
 const simulation = Simulation
     .in(container)
-    .with(renderer)
+    .with({
+        cameraPosition: new Vec3(3, 1, 4),
+        fieldOfView: 45
+    })
     .withMouseClickEventListener()
     .synchronize(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
     .incrementsTimeBy(dt)
+    .addObject3D(faradayLoopsGroup)
     .onClockTick((clockTime, simulatedTime) => {
         const fieldLength = (simulatedTime % 20) / 25 + 0.001;
 

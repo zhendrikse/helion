@@ -1,5 +1,5 @@
 import {
-    ThreeJsRenderer, Simulation, RadialSymmetricBody, Sun, Vec3
+    Simulation, RadialSymmetricBody, Sun, Vec3
 } from "../../../../src/index.js";
 
 const sun = new RadialSymmetricBody({
@@ -8,11 +8,11 @@ const sun = new RadialSymmetricBody({
 
 Simulation
     .in(document.getElementById("sunContainer"))
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(.3),
         fieldOfView: 45,
-        background: ThreeJsRenderer.Background.STARS
-    }))
+        background: Simulation.Background.STARS
+    })
     .synchronize(sun.alwaysWith(new Sun()))
     .onClockTick()
     .start();

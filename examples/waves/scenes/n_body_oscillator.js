@@ -1,7 +1,6 @@
 import { Vector2 } from "three";
 import {
-    UPlotGraph, RadialSymmetricBody, Vec3, HarmonicOscillator,
-    Simulation, Sphere, ThreeJsRenderer, Helix, Floor
+    UPlotGraph, RadialSymmetricBody, Vec3, HarmonicOscillator, Simulation, Sphere, Helix, Floor
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -37,19 +36,17 @@ initialDisturbance(7);
 // Renderer & simulation
 //
 const htmlContainerDiv = document.getElementById("oscillatorContainer");
-const renderer = new ThreeJsRenderer({
-    cameraPosition: new Vec3(17, 6, 17),
-    light: true,
-    shadowsEnabled: true,
-    fieldOfView: 45,
-    background: ThreeJsRenderer.Background.FOG
-});
-
 const dt = 1e-3;
 const subSteps = 10;
 const simulation = Simulation
     .in(htmlContainerDiv)
-    .with(renderer)
+    .with({
+        cameraPosition: new Vec3(17, 6, 17),
+        light: true,
+        shadowsEnabled: true,
+        fieldOfView: 45,
+        background: Simulation.Background.FOG
+    })
     .withHud()
     .withMouseClickEventListener()
     .incrementsTimeBy(dt)
@@ -70,16 +67,12 @@ const simulation = Simulation
         plot.graphData[0] = [0];
         for (let i = 0; i < balls.length; i++)
             plot.graphData[i + 1] = [balls[i].position.x];
-    });
-
-//
-// View
-//
-renderer.add(new Floor({
-    type: Floor.Type.WOOD_WICKER,
-    planeSizeXy: new Vector2(200, 200),
-    granularity: 5
-}));
+    })
+    .addObject3D(new Floor({
+        type: Floor.Type.WOOD_WICKER,
+        planeSizeXy: new Vector2(200, 200),
+        granularity: 5
+    }));
 
 // Attach spheres and helices to balls and springs
 for (let i = 0; i < balls.length; i++) {

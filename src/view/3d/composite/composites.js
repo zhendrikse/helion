@@ -4,8 +4,9 @@ import {
     MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry
 } from "three";
 import { Arrow } from "../primitives/primitives.js";
-import { VectorFieldValue, ComplexScalarFieldValue, Complex} from "../../../model/math/math.js";
-import {Renderable3D} from "../../renderer.js";
+import { Complex, Vec3 } from "../../../model/math/math.js";
+import { Renderable3D } from "../../renderer.js";
+import { MathPhysicsModelBehavior } from "../../../core/helion.js";
 
 //
 // Point cloud
@@ -167,6 +168,14 @@ export class PointCloudView extends Points {
 //
 // Plane waves
 //
+class Vector extends MathPhysicsModelBehavior {
+    constructor(position, axis = new Vec3())  {
+        super();
+        this.position = position.clone();
+        this.axis = axis.clone();
+    }
+}
+
 export class ElectromagneticWave extends Renderable3D {
     constructor({
         electricFieldColor = new Color("orange"),
@@ -178,6 +187,9 @@ export class ElectromagneticWave extends Renderable3D {
         super();
         this._electricFieldArrows = [];
         this._magneticFieldArrows = [];
+        this._electricFieldVectors = [];
+        this._magneticFieldVectors = [];
+
         this._numArrows = numArrows;
         this._eletricFieldColor = electricFieldColor;
         this._magneticFieldColor = magneticFieldColor;
@@ -195,31 +207,28 @@ export class ElectromagneticWave extends Renderable3D {
         return planeWave.valueAt;
     }
 
-    _updateFieldVectorAt(index, wave) {
-        const fieldVector = this._electricFieldArrows[index].body;
+    _updateFieldVectorsAt(index, wave) {
+        const fieldVector = this._electricFieldVectors[index];
 
         // x = distance along wave
         const x = this._tempPosition.copy(fieldVector.position)
             .sub(wave.position)
             .length();
 
-        // Field vectors haven't been added to the renderer by the application, so we need to sync state here:
         const scaling = this._scalingFunction(fieldVector.position);
         fieldVector.axis.y = scaling * wave.valueAt(x);
 
         // Magnetic field (orthogonal)
-        this._magneticFieldArrows[index].body.axis.copy(
-            this._tempAxis.copy(fieldVector.axis).cross(this._i_hat)
-        );
+        this._magneticFieldVectors[index].axis.copy(this._tempAxis.copy(fieldVector.axis).cross(this._i_hat));
     }
 
     synchronizeWith(wave) {
-        for (let index = 0; index < this._electricFieldArrows.length; index++)
-            this._updateFieldVectorAt(index, wave);
-        for (const arrow of this._electricFieldArrows)
-            arrow.render();
-        for (const arrow of this._magneticFieldArrows)
-            arrow.render();
+        for (let index = 0; index < this._numArrows; index++)
+            this._updateFieldVectorsAt(index, wave);
+        for (let index = 0; index < this._numArrows; index++)
+            this._electricFieldArrows[index].synchronizeWith(this._electricFieldVectors[index]);
+        for (let index = 0; index < this._numArrows; index++)
+            this._magneticFieldArrows[index].synchronizeWith(this._magneticFieldVectors[index]);
     }
 
     initialize(planeWave) {
@@ -237,8 +246,8 @@ export class ElectromagneticWave extends Renderable3D {
                 size: this._arrowSize,
                 round: true
             });
-            electricFieldArrow.bind(new VectorFieldValue({position}));
-            magneticFieldArrow.bind(new VectorFieldValue({position}));
+            this._electricFieldVectors.push(new Vector(position));
+            this._magneticFieldVectors.push(new Vector(position));
             this._magneticFieldArrows.push(magneticFieldArrow);
             this._electricFieldArrows.push(electricFieldArrow);
             this.add(electricFieldArrow, magneticFieldArrow);
@@ -248,6 +257,14 @@ export class ElectromagneticWave extends Renderable3D {
     }
 }
 
+export class ComplexScalarFieldValue {
+    constructor(position, value)  {
+        this.position = position.clone();
+        this.value = value;
+    }
+
+    get axis() { return new Vec3(0, this.value.re, this.value.im); }
+}
 export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
     constructor({
         size = 1,
@@ -362,7 +379,7 @@ export class ArrowField extends Renderable3D {
 
         this._shaftOffset = new Vector3();
         this._headOffset = new Vector3();
-        this.target = new Vector3();
+        this._target = new Vector3();
     }
 
     canBindTo(vectorField) {
@@ -389,8 +406,8 @@ export class ArrowField extends Renderable3D {
 
         for (let i = 0; i < count; i++) {
             const pos = this._positions[i];
-            vectorField.sample(pos, this.target);
-            const mag = this.target.length();
+            vectorField.sample(pos, this._target);
+            const mag = this._target.length();
 
             if (mag < 1e-9) {
                 this._shaftMesh.setMatrixAt(i, new Matrix4().makeScale(0,0,0));
@@ -399,7 +416,7 @@ export class ArrowField extends Renderable3D {
             }
 
             // Direction
-            this._dir.copy(this.target).normalize();
+            this._dir.copy(this._target).normalize();
             this._q.setFromUnitVectors(UP, this._dir);
 
             const visualMag = this._matrixMagnitudeMap(mag) * this._scaleFactor;

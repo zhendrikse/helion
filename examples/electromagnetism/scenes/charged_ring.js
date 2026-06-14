@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     RadialSymmetricBody, AxialSymmetricBody, VectorField, Range, Simulation,
-    Sphere, Cylinder, ArrowField, Vec3, ThreeJsRenderer, Trail
+    Sphere, Cylinder, ArrowField, Vec3, Trail
 } from "../../../src/index.js";
 
 //
@@ -128,11 +128,11 @@ const dt = 2e-19;
 const subSteps = 20;
 const simulation = Simulation
     .in(document.getElementById("chargedRingContainer"))
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(15, 5, 20),
         fieldOfView: 22,
         scale: 5e10
-    }))
+    })
     .withHud()
     .withMouseClickEventListener()
     .synchronize(electron.alwaysWith(electronSphere))

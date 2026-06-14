@@ -1,6 +1,5 @@
 import {
-    Domain, StandardSurfaceView, Interval,
-    MultivariateFunctionSurface, Simulation, ThreeJsRenderer, Button
+    Domain, StandardSurfaceView, Interval, MultivariateFunctionSurface, Simulation, Button
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -35,7 +34,7 @@ const surfaceView = new StandardSurfaceView({
 const container = document.getElementById("membraneContainer");
 const simulation = Simulation
     .in(container)
-    .with(new ThreeJsRenderer())
+    .with({})
     .synchronize(membrane.alwaysWith(surfaceView))
     .incrementsTimeBy(0.016)
     .onClockTick((clockTime, simulatedTime) => membrane.time = simulatedTime, 3)

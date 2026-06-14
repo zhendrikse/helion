@@ -266,33 +266,6 @@ export class Interval {
     scaleUnitParameter = (unitParameter) => this.range * (unitParameter + this.from / this.range);
 }
 
-
-
-
-
-
-
-
-
-
-export class VectorFieldValue extends MathPhysicsModelBehavior {
-    constructor({
-        position = new Vec3(),
-        axis = new Vec3()
-    } = {})  {
-        super();
-        this.position = position.clone();
-        this.axis = axis.clone();
-    }
-
-    clone() {
-        return new VectorFieldValue({
-            position: this.position.clone(),
-            axis: this.axis.clone(),
-        });
-    }
-}
-
 export class Complex {
     constructor(re, im) {
         this.re = re;
@@ -305,6 +278,12 @@ export class Complex {
     get absSquared() { return this.re * this.re + this.im * this.im; }
     get magnitude() { return Math.sqrt(this.absSquared); }
     get abs() { return Math.sqrt(this.absSquared); }
+
+    multiply(c) {
+        this.re = this.re * c.re - this.im * c.im;
+        this.im = this.re * c.im + this.im * c.re
+        return this;
+    }
 
     // static multiplyScalar = (a, scalar) => new Complex(a.re * scalar, a.im * scalar);
     // static fromPhase = (theta) => new Complex(Math.cos(theta), Math.sin(theta));
@@ -364,25 +343,4 @@ export class AdaptiveSymmetricNormalizer {
     }
 }
 
-// TODO This is a vector representation of a complex scalar value,
-// rotating in the complex plane, coloured by its phase, and size
-// equal to the abs value.
-export class ComplexScalarFieldValue {
-    constructor({
-        position = new Vec3(),
-        value = new Complex(0, 0)
-    } = {})  {
-        this.position = position.clone();
-        this.value = value;
-    }
-
-    clone() {
-        return new VectorFieldValue({
-            position: this.position.clone(),
-            value: this.value.clone(),
-        });
-    }
-
-    get axis() { return new Vec3(0, this.value.re, this.value.im); }
-}
 

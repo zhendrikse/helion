@@ -1,6 +1,6 @@
 import {
     ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3,
-    DiscreteFieldSurface, ThreeJsRenderer, LaplaceOperator, SurfaceResolution,
+    DiscreteFieldSurface, LaplaceOperator, SurfaceResolution,
     WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView, ColorMap
 } from "../../../src/index.js";
 
@@ -40,10 +40,10 @@ water.position.set(-128, 0, -128);
 const htmlDiv = document.getElementById("raindropContainer");
 Simulation
     .in(htmlDiv)
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(4, .6, 4.2).multiplyScalar(45),
         fieldOfView: 19
-    }))
+    })
     .synchronize(surface.alwaysWith(water))
     .onClockTick(() => {
         solver.step(0.02);

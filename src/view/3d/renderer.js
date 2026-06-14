@@ -5,35 +5,13 @@ import {
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Renderer } from "../renderer.js"
-import { Vec3 } from "../../model/math/math.js";
 import { Axes, SkyDome } from "./composite/backgrounds.js";
+import { Simulation } from "../../core/helion.js";
 
 export class ThreeJsRenderer extends Renderer {
-    static Background = Object.freeze({
-        PLAIN: "Plain",
-        FOG: "Fog",
-        TRANSPARENT: "Transparent",
-        STARS: "Stars"
-    });
-
-    constructor({
-            background = ThreeJsRenderer.Background.TRANSPARENT,
-            backgroundColor = 0x0088ff,
-            scale = 1,
-            controls = true,
-            light = true,
-            cameraPosition = new Vec3(3, 3, 3),
-            shadowsEnabled = false,
-            fieldOfView = 50
-        } = {}) {
+    constructor(options) {
         super();
-
-        this._options = { background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView };
-
-        this._autoRotate = false;
-        this._autoRotateTheta = Math.PI / 2;
-        this._autoRotatePhi = 0;
-
+        this._options = options;
         this._scene = new Scene();
         this._world = new Group();
         this._background = new Group();
@@ -59,7 +37,6 @@ export class ThreeJsRenderer extends Renderer {
         }
 
         this._world.scale.setScalar(scale);
-
         this._camera = new PerspectiveCamera(fieldOfView, viewport.width / viewport.height, 0.1, 1e6);
         this._camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
@@ -70,7 +47,6 @@ export class ThreeJsRenderer extends Renderer {
             this._initLights(shadowsEnabled);
 
         this._initBackground(background, backgroundColor);
-
         this.resize();
         window.addEventListener("resize", () => this.resize());
     }
@@ -94,19 +70,6 @@ export class ThreeJsRenderer extends Renderer {
         this._renderer.setSize(canvasWidth, canvasHeight, false);
         this._camera.aspect = canvasWidth / canvasHeight;
         this._camera.updateProjectionMatrix();
-    }
-
-    _doAutoRotate(distance) {
-        this._autoRotateTheta += -Math.PI / (7.5 * 100);
-        this._autoRotatePhi +=  Math.PI / (7.5 * 100) * 2;
-
-        this._camera.position.set(
-            distance * Math.sin(this._autoRotateTheta) * Math.sin(this._autoRotatePhi),
-            distance * Math.cos(this._autoRotateTheta),
-            distance * Math.sin(this._autoRotateTheta) * Math.cos(this._autoRotatePhi)
-        );
-
-        this._camera.lookAt(0, 0, 0);
     }
 
     _initLights(shadowsEnabled) {
@@ -134,21 +97,21 @@ export class ThreeJsRenderer extends Renderer {
 
     _initBackground(background, backgroundColor) {
         switch (background) {
-            case ThreeJsRenderer.Background.PLAIN:
+            case Simulation.Background.PLAIN:
                 this._scene.background = new Color(backgroundColor);
                 break;
-            case ThreeJsRenderer.Background.FOG:
+            case Simulation.Background.FOG:
                 this._scene.background = new Color(backgroundColor);
                 this._scene.fog = new Fog(backgroundColor, 1, 100);
                 break;
-            case ThreeJsRenderer.Background.STARS:
+            case Simulation.Background.STARS:
                 this._skydome = new SkyDome({
                     skyRadius: this._camera.position.clone().length() * 10,
                     blinkSpeed: 2.5
                 });
                 this._background.add(this._skydome);
                 break;
-            case ThreeJsRenderer.Background.TRANSPARENT:
+            case Simulation.Background.TRANSPARENT:
             default:
                 break;
         }
@@ -159,9 +122,6 @@ export class ThreeJsRenderer extends Renderer {
         this._controls?.update();
         this._skydome?.update(time, this._camera);
         this._axes?.render(this._scene, this._camera);
-
-        if (this._autoRotate)
-            this._doAutoRotate(this._camera.position.length());
     }
 
     add(threeJsObject) {
@@ -226,6 +186,4 @@ export class ThreeJsRenderer extends Renderer {
         this._world.add(this._axes);
         return this._axes;
     }
-
-    set autoRotate(autoRotate) { this._autoRotate = autoRotate; }
 }

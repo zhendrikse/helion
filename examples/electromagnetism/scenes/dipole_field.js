@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     RadialSymmetricBody, VectorField, Range, Simulation, Vec3, Slider,
-    Sphere, ArrowField, ThreeJsRenderer, Checkbox
+    Sphere, ArrowField, Checkbox
 } from "../../../src/index.js";
 
 const scale = 1e15;
@@ -67,14 +67,13 @@ const arrowField = new ArrowField({
 });
 
 const container = document.getElementById("dipoleContainer");
-const renderer = new ThreeJsRenderer({
-    cameraPosition: new Vec3(32, 16, 48),
-    scale: scale,
-    fieldOfView: 40
-});
 Simulation
     .in(container)
-    .with(renderer)
+    .with({
+        cameraPosition: new Vec3(32, 16, 48),
+        scale: scale,
+        fieldOfView: 40
+    })
     .synchronize(dipole.positive.onceWith(positiveSphere))
     .synchronize(dipole.negative.onceWith(negativeSphere))
     .synchronize(dipoleField.onceWith(arrowField))
@@ -87,8 +86,22 @@ const slider = new Slider(container)
     .withValue(.5)
     .withLabel("️⚡ Field strength: ");
 
-Checkbox.togetherWith(slider)
-    .on(renderer)
-    .withProperty("autoRotate")
-    .withLabel("↻ Rotate: ")
+let autoRotateTheta = Math.PI / 2;
+let autoRotatePhi = 0;
+
+function doAutoRotate(object) {
+    autoRotateTheta += -Math.PI / (7.5 * 100);
+    autoRotatePhi +=  Math.PI / (7.5 * 100) * 2;
+
+    object.rotation.order = 'YXZ';
+
+    object.rotation.y = -autoRotatePhi;
+    object.rotation.x = -autoRotateTheta;
+}
+
+// TODO
+// Checkbox.togetherWith(slider)
+//     .withProperty("autoRotate")
+//     .withLabel("↻ Rotate: ")
+//     .addEventListener(() => doAutoRotate(arrowField));
 

@@ -1,6 +1,6 @@
 import { Color } from "three";
 import { 
-    RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, ThreeJsRenderer, Simulation, Vec3
+    RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, Simulation, Vec3
 } from "../../../src/index.js";
 
 //
@@ -150,10 +150,10 @@ const dt = 0.01;
 const allGone = () => rod.charges.every(c => c.position.y > 1);
 const simulation = Simulation
     .in(document.getElementById("chargedRodContainer"))
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(2, 1.5, 2.5),
         fieldOfView: 30
-    }))
+    })
     .synchronize(electricField.alwaysWith(electricArrowField))
     .synchronize(magneticField.alwaysWith(magneticArrowField))
     .incrementsTimeBy(dt)

@@ -1,6 +1,4 @@
-import {
-    Body, Simulation, Vec3, Arrow, ThreeJsRenderer, Slider, Range, Button
-} from "../../../src/index.js";
+import { Body, Simulation, Vec3, Arrow, Slider, Range, Button } from "../../../src/index.js";
 
 // Simulation parameters
 const speed = 6;  // initial horizontal speed
@@ -105,10 +103,10 @@ const htmlDiv = document.getElementById("birdsContainer");
 const dt = 0.02;
 const simulation = Simulation
     .in(htmlDiv)
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
         fieldOfView: 30
-    }))
+    })
     .withMouseClickEventListener()
     .incrementsTimeBy(dt)
     .onClockTick(() => flock.update(dt))

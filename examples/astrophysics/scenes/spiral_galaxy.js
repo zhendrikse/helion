@@ -1,6 +1,6 @@
 import { Vector3, Color } from "three";
 import {
-    normalDistribution, uniform, randomInt, ThreeJsRenderer, Vec3,
+    normalDistribution, uniform, randomInt, Vec3,
     Simulation, PointCloud, PointCloudMaterial, PointCloudView
 } from "../../../src/index.js";
 
@@ -127,12 +127,12 @@ const spiralGalaxy = new SpiralGalaxy();
 const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() });
 Simulation
     .in(document.getElementById("galaxyContainer"))
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(1, -12, 4).multiplyScalar(55),
-        background: ThreeJsRenderer.Background.STARS,
+        background: Simulation.Background.STARS,
         fov: 30,
         light: false
-    }))
+    })
     .synchronize(spiralGalaxy.onceWith(pointCloud))
     .onClockTick((clockTime, simulatedTime) => { pointCloud.rotation.z += 2.5e-3 })
     .start();

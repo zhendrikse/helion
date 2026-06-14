@@ -1,6 +1,6 @@
 import {
-    ThreeJsRenderer, ThreeJsRenderOptions, Canvas, HtmlDiv, Simulation, HtmlControl,
-    EventController, Vec3, ParametricSurface, GaussianCurvatureField,
+    ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
+    EventController, Vec3, ParametricSurface,
     Domain, StandardSurfaceView, ColorMappers
 } from "../../../src/index.js";
 

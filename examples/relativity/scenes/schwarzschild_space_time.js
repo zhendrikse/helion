@@ -1,6 +1,6 @@
 import { Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
-    Floor, Sphere, ThreeJsRenderer, Trail, Vec3, Simulation, Surface, StandardSurfaceView, RadialSymmetricBody, Sun
+    Floor, Sphere, Trail, Vec3, Simulation, Surface, StandardSurfaceView, RadialSymmetricBody, Sun
 } from "../../../src/index.js";
 
 const initialCometDistance = 33;
@@ -245,16 +245,6 @@ const coneGeometry = new SchwarzschildSurface(sun.mass);
 const cometInsideCone = () =>
     coneGeometry.rMin < comet.distance && comet.distance < coneGeometry.rMax;
 
-//
-// Set up renderer and views
-//
-const htmlDiv = document.getElementById("spaceTimeContainer");
-const renderer = new ThreeJsRenderer({
-    cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(13),
-    fieldOfView: 45,
-    background: ThreeJsRenderer.Background.STARS
-});
-
 // Grid
 const grid = new Floor({
     position: new Vec3(0, SchwarzschildSurface.yOffset, 0),
@@ -263,17 +253,23 @@ const grid = new Floor({
     opacity: 0.05,
     granularity: 20
 });
-renderer.add(grid);
-renderer.add(photonRing);
 
 // Curved space-time: Flamm's paraboloid
 const spaceTimeCone = new StandardSurfaceView();
 spaceTimeCone.surfaceVisible = false;
+
+const htmlDiv = document.getElementById("spaceTimeContainer");
 const simulation = Simulation
     .in(htmlDiv)
-    .with(renderer)
+    .with({
+        cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(13),
+        fieldOfView: 45,
+        background: Simulation.Background.STARS
+    })
     .withHud()
     .withMouseClickEventListener()
+    .addObject3D(grid)
+    .addObject3D(photonRing)
     .synchronize(coneGeometry.onceWith(spaceTimeCone))
     .synchronize(sun.alwaysWith(new Sun()))
     .synchronize(realComet.alwaysWith(new Sphere({ color: 0xff8800 })))

@@ -1,6 +1,6 @@
 import { Color } from "three";
 import {
-    RadialSymmetricBody, VectorField, Range, Simulation, Slider, Sphere, ArrowField, ThreeJsRenderer, Trail, Vec3
+    RadialSymmetricBody, VectorField, Range, Simulation, Slider, Sphere, ArrowField, Trail, Vec3
 } from "../../../src/index.js";
 
 class MagneticField extends VectorField {
@@ -57,9 +57,9 @@ const subSteps = 100;
 const container = document.getElementById("protonInFieldContainer");
 Simulation
     .in(container)
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(0, 5, -10)
-    }))
+    })
     .withHud()
     .withMouseClickEventListener()
     .synchronize(magneticField.onceWith(arrowField))

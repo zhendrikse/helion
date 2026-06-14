@@ -1,5 +1,5 @@
 import {
-    ThreeJsRenderer, Simulation, ParametricSurface, Domain, StandardSurfaceView, DropdownMenu, Registry
+    Simulation, ParametricSurface, Domain, StandardSurfaceView, DropdownMenu, Registry
 } from "../../../src/index.js";
 
 const sin = Math.sin;
@@ -65,12 +65,9 @@ const surfaceView = new StandardSurfaceView({
 });
 
 const container = document.getElementById("parametricSurfacesContainer");
-const renderer = new ThreeJsRenderer({
-    fieldOfView: 20
-});
 const simulation = Simulation
     .in(container)
-    .with(renderer)
+    .with({})
     .start();
 
 const surfacesRegistry = new Registry({

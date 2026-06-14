@@ -1,5 +1,5 @@
 import {
-    ParticleCloudView, Simulation, ThreeJsRenderer, Vec3, DropdownMenu, ColorMappers, ColorMap
+    ParticleCloudView, Simulation, Vec3, DropdownMenu, ColorMappers, ColorMap
 } from "../../../src/index.js";
 import { MathPhysicsModelBehavior } from "../../../src/core/helion.js";
 import { Color } from "three";
@@ -113,7 +113,7 @@ let particleField = new ParticleCloud(swarmSize);
 const htmlDiv = document.getElementById("coralContainer");
 const simulation = Simulation
     .in(htmlDiv)
-    .with(new ThreeJsRenderer({ controls: false }))
+    .with({ controls: false })
     .withMouseClickEventListener()
     .withHud()
     .synchronize(particleField.alwaysWith(particleView2D))

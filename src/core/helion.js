@@ -2,6 +2,7 @@ import { Hud } from "./hud.js";
 import {ThreeJsRenderer} from "../view/3d/renderer.js";
 import {Vector3} from "three";
 import {Axes} from "../view/3d/composite/backgrounds.js";
+import {Vec3} from "../model/math/math.js";
 
 export class Registry {
     constructor({
@@ -51,20 +52,17 @@ export class Binding {
         this.mode = mode;
     }
 
-    synchronize(clockTime) {
-        if (this.needsRendering)
-            this.view.synchronizeWith(this.model, clockTime);
-    }
-
-    needsRendering() {
-        return this.mode === Binding.Mode.ALWAYS || this.view?.dirty
+    synchronize(atClockTime) {
+        const viewNeedsSynchronization = this.mode === Binding.Mode.ALWAYS || this.view?.dirty;
+        if (viewNeedsSynchronization)
+            this.view.synchronizeWith(this.model, atClockTime);
     }
 
     initialize() {
         if (!this.view.canBindTo(this.model))
             throw new Error("Helion cannot bind this view to this model");
 
-        this.view.initialize?.(this.model); // E.g. to generate geometries & correct bounding boxes
+        this.view.initialize(this.model); // E.g. to generate geometries & correct bounding boxes
         this.synchronize(0);
     }
 
@@ -124,6 +122,13 @@ export class Viewport {
 }
 
 export class Simulation {
+    static Background = Object.freeze({
+        PLAIN: "Plain",
+        FOG: "Fog",
+        TRANSPARENT: "Transparent",
+        STARS: "Stars"
+    });
+
     static in = (htmlDiv) => new Simulation(new Viewport(htmlDiv));
 
     constructor(viewport) {
@@ -141,9 +146,25 @@ export class Simulation {
         requestAnimationFrame(this.animate);
     }
 
-    with(renderer) {
-        this._renderer = renderer;
+    with({
+         background = Simulation.Background.TRANSPARENT,
+         backgroundColor = 0x0088ff,
+         scale = 1,
+         controls = true,
+         light = true,
+         cameraPosition = new Vec3(3, 3, 3),
+         shadowsEnabled = false,
+         fieldOfView = 50
+     } = {}) {
+        this._renderer = new ThreeJsRenderer({
+            background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView
+        });
         this._renderer.attach(this._viewport);
+        return this;
+    }
+
+    addObject3D(object3D) {
+        this._renderer.add(object3D);
         return this;
     }
 

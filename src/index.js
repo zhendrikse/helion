@@ -1,24 +1,24 @@
 export {
     AxialSymmetricBody, HarmonicOscillator, RadialSymmetricBody,
-    EC, Body, G, OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave, Spring,
-    Block, gravitationalForceBetween
+    EC, Body, G, Spring, Block, gravitationalForceBetween
 } from "./model/phys/bodies.js";
 
 export {
     Range, Vec3, factorial, linspace, Interval, generateUUID,
-    normalDistribution, uniform, randomInt, meshgrid
+    normalDistribution, uniform, randomInt, meshgrid, Complex
 } from "./model/math/math.js";
 
 export {
     ParametricSurface, MultivariateFunctionSurface, Domain,
     Surface, DiscreteScalarField, DiscreteComplexField, VectorField,
-    DiscreteFieldSurface, SurfaceScalarFields
+    DiscreteFieldSurface, SurfaceScalarFields, ComplexSurface
 } from "./model/math/fields.js"
 
 export {
     FFT, LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator
 } from "./model/math/numerics/operators/operators.js";
 
+export { OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave } from "./model/phys/waves.js";
 export { PointCloud } from "./model/phys/clouds.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { Sun } from "./view/3d/astro/sun.js";
@@ -28,7 +28,6 @@ export { WaveEquationSolver } from "./model/math/numerics/solvers/solvers.js";
 export { DropdownMenu, Checkbox, Button, Slider, RadioButton } from "./controller/controller.js";
 export { Simulation, Registry } from "./core/helion.js";
 export { UPlotGraph } from "./core/uplot.js";
-export { ThreeJsRenderer } from "./view/3d/renderer.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { ParticleCloudView, ScalarFieldPixelRaster, ComplexScalarFieldRaster } from "./view/2d/views.js";

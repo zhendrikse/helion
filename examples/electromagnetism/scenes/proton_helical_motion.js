@@ -1,6 +1,6 @@
 import { Color } from "three";
 import {
-    VectorField, Range, Sphere, Trail, Vec3, ArrowField, ThreeJsRenderer,
+    VectorField, Range, Sphere, Trail, Vec3, ArrowField,
     Slider, Simulation, Aquarium, RadialSymmetricBody
 } from "../../../src/index.js";
 
@@ -50,12 +50,6 @@ function timeStep(dt) {
 //
 // View
 //
-const container = document.getElementById("helicalProtonContainer");
-const renderer = new ThreeJsRenderer({
-    cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
-    fieldOfView: 30
-});
-
 const protonSphere = new Sphere({ color: 0xff0000 });
 const arrowField = new ArrowField({
     xRange: new Range(-boxSize, boxSize, 10),
@@ -72,23 +66,26 @@ const arrowField = new ArrowField({
 });
 
 const dt = 5e-4;
+const container = document.getElementById("helicalProtonContainer");
 Simulation
     .in(container)
-    .with(renderer)
+    .with({
+        cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
+        fieldOfView: 30
+    })
     .withHud()
     .withMouseClickEventListener()
     .synchronize(proton.alwaysWith(protonSphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
     .synchronize(magneticField.onceWith(arrowField))
     .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => timeStep(dt), 25);
-
-renderer.add(new Aquarium({
-    color: 0x1e90ff,
-    opacity: 0.1,
-    size: new Vec3(boxSize, boxSize, boxSize).multiplyScalar(2.1),
-    frameColor: 0x779977
-}));
+    .onClockTick((clockTime, simulatedTime) => timeStep(dt), 25)
+    .addObject3D(new Aquarium({
+        color: 0x1e90ff,
+        opacity: 0.1,
+        size: new Vec3(boxSize, boxSize, boxSize).multiplyScalar(2.1),
+        frameColor: 0x779977
+    }));
 
 new Slider(container)
     .withRange(new Range(.25, 5, .1))

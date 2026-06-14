@@ -1,6 +1,6 @@
 import {
     FFT, DiscreteComplexField, RadioButton, Simulation, Slider, Vec3, Range,
-    Checkbox, ComplexScalarFieldRaster, ThreeJsRenderer
+    Checkbox, ComplexScalarFieldRaster
 } from "../../../src/index.js";
 
 const Shape = Object.freeze({
@@ -80,9 +80,9 @@ const intensityRaster = new ComplexScalarFieldRaster({
 const htmlDiv = document.getElementById("fourierTransformContainer");
 Simulation
     .in(htmlDiv)
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.5)
-    }))
+    })
     .synchronize(fourierSimulation.field.alwaysWith(intensityRaster))
     .onClockTick()
     .start();

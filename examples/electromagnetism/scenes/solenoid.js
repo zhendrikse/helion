@@ -1,7 +1,6 @@
 import { Color } from "three"
 import {
-    AxialSymmetricBody, VectorField, Range, Simulation, Vec3, Cylinder, ArrowField,
-    ThreeJsRenderer, Slider, Checkbox
+    AxialSymmetricBody, VectorField, Range, Simulation, Vec3, Cylinder, ArrowField, Slider, Checkbox
 } from "../../../src/index.js";
 
 const MU0 = 4 * Math.PI * 1e-7;
@@ -93,14 +92,13 @@ const arrowField = new ArrowField({
     scaleFactor: 1.25
 });
 
-const renderer = new ThreeJsRenderer({
-    cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
-    fieldOfView: 45
-});
 const container = document.getElementById("solenoidContainer");
 const simulation = Simulation
     .in(container)
-    .with(renderer)
+    .with({
+        cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
+        fieldOfView: 45
+    })
     .synchronize(magneticField.onceWith(arrowField))
     .start();
 
@@ -114,7 +112,8 @@ const slider = new Slider(container)
     .withValue(.5)
     .withLabel("️⚡ Field strength: ");
 
-Checkbox.togetherWith(slider)
-    .on(renderer)
-    .withProperty("autoRotate")
-    .withLabel("↻ Rotate: ")
+// TODO
+// Checkbox.togetherWith(slider)
+//     .on(renderer)
+//     .withProperty("autoRotate")
+//     .withLabel("↻ Rotate: ")

@@ -1,8 +1,6 @@
 import { Color, Vector3 } from "three";
 import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
-import {
-    ThreeJsRenderer, Simulation, Vec3, PointCloud, PointCloudView, PointCloudMaterial
-} from "../../../src/index.js";
+import { Simulation, Vec3, PointCloud, PointCloudView, PointCloudMaterial } from "../../../src/index.js";
 
 class StarCluster extends PointCloud {
     constructor(N=40000) {
@@ -53,12 +51,12 @@ const starCluster = new StarCluster();
 const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
 Simulation
     .in(document.getElementById("starClusterContainer"))
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(7, 14, 21),
-        background: ThreeJsRenderer.Background.STARS,
+        background: Simulation.Background.STARS,
         fov: 35,
         light: false
-    }))
+    })
     .synchronize(starCluster.onceWith(cloud))
     .onClockTick((clockTime, simulatedTime) => {cloud.rotation.y += 2.5e-3})
     .start();

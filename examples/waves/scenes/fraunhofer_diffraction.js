@@ -1,6 +1,6 @@
 import {
-    linspace, meshgrid, ScalarFieldPixelRaster, wavelengthColor, wavelengthToRGBNormalized, Vec3,
-    DiscreteScalarField, Simulation, RadioButton, Slider, Checkbox, Range, ThreeJsRenderer, ColorMapper
+    linspace, meshgrid, ScalarFieldPixelRaster, wavelengthColor, Vec3,
+    DiscreteScalarField, Simulation, RadioButton, Slider, Checkbox, Range, ColorMapper
 } from "../../../src/index.js";
 
 const initialLambda = 550;
@@ -154,9 +154,9 @@ const intensityPixelRaster = new ScalarFieldPixelRaster({
 const htmlDiv = document.getElementById("fraunhoferContainer");
 Simulation
     .in(htmlDiv)
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(50)
-    }))
+    })
     .synchronize(intensityField.alwaysWith(intensityPixelRaster))
     .onClockTick()
     .start();

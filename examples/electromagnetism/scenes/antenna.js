@@ -1,5 +1,5 @@
 import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Vec3, Range,
-    Cylinder, ElectromagneticWave, ThreeJsRenderer, Slider
+    Cylinder, ElectromagneticWave, Slider
 } from "../../../src/index.js";
 
 //
@@ -28,10 +28,10 @@ const antenna = new AxialSymmetricBody({
 const container= document.getElementById("antennaContainer");
 const simulation = Simulation
     .in(container)
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(-1, 4, -10).multiplyScalar(5),
         fieldOfView: 25
-    }))
+    })
     .withHud()
     .withMouseClickEventListener()
     .synchronize(antenna.onceWith(new Cylinder({color: 0xcccc77})))

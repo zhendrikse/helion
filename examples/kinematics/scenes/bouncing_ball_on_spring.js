@@ -1,6 +1,5 @@
 import {
-    RadialSymmetricBody, Spring, Simulation, Vec3, Checkbox, Arrow, Sphere,
-    ThreeJsRenderer, Floor, Helix, Slider, Range
+    RadialSymmetricBody, Spring, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix, Slider, Range
 } from "../../../src/index.js";
 
 //
@@ -65,12 +64,11 @@ const forceArrow = new Arrow({
 
 const dt = 1.5e-3;
 const subSteps = 10;
-const renderer = new ThreeJsRenderer({
-    cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
-});
 Simulation
     .in(container)
-    .with(renderer)
+    .with({
+        cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
+    })
     .withHud()
     .withMouseClickEventListener()
     .synchronize(world.ball.alwaysWith(sphere))
@@ -78,8 +76,8 @@ Simulation
     .synchronize(world.ball.accelerationVector.alwaysWith(forceArrow))
     .synchronize(world.spring.alwaysWith(helix))
     .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => world.timeStep(dt), subSteps);
-renderer.add(floor);
+    .onClockTick((clockTime, simulatedTime) => world.timeStep(dt), subSteps)
+    .addObject3D(floor);
 
 const velocityArrowCheckbox = new Checkbox(container)
     .on(velocityArrow)

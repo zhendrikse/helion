@@ -86,8 +86,27 @@ export class MultivariateFunctionSurface extends ParametricSurface {
     set time(time) { this._time = time; }
 }
 
-export class ComplexSurface extends ParametricSurface {
-    // TODO
+export class ComplexSurface extends Surface {
+    constructor({
+        domain = new Domain(),
+        z = (c) => new Complex(0, 0)
+    } = {}) {
+        super();
+        this._domain = domain;
+        this._x = (u, v) => u;
+        this._y = (u, v) => v;
+        this._z = z;
+
+        this._complexNumber = new Complex();
+    }
+
+    sample(u, v, target) {
+        target.re = this._domain.xRange.scaleUnitParameter(u);
+        target.im = this._domain.yRange.scaleUnitParameter(v);
+        this._complexNumber = this._z(target);
+        target.re = this._complexNumber.re;
+        target.im = this._complexNumber.im;
+    }
 }
 
 export class DiscreteFieldSurface extends Surface {

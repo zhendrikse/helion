@@ -1,6 +1,5 @@
 import {
-    Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation,
-    Vec3, Sphere, ThreeJsRenderer, Trail
+    Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation, Vec3, Sphere, Trail
 } from "../../../src/index.js";
 
 //
@@ -52,10 +51,10 @@ const dt = 5000;
 const subSteps = 50;
 Simulation
     .in(document.getElementById("threeBodyContainer"))
-    .with(new ThreeJsRenderer({
+    .with({
             cameraPosition: new Vec3(30, 30, 30),
             scale: 1e-9
-        }))
+        })
     .withHud()
     .synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
     .synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))

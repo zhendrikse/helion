@@ -1,6 +1,6 @@
 import {
-    ThreeJsRenderer, Simulation, ParametricSurface,
-    Domain, StandardSurfaceView, SurfaceResolution, ColorMappers, Registry, DropdownMenu, ColorMap
+    Simulation, ParametricSurface, Domain, StandardSurfaceView, SurfaceResolution,
+    ColorMappers, Registry, DropdownMenu, ColorMap
 } from "../../../src/index.js";
 import {MeshStandardMaterial} from "three";
 
@@ -74,7 +74,7 @@ const surfaceView = new StandardSurfaceView({
 const htmlDiv = document.getElementById("shellsContainer");
 const simulation = Simulation
     .in(htmlDiv)
-    .with(new ThreeJsRenderer({ fieldOfView: 20 }))
+    .with({ fieldOfView: 20 })
     .onClockTick(() => surfaceView.rotation.y += 0.0167)
     .start();
 

@@ -1,6 +1,6 @@
 import { Color } from "three";
 import {
-    Block, RadialSymmetricBody, VectorField, Range, Sphere, Trail, ArrowField, ThreeJsRenderer,
+    Block, RadialSymmetricBody, VectorField, Range, Sphere, Trail, ArrowField,
     Box, Simulation, Vec3
 } from "../../../src/index.js";
 
@@ -94,11 +94,11 @@ const dt = 5e-20;
 const field = new Vec3();
 const simulation = Simulation
     .in(document.getElementById("chargedSheetContainer"))
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(12, 8, 16),
         fieldOfView: 20,
         scale: 5e10
-    }))
+    })
     .withHud()
     .withMouseClickEventListener()
     .synchronize(electricField.onceWith(arrowField))

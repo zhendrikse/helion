@@ -1,6 +1,6 @@
 import {
     DiscreteScalarField, DiscreteFieldSurface, Simulation, PerlinNoiseOperator, ColorMap,
-    StandardSurfaceView, ThreeJsRenderer, Vec3, DiamondSquareOperator, ColorMappers, RadioButton
+    StandardSurfaceView, Vec3, DiamondSquareOperator, ColorMappers, RadioButton
 } from "../../../src/index.js";
 
 class Landscape {
@@ -42,10 +42,10 @@ surfaceView.position.set(-128, 0, -128);
 const htmlDiv = document.getElementById("terrainContainer");
 const simulation = Simulation
     .in(htmlDiv)
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(300, 300, 300),
         fieldOfView: 30,
-    }))
+    })
     .synchronize(landscape.surface.onceWith(surfaceView))
     .start();
 

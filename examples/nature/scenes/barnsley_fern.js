@@ -1,5 +1,5 @@
 import {
-    ColorMapper, DiscreteScalarField, ScalarFieldPixelRaster, Simulation, ThreeJsRenderer, uniform, Vec3
+    ColorMapper, DiscreteScalarField, ScalarFieldPixelRaster, Simulation, uniform, Vec3
 } from "../../../src/index.js";
 
 const img_x = 512
@@ -109,9 +109,9 @@ const fern = new BarnsleyFern();
 const htmlDiv = document.getElementById("fernContainer");
 Simulation
     .in(htmlDiv)
-    .with(new ThreeJsRenderer({
+    .with({
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(10)
-    }))
+    })
     .synchronize(fern.field.alwaysWith(fernImage))
     .onClockTick(() => fern.iterate())
     .start();

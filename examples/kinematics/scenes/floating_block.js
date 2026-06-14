@@ -1,6 +1,4 @@
-import {
-    Vec3, UPlotGraph, Block, Simulation, Box, ThreeJsRenderer, Aquarium
-} from "../../../src/index.js";
+import { Vec3, UPlotGraph, Block, Simulation, Box, Aquarium } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
 const liquidDensity = 1000;
@@ -51,18 +49,16 @@ const water = new Aquarium({
     frameColor: 0xffff00
 });
 
-const container = document.getElementById("floatingBlockContainer");
-const renderer = new ThreeJsRenderer({
-    cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
-});
-renderer.add(water);
-
 const dt = 0.001;
 const substeps = 20;
+const container = document.getElementById("floatingBlockContainer");
 Simulation
     .in(container)
-    .with(renderer)
+    .with({
+        cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
+    })
     .withHud()
+    .addObject3D(water)
     .withMouseClickEventListener()
     .incrementsTimeBy(dt)
     .synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
