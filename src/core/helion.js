@@ -94,7 +94,7 @@ export class Binding {
  * │           └── ...
  */
 export class Viewport {
-    constructor(containerDiv) {
+    constructor(containerDiv, parameterMenuCollapsed) {
         this._container = containerDiv;
         this._container.classList.add('helionContainer');
         this._container.style.position = "relative";
@@ -134,6 +134,8 @@ export class Viewport {
         summary.classList.add("helionControlSummary");
         summary.textContent = "⚙️ Parameters";
         this._details.appendChild(summary);
+        this._details.style.visibility = "hidden";
+        this._details.open = !parameterMenuCollapsed;
         this._addOnsDiv.appendChild(this._details);
     }
 
@@ -144,7 +146,9 @@ export class Viewport {
     get width() { return this._canvasWrapperDiv.clientWidth; }
     get height() { return this._canvasWrapperDiv.clientHeight; }
 
-    set parameterMenuCollapsed(booleanValue) { this._details.open = !booleanValue; }
+    enableParameterMenu() {
+        this._details.style.visibility = "visible";
+    }
 }
 
 export class Simulation {
@@ -155,17 +159,39 @@ export class Simulation {
         STARS: "Stars"
     });
 
-    static inHtmlDiv = (htmlDiv) => {
+    static viewportFromHtmlDiv = (htmlDiv, parameterMenuCollapsed) => {
         const canvasWrapper = document.getElementById(htmlDiv);
         if (!canvasWrapper)
             throw new Error(`Helion cannot find HTML div with id=${htmlDiv}`)
 
-        return new Simulation(new Viewport(canvasWrapper));
+        return new Viewport(canvasWrapper, parameterMenuCollapsed);
     }
 
-    constructor(viewport) {
+    static with({
+        htmlDivId = "helionSimulationContainer",
+        background = Simulation.Background.TRANSPARENT,
+        backgroundColor = 0x0088ff,
+        scale = 1,
+        controls = true,
+        headUpDisplay = false,
+        light = true,
+        cameraPosition = new Vec3(3, 3, 3),
+        shadowsEnabled = false,
+        fieldOfView = 50,
+        parameterMenuCollapsed = true
+    } = {}) {
+        const viewport = Simulation.viewportFromHtmlDiv(htmlDivId, parameterMenuCollapsed);
+        viewport.parameterMenuCollapsed = parameterMenuCollapsed;
+        const renderer = new ThreeJsRenderer({
+            background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView
+        });
+        renderer.attach(viewport);
+        return new Simulation(viewport, renderer, headUpDisplay);
+    }
+
+    constructor(viewport, renderer, headUpDisplay) {
         this._viewport = viewport;
-        this._renderer = new ThreeJsRenderer();
+        this._renderer = renderer;
         this._bindings = [];
         this._plot = null;                      // No plot by default
         this._hud = null;                       // No head-up display by default
@@ -177,32 +203,13 @@ export class Simulation {
         this._dt = 0.01;
         this._substepsCount = 1;
         this._clockTime = 0;
+        if (headUpDisplay)
+            this._initHud()
+
         requestAnimationFrame(this.animate);
     }
 
     set autoRotate(autoRotate) { this._renderer.autoRotate = autoRotate; }
-
-    with({
-        background = Simulation.Background.TRANSPARENT,
-        backgroundColor = 0x0088ff,
-        scale = 1,
-        controls = true,
-        headUpDisplay = false,
-        light = true,
-        cameraPosition = new Vec3(3, 3, 3),
-        shadowsEnabled = false,
-        fieldOfView = 50,
-        parameterMenuCollapsed = true
-     } = {}) {
-        this._renderer = new ThreeJsRenderer({
-            background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView
-        });
-        this._renderer.attach(this._viewport);
-        if (headUpDisplay)
-            this._initHud()
-        this._viewport.parameterMenuCollapsed = parameterMenuCollapsed;
-        return this;
-    }
 
     addObject3D(object3D) {
         this._renderer.add(object3D);
@@ -345,6 +352,7 @@ export class Simulation {
 
     append(control) {
         control.append(this._viewport).to(this);
+        this._viewport.enableParameterMenu();
         return this;
     }
 

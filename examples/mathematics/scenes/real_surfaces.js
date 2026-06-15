@@ -96,8 +96,8 @@ const surfaceView = new StandardSurfaceView({
 });
 
 const simulation = Simulation
-    .inHtmlDiv("realSurfacesContainer")
     .with({
+        htmlDivId: "realSurfacesContainer",
         fieldOfView: 20
     })
     .incrementsTimeBy(0.016);

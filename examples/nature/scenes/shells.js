@@ -69,8 +69,10 @@ const surfaceView = new StandardSurfaceView({
 
 const htmlDiv = document.getElementById();
 const simulation = Simulation
-    .inHtmlDiv("shellsContainer")
-    .with({ fieldOfView: 20 })
+    .with({
+        htmlDivId: "shellsContainer",
+        fieldOfView: 20
+    })
     .onClockTick(() => surfaceView.rotation.y += 0.0167)
     .append(new DropdownMenu(htmlDiv)
         .for(surfacesRegistry)

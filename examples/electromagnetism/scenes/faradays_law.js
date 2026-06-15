@@ -43,8 +43,8 @@ faradayLoopsGroup.visible = false;
 
 const dt = 0.05;
 const simulation = Simulation
-    .inHtmlDiv("faradayLawContainer")
     .with({
+        htmlDivId: "faradayLawContainer",
         cameraPosition: new Vec3(3, 1, 4),
         fieldOfView: 45
     })

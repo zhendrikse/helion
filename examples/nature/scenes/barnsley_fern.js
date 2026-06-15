@@ -106,10 +106,9 @@ const fernImage = new ScalarFieldPixelRaster({
 });
 const fern = new BarnsleyFern();
 
-const htmlDiv = document.getElementById("fernContainer");
 Simulation
-    .in(htmlDiv)
     .with({
+        htmlDivId: "fernContainer",
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(10)
     })
     .synchronize(fern.field.alwaysWith(fernImage))

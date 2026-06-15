@@ -100,8 +100,8 @@ const birdCount = 250;
 const flock = new Flock(birdCount);
 const dt = 0.02;
 const simulation = Simulation
-    .inHtmlDiv("birdsContainer")
     .with({
+        htmlDivId: "birdsContainer",
         cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
         fieldOfView: 30
     })

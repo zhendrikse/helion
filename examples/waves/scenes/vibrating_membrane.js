@@ -32,8 +32,9 @@ const surfaceView = new StandardSurfaceView({
 });
 
 Simulation
-    .inHtmlDiv("membraneContainer")
-    .with({})
+    .with({
+        htmlDivId: "membraneContainer"
+    })
     .synchronize(membrane.alwaysWith(surfaceView))
     .incrementsTimeBy(0.016)
     .onClockTick((clockTime, simulatedTime) => membrane.time = simulatedTime, 3)

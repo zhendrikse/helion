@@ -26,8 +26,8 @@ const antenna = new AxialSymmetricBody({
 });
 
 const simulation = Simulation
-    .inHtmlDiv("antennaContainer")
     .with({
+        htmlDivId: "antennaContainer",
         cameraPosition: new Vec3(-1, 4, -10).multiplyScalar(5),
         fieldOfView: 25,
         headUpDisplay: true

@@ -28,8 +28,8 @@ const planeWave = new OneDimensionalComplexPlaneWave({
 // View for 3D canvas
 //
 const simulation = Simulation
-    .inHtmlDiv("planeWaveContainer3d")
     .with({
+        htmlDivId: "planeWaveContainer3d",
         cameraPosition: new Vec3(100, 100, 200),
         fieldOfView: 20
     })

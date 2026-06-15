@@ -71,8 +71,8 @@ const surfaceView = new StandardSurfaceView({
 });
 
 const simulation = Simulation
-    .inHtmlDiv("parametricSurfacesContainer")
     .with({
+        htmlDivId: "parametricSurfacesContainer",
         fieldOfView: 20
     })
     .append(surfaceView.colormapSelector)

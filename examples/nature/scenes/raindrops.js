@@ -39,8 +39,8 @@ water.position.set(-128, 0, -128);
 
 const htmlDiv = document.getElementById();
 Simulation
-    .inHtmlDiv("raindropContainer")
     .with({
+        htmlDivId: "raindropContainer",
         cameraPosition: new Vec3(4, .6, 4.2).multiplyScalar(45),
         fieldOfView: 19
     })

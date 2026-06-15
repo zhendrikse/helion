@@ -51,8 +51,8 @@ const water = new Aquarium({
 const dt = 0.001;
 const substeps = 20;
 const simulation = Simulation
-    .inHtmlDiv("floatingBlockContainer")
     .with({
+        htmlDivId: "floatingBlockContainer",
         cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7),
         headUpDisplay: true
     })

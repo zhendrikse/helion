@@ -17,6 +17,7 @@ export default defineConfig({
                 coral_2d: path.resolve(__dirname, 'examples/nature/scenes/coral_2d.js'),
                 dipole_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/dipole_field.js'),
                 double_slit: path.resolve(__dirname, 'examples/quantumphysics/scenes/double_slit.js'),
+                double_slit_2d: path.resolve(__dirname, 'examples/quantumphysics/scenes/double_slit_2d.js'),
                 earth: path.resolve(__dirname, 'examples/astrophysics/scenes/planets/earth.js'),
                 electromagnetic_wave_quiver: path.resolve(__dirname, 'examples/electromagnetism/scenes/electromagnetic_wave_quiver.js'),
                 floating_block: path.resolve(__dirname, 'examples/kinematics/scenes/floating_block.js'),

@@ -93,8 +93,8 @@ const arrowField = new ArrowField({
 const dt = 5e-20;
 const field = new Vec3();
 const simulation = Simulation
-    .inHtmlDiv("chargedSheetContainer")
     .with({
+        htmlDivId: "chargedSheetContainer",
         cameraPosition: new Vec3(12, 8, 16),
         fieldOfView: 20,
         scale: 5e10,

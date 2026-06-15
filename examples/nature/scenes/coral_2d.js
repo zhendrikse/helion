@@ -112,8 +112,8 @@ const particleView2D = new ParticleCloudView({
 let particleField = new ParticleCloud(swarmSize);
 const htmlDiv = document.getElementById();
 const simulation = Simulation
-    .inHtmlDiv("coralContainer")
     .with({
+        htmlDivId: "coralContainer",
         controls: false,
         headUpDisplay: true
     })

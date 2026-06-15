@@ -1,3 +1,5 @@
+import { BoxGeometry, Color, Group, InstancedMesh, Matrix4, MeshBasicMaterial, Quaternion, Vector3} from "three";
+import { Cylinder, Simulation, Vec3 } from "../../../src/index.js";
 
 class Particle {
     constructor(group, {
@@ -28,12 +30,13 @@ class Particle {
 
 class InterferencePattern extends Group {
     constructor({
-                    wavelength=0.5,
-                    dx=0.1,
-                    xMax=4,
-                    slit1=new Vector3(-1, -3, 0),
-                    slit2=new Vector3(1, -3, 0),
-                    thicknessEdge=2 } = {}) {
+        wavelength=0.5,
+        dx=0.1,
+        xMax=4,
+        slit1=new Vector3(-1, -3, 0),
+        slit2=new Vector3(1, -3, 0),
+        thicknessEdge=2
+    } = {}) {
         super();
         this._wavelength = wavelength;
         this._dx = dx;
@@ -119,8 +122,6 @@ class InterferencePattern extends Group {
 }
 
 const doubleSlitGroup = new Group();
-scene.add(doubleSlitGroup);
-
 const pattern = new InterferencePattern();
 doubleSlitGroup.add(pattern);
 doubleSlitGroup.rotation.x = Math.PI/2;
@@ -141,21 +142,29 @@ function spawnParticleFromSlit(slitPos) {
     }));
 }
 
-const wavelengthSlider = document.getElementById("wavelengthSlider");
-const wavelengthValue = document.getElementById("wavelengthValue");
+// TODO
+// const wavelengthSlider = document.getElementById("wavelengthSlider");
+// const wavelengthValue = document.getElementById("wavelengthValue");
+//
+// wavelengthSlider.addEventListener("input", (event) => {
+//     const value = parseFloat(event.target.value);
+//     pattern.setWavelength(value);
+//     wavelengthValue.textContent = value.toFixed(2);
+// });
+//
+// function animate() {
+//     if (Math.random() > 0.9) spawnParticleFromSlit(pattern._slit1);
+//     if (Math.random() > 0.9) spawnParticleFromSlit(pattern._slit2);
+//
+//     for (const particle of particles)
+//         particle.update(dt, pattern._yEnd-pattern._dx);
+//
+//     renderer.render(scene, camera);
+// }
 
-wavelengthSlider.addEventListener("input", (event) => {
-    const value = parseFloat(event.target.value);
-    pattern.setWavelength(value);
-    wavelengthValue.textContent = value.toFixed(2);
-});
-
-function animate() {
-    if (Math.random() > 0.9) spawnParticleFromSlit(pattern._slit1);
-    if (Math.random() > 0.9) spawnParticleFromSlit(pattern._slit2);
-
-    for (const particle of particles)
-        particle.update(dt, pattern._yEnd-pattern._dx);
-
-    renderer.render(scene, camera);
-}
+Simulation
+    .with({
+        htmlDivId: "doubleSlitContainer",
+        cameraPosition: new Vec3(0, 9, -9)
+    })
+    .addObject3D(doubleSlitGroup);

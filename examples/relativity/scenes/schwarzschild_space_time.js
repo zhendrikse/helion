@@ -259,8 +259,8 @@ const spaceTimeCone = new StandardSurfaceView();
 spaceTimeCone.surfaceVisible = false;
 
 const simulation = Simulation
-    .inHtmlDiv("spaceTimeContainer")
     .with({
+        htmlDivId: "spaceTimeContainer",
         cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(13),
         fieldOfView: 45,
         background: Simulation.Background.STARS,

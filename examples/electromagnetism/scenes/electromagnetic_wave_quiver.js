@@ -142,8 +142,8 @@ const magneticArrowField = new ArrowField({
 
 const dt = 2e-19;
 Simulation
-    .inHtmlDiv("electromagneticWaveContainer")
     .with({
+        htmlDivId: "electromagneticWaveContainer",
         cameraPosition: new Vec3(15, 5, 20),
         fieldOfView: 45,
         scale: 1e10,

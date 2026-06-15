@@ -149,8 +149,8 @@ const electricArrowField = new ArrowField({
 const dt = 0.01;
 const allGone = () => rod.charges.every(c => c.position.y > 1);
 const simulation = Simulation
-    .inHtmlDiv("chargedRodContainer")
     .with({
+        htmlDivId: "chargedRodContainer",
         cameraPosition: new Vec3(2, 1.5, 2.5),
         fieldOfView: 30
     })

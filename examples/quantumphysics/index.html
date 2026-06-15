@@ -4,13 +4,67 @@
     <link rel="stylesheet" href="../../docs/src/assets/styles.css" />
     <title>Testing quantummathematics</title>
 </head>
-<body>
+<body style="background-color: black">
     <!--
        - C O M P L E X  P L A N E  W A V E
-       -->
     <div id="planeWaveContainer3d" style="aspect-ratio: 2/1" ></div>
     <div id="planeWaveContainer2d" style="aspect-ratio: 3/1" ></div>
     <script type="module" src="scenes/plane_wave.js"></script>
+       -->
+    <!--
+       - D O U B L E  S L I T
+       -->
+    <div id="doubleSlitContainer" style="aspect-ratio: 2/1" ></div>
+    <script type="module" src="scenes/double_slit.js"></script>
+    <!--
+       - D O U B L E  S L I T  2 D
+    <div id="simContainer">
+        <div style="aspect-ratio: 1/1; width:400px;">
+            <canvas id="vCanvas" width="400" height="400" style="z-index:1; margin: auto;">Canvas not supported!</canvas>
+            <canvas id="doubleSlit2dContainer" width="400" height="400" style="z-index:0; margin: auto;">Canvas not supported!</canvas>
+        </div>
+    </div>
+
+    <div class="buttonRow">
+        <label for="speedSlider">Speed:</label><input type="range" id="speedSlider" min="1" max="100" step="1" value="15"/>
+        <span id="spsReadout">0</span>
+    </div>
+    <div class="buttonRow">
+        <label for="brightnessSlider">Brightness:</label>
+        <input type="range" id="brightnessSlider" min="0.1" max="10" step="0.1" value="1.6"/>
+    </div>
+    <div class="buttonRow">
+        <button id="pauseButton">Run</button>
+        <button id="resetButton">Reset</button>
+        <label for="barrierType">Barrier type:</label>
+        <select id="barrierType">
+            <option value="line">Line</option>
+            <option value="step">Step</option>
+            <option value="singleHole">Single hole</option>
+            <option value="doubleHole" selected>Double hole</option>
+            <option value="grating">Grating</option>
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+        </select>
+    </div>
+    <div class="buttonRow">
+        <label for="eSlider">Packet energy = <span id="eReadout">0.050</span></label>
+        <input type="range" id="eSlider" min="0" max="0.100" step="0.001" value="0.05"/>
+    </div>
+    <div class="buttonRow">
+        <label for="bEnergySlider">Strength = <span id="bEnergyReadout">0.100</span></label>
+        <input type="range" id="bEnergySlider" min="-0.1" max="0.1" step="0.001" value="0.1"/>
+    </div>
+    <div class="buttonRow">
+        <label for="bSizeSlider">Size = <span id="bSizeReadout">40</span></label>
+        <input type="range" id="bSizeSlider" min="0" max="50" step="1" value="40"/>
+    </div>
+    <div class="buttonRow">
+        <label for="bSoftnessSlider">Softness = <span id="bSoftnessReadout">0</span></label>
+        <input type="range" id="bSoftnessSlider" min="0" max="20" step="1" value="0"/>
+    </div>
+    <script type="module" src="scenes/double_slit_2d.js"></script>
+       -->
 </body>
 </html>
 

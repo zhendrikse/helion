@@ -49,8 +49,8 @@ function updateForces(dt) {
 const dt = 5000;
 const subSteps = 50;
 Simulation
-    .inHtmlDiv("threeBodyContainer")
     .with({
+        htmlDivId: "threeBodyContainer",
         cameraPosition: new Vec3(30, 30, 30),
         scale: 1e-9,
         headUpDisplay: true

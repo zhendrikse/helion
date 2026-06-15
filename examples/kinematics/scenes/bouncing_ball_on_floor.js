@@ -58,8 +58,8 @@ const graphDefinition = {
     yLabel: "Displacement"
 };
 const simulation = Simulation
-    .inHtmlDiv("bouncingBallContainer")
     .with({
+        htmlDivId: "bouncingBallContainer",
         cameraPosition: new Vec3(2, 1, 0).multiplyScalar(3.25),
         headUpDisplay: true
     })

@@ -77,8 +77,8 @@ const dt = 0.01;
 const subSteps = 3;
 const field = new Vec3();
 const simulation = Simulation
-    .inHtmlDiv("movingChargeContainer")
     .with({
+        htmlDivId: "movingChargeContainer",
         light: false, // setting our own lights
         cameraPosition: new Vec3(-50, 0, 75).multiplyScalar(0.5),
         fieldOfView: 60,

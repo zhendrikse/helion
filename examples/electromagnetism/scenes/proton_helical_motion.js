@@ -69,9 +69,9 @@ const dt = 5e-4;
 const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
 const speedCallback = event => proton.state.velocity = speedToVelocity(event.target.value, proton.velocity);
 Simulation
-    .inHtmlDiv("helicalProtonContainer")
     .with({
-        cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
+        htmlDivId: "helicalProtonContainer",
+        cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(27),
         fieldOfView: 30,
         headUpDisplay: true
     })
@@ -100,5 +100,5 @@ Simulation
     .append(new Slider("🚀 Speed: ")
         .withRange(new Range(1, 100, 1))
         .withValue(50)
-        .addEventListener(speedCallback));
+        .addEventListener("input", speedCallback));
 

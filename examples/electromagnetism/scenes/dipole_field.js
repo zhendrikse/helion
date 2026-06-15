@@ -67,8 +67,8 @@ const arrowField = new ArrowField({
 });
 
 const simulation = Simulation
-    .inHtmlDiv("dipoleContainer")
     .with({
+        htmlDivId: "dipoleContainer",
         cameraPosition: new Vec3(32, 16, 48),
         scale: scale,
         fieldOfView: 40

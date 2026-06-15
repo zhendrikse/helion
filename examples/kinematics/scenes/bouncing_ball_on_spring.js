@@ -64,8 +64,8 @@ const forceArrow = new Arrow({
 const dt = 1.5e-3;
 const subSteps = 10;
 Simulation
-    .inHtmlDiv("bouncingBallOnSpringContainer")
     .with({
+        htmlDivId: "bouncingBallOnSpringContainer",
         cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7),
         headUpDisplay: true
     })

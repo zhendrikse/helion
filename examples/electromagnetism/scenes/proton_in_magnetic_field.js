@@ -56,8 +56,8 @@ const dt = 2.5e-3;
 const subSteps = 100;
 const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
 Simulation
-    .inHtmlDiv("protonInFieldContainer")
     .with({
+        htmlDivId: "protonInFieldContainer",
         cameraPosition: new Vec3(0, 5, -10),
         headUpDisplay: true
     })

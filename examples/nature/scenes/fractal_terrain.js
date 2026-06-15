@@ -40,8 +40,8 @@ const surfaceView = new StandardSurfaceView({
 surfaceView.position.set(-128, 0, -128);
 
 const simulation = Simulation
-    .inHtmlDiv("terrainContainer")
     .with({
+        htmlDivId: "terrainContainer",
         cameraPosition: new Vec3(300, 300, 300),
         fieldOfView: 30,
     })

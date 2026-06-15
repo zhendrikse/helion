@@ -78,8 +78,8 @@ const intensityRaster = new ComplexScalarFieldRaster({
 });
 
 Simulation
-    .inHtmlDiv("fourierTransformContainer")
     .with({
+        htmlDivId: "fourierTransformContainer",
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.5)
     })
     .synchronize(fourierSimulation.field.alwaysWith(intensityRaster))

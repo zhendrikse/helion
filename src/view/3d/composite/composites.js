@@ -284,7 +284,8 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
         const arrow = new Arrow({
             round: this._round,
             size: this._size,
-            colorMap: (axis) => new Color().setHSL(1.0 - new Complex(axis.z, axis.y).phase / (2 * Math.PI), 1.0, 0.5)
+            colorMap: (axis) =>
+                new Color().setHSL(1.0 - Math.atan2(axis.z, axis.y) / (2 * Math.PI), 1.0, 0.5)
         });
 
         this._arrows.push(arrow);

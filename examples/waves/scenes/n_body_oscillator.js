@@ -35,8 +35,8 @@ initialDisturbance(7);
 const dt = 1e-3;
 const subSteps = 10;
 const simulation = Simulation
-    .inHtmlDiv("oscillatorContainer")
     .with({
+        htmlDivId: "oscillatorContainer",
         cameraPosition: new Vec3(17, 6, 17),
         light: true,
         shadowsEnabled: true,
