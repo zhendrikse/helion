@@ -67,7 +67,6 @@ const surfaceView = new StandardSurfaceView({
     colorMapper: ColorMappers.get(ColorMap.RdYlBu)
 });
 
-const htmlDiv = document.getElementById();
 const simulation = Simulation
     .with({
         htmlDivId: "shellsContainer",

@@ -37,7 +37,6 @@ const water = new InstancedMeshSurfaceView({
 });
 water.position.set(-128, 0, -128);
 
-const htmlDiv = document.getElementById();
 Simulation
     .with({
         htmlDivId: "raindropContainer",
