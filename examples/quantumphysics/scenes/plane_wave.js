@@ -27,9 +27,8 @@ const planeWave = new OneDimensionalComplexPlaneWave({
 //
 // View for 3D canvas
 //
-const htmlDiv3d = document.getElementById("planeWaveContainer3d");
 const simulation = Simulation
-    .in(htmlDiv3d)
+    .inHtmlDiv("planeWaveContainer3d")
     .with({
         cameraPosition: new Vec3(100, 100, 200),
         fieldOfView: 20
@@ -38,52 +37,46 @@ const simulation = Simulation
     .synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({ numArrows: 100 })))
     .incrementsTimeBy(0.01)
     .onClockTick((clockTime, simulatedTime) => planeWave.propagate(simulatedTime))
+    .append(new Slider("Amplitude: ")
+        .on(planeWave)
+        .withProperty("amplitude")
+        .withValue(10)
+        .withRange(new Range(0.5, 20, .1)))
+    .append(new Slider("Omega: ")
+        .on(planeWave)
+        .withProperty("omega")
+        .withValue(3.2)
+        .withRange(new Range(0, 25, .1)))
+    .append(new Slider("Wave number: ")
+        .on(planeWave)
+        .withProperty("k")
+        .withRange(new Range(-.1, .1, .01))
+        .withValue(0.1))
     .start();
 
-new Slider(htmlDiv3d)
-    .on(planeWave)
-    .withProperty("amplitude")
-    .withValue(10)
-    .withLabel("Amplitude: ")
-    .withRange(new Range(0.5, 20, .1));
-
-new Slider(htmlDiv3d)
-    .on(planeWave)
-    .withProperty("omega")
-    .withValue(3.2)
-    .withLabel("Omega: ")
-    .withRange(new Range(0, 25, .1));
-
-new Slider(htmlDiv3d)
-    .on(planeWave)
-    .withProperty("k")
-    .withLabel("Wave number: ")
-    .withRange(new Range(-.1, .1, .01))
-    .withValue(0.1);
-
-const startStopButton = new Button(htmlDiv2d)
-    .withText("Stop")
-    .addEventListener("click", (event) => {
-        if (simulation.isRunning)
-            simulation.stop();
-        else
-            simulation.start();
-
-        event.target.innerText = event.target.innerText === "Pause" ? "Resume" : "Pause";
-    })
-
-RadioButton.togetherWith(startStopButton)
-    .on(waveView2d)
-    .withProperty("mode")
-    .withLabel("Real/imag ")
-    .withValue("realImag")
-    .checked(true);
-
-RadioButton.togetherWith(startStopButton)
-    .on(waveView2d)
-    .withProperty("mode")
-    .withLabel("Density/phase ")
-    .withValue("densityPhase");
+// const startStopButton = new Button(htmlDiv2d)
+//     .withText("Stop")
+//     .addEventListener("click", (event) => {
+//         if (simulation.isRunning)
+//             simulation.stop();
+//         else
+//             simulation.start();
+//
+//         event.target.innerText = event.target.innerText === "Pause" ? "Resume" : "Pause";
+//     })
+//
+// RadioButton.togetherWith(startStopButton)
+//     .on(waveView2d)
+//     .withProperty("mode")
+//     .withLabel("Real/imag ")
+//     .withValue("realImag")
+//     .checked(true);
+//
+// RadioButton.togetherWith(startStopButton)
+//     .on(waveView2d)
+//     .withProperty("mode")
+//     .withLabel("Density/phase ")
+//     .withValue("densityPhase");
 
 
 

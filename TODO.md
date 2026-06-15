@@ -654,43 +654,6 @@ Dat voelt als een natuurlijke uitbreiding van wat je al hebt.
 
 ---
 
-## Registries voor plug-ins
-
-Dit speelt nu al bij:
-
-* ColorMappers
-* SurfaceViews
-* Integrators
-
-Nu heb je:
-
-```js
-ColorMappers.Jet
-ColorMappers.Viridis
-```
-
-Ik zou daar een algemeen patroon van maken:
-
-```js
-Registry.register(...)
-Registry.names()
-Registry.entries()
-```
-
-of simpelweg:
-
-```js
-ColorMappers.all()
-SurfaceViews.all()
-Integrators.all()
-```
-
-zodat UI-elementen automatisch gegenereerd kunnen worden.
-
-Dat voorkomt precies het HTML-kopieerwerk waar je tegenaan liep.
-
----
-
 ## SurfaceView-hiërarchie consolideren
 
 Dit voelt als een plek waar je veel winst kunt halen.

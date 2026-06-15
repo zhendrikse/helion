@@ -1,24 +1,3 @@
-import { DirectionalLight, PerspectiveCamera, WebGLRenderer, Scene, Group, Vector3, MeshBasicMaterial,
-    InstancedMesh, Matrix4, BoxGeometry, AmbientLight, Color, Quaternion } from "three";
-
-// --- Scene setup ---
-const canvas = document.getElementById("slitExperimentCanvas");
-const scene = new Scene();
-
-const camera = new PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-camera.position.set(0, 6, -12.5);
-camera.lookAt(0, 2, 0);
-
-const renderer = new WebGLRenderer({ antialias: true, canvas: canvas, alpha: true });
-renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-renderer.setAnimationLoop(animate);
-
-// --- Lighting ---
-scene.add(new AmbientLight(0xffffff, 0.4));
-
-const directionalLight = new DirectionalLight(0xffffff, 7);
-directionalLight.position.set(0, 7, 0);
-scene.add(directionalLight);
 
 class Particle {
     constructor(group, {

@@ -37,7 +37,7 @@ export class MathPhysicsModelBehavior {
 }
 
 /**
- * Binding between the phys/math model and view
+ * Binding between the phys/math model and view.
  */
 export class Binding {
     static Mode = Object.freeze({
@@ -66,7 +66,7 @@ export class Binding {
             throw new Error("Helion cannot bind this view to this model");
 
         this.view.initialize(this.model);
-        this.view.synchronizeWith(this.model, 0); // E.g. to generate geometries & correct bounding boxes
+        this.view.synchronizeWith(this.model, 0); // The first (and for sync-once-objects last) sync happens here!
     }
 
     reset() {
@@ -85,10 +85,13 @@ export class Binding {
  * │   └── CSS2D labels  (text labels in the simulation)
  * │
  * ├── AddOnsDiv
- * │   ├── uPlot graph
- * │   ├── dropdowns
- * │   ├── sliders
- * │   └── ...
+ * │   ├── uPlot graph   (Graph, if present)
+ * │   ├── details       (Parameter settings menu)
+ * │       ├── summary
+ * │           ├── dropdowns
+ * │           ├── sliders
+ * │           ├── buttons
+ * │           └── ...
  */
 export class Viewport {
     constructor(containerDiv) {

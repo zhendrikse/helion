@@ -257,14 +257,6 @@ export class ElectromagneticWave extends Renderable3D {
     }
 }
 
-export class ComplexScalarFieldValue {
-    constructor(position, value)  {
-        this.position = position.clone();
-        this.value = value;
-    }
-
-    get axis() { return new Vec3(0, this.value.re, this.value.im); }
-}
 export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
     constructor({
         size = 1,
@@ -273,11 +265,10 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
     } = {}) {
         super();
         this._arrows = [];
-
         this._numArrows = numArrows;
         this._round = round;
         this._size = size;
-        this._complexPlaneWave = null;
+        this._valueVector = new Vector(new Vector3());
     }
 
     canBindTo(complexPlaneWave) {
@@ -285,34 +276,29 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
     }
 
     initialize(complexPlaneWave) {
-        this._complexPlaneWave = complexPlaneWave;
-
-        const position = new Vector3().copy(complexPlaneWave.position);
         for (let i = 0; i < this._numArrows; i++)
-            this._createArrowAt(position, i * 2);
+            this._createArrow();
     }
 
-    _createArrowAt(position, index) {
-        const x = position.x + index;
+    _createArrow() {
         const arrow = new Arrow({
             round: this._round,
             size: this._size,
             colorMap: (axis) => new Color().setHSL(1.0 - new Complex(axis.z, axis.y).phase / (2 * Math.PI), 1.0, 0.5)
         });
 
-        arrow.bind(new ComplexScalarFieldValue({ position: new Vector3(x, position.y, position.z) }));
         this._arrows.push(arrow);
         this.add(arrow);
     }
 
     synchronizeWith(complexPlaneWave) {
-        // TODO Arrows still have to be mapped to the wave properly
-        throw new Error("TODO: Arrows still have to be mapped to the wave properly!!!!!!!!");
-        for (let arrow of this._arrows)
-            arrow.body.withValue = this._complexPlaneWave.valueAt(arrow.body.position.x);
-
-        for (let arrow of this._arrows)
-            arrow.render();
+        for (let i = 0; i < this._numArrows; i++) {
+            const x = complexPlaneWave.position.x + i * 2;
+            const value = complexPlaneWave.valueAt(x);
+            this._valueVector.position.set(x, complexPlaneWave.position.y, complexPlaneWave.position.z);
+            this._valueVector.axis.set(0, value.re, value.im);
+            this._arrows[i].synchronizeWith(this._valueVector);
+        }
     }
 }
 

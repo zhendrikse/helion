@@ -44,17 +44,17 @@ function updateForces(dt) {
 }
 
 //
-// View
+// Simulation binds view to model
 //
 const dt = 5000;
 const subSteps = 50;
 Simulation
     .inHtmlDiv("threeBodyContainer")
     .with({
-            cameraPosition: new Vec3(30, 30, 30),
-            scale: 1e-9,
-            headUpDisplay: true
-        })
+        cameraPosition: new Vec3(30, 30, 30),
+        scale: 1e-9,
+        headUpDisplay: true
+    })
     .synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
     .synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
     .synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })))
