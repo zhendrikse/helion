@@ -50,8 +50,8 @@ class StarCluster extends PointCloud {
 const starCluster = new StarCluster();
 const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
 Simulation
-    .inHtmlDiv("starClusterContainer")
     .with({
+        htmlDivId: "starClusterContainer",
         cameraPosition: new Vec3(7, 14, 21),
         background: Simulation.Background.STARS,
         fov: 35,

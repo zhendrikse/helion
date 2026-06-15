@@ -2,8 +2,8 @@ import { Simulation, Saturn, Vec3, Planets } from "../../../../src/index.js";
 import {AmbientLight} from "three";
 
 Simulation
-    .inHtmlDiv("saturnContainer")
     .with({
+        htmlDivId: "saturnContainer",
         cameraPosition: new Vec3(1, 1.5, 4).multiplyScalar(.8),
         fieldOfView: 45,
         background: Simulation.Background.STARS,

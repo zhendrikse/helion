@@ -7,8 +7,8 @@ const sun = new RadialSymmetricBody({
 });
 
 Simulation
-    .inHtmlDiv("sunContainer")
     .with({
+        htmlDivId: "sunContainer",
         cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(.3),
         fieldOfView: 45,
         background: Simulation.Background.STARS

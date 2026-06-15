@@ -125,8 +125,8 @@ class SpiralGalaxy extends PointCloud {
 const spiralGalaxy = new SpiralGalaxy();
 const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() });
 Simulation
-    .inHtmlDiv("galaxyContainer")
     .with({
+        htmlDivId: "galaxyContainer",
         cameraPosition: new Vec3(1, -12, 4).multiplyScalar(55),
         background: Simulation.Background.STARS,
         fov: 30,

@@ -31,7 +31,7 @@ class Particle {
 class InterferencePattern extends Group {
     constructor({
         wavelength=0.5,
-        dx=0.1,
+        dx=0.025,
         xMax=4,
         slit1=new Vector3(-1, -3, 0),
         slit2=new Vector3(1, -3, 0),
@@ -165,6 +165,6 @@ function spawnParticleFromSlit(slitPos) {
 Simulation
     .with({
         htmlDivId: "doubleSlitContainer",
-        cameraPosition: new Vec3(0, 9, -9)
+        cameraPosition: new Vec3(0, 10, -8)
     })
     .addObject3D(doubleSlitGroup);
