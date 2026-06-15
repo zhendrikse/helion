@@ -45,6 +45,7 @@ const dt = 0.05;
 const simulation = Simulation
     .with({
         htmlDivId: "faradayLawContainer",
+        headUpDisplay: true,
         cameraPosition: new Vec3(3, 1, 4),
         fieldOfView: 45
     })
