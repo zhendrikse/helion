@@ -124,14 +124,23 @@ export class Viewport {
         this._addOnsDiv.style.backgroundColor = "transparent";
         this._addOnsDiv.style.width = "100%";
         this._container.appendChild(this._addOnsDiv);
+
+        this._details = document.createElement("details");
+        this._details.open = true;   // Open by default
+        const summary = document.createElement("summary");
+        summary.textContent = "⚙️ Parameters";
+        this._details.appendChild(summary);
+        this._addOnsDiv.appendChild(this._details);
     }
 
     get addOnsDiv() { return this._addOnsDiv; }
-    get container() { return this._container; }
+    get controlsDiv() { return this._details; }
     get canvasWrapper() { return this._canvasWrapperDiv; }
     get canvas() { return this._canvas; }
     get width() { return this._canvasWrapperDiv.clientWidth; }
     get height() { return this._canvasWrapperDiv.clientHeight; }
+
+    set parameterMenuCollapsed(booleanValue) { this._details.open = !booleanValue; }
 }
 
 export class Simulation {
@@ -170,15 +179,16 @@ export class Simulation {
     set autoRotate(autoRotate) { this._renderer.autoRotate = autoRotate; }
 
     with({
-         background = Simulation.Background.TRANSPARENT,
-         backgroundColor = 0x0088ff,
-         scale = 1,
-         controls = true,
-         headUpDisplay = false,
-         light = true,
-         cameraPosition = new Vec3(3, 3, 3),
-         shadowsEnabled = false,
-         fieldOfView = 50
+        background = Simulation.Background.TRANSPARENT,
+        backgroundColor = 0x0088ff,
+        scale = 1,
+        controls = true,
+        headUpDisplay = false,
+        light = true,
+        cameraPosition = new Vec3(3, 3, 3),
+        shadowsEnabled = false,
+        fieldOfView = 50,
+        parameterMenuCollapsed = true
      } = {}) {
         this._renderer = new ThreeJsRenderer({
             background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView
@@ -186,6 +196,7 @@ export class Simulation {
         this._renderer.attach(this._viewport);
         if (headUpDisplay)
             this._initHud()
+        this._viewport.parameterMenuCollapsed = parameterMenuCollapsed;
         return this;
     }
 

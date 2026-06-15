@@ -60,7 +60,7 @@ class HtmlControl {
 
     append(viewport) {
         this._appendToButtonRow(this);
-        viewport.addOnsDiv.appendChild(this._buttonRow);
+        viewport.controlsDiv.appendChild(this._buttonRow);
         return this;
     }
 
