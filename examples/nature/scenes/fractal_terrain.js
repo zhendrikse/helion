@@ -39,30 +39,25 @@ const surfaceView = new StandardSurfaceView({
 });
 surfaceView.position.set(-128, 0, -128);
 
-const htmlDiv = document.getElementById("terrainContainer");
 const simulation = Simulation
-    .in(htmlDiv)
+    .inHtmlDiv("terrainContainer")
     .with({
         cameraPosition: new Vec3(300, 300, 300),
         fieldOfView: 30,
     })
     .synchronize(landscape.surface.onceWith(surfaceView))
+    .append(surfaceView.colormapSelector)
+    .append(surfaceView.surfaceLayoutSelector)
+    .append(new RadioButton("Perlin noise: ")
+        .withValue("perlin")
+        .on(landscape)
+        .withProperty("noiseType")
+        .addEventListener("click", () => simulation.synchronize(landscape.surface.onceWith(surfaceView)))
+        .togetherWith(new RadioButton("Diamond-square: ")
+            .withValue("diamondSquare")
+            .checked(true)
+            .on(landscape)
+            .withProperty("noiseType")
+            .addEventListener("click", () => simulation.synchronize(landscape.surface.onceWith(surfaceView))))
+    )
     .start();
-
-surfaceView.showSurfaceControlsIn(htmlDiv);
-surfaceView.showColormapSelectorIn(htmlDiv);
-
-const radioButton = new RadioButton(htmlDiv)
-    .withValue("perlin")
-    .withLabel("Perlin noise: ")
-    .on(landscape)
-    .withProperty("noiseType")
-    .addEventListener("click", () => simulation.synchronize(landscape.surface.onceWith(surfaceView)));
-
-RadioButton.togetherWith(radioButton)
-    .withValue("diamondSquare")
-    .withLabel("Diamond-square: ")
-    .checked(true)
-    .on(landscape)
-    .withProperty("noiseType")
-    .addEventListener("click", () => simulation.synchronize(landscape.surface.onceWith(surfaceView)));

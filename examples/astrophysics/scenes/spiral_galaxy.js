@@ -1,7 +1,6 @@
 import { Vector3, Color } from "three";
 import {
-    normalDistribution, uniform, randomInt, Vec3,
-    Simulation, PointCloud, PointCloudMaterial, PointCloudView
+    normalDistribution, uniform, randomInt, Vec3, Simulation, PointCloud, PointCloudMaterial, PointCloudView
 } from "../../../src/index.js";
 
 class SpiralGalaxy extends PointCloud {
@@ -126,7 +125,7 @@ class SpiralGalaxy extends PointCloud {
 const spiralGalaxy = new SpiralGalaxy();
 const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() });
 Simulation
-    .in(document.getElementById("galaxyContainer"))
+    .inHtmlDiv("galaxyContainer")
     .with({
         cameraPosition: new Vec3(1, -12, 4).multiplyScalar(55),
         background: Simulation.Background.STARS,

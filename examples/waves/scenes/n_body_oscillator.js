@@ -1,6 +1,6 @@
 import { Vector2 } from "three";
 import {
-    UPlotGraph, RadialSymmetricBody, Vec3, HarmonicOscillator, Simulation, Sphere, Helix, Floor
+    RadialSymmetricBody, Vec3, HarmonicOscillator, Simulation, Sphere, Helix, Floor
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -32,47 +32,43 @@ function initialDisturbance(displacement = 5) {
 const { balls, springs } = createBallsAndSprings();
 initialDisturbance(7);
 
-//
-// Renderer & simulation
-//
-const htmlContainerDiv = document.getElementById("oscillatorContainer");
 const dt = 1e-3;
 const subSteps = 10;
 const simulation = Simulation
-    .in(htmlContainerDiv)
+    .inHtmlDiv("oscillatorContainer")
     .with({
         cameraPosition: new Vec3(17, 6, 17),
         light: true,
         shadowsEnabled: true,
         fieldOfView: 45,
-        background: Simulation.Background.FOG
+        background: Simulation.Background.FOG,
+        headUpDisplay: true
     })
-    .withHud()
     .withMouseClickEventListener()
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, _) => {
         for (let i = 0; i < balls.length - 1; i++)
             springs[i].oscillate(dt);
     }, subSteps)
-    .onAfterClockTick((clockTime, simulatedTime) => {
-        if (!simulation.isRunning)
-            return;
-
-        plot.graphData[0].push(clockTime * 0.001);
-        for (let i = 0; i < balls.length; i++)
-            plot.graphData[i + 1].push(balls[i].position.x);
-        plot.update();
-    })
-    .onReset(() => {
-        plot.graphData[0] = [0];
-        for (let i = 0; i < balls.length; i++)
-            plot.graphData[i + 1] = [balls[i].position.x];
-    })
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
         planeSizeXy: new Vector2(200, 200),
         granularity: 5
-    }));
+    }))
+    .setupGraphWith({
+            dataDefinition: [
+                { label: "t" },
+                { label: "ball1", color: "blue" },
+                { label: "ball2", color: "red" },
+                { label: "ball3", color: "red" },
+                { label: "ball4", color: "red" },
+                { label: "ball5", color: "blue" },
+            ],
+            title: "Kinetic Energy vs Time",
+            xLabel: "Time [s]",
+            yLabel: "Displacement"
+        }
+    )
 
 // Attach spheres and helices to balls and springs
 for (let i = 0; i < balls.length; i++) {
@@ -91,21 +87,19 @@ for (let i = 0; i < balls.length; i++) {
     simulation.synchronize(springs[i - 1].alwaysWith(helix));
 }
 
-//
-// Graph
-//
-const plot = new UPlotGraph({
-    plotParentDiv: htmlContainerDiv,
-    dataDefinition: [
-        { label: "t" }, { label: "ball1", color: "blue" },
-        { label: "ball2", color: "red" },
-        { label: "ball3", color: "red" },
-        { label: "ball4", color: "red" },
-        { label: "ball5", color: "blue" },
-    ],
-    width: htmlContainerDiv.clientWidth,
-    height: htmlContainerDiv.clientHeight * .75,
-    title: "Kinetic Energy vs Time",
-    xLabel: "Time [s]",
-    yLabel: "Displacement"
-});
+simulation
+    .onAfterClockTick((clockTime, simulatedTime) => {
+        if (!simulation.isRunning)
+            return;
+
+        const plotData = [clockTime * 0.001];
+        for (let i = 0; i < balls.length; i++)
+            plotData.push(balls[i].position.x);
+        simulation.plot(plotData);
+    })
+    .onReset(() => {
+        const plotData = [0];
+        for (let i = 0; i < balls.length; i++)
+            plotData.push(balls[i].position.x);
+        simulation.plot(plotData);
+    })

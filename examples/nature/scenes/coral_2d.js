@@ -110,12 +110,14 @@ const particleView2D = new ParticleCloudView({
 });
 
 let particleField = new ParticleCloud(swarmSize);
-const htmlDiv = document.getElementById("coralContainer");
+const htmlDiv = document.getElementById();
 const simulation = Simulation
-    .in(htmlDiv)
-    .with({ controls: false })
+    .inHtmlDiv("coralContainer")
+    .with({
+        controls: false,
+        headUpDisplay: true
+    })
     .withMouseClickEventListener()
-    .withHud()
     .synchronize(particleField.alwaysWith(particleView2D))
     .onReset(resetSimulation)
     .onClockTick((clockTime, simulatedTime) => particleField.update());

@@ -1,6 +1,6 @@
 import { Vector2 } from "three";
 import {
-    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, Trail, UPlotGraph, G
+    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, Trail, G
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -45,13 +45,24 @@ function ballStep(dt) {
 const dt = 2.5e-3;
 const subSteps = 10;
 const sphere = new Sphere({ color: "cyan" });
-const containerDiv = document.getElementById("bouncingBallContainer");
-Simulation
-    .in(containerDiv)
+const graphDefinition = {
+    dataDefinition: [
+        { label: "t" },
+        { label: "ball1", color: "blue" },
+        { label: "Y-position", color: "cyan" },
+        { label: "Kinetic Energy", color: "red" },
+        { label: "Potential Energy", color: "green" }
+    ],
+    title: "Bouncing ball",
+    xLabel: "Simulation time",
+    yLabel: "Displacement"
+};
+const simulation = Simulation
+    .inHtmlDiv("bouncingBallContainer")
     .with({
-        cameraPosition: new Vec3(2, 1, 0.5).multiplyScalar(2.25)
+        cameraPosition: new Vec3(2, 1, 0).multiplyScalar(3.25),
+        headUpDisplay: true
     })
-    .withHud()
     .withMouseClickEventListener()
     .synchronize(ball.alwaysWith(sphere))
     .synchronize(ball.alwaysWith(new Trail({ color: sphere.color})))
@@ -68,33 +79,13 @@ Simulation
         planeSizeXy: new Vector2(5, 5),
         opacity: 0.3,
         granularity: 20
-    }));
-
-//
-// Graph
-//
-const plot = new UPlotGraph({
-    plotParentDiv: containerDiv,
-    dataDefinition: [
-        {label: "t"}, {label: "ball1", color: "blue"},
-        { label: "Y-position", color: "cyan" },
-        { label: "Kinetic Energy", color: "red" },
-        { label: "Potential Energy", color: "green" }
-    ],
-    width: containerDiv.clientWidth,
-    height: containerDiv.clientHeight * .5,
-    title: "Bouncing ball",
-    xLabel: "Simulation time",
-    yLabel: "Displacement"
-});
+    }))
+    .setupGraphWith(graphDefinition);
 
 function updateGraph(simulatedTime) {
     if (ball.reachedEnd())
         return;
-    plot.graphData[0].push(simulatedTime);
-    plot.graphData[1].push(ball.position.y);
-    plot.graphData[2].push(ball.kineticEnergy);
-    plot.graphData[3].push(ball.mass * G * ball.position.y);
-    plot.update();
+
+    simulation.plot([simulatedTime, ball.position.y, ball.kineticEnergy, ball.mass * G * ball.position.y]);
 }
 

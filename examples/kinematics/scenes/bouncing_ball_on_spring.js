@@ -48,7 +48,6 @@ const world = new PhysicsWorld(new RadialSymmetricBody({
     mass: 1.5
 }));
 
-const container = document.getElementById("bouncingBallOnSpringContainer");
 const helix = new Helix({ coils: 15, color: "yellow" });
 const sphere = new Sphere({ color: "orange" });
 const velocityArrow = new Arrow({
@@ -65,11 +64,11 @@ const forceArrow = new Arrow({
 const dt = 1.5e-3;
 const subSteps = 10;
 Simulation
-    .in(container)
+    .inHtmlDiv("bouncingBallOnSpringContainer")
     .with({
-        cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
+        cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7),
+        headUpDisplay: true
     })
-    .withHud()
     .withMouseClickEventListener()
     .synchronize(world.ball.alwaysWith(sphere))
     .synchronize(world.ball.velocityVector.alwaysWith(velocityArrow))
@@ -77,25 +76,20 @@ Simulation
     .synchronize(world.spring.alwaysWith(helix))
     .incrementsTimeBy(dt)
     .onClockTick((clockTime, simulatedTime) => world.timeStep(dt), subSteps)
-    .addObject3D(floor);
+    .addObject3D(floor)
+    .append(new Checkbox("🚀 Velocity: ")
+        .on(velocityArrow)
+        .withProperty("visible")
+        .checked(true)
+        .togetherWith(new Checkbox("💪🏻 Force: ")
+            .on(forceArrow)
+            .withProperty("visible")
+            .checked(true)))
+    .append(new Slider("🍃 Air resistance: ")
+        .withRange(new Range(0, 1, 0.01))
+        .withValue(0.2)
+        .on(world)
+        .withProperty("damping"));
 
-const velocityArrowCheckbox = new Checkbox(container)
-    .on(velocityArrow)
-    .withProperty("visible")
-    .withLabel("🚀 Velocity: ")
-    .checked(true);
-
-Checkbox.togetherWith(velocityArrowCheckbox)
-    .on(forceArrow)
-    .withProperty("visible")
-    .withLabel("💪🏻 Force: ")
-    .checked(true);
-
-new Slider(container)
-    .withRange(new Range(0, 1, 0.01))
-    .withValue(0.2)
-    .on(world)
-    .withProperty("damping")
-    .withLabel("🍃 Air resistance: ");
 
 

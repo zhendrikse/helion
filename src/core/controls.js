@@ -1,35 +1,31 @@
 import { generateUUID } from "../model/math/math.js";
 
 class HtmlControl {
-    constructor(container, htmlButtonRow = null) {
-        this._container = container;
-        this._buttonRow = htmlButtonRow ? htmlButtonRow : this._createButtonRow(container);
+    constructor(labelText) {
+        this._buttonRow = this._createButtonRow();
         this._inputControl = null; // To be set by each concrete control / subclass
         this._targetObject = null; // To be set by each concrete control / subclass
-    }
+        this._childControl = null; // Other control in this same button row
+        this._simulation = null;
 
-    get buttonRow() { return this._buttonRow; }
-    get container() { return this._container;}
+        //
+        // <label for="anId">labelText</label><input id="anId" ... />
+        //
+        this._label = document.createElement("label");
+        this._labelId = generateUUID();
+        this._label.htmlFor = this._labelId;
+        this._label.style.marginRight = "5px";
+        this._label.textContent = labelText ? labelText : "";
+
+        this._span = null;
+    }
 
     on(targetObject) {
         this._targetObject = targetObject;
         return this;
     }
 
-    withLabel(label) {
-        this._label.textContent = label;
-        return this;
-    }
-
-    _createLabel() {
-        const id = generateUUID();
-        this._label = document.createElement("label");
-        this._label.htmlFor = id;
-        this._label.style.marginRight = "5px";
-        return id;
-    }
-
-    _createButtonRow(container) {
+    _createButtonRow() {
         const buttonRow = document.createElement("div");
         buttonRow.classList.add("helionButtonRow");
         buttonRow.style.display = "flex";
@@ -39,39 +35,68 @@ class HtmlControl {
         buttonRow.style.left = "10px";
         buttonRow.style.marginBottom = "5px";
         buttonRow.style.borderRadius = "8px";
-        this._container.appendChild(buttonRow);
         return buttonRow;
     }
 
     addEventListener(type, callback) {
-        this._inputControl.addEventListener(type, callback);
+        this._inputControl.addEventListener(type, event => {
+            this._simulation.onUserInteraction(event);
+            callback(event);
+        });
+        return this;
+    }
+
+    _appendToButtonRow(control) {
+        this._buttonRow.appendChild(control._label);
+        this._buttonRow.appendChild(control._inputControl);
+        if (control._span)
+            this._buttonRow.appendChild(control._span);
+
+        if (control.hasChildControl)
+            this._appendToButtonRow(control._childControl);
+    }
+
+    get hasChildControl() { return this._childControl !== null;}
+
+    append(viewport) {
+        this._appendToButtonRow(this);
+        viewport.addOnsDiv.appendChild(this._buttonRow);
+        return this;
+    }
+
+    _setSimulationOn(control, simulation) {
+        control._simulation = simulation;
+        if (control.hasChildControl)
+            this._setSimulationOn(control._childControl, simulation);
+    }
+
+    to(simulation) {
+        this._setSimulationOn(this, simulation);
+        return this;
+    }
+
+    togetherWith(otherControl) {
+        this._childControl = otherControl;
         return this;
     }
 }
 
 export class DropdownMenu extends HtmlControl {
-    static togetherWith = (htmlControl) => new DropdownMenu(htmlControl.container, htmlControl.buttonRow);
-
-    constructor(container, htmlButtonRow = null) {
-        super(container, htmlButtonRow);
+    constructor() {
+        super();
     }
 
     for(registry) {
-        const label = document.createElement("label");
-        label.htmlFor = registry.id;
-        label.textContent = registry.label;
+        this._label.textContent = registry.label;
 
         this._inputControl = document.createElement("select");
         this._inputControl.name = registry.id;
         this._inputControl.id = registry.id;
 
-        this._buttonRow.appendChild(label);
-        this._buttonRow.appendChild(this._inputControl);
-
         for (const value of Object.values(registry.names)) {
             const option = document.createElement("option");
-            option.value = value;
-            option.textContent = value;
+            option.value = String(value);
+            option.textContent = String(value);
             this._inputControl.appendChild(option);
         }
 
@@ -80,25 +105,18 @@ export class DropdownMenu extends HtmlControl {
 }
 
 export class Slider extends HtmlControl {
-    static togetherWith = (htmlControl) => new Checkbox(htmlControl.container, htmlControl.buttonRow);
-
-    constructor(container, htmlButtonRow = null) {
-        super(container, htmlButtonRow);
+    constructor(label) {
+        super(label);
         this._targetObject = null;
 
-        const sliderId = this._createLabel();
         this._inputControl = document.createElement("input");
         this._inputControl.type = "range";
-        this._inputControl.id = sliderId;
+        this._inputControl.id = this._labelId;
         this._inputControl.style.marginRight = "10px";
 
         this._span = document.createElement("span");
         this._span.style.marginRight = "25px";
         this._span.style.borderRadius = "8px";
-
-        this._buttonRow.appendChild(this._label);
-        this._buttonRow.appendChild(this._inputControl);
-        this._buttonRow.appendChild(this._span);
 
         this._units = "";
     }
@@ -124,7 +142,7 @@ export class Slider extends HtmlControl {
     }
 
     withProperty(name) {
-        this._inputControl.addEventListener("input", (event) => {
+        this.addEventListener("input", (event) => {
             this._targetObject[name] = event.target.value;
             this._span.textContent = event.target.value + this._units;
         });
@@ -132,29 +150,24 @@ export class Slider extends HtmlControl {
     }
 
     addEventListener(type, callback) {
-        super.addEventListener(type, callback);
-        this._inputControl.addEventListener("input",
-                event => this._span.textContent = event.target.value + this._units
-        );
+        this._inputControl.addEventListener(type, event => {
+            this._simulation.onUserInteraction(event);
+            callback(event);
+            this._span.textContent = event.target.value + this._units;
+        });
         return this;
     }
 }
 
 export class Checkbox extends HtmlControl {
-    static togetherWith = (htmlControl) => new Checkbox(htmlControl.container, htmlControl.buttonRow);
-
-    constructor(container, htmlButtonRow = null) {
-        super(container, htmlButtonRow);
+    constructor(label) {
+        super(label);
         this._targetObject = null;
 
-        const checkboxId = this._createLabel();
         this._inputControl = document.createElement("input");
         this._inputControl.type = "checkbox";
-        this._inputControl.id = checkboxId;
+        this._inputControl.id = this._labelId;
         this._inputControl.style.marginRight = "10px";
-
-        this._buttonRow.appendChild(this._label);
-        this._buttonRow.appendChild(this._inputControl);
     }
 
     checked(value) {
@@ -163,30 +176,22 @@ export class Checkbox extends HtmlControl {
     }
 
     withProperty(name) {
-        this.addEventListener("click",
-            (event) => this._targetObject[name] = event.target.checked
-        );
+        this.addEventListener("click", (event) => this._targetObject[name] = event.target.checked);
         return this;
     }
 }
 
 export class RadioButton extends HtmlControl {
-    static togetherWith = (htmlControl) => new RadioButton(htmlControl.container, htmlControl);
-
-    constructor(container, htmlControl = null) {
-        super(container, htmlControl ? htmlControl.buttonRow : null);
+    constructor(label) {
+        super(label);
         this._targetObject = null;
-        this._nameAttributeValue = htmlControl ? htmlControl._nameAttributeValue : generateUUID();
+        this._nameAttributeValue = generateUUID();
 
-        const buttonId = this._createLabel();
         this._inputControl = document.createElement("input");
         this._inputControl.type = "radio";
-        this._inputControl.id = buttonId;
+        this._inputControl.id = this._labelId;
         this._inputControl.style.marginRight = "10px";
         this._inputControl.name = this._nameAttributeValue;
-
-        this._buttonRow.appendChild(this._label);
-        this._buttonRow.appendChild(this._inputControl);
     }
 
     checked(value) {
@@ -195,9 +200,7 @@ export class RadioButton extends HtmlControl {
     }
 
     withProperty(name) {
-        this.addEventListener("click",
-            (event) => this._targetObject[name] = event.target.value
-        );
+        this.addEventListener("click", event => this._targetObject[name] = event.target.value);
         return this;
     }
 
@@ -205,21 +208,20 @@ export class RadioButton extends HtmlControl {
         this._inputControl.value = value;
         return this;
     }
+
+    togetherWith(otherControl) {
+        otherControl._inputControl.name = this._nameAttributeValue;
+        return super.togetherWith(otherControl);
+    }
 }
 
 export class Button extends HtmlControl {
-    static togetherWith = (htmlControl) => new Button(htmlControl.container, htmlControl.buttonRow);
-
-    constructor(container, htmlButtonRow = null) {
-        super(container, htmlButtonRow);
+    constructor(label) {
+        super(label);
         this._targetObject = null;
 
-        const buttonId = this._createLabel();
         this._inputControl = document.createElement("button");
-        this._inputControl.id = buttonId;
-
-        this._buttonRow.appendChild(this._label);
-        this._buttonRow.appendChild(this._inputControl);
+        this._inputControl.id = this._labelId;
     }
 
     withText(text) {
@@ -229,10 +231,7 @@ export class Button extends HtmlControl {
     }
 
     withProperty(name) {
-        this.addEventListener("click",
-            (event) => this._targetObject[name] = event.target.value
-        );
+        this.addEventListener("click", event => this._targetObject[name] = event.target.value);
         return this;
     }
 }
-

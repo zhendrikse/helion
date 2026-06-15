@@ -25,21 +25,28 @@ const antenna = new AxialSymmetricBody({
     radius: 0.5
 });
 
-const container= document.getElementById("antennaContainer");
 const simulation = Simulation
-    .in(container)
+    .inHtmlDiv("antennaContainer")
     .with({
         cameraPosition: new Vec3(-1, 4, -10).multiplyScalar(5),
-        fieldOfView: 25
+        fieldOfView: 25,
+        headUpDisplay: true
     })
-    .withHud()
     .withMouseClickEventListener()
     .synchronize(antenna.onceWith(new Cylinder({color: 0xcccc77})))
     .incrementsTimeBy(lambda / OneDimensionalPlaneWave.c / 100.0)
     .onClockTick((clockTime, simulatedTime) => {
         for (let wave of planeWaves)
             wave.propagate(simulatedTime);
-    }, 2);
+    }, 2)
+    .append(new Slider("🧲 Field strength: ")
+        .withValue(10)
+        .withRange(new Range(1, 20, .1))
+        .addEventListener("input", event => {
+            for (let wave of planeWaves)
+                wave.amplitude = event.target.value;
+        })
+    );
 
 const slit = new Vec3(0, 0, lambda)
 for (let wave of planeWaves)
@@ -48,12 +55,3 @@ for (let wave of planeWaves)
         arrowSize: 0.2,
         scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)
     })));
-
-new Slider(container)
-    .withLabel("🧲 Field strength: ")
-    .addEventListener(event => {
-        for (let wave of planeWaves)
-            wave.amplitude = event.target.value;
-    })
-    .withValue(10)
-    .withRange(new Range(1, 20, .1));

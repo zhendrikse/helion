@@ -3,6 +3,7 @@ import {ThreeJsRenderer} from "../view/3d/renderer.js";
 import {Vector3} from "three";
 import {Axes} from "../view/3d/composite/backgrounds.js";
 import {Vec3} from "../model/math/math.js";
+import {UPlotGraph} from "./uplot.js";
 
 export class Registry {
     constructor({
@@ -15,12 +16,10 @@ export class Registry {
         this._id = id;
     }
 
-
     get(name) { return this._entries[name]; }
 
     get label() { return this._label; }
     get id() { return this._id; }
-
     get names() { return Object.keys(this._entries); }
 
     add(name, value) { this._entries[name] = value; }
@@ -52,6 +51,10 @@ export class Binding {
         this.mode = mode;
     }
 
+    forceSynchronize(atClockTime) {
+        this.view.synchronizeWith(this.model, atClockTime);
+    }
+
     synchronize(atClockTime) {
         const viewNeedsSynchronization = this.mode === Binding.Mode.ALWAYS || this.view?.dirty;
         if (viewNeedsSynchronization)
@@ -81,10 +84,11 @@ export class Binding {
  * │   ├── HUD           (shows head-up display messages)
  * │   └── CSS2D labels  (text labels in the simulation)
  * │
- * ├── uPlot graph
- * ├── dropdowns
- * ├── sliders
- * └── controls
+ * ├── AddOnsDiv
+ * │   ├── uPlot graph
+ * │   ├── dropdowns
+ * │   ├── sliders
+ * │   └── ...
  */
 export class Viewport {
     constructor(containerDiv) {
@@ -112,8 +116,17 @@ export class Viewport {
         this._canvas.style.width = "100%";
         this._canvas.style.height = "100%";
         this._canvasWrapperDiv.appendChild(this._canvas);
+
+        this._addOnsDiv = document.createElement("div");
+        this._addOnsDiv.classList.add("helionAddOns");
+        this._addOnsDiv.style.position = "relative";
+        this._addOnsDiv.style.display = "block";
+        this._addOnsDiv.style.backgroundColor = "transparent";
+        this._addOnsDiv.style.width = "100%";
+        this._container.appendChild(this._addOnsDiv);
     }
 
+    get addOnsDiv() { return this._addOnsDiv; }
     get container() { return this._container; }
     get canvasWrapper() { return this._canvasWrapperDiv; }
     get canvas() { return this._canvas; }
@@ -129,12 +142,19 @@ export class Simulation {
         STARS: "Stars"
     });
 
-    static in = (htmlDiv) => new Simulation(new Viewport(htmlDiv));
+    static inHtmlDiv = (htmlDiv) => {
+        const canvasWrapper = document.getElementById(htmlDiv);
+        if (!canvasWrapper)
+            throw new Error(`Helion cannot find HTML div with id=${htmlDiv}`)
+
+        return new Simulation(new Viewport(canvasWrapper));
+    }
 
     constructor(viewport) {
         this._viewport = viewport;
         this._renderer = new ThreeJsRenderer();
         this._bindings = [];
+        this._plot = null;                      // No plot by default
         this._hud = null;                       // No head-up display by default
         this._onReset = () => {};               // Callback function for client when a reset happens
         this._onBeforePhysicsUpdate = () => {}; // Callback function for client before physics update
@@ -143,14 +163,18 @@ export class Simulation {
         this._simulatedTime = 0;
         this._dt = 0.01;
         this._substepsCount = 1;
+        this._clockTime = 0;
         requestAnimationFrame(this.animate);
     }
+
+    set autoRotate(autoRotate) { this._renderer.autoRotate = autoRotate; }
 
     with({
          background = Simulation.Background.TRANSPARENT,
          backgroundColor = 0x0088ff,
          scale = 1,
          controls = true,
+         headUpDisplay = false,
          light = true,
          cameraPosition = new Vec3(3, 3, 3),
          shadowsEnabled = false,
@@ -160,6 +184,8 @@ export class Simulation {
             background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView
         });
         this._renderer.attach(this._viewport);
+        if (headUpDisplay)
+            this._initHud()
         return this;
     }
 
@@ -180,12 +206,11 @@ export class Simulation {
         return this;
     }
 
-    withHud() {
+    _initHud() {
         this._hud = new Hud();
         this._hud.attach(this._viewport)
         if (!this._running)
             this._hud.show("Click to start the simulation");
-        return this;
     }
 
     frameSceneOn(anObject, {
@@ -236,6 +261,8 @@ export class Simulation {
     }
 
     animate = (clockTime) => {
+        this._clockTime = clockTime;
+
         // Physics / math model update
         this._onBeforePhysicsUpdate(clockTime, this._simulatedTime);
         this._updatePhysics(clockTime);
@@ -299,5 +326,38 @@ export class Simulation {
     onReset(resetFunction = () => {}) {
         this._onReset = resetFunction;
         return this
+    }
+
+    append(control) {
+        control.append(this._viewport).to(this);
+        return this;
+    }
+
+    onUserInteraction(event) {
+        for (const binding of this._bindings)
+            binding.forceSynchronize(this._clockTime);
+    }
+
+    setupGraphWith({
+         dataDefinition,
+         width = this._viewport.width,
+         height = this._viewport.height,
+         title="",
+         xLabel="",
+         yLabel="",
+         maxPoints = 500,
+         labelColor = "green",
+     } = {}) {
+        const plotParentDiv = this._viewport.addOnsDiv;
+        this._plot = new UPlotGraph({
+            plotParentDiv, dataDefinition, width, height, title, xLabel, yLabel, maxPoints, labelColor
+        });
+        return this;
+    }
+
+    plot(variables) {
+        for (let i = 0; i < variables.length; ++i)
+            this._plot.graphData[i].push(variables[i]);
+        this._plot.update();
     }
 }

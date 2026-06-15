@@ -93,13 +93,13 @@ const arrowField = new ArrowField({
 const dt = 5e-20;
 const field = new Vec3();
 const simulation = Simulation
-    .in(document.getElementById("chargedSheetContainer"))
+    .inHtmlDiv("chargedSheetContainer")
     .with({
         cameraPosition: new Vec3(12, 8, 16),
         fieldOfView: 20,
-        scale: 5e10
+        scale: 5e10,
+        headUpDisplay: true
     })
-    .withHud()
     .withMouseClickEventListener()
     .synchronize(electricField.onceWith(arrowField))
     .synchronize(electron.alwaysWith(electronSphere))

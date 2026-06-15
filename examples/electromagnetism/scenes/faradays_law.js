@@ -42,9 +42,8 @@ const faradayLoopsGroup = new Group(); // Needed to toggle this group on and off
 faradayLoopsGroup.visible = false;
 
 const dt = 0.05;
-const container = document.getElementById("faradayLawContainer");
 const simulation = Simulation
-    .in(container)
+    .inHtmlDiv("faradayLawContainer")
     .with({
         cameraPosition: new Vec3(3, 1, 4),
         fieldOfView: 45
@@ -61,7 +60,11 @@ const simulation = Simulation
 
         for (const charge of charges)
             charge.position.z = zStart + ((charge.baseZ + simulatedTime * dt) % numCharges);
-    }, 10);
+    }, 10)
+    .append(new Checkbox("Show Faraday loop: ")
+        .on(faradayLoopsGroup)
+        .withProperty("visible")
+    );
 
 function createFaradayLoops(faradayLoopsGroup) {
     for (const z of loopZs) {
@@ -125,8 +128,3 @@ for (const position of magneticFieldPositions) {
         round: true
     })));
 }
-
-new Checkbox(container)
-    .on(faradayLoopsGroup)
-    .withProperty("visible")
-    .withLabel("Show Faraday loop: ");

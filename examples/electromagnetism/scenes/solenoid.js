@@ -92,28 +92,22 @@ const arrowField = new ArrowField({
     scaleFactor: 1.25
 });
 
-const container = document.getElementById("solenoidContainer");
 const simulation = Simulation
-    .in(container)
+    .inHtmlDiv("solenoidContainer")
     .with({
         cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
         fieldOfView: 45
     })
-    .synchronize(magneticField.onceWith(arrowField))
-    .start();
+    .synchronize(magneticField.onceWith(arrowField));
 
 for (const segment of solenoid.segments)
     simulation.synchronize(segment.onceWith(new Cylinder({ color: new Color("yellow") })));
 
-const slider = new Slider(container)
+simulation.append(new Slider("️⚡ Field strength: ")
     .on(magneticField)
     .withProperty("fieldStrength")
     .withRange(new Range(0, 1, 0.01))
     .withValue(.5)
-    .withLabel("️⚡ Field strength: ");
-
-// TODO
-// Checkbox.togetherWith(slider)
-//     .on(renderer)
-//     .withProperty("autoRotate")
-//     .withLabel("↻ Rotate: ")
+    .togetherWith(new Checkbox("↻ Rotate: ")
+        .withProperty("autoRotate")
+        .on(simulation)));

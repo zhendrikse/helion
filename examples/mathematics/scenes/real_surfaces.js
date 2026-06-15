@@ -78,7 +78,7 @@ class SurfaceController {
         const amplitude = surfacesRegistry.get(surfaceId).amplitude;
         this._surfaceView.normalizer = new Interval(0, amplitude);
         this._surfaceView.dispose();
-        this._simulation.synchronize(this._currentSurface.onceWith(surfaceView));
+        this._simulation.synchronize(this._currentSurface.alwaysWith(surfaceView));
         this._simulation.provideAxesAround(surfaceView);
         this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5 * amplitude});
     }
@@ -95,9 +95,8 @@ const surfaceView = new StandardSurfaceView({
     normalizer: new Interval(0, surfaces["Ripple"].amplitude)
 });
 
-const container = document.getElementById("realSurfacesContainer");
 const simulation = Simulation
-    .in(container)
+    .inHtmlDiv("realSurfacesContainer")
     .with({
         fieldOfView: 20
     })
@@ -106,16 +105,16 @@ const simulation = Simulation
 const surfaceController = new SurfaceController(simulation, surfaceView);
 simulation
     .onClockTick((clockTime, simulatedTime) => surfaceController.time = simulatedTime)
+    .append(new DropdownMenu()
+        .for(surfacesRegistry)
+        .addEventListener("change", event => surfaceController.changeSurface(event.target.value))
+    )
+    .append(surfaceView.colormapSelector)
+    .append(surfaceView.scalarFieldSelector)
+    .append(surfaceView.surfaceLayoutSelector)
+    .append(new Checkbox("Animate surface ")
+        .on(surfaceController)
+        .withProperty("animate"))
     .start();
 
-new DropdownMenu(container)
-    .for(surfacesRegistry)
-    .addEventListener("change", event => surfaceController.changeSurface(event.target.value));
 surfaceController.changeSurface("Ripple");
-surfaceView.showColormapSelectorIn(container);
-surfaceView.showSurfaceControlsIn(container);
-surfaceView.showScalarFieldSelectorIn(container);
-new Checkbox(container)
-    .on(surfaceController)
-    .withLabel("Animate surface ")
-    .withProperty("animate");

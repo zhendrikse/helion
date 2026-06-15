@@ -19,7 +19,13 @@ export class ThreeJsRenderer extends Renderer {
         this._scene.add(this._world, this._background);
         this._axes = null;
         this._viewport = null;
+
+        this._autoRotateTheta = Math.PI / 2;
+        this._autoRotatePhi = 0;
+        this._autoRotate = false;
     }
+
+    set autoRotate(autoRotate) { this._autoRotate = autoRotate; }
 
     attach(viewport) {
         this._viewport = viewport;
@@ -122,6 +128,8 @@ export class ThreeJsRenderer extends Renderer {
         this._controls?.update();
         this._skydome?.update(time, this._camera);
         this._axes?.render(this._scene, this._camera);
+        if (this._autoRotate)
+            this._doAutoRotate();
     }
 
     add(threeJsObject) {
@@ -185,5 +193,16 @@ export class ThreeJsRenderer extends Renderer {
         this._axes.onWindowResize();
         this._world.add(this._axes);
         return this._axes;
+    }
+
+    _doAutoRotate() {
+        const distance = this._camera.position.length();
+        this._autoRotateTheta += -Math.PI / (7.5 * 100);
+        this._autoRotatePhi += Math.PI / (7.5 * 100) * 2;
+        this._camera.position.set(
+            distance * Math.sin(this._autoRotateTheta) * Math.sin(this._autoRotatePhi),
+            distance * Math.cos(this._autoRotateTheta),
+            distance * Math.sin(this._autoRotateTheta) * Math.cos(this._autoRotatePhi) );
+        this._camera.lookAt(0, 0, 0);
     }
 }

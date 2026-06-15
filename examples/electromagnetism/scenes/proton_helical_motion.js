@@ -66,14 +66,15 @@ const arrowField = new ArrowField({
 });
 
 const dt = 5e-4;
-const container = document.getElementById("helicalProtonContainer");
+const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
+const speedCallback = event => proton.state.velocity = speedToVelocity(event.target.value, proton.velocity);
 Simulation
-    .in(container)
+    .inHtmlDiv("helicalProtonContainer")
     .with({
         cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(25),
-        fieldOfView: 30
+        fieldOfView: 30,
+        headUpDisplay: true
     })
-    .withHud()
     .withMouseClickEventListener()
     .synchronize(proton.alwaysWith(protonSphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
@@ -85,27 +86,19 @@ Simulation
         opacity: 0.1,
         size: new Vec3(boxSize, boxSize, boxSize).multiplyScalar(2.1),
         frameColor: 0x779977
-    }));
-
-new Slider(container)
-    .withRange(new Range(.25, 5, .1))
-    .on(proton.state)
-    .withValue(0.8)
-    .withProperty("charge")
-    .withLabel("🪫 Charge: ");
-
-new Slider(container)
-    .withRange(new Range(.5, 5, .1))
-    .on(magneticField)
-    .withValue(1)
-    .withProperty("fieldStrength")
-    .withLabel("🧲 Field: ");
-
-const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
-const speedCallback = event => proton.state.velocity = speedToVelocity(event.target.value, proton.velocity);
-new Slider(container)
-    .withRange(new Range(1, 100, 1))
-    .withValue(50)
-    .withLabel("🚀 Speed: ")
-    .addEventListener(speedCallback);
+    }))
+    .append(new Slider("🪫 Charge: ")
+        .withRange(new Range(.25, 5, .1))
+        .on(proton.state)
+        .withValue(0.8)
+        .withProperty("charge"))
+    .append(new Slider("🧲 Field: ")
+        .withRange(new Range(.5, 5, .1))
+        .on(magneticField)
+        .withValue(1)
+        .withProperty("fieldStrength"))
+    .append(new Slider("🚀 Speed: ")
+        .withRange(new Range(1, 100, 1))
+        .withValue(50)
+        .addEventListener(speedCallback));
 

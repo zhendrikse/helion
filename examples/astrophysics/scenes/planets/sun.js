@@ -7,7 +7,7 @@ const sun = new RadialSymmetricBody({
 });
 
 Simulation
-    .in(document.getElementById("sunContainer"))
+    .inHtmlDiv("sunContainer")
     .with({
         cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(.3),
         fieldOfView: 45,

@@ -15,7 +15,7 @@ import { SurfaceScalarFields } from "../../../model/math/fields.js";
 import { AdaptiveSymmetricNormalizer } from "../../../model/math/math.js";
 import { NormalizedScalarField } from "../../../model/math/fields.js";
 import {ColorMap, ColorMappers} from "../../colormappers.js";
-import { Checkbox, DropdownMenu} from "../../../controller/controller.js";
+import { Checkbox, DropdownMenu} from "../../../core/controls.js";
 import { Registry } from "../../../core/helion.js";
 import { Renderable3D } from "../../renderer.js";
 
@@ -53,8 +53,8 @@ class SurfaceView extends Renderable3D {
 
     get dirty() { return this._dirty; }
 
-    showColormapSelectorIn(container) {
-        new DropdownMenu(container)
+    get colormapSelector() {
+        return new DropdownMenu()
             .for(ColorMappers)
             .addEventListener("change", (event) => {
                 this._colorMapper = ColorMappers.get(event.target.value);
@@ -62,8 +62,8 @@ class SurfaceView extends Renderable3D {
             });
     }
 
-    showScalarFieldSelectorIn(container) {
-        new DropdownMenu(container)
+    get scalarFieldSelector() {
+        return new DropdownMenu()
             .for(SurfaceScalarFields)
             .addEventListener("change", (event) => {
                 const newScalarField = SurfaceScalarFields.get(event.target.value);
@@ -179,9 +179,10 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         this.shape = shape;
     }
 
-    showShapeSelectorIn(container) {
-        new DropdownMenu(container).for(InstancedMeshSurfaceView.Shapes).addEventListener("change",
-            event => this.shape = event.target.value
+    get shapeSelector() {
+        return new DropdownMenu()
+            .for(InstancedMeshSurfaceView.Shapes)
+            .addEventListener("change", event => this.shape = event.target.value
         );
     }
 
@@ -289,17 +290,14 @@ export class StandardSurfaceView extends SurfaceView {
         this._showSurface = surface;
     }
 
-    showSurfaceControlsIn(container) {
-        const contoursCheckbox = new Checkbox(container)
+    get surfaceLayoutSelector() {
+        return new Checkbox("Contours ")
             .on(this)
-            .withLabel("Contours ")
             .checked(this._showContours)
-            .withProperty("contoursVisible");
-
-        Checkbox.togetherWith(contoursCheckbox)
-            .on(this)
-            .withLabel("Wireframe ")
-            .withProperty("wireframe");
+            .withProperty("contoursVisible")
+            .togetherWith(new Checkbox("Wireframe ")
+                .on(this)
+                .withProperty("wireframe"));
     }
 
     set surfaceVisible(value) {

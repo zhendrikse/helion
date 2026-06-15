@@ -5,7 +5,7 @@ import {
 } from "three";
 import { Renderable3D } from "../renderer.js";
 import { Complex } from "../../model/math/math.js";
-import {DropdownMenu} from "../../controller/controller.js";
+import {DropdownMenu} from "../../core/controls.js";
 import {Registry} from "../../core/helion.js";
 import {ColorMap, ColorMappers} from "../colormappers.js";
 

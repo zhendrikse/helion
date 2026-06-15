@@ -258,15 +258,14 @@ const grid = new Floor({
 const spaceTimeCone = new StandardSurfaceView();
 spaceTimeCone.surfaceVisible = false;
 
-const htmlDiv = document.getElementById("spaceTimeContainer");
 const simulation = Simulation
-    .in(htmlDiv)
+    .inHtmlDiv("spaceTimeContainer")
     .with({
         cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(13),
         fieldOfView: 45,
-        background: Simulation.Background.STARS
+        background: Simulation.Background.STARS,
+        headUpDisplay: true
     })
-    .withHud()
     .withMouseClickEventListener()
     .addObject3D(grid)
     .addObject3D(photonRing)

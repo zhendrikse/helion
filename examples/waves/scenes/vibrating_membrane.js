@@ -31,9 +31,8 @@ const surfaceView = new StandardSurfaceView({
     normalizer: new Interval(-membrane.amplitude, membrane.amplitude)
 });
 
-const container = document.getElementById("membraneContainer");
 Simulation
-    .in(container)
+    .inHtmlDiv("membraneContainer")
     .with({})
     .synchronize(membrane.alwaysWith(surfaceView))
     .incrementsTimeBy(0.016)
@@ -42,29 +41,18 @@ Simulation
         padding: 0.7,
         translationY: -1.25
     })
+    .append(surfaceView.colormapSelector)
+    .append(surfaceView.surfaceLayoutSelector)
+    .append(new Button("Mode-x: ").on(membrane).withProperty("normalModeX").withText(" 1 ")
+        .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 2 `)
+            .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 3 `)
+                .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 4 `)
+                    .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 5 `)))))
+    )
+    .append(new Button("Mode-y: ").on(membrane).withProperty("normalModeY").withText(" 1 ")
+        .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 2 `)
+            .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 3 `)
+                .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 4 `)
+                    .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 5 `)))))
+    )
     .start();
-
-surfaceView.showColormapSelectorIn(container);
-surfaceView.showSurfaceControlsIn(container);
-
-const normalModeXButton = new Button(container)
-    .on(membrane)
-    .withProperty("normalModeX")
-    .withText(" 1 ")
-    .withLabel("Mode-x: ");
-for (let i = 2; i < 6; i++)
-    Button.togetherWith(normalModeXButton)
-        .on(membrane)
-        .withProperty("normalModeX")
-        .withText(` ${i} `);
-
-const normalModeYButton = new Button(container)
-    .on(membrane)
-    .withProperty("normalModeY")
-    .withText(" 1 ")
-    .withLabel("Mode-y: ");
-for (let i = 2; i < 6; i++)
-    Button.togetherWith(normalModeYButton)
-        .on(membrane)
-        .withProperty("normalModeY")
-        .withText(` ${i} `)

@@ -7,7 +7,6 @@ import {
 //
 const astronomical_unit = 1.49e11;
 const mass = 1e30;
-
 const radiusA = 0.1 * astronomical_unit;
 const radiusB = radiusA / 0.8;
 const velocityA = Math.sqrt(G * 0.8 * mass * radiusA) / (radiusA + radiusB);
@@ -50,12 +49,12 @@ function updateForces(dt) {
 const dt = 5000;
 const subSteps = 50;
 Simulation
-    .in(document.getElementById("threeBodyContainer"))
+    .inHtmlDiv("threeBodyContainer")
     .with({
             cameraPosition: new Vec3(30, 30, 30),
-            scale: 1e-9
+            scale: 1e-9,
+            headUpDisplay: true
         })
-    .withHud()
     .synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
     .synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
     .synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })))

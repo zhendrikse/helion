@@ -1,5 +1,4 @@
-import { Vec3, UPlotGraph, Block, Simulation, Box, Aquarium } from "../../../src/index.js";
-import 'uplot/dist/uPlot.min.css';
+import { Vec3, Block, Simulation, Box, Aquarium } from "../../../src/index.js";
 
 const liquidDensity = 1000;
 const g = -9.8;
@@ -51,44 +50,27 @@ const water = new Aquarium({
 
 const dt = 0.001;
 const substeps = 20;
-const container = document.getElementById("floatingBlockContainer");
-Simulation
-    .in(container)
+const simulation = Simulation
+    .inHtmlDiv("floatingBlockContainer")
     .with({
-        cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
+        cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7),
+        headUpDisplay: true
     })
-    .withHud()
     .addObject3D(water)
     .withMouseClickEventListener()
     .incrementsTimeBy(dt)
     .synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
     .onClockTick((clockTime, simulationTime) => woodenBlock.apply(woodenBlock.netForce(water), dt), substeps)
-    .onAfterClockTick((clockTime, simulationTime) => {
-        plot.graphData[0].push(simulationTime);
-        plot.graphData[1].push(woodenBlock.buoyancyForce(water));
-        plot.graphData[2].push(woodenBlock.dragForce());
-        plot.update();
-    });
+    .onAfterClockTick((clockTime, simulationTime) => plotFunction(simulationTime))
+    .setupGraphWith({
+        dataDefinition: [
+            { label: "t [s]", color: "yellow" },
+            { label: "buoyancy", color: "magenta" },
+            { label: "drag", color: "blue" }
+        ],
+        title: "Buoyancy & drag forces",
+        xLabel: "Simulation time",
+        yLabel: "y [m]"
+    })
 
-
-//
-// Graph
-//
-const plot = new UPlotGraph({
-    plotParentDiv: container,
-    dataDefinition: [
-        { label: "t [s]", color: "yellow" },
-        { label: "buoyancy", color: "magenta" },
-        { label: "drag", color: "blue" }
-    ],
-    width: container.clientWidth,
-    height: container.clientHeight * 0.5,
-    title: "Buoyancy & drag forces",
-    xLabel: "Simulation time",
-    yLabel: "y [m]"
-});
-
-plot.graphData[0] = [0]; // time
-plot.graphData[1] = [woodenBlock.buoyancyForce(water)];
-plot.graphData[2] = [woodenBlock.dragForce()];
-
+const plotFunction = (simulatedTime) => simulation.plot([simulatedTime, woodenBlock.buoyancyForce(water), woodenBlock.dragForce()]);

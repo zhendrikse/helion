@@ -4,11 +4,7 @@ import {
 } from "../../../src/index.js";
 import {MeshStandardMaterial} from "three";
 
-const sin = Math.sin;
-const cos = Math.cos;
-const exp = Math.exp;
-const PI = Math.PI;
-
+const sin = Math.sin, cos = Math.cos, exp = Math.exp, PI = Math.PI;
 const surfaces = {
     "Astroceras": new ParametricSurface({
         domain: new Domain([-40, -1], [0, 2 * PI]),
@@ -71,11 +67,16 @@ const surfaceView = new StandardSurfaceView({
     colorMapper: ColorMappers.get(ColorMap.RdYlBu)
 });
 
-const htmlDiv = document.getElementById("shellsContainer");
+const htmlDiv = document.getElementById();
 const simulation = Simulation
-    .in(htmlDiv)
+    .inHtmlDiv("shellsContainer")
     .with({ fieldOfView: 20 })
     .onClockTick(() => surfaceView.rotation.y += 0.0167)
+    .append(new DropdownMenu(htmlDiv)
+        .for(surfacesRegistry)
+        .addEventListener("change", event => changeSurface(event.target.value)))
+    .append(surfaceView.colormapSelector)
+    .append(surfaceView.surfaceLayoutSelector)
     .start();
 
 const surfacesRegistry = new Registry({
@@ -91,12 +92,5 @@ function changeSurface(surfaceId) {
     simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
 }
 
-new DropdownMenu(htmlDiv)
-    .for(surfacesRegistry)
-    .addEventListener("change", event => changeSurface(event.target.value));
-
 changeSurface("Sea shell");
-
-surfaceView.showColormapSelectorIn(htmlDiv);
-surfaceView.showSurfaceControlsIn(htmlDiv);
 

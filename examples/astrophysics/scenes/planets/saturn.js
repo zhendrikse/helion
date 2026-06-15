@@ -2,7 +2,7 @@ import { Simulation, Saturn, Vec3, Planets } from "../../../../src/index.js";
 import {AmbientLight} from "three";
 
 Simulation
-    .in(document.getElementById("saturnContainer"))
+    .inHtmlDiv("saturnContainer")
     .with({
         cameraPosition: new Vec3(1, 1.5, 4).multiplyScalar(.8),
         fieldOfView: 45,

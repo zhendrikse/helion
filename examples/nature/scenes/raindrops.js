@@ -37,9 +37,9 @@ const water = new InstancedMeshSurfaceView({
 });
 water.position.set(-128, 0, -128);
 
-const htmlDiv = document.getElementById("raindropContainer");
+const htmlDiv = document.getElementById();
 Simulation
-    .in(htmlDiv)
+    .inHtmlDiv("raindropContainer")
     .with({
         cameraPosition: new Vec3(4, .6, 4.2).multiplyScalar(45),
         fieldOfView: 19
@@ -57,7 +57,6 @@ Simulation
             sigma: 1
         }));
     }, 5)
+    .append(water.colormapSelector)
+    .append(water.shapeSelector)
     .start();
-
-water.showColormapSelectorIn(htmlDiv);
-water.showShapeSelectorIn(htmlDiv);

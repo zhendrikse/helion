@@ -98,11 +98,9 @@ class Flock {
 
 const birdCount = 250;
 const flock = new Flock(birdCount);
-
-const htmlDiv = document.getElementById("birdsContainer");
 const dt = 0.02;
 const simulation = Simulation
-    .in(htmlDiv)
+    .inHtmlDiv("birdsContainer")
     .with({
         cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
         fieldOfView: 30
@@ -110,6 +108,29 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .incrementsTimeBy(dt)
     .onClockTick(() => flock.update(dt))
+    .append(new Slider("Random behavior: ")
+        .on(flock)
+        .withProperty("randomWeight")
+        .withRange(new Range(0, 50, 1))
+        .withValue(5))
+    .append(new Slider("Centering behavior: ")
+        .on(flock)
+        .withProperty("centeringWeight")
+        .withRange(new Range(0, 2, .01))
+        .withValue(.1))
+    .append(new Slider("Direction behavior: ")
+        .on(flock)
+        .withProperty("directionWeight")
+        .withRange(new Range(0, 2, .01))
+        .withValue(.1))
+    .append(new Slider("Avoidance behavior: ")
+        .on(flock)
+        .withProperty("avoidWeight")
+        .withRange(new Range(0, 2, .01))
+        .withValue(1))
+    .append(new Button()
+        .withText("Startle birds")
+        .addEventListener("click", () => flock.startleBirds()))
     .start();
 
 for (let i = 0; i < birdCount; i++)
@@ -119,35 +140,3 @@ for (let i = 0; i < birdCount; i++)
         size: .25,
         magnitudeMap: magnitude => magnitude * .1
     })));
-
-new Slider(htmlDiv)
-    .on(flock)
-    .withProperty("randomWeight")
-    .withRange(new Range(0, 50, 1))
-    .withValue(5)
-    .withLabel("Random behavior: ");
-
-new Slider(htmlDiv)
-    .on(flock)
-    .withProperty("centeringWeight")
-    .withRange(new Range(0, 2, .01))
-    .withValue(.1)
-    .withLabel("Centering behavior: ");
-
-new Slider(htmlDiv)
-    .on(flock)
-    .withProperty("directionWeight")
-    .withRange(new Range(0, 2, .01))
-    .withValue(.1)
-    .withLabel("Direction behavior: ");
-
-new Slider(htmlDiv)
-    .on(flock)
-    .withProperty("avoidWeight")
-    .withRange(new Range(0, 2, .01))
-    .withValue(1)
-    .withLabel("Avoidance behavior: ");
-
-new Button(htmlDiv)
-    .withText("Startle birds")
-    .addEventListener("click", () => flock.startleBirds());

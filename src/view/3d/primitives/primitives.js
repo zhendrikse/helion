@@ -354,6 +354,7 @@ export class Ring extends Renderable3D {
         });
         this._mesh = new Mesh(geometry, material);
         this.add(this._mesh);
+        this._direction = new Vector3();
     }
 
     canBindTo(body) {
@@ -363,7 +364,7 @@ export class Ring extends Renderable3D {
     synchronizeWith(body) {
         this.position.copy(body.position);
         this.scale.setScalar(body.radius);
-        this._direction.copy(body.axis);
+        this._direction.set(body.axis.x, body.axis.y, body.axis.z);
         this._direction.normalize();
         this.quaternion.setFromUnitVectors(Arrow.FORWARD, this._direction);
     }

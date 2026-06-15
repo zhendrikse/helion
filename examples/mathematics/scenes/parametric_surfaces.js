@@ -59,24 +59,30 @@ const surfaces = {
     })
 };
 
-const surfaceView = new StandardSurfaceView({
-    scalarFieldType: "GaussianCurvature",
-    opacity: 0.925
-});
-
-const container = document.getElementById("parametricSurfacesContainer");
-const simulation = Simulation
-    .in(container)
-    .with({
-        fieldOfView: 20
-    })
-    .start();
-
 const surfacesRegistry = new Registry({
     id: "parametricSurfaceSelect",
     label: "Surface ",
     entries: surfaces
 });
+
+const surfaceView = new StandardSurfaceView({
+    scalarFieldType: "GaussianCurvature",
+    opacity: 0.925
+});
+
+const simulation = Simulation
+    .inHtmlDiv("parametricSurfacesContainer")
+    .with({
+        fieldOfView: 20
+    })
+    .append(surfaceView.colormapSelector)
+    .append(surfaceView.scalarFieldSelector)
+    .append(surfaceView.surfaceLayoutSelector)
+    .append(new DropdownMenu()
+        .for(surfacesRegistry)
+        .addEventListener("change", event => changeSurface(event.target.value))
+    )
+    .start();
 
 function changeSurface(surfaceId) {
     const newSurface = surfacesRegistry.get(surfaceId);
@@ -86,11 +92,5 @@ function changeSurface(surfaceId) {
     simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
 }
 
-new DropdownMenu(container)
-    .for(surfacesRegistry)
-    .addEventListener("change", event => changeSurface(event.target.value));
-surfaceView.showColormapSelectorIn(container);
-surfaceView.showScalarFieldSelectorIn(container);
-surfaceView.showSurfaceControlsIn(container);
 
 changeSurface("Bow curve");

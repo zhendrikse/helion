@@ -127,13 +127,13 @@ const arrowField = new ArrowField({
 const dt = 2e-19;
 const subSteps = 20;
 const simulation = Simulation
-    .in(document.getElementById("chargedRingContainer"))
+    .inHtmlDiv("chargedRingContainer")
     .with({
         cameraPosition: new Vec3(15, 5, 20),
         fieldOfView: 22,
-        scale: 5e10
+        scale: 5e10,
+        headUpDisplay: true
     })
-    .withHud()
     .withMouseClickEventListener()
     .synchronize(electron.alwaysWith(electronSphere))
     .synchronize(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))

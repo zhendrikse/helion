@@ -50,7 +50,7 @@ class StarCluster extends PointCloud {
 const starCluster = new StarCluster();
 const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
 Simulation
-    .in(document.getElementById("starClusterContainer"))
+    .inHtmlDiv("starClusterContainer")
     .with({
         cameraPosition: new Vec3(7, 14, 21),
         background: Simulation.Background.STARS,

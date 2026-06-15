@@ -66,9 +66,8 @@ const arrowField = new ArrowField({
     colorMap: (axis, magnitude) => new Color().setHSL(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.5)
 });
 
-const container = document.getElementById("dipoleContainer");
-Simulation
-    .in(container)
+const simulation = Simulation
+    .inHtmlDiv("dipoleContainer")
     .with({
         cameraPosition: new Vec3(32, 16, 48),
         scale: scale,
@@ -76,29 +75,18 @@ Simulation
     })
     .synchronize(dipole.positive.onceWith(positiveSphere))
     .synchronize(dipole.negative.onceWith(negativeSphere))
-    .synchronize(dipoleField.onceWith(arrowField))
-    .start();
+    .synchronize(dipoleField.onceWith(arrowField));
 
-const slider = new Slider(container)
+simulation.append(new Slider("️⚡ Field strength: ")
     .on(dipoleField)
     .withProperty("fieldStrength")
     .withRange(new Range(0, 1, 0.01))
     .withValue(.5)
-    .withLabel("️⚡ Field strength: ");
+    .togetherWith(new Checkbox("↻ Rotate: ")
+        .withProperty("autoRotate")
+        .on(simulation)
+    ));
 
-const distance = this._camera.position.length();
 
-function doAutoRotate(distance) {
-    let autoRotateTheta = Math.PI / 2;
-    let autoRotatePhi = 0;
-    autoRotateTheta += -Math.PI / (7.5 * 100);
-    autoRotatePhi += Math.PI / (7.5 * 100) * 2;
-    this._camera.position.set( distance * Math.sin(autoRotateTheta) * Math.sin(autoRotatePhi), distance * Math.cos(autoRotateTheta), distance * Math.sin(autoRotateTheta) * Math.cos(autoRotatePhi) );
-    this._camera.lookAt(0, 0, 0);
-}
 
-// Checkbox.togetherWith(slider)
-//     .withProperty("autoRotate")
-//     .withLabel("↻ Rotate: ")
-//     .addEventListener(() => doAutoRotate(arrowField));
 

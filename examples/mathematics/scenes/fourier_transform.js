@@ -77,39 +77,32 @@ const intensityRaster = new ComplexScalarFieldRaster({
     showPhaseColour: false
 });
 
-const htmlDiv = document.getElementById("fourierTransformContainer");
 Simulation
-    .in(htmlDiv)
+    .inHtmlDiv("fourierTransformContainer")
     .with({
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.5)
     })
     .synchronize(fourierSimulation.field.alwaysWith(intensityRaster))
     .onClockTick()
+    .append(new Slider("📏 Size:")
+        .on(fourierSimulation)
+        .withRange(new Range(20, 50, .1))
+        .withValue(30)
+        .withUnits("pixels")
+        .withProperty("diameter")
+        .togetherWith(new Checkbox("🎨 Phase: ")
+            .on(intensityRaster)
+            .checked(false)
+            .withProperty("phaseColor"))
+    )
+    .append(new RadioButton("🟩 Square")
+        .on(fourierSimulation)
+        .withProperty("type")
+        .withValue("square")
+        .togetherWith( new RadioButton("🟢 Circle")
+            .on(fourierSimulation)
+            .withProperty("type")
+            .checked(true)
+            .withValue("circle"))
+    )
     .start();
-
-const slider = new Slider(htmlDiv)
-    .on(fourierSimulation)
-    .withLabel("📏 Size:")
-    .withRange(new Range(20, 50, .1))
-    .withValue(30)
-    .withUnits("pixels")
-    .withProperty("diameter");
-
-Checkbox.togetherWith(slider)
-    .withLabel("🎨 Phase: ")
-    .on(intensityRaster)
-    .checked(false)
-    .withProperty("phaseColor");
-
-const radioButton = new RadioButton(htmlDiv)
-    .on(fourierSimulation)
-    .withProperty("type")
-    .withValue("square")
-    .withLabel("🟩 Square");
-
-RadioButton.togetherWith(radioButton)
-    .on(fourierSimulation)
-    .withProperty("type")
-    .checked(true)
-    .withValue("circle")
-    .withLabel("🟢 Circle");

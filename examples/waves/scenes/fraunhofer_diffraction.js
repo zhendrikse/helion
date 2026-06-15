@@ -153,52 +153,42 @@ const intensityPixelRaster = new ScalarFieldPixelRaster({
 
 const htmlDiv = document.getElementById("fraunhoferContainer");
 Simulation
-    .in(htmlDiv)
+    .inHtmlDiv("fraunhoferContainer")
     .with({
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(50)
     })
     .synchronize(intensityField.alwaysWith(intensityPixelRaster))
     .onClockTick()
+    .append(new RadioButton("🟩 Square")
+        .on(fraunhoferSimulation)
+        .withProperty("apertureType")
+        .withValue("square")
+        .togetherWith(new RadioButton("🟢 Circle")
+            .on(fraunhoferSimulation)
+            .withProperty("apertureType")
+            .withValue("circle")
+            .checked(true))
+    )
+    .append(new Slider("Size: ")
+        .withValue(200)
+        .withRange(new Range(50, 300, 1))
+        .addEventListener("change", event => fraunhoferSimulation.diameterInMicroMeter = event.target.value))
+    .append(new Slider("Color: ")
+        .withValue(initialLambda)
+        .withRange(new Range(380, 700, 1))
+        // .addEventListener("input", (event) => {
+        //     const wavelength = Number(event.target.value);
+        //     const color = wavelengthToRGBNormalized(wavelength);
+        //     const intensity = 1;
+        //     wavelengthProbe.style.backgroundColor =
+        //         `rgb(${color.r * intensity * 255},
+        //          ${color.g * intensity * 255},
+        //          ${color.b * intensity * 255})`;
+        // })
+        .addEventListener("change", event => fraunhoferSimulation.lambdaInNanos = event.target.value)
+        .togetherWith(new Checkbox("🎨 ")
+            .on(fraunhoferSimulation)
+            .withProperty("showSpectralColor")
+            .checked(true))
+    )
     .start();
-
-const radioButton = new RadioButton(htmlDiv)
-    .on(fraunhoferSimulation)
-    .withProperty("apertureType")
-    .withValue("square")
-    .withLabel("🟩 Square");
-
-RadioButton.togetherWith(radioButton)
-    .on(fraunhoferSimulation)
-    .withProperty("apertureType")
-    .checked(true)
-    .withValue("circle")
-    .withLabel("🟢 Circle");
-
-new Slider(htmlDiv)
-    .withLabel("Size: ")
-    .withValue(200)
-    .withRange(new Range(50, 300, 1))
-    .addEventListener("change", event => fraunhoferSimulation.diameterInMicroMeter = event.target.value);
-
-const slider = new Slider(htmlDiv)
-    .withLabel("Color: ")
-    .withValue(initialLambda)
-    .withRange(new Range(380, 700, 1))
-    // .addEventListener("input", (event) => {
-    //     const wavelength = Number(event.target.value);
-    //     const color = wavelengthToRGBNormalized(wavelength);
-    //     const intensity = 1;
-    //     wavelengthProbe.style.backgroundColor =
-    //         `rgb(${color.r * intensity * 255},
-    //          ${color.g * intensity * 255},
-    //          ${color.b * intensity * 255})`;
-    // })
-    .addEventListener("change", event => fraunhoferSimulation.lambdaInNanos = event.target.value);
-
-Checkbox
-    .togetherWith(slider)
-    .on(fraunhoferSimulation)
-    .withProperty("showSpectralColor")
-    .withLabel("🎨 ")
-    .checked(true);
-

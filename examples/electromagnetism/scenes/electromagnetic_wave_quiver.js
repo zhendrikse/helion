@@ -142,13 +142,13 @@ const magneticArrowField = new ArrowField({
 
 const dt = 2e-19;
 Simulation
-    .in(document.getElementById("electromagneticWaveContainer"))
+    .inHtmlDiv("electromagneticWaveContainer")
     .with({
         cameraPosition: new Vec3(15, 5, 20),
         fieldOfView: 45,
-        scale: 1e10
+        scale: 1e10,
+        headUpDisplay: true
     })
-    .withHud()
     .withMouseClickEventListener()
     .incrementsTimeBy(dt)
     .synchronize(electron.alwaysWith(new Sphere({ color: new Color("red") })))

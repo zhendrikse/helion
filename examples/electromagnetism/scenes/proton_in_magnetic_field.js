@@ -3,6 +3,9 @@ import {
     RadialSymmetricBody, VectorField, Range, Simulation, Slider, Sphere, ArrowField, Trail, Vec3
 } from "../../../src/index.js";
 
+//
+// Physics
+//
 class MagneticField extends VectorField {
     constructor(fieldStrength) {
         super();
@@ -18,9 +21,6 @@ class MagneticField extends VectorField {
     }
 }
 
-//
-// Physics
-//
 const proton = new RadialSymmetricBody({
     position: new Vec3(0, 1, 0),
     velocity: new Vec3(.5, 0, 0),
@@ -39,7 +39,7 @@ function timeStep(dt) {
 }
 
 //
-// Simulation
+// View
 //
 const sphere = new Sphere({ color: new Color("red") });
 const arrowField = new ArrowField({
@@ -54,32 +54,28 @@ const arrowField = new ArrowField({
 
 const dt = 2.5e-3;
 const subSteps = 100;
-const container = document.getElementById("protonInFieldContainer");
+const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
 Simulation
-    .in(container)
+    .inHtmlDiv("protonInFieldContainer")
     .with({
-        cameraPosition: new Vec3(0, 5, -10)
+        cameraPosition: new Vec3(0, 5, -10),
+        headUpDisplay: true
     })
-    .withHud()
     .withMouseClickEventListener()
     .synchronize(magneticField.onceWith(arrowField))
     .synchronize(proton.alwaysWith(sphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })))
     .incrementsTimeBy(dt)
-    .onClockTick(() => timeStep(dt), subSteps);
-
-new Slider(container)
-    .withRange(new Range(.1, 1, .01))
-    .on(magneticField)
-    .withValue(.2)
-    .withProperty("magnitude")
-    .withLabel("🧲 Field: ");
-
-const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
-const speedCallback = event =>
-    proton.state.velocity.copy(speedToVelocity(event.target.value * .01, proton.velocity));
-new Slider(container)
-    .withRange(new Range(1, 100, 1))
-    .withValue(50)
-    .withLabel("🚀 Speed: ")
-    .addEventListener(speedCallback);
+    .onClockTick(() => timeStep(dt), subSteps)
+    .append(new Slider("🧲 Field: ")
+        .withRange(new Range(.1, 1, .01))
+        .on(magneticField)
+        .withValue(.2)
+        .withProperty("magnitude")
+    )
+    .append(new Slider("🚀 Speed: ")
+        .withRange(new Range(1, 100, 1))
+        .withValue(50)
+        .addEventListener("input", event =>
+            proton.state.velocity.copy(speedToVelocity(event.target.value * .01, proton.velocity)))
+    );
