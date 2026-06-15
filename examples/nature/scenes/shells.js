@@ -56,6 +56,12 @@ const surfaces = {
     })
 };
 
+const surfacesRegistry = new Registry({
+    id: "shellsSelect",
+    label: "Specie: ",
+    entries: surfaces
+});
+
 const surfaceView = new StandardSurfaceView({
     material: new MeshStandardMaterial({
         metalness: 0.5,
@@ -73,18 +79,12 @@ const simulation = Simulation
         fieldOfView: 20
     })
     .onClockTick(() => surfaceView.rotation.y += 0.0167)
-    .append(new DropdownMenu(htmlDiv)
+    .append(new DropdownMenu()
         .for(surfacesRegistry)
         .addEventListener("change", event => changeSurface(event.target.value)))
     .append(surfaceView.colormapSelector)
     .append(surfaceView.surfaceLayoutSelector)
     .start();
-
-const surfacesRegistry = new Registry({
-    id: "shellsSelect",
-    label: "Specie: ",
-    entries: surfaces
-});
 
 function changeSurface(surfaceId) {
     const newSurface = surfacesRegistry.get(surfaceId);
