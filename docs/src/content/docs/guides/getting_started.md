@@ -2,184 +2,70 @@
 title: "Getting started"
 ---
 
-## Design
+## My first simulation
+<div class="header_line"></div>
 
-Wat je nu hebt lijkt sterk op een kleine ECS/MVC-hybride, en dat schaalt veel beter dan losse imperative canvas-code.
+As an example, let's code the three-body problem. First, we start by coding the physics involved:
 
-```
-                ┌──────────────────────────────┐
-                │     Mathematical Layer       │
-                │                              │
-                │  ScalarField                │
-                │  VectorField               │
-                │  ParametricSurface         │
-                │  DifferentialGeometry       │
-                └────────────┬───────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │     Discretization Layer     │
-                │                              │
-                │  Range                      │
-                │  SurfaceResolution          │
-                │  Sampling (u,v grids)       │
-                └────────────┬───────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │       View Layer             │
-                │                              │
-                │  PlaneSurfaceView          │
-                │  IsoparametricContoursView  │
-                │  ArrowField                │
-                │  PointCloudView            │
-                │  ScalarFieldSurface         │
-                └────────────┬───────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │      Rendering Layer         │
-                │                              │
-                │  ThreeJsRenderer            │
-                │  InstancedMesh             │
-                │  Materials / Shaders       │
-                └────────────┬───────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │     Simulation Layer         │
-                │                              │
-                │  Simulation loop            │
-                │  EventController           │
-                │  Time evolution            │
-                └──────────────────────────────┘
-```
+```js
+const astronomical_unit = 1.49e11;
+const mass = 1e30;
+const radiusA = 0.1 * astronomical_unit;
+const radiusB = radiusA / 0.8;
+const velocityA = Math.sqrt(G * 0.8 * mass * radiusA) / (radiusA + radiusB);
 
-MVC: 
-
-```
-Simulation
-    updates solver
-Solver
-    updates field
-SurfaceView
-    samples field
-```
-
-```
-numerics/
-├── solvers/
-│   ├── JacobiSolver
-│   ├── GaussSeidelSolver
-│   ├── MultigridSolver
-│   └── FiniteDifferenceWaveSolver
-│
-├── operators/
-│   ├── Laplacian2D
-│   ├── Gradient2D
-│   └── Divergence2D
-│
-├── boundaryconditions/
-│   ├── Dirichlet
-│   ├── Neumann
-│   └── Periodic
-```
-
-```
-SurfaceView
-    ↓
-Surface.sample()
-    ↓
-ScalarField.scalarValueAt()
-```
-
-```javascript
-const field = new ScalarGridField(...);
-
-const solver = new WaveEquationSolver({
-    field,
-    boundaryCondition: BoundaryCondition.Dirichlet
+const radius = 1.9e9;
+const bodyA = new RadialSymmetricBody({
+    position: new Vec3(radiusA, 0, 0),
+    velocity: new Vec3(0, velocityA, 0),
+    radius,
+    mass
 });
 
-simulation.onClockTick((_, dt) => solver.step(dt));
+const bodyB = new RadialSymmetricBody({
+    position: new Vec3(-radiusB, 0, 0),
+    velocity: new Vec3(0, -velocityA / 0.8, 0),
+    radius,
+    mass: mass * 0.8
+});
+
+const bodyC = new RadialSymmetricBody({
+    position: new Vec3(0, 0, radiusA),
+    velocity: new Vec3(0, 0, 0),
+    radius,
+    mass: mass * 0.5
+});
+
+function updateForces(dt) {
+    const force_BA = gravitationalForceBetween(bodyA.and(bodyB));
+    const force_CB = gravitationalForceBetween(bodyB.and(bodyC));
+    const force_AC = gravitationalForceBetween(bodyC.and(bodyA));
+
+    bodyA.apply(force_BA.clone().sub(force_AC), dt / subSteps, Integrators.symplecticEulerStep);
+    bodyB.apply(force_CB.clone().sub(force_BA), dt / subSteps, Integrators.symplecticEulerStep);
+    bodyC.apply(force_AC.clone().sub(force_CB), dt / subSteps, Integrators.symplecticEulerStep);
+}
 ```
 
+In the simulation, we synchronize the bodies with the view: spheres that leave a trail behind:
 
-
-# Introduction
-<div class="header_line"></div>
-
-In jouw architectuur (zoals je die nu gebruikt)
-
-Je hebt 3 lagen:
-
-1. Physics layer
-   Dipole, Particle, VectorField
-
-→ puur fysica in meters (of SI units)
-
-2. Simulation layer
-   Simulation
-
-→ tijd, substeps, integratie
-
-❗ hoort NIETS te weten over visual scale
-
-3. Render layer
-   ThreeJsRenderer._world
-   ArrowField2
-   Sphere
-   etc.
-
-→ mapping physics → visuals
-
-# Getting started
-<div class="header_line"></div>
-
-
-
-#### 📊 My first simulation
-<div class="header_line"></div>
-
-TODO
-
-
-# The physics layer
-<div class="header_line"></div>
-
-# The simulation layer
-<div class="header_line"></div>
-
-# The rendering layer
-<div class="header_line"></div>
-
-## Surfaces
-
+```js
+const dt = 5000;
+const subSteps = 50;
+Simulation
+    .inHtmlDiv("threeBodyContainer")
+    .with({
+            cameraPosition: new Vec3(30, 30, 30),
+            scale: 1e-9,
+            headUpDisplay: true
+        })
+    .synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
+    .synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
+    .synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })))
+    .synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
+    .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
+    .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
+    .incrementsTimeBy(dt / subSteps)
+    .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps)
+    .withMouseClickEventListener();
 ```
-Surface
-↓
-ScalarField (ruwe waarde)
-↓
-NormalizedScalarField (altijd [0,1])
-↓
-ColorMapper (blind voor fysica)
-↓
-View (alleen rendering)
-```
-
-```javascript
-/**
-* Scalar field on a surface.
-* │
-* ├── MeanCurvatureField
-* ├── GaussianCurvatureField
-* ├── PrincipalCurvatureField
-* ├── GeodesicDistanceField
-* ├── UserDefinedField
-  */
-  export class SurfaceScalarField 
-
-```
-
-# User interaction
-<div class="header_line"></div>
