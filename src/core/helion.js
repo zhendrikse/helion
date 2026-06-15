@@ -126,8 +126,9 @@ export class Viewport {
         this._container.appendChild(this._addOnsDiv);
 
         this._details = document.createElement("details");
-        this._details.open = true;   // Open by default
+        this._details.classList.add("helionControlGroup");
         const summary = document.createElement("summary");
+        summary.classList.add("helionControlSummary");
         summary.textContent = "⚙️ Parameters";
         this._details.appendChild(summary);
         this._addOnsDiv.appendChild(this._details);
