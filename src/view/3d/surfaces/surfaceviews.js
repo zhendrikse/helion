@@ -12,10 +12,10 @@ import {
     IcosahedronGeometry
 } from "three";
 import { SurfaceScalarFields } from "../../../model/math/fields.js";
-import { AdaptiveSymmetricNormalizer } from "../../../model/math/math.js";
+import { AdaptiveSymmetricNormalizer, Range } from "../../../model/math/math.js";
 import { NormalizedScalarField } from "../../../model/math/fields.js";
 import {ColorMap, ColorMappers} from "../../colormappers.js";
-import { Checkbox, DropdownMenu} from "../../../core/controls.js";
+import {Checkbox, DropdownMenu, Slider} from "../../../core/controls.js";
 import { Registry } from "../../../core/helion.js";
 import { Renderable3D } from "../../renderer.js";
 
@@ -291,13 +291,20 @@ export class StandardSurfaceView extends SurfaceView {
     }
 
     get surfaceLayoutSelector() {
-        return new Checkbox("Contours ")
-            .on(this)
-            .checked(this._showContours)
-            .withProperty("contoursVisible")
-            .togetherWith(new Checkbox("Wireframe ")
+        return new Slider("Opacity ")
+            .on(this._mesh.material)
+            .withProperty("opacity")
+            .withRange(new Range(0, 1, 0.01))
+            .withValue(this._mesh.material.opacity)
+            .togetherWith(new Checkbox("Contours ")
                 .on(this)
-                .withProperty("wireframe"));
+                .checked(this._showContours)
+                .withProperty("contoursVisible")
+                .togetherWith(new Checkbox("Wireframe ")
+                    .on(this)
+                    .withProperty("wireframe")
+                )
+            );
     }
 
     set surfaceVisible(value) {
