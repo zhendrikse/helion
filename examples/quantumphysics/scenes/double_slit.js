@@ -4,14 +4,24 @@ import {
     DiscreteScalarField, Renderable3D, WavelengthColorMapper, ScalarFieldPixelRaster
 } from "../../../src/index.js";
 
-const resolution = 40;
+const resolution = 100;
 const xMax = 4;
-const posSlit1= new Vec3(-1, -3, 0);
-const posSlit2= new Vec3(1, -3, 0);
 const wavelengthColorMapper = new WavelengthColorMapper();
 const field = new DiscreteScalarField({
     nx: Math.floor(4 * xMax * resolution),
     ny: Math.floor(2 * xMax * resolution),
+});
+
+const slitSize = .5;
+const slit1 = new AxialSymmetricBody({
+    position: new Vec3(-1, -3 - slitSize * .5, 0).multiplyScalar(resolution),
+    axis: new Vec3(0, slitSize * resolution,0),
+    radius: .25 * resolution,
+});
+const slit2 = new AxialSymmetricBody({
+    position: new Vec3( 1, -3 - slitSize * .5, 0).multiplyScalar(resolution),
+    axis: new Vec3(0, slitSize * resolution,0),
+    radius: .25 * resolution,
 });
 
 function updateInterferencePattern(field, wavelength) {
@@ -21,8 +31,8 @@ function updateInterferencePattern(field, wavelength) {
             const x = (i - field.nx * .5) / resolution;
             const y = (j - field.ny * .5) / resolution;
             pos.set(x, y, 0);
-            const r1 = pos.distanceTo(posSlit1);
-            const r2 = pos.distanceTo(posSlit2);
+            const r1 = pos.distanceTo(slit1.position.clone().divideScalar(resolution));
+            const r2 = pos.distanceTo(slit2.position.clone().divideScalar(resolution));
             const pathDiff = Math.abs(r1 - r2);
             const rAverage = (r1 + r2) * 0.5;
             const envelope = 1 / (1 + 0.1 * rAverage);
@@ -74,18 +84,6 @@ class InterferenceScreen extends Renderable3D {
     }
 }
 
-const slitSize = .5 * resolution;
-const slit1 = new AxialSymmetricBody({
-    position: posSlit1.clone().multiplyScalar(resolution).sub(new Vec3(0, .5 * slitSize, 0)),
-    axis: new Vec3(0,slitSize,0),
-    radius: .25 * resolution,
-});
-const slit2 = new AxialSymmetricBody({
-    position: posSlit2.clone().multiplyScalar(resolution).sub(new Vec3(0, .5 * slitSize, 0)),
-    axis: new Vec3(0,slitSize,0),
-    radius: .25 * resolution,
-});
-
 const particles = [];
 const dt = 0.1;
 updateInterferencePattern(field, 0.5);
@@ -111,7 +109,7 @@ const simulation = Simulation
 
         for (const particle of particles)
             if (particle.position.y < xMax * resolution - particle.radius * 2)
-                particle.apply(new Vec3(0, 0, 0), dt);
+                particle.apply(new Vec3(0, 0, 0), 0.1); // Apply zero force ==> velocity stays the same
     })
     .append(new Slider("Wavelength ")
         .withRange(new Range(380, 700, 1))
