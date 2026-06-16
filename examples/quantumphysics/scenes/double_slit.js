@@ -4,22 +4,22 @@ import {
     DiscreteScalarField, Renderable3D, WavelengthColorMapper
 } from "../../../src/index.js";
 
-const dx = 0.025;
+const resolution = 50;
 const xMax = 4;
 const posSlit1= new Vec3(-1, -3, 0);
 const posSlit2= new Vec3(1, -3, 0);
-
+const wavelengthColorMapper = new WavelengthColorMapper();
 const field = new DiscreteScalarField({
-    nx: Math.floor(4 * xMax / dx),
-    ny: Math.floor(2 * xMax / dx)
+    nx: Math.floor(4 * xMax * resolution),
+    ny: Math.floor(2 * xMax * resolution),
 });
 
 function updateInterferencePattern(field, wavelength) {
     const pos = new Vec3();
     for (let i = 0; i < field.nx; i++)
         for (let j = 0; j < field.nx; j++) {
-            const x = (i - field.nx * .5) * dx;
-            const y = (j - field.ny * .5) * dx;
+            const x = (i - field.nx * .5) / resolution;
+            const y = (j - field.ny * .5) / resolution;
             pos.set(x, y, 0);
             const r1 = pos.distanceTo(posSlit1);
             const r2 = pos.distanceTo(posSlit2);
@@ -30,7 +30,6 @@ function updateInterferencePattern(field, wavelength) {
         }
 }
 
-const wavelengthColorMapper = new WavelengthColorMapper();
 
 class InterferencePattern extends Renderable3D {
     constructor({
@@ -45,7 +44,7 @@ class InterferencePattern extends Renderable3D {
         this._nx = nx;
         this._ny = ny;
 
-        const geometry = new BoxGeometry(dx, dx, 0.02);
+        const geometry = new BoxGeometry(1 / resolution, 1 / resolution, 0.02);
         const material = new MeshBasicMaterial();
         this._mesh = new InstancedMesh(geometry, material, nx * ny);
         this.add(this._mesh);
@@ -55,11 +54,11 @@ class InterferencePattern extends Renderable3D {
     }
 
     #updatePixelAt(i, j, index) {
-        const x = (i - this._nx * .5) * dx;
-        const y = (j - this._ny * .5) * dx;
+        const x = (i - this._nx * .5) / resolution;
+        const y = (j - this._ny * .5) / resolution;
 
         let zDepth = 0.02; // Height of the screen that the particles hit
-        if (y >= xMax - dx)
+        if (y >= xMax - 1 / resolution)
             zDepth = this._thicknessEdge;
 
         this._matrix.compose(new Vector3(x, y,0), new Quaternion(), new Vector3(1, 1, zDepth / 0.02));
@@ -120,8 +119,7 @@ const simulation = Simulation
         .addEventListener("input", event => {
             updateInterferencePattern(field, parseFloat(event.target.value) * 1e-3);
             wavelengthColorMapper.lambdaInNanos = Number(event.target.value);
-        })
-    )
+        }))
     .start();
 
 let spawnParticles = true;
