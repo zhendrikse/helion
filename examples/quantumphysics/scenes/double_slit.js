@@ -4,7 +4,7 @@ import {
     DiscreteScalarField, Renderable3D, WavelengthColorMapper, ScalarFieldPixelRaster
 } from "../../../src/index.js";
 
-const resolution = 100;
+const resolution = 50;
 const xMax = 4;
 const wavelengthColorMapper = new WavelengthColorMapper();
 const field = new DiscreteScalarField({
@@ -16,15 +16,16 @@ const slitSize = .5;
 const slit1 = new AxialSymmetricBody({
     position: new Vec3(-1, -3 - slitSize * .5, 0).multiplyScalar(resolution),
     axis: new Vec3(0, slitSize * resolution,0),
-    radius: .25 * resolution,
+    radius: .15 * resolution,
 });
 const slit2 = new AxialSymmetricBody({
     position: new Vec3( 1, -3 - slitSize * .5, 0).multiplyScalar(resolution),
     axis: new Vec3(0, slitSize * resolution,0),
-    radius: .25 * resolution,
+    radius: .15 * resolution,
 });
 
-function updateInterferencePattern(field, wavelength) {
+function updateInterferencePattern(field, wavelength=480) {
+    wavelengthColorMapper.lambdaInNanos = wavelength;
     const pos = new Vec3();
     for (let i = 0; i < field.nx; i++)
         for (let j = 0; j < field.nx; j++) {
@@ -36,7 +37,7 @@ function updateInterferencePattern(field, wavelength) {
             const pathDiff = Math.abs(r1 - r2);
             const rAverage = (r1 + r2) * 0.5;
             const envelope = 1 / (1 + 0.1 * rAverage);
-            field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff / wavelength), 2) * envelope);
+            field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff * 1e3 / wavelength), 2) * envelope);
         }
 }
 
@@ -85,8 +86,7 @@ class InterferenceScreen extends Renderable3D {
 }
 
 const particles = [];
-const dt = 0.1;
-updateInterferencePattern(field, 0.5);
+updateInterferencePattern(field);
 const simulation = Simulation
     .with({
         htmlDivId: "doubleSlitContainer",
@@ -113,11 +113,8 @@ const simulation = Simulation
     })
     .append(new Slider("Wavelength ")
         .withRange(new Range(380, 700, 1))
-        .withValue(590)
-        .addEventListener("input", event => {
-            updateInterferencePattern(field, parseFloat(event.target.value) * 1e-3);
-            wavelengthColorMapper.lambdaInNanos = Number(event.target.value);
-        })
+        .withValue(480)
+        .addEventListener("input", event => updateInterferencePattern(field, Number(event.target.value)))
     );
 
 let spawnParticles = true;
@@ -136,8 +133,8 @@ function spawnParticleFromSlit(slitPos) {
     const particle = new RadialSymmetricBody({
         position: slitPos.clone().add(new Vec3(0, 10, 0)),
         velocity: new Vec3((Math.random() - 0.5) * 0.1, 1,(Math.random() - 0.5) * 0.1).multiplyScalar(resolution),
-        radius: .05 * resolution
+        radius: .075 * resolution
     });
     particles.push(particle);
-    simulation.synchronize(particle.alwaysWith(new Sphere({ color: 0x00ff00})));
+    simulation.synchronize(particle.alwaysWith(new Sphere({ color: 0xffffff})));
 }
