@@ -1,28 +1,9 @@
 import {
-    linspace, meshgrid, ScalarFieldPixelRaster, wavelengthColor, Vec3,
-    DiscreteScalarField, Simulation, RadioButton, Slider, Checkbox, Range, ColorMapper
+    linspace, meshgrid, ScalarFieldPixelRaster, WavelengthColorMapper, Vec3,
+    DiscreteScalarField, Simulation, RadioButton, Slider, Checkbox, Range
 } from "../../../src/index.js";
 
 const initialLambda = 550;
-
-class WavelengthColorMapper extends ColorMapper {
-    constructor(lambdaInNanos = initialLambda, showSpectralColor = true) {
-        super();
-        this._showSpectralColor = showSpectralColor;
-        this._lambdaInNanos = lambdaInNanos;
-    }
-
-    map(intensity, targetColor) {
-        if (this._showSpectralColor)
-            return wavelengthColor(this._lambdaInNanos, intensity, targetColor);
-
-        targetColor.setRGB(255, 255, 255);
-        return 255 * Math.sqrt(intensity);
-    }
-
-    set showSpectralColor(value) { this._showSpectralColor = value; }
-    set lambdaInNanos(value) { this._lambdaInNanos = value; }
-}
 
 class Aperture {
     static Type = Object.freeze({
@@ -151,7 +132,6 @@ const intensityPixelRaster = new ScalarFieldPixelRaster({
     colorMapper: fraunhoferSimulation.colorMapper
 });
 
-const htmlDiv = document.getElementById("fraunhoferContainer");
 Simulation
     .with({
         htmlDivId: "fraunhoferContainer",

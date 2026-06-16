@@ -31,13 +31,15 @@ export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/prim
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { ParticleCloudView, ScalarFieldPixelRaster, ComplexScalarFieldRaster } from "./view/2d/views.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
+export { Renderable3D } from "./view/renderer.js";
 
 export {
     OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial, ArrowField
 } from "./view/3d/composite/composites.js";
 
 export {
-    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString, ColorMap, hsvToRgb
+    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString, ColorMap,
+    hsvToRgb, WavelengthColorMapper
 } from "./view/colormappers.js";
 
 export {

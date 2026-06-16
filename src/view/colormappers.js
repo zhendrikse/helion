@@ -146,6 +146,25 @@ export class ColorMapper {
     map(value, targetColor) {}
 }
 
+export class WavelengthColorMapper extends ColorMapper {
+    constructor(lambdaInNanos = 590, showSpectralColor = true) {
+        super();
+        this._showSpectralColor = showSpectralColor;
+        this._lambdaInNanos = lambdaInNanos;
+    }
+
+    map(intensity, targetColor) {
+        if (this._showSpectralColor)
+            return wavelengthColor(this._lambdaInNanos, intensity, targetColor);
+
+        targetColor.setRGB(255, 255, 255);
+        return 255 * Math.sqrt(intensity);
+    }
+
+    set showSpectralColor(value) { this._showSpectralColor = value; }
+    set lambdaInNanos(value) { this._lambdaInNanos = value; }
+}
+
 export class ScientificColorMapper extends ColorMapper {
     map(normalizedValue, targetColor) {
         const num = Math.floor(4 * normalizedValue);

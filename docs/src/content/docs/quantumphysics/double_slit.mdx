@@ -41,20 +41,19 @@ in the simulation, so that the difference in the behavior of particles and waves
 The intensity is given by:
 
 $$
-I = \cos^2\left(\frac{\pi , \Delta r}{\lambda}\right)
+I = \cos^2\left(\frac{\pi \Delta r}{\lambda}\right)
 $$
 
 This is easily translated in code as follows:
 
 ```js
-this._position.set(x, y, 0);
-const r1 = this._position.distanceTo(this._slit1);
-const r2 = this._position.distanceTo(this._slit2);
+const pos = new Vec3(x, y, 0);
+const r1 = pos.distanceTo(posSlit1);
+const r2 = pos.distanceTo(posSlit2);
 const pathDiff = Math.abs(r1 - r2);
 const rAverage = (r1 + r2) * 0.5;
 const envelope = 1 / (1 + 0.1 * rAverage);
-
-const brightness = Math.pow(Math.cos(Math.PI * pathDiff / this._wavelength), 2) * envelope;
+field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff / wavelength), 2) * envelope);
 ```
 
 ## Additional two-dimensional simulation

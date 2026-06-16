@@ -1,23 +1,21 @@
-import {BoxGeometry, Color, Group, InstancedMesh, Matrix4, MeshBasicMaterial, Quaternion, Vector3} from "three";
+import {BoxGeometry, Color, InstancedMesh, Matrix4, MeshBasicMaterial, Quaternion, Vector3} from "three";
 import {
     AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider, Sphere, Vec3,
-    DiscreteScalarField
+    DiscreteScalarField, Renderable3D, WavelengthColorMapper
 } from "../../../src/index.js";
-import {Renderable3D} from "../../../src/view/renderer.js";
 
 const dx = 0.025;
 const xMax = 4;
+const posSlit1= new Vec3(-1, -3, 0);
+const posSlit2= new Vec3(1, -3, 0);
 
 const field = new DiscreteScalarField({
     nx: Math.floor(4 * xMax / dx),
     ny: Math.floor(2 * xMax / dx)
 });
 
-const posSlit1= new Vec3(-1, -3, 0);
-const posSlit2= new Vec3(1, -3, 0);
-const pos = new Vec3();
-
 function updateInterferencePattern(field, wavelength) {
+    const pos = new Vec3();
     for (let i = 0; i < field.nx; i++)
         for (let j = 0; j < field.nx; j++) {
             const x = (i - field.nx * .5) * dx;
@@ -28,19 +26,22 @@ function updateInterferencePattern(field, wavelength) {
             const pathDiff = Math.abs(r1 - r2);
             const rAverage = (r1 + r2) * 0.5;
             const envelope = 1 / (1 + 0.1 * rAverage);
-
             field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff / wavelength), 2) * envelope);
         }
 }
+
+const wavelengthColorMapper = new WavelengthColorMapper();
 
 class InterferencePattern extends Renderable3D {
     constructor({
         nx = field.nx,
         ny = field.ny,
-        thicknessEdge= 2
+        thicknessEdge= 2,
+        colorMapper = wavelengthColorMapper
     } = {}) {
         super();
         this._thicknessEdge = thicknessEdge;
+        this._colorMapper = colorMapper;
         this._nx = nx;
         this._ny = ny;
 
@@ -64,20 +65,19 @@ class InterferencePattern extends Renderable3D {
         this._matrix.compose(new Vector3(x, y,0), new Quaternion(), new Vector3(1, 1, zDepth / 0.02));
         this._mesh.setMatrixAt(index, this._matrix);
 
-        const brightness = field.valueAt(i, j);
-        this._color.setRGB(brightness, brightness, 0);
-        this._mesh.setColorAt(index, this._color);
+        const intensity = field.valueAt(i, j);
+        const brightness = this._colorMapper.map(intensity * 1e-10, this._color);
+        this._mesh.setColorAt(index, this._color.multiplyScalar(brightness));
     }
 
-    canBindTo(model) {
-        return model.valueAt;
-    }
+    canBindTo(model) { return model.valueAt; }
 
     synchronizeWith(field) {
         let index = 0;
         for (let i = 0; i < this._nx; i++)
             for (let j = 0; j < this._ny; j++)
                 this.#updatePixelAt(i, j, ++index);
+
         this._mesh.instanceMatrix.needsUpdate = true;
         this._mesh.instanceColor.needsUpdate = true;
     }
@@ -85,13 +85,12 @@ class InterferencePattern extends Renderable3D {
 
 const slitSize = 0.5;
 const slit1 = new AxialSymmetricBody({
-    position: new Vec3(1, -3 - .5 * slitSize, 0),
+    position: posSlit1.clone().sub(new Vec3(0, .5 * slitSize, 0)),
     axis: new Vec3(0,slitSize,0),
     radius: 0.15
 });
-
 const slit2 = new AxialSymmetricBody({
-    position: new Vec3(-1, -3 - .5 * slitSize, 0),
+    position: posSlit2.clone().sub(new Vec3(0, .5 * slitSize, 0)),
     axis: new Vec3(0,slitSize,0),
     radius: 0.15
 });
@@ -116,9 +115,12 @@ const simulation = Simulation
                 particle.apply(new Vec3(0, 0, 0), dt);
     })
     .append(new Slider("Wavelength ")
-        .withRange(new Range(0.1, 2, 0.01))
-        .withValue(0.5)
-        .addEventListener("input", event => updateInterferencePattern(field, event.target.value))
+        .withRange(new Range(380, 700, 1))
+        .withValue(590)
+        .addEventListener("input", event => {
+            updateInterferencePattern(field, parseFloat(event.target.value) * 1e-3);
+            wavelengthColorMapper.lambdaInNanos = Number(event.target.value);
+        })
     )
     .start();
 
