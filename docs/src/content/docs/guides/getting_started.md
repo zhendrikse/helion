@@ -53,12 +53,12 @@ In the simulation, we synchronize the bodies with the view: spheres that leave a
 const dt = 5000;
 const subSteps = 50;
 Simulation
-    .inHtmlDiv("threeBodyContainer")
     .with({
-            cameraPosition: new Vec3(30, 30, 30),
-            scale: 1e-9,
-            headUpDisplay: true
-        })
+        htmlDivId: "threeBodyContainer", 
+        cameraPosition: new Vec3(30, 30, 30),
+        scale: 1e-9,
+        headUpDisplay: true
+    })
     .synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
     .synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
     .synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })))

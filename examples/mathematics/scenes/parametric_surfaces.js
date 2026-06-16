@@ -2,12 +2,7 @@ import {
     Simulation, ParametricSurface, Domain, StandardSurfaceView, DropdownMenu, Registry
 } from "../../../src/index.js";
 
-const sin = Math.sin;
-const cos = Math.cos;
-const tan = Math.tan;
-const log = Math.log;
-const PI = Math.PI;
-
+const sin = Math.sin, cos = Math.cos, tan = Math.tan, log = Math.log, PI = Math.PI;
 const surfaces = {
     "Bow curve": new ParametricSurface({
         domain: new Domain([0, 2 * PI], [0, 4 * PI]),
@@ -91,6 +86,5 @@ function changeSurface(surfaceId) {
     simulation.provideAxesAround(surfaceView);
     simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
 }
-
 
 changeSurface("Bow curve");

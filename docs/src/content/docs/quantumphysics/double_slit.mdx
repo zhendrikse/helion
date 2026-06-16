@@ -15,13 +15,6 @@ layout: ../../../layouts/DocsLayout.astro
 ### About
 <div class="header_line"></div>
 
-📌 **Highly recommended background information**: [Simulating and visualizing the double slit experiment with Python](https://ben.land/post/2026/01/31/double-slit-simulation/)<br/>
-
-### Wave-particle duality
-<div class="header_line"><br/></div>
-
-[![Source](https://img.shields.io/badge/github-repo-green?logo=github&label=double_slit.js)](https://github.com/zhendrikse/science/blob/main/quantumphysics/double_slit.js)&nbsp;&nbsp;
-
 In this visualization, the interference pattern is generated "statically", i.e. by calculating
 the path difference between the beams originating from each source and setting the (pixel) color 
 of the background accordingly.
@@ -29,14 +22,19 @@ of the background accordingly.
 The two slits are represented by the two cylinders that also now firing particles at the screen/detector 
 in the simulation, so that the difference in the behavior of particles and waves can be clearly seen.
 
-🔧 [Original VPython version](https://www.glowscript.org/#/user/wlane/folder/Modern-Physics/program/Double-Slit) by [Let&apos;s code physics](https://www.youtube.com/@LetsCodePhysics)<br/>
+🧠 Inspired by [original VPython version](https://www.glowscript.org/#/user/wlane/folder/Modern-Physics/program/Double-Slit) by [Let&apos;s code physics](https://www.youtube.com/@LetsCodePhysics)<br/>
 👉 See also [his accompanying video](https://www.youtube.com/watch?v=Zjmg6n7Wc8I)<br/>
-👉 [VPython](https://vpython.org/) version available as [double_slit.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/double_slit.py)
+🐍 A 3D [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Quantum/program/DoubleSlit) is available as well, see [double_slit.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/double_slit.py)<br/>
+
+<p style="clear: both;"></p>
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/quantumphysics/scenes/double_slit.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=double_slit.js"/>
+    </a>
+</div>
 
 <div id="doubleSlitContainer" style="aspect-ratio: 2/1" ></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/double_slit.js"}></script>
-<p style="clear: both;"></p>
-
 
 ### How the interference pattern is generated
 
@@ -67,6 +65,7 @@ const brightness = Math.pow(Math.cos(Math.PI * pathDiff / this._wavelength), 2) 
 ⭐ Based on [QuantumScattering2D.html](https://physics.weber.edu/schroeder/software/QuantumScattering2D.html) by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/), [Weber State University](https://www.weber.edu/)<br/>
 🔑 Updated and refactored and by [Zeger Hendrikse](https://www.hendrikse.name/)<br/>
 ⭐ More physics software by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/) can be found [here](https://physics.weber.edu/schroeder/software/)
+📌 See als [Simulating and visualizing the double slit experiment with Python](https://ben.land/post/2026/01/31/double-slit-simulation/)<br/>
 
 <div id="simContainer" style="position: relative; width: 100%, max-width: 600px; aspect-ratio: 1/1; margin: 0 auto;">
   <div style="aspect-ratio: 1/1; width:400px;">

@@ -153,7 +153,8 @@ export class Slider extends HtmlControl {
         this._inputControl.addEventListener(type, event => {
             this._simulation.onUserInteraction(event);
             callback(event);
-            this._span.textContent = event.target.value + this._units;
+            const value = parseFloat(event.target.value);
+            this._span.textContent = value.toFixed(2) + this._units;
         });
         return this;
     }
