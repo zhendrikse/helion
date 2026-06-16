@@ -53,10 +53,7 @@ class InterferenceScreen extends Renderable3D {
         this._colorMapper = colorMapper;
         this._nx = nx;
         this._ny = ny;
-
-        const geometry = new BoxGeometry(1, 1, 0.02);
-        const material = new MeshBasicMaterial();
-        this._mesh = new InstancedMesh(geometry, material, nx * ny);
+        this._mesh = new InstancedMesh(new BoxGeometry(1, 1, 0.02), new MeshBasicMaterial(), nx * ny);
         this.add(this._mesh);
 
         this._matrix = new Matrix4();
@@ -71,8 +68,7 @@ class InterferenceScreen extends Renderable3D {
             const j = this._ny - 1; // fixed, we only need the last row!
             const x = i - this._nx * .5;
             const y = j - this._ny * .5;
-            const intensity = field.valueAt(i, this._ny - 1);
-            const brightness = this._colorMapper.map(intensity * 1e-10, this._color);
+            const brightness = this._colorMapper.map(field.valueAt(i, j) * 1e-10, this._color);
 
             index++;
             this._matrix.compose(new Vector3(x, y,0), new Quaternion(), new Vector3(1, 1, this._edgeHeight));
