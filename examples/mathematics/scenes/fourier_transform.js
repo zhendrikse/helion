@@ -45,8 +45,8 @@ class FourierSimulation {
 
     _buildShape() {
         const N = this._N;
-        const real =  Array.from({ length: N },() => new Float32Array(N));
-        const imag = Array.from({ length: N },() => new Float32Array(N));
+        const real =  new Float32Array(N * N);
+        const imag = new Float32Array(N * N);
         const cx = N / 2;
         const cy = N / 2;
         const radius = this._diameter / 2;
@@ -58,7 +58,7 @@ class FourierSimulation {
                     (x * x + y * y <= radius * radius)
                     : (Math.abs(x) <= radius && Math.abs(y) <= radius);
 
-                real[i][j] = inside ? 1 : 0;
+                real[j * N + i] = inside ? 1 : 0;
             }
         this._field.real = real;
         this._field.imag = imag;

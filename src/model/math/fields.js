@@ -322,8 +322,8 @@ export class DiscreteComplexField extends Field {
     constructor({
         nx = 128,
         ny = 128,
-        real = Array.from({ length: nx },() => new Float32Array(ny)),
-        imag = Array.from({ length: nx },() => new Float32Array(ny)),
+        real = new Float32Array(nx * ny),
+        imag = new Float32Array(nx * ny)
     } = {}) {
         super();
         this.real = real;
@@ -332,14 +332,16 @@ export class DiscreteComplexField extends Field {
         this.ny = ny;
     }
 
+    get size() { return this.nx; }
+
     apply(transformation) {
         transformation(this);
         return this;
     }
 
     sample(i, j, target) {
-        target.re = this.real[i][j];
-        target.im = this.imag[i][j];
+        target.re = this.real[j * this.nx + i];
+        target.im = this.imag[j * this.nx + i];
     }
 }
 

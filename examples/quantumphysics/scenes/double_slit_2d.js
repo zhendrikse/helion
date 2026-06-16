@@ -1,4 +1,5 @@
-import { hsvToRgb } from "../../../src/index.js";
+import { hsvToRgb, Simulation} from "../../../src/index.js";
+import {Field} from "../../../src/model/math/fields.js";
 
 const theCanvas = document.getElementById("doubleSlit2dContainer");
 const theContext = theCanvas.getContext("2d");
@@ -170,8 +171,6 @@ function wpEnergyAdjust() {
 }
 
 function nextFrame() {
-    if (!running) return;
-
     const stepsPerFrame = Number(speedSlider.value);
     for (let step=0; step < stepsPerFrame; step++)
         psi.doStep(dt, barrier);
@@ -180,11 +179,11 @@ function nextFrame() {
     paintCanvas(psi, imgData);
     const currentTime = (new Date()).getTime();
     spsReadout.innerHTML = "" + Math.round(1000 * stepCount / (currentTime-startTime));
-    requestAnimationFrame(nextFrame);
 }
 
-class Psi2D {
+class Psi2D extends Field {
     constructor(xMax) {
+        super({});
         this._xMax = xMax;
         this._psi = {
             re: new Float32Array(xMax*xMax),
@@ -196,9 +195,6 @@ class Psi2D {
         };
     }
 
-    get re() { return this._psi.re; }
-    get im() { return this._psi.im; }
-
     // Integrate the TDSE for a double time step (centered-difference time integration):
     // (Remember that psi.im is one time step earlier than psi.re; same for psiNext.im and psiNext.re.)
     doStep(dt, barrier) {
@@ -209,28 +205,28 @@ class Psi2D {
         const vmax = barrier._v;
         const w = this._xMax;
 
-        for (let y=1; y<xMaxm1; y++)
-            for (let x=1; x<xMaxm1; x++) {
-                const i = y*w + x;
+        for (let y=1; y < xMaxm1; y++)
+            for (let x=1; x < xMaxm1; x++) {
+                const i = y * w + x;
                 imNext[i] = im[i] - dt * (-re[i+1] - re[i-1] - re[i+w] - re[i-w] + 2*(2+vmax[i])*re[i]);
             }
 
-        for (let y=1; y<xMaxm1; y++)
-            for (let x=1; x<xMaxm1; x++) {
-                const i = y*w + x;
+        for (let y=1; y < xMaxm1; y++)
+            for (let x=1; x < xMaxm1; x++) {
+                const i = y * w + x;
                 reNext[i] = re[i] + dt * (-imNext[i+1] - imNext[i-1] - imNext[i+w] - imNext[i-w] + 2*(2+vmax[i])*imNext[i]);
             }
 
-        for (let y=1; y<w-1; y++)
-            for (let x=1; x<xMaxm1; x++) {
-                const i = y*w + x;
+        for (let y=1; y < w - 1; y++)
+            for (let x=1; x < xMaxm1; x++) {
+                const i = y * w + x;
                 re[i] = reNext[i];
                 im[i] = imNext[i];
             }
     }
 
     squaredAt = (i) => this._psi.re[i] * this._psi.re[i] + this._psi.im[i] * this._psi.im[i];
-    phaseAt = (i) => Math.atan2(psi.im[i], psi.re[i]) / TWO_PI;
+    phaseAt = (i) => Math.atan2(this._psi.im[i], this._psi.re[i]) / TWO_PI;
 
     // Initialize the wavefunction to a Gaussian wavepacket:
     reset() {
@@ -254,7 +250,8 @@ class Psi2D {
         for (let y=1; y<xMax-1; y++)
             for (let x=1; x<xMax-1; x++) {
                 const i = y*xMax + x;
-                this._psi.im[i] = this.im[i] + 0.5*dt * (-this.re[i+1] - this.re[i-1] - this.re[i+xMax] - this.re[i-xMax] + 2*(2+barrier.at(i))*this.re[i]);
+                this._psi.im[i] = this._psi.im[i] + 0.5 * dt *
+                    (-this._psi.re[i+1] - this._psi.re[i-1] - this._psi.re[i+xMax] - this._psi.re[i-xMax] + 2*(2+barrier.at(i))*this._psi.re[i]);
             }
     }
 }
@@ -321,3 +318,13 @@ function resizeCanvas() {
 
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
+
+Simulation
+    .with({
+        htmlDivId: "simContainer",
+        controls: false,
+        headUpDisplay: true
+    })
+    .withMouseClickEventListener()
+    .onReset(() => reset())
+    .onClockTick(() => nextFrame());

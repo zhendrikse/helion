@@ -2,7 +2,7 @@ import { Hud } from "./hud.js";
 import {ThreeJsRenderer} from "../view/3d/renderer.js";
 import {Vector3} from "three";
 import {Axes} from "../view/3d/composite/backgrounds.js";
-import {Vec3} from "../model/math/math.js";
+import {generateUUID, Vec3} from "../model/math/math.js";
 import {UPlotGraph} from "./uplot.js";
 
 export class Registry {
@@ -160,15 +160,20 @@ export class Simulation {
     });
 
     static viewportFromHtmlDiv = (htmlDiv, parameterMenuCollapsed) => {
-        const canvasWrapper = document.getElementById(htmlDiv);
-        if (!canvasWrapper)
-            throw new Error(`Helion cannot find HTML div with id=${htmlDiv}`)
+        let canvasWrapper;
+        if (htmlDiv)
+            canvasWrapper = document.getElementById(htmlDiv);
+        else {
+            canvasWrapper = document.createElement("div");
+            canvasWrapper.id = generateUUID();
+            document.body.appendChild(canvasWrapper);
+        }
 
         return new Viewport(canvasWrapper, parameterMenuCollapsed);
     }
 
     static with({
-        htmlDivId = "helionSimulationContainer",
+        htmlDivId,
         background = Simulation.Background.TRANSPARENT,
         backgroundColor = 0x0088ff,
         scale = 1,

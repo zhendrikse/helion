@@ -79,6 +79,29 @@ export class DiamondSquareOperator {
     #random(scale) { return (Math.random() * 2 - 1) * scale; }
 }
 
+export class DoubleSlit {
+    constructor(wavelengthInNanos = 500) {
+        this._wavelengthInNanos = wavelengthInNanos;
+    }
+
+    apply(field) {
+        const pos = new Vec3();
+        for (let i = 0; i < field.nx; i++)
+            for (let j = 0; j < field.nx; j++) {
+                const x = (i - field.nx * .5) / resolution;
+                const y = (j - field.ny * .5) / resolution;
+                pos.set(x, y, 0);
+                const r1 = pos.distanceTo(slit1.position.clone().divideScalar(resolution));
+                const r2 = pos.distanceTo(slit2.position.clone().divideScalar(resolution));
+                const pathDiff = Math.abs(r1 - r2);
+                const rAverage = (r1 + r2) * 0.5;
+                const envelope = 1 / (1 + 0.1 * rAverage);
+                field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff * 1e3 / wavelength), 2) * envelope);
+            }
+
+    }
+}
+
 export class GaussianImpulse {
     constructor({
         centerX = 100,
@@ -109,12 +132,12 @@ export class GaussianImpulse {
 
 export class PerlinNoiseOperator {
     constructor({
-                    scale = 50,
-                    frequency = 0.02,
-                    octaves = 6,
-                    persistence = 0.5,
-                    z = 0
-                } = {}) {
+        scale = 50,
+        frequency = 0.02,
+        octaves = 6,
+        persistence = 0.5,
+        z = 0
+    } = {}) {
         this._scale = scale;
         this._frequency = frequency;
         this._octaves = octaves;
@@ -216,17 +239,19 @@ export class FFT {
         }
     }
 
-
     static fftShift2D(field) {
-        const N = field.real.length;
+        const N = field.size;
         const half = N >> 1;
-        const real =  Array.from({ length: N },() => new Float32Array(N));
-        const imag = Array.from({ length: N },() => new Float32Array(N));
 
-        for (let i = 0; i < N; i++)
-            for (let j = 0; j < N; j++) {
-                real[i][j] = field.real[(i + half) % N][(j + half) % N];
-                imag[i][j] = field.imag[(i + half) % N][(j + half) % N];
+        const real = new Float32Array(N * N);
+        const imag = new Float32Array(N * N);
+
+        for (let j = 0; j < N; j++)
+            for (let i = 0; i < N; i++) {
+                const src = ((j + half) % N) * N + ((i + half) % N);
+                const dst = j * N + i;
+                real[dst] = field.real[src];
+                imag[dst] = field.imag[src];
             }
 
         field.real = real;
@@ -234,30 +259,41 @@ export class FFT {
     }
 
     static fft2D(gridField) {
-        const size = gridField.real.length;
-        const fft = new FFT(size);
+        const N = gridField.size;
+        const fft = new FFT(N);
+
         // rows
-        for (let i = 0; i < size; i++)
-            fft.transform(gridField.real[i], gridField.imag[i], gridField.real[i].slice(), gridField.imag[i].slice());
+        for (let row = 0; row < N; row++) {
+            const offset = row * N;
+            const inRe = gridField.real.slice(offset, offset + N);
+            const inIm = gridField.imag.slice(offset, offset + N);
+            const outRe = new Float32Array(N);
+            const outIm = new Float32Array(N);
+
+            fft.transform(outRe, outIm, inRe, inIm);
+
+            gridField.real.set(outRe, offset);
+            gridField.imag.set(outIm, offset);
+        }
 
         // columns
-        for (let j = 0; j < size; j++) {
-            const colRe = new Array(size);
-            const colIm = new Array(size);
+        for (let j = 0; j < N; j++) {
+            const colRe = new Array(N);
+            const colIm = new Array(N);
 
-            for (let i = 0; i < size; i++) {
-                colRe[i] = gridField.real[i][j];
-                colIm[i] = gridField.imag[i][j];
+            for (let i = 0; i < N; i++) {
+                colRe[i] = gridField.real[i * N + j];
+                colIm[i] = gridField.imag[i * N + j];
             }
 
-            const outRe = new Array(size);
-            const outIm = new Array(size);
+            const outRe = new Array(N);
+            const outIm = new Array(N);
 
             fft.transform(outRe, outIm, colRe, colIm);
 
-            for (let i = 0; i < size; i++) {
-                gridField.real[i][j] = outRe[i];
-                gridField.imag[i][j] = outIm[i];
+            for (let i = 0; i < N; i++) {
+                gridField.real[i * N + j] = outRe[i];
+                gridField.imag[i * N + j] = outIm[i];
             }
         }
     }
