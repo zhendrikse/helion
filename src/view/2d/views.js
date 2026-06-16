@@ -145,7 +145,7 @@ export class ScalarFieldPixelRaster extends Renderable3D {
         texture.needsUpdate = true;
         this._mesh = new Mesh(
             new PlaneGeometry(width,height),
-            new MeshBasicMaterial({ map: texture, transparent: true })
+            new MeshBasicMaterial({ map: texture, transparent: true, side: DoubleSide })
         );
         this.add(this._mesh);
 

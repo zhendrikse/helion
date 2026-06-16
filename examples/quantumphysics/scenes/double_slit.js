@@ -129,7 +129,7 @@ function spawnParticleFromSlit(slitPos) {
     const particle = new RadialSymmetricBody({
         position: slitPos.clone().add(new Vec3(0, 10, 0)),
         velocity: new Vec3((Math.random() - 0.5) * 0.1, 1,(Math.random() - 0.5) * 0.1).multiplyScalar(resolution),
-        radius: .075 * resolution
+        radius: .06 * resolution
     });
     particles.push(particle);
     simulation.synchronize(particle.alwaysWith(new Sphere({ color: 0xffffff})));
