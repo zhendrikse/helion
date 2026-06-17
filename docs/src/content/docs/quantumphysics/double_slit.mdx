@@ -25,6 +25,7 @@ of the background accordingly.
 The two slits are represented by the two cylinders that also now firing particles at the screen/detector 
 in the simulation, so that the difference in the behavior of particles and waves can be clearly seen.
 
+🎯 Visualization of a real (discrete scalar) field<br/>
 🧠 Inspired by [original VPython version](https://www.glowscript.org/#/user/wlane/folder/Modern-Physics/program/Double-Slit) by [Let&apos;s code physics](https://www.youtube.com/@LetsCodePhysics)<br/>
 👉 See also [his accompanying video](https://www.youtube.com/watch?v=Zjmg6n7Wc8I)<br/>
 🐍 A 3D [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Quantum/program/DoubleSlit) is available as well, see [double_slit.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/double_slit.py)<br/>
@@ -68,9 +69,10 @@ field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff / wavelength), 2) * 
     </a>
 </div>
 
+🎯 Visualization of a complex (discrete scalar) field<br/>
 🧠 Based on [QuantumScattering2D.html](https://physics.weber.edu/schroeder/software/QuantumScattering2D.html) by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/), [Weber State University](https://www.weber.edu/)<br/>
 🔑 Updated and refactored and by [Zeger Hendrikse](https://www.hendrikse.name/)<br/>
-⭐ More physics software by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/) can be found [here](https://physics.weber.edu/schroeder/software/)
+⭐ More physics software by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/) can be found [here](https://physics.weber.edu/schroeder/software/)<br/>
 📌 See als [Simulating and visualizing the double slit experiment with Python](https://ben.land/post/2026/01/31/double-slit-simulation/)<br/>
 
 <div id="doubleSlit2dContainer"></div>
@@ -104,6 +106,9 @@ field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff / wavelength), 2) * 
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=double_slit_3d.js"/>
     </a>
 </div>
+
+🎯 Demonstration of how different views can seamlessly be attached to the same (physics) model<br/>
+👉 Code base is exactly the same as the above demo, only 3D-views have been used here!<br/>
 
 <div id="doubleSlit3dContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/double_slit_3d.js"}></script>
