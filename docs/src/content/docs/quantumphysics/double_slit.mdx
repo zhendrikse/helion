@@ -61,56 +61,13 @@ field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff / wavelength), 2) * 
 
 [![Source](https://img.shields.io/badge/github-repo-green?logo=github&label=double_slit_2d.js)](https://github.com/zhendrikse/science/blob/main/quantumphysics/double_slit_2d.js)&nbsp;&nbsp;
 
-⭐ Based on [QuantumScattering2D.html](https://physics.weber.edu/schroeder/software/QuantumScattering2D.html) by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/), [Weber State University](https://www.weber.edu/)<br/>
+🧠 Based on [QuantumScattering2D.html](https://physics.weber.edu/schroeder/software/QuantumScattering2D.html) by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/), [Weber State University](https://www.weber.edu/)<br/>
 🔑 Updated and refactored and by [Zeger Hendrikse](https://www.hendrikse.name/)<br/>
 ⭐ More physics software by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/) can be found [here](https://physics.weber.edu/schroeder/software/)
 📌 See als [Simulating and visualizing the double slit experiment with Python](https://ben.land/post/2026/01/31/double-slit-simulation/)<br/>
 
-<div id="simContainer" style="position: relative; width: 100%, max-width: 600px; aspect-ratio: 1/1; margin: 0 auto;">
-  <div style="aspect-ratio: 1/1; width:400px;">
-    <canvas id="vCanvas" width="400" height="400" style="z-index:1; margin: auto; position: absolute; inset: 0; display: block;">Canvas not supported!</canvas>
-    <canvas id="doubleSlit2dContainer" width="400" height="400" style="z-index:0; margin: auto; position: absolute; inset: 0; display: block;">Canvas not supported!</canvas>
-  </div>
-</div>
-
-<div class="buttonRow">
-    <label for="speedSlider">Speed:</label><input type="range" id="speedSlider" min="1" max="100" step="1" value="15"/>
-    <span id="spsReadout">0</span>
-</div>
-<div class="buttonRow">
-    <label for="brightnessSlider">Brightness:</label>
-    <input type="range" id="brightnessSlider" min="0.1" max="10" step="0.1" value="1.6"/>
-</div>
-<div class="buttonRow">
-    <button id="pauseButton">Run</button>
-    <button id="resetButton">Reset</button>
-    <label for="barrierType">Barrier type:</label>
-    <select id="barrierType">
-        <option value="line">Line</option>
-        <option value="step">Step</option>
-        <option value="singleHole">Single hole</option>
-        <option value="doubleHole" selected>Double hole</option>
-        <option value="grating">Grating</option>
-        <option value="circle">Circle</option>
-        <option value="square">Square</option>
-    </select>
-</div>
-<div class="buttonRow">
-    <label for="eSlider">Packet energy = <span id="eReadout">0.050</span></label>
-    <input type="range" id="eSlider" min="0" max="0.100" step="0.001" value="0.05"/>
-</div>
-<div class="buttonRow">
-    <label for="bEnergySlider">Strength = <span id="bEnergyReadout">0.100</span></label>
-    <input type="range" id="bEnergySlider" min="-0.1" max="0.1" step="0.001" value="0.1"/>
-</div>
-<div class="buttonRow">
-    <label for="bSizeSlider">Size = <span id="bSizeReadout">40</span></label>
-    <input type="range" id="bSizeSlider" min="0" max="50" step="1" value="40"/>
-</div>
-<div class="buttonRow">
-    <label for="bSoftnessSlider">Softness = <span id="bSoftnessReadout">0</span></label>
-    <input type="range" id="bSoftnessSlider" min="0" max="20" step="1" value="0"/>
-</div>
+<div id="doubleSlit2dContainer"></div>
+<div id="doubleSlit3dContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/double_slit_2d.js"}></script>
 <p style="clear: both;"></p>
 

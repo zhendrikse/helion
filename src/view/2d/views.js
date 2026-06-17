@@ -242,7 +242,6 @@ export class ComplexScalarFieldRaster extends Renderable3D {
         this._pixels = pixels;
         this._texture = texture;
         this._phaseColor = showPhaseColour;
-        this._complexValue = new Complex();
     }
 
     canBindTo(field) {
@@ -256,16 +255,18 @@ export class ComplexScalarFieldRaster extends Renderable3D {
         let index = 0;
         for (let x = 0; x < this._height; x++)
             for (let y = 0; y < this._width; y++) {
-                field.sample(x, y, this._complexValue);
-                let brightness = this._complexValue.magnitude * this._brightness;
+                const i = x * field.nx + y;
+                const re = field.real[i];
+                const im = field.imag[i];
+                const mag = Math.sqrt(re * re + im * im);
+                const phase = Math.atan2(im, re);
+
+                let brightness = mag * this._brightness;
                 if (brightness > 1.0) brightness = 1.0;
 
-                let phaseIndex = Math.floor(this._numColors * this._complexValue.phase );
-                if (phaseIndex < 0) phaseIndex += this._numColors;
-                if (phaseIndex >= this._numColors) phaseIndex = this._numColors - 1;
-
                 if (this._phaseColor) {
-                    const rgb = this._hsvTable[phaseIndex];
+                    const phaseIndex = Math.floor(((phase + Math.PI) / (2 * Math.PI)) * this._numColors);
+                    const rgb = this._hsvTable[Math.max(0, Math.min(this._numColors - 1, phaseIndex))];
                     this._pixels[index++] = Math.round(rgb.r * brightness);
                     this._pixels[index++] = Math.round(rgb.g * brightness);
                     this._pixels[index++] = Math.round(rgb.b * brightness);

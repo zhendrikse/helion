@@ -1,6 +1,8 @@
 import {
-    ComplexScalarFieldRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range, DiscreteScalarField, Registry,
-    DropdownMenu, SchrodingerSolver, GaussianImpulseComplex2D, ScalarFieldIntensityPixelRaster
+    ComplexScalarFieldRaster, DiscreteComplexField, Simulation, Vec3, Slider,
+    Range, DiscreteScalarField, Registry, DropdownMenu, SchrodingerSolver,
+    GaussianImpulseComplex2D, ComplexScalarFieldSurfaceRaster, PotentialField3DRaster,
+    ScalarFieldIntensityPixelRaster
 } from "../../../src/index.js";
 
 let xMax = 400;
@@ -139,6 +141,14 @@ const waveFunctionRaster = new ComplexScalarFieldRaster({
     height: xMax
 });
 
+const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
+    width: xMax,
+    height: xMax,
+    scale: 20,
+    zScale: 80,
+    brightness: .01
+});
+
 function reset() {
     psi.reset();
     solver.initialize(dt)
@@ -196,3 +206,20 @@ Simulation
         .addEventListener("change", () => reset())
     )
     .append(potential.shapeSelector);
+
+Simulation
+    .with({
+        htmlDivId: "doubleSlit3dContainer",
+        controls: true,
+        headUpDisplay: false,
+        cameraPosition: new Vec3(-1, 1.25, .1).multiplyScalar(xMax),
+        fov: 30
+    })
+    .withMouseClickEventListener()
+    .synchronize(psi.alwaysWith(waveFunctionSurface))
+    .synchronize(potential.onceWith(new PotentialField3DRaster({
+        width: xMax,
+        height: xMax
+    })))
+    .onReset(() => reset())
+    .onClockTick(() => solver.step(dt), 15);
