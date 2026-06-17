@@ -3,16 +3,19 @@ title: "🐈 Double slit experiment"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
-<div className="badgeRow">
+<div class="badgeRow">
     <a href="https://en.wikipedia.org/wiki/JavaScript">
         <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
     </a>
     <a href="https://threejs.org/">
         <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
     </a>
+    <a href="https://www.khronos.org/webgl/">
+        <img alt="WebGL" src="https://img.shields.io/badge/WebGL-990000?logo=webgl&logoColor=white"/>
+    </a>
 </div>
 
-### About
+### Introduction
 <div class="header_line"></div>
 
 In this visualization, the interference pattern is generated "statically", i.e. by calculating
@@ -36,7 +39,7 @@ in the simulation, so that the difference in the behavior of particles and waves
 <div id="doubleSlitContainer" style="aspect-ratio: 2/1" ></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/double_slit.js"}></script>
 
-### How the interference pattern is generated
+#### Implementation details
 
 The intensity is given by:
 
@@ -56,10 +59,14 @@ const envelope = 1 / (1 + 0.1 * rAverage);
 field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff / wavelength), 2) * envelope);
 ```
 
-## Additional two-dimensional simulation
+## Two-dimensional simulation
 <div class="header_line"><br/></div>
 
-[![Source](https://img.shields.io/badge/github-repo-green?logo=github&label=double_slit_2d.js)](https://github.com/zhendrikse/science/blob/main/quantumphysics/double_slit_2d.js)&nbsp;&nbsp;
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/quantumphysics/scenes/double_slit_2d.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=double_slit_2d.js"/>
+    </a>
+</div>
 
 🧠 Based on [QuantumScattering2D.html](https://physics.weber.edu/schroeder/software/QuantumScattering2D.html) by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/), [Weber State University](https://www.weber.edu/)<br/>
 🔑 Updated and refactored and by [Zeger Hendrikse](https://www.hendrikse.name/)<br/>
@@ -67,7 +74,6 @@ field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff / wavelength), 2) * 
 📌 See als [Simulating and visualizing the double slit experiment with Python](https://ben.land/post/2026/01/31/double-slit-simulation/)<br/>
 
 <div id="doubleSlit2dContainer"></div>
-<div id="doubleSlit3dContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/double_slit_2d.js"}></script>
 <p style="clear: both;"></p>
 
@@ -88,6 +94,20 @@ field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff / wavelength), 2) * 
 > along all edges of the square grid, so the particle is effectively trapped inside
 > a $400 \times 400$ box.
 > &mdash; Paraphrased from instructions at [QuantumScattering2D.html](https://physics.weber.edu/schroeder/software/QuantumScattering2D.html)
+
+
+## Three-dimensional simulation
+<div class="header_line"><br/></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/quantumphysics/scenes/double_slit_3d.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=double_slit_3d.js"/>
+    </a>
+</div>
+
+<div id="doubleSlit3dContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/double_slit_3d.js"}></script>
+<p style="clear: both;"></p>
 
 
 ## Background information

@@ -69,7 +69,8 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
         geometry.setAttribute("alpha", new BufferAttribute(this._alphas, 1));
     }
 
-    set showPhaseColor(showPhaseColor) { this._showPhaseColor = showPhaseColor; }
+    set phaseColor(showPhaseColor) { this._showPhaseColor = showPhaseColor; }
+    set brightness(brightness) { this._brightness = brightness; }
 
     synchronizeWith(field) {
         const pos = this._positions;

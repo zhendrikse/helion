@@ -136,9 +136,12 @@ solver.initialize(dt)
 const gaussianImpulse = new GaussianImpulseComplex2D();
 psi.apply(gaussianImpulse);
 
-const waveFunctionRaster = new ComplexScalarFieldRaster({
+const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
     width: xMax,
-    height: xMax
+    height: xMax,
+    scale: 20,
+    zScale: 80,
+    brightness: 1
 });
 
 function reset() {
@@ -150,23 +153,23 @@ function reset() {
 
 Simulation
     .with({
-        htmlDivId: "doubleSlit2dContainer",
-        controls: false,
+        htmlDivId: "doubleSlit3dContainer",
         headUpDisplay: true,
-        cameraPosition: new Vec3(0, 0, xMax)
+        cameraPosition: new Vec3(-1, 1.25, .4).multiplyScalar(xMax * .9),
+        fov: 30
     })
     .withMouseClickEventListener()
-    .synchronize(psi.alwaysWith(waveFunctionRaster))
-    .synchronize(potential.onceWith(new ScalarFieldIntensityPixelRaster({
+    .synchronize(psi.alwaysWith(waveFunctionSurface))
+    .synchronize(potential.onceWith(new PotentialField3DRaster({
         width: xMax,
         height: xMax
     })))
     .onReset(() => reset())
     .onClockTick(() => solver.step(dt), 15)
     .append(new Slider("🔆 Brightness ")
-        .withRange(new Range(0.1, 2, 0.01))
+        .withRange(new Range(0.5, 1.5, 0.01))
         .withValue(1)
-        .on(waveFunctionRaster)
+        .on(waveFunctionSurface)
         .withProperty("brightness")
     )
     .append(new Slider("🏃 Packet energy ")
@@ -199,6 +202,6 @@ Simulation
     )
     .append(potential.shapeSelector)
     .append(new Checkbox("🌈 Show phase color ")
-        .on(waveFunctionRaster)
+        .on(waveFunctionSurface)
         .withProperty("phaseColor")
         .checked(true));
