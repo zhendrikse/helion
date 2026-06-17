@@ -5,10 +5,10 @@ import {
 } from "three";
 
 import { Renderable3D } from "../renderer.js";
-import {Complex, Vec3} from "../../model/math/math.js";
-import {DropdownMenu} from "../../core/controls.js";
-import {Registry, Simulation} from "../../core/helion.js";
-import {ColorMap, ColorMappers, hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
+import { Complex } from "../../model/math/math.js";
+import { DropdownMenu} from "../../core/controls.js";
+import { Registry } from "../../core/helion.js";
+import { ColorMap, ColorMappers, hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -109,7 +109,7 @@ export class ScalarFieldIntensityPixelRaster extends Renderable3D {
     constructor({
         width = 512,
         height = 512,
-        colorMapper = null
+        colorMapper = new WavelengthColorMapper(525)
     } = {}) {
         super();
         this._width = width;

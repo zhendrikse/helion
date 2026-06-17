@@ -1,10 +1,9 @@
 import {
     ComplexScalarFieldRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range, DiscreteScalarField, Registry,
-    DropdownMenu, SchrodingerSolver, GaussianImpulseComplex2D
+    DropdownMenu, SchrodingerSolver, GaussianImpulseComplex2D, ScalarFieldIntensityPixelRaster
 } from "../../../src/index.js";
 
 const theCanvas = document.getElementById("doubleSlit2dContainer");
-const vCanvas = document.getElementById("vCanvas");
 document.getElementById("barrierType").addEventListener("click", () => potential.adjust());
 document.getElementById("bSizeSlider").addEventListener("input", () => potential.adjust());
 document.getElementById("bSoftnessSlider").addEventListener("input", () => potential.adjust());
@@ -30,15 +29,12 @@ class PotentialField extends DiscreteScalarField {
         entries: PotentialField.Type
     });
 
-    constructor(size, context, potentialType = PotentialField.Type.DoubleHole) {
+    constructor(size, potentialType = PotentialField.Type.DoubleHole) {
         super({
             nx: size,
             ny: size
         })
         this._potentialType = potentialType;
-        this._context = context;
-        this._data = new Array(size * size).fill(0);
-        this._dataImage = context.createImageData(size, size);
     }
 
     get shapeSelector() {
@@ -115,20 +111,6 @@ class PotentialField extends DiscreteScalarField {
         }
     }
 
-    _draw() {
-        const max = this.nx;
-        for (let y=0; y<max; y++)
-            for (let x=0; x<max; x++) {
-                const i = y*max+x;
-                const imageIndex = (x + (max-y-1)*max)*4;
-                this._dataImage.data[imageIndex] = 255;
-                this._dataImage.data[imageIndex+1] = 255;
-                this._dataImage.data[imageIndex+2] = 255;
-                this._dataImage.data[imageIndex+3] = Math.round(Math.abs(128 * this.data[i] * 10));
-            }
-        this._context.putImageData(this._dataImage, 0, 0);
-    }
-
     adjust() {
         const bEnergy = Number(document.getElementById("bEnergySlider").value);
         const bSize = Number(document.getElementById("bSizeSlider").value);
@@ -141,46 +123,31 @@ class PotentialField extends DiscreteScalarField {
         this._data.fill(0);
         this._setPotentialFor(bSize, bEnergy);
         this._softenEdges(softness);
-        this._draw();
     }
 }
 
+xMax = 400;
+xMaxm1 = xMax - 1;
+const potential = new PotentialField(xMax);
+potential.adjust();
+
+const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
+const solver = new SchrodingerSolver(psi, potential);
+solver.initialize(dt)
 const gaussianImpulse = new GaussianImpulseComplex2D();
+psi.apply(gaussianImpulse);
 
-let potential;
-let psi;
-let solver;
-function initSimulation(size) {
-    xMax = size;
-    xMaxm1 = xMax - 1;
-
-    potential = new PotentialField(xMax, vCanvas.getContext("2d"));
-    potential.adjust();
-    psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
-    solver = new SchrodingerSolver(psi, potential);
-    psi.apply(gaussianImpulse);
-    solver.initialize(dt)
-}
-
-function resizeCanvas() {
-    const rect = theCanvas.getBoundingClientRect();
-    const size = Math.floor(rect.width);
-
-    theCanvas.width = size;
-    theCanvas.height = size;
-    vCanvas.width = size;
-    vCanvas.height = size;
-
-    initSimulation(size);
-}
-
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
-const complexFieldRaster = new ComplexScalarFieldRaster({
+const waveFunctionRaster = new ComplexScalarFieldRaster({
     width: xMax,
     height: xMax
 });
+
+function reset() {
+    psi.reset();
+    solver.initialize(dt)
+    psi.apply(gaussianImpulse);
+    potential.adjust();
+}
 
 Simulation
     .with({
@@ -190,17 +157,17 @@ Simulation
         cameraPosition: new Vec3(0, 0, xMax)
     })
     .withMouseClickEventListener()
-    .synchronize(psi.alwaysWith(complexFieldRaster))
-    .onReset(() => {
-        psi.reset();
-        solver.initialize(dt)
-        psi.apply(gaussianImpulse);
-    })
+    .synchronize(psi.alwaysWith(waveFunctionRaster))
+    .synchronize(potential.onceWith(new ScalarFieldIntensityPixelRaster({
+        width: xMax,
+        height: xMax
+    })))
+    .onReset(() => reset())
     .onClockTick(() => solver.step(dt), 15)
     .append(new Slider("🔆 Brightness ")
         .withRange(new Range(0.1, 2, 0.01))
         .withValue(1)
-        .on(complexFieldRaster)
+        .on(waveFunctionRaster)
         .withProperty("brightness")
     )
     .append(new Slider("🏭 Packet energy ")
@@ -208,10 +175,6 @@ Simulation
         .withProperty("wavePacketEnergy")
         .withValue(0.050)
         .withRange(new Range(0.001, 0.1, 0.001))
-        .addEventListener("change", () => {
-            psi.reset();
-            solver.initialize(dt)
-            psi.apply(gaussianImpulse);
-            potential.adjust();
-        }))
+        .addEventListener("change", () => reset())
+    )
     .append(potential.shapeSelector);
