@@ -6,23 +6,7 @@ import { Renderable3D } from "../renderer.js";
 import { hsvToRgb } from "../../../src/index.js";
 
 export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
-    constructor({
-                    width = 200,
-                    height = 200,
-                    zScale = 30,
-                    showPhaseColor = true,
-                    brightness = 1
-                } = {}) {
-        super();
-
-        this._width = width;
-        this._height = height;
-        this._brightness = brightness;
-        this._zScale = zScale;
-
-        const geometry = new PlaneGeometry(width, height, width - 1, height - 1);
-
-        const vertexShader = `
+    static vertexShader = `
         attribute vec3 color;
         attribute float alpha;
         varying vec3 vColor;
@@ -34,8 +18,7 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
         `;
-
-        const fragmentShader = `
+    static fragmentShader = `
         precision highp float;
         varying vec3 vColor;
         varying float vAlpha;
@@ -50,10 +33,24 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
             gl_FragColor = vec4(color, alpha);
         }
         `;
+    constructor({
+        width = 200,
+        height = 200,
+        zScale = 30,
+        showPhaseColor = true,
+        brightness = 1
+    } = {}) {
+        super();
+        this._showPhaseColor = showPhaseColor;
+        this._width = width;
+        this._height = height;
+        this._brightness = brightness;
+        this._zScale = zScale;
 
+        const geometry = new PlaneGeometry(width, height, width - 1, height - 1);
         const material = new ShaderMaterial({
-            vertexShader,
-            fragmentShader,
+            vertexShader: ComplexScalarFieldSurfaceRaster.vertexShader,
+            fragmentShader: ComplexScalarFieldSurfaceRaster.fragmentShader,
             transparent: true,
             side: DoubleSide,
             uniforms: {
@@ -72,8 +69,11 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
         geometry.setAttribute("alpha", new BufferAttribute(this._alphas, 1));
     }
 
+    set showPhaseColor(showPhaseColor) { this._showPhaseColor = showPhaseColor; }
+
     synchronizeWith(field) {
         const pos = this._positions;
+        const pi2 = Math.PI * 2;
         let index = 0;
 
         for (let y = 0; y < field.ny; y++) {
@@ -89,7 +89,7 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
                 pos.setXYZ(i, x - this._width/2, height *  this._zScale, y - this._height/2);
 
                 // PHASE → color
-                const hue = (phase + Math.PI) / (2 * Math.PI);
+                const hue = this._showPhaseColor ? (phase + Math.PI) / pi2 : 0.1;
                 const rgb = hsvToRgb(hue, 0.6, 1.0);
 
                 const intensity = Math.min(1, Math.sqrt(mag));
