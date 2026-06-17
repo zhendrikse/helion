@@ -1,4 +1,4 @@
-import { hsvToRgb, Simulation} from "../../../src/index.js";
+import {Complex, DiscreteComplexField, hsvToRgb, Simulation} from "../../../src/index.js";
 import {Field} from "../../../src/model/math/fields.js";
 
 const theCanvas = document.getElementById("doubleSlit2dContainer");
@@ -181,25 +181,24 @@ function nextFrame() {
     spsReadout.innerHTML = "" + Math.round(1000 * stepCount / (currentTime-startTime));
 }
 
-class Psi2D extends Field {
+class Psi2D extends DiscreteComplexField {
     constructor(xMax) {
-        super({});
+        super({
+            nx: xMax,
+            ny: xMax
+        });
         this._xMax = xMax;
-        this._psi = {
-            re: new Float32Array(xMax*xMax),
-            im: new Float32Array(xMax*xMax)
-        };
         this._psiNext = {
-            re: new Float32Array(xMax*xMax),
-            im: new Float32Array(xMax*xMax)
+            re: new Float32Array(xMax * xMax),
+            im: new Float32Array(xMax * xMax)
         };
     }
 
     // Integrate the TDSE for a double time step (centered-difference time integration):
     // (Remember that psi.im is one time step earlier than psi.re; same for psiNext.im and psiNext.re.)
     doStep(dt, barrier) {
-        const re = this._psi.re;
-        const im = this._psi.im;
+        const re = this.real;
+        const im = this.imag;
         const reNext = this._psiNext.re;
         const imNext = this._psiNext.im;
         const vmax = barrier._v;
@@ -217,16 +216,9 @@ class Psi2D extends Field {
                 reNext[i] = re[i] + dt * (-imNext[i+1] - imNext[i-1] - imNext[i+w] - imNext[i-w] + 2*(2+vmax[i])*imNext[i]);
             }
 
-        for (let y=1; y < w - 1; y++)
-            for (let x=1; x < xMaxm1; x++) {
-                const i = y * w + x;
-                re[i] = reNext[i];
-                im[i] = imNext[i];
-            }
+        this.real = reNext.slice();
+        this.imag = imNext.slice();
     }
-
-    squaredAt = (i) => this._psi.re[i] * this._psi.re[i] + this._psi.im[i] * this._psi.im[i];
-    phaseAt = (i) => Math.atan2(this._psi.im[i], this._psi.re[i]) / TWO_PI;
 
     // Initialize the wavefunction to a Gaussian wavepacket:
     reset() {
@@ -240,8 +232,8 @@ class Psi2D extends Field {
                 const i = y*xMax + x;
                 const envelope = Math.exp(-(x-centerX)*(x-centerX)/(pWidth*pWidth)) *
                     Math.exp(-(y-centerY)*(y-centerY)/(pWidth*pWidth));
-                this._psi.re[i] = envelope * (Math.cos(kx*x)*Math.cos(ky*y) - Math.sin(kx*x)*Math.sin(ky*y));
-                this._psi.im[i] = envelope * (Math.cos(kx*x)*Math.sin(ky*y) + Math.sin(kx*x)*Math.cos(ky*y));
+                this.real[i] = envelope * (Math.cos(kx*x)*Math.cos(ky*y) - Math.sin(kx*x)*Math.sin(ky*y));
+                this.imag[i] = envelope * (Math.cos(kx*x)*Math.sin(ky*y) + Math.sin(kx*x)*Math.cos(ky*y));
                 this._psiNext.re[i] = 0.0;
                 this._psiNext.im[i] = 0.0;	// These lines may not be needed but edges must be zero
             }
@@ -250,8 +242,8 @@ class Psi2D extends Field {
         for (let y=1; y<xMax-1; y++)
             for (let x=1; x<xMax-1; x++) {
                 const i = y*xMax + x;
-                this._psi.im[i] = this._psi.im[i] + 0.5 * dt *
-                    (-this._psi.re[i+1] - this._psi.re[i-1] - this._psi.re[i+xMax] - this._psi.re[i-xMax] + 2*(2+barrier.at(i))*this._psi.re[i]);
+                this.imag[i] = this.imag[i] + 0.5 * dt *
+                    (-this.real[i+1] - this.real[i-1] - this.real[i+xMax] - this.real[i-xMax] + 2*(2+barrier.at(i))*this.real[i]);
             }
     }
 }
@@ -266,14 +258,15 @@ function reset() {
 function paintCanvas(psi, imageData) {
     const brightSetting = Number(brightnessSlider.value);
     const size = xMax; // use actual canvas size
-
+    const target = new Complex();
     for (let y = 0; y < size; y++)
         for (let x = 0; x < size; x++) {
-            const i = y * size + x;
-            let brightness = Math.sqrt(psi.squaredAt(i)) * brightSetting;
+            psi.sample(x, y, target);
+            let brightness = Math.sqrt(target.re * target.re + target.im * target.im) * brightSetting;
             if (brightness > 1.0) brightness = 1.0;
 
-            let phaseIndex = Math.floor(PHASE_STEPS * psi.phaseAt(i) );
+            const phase = Math.atan2(target.im, target.re) / TWO_PI
+            let phaseIndex = Math.floor(PHASE_STEPS * phase );
             if (phaseIndex < 0) phaseIndex += PHASE_STEPS;
             if (phaseIndex >= PHASE_STEPS) phaseIndex = PHASE_STEPS-1;
 

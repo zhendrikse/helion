@@ -1,10 +1,12 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
+import {Renderable3D} from "../../../../view/renderer.js";
+import {BoxGeometry, Color, InstancedMesh, Matrix4, MeshBasicMaterial, Quaternion, Vector3} from "three";
 
 export class DiamondSquareOperator {
     constructor({
-                    roughness = 1,
-                    amplitude = 100
-                } = {}) {
+        roughness = 1,
+        amplitude = 100
+    } = {}) {
         this._roughness = roughness;
         this._amplitude = amplitude;
     }
@@ -79,29 +81,6 @@ export class DiamondSquareOperator {
     #random(scale) { return (Math.random() * 2 - 1) * scale; }
 }
 
-export class DoubleSlit {
-    constructor(wavelengthInNanos = 500) {
-        this._wavelengthInNanos = wavelengthInNanos;
-    }
-
-    apply(field) {
-        const pos = new Vec3();
-        for (let i = 0; i < field.nx; i++)
-            for (let j = 0; j < field.nx; j++) {
-                const x = (i - field.nx * .5) / resolution;
-                const y = (j - field.ny * .5) / resolution;
-                pos.set(x, y, 0);
-                const r1 = pos.distanceTo(slit1.position.clone().divideScalar(resolution));
-                const r2 = pos.distanceTo(slit2.position.clone().divideScalar(resolution));
-                const pathDiff = Math.abs(r1 - r2);
-                const rAverage = (r1 + r2) * 0.5;
-                const envelope = 1 / (1 + 0.1 * rAverage);
-                field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff * 1e3 / wavelength), 2) * envelope);
-            }
-
-    }
-}
-
 export class GaussianImpulse {
     constructor({
         centerX = 100,
@@ -166,6 +145,37 @@ export class PerlinNoiseOperator {
                 field.setValueAt(x, y, value * this._scale);
             }
     }
+}
+
+export class DoubleSlitOperator {
+    constructor({
+                    wavelength = 525,
+                    positionSlit1 = new Vec3(),
+                    positionSlit2 = new Vec3(),
+                }) {
+        this._wavelength = wavelength;
+        this._positionSlit1 = positionSlit1;
+        this._positionSlit2 = positionSlit2;
+    }
+
+    apply(field) {
+        const pos = new Vec3();
+        for (let i = 0; i < field.nx; i++)
+            for (let j = 0; j < field.nx; j++) {
+                const x = (i - field.nx * .5);
+                const y = (j - field.ny * .5);
+                pos.set(x, y, 0);
+                const r1 = pos.distanceTo(this._positionSlit1);
+                const r2 = pos.distanceTo(this._positionSlit2);
+                const pathDiff = Math.abs(r1 - r2);
+                const rAverage = (r1 + r2) * 0.5;
+                const envelope = 1 / (1 + 0.1 * rAverage);
+                const factor = Math.cos(Math.PI * pathDiff * 25 / this._wavelength);
+                field.setValueAt(i, j, factor * factor * envelope);
+            }
+    }
+
+    set wavelength(wavelength) { this._wavelength = wavelength; }
 }
 
 //

@@ -4,34 +4,13 @@ import {
     DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry, ConeGeometry, CylinderGeometry, CapsuleGeometry
 } from "three";
 import { Renderable3D } from "../renderer.js";
-import { Complex } from "../../model/math/math.js";
+import {Complex, Vec3} from "../../model/math/math.js";
 import {DropdownMenu} from "../../core/controls.js";
-import {Registry} from "../../core/helion.js";
-import {ColorMap, ColorMappers} from "../colormappers.js";
-
-export function hsvToRgb(h, s, v) {
-    let r, g, b;
-    let i = Math.floor(h * 6);
-    let f = h * 6 - i;
-    let p = v * (1 - s);
-    let q = v * (1 - f * s);
-    let t = v * (1 - (1 - f) * s);
-
-    switch (i % 6) {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
-
-    return {
-        r: Math.round(r * 255),
-        g: Math.round(g * 255),
-        b: Math.round(b * 255)
-    };
-}
+import {Registry, Simulation} from "../../core/helion.js";
+import {ColorMap, ColorMappers, hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
+import {AxialSymmetricBody} from "../../model/phys/bodies.js";
+import {DiscreteScalarField} from "../../model/math/fields.js";
+import {Cylinder} from "../3d/primitives/primitives.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -128,7 +107,7 @@ export class ParticleCloudView extends Renderable3D {
     }
 }
 
-export class ScalarFieldPixelRaster extends Renderable3D {
+export class ScalarFieldIntensityPixelRaster extends Renderable3D {
     constructor({
         width = 512,
         height = 512,
@@ -190,6 +169,50 @@ export class ScalarFieldPixelRaster extends Renderable3D {
             }
 
         this._texture.needsUpdate = true;
+    }
+}
+
+/**
+ * Visualizes the edge of a pixel raster as a
+ * vertical plane perpendicular to the intensity pixel raster itself.
+ */
+export class FieldEdgeIntensityPixelRaster extends Renderable3D {
+    constructor({
+                    nx = field.nx,
+                    ny = field.ny,
+                    edgeHeight= 60 * resolution,
+                    colorMapper = wavelengthColorMapper
+                } = {}) {
+        super();
+        this._edgeHeight = edgeHeight;
+        this._colorMapper = colorMapper;
+        this._nx = nx;
+        this._ny = ny;
+        this._mesh = new InstancedMesh(new BoxGeometry(1, 1, 0.02), new MeshBasicMaterial(), nx * ny);
+        this.add(this._mesh);
+
+        this._matrix = new Matrix4();
+        this._color = new Color();
+    }
+
+    canBindTo(model) { return model.valueAt; }
+
+    synchronizeWith(field) {
+        let index = 0;
+        for (let i = 0; i < this._nx; i++) {
+            const j = this._ny - 1; // fixed, we only need the last row!
+            const x = i - this._nx * .5;
+            const y = j - this._ny * .5;
+            const brightness = this._colorMapper.map(field.valueAt(i, j) * 1e-10, this._color);
+
+            index++;
+            this._matrix.compose(new Vector3(x, y,0), new Quaternion(), new Vector3(1, 1, this._edgeHeight));
+            this._mesh.setMatrixAt(index, this._matrix);
+            this._mesh.setColorAt(index, this._color.multiplyScalar(brightness));
+        }
+
+        this._mesh.instanceMatrix.needsUpdate = true;
+        this._mesh.instanceColor.needsUpdate = true;
     }
 }
 

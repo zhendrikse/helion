@@ -1,16 +1,13 @@
 import {BoxGeometry, Color, InstancedMesh, Matrix4, MeshBasicMaterial, Quaternion, Vector3} from "three";
 import {
     AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider, Sphere, Vec3,
-    DiscreteScalarField, Renderable3D, WavelengthColorMapper, ScalarFieldPixelRaster
+    DiscreteScalarField, Renderable3D, WavelengthColorMapper, ScalarFieldIntensityPixelRaster
 } from "../../../src/index.js";
+
 
 const resolution = 50;
 const xMax = 4;
-const wavelengthColorMapper = new WavelengthColorMapper();
-const field = new DiscreteScalarField({
-    nx: Math.floor(4 * xMax * resolution),
-    ny: Math.floor(2 * xMax * resolution),
-});
+const wavelengthColorMapper = new WavelengthColorMapper(525);
 
 const slitSize = .5;
 const slit1 = new AxialSymmetricBody({
@@ -24,65 +21,19 @@ const slit2 = new AxialSymmetricBody({
     radius: .15 * resolution,
 });
 
-function updateInterferencePattern(field, wavelength=480) {
-    wavelengthColorMapper.lambdaInNanos = wavelength;
-    const pos = new Vec3();
-    for (let i = 0; i < field.nx; i++)
-        for (let j = 0; j < field.nx; j++) {
-            const x = (i - field.nx * .5) / resolution;
-            const y = (j - field.ny * .5) / resolution;
-            pos.set(x, y, 0);
-            const r1 = pos.distanceTo(slit1.position.clone().divideScalar(resolution));
-            const r2 = pos.distanceTo(slit2.position.clone().divideScalar(resolution));
-            const pathDiff = Math.abs(r1 - r2);
-            const rAverage = (r1 + r2) * 0.5;
-            const envelope = 1 / (1 + 0.1 * rAverage);
-            field.setValueAt(i, j, Math.pow(Math.cos(Math.PI * pathDiff * 1e3 / wavelength), 2) * envelope);
-        }
-}
+const doubleSlitOperator = new DoubleSlitOperator({
+    positionSlit1: slit1.position,
+    positionSlit2: slit2.position
+});
 
-class InterferenceScreen extends Renderable3D {
-    constructor({
-        nx = field.nx,
-        ny = field.ny,
-        edgeHeight= 60 * resolution,
-        colorMapper = wavelengthColorMapper
-    } = {}) {
-        super();
-        this._edgeHeight = edgeHeight;
-        this._colorMapper = colorMapper;
-        this._nx = nx;
-        this._ny = ny;
-        this._mesh = new InstancedMesh(new BoxGeometry(1, 1, 0.02), new MeshBasicMaterial(), nx * ny);
-        this.add(this._mesh);
+const field = new DiscreteScalarField({
+    nx: Math.floor(4 * xMax * resolution),
+    ny: Math.floor(2 * xMax * resolution),
+});
+field.apply(doubleSlitOperator);
 
-        this._matrix = new Matrix4();
-        this._color = new Color();
-    }
-
-    canBindTo(model) { return model.valueAt; }
-
-    synchronizeWith(field) {
-        let index = 0;
-        for (let i = 0; i < this._nx; i++) {
-            const j = this._ny - 1; // fixed, we only need the last row!
-            const x = i - this._nx * .5;
-            const y = j - this._ny * .5;
-            const brightness = this._colorMapper.map(field.valueAt(i, j) * 1e-10, this._color);
-
-            index++;
-            this._matrix.compose(new Vector3(x, y,0), new Quaternion(), new Vector3(1, 1, this._edgeHeight));
-            this._mesh.setMatrixAt(index, this._matrix);
-            this._mesh.setColorAt(index, this._color.multiplyScalar(brightness));
-        }
-
-        this._mesh.instanceMatrix.needsUpdate = true;
-        this._mesh.instanceColor.needsUpdate = true;
-    }
-}
 
 const particles = [];
-updateInterferencePattern(field);
 const simulation = Simulation
     .with({
         htmlDivId: "doubleSlitContainer",
@@ -91,8 +42,8 @@ const simulation = Simulation
     })
     .synchronize(slit1.onceWith(new Cylinder({ color: 0xffffff })))
     .synchronize(slit2.onceWith(new Cylinder({ color: 0xffffff })))
-    .synchronize(field.onceWith(new InterferenceScreen()))
-    .synchronize(field.onceWith(new ScalarFieldPixelRaster({
+    .synchronize(field.onceWith(new FieldEdgeIntensityPixelRaster()))
+    .synchronize(field.onceWith(new ScalarFieldIntensityPixelRaster({
         width: field.nx,
         height: field.ny,
         colorMapper: wavelengthColorMapper
@@ -110,7 +61,11 @@ const simulation = Simulation
     .append(new Slider("Wavelength ")
         .withRange(new Range(380, 700, 1))
         .withValue(480)
-        .addEventListener("input", event => updateInterferencePattern(field, Number(event.target.value)))
+        .addEventListener("input", event => {
+            wavelengthColorMapper.lambdaInNanos = Number(event.target.value);
+            doubleSlitOperator.wavelength = Number(event.target.value);
+            field.apply(doubleSlitOperator);
+        })
     );
 
 let spawnParticles = true;

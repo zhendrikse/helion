@@ -29,7 +29,7 @@ export { DropdownMenu, Checkbox, Button, Slider, RadioButton } from "./core/cont
 export { Simulation, Registry } from "./core/helion.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
-export { ParticleCloudView, ScalarFieldPixelRaster, ComplexScalarFieldRaster } from "./view/2d/views.js";
+export { ParticleCloudView, ScalarFieldIntensityPixelRaster, ComplexScalarFieldRaster } from "./view/2d/views.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 export { Renderable3D } from "./view/renderer.js";
 
