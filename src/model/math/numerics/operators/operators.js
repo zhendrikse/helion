@@ -1,7 +1,10 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import {Renderable3D} from "../../../../view/renderer.js";
-import {BoxGeometry, Color, InstancedMesh, Matrix4, MeshBasicMaterial, Quaternion, Vector3} from "three";
-import {Vec3} from "../../math.js";
+import {Range, Vec3} from "../../math.js";
+import {DiscreteComplexField} from "../../fields.js";
+import {ComplexScalarFieldRaster} from "../../../../view/2d/views.js";
+import {SchrodingerSolver} from "../solvers/solvers.js";
+import {Simulation} from "../../../../core/helion.js";
+import {Slider} from "../../../../core/controls.js";
 
 export class DiamondSquareOperator {
     constructor({
@@ -106,6 +109,35 @@ export class GaussianImpulse {
                 const dy = j - this._centerY;
                 const value = this._amplitude * Math.exp(-(dx * dx + dy * dy) / (2 * sigma2));
                 field.setValueAt(i, j, field.valueAt(i, j) + value);
+            }
+    }
+}
+
+export class GaussianImpulseComplex2D {
+    constructor({
+        wavePacketEnergy=0.05,
+        packetWidth = 48
+    } = {}) {
+        this._packetWidth = packetWidth;
+        this._wavePacketEnergy = wavePacketEnergy;
+    }
+
+    set wavePacketEnergy(wavePacketEnergy) { this._wavePacketEnergy = wavePacketEnergy; }
+
+    apply(field) {
+        const packetWidth2 = this._packetWidth * this._packetWidth;
+        const centerX = Math.floor(field.nx * 0.22);
+        const centerY = field.nx * .5;
+        const e = this._wavePacketEnergy;
+        const kx = Math.sqrt(2 * e);
+        const ky = 0;
+        for (let y = 0; y < field.ny; y++)
+            for (let x = 0; x < field.nx; x++) {
+                const i = y * field.ny + x;
+                const envelope = Math.exp(-(x-centerX)*(x-centerX)/ packetWidth2) *
+                    Math.exp(-(y-centerY)*(y-centerY)/ packetWidth2);
+                field.real[i] = envelope * (Math.cos(kx*x)*Math.cos(ky*y) - Math.sin(kx*x)*Math.sin(ky*y));
+                field.imag[i] = envelope * (Math.cos(kx*x)*Math.sin(ky*y) + Math.sin(kx*x)*Math.cos(ky*y));
             }
     }
 }

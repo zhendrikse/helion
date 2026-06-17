@@ -14,7 +14,8 @@ export {
 } from "./model/math/fields.js"
 
 export {
-    FFT, LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator
+    FFT, LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator,
+    GaussianImpulseComplex2D
 } from "./model/math/numerics/operators/operators.js";
 
 export {
@@ -28,7 +29,7 @@ export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { Sun } from "./view/3d/astro/sun.js";
 export { Saturn } from "./view/3d/astro/saturn.js";
 export { Planets } from "./model/phys/planets.js";
-export { WaveEquationSolver } from "./model/math/numerics/solvers/solvers.js";
+export { WaveEquationSolver, SchrodingerSolver } from "./model/math/numerics/solvers/solvers.js";
 export { DropdownMenu, Checkbox, Button, Slider, RadioButton } from "./core/controls.js";
 export { Simulation, Registry } from "./core/helion.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";

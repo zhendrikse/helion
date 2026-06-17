@@ -102,6 +102,11 @@ export class DropdownMenu extends HtmlControl {
 
         return this;
     }
+
+    withValue(value) {
+        this._inputControl.value = value;
+        return this;
+    }
 }
 
 export class Slider extends HtmlControl {

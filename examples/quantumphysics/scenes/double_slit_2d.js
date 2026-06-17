@@ -1,119 +1,135 @@
 import {
-    ComplexScalarFieldRaster, DiscreteComplexField, Button, Simulation, Vec3, Slider, Range
+    ComplexScalarFieldRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range, DiscreteScalarField, Registry,
+    DropdownMenu, SchrodingerSolver, GaussianImpulseComplex2D
 } from "../../../src/index.js";
 
 const theCanvas = document.getElementById("doubleSlit2dContainer");
 const vCanvas = document.getElementById("vCanvas");
-const speedSlider = document.getElementById("speedSlider");
-const eSlider = document.getElementById("eSlider");
-const eReadout = document.getElementById("eReadout");
-const spsReadout = document.getElementById("spsReadout");
-document.getElementById("barrierType").addEventListener("click", () => barrier.adjust());
-speedSlider.addEventListener("input", () => resetTimer());
-eSlider.addEventListener("input", () => wpEnergyAdjust());
-document.getElementById("bEnergySlider").addEventListener("input", () => barrier.adjust());
-document.getElementById("bSizeSlider").addEventListener("input", () => barrier.adjust());
-document.getElementById("bSoftnessSlider").addEventListener("input", () => barrier.adjust());
+document.getElementById("barrierType").addEventListener("click", () => potential.adjust());
+document.getElementById("bSizeSlider").addEventListener("input", () => potential.adjust());
+document.getElementById("bSoftnessSlider").addEventListener("input", () => potential.adjust());
 
 let xMax = Number(theCanvas.width);
 let xMaxm1 = xMax - 1;
-
-const pWidth = 48;	// initial wavepacket width
-// Here are the wavefunction arrays.  Note that times are staggered, with the imaginary parts always
-// one time step behind the corresponding real parts.  This is admittedly confusing.
-// Also note that these are 1D arrays, with index i = y*xMax + x, for efficiency.
 const dt = 0.24;		// anything less than 0.25 seems to be stable
-let running = false;
-let startTime, stepCount;
 
-class Barrier {
-    constructor(size, context) {
-        this._xMax = size;
+class PotentialField extends DiscreteScalarField {
+    static Type = Object.freeze({
+        Circle: "Circle",
+        Square: "Square",
+        Line: "Line",
+        Step: "Step",
+        SingleHole: "SingleHole",
+        DoubleHole: "DoubleHole",
+        Grating: "Grating"
+    })
+
+    static Shapes = new Registry({
+        id: "surfaceShapeSelect",
+        label: "🟦 Shape ",
+        entries: PotentialField.Type
+    });
+
+    constructor(size, context, potentialType = PotentialField.Type.DoubleHole) {
+        super({
+            nx: size,
+            ny: size
+        })
+        this._potentialType = potentialType;
         this._context = context;
-        this._v = new Array(size * size).fill(0);
-        this._vImage = context.createImageData(size, size);
+        this._data = new Array(size * size).fill(0);
+        this._dataImage = context.createImageData(size, size);
     }
 
-    at = (i) => this._v[i];
-    _clear = () => this._v.fill(0);
+    get shapeSelector() {
+        return new DropdownMenu()
+            .for(PotentialField.Shapes)
+            .withValue(this._potentialType)
+            .addEventListener("change", event => {
+                    this._potentialType = event.target.value;
+                    this.adjust();
+                }
+            );
+    }
 
-    _setPotentialFor(barrierType, bSize, bEnergy) {
-        const max = this._xMax;
-        switch (barrierType) {
-            case "circle":
-                const rSquared = bSize*bSize/4.0;
+    _setPotentialFor(size, energy) {
+        const max = this.nx;
+        switch (this._potentialType) {
+            case PotentialField.Type.Circle:
+                const rSquared = size * size/4.0;
                 for (let y=0; y<max; y++)
                     for (let x=0; x<max; x++)
                         if ((x-max/2)**2 + (y-max/2)**2 < rSquared)
-                            this._v[y*max+x] = bEnergy;
+                            this._data[y*max+x] = energy;
                 break;
-            case "square":
-                const edge = Math.round(max/2 - bSize/2);
-                for (let y=edge; y<edge+bSize; y++)
-                    for (let x=edge; x<edge+bSize; x++)
-                        this._v[y*max+x] = bEnergy;
+            case PotentialField.Type.Square:
+                const edge = Math.round(max/2 - size/2);
+                for (let y=edge; y<edge+size; y++)
+                    for (let x=edge; x<edge+size; x++)
+                        this._data[y*max+x] = energy;
                 break;
-            case "line":
+            case PotentialField.Type.Line:
                 for (let y=0; y<max; y++)
-                    for (let x=Math.floor(max/2); x<Math.floor(max/2)+bSize; x++)
-                        this._v[y*max+x] = bEnergy;
+                    for (let x=Math.floor(max/2); x<Math.floor(max/2)+size; x++)
+                        this._data[y*max+x] = energy;
                 break;
-            case "step":
+            case PotentialField.Type.Step:
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2); x<max; x++)
-                        this._v[y*max+x] = bEnergy;
+                        this._data[y*max+x] = energy;
                 break;
-            case "singleHole":
-                const holeEdge = Math.round(max/2 - bSize/2);
+            case PotentialField.Type.SingleHole:
+                const holeEdge = Math.round(max/2 - size/2);
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2)-5; x<Math.floor(max/2)+5; x++)
-                        if (y <= holeEdge || y > holeEdge+bSize)
-                            this._v[y*max+x] = bEnergy;
+                        if (y <= holeEdge || y > holeEdge+size)
+                            this._data[y*max+x] = energy;
                 break;
-            case "doubleHole":
-                const dhEdge = Math.round(max/2 - bSize/2);
+            case PotentialField.Type.DoubleHole:
+                const dhEdge = Math.round(max/2 - size/2);
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2)-5; x<Math.floor(max/2)+5; x++)
-                        if (y <= dhEdge-10 || y > dhEdge+bSize+10 || (y>dhEdge && y<=dhEdge+bSize))
-                            this._v[y*max+x] = bEnergy;
+                        if (y <= dhEdge-10 || y > dhEdge+size+10 || (y>dhEdge && y<=dhEdge+size))
+                            this._data[y*max+x] = energy;
                 break;
-            case "grating":
+            case PotentialField.Type.Grating:
                 for (let y=Math.floor(max/4); y<Math.floor(3*max/4); y++)
                     for (let x=Math.floor(max/2)-5; x<Math.floor(max/2)+5; x++)
-                        if (y % bSize < bSize/2)
-                            this._v[y*max+x] = bEnergy;
+                        if (y % size < size/2)
+                            this._data[y*max+x] = energy;
                 break;
+            default:
+                throw new Error(`Unknown potential type "${this._potentialType}"`);
         }
     }
 
     _softenEdges(softness) {
-        const max = this._xMax;
+        const max = this.nx;
         for (let s=0; s<softness; s++) {
-            const oldV = this._v.slice();
+            const oldV = this._data.slice();
             for (let y=1; y<max-1; y++)
                 for (let x=1; x<max-1; x++) {
                     const i = y*max + x;
-                    this._v[i] = (oldV[i + 1] + oldV[i - 1] + oldV[i + max] + oldV[i - max]) * .25;
+                    this._data[i] = (oldV[i + 1] + oldV[i - 1] + oldV[i + max] + oldV[i - max]) * .25;
                 }
         }
     }
 
     _draw() {
-        const max = this._xMax;
+        const max = this.nx;
         for (let y=0; y<max; y++)
             for (let x=0; x<max; x++) {
                 const i = y*max+x;
                 const imageIndex = (x + (max-y-1)*max)*4;
-                this._vImage.data[imageIndex] = 255;
-                this._vImage.data[imageIndex+1] = 255;
-                this._vImage.data[imageIndex+2] = 255;
-                this._vImage.data[imageIndex+3] = Math.round(Math.abs(128 * this.at(i) * 10));
+                this._dataImage.data[imageIndex] = 255;
+                this._dataImage.data[imageIndex+1] = 255;
+                this._dataImage.data[imageIndex+2] = 255;
+                this._dataImage.data[imageIndex+3] = Math.round(Math.abs(128 * this.data[i] * 10));
             }
-        this._context.putImageData(this._vImage, 0, 0);
+        this._context.putImageData(this._dataImage, 0, 0);
     }
 
     adjust() {
-        const barrierType = document.getElementById("barrierType").value;
         const bEnergy = Number(document.getElementById("bEnergySlider").value);
         const bSize = Number(document.getElementById("bSizeSlider").value);
         const softness = Number(document.getElementById("bSoftnessSlider").value);
@@ -122,118 +138,28 @@ class Barrier {
         document.getElementById("bEnergyReadout").innerText = bEnergy.toFixed(3).replace("-", "−");
         document.getElementById("bSizeReadout").innerText = "" + bSize;
 
-        this._clear();
-        this._setPotentialFor(barrierType, bSize, bEnergy);
+        this._data.fill(0);
+        this._setPotentialFor(bSize, bEnergy);
         this._softenEdges(softness);
         this._draw();
     }
 }
-let barrier;
+
+const gaussianImpulse = new GaussianImpulseComplex2D();
+
+let potential;
 let psi;
-
-function startStop() {
-    running = !running;
-    if (running) {
-        resetTimer();
-        pauseButton.innerHTML = "Pause";
-        nextFrame();
-    } else
-        pauseButton.innerHTML = "Resume";
-}
-
-function resetTimer() {
-    stepCount = 0;
-    startTime = (new Date()).getTime();
-}
-
-// Respond to user adjusting wavepacket energy:
-// (Uncertainty code is left over from 1D version and is commented out for now.)
-function wpEnergyAdjust() {
-    const e = Number(eSlider.value);
-    //const a = 1 / (pWidth * pWidth);						// so envelope is exp(-ax^2)
-    //const sigma = Math.sqrt(2*energy*a + a*a/2) + a/2;	// uncertainty in energy (more or less)
-    // The square root term is the actual sigma and dominates for most energy values;
-    // the a/2 term is the offset between the k^2/2 and the actual average energy.
-    eReadout.innerHTML = Number(e).toFixed(3);
-    //+ " &plusmn; " + Number(sigma).toFixed(3);
-    if (!running) reset();
-}
-
-class Psi2D extends DiscreteComplexField {
-    constructor(xMax) {
-        super({
-            nx: xMax,
-            ny: xMax
-        });
-        this._xMax = xMax;
-        this._psiNext = {
-            re: new Float32Array(xMax * xMax),
-            im: new Float32Array(xMax * xMax)
-        };
-    }
-
-    // Integrate the TDSE for a double time step (centered-difference time integration):
-    // (Remember that psi.im is one time step earlier than psi.re; same for psiNext.im and psiNext.re.)
-    doStep(dt, barrier) {
-        const re = this.real;
-        const im = this.imag;
-        const reNext = this._psiNext.re;
-        const imNext = this._psiNext.im;
-        const vmax = barrier._v;
-        const w = this._xMax;
-
-        for (let x= 1; x < xMaxm1; x++)
-            for (let y = 1; y < xMaxm1; y++) {
-                const i = x * w + y;
-                imNext[i] = im[i] - dt * (-re[i+1] - re[i-1] - re[i+w] - re[i-w] + 2*(2+vmax[i])*re[i]);
-            }
-
-        for (let x= 1; x < xMaxm1; x++)
-            for (let y = 1; y < xMaxm1; y++) {
-                const i = x * w + y;
-                reNext[i] = re[i] + dt * (-imNext[i+1] - imNext[i-1] - imNext[i+w] - imNext[i-w] + 2*(2+vmax[i])*imNext[i]);
-            }
-
-        this.real = reNext.slice();
-        this.imag = imNext.slice();
-    }
-
-    // Initialize the wavefunction to a Gaussian wavepacket:
-    reset() {
-        const centerX = Math.floor(xMax*0.22);
-        const centerY = xMax/2;
-        const e = Number(eSlider.value);
-        const kx = Math.sqrt(2*e);
-        const ky = 0;
-        for (let y = 0; y < xMax; y++)
-            for (let x = 0; x < xMax; x++) {
-                const i = y * xMax + x;
-                const envelope = Math.exp(-(x-centerX)*(x-centerX)/(pWidth*pWidth)) *
-                    Math.exp(-(y-centerY)*(y-centerY)/(pWidth*pWidth));
-                this.real[i] = envelope * (Math.cos(kx*x)*Math.cos(ky*y) - Math.sin(kx*x)*Math.sin(ky*y));
-                this.imag[i] = envelope * (Math.cos(kx*x)*Math.sin(ky*y) + Math.sin(kx*x)*Math.cos(ky*y));
-                this._psiNext.re[i] = 0.0;
-                this._psiNext.im[i] = 0.0;	// These lines may not be needed but edges must be zero
-            }
-
-        // Now bump the imaginary part of psi back by one time step:
-        for (let y=1; y<xMax-1; y++)
-            for (let x=1; x<xMax-1; x++) {
-                const i = y*xMax + x;
-                this.imag[i] = this.imag[i] + 0.5 * dt *
-                    (-this.real[i+1] - this.real[i-1] - this.real[i+xMax] - this.real[i-xMax] + 2*(2+barrier.at(i))*this.real[i]);
-            }
-    }
-}
-
+let solver;
 function initSimulation(size) {
     xMax = size;
     xMaxm1 = xMax - 1;
 
-    psi = new Psi2D(xMax);
-    barrier = new Barrier(xMax, vCanvas.getContext("2d"));
-    barrier.adjust();
-    psi.reset();
+    potential = new PotentialField(xMax, vCanvas.getContext("2d"));
+    potential.adjust();
+    psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
+    solver = new SchrodingerSolver(psi, potential);
+    psi.apply(gaussianImpulse);
+    solver.initialize(dt)
 }
 
 function resizeCanvas() {
@@ -252,27 +178,40 @@ window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
 const complexFieldRaster = new ComplexScalarFieldRaster({
-    width: 400, // TODO fix hard coded 400
-    height: 400
+    width: xMax,
+    height: xMax
 });
+
 Simulation
     .with({
         htmlDivId: "simContainer",
         controls: false,
         headUpDisplay: true,
-        cameraPosition: new Vec3(0, 0, 400) // TODO fix hard coded 400
+        cameraPosition: new Vec3(0, 0, xMax)
     })
     .withMouseClickEventListener()
     .synchronize(psi.alwaysWith(complexFieldRaster))
-    .onReset(() => psi.reset())
-    .onClockTick((clockTime, simulatedTime) => {
-        psi.doStep(dt, barrier);
-        stepCount++;
-        spsReadout.innerHTML = "" + Math.round(1000 * stepCount / (clockTime - startTime));
-    }, Number(speedSlider.value))
+    .onReset(() => {
+        psi.reset();
+        solver.initialize(dt)
+        psi.apply(gaussianImpulse);
+    })
+    .onClockTick(() => solver.step(dt), 15)
     .append(new Slider("🔆 Brightness ")
         .withRange(new Range(0.1, 2, 0.01))
         .withValue(1)
         .on(complexFieldRaster)
         .withProperty("brightness")
     )
+    .append(new Slider("🏭 Packet energy ")
+        .on(psi)
+        .withProperty("wavePacketEnergy")
+        .withValue(0.050)
+        .withRange(new Range(0.001, 0.1, 0.001))
+        .addEventListener("change", () => {
+            psi.reset();
+            solver.initialize(dt)
+            psi.apply(gaussianImpulse);
+            potential.adjust();
+        }))
+    .append(potential.shapeSelector);

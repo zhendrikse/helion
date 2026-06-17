@@ -297,6 +297,10 @@ export class DiscreteScalarField extends Field {
         // bilinear interpolation
     }
 
+    reset() {
+        this._data = new Float32Array(this.nx * this.ny);
+    }
+
     get data() {
         return this._data;
     }
@@ -304,6 +308,10 @@ export class DiscreteScalarField extends Field {
     apply(operator) {
         operator.apply(this);
         return this;
+    }
+
+    index(i, j) {
+        return i * this.nx + j;
     }
 
     valueAt(i, j) {
@@ -334,13 +342,18 @@ export class DiscreteComplexField extends Field {
 
     get size() { return this.nx; }
 
-    apply(transformation) {
-        transformation(this);
+    apply(operator) {
+        operator.apply(this);
         return this;
     }
 
     index(i, j) {
         return i * this.nx + j;
+    }
+
+    reset() {
+        this.real = new Float32Array(this.nx * this.ny);
+        this.imag = new Float32Array(this.nx * this.ny)
     }
 
     sample(i, j, target) {
