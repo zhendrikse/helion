@@ -69,18 +69,18 @@ export class WaveEquationSolver {
         const reNext = this._nextRe;
         const imNext = this._nextIm;
 
-        const V = this._potential;
+        const V = this._potential.data;
         const w = this._psi.nx;
         for (let x= 1; x < w - 1; x++)
             for (let y = 1; y < w - 1; y++) {
-                const i = x * w + y;
-                imNext[i] = im[i] - dt * (-re[i+1] - re[i-1] - re[i+w] - re[i-w] + 2*(2+V.valueAt(y, x))*re[i]);
+                const i = y * w + x;
+                imNext[i] = im[i] - dt * (-re[i+1] - re[i-1] - re[i+w] - re[i-w] + 2*(2+V[i])*re[i]);
             }
 
         for (let x= 1; x < w - 1; x++)
             for (let y = 1; y < w - 1; y++) {
-                const i = x * w + y;
-                reNext[i] = re[i] + dt * (-imNext[i+1] - imNext[i-1] - imNext[i+w] - imNext[i-w] + 2*(2+V.valueAt(y, x))*imNext[i]);
+                const i = y * w + x;
+                reNext[i] = re[i] + dt * (-imNext[i+1] - imNext[i-1] - imNext[i+w] - imNext[i-w] + 2*(2+V[i])*imNext[i]);
             }
 
         [this._psi.real, this._nextRe] = [this._nextRe, this._psi.real];
