@@ -146,7 +146,7 @@ const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
     height: xMax,
     scale: 20,
     zScale: 80,
-    brightness: .01
+    brightness: 1
 });
 
 function reset() {
@@ -212,7 +212,7 @@ Simulation
         htmlDivId: "doubleSlit3dContainer",
         controls: true,
         headUpDisplay: false,
-        cameraPosition: new Vec3(-1, 1.25, .1).multiplyScalar(xMax),
+        cameraPosition: new Vec3(-1, 1.25, .4).multiplyScalar(xMax * .9),
         fov: 30
     })
     .withMouseClickEventListener()
