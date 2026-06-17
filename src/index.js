@@ -44,7 +44,7 @@ export {
 
 export {
     wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString, ColorMap,
-    hsvToRgb, WavelengthColorMapper
+    hsvToRgb, WavelengthColorMapper, hsvToRgbNormalized
 } from "./view/colormappers.js";
 
 export {

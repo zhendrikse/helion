@@ -140,7 +140,7 @@ const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
     width: xMax,
     height: xMax,
     scale: 20,
-    zScale: 80,
+    zScale: 20,
     brightness: 1
 });
 

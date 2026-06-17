@@ -3,7 +3,7 @@ import {Mesh, PlaneGeometry, ShaderMaterial, DoubleSide,
 } from "three";
 
 import { Renderable3D } from "../renderer.js";
-import { hsvToRgb } from "../../../src/index.js";
+import { hsvToRgbNormalized} from "../colormappers.js";
 
 export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
     static vertexShader = `
@@ -27,16 +27,15 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
         void main() {
             float a = vAlpha * uBrightness;
             if (a < 0.01) discard;
-            vec3 color = vColor * uBrightness;
-            float alpha = vAlpha * uBrightness;
-            
+            vec3 color = vColor;
+            float alpha = vAlpha * uBrightness;            
             gl_FragColor = vec4(color, alpha);
         }
         `;
     constructor({
         width = 200,
         height = 200,
-        zScale = 30,
+        zScale = 20,
         showPhaseColor = true,
         brightness = 1
     } = {}) {
@@ -86,20 +85,21 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
                 const phase = Math.atan2(im, re);
 
                 // HEIGHT (surface deformation)
-                const height = Math.pow(mag, 0.4);
+                const height = Math.log(1 + 20 * mag);
                 pos.setXYZ(i, x - this._width/2, height *  this._zScale, y - this._height/2);
 
                 // PHASE → color
                 const hue = this._showPhaseColor ? (phase + Math.PI) / pi2 : 0.1;
-                const rgb = hsvToRgb(hue, 0.6, 1.0);
+                const rgb = hsvToRgbNormalized(hue, 0.55, 1.0);
 
-                const intensity = Math.min(1, Math.sqrt(mag));
-                this._colors[index]     = rgb.r * intensity / 255;
-                this._colors[index + 1] = rgb.g * intensity / 255;
-                this._colors[index + 2] = rgb.b * intensity / 255;
+                const lighting = 0.6 + 0.4 * Math.cos(phase);
+                const intensity = Math.pow(mag, 0.35) * lighting;
+                this._colors[index]     = rgb.r * intensity;
+                this._colors[index + 1] = rgb.g * intensity;
+                this._colors[index + 2] = rgb.b * intensity;
 
                 // MAGNITUDE → alpha
-                this._alphas[i] = Math.log(1 + 10 * mag)
+                this._alphas[i] = Math.tanh(3.0 * mag);
 
                 index += 3;
             }
