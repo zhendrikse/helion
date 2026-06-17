@@ -3,13 +3,7 @@ import {
     DropdownMenu, SchrodingerSolver, GaussianImpulseComplex2D, ScalarFieldIntensityPixelRaster
 } from "../../../src/index.js";
 
-const theCanvas = document.getElementById("doubleSlit2dContainer");
-document.getElementById("barrierType").addEventListener("click", () => potential.adjust());
-document.getElementById("bSizeSlider").addEventListener("input", () => potential.adjust());
-document.getElementById("bSoftnessSlider").addEventListener("input", () => potential.adjust());
-
-let xMax = Number(theCanvas.width);
-let xMaxm1 = xMax - 1;
+let xMax = 400;
 const dt = 0.24;		// anything less than 0.25 seems to be stable
 
 class PotentialField extends DiscreteScalarField {
@@ -29,12 +23,30 @@ class PotentialField extends DiscreteScalarField {
         entries: PotentialField.Type
     });
 
-    constructor(size, potentialType = PotentialField.Type.DoubleHole) {
-        super({
-            nx: size,
-            ny: size
-        })
+    constructor({
+        nx = 100,
+        ny = 100,
+        size = 40,
+        energy = 0.1,
+        softness = 0,
+        potentialType = PotentialField.Type.DoubleHole
+    } = {}) {
+        super({ nx, ny });
         this._potentialType = potentialType;
+        this._energy = energy;
+        this._size = size;
+        this._softness = softness;
+        this.reset();
+    }
+
+    set size(value) {
+        this._size = value;
+        this.reset();
+    }
+
+    set energy(value) {
+        this._energy = value;
+        this.reset();
     }
 
     get shapeSelector() {
@@ -43,94 +55,83 @@ class PotentialField extends DiscreteScalarField {
             .withValue(this._potentialType)
             .addEventListener("change", event => {
                     this._potentialType = event.target.value;
-                    this.adjust();
+                    this.reset();
                 }
             );
     }
 
-    _setPotentialFor(size, energy) {
+    reset() {
+        super.reset();
         const max = this.nx;
         switch (this._potentialType) {
             case PotentialField.Type.Circle:
-                const rSquared = size * size/4.0;
+                const rSquared = this._size * this._size/4.0;
                 for (let y=0; y<max; y++)
                     for (let x=0; x<max; x++)
                         if ((x-max/2)**2 + (y-max/2)**2 < rSquared)
-                            this._data[y*max+x] = energy;
+                            this._data[y*max+x] = this._energy;
                 break;
             case PotentialField.Type.Square:
-                const edge = Math.round(max/2 - size/2);
-                for (let y=edge; y<edge+size; y++)
-                    for (let x=edge; x<edge+size; x++)
-                        this._data[y*max+x] = energy;
+                const edge = Math.round(max/2 - this._size/2);
+                for (let y=edge; y<edge+this._size; y++)
+                    for (let x=edge; x<edge+this._size; x++)
+                        this._data[y*max+x] = this._energy;
                 break;
             case PotentialField.Type.Line:
+                console.log(this._size);
                 for (let y=0; y<max; y++)
-                    for (let x=Math.floor(max/2); x<Math.floor(max/2)+size; x++)
-                        this._data[y*max+x] = energy;
+                    for (let x=Math.floor(max/2); x<Math.floor(max/2)+this._size; x++)
+                        this._data[y*max+x] = this._energy;
                 break;
             case PotentialField.Type.Step:
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2); x<max; x++)
-                        this._data[y*max+x] = energy;
+                        this._data[y*max+x] = this._energy;
                 break;
             case PotentialField.Type.SingleHole:
-                const holeEdge = Math.round(max/2 - size/2);
+                const holeEdge = Math.round(max/2 - this._size/2);
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2)-5; x<Math.floor(max/2)+5; x++)
-                        if (y <= holeEdge || y > holeEdge+size)
-                            this._data[y*max+x] = energy;
+                        if (y <= holeEdge || y > holeEdge+this._size)
+                            this._data[y*max+x] = this._energy;
                 break;
             case PotentialField.Type.DoubleHole:
-                const dhEdge = Math.round(max/2 - size/2);
+                const dhEdge = Math.round(max/2 - this._size/2);
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2)-5; x<Math.floor(max/2)+5; x++)
-                        if (y <= dhEdge-10 || y > dhEdge+size+10 || (y>dhEdge && y<=dhEdge+size))
-                            this._data[y*max+x] = energy;
+                        if (y <= dhEdge-10 || y > dhEdge+this._size+10 || (y>dhEdge && y<=dhEdge+this._size))
+                            this._data[y*max+x] = this._energy;
                 break;
             case PotentialField.Type.Grating:
                 for (let y=Math.floor(max/4); y<Math.floor(3*max/4); y++)
                     for (let x=Math.floor(max/2)-5; x<Math.floor(max/2)+5; x++)
-                        if (y % size < size/2)
-                            this._data[y*max+x] = energy;
+                        if (y % this._size < this._size/2)
+                            this._data[y*max+x] = this._energy;
                 break;
             default:
                 throw new Error(`Unknown potential type "${this._potentialType}"`);
         }
+        this._applySoftness();
     }
 
-    _softenEdges(softness) {
-        const max = this.nx;
-        for (let s=0; s<softness; s++) {
+    set softness(softness) {
+        this._softness = softness;
+        this.reset();
+    }
+
+    _applySoftness() {
+        for (let s=0; s < this._softness; s++) {
             const oldV = this._data.slice();
-            for (let y=1; y<max-1; y++)
-                for (let x=1; x<max-1; x++) {
-                    const i = y*max + x;
-                    this._data[i] = (oldV[i + 1] + oldV[i - 1] + oldV[i + max] + oldV[i - max]) * .25;
+            for (let y = 1; y < this.nx - 1; y++)
+                for (let x = 1; x < this.nx - 1; x++) {
+                    const i = y * this.nx + x;
+                    this._data[i] = (oldV[i + 1] + oldV[i - 1] + oldV[i + this.nx] + oldV[i - this.nx]) * .25;
                 }
         }
     }
-
-    adjust() {
-        const bEnergy = Number(document.getElementById("bEnergySlider").value);
-        const bSize = Number(document.getElementById("bSizeSlider").value);
-        const softness = Number(document.getElementById("bSoftnessSlider").value);
-
-        document.getElementById("bSoftnessReadout").innerText = "" + softness;
-        document.getElementById("bEnergyReadout").innerText = bEnergy.toFixed(3).replace("-", "−");
-        document.getElementById("bSizeReadout").innerText = "" + bSize;
-
-        this._data.fill(0);
-        this._setPotentialFor(bSize, bEnergy);
-        this._softenEdges(softness);
-    }
 }
 
-xMax = 400;
-xMaxm1 = xMax - 1;
-const potential = new PotentialField(xMax);
-potential.adjust();
-
+const potential = new PotentialField({ nx: xMax, ny: xMax });
 const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
 const solver = new SchrodingerSolver(psi, potential);
 solver.initialize(dt)
@@ -146,12 +147,12 @@ function reset() {
     psi.reset();
     solver.initialize(dt)
     psi.apply(gaussianImpulse);
-    potential.adjust();
+    potential.reset();
 }
 
 Simulation
     .with({
-        htmlDivId: "simContainer",
+        htmlDivId: "doubleSlit2dContainer",
         controls: false,
         headUpDisplay: true,
         cameraPosition: new Vec3(0, 0, xMax)
@@ -170,11 +171,32 @@ Simulation
         .on(waveFunctionRaster)
         .withProperty("brightness")
     )
-    .append(new Slider("🏭 Packet energy ")
-        .on(psi)
+    .append(new Slider("🏃 Packet energy ")
+        .on(gaussianImpulse)
         .withProperty("wavePacketEnergy")
-        .withValue(0.050)
         .withRange(new Range(0.001, 0.1, 0.001))
+        .withValue(0.050)
+        .addEventListener("change", () => reset())
+    )
+    .append(new Slider("💪🏻 Energy barrier")
+        .on(potential)
+        .withProperty("energy")
+        .withRange(new Range(-0.1, 0.1, .001))
+        .withValue(0.1)
+        .addEventListener("change", () => reset())
+    )
+    .append(new Slider("📐 Size")
+        .on(potential)
+        .withProperty("size")
+        .withRange(new Range(0, 50, 1))
+        .withValue(40)
+        .addEventListener("change", () => reset())
+    )
+    .append(new Slider("🧸 Softness")
+        .on(potential)
+        .withProperty("softness")
+        .withRange(new Range(0, 20, 1))
+        .withValue(0)
         .addEventListener("change", () => reset())
     )
     .append(potential.shapeSelector);
