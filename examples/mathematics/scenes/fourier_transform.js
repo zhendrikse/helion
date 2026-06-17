@@ -74,13 +74,14 @@ const fourierSimulation = new FourierSimulation(30, resolution);
 const intensityRaster = new ComplexScalarFieldRaster({
     width: resolution,
     height: resolution,
-    showPhaseColour: false
+    showPhaseColour: false,
+    brightness: 5e-3
 });
 
 Simulation
     .with({
         htmlDivId: "fourierTransformContainer",
-        cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.5)
+        cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.5 * resolution),
     })
     .synchronize(fourierSimulation.field.alwaysWith(intensityRaster))
     .onClockTick()

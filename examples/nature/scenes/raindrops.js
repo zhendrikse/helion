@@ -1,7 +1,6 @@
 import {
-    ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3,
-    DiscreteFieldSurface, LaplaceOperator, SurfaceResolution,
-    WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView, ColorMap
+    ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
+    SurfaceResolution, WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView, ColorMap
 } from "../../../src/index.js";
 
 export class WaveEquation {

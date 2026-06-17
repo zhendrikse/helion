@@ -219,24 +219,20 @@ export class ComplexScalarFieldRaster extends Renderable3D {
         width = 512,
         height = 512,
         showPhaseColour = true,
-        colorMapper = (magnitude, phase) => {
-            if (magnitude < 1e-3)
-                return [0, 0, 0, 0];
-
-            const hue = (phase + Math.PI) / (2 * Math.PI);
-            const {r, g, b} = hsvToRgb(hue, 1, 1);
-            const brightness = Math.pow(magnitude, 0.3);
-            const alpha = Math.log(1 + 10 * magnitude);
-            return [r * brightness, g * brightness, b * brightness, alpha * 255];
-        }
+        brightness = 1
     } = {}) {
         super();
+        this._brightness = brightness;
+        this._numColors = 256;
+        this._hsvTable = new Array(this._numColors);
+        for (let i = 0; i < this._numColors; i++)
+            this._hsvTable[i] = hsvToRgb(i / this._numColors, 1.0, 1.0); // V=1, saturation=1
 
         const pixels = new Uint8Array(width * height * 4);
         const texture = new DataTexture(pixels,  width, height, RGBAFormat);
         texture.needsUpdate = true;
         this._mesh = new Mesh(
-            new PlaneGeometry(1,1),
+            new PlaneGeometry(width, height),
             new MeshBasicMaterial({ map: texture, transparent: true })
         );
         this.add(this._mesh);
@@ -246,7 +242,6 @@ export class ComplexScalarFieldRaster extends Renderable3D {
         this._pixels = pixels;
         this._texture = texture;
         this._phaseColor = showPhaseColour;
-        this._colorMapper = colorMapper;
         this._complexValue = new Complex();
     }
 
@@ -256,36 +251,32 @@ export class ComplexScalarFieldRaster extends Renderable3D {
 
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
-    _maxMagnitude(field) {
-        let max = 0;
-        for (let i = 0; i < field.nx; i++)
-            for (let j = 0; j < field.ny; j++) {
-                field.sample(i, j, this._complexValue);
-                if (this._complexValue.magnitude > max)
-                    max = this._complexValue.magnitude;
-            }
-
-        return max;
-    }
-
     synchronizeWith(field) {
-        const max =  this._maxMagnitude(field);
         let index = 0;
+        for (let x = 0; x < this._height; x++)
+            for (let y = 0; y < this._width; y++) {
+                field.sample(x, y, this._complexValue);
+                let brightness = this._complexValue.magnitude * this._brightness;
+                if (brightness > 1.0) brightness = 1.0;
 
-        for(let j = 0; j < this._height; j++)
-            for(let i = 0; i < this._width; i++) {
-                field.sample(i, j, this._complexValue);
-                const mag = this._complexValue.magnitude / max;
-                const phase = this._complexValue.phase;
-                const color = this._phaseColor ?
-                    this._colorMapper(mag, phase) : [255, 255, 0,Math.log(1 + 10 * mag) * 255];
+                let phaseIndex = Math.floor(this._numColors * this._complexValue.phase );
+                if (phaseIndex < 0) phaseIndex += this._numColors;
+                if (phaseIndex >= this._numColors) phaseIndex = this._numColors - 1;
 
-                this._pixels[index++] = color[0];
-                this._pixels[index++] = color[1];
-                this._pixels[index++] = color[2];
-                this._pixels[index++] = color[3];
+                if (this._phaseColor) {
+                    const rgb = this._hsvTable[phaseIndex];
+                    this._pixels[index++] = Math.round(rgb.r * brightness);
+                    this._pixels[index++] = Math.round(rgb.g * brightness);
+                    this._pixels[index++] = Math.round(rgb.b * brightness);
+                    this._pixels[index++] = Math.round(brightness * 255);
+                } else {
+                    this._pixels[index++] = 255;
+                    this._pixels[index++] = 255;
+                    this._pixels[index++] = 0;
+                    this._pixels[index++] = Math.log(1 + brightness) * 255;
+                }
             }
 
-        this._texture.needsUpdate = true;
+            this._texture.needsUpdate = true;
     }
 }

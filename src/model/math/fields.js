@@ -339,9 +339,13 @@ export class DiscreteComplexField extends Field {
         return this;
     }
 
+    index(i, j) {
+        return i * this.nx + j;
+    }
+
     sample(i, j, target) {
-        target.re = this.real[j * this.nx + i];
-        target.im = this.imag[j * this.nx + i];
+        target.re = this.real[i * this.nx + j];
+        target.im = this.imag[i * this.nx + j];
     }
 }
 

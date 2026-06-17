@@ -1,59 +1,38 @@
 ---
-title: "📖 Reference"
+title: "📖 Reference guide"
 ---
 
-## Design
+## Fields
+<div class="header_line"></div>
 
-Wat je nu hebt lijkt sterk op een kleine ECS/MVC-hybride, en dat schaalt veel beter dan losse imperative canvas-code.
+Fields play a central role in the Helion library.
+
+
+## Fields
+<div class="header_line"></div>
 
 ```
-                ┌──────────────────────────────┐
-                │     Mathematical Layer       │
-                │                              │
-                │  ScalarField                │
-                │  VectorField               │
-                │  ParametricSurface         │
-                │  DifferentialGeometry     │
-                └────────────┬──────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │     Discretization Layer     │
-                │                              │
-                │  Range                      │
-                │  SurfaceResolution          │
-                │  Sampling (u,v grids)       │
-                └────────────┬────────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │       View Layer             │
-                │                              │
-                │  PlaneSurfaceView           │
-                │  IsoparametricContoursView  │
-                │  ArrowField                │
-                │  PointCloudView            │
-                │  ScalarFieldSurface        │
-                └────────────┬───────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │      Rendering Layer         │
-                │                              │
-                │  ThreeJsRenderer            │
-                │  InstancedMesh             │
-                │  Materials / Shaders       │
-                └────────────┬───────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │     Simulation Layer         │
-                │                              │
-                │  Simulation loop            │
-                │  EventController           │
-                │  Time evolution            │
-                └────────────────────────────┘
+Field: sample(u, ,v, target)
+ │
+ ├─ VectorField: sample(positionVector, target)
+ │
+ ├─ Surface
+ │   ├─ ParametricSurface
+ │   │   └─ MultivariateFunctionSurface
+ │   │
+ │   ├─ ComplexSurface
+ │   ├─ DiscreteFieldSurface
+ │   └─ ComplexSurface
+ │   
+ ├─ ScalarFieldOnSurface
+ │   ├─ HeightScalarField
+ │   ├─ MeanCurvatureField
+ │   ├─ GaussianCurvatureField
+ ├─ ...
+ │
+ └─ DiscreteScalarField
 ```
+
 
 MVC: 
 

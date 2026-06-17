@@ -1,5 +1,6 @@
-import {Complex, DiscreteComplexField, hsvToRgb, Simulation} from "../../../src/index.js";
-import {Field} from "../../../src/model/math/fields.js";
+import {
+    ComplexScalarFieldRaster, DiscreteComplexField, Button, Simulation, Vec3
+} from "../../../src/index.js";
 
 const theCanvas = document.getElementById("doubleSlit2dContainer");
 const theContext = theCanvas.getContext("2d");
@@ -19,12 +20,6 @@ eSlider.addEventListener("input", () => wpEnergyAdjust());
 document.getElementById("bEnergySlider").addEventListener("input", () => barrier.adjust());
 document.getElementById("bSizeSlider").addEventListener("input", () => barrier.adjust());
 document.getElementById("bSoftnessSlider").addEventListener("input", () => barrier.adjust());
-
-const TWO_PI = 2 * Math.PI;
-const PHASE_STEPS = 256;
-const hsvTable = new Array(PHASE_STEPS);
-for (let i = 0; i < PHASE_STEPS; i++)
-    hsvTable[i] = hsvToRgb(i / PHASE_STEPS, 1.0, 1.0); // V=1, saturation=1
 
 let xMax = Number(theCanvas.width);
 let xMaxm1 = xMax - 1;
@@ -170,17 +165,6 @@ function wpEnergyAdjust() {
     if (!running) reset();
 }
 
-function nextFrame() {
-    const stepsPerFrame = Number(speedSlider.value);
-    for (let step=0; step < stepsPerFrame; step++)
-        psi.doStep(dt, barrier);
-    stepCount += stepsPerFrame;
-
-    paintCanvas(psi, imgData);
-    const currentTime = (new Date()).getTime();
-    spsReadout.innerHTML = "" + Math.round(1000 * stepCount / (currentTime-startTime));
-}
-
 class Psi2D extends DiscreteComplexField {
     constructor(xMax) {
         super({
@@ -204,15 +188,15 @@ class Psi2D extends DiscreteComplexField {
         const vmax = barrier._v;
         const w = this._xMax;
 
-        for (let y=1; y < xMaxm1; y++)
-            for (let x=1; x < xMaxm1; x++) {
-                const i = y * w + x;
+        for (let x= 1; x < xMaxm1; x++)
+            for (let y = 1; y < xMaxm1; y++) {
+                const i = x * w + y;
                 imNext[i] = im[i] - dt * (-re[i+1] - re[i-1] - re[i+w] - re[i-w] + 2*(2+vmax[i])*re[i]);
             }
 
-        for (let y=1; y < xMaxm1; y++)
-            for (let x=1; x < xMaxm1; x++) {
-                const i = y * w + x;
+        for (let x= 1; x < xMaxm1; x++)
+            for (let y = 1; y < xMaxm1; y++) {
+                const i = x * w + y;
                 reNext[i] = re[i] + dt * (-imNext[i+1] - imNext[i-1] - imNext[i+w] - imNext[i-w] + 2*(2+vmax[i])*imNext[i]);
             }
 
@@ -227,9 +211,9 @@ class Psi2D extends DiscreteComplexField {
         const e = Number(eSlider.value);
         const kx = Math.sqrt(2*e);
         const ky = 0;
-        for (let y=0; y<xMax; y++)
-            for (let x=0; x<xMax; x++) {
-                const i = y*xMax + x;
+        for (let y = 0; y < xMax; y++)
+            for (let x = 0; x < xMax; x++) {
+                const i = y * xMax + x;
                 const envelope = Math.exp(-(x-centerX)*(x-centerX)/(pWidth*pWidth)) *
                     Math.exp(-(y-centerY)*(y-centerY)/(pWidth*pWidth));
                 this.real[i] = envelope * (Math.cos(kx*x)*Math.cos(ky*y) - Math.sin(kx*x)*Math.sin(ky*y));
@@ -251,39 +235,10 @@ class Psi2D extends DiscreteComplexField {
 // Initialize the wavefunction to a Gaussian wavepacket:
 function reset() {
     psi.reset();
-    paintCanvas(psi, imgData);
     if (!running) pauseButton.innerHTML = "Run";
 }
 
-function paintCanvas(psi, imageData) {
-    const brightSetting = Number(brightnessSlider.value);
-    const size = xMax; // use actual canvas size
-    const target = new Complex();
-    for (let y = 0; y < size; y++)
-        for (let x = 0; x < size; x++) {
-            psi.sample(x, y, target);
-            let brightness = Math.sqrt(target.re * target.re + target.im * target.im) * brightSetting;
-            if (brightness > 1.0) brightness = 1.0;
-
-            const phase = Math.atan2(target.im, target.re) / TWO_PI
-            let phaseIndex = Math.floor(PHASE_STEPS * phase );
-            if (phaseIndex < 0) phaseIndex += PHASE_STEPS;
-            if (phaseIndex >= PHASE_STEPS) phaseIndex = PHASE_STEPS-1;
-
-            const rgb = hsvTable[phaseIndex];
-            const imageIndex = (x + (size - y - 1) * size) * 4;
-            imageData.data[imageIndex] = Math.round(rgb.r * brightness);
-            imageData.data[imageIndex + 1] = Math.round(rgb.g * brightness);
-            imageData.data[imageIndex + 2] = Math.round(rgb.b * brightness);
-            imageData.data[imageIndex + 3] = Math.round(brightness * 255); // alpha based on brightness
-        }
-
-    theContext.putImageData(imgData, 0, 0);
-}
-
-let imgData;
 function setupArrays() {
-    imgData = theContext.createImageData(xMax, xMax);
     psi = new Psi2D(xMax);
 }
 
@@ -316,8 +271,21 @@ Simulation
     .with({
         htmlDivId: "simContainer",
         controls: false,
-        headUpDisplay: true
+        cameraPosition: new Vec3(0, 0, 400) // TODO fix hard coded 400
     })
-    .withMouseClickEventListener()
+    .synchronize(psi.alwaysWith(new ComplexScalarFieldRaster({
+        width: 400, // TODO fix hard coded 400
+        height: 400
+    })))
     .onReset(() => reset())
-    .onClockTick(() => nextFrame());
+    .onClockTick((clockTime, simulatedTime) => {
+        psi.doStep(dt, barrier);
+        stepCount ++;
+        spsReadout.innerHTML = "" + Math.round(1000 * stepCount / (clockTime - startTime));
+    }, Number(speedSlider.value))
+    .append(new Button()
+        .withText("Start")
+        .addEventListener("click", event => {
+
+        })
+    )
