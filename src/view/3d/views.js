@@ -69,7 +69,8 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
     }
 
     set phaseColor(showPhaseColor) { this._showPhaseColor = showPhaseColor; }
-    set brightness(brightness) { this._brightness = brightness; }
+    set zScale(value) { this._zScale = value; }
+    get zScale() { return this._zScale; }
 
     synchronizeWith(field) {
         const pos = this._positions;

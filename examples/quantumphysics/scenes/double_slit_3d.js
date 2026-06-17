@@ -140,7 +140,7 @@ const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
     width: xMax,
     height: xMax,
     scale: 20,
-    zScale: 20,
+    zScale: 15,
     brightness: 1
 });
 
@@ -166,11 +166,11 @@ Simulation
     })))
     .onReset(() => reset())
     .onClockTick(() => solver.step(dt), 15)
-    .append(new Slider("🔆 Brightness ")
-        .withRange(new Range(0.5, 1.5, 0.01))
-        .withValue(1)
+    .append(new Slider("🪜 Height scale")
+        .withRange(new Range(10, 25, 0.1))
+        .withValue(waveFunctionSurface.zScale)
         .on(waveFunctionSurface)
-        .withProperty("brightness")
+        .withProperty("zScale")
     )
     .append(new Slider("🏃 Packet energy ")
         .on(gaussianImpulse)
