@@ -1,21 +1,15 @@
 import {
-    ComplexScalarFieldRaster, DiscreteComplexField, Button, Simulation, Vec3
+    ComplexScalarFieldRaster, DiscreteComplexField, Button, Simulation, Vec3, Slider, Range
 } from "../../../src/index.js";
 
 const theCanvas = document.getElementById("doubleSlit2dContainer");
-const theContext = theCanvas.getContext("2d");
 const vCanvas = document.getElementById("vCanvas");
-const pauseButton = document.getElementById("pauseButton");
 const speedSlider = document.getElementById("speedSlider");
-const brightnessSlider = document.getElementById("brightnessSlider");
 const eSlider = document.getElementById("eSlider");
 const eReadout = document.getElementById("eReadout");
 const spsReadout = document.getElementById("spsReadout");
-document.getElementById("resetButton").addEventListener("click", () => reset());
-document.getElementById("pauseButton").addEventListener("click", () => startStop());
 document.getElementById("barrierType").addEventListener("click", () => barrier.adjust());
 speedSlider.addEventListener("input", () => resetTimer());
-brightnessSlider.addEventListener("input", () => paintCanvas(psi, imgData));
 eSlider.addEventListener("input", () => wpEnergyAdjust());
 document.getElementById("bEnergySlider").addEventListener("input", () => barrier.adjust());
 document.getElementById("bSizeSlider").addEventListener("input", () => barrier.adjust());
@@ -232,24 +226,14 @@ class Psi2D extends DiscreteComplexField {
     }
 }
 
-// Initialize the wavefunction to a Gaussian wavepacket:
-function reset() {
-    psi.reset();
-    if (!running) pauseButton.innerHTML = "Run";
-}
-
-function setupArrays() {
-    psi = new Psi2D(xMax);
-}
-
 function initSimulation(size) {
     xMax = size;
     xMaxm1 = xMax - 1;
 
-    setupArrays();
+    psi = new Psi2D(xMax);
     barrier = new Barrier(xMax, vCanvas.getContext("2d"));
     barrier.adjust();
-    reset();
+    psi.reset();
 }
 
 function resizeCanvas() {
@@ -267,25 +251,28 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
+const complexFieldRaster = new ComplexScalarFieldRaster({
+    width: 400, // TODO fix hard coded 400
+    height: 400
+});
 Simulation
     .with({
         htmlDivId: "simContainer",
         controls: false,
+        headUpDisplay: true,
         cameraPosition: new Vec3(0, 0, 400) // TODO fix hard coded 400
     })
-    .synchronize(psi.alwaysWith(new ComplexScalarFieldRaster({
-        width: 400, // TODO fix hard coded 400
-        height: 400
-    })))
-    .onReset(() => reset())
+    .withMouseClickEventListener()
+    .synchronize(psi.alwaysWith(complexFieldRaster))
+    .onReset(() => psi.reset())
     .onClockTick((clockTime, simulatedTime) => {
         psi.doStep(dt, barrier);
-        stepCount ++;
+        stepCount++;
         spsReadout.innerHTML = "" + Math.round(1000 * stepCount / (clockTime - startTime));
     }, Number(speedSlider.value))
-    .append(new Button()
-        .withText("Start")
-        .addEventListener("click", event => {
-
-        })
+    .append(new Slider("🔆 Brightness ")
+        .withRange(new Range(0.1, 2, 0.01))
+        .withValue(1)
+        .on(complexFieldRaster)
+        .withProperty("brightness")
     )

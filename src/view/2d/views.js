@@ -249,6 +249,7 @@ export class ComplexScalarFieldRaster extends Renderable3D {
         return field.sample && field.nx && field.ny;
     }
 
+    set brightness(brightness) { this._brightness = brightness; }
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
     synchronizeWith(field) {
