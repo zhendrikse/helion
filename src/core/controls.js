@@ -137,7 +137,7 @@ export class Slider extends HtmlControl {
         return this;
     }
 
-    get value() { return this._inputControl.value; }
+    get value() { return Number(this._inputControl.value); }
 
     withRange(range) {
         this._inputControl.min = String(range.from);
@@ -148,7 +148,7 @@ export class Slider extends HtmlControl {
 
     withProperty(name) {
         this.addEventListener("input", (event) => {
-            this._targetObject[name] = event.target.value;
+            this._targetObject[name] = Number(event.target.value);
             this._span.textContent = event.target.value + this._units;
         });
         return this;

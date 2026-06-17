@@ -298,7 +298,7 @@ export class DiscreteScalarField extends Field {
     }
 
     reset() {
-        this._data = new Float32Array(this.nx * this.ny);
+        this._data.fill(0);
     }
 
     get data() {

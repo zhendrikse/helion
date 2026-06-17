@@ -41,12 +41,10 @@ class PotentialField extends DiscreteScalarField {
 
     set size(value) {
         this._size = value;
-        this.reset();
     }
 
     set energy(value) {
         this._energy = value;
-        this.reset();
     }
 
     get shapeSelector() {
@@ -78,7 +76,6 @@ class PotentialField extends DiscreteScalarField {
                         this._data[y*max+x] = this._energy;
                 break;
             case PotentialField.Type.Line:
-                console.log(this._size);
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2); x<Math.floor(max/2)+this._size; x++)
                         this._data[y*max+x] = this._energy;
@@ -116,7 +113,6 @@ class PotentialField extends DiscreteScalarField {
 
     set softness(softness) {
         this._softness = softness;
-        this.reset();
     }
 
     _applySoftness() {
