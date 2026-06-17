@@ -1,16 +1,14 @@
 import {
-    Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, InstancedMesh,
-    InstancedBufferAttribute, DynamicDrawUsage, CircleGeometry, Object3D, Color, SphereGeometry, MeshStandardMaterial,
+    Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, InstancedMesh, InstancedBufferAttribute,
+    DynamicDrawUsage, Matrix4, Quaternion, Object3D, Color, SphereGeometry, MeshStandardMaterial,
     DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry, ConeGeometry, CylinderGeometry, CapsuleGeometry
 } from "three";
+
 import { Renderable3D } from "../renderer.js";
 import {Complex, Vec3} from "../../model/math/math.js";
 import {DropdownMenu} from "../../core/controls.js";
 import {Registry, Simulation} from "../../core/helion.js";
 import {ColorMap, ColorMappers, hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
-import {AxialSymmetricBody} from "../../model/phys/bodies.js";
-import {DiscreteScalarField} from "../../model/math/fields.js";
-import {Cylinder} from "../3d/primitives/primitives.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -178,11 +176,11 @@ export class ScalarFieldIntensityPixelRaster extends Renderable3D {
  */
 export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     constructor({
-                    nx = field.nx,
-                    ny = field.ny,
-                    edgeHeight= 60 * resolution,
-                    colorMapper = wavelengthColorMapper
-                } = {}) {
+        nx = 100,
+        ny = 1000,
+        edgeHeight= 100,
+        colorMapper = new WavelengthColorMapper()
+    } = {}) {
         super();
         this._edgeHeight = edgeHeight;
         this._colorMapper = colorMapper;

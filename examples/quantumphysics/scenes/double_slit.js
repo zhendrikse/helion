@@ -1,9 +1,8 @@
-import {BoxGeometry, Color, InstancedMesh, Matrix4, MeshBasicMaterial, Quaternion, Vector3} from "three";
 import {
     AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider, Sphere, Vec3,
-    DiscreteScalarField, Renderable3D, WavelengthColorMapper, ScalarFieldIntensityPixelRaster
+    DiscreteScalarField, WavelengthColorMapper, ScalarFieldIntensityPixelRaster,
+    FieldEdgeIntensityPixelRaster, DoubleSlitOperator
 } from "../../../src/index.js";
-
 
 const resolution = 50;
 const xMax = 4;
@@ -32,7 +31,6 @@ const field = new DiscreteScalarField({
 });
 field.apply(doubleSlitOperator);
 
-
 const particles = [];
 const simulation = Simulation
     .with({
@@ -42,7 +40,12 @@ const simulation = Simulation
     })
     .synchronize(slit1.onceWith(new Cylinder({ color: 0xffffff })))
     .synchronize(slit2.onceWith(new Cylinder({ color: 0xffffff })))
-    .synchronize(field.onceWith(new FieldEdgeIntensityPixelRaster()))
+    .synchronize(field.onceWith(new FieldEdgeIntensityPixelRaster({
+        nx: field.nx,
+        ny: field.ny,
+        edgeHeight: 60 * resolution,
+        colorMapper: wavelengthColorMapper
+    })))
     .synchronize(field.onceWith(new ScalarFieldIntensityPixelRaster({
         width: field.nx,
         height: field.ny,

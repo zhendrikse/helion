@@ -1,6 +1,7 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import {Renderable3D} from "../../../../view/renderer.js";
 import {BoxGeometry, Color, InstancedMesh, Matrix4, MeshBasicMaterial, Quaternion, Vector3} from "three";
+import {Vec3} from "../../math.js";
 
 export class DiamondSquareOperator {
     constructor({
