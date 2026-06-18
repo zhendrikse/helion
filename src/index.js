@@ -37,6 +37,7 @@ export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 export { Renderable3D } from "./view/renderer.js";
 export { ComplexScalarFieldSurfaceRaster, PotentialField3DRaster } from "./view/3d/views.js"
+export { PotentialField } from "./model/phys/fields.js";
 
 export {
     OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial, ArrowField
@@ -50,5 +51,3 @@ export {
 export {
     InstancedMeshSurfaceView, SurfaceResolution, StandardSurfaceView
 } from "./view/3d/surfaces/surfaceviews.js"
-
-
