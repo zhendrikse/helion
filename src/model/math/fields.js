@@ -343,7 +343,7 @@ export class DiscreteComplexField extends Field {
     get size() { return this.nx; }
 
     apply(operator) {
-        operator.apply(this);
+        operator(this);
         return this;
     }
 
