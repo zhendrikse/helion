@@ -4,6 +4,7 @@ import {Vector3} from "three";
 import {Axes} from "../view/3d/composite/backgrounds.js";
 import {generateUUID, Vec3} from "../model/math/math.js";
 import {UPlotGraph} from "./uplot.js";
+import {Button} from "./controls.js";
 
 export class Registry {
     constructor({
@@ -84,6 +85,9 @@ export class Binding {
  * │   ├── HUD           (shows head-up display messages)
  * │   └── CSS2D labels  (text labels in the simulation)
  * │
+ * ├── SimulationButtonsDiv
+ * │   ├── Start/stop    (Start/stop/reset buttons, if present)
+ * │
  * ├── AddOnsDiv
  * │   ├── uPlot graph   (Graph, if present)
  * │   ├── details       (Parameter settings menu)
@@ -120,6 +124,14 @@ export class Viewport {
         this._canvas.style.height = "100%";
         this._canvasWrapperDiv.appendChild(this._canvas);
 
+        this._simulationButtonsDiv = document.createElement("div");
+        this._simulationButtonsDiv.classList.add("helionSimulationButtons");
+        this._simulationButtonsDiv.style.position = "relative";
+        this._simulationButtonsDiv.style.display = "block";
+        this._simulationButtonsDiv.style.backgroundColor = "transparent";
+        this._simulationButtonsDiv.style.width = "100%";
+        this._container.appendChild(this._simulationButtonsDiv);
+
         this._addOnsDiv = document.createElement("div");
         this._addOnsDiv.classList.add("helionAddOns");
         this._addOnsDiv.style.position = "relative";
@@ -139,6 +151,7 @@ export class Viewport {
         this._addOnsDiv.appendChild(this._details);
     }
 
+    get simulationButtonsDiv() { return this._simulationButtonsDiv; }
     get addOnsDiv() { return this._addOnsDiv; }
     get controlsDiv() { return this._details; }
     get canvasWrapper() { return this._canvasWrapperDiv; }
@@ -236,8 +249,6 @@ export class Simulation {
     _initHud() {
         this._hud = new Hud();
         this._hud.attach(this._viewport)
-        if (!this._running)
-            this._hud.show("Click to start the simulation");
     }
 
     frameSceneOn(anObject, {
@@ -268,9 +279,6 @@ export class Simulation {
     }
 
     _updatePhysics(clockTime) {
-        if (!this._running || !this._updateFunction)
-            return;
-
         for (let substeps = 0; substeps < this._substepsCount; substeps++) {
             this._updateFunction(clockTime, this._simulatedTime);
             this._simulatedTime += this._dt;
@@ -291,13 +299,15 @@ export class Simulation {
         this._clockTime = clockTime;
 
         // Physics / math model update
-        this._onBeforePhysicsUpdate(clockTime, this._simulatedTime);
-        this._updatePhysics(clockTime);
-        this._onAfterPhysicsUpdate(clockTime, this._simulatedTime);
+        if (this._running) {
+            this._onBeforePhysicsUpdate(clockTime, this._simulatedTime);
+            this._updatePhysics?.(clockTime);
+            this._onAfterPhysicsUpdate(clockTime, this._simulatedTime);
 
-        // Sync model and views after model update
-        for (const binding of this._bindings)
-            binding.synchronize(clockTime);
+            // Sync model and views after model update
+            for (const binding of this._bindings)
+                binding.synchronize(clockTime);
+        }
 
         this._renderer.render(clockTime);
         requestAnimationFrame(this.animate);
@@ -322,7 +332,9 @@ export class Simulation {
      * lost and needs to be re-added if needed!!
      */
     withMouseClickEventListener(callback = (event) => this.toggleRunStatus()) {
-        this._viewport.canvasWrapper.addEventListener("click", (event) => callback(event) );
+        this._viewport.canvasWrapper.addEventListener("click", event => callback(event) );
+        if (!this._running)
+            this._hud?.show("Click to start the simulation");
         return this;
     }
 
@@ -331,20 +343,20 @@ export class Simulation {
         if (this._running) {
             this.reset(); // This function is called during execution ==> we need to reset the simulation
             this.stop();
-        } else
+            this._hud?.show("Reset: click to restart");
+        } else {
             this.start();
+            this._hud?.show("Running", 1000);
+        }
     }
 
     start() {
         this._running = true;
-        this._hud?.hide();
         return this;
     }
 
     stop() {
         this._running = false;
-        this._hud?.show("Reset: click to restart");
-
         return this;
     }
 
@@ -356,8 +368,31 @@ export class Simulation {
     }
 
     append(control) {
-        control.append(this._viewport).to(this);
+        control.append(this._viewport.controlsDiv).to(this);
         this._viewport.enableParameterMenu();
+        return this;
+    }
+
+    withStartStopResetButtons() {
+        const buttonRow = new Button()
+            .withText("▶︎ Run")
+            .addEventListener("click", () => {
+                this._hud?.show("Running", 1000);
+                this.start();
+            })
+            .togetherWith(new Button()
+                .withText("❚❚ Pause")
+                .addEventListener("click", () => {
+                    this._hud?.show("Paused");
+                    this.stop();
+                })
+                .togetherWith(new Button()
+                    .addEventListener("click", () => {
+                        this._hud.show("Reset", 1000);
+                        this.reset();
+                    })
+                    .withText("⟳ Reset")))
+        buttonRow.append(this._viewport.simulationButtonsDiv).to(this);
         return this;
     }
 

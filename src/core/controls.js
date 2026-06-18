@@ -58,9 +58,9 @@ class HtmlControl {
 
     get hasChildControl() { return this._childControl !== null;}
 
-    append(viewport) {
+    append(controlsDiv) {
         this._appendToButtonRow(this);
-        viewport.controlsDiv.appendChild(this._buttonRow);
+        controlsDiv.appendChild(this._buttonRow);
         return this;
     }
 

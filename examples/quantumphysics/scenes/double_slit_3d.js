@@ -158,7 +158,7 @@ Simulation
         cameraPosition: new Vec3(-1, 1.25, .4).multiplyScalar(xMax * .9),
         fov: 30
     })
-    .withMouseClickEventListener()
+    .withStartStopResetButtons()
     .synchronize(psi.alwaysWith(waveFunctionSurface))
     .synchronize(potential.onceWith(new PotentialField3DRaster({
         width: xMax,

@@ -21,13 +21,12 @@ export class Hud {
         viewPort.canvasWrapper.appendChild(this._element);
     }
 
-    show(text) {
+    show(text, duration=-1) {
         this._element.textContent = text;
         this._element.style.display = "block";
 
-        // setTimeout(() => {
-        //     this._element.style.display = "none";
-        // }, duration);
+        if (duration > 0)
+            setTimeout(() => { this._element.style.display = "none"; }, duration);
     }
 
     hide() {

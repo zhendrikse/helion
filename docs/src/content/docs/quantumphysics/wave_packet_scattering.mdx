@@ -1,0 +1,73 @@
+---
+title: "〰️ Wave packet scattering"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div class="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+    <a href="https://www.khronos.org/webgl/">
+        <img alt="WebGL" src="https://img.shields.io/badge/WebGL-990000?logo=webgl&logoColor=white"/>
+    </a>
+</div>
+
+## 2D visualization
+<div class="header_line"><br/></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/quantumphysics/scenes/double_slit_2d.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=double_slit_2d.js"/>
+    </a>
+</div>
+
+🎯 Visualization of a complex (discrete scalar) field<br/>
+🧠 Based on [QuantumScattering2D.html](https://physics.weber.edu/schroeder/software/QuantumScattering2D.html) by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/), [Weber State University](https://www.weber.edu/)<br/>
+🔑 Updated and refactored and by [Zeger Hendrikse](https://www.hendrikse.name/)<br/>
+⭐ More physics software by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/) can be found [here](https://physics.weber.edu/schroeder/software/)<br/>
+📌 See als [Simulating and visualizing the double slit experiment with Python](https://ben.land/post/2026/01/31/double-slit-simulation/)<br/>
+
+<div id="doubleSlit2dContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/double_slit_2d.js"}></script>
+<p style="clear: both;"></p>
+
+#### About
+
+> This program simulates scattering of a quantum particle from a stationary barrier in two
+> dimensions.  The particle&rsquo;s initial state is a Gaussian wavepacket, whose average energy
+> you can adjust.  You can choose from seven different barrier shapes, and adjust their
+> properties.  Try a variety of settings to explore reflection, transmission, tunneling, and interference.
+>
+> The brightness of the wavefunction image indicates the wavefunction&rsquo;s magnitude, while
+> the color hue indicates the phase, going from red (pure real and positive) to light green (pure
+> imaginary and positive) to cyan (pure real and negative) to purple (pure imaginary and negative)
+> and finally back to red.  Use the slider to adjust the overall brightness.
+>
+> The simulation uses natural units in which the particle&rsquo;s mass, Planck&rsquo;s
+> constant $\hbar$, and the (nominal) screen pixel width are all equal to $1$.  It works by
+> integrating a discretized version of the time-dependent Schrödinger equation, with a grid
+> spacing of one unit and a grid size of $400 \times 400$. The wavefunction is always zero
+> along all edges of the square grid, so the particle is effectively trapped inside
+> a $400 \times 400$ box.
+> &mdash; Paraphrased from instructions at [QuantumScattering2D.html](https://physics.weber.edu/schroeder/software/QuantumScattering2D.html)
+
+
+## 3D visualization
+<div class="header_line"><br/></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/quantumphysics/scenes/double_slit_3d.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=double_slit_3d.js"/>
+    </a>
+</div>
+
+🎯 Demonstration of how different views can seamlessly be attached to the same (physics) model<br/>
+👉 Code base is exactly the same as the above demo, only 3D-views have been used here!<br/>
+
+<div id="doubleSlit3dContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/double_slit_3d.js"}></script>
+<p style="clear: both;"></p>
+

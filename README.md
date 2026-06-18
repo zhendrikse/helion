@@ -1,3 +1,8 @@
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/zhendrikse/helion?logo=git&logoColor=yellow)
+![GitHub last commit](https://img.shields.io/github/last-commit/zhendrikse/helion?color=blue)
+![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/zhendrikse/helion?color=blue&logo=git&logoColor=yellow)
+[![Pull requests](https://img.shields.io/github/issues-pr/zhendrikse/helion?logo=git&color=blue&logoColor=yellow)](https://github.com/zhendrikse/helion/pulls)
+
 # ✨ Helion
 <div class="header_line"><br/></div>
 

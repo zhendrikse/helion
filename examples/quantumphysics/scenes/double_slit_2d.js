@@ -155,7 +155,7 @@ Simulation
         headUpDisplay: true,
         cameraPosition: new Vec3(0, 0, xMax)
     })
-    .withMouseClickEventListener()
+    .withStartStopResetButtons()
     .synchronize(psi.alwaysWith(waveFunctionRaster))
     .synchronize(potential.onceWith(new ScalarFieldIntensityPixelRaster({
         width: xMax,

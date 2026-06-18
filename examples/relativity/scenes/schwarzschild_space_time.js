@@ -266,7 +266,7 @@ const simulation = Simulation
         background: Simulation.Background.STARS,
         headUpDisplay: true
     })
-    .withMouseClickEventListener()
+    .withStartStopResetButtons()
     .addObject3D(grid)
     .addObject3D(photonRing)
     .synchronize(coneGeometry.onceWith(spaceTimeCone))
