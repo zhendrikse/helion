@@ -20,6 +20,10 @@ class HtmlControl {
         this._span = null;
     }
 
+    set disabled(booleanValue) {
+        this._inputControl.disabled = booleanValue;
+    }
+
     on(targetObject) {
         this._targetObject = targetObject;
         return this;

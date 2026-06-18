@@ -251,6 +251,8 @@ export class Simulation {
         this._hud.attach(this._viewport)
     }
 
+    get hud() { return this._hud; }
+
     frameSceneOn(anObject, {
         padding = 1.2,
         translationY = 0,
@@ -280,7 +282,7 @@ export class Simulation {
 
     _updatePhysics(clockTime) {
         for (let substeps = 0; substeps < this._substepsCount; substeps++) {
-            this._updateFunction(clockTime, this._simulatedTime);
+            this._updateFunction?.(clockTime, this._simulatedTime);
             this._simulatedTime += this._dt;
         }
     }
@@ -301,7 +303,7 @@ export class Simulation {
         // Physics / math model update
         if (this._running) {
             this._onBeforePhysicsUpdate(clockTime, this._simulatedTime);
-            this._updatePhysics?.(clockTime);
+            this._updatePhysics(clockTime);
             this._onAfterPhysicsUpdate(clockTime, this._simulatedTime);
 
             // Sync model and views after model update

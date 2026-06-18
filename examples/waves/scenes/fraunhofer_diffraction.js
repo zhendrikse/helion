@@ -138,7 +138,6 @@ Simulation
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(50)
     })
     .synchronize(intensityField.alwaysWith(intensityPixelRaster))
-    .onClockTick()
     .append(new RadioButton("🟩 Square")
         .on(fraunhoferSimulation)
         .withProperty("apertureType")

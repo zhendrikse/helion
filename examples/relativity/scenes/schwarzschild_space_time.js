@@ -1,11 +1,12 @@
 import { Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
-    Floor, Sphere, Trail, Vec3, Simulation, Surface, StandardSurfaceView, RadialSymmetricBody, Sun
+    Floor, Sphere, Trail, Vec3, Simulation, Surface, StandardSurfaceView,
+    RadialSymmetricBody, Sun, Checkbox, Slider, Range
 } from "../../../src/index.js";
 
-const initialCometDistance = 33;
-const currentIsRingOrbitValue = false;
-const subSteps = (isRingOrbit) => isRingOrbit ? 1000 : 20;
+let initialCometDistance = 33;
+let currentIsRingOrbitValue = false;
+const subSteps = (isRingOrbit) => isRingOrbit ? 1000 : 10;
 
 const sun = new RadialSymmetricBody({
     mass: 5,
@@ -178,11 +179,10 @@ class Comet extends RadialSymmetricBody {
 
     reset() {
         super.reset();
-        const distance = initialCometDistance;
         this.visible = true;
         this._stateVector = this._startStateVector ? this._startStateVector.clone() : null;
         if (this._stateVector)
-            this._stateVector.r = distance;
+            this._stateVector.r = initialCometDistance;
     }
 }
 
@@ -225,16 +225,18 @@ const photonRing = createPhotonSphere(sun.mass);
 photonRing.visible = false;
 
 function timeStep(clockTime) {
-    if (cometInsideCone())
-        comet.update(sun.mass, 2e-3); // 3D geodesic
-    if (cometInsideCone() || subSteps(currentIsRingOrbitValue))
-        realComet.updateRealMotion(sun.mass, 2e-3);
+    for (let substep = 0; substep < subSteps(currentIsRingOrbitValue); substep++) {
+        if (cometInsideCone())
+            comet.update(sun.mass, 2e-3); // 3D geodesic
+        if (cometInsideCone() || subSteps(currentIsRingOrbitValue))
+            realComet.updateRealMotion(sun.mass, 2e-3);
 
-    photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1);
+        photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1);
 
-    comet._state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
-    realComet._state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
-    flatComet._state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
+        comet._state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
+        realComet._state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
+        flatComet._state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
+    }
 }
 
 //
@@ -264,7 +266,8 @@ const simulation = Simulation
         cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(13),
         fieldOfView: 45,
         background: Simulation.Background.STARS,
-        headUpDisplay: true
+        headUpDisplay: true,
+        parameterMenuCollapsed: false
     })
     .withStartStopResetButtons()
     .addObject3D(grid)
@@ -277,10 +280,44 @@ const simulation = Simulation
     .synchronize(flatComet.alwaysWith(new Trail({ color: 0xff0000 })))
     .synchronize(comet.alwaysWith(new Sphere({ color: 0x00ffff })))
     .synchronize(comet.alwaysWith(new Trail({ color: 0x00ffff })))
-    .onClockTick((clockTime, simulatedTime) => timeStep(clockTime), 10);
+    .onClockTick((clockTime, simulatedTime) => timeStep(clockTime))
+    .append(new Checkbox("Grid: ")
+        .on(grid)
+        .withProperty("visible")
+        .checked(true)
+        .togetherWith(new Checkbox("Paraboloid: ")
+            .on(spaceTimeCone)
+            .withProperty("visible")
+            .checked(true)
+        )
+    );
 
-simulation.onBeforeClockTick((clockTime, simulatedTime) =>
-    simulation.substepsCount = subSteps(currentIsRingOrbitValue));
+// TODO Mass slider
+
+const distanceSlider = new Slider("Distance: ")
+    .withRange(new Range(25.1, 64, .1))
+    .withValue(33)
+    .addEventListener("input", event => {
+        initialCometDistance = Number(event.target.value);
+    });
+
+simulation
+    .append(new Checkbox("Photon sphere: ")
+        .on(photonRing)
+        .withProperty("visible")
+        .checked(false)
+        .togetherWith(new Checkbox("Orbit: ")
+            .addEventListener('click', event => {
+                realComet.reset();
+                realComet._stateVector = StateVector.initial(event.target.checked);
+                comet.reset();
+                comet._stateVector = StateVector.initial(event.target.checked);
+                flatComet.reset();
+                currentIsRingOrbitValue = event.target.checked;
+            })
+        )
+    )
+    .append(distanceSlider);
 
 //
 // Event handling
@@ -296,16 +333,6 @@ simulation.onBeforeClockTick((clockTime, simulatedTime) =>
 //     }
 // });
 
-// TODO naar event handler klasse omzetten
-document.getElementById('gridButton').addEventListener('click',
-    () => grid.visible = !grid.visible);
-
-document.getElementById('coneButton').addEventListener('click', () => {
-    spaceTimeCone.visible = !spaceTimeCone.visible;
-});
-
-document.getElementById('photonSphereButton').addEventListener('click', () => photonRing.visible = !photonRing.visible);
-
 // distanceSlider.addEventListener('input',
 //     () => document.getElementById('distanceSliderValue').textContent = distanceSlider.value);
 // distanceSlider.addEventListener('input', () => {
@@ -314,14 +341,7 @@ document.getElementById('photonSphereButton').addEventListener('click', () => ph
 //     realComet.reset(Number(distanceSlider.value));
 // });
 //
-// orbitButton.addEventListener('click', (e) => {
-//     realComet.reset(Number(distanceSlider.value));
-//     realComet._stateVector = StateVector.initial(orbitButton.checked);
-//     comet.reset(Number(distanceSlider.value));
-//     comet._stateVector = StateVector.initial(orbitButton.checked);
-//     flatComet.reset(Number(distanceSlider.value));
-//     distanceSlider.disabled = orbitButton.checked;
-// });
+
 //
 // canvas.addEventListener("click", () => {
 //     if (comet.isMoving) {
