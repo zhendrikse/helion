@@ -2,6 +2,281 @@
 title: "🏛️ Architecture"
 ---
 
+## Central concepts
+<div class="header_line"></div>
+
+In physics and mathematics, we are always searching for the most fundamental abstractions:
+
+$$
+\text{state} \xrightarrow{\text{operator}} \text{state}
+$$
+
+A state can may change in time. This change in time can be thought of 
+as applying an operator to that state:
+
+$$
+\frac{d}{dt}\text{state} = \mathcal{L}(\text{state})
+$$
+
+Eventually, everything may thus be conceptualized as states and operators.
+
+However, software adds additional dimensions that are unknown to math and physics:
+
+* **code should express intent** (Kent Beck's rules of simple design)
+* **performance** (fields are refreshed dozens of times per second)
+* **memory management** (fields with thousands pixels/vertices) 
+* **maintenance**
+
+As a consequence, the mathematical most elegant abstraction 
+is not always tantamount to the best programming abstraction.
+
+### State
+
+```js
+DiscreteScalarField
+DiscreteComplexField
+RadialSymmetricBody
+```
+
+Dit zijn toestanden.
+
+---
+
+### Operator
+
+```js
+FFT2D
+FFTShift2D
+GaussianImpulse
+DoubleSlit
+Blur
+```
+
+Dit zijn transformaties.
+
+---
+
+### Equation
+
+```js
+WaveEquation
+SchrodingerEquation
+HeatEquation
+```
+
+Dit zijn wetten.
+
+---
+
+### Solver
+
+```js
+WaveEquationSolver
+SchrodingerSolver
+```
+
+Dit zijn numerieke procedures.
+
+---
+
+Vanuit theoretische natuurkunde zou je kunnen zeggen:
+
+> een solver is ook een operator
+
+en dat is eigenlijk waar.
+
+Een solver realiseert immers een discrete tijdsevolutie-operator:
+
+$$
+\psi(t+\Delta t) = U(\Delta t)\psi(t)
+$$
+
+or
+
+$$
+\phi_{n+1} = S_{\Delta t}(\phi_n)
+$$
+
+Dus conceptueel is een solver inderdaad een operator.
+
+---
+
+Waar ik denk dat jouw huidige ontwerp wringt is niet dat de solver geen operator is.
+
+Het wringt omdat de solver momenteel eigenaar is van de toestand:
+
+```js
+const solver =
+    new WaveEquationSolver(field, equation);
+```
+
+Terwijl overal elders in Helion de toestand eigenaar blijft van zichzelf:
+
+```js
+field.apply(operator);
+```
+
+of
+
+```js
+body.apply(force);
+```
+
+---
+
+Ik denk daarom dat deze richting heel natuurlijk zou zijn:
+
+```js
+const solver =
+    new WaveEquationSolver(equation);
+
+solver.step(field, dt);
+```
+
+of zelfs:
+
+```js
+field.evolve(solver, dt);
+```
+
+waarbij de solver geen veld bewaart.
+
+---
+
+Het mooie daarvan is dat je dan ook meerdere velden met dezelfde solver kunt evolueren:
+
+```js
+const solver =
+    new SchrodingerSolver(equation);
+
+solver.step(psi1, dt);
+solver.step(psi2, dt);
+solver.step(psi3, dt);
+```
+
+Dat is conceptueel vaak zuiverder.
+
+---
+
+Wat ik níet zou doen is teruggaan naar je oorspronkelijke idee:
+
+> alles is een Field
+
+Dat zie ik veel mensen proberen.
+
+Bijvoorbeeld:
+
+```js
+Body extends Field
+Particle extends Field
+Surface extends Field
+Mesh extends Field
+```
+
+Dat levert meestal een prachtige theorie op en een onhandige codebase.
+
+Je verliest dan precies wat jij noemt: semantiek.
+
+Een `RadialSymmetricBody` is geen veld. Een lichaam heeft massa, impuls, traagheid, botsingen, enzovoort.
+
+Een `DiscreteComplexField` is geen lichaam.
+
+Dat ze beide toestanden zijn betekent niet dat ze hetzelfde type moeten zijn.
+
+---
+
+Wat ik uit jouw huidige ontwerp haal is eigenlijk iets subtielers:
+
+Niet:
+
+```text
+Everything is a Field
+```
+
+maar:
+
+```text
+Everything is State
+```
+
+en
+
+```text
+State is transformed by Operators
+```
+
+Dat is een veel krachtigere unificatie.
+
+Dan mogen er best meerdere soorten toestand bestaan:
+
+* velden
+* lichamen
+* geometrieën
+* grafen
+* meshes
+
+zolang ze allemaal dezelfde operationele grammatica delen:
+
+```js
+state.apply(operator);
+```
+
+en
+
+```js
+state.alwaysWith(view);
+```
+
+Dat lijkt mij een betere balans tussen de elegantie van de theoretische natuurkunde en de praktische eisen van softwareontwerp. Dat is ook precies de richting waarin je Fourier-refactor je nu lijkt te duwen.
+
+
+### Declarative coding
+
+
+```js
+field                             // E.g. a discrete scalar field
+    .reset()                      // Start with a blank slate
+    .apply(new GaussianImpluse()) // Apply a Gaussian impulse
+    .apply(new FFT2D())           // Apply a Fourier transform
+    .apply(new FFTShift2D());     // Shift the result
+```
+
+
+### Fields and operators
+
+```js
+DiscreteScalarField
+DiscreteComplexField
+```
+
+```js
+CirclePotential
+SquarePotential
+LinePotential
+StepPotential
+SingleSlit
+DoubleSlit
+Grating
+Blur
+FFT2D
+FFTShift2D
+GaussianImpulseComplex2D
+```
+
+This takes care of a declarative simulation
+
+```js
+potential
+    .reset()
+    .apply(new DoubleSlit({
+        size: 40,
+        energy: 0.1
+    }))
+    .apply(new Blur(4));
+```
+
+
+
 ## Design
 
 Wat je nu hebt lijkt sterk op een kleine ECS/MVC-hybride, en dat schaalt veel beter dan losse imperative canvas-code.

@@ -376,25 +376,26 @@ export class Simulation {
     }
 
     withStartStopResetButtons() {
-        const buttonRow = new Button()
-            .withText("▶︎ Run")
+        const runButton = new Button().withText("▶︎ Run");
+        runButton
             .addEventListener("click", () => {
-                this._hud?.show("Running", 1000);
-                this.start();
+                if (this._running) {
+                    this._hud?.show("Paused");
+                    runButton.withText("▶︎ Run")
+                    this.stop();
+                } else {
+                    this._hud?.show("Running", 1000);
+                    runButton.withText("❚❚ Pause")
+                    this.start();
+                }
             })
             .togetherWith(new Button()
-                .withText("❚❚ Pause")
                 .addEventListener("click", () => {
-                    this._hud?.show("Paused");
-                    this.stop();
+                    this._hud.show("Reset", 1000);
+                    this.reset();
                 })
-                .togetherWith(new Button()
-                    .addEventListener("click", () => {
-                        this._hud.show("Reset", 1000);
-                        this.reset();
-                    })
-                    .withText("⟳ Reset")))
-        buttonRow.append(this._viewport.simulationButtonsDiv).to(this);
+                .withText("⟳ Reset"));
+        runButton.append(this._viewport.simulationButtonsDiv).to(this);
         return this;
     }
 

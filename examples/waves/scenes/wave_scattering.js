@@ -1,7 +1,7 @@
 import {
     ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
     SurfaceResolution, WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView, ColorMap, PotentialField,
-    PotentialField3DRaster
+    PotentialField3DRaster, StandardSurfaceView
 } from "../../../src/index.js";
 
 // TODO hardcoded 256 resolution => constant
@@ -30,10 +30,11 @@ export class WaveEquation {
 const field = new DiscreteScalarField({ nx: 256, ny: 256 });
 const surface = new DiscreteFieldSurface(field);
 
-const water = new InstancedMeshSurfaceView({
+const water = new StandardSurfaceView({
     resolution: new SurfaceResolution(256, 256),
-    normalizer: new Interval(-0.25, 2),
-    colorMapper: ColorMappers.get(ColorMap.WaterAlternative)
+    normalizer: new Interval(-2, 2),
+    colorMapper: ColorMappers.get(ColorMap.WaterAlternative),
+    contours: false,
 });
 water.position.set(-128, 0, -128);
 
@@ -62,7 +63,7 @@ const barrier = new PotentialField({
     energy: 1.0
 });
 const equation = new BarrierWaveEquation({
-    velocity: 5,
+    velocity: 10,
     damping: 0.01,
     barrier
 });
@@ -83,13 +84,14 @@ Simulation
         width: 256,
         height: 256,
         heightScale: 20,
-        opacity: 0.9
+        opacity: 0.5,
+        color: 0x008080
     })))
     .onClockTick((clock, time) => {
         solver.step(dt);
-        if (time < 1.0) {
+        if (time < 2.0) {
 
-            const pulse = 1.5 * Math.sin(20 * time);
+            const pulse = 3 * Math.sin(10 * time);
 
             for (let y = 0; y < field.ny; y++)
                 field.setValueAt(5, y, pulse);
