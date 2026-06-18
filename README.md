@@ -20,8 +20,10 @@ operators, and numerical solvers<sup>
 <a href="https://www.hendrikse.name/helion/nature/raindrops/">[4]</a>
 </sup>.
 
-The genuine abstraction in Helion is not based on objects but on
-transformations between mathematical representations instead.
+The central abstractions in Helion are operators, **not** classes.
+Mathematical entities such as fields, bodies, and geometries are transformed
+through composable operations that mirror the structure of the underlying
+mathematics.
 
 Helion is the product of decades of exploration in mathematics, physics, programming,
 and education, driven by a lifelong fascination with the beauty and patterns of nature.

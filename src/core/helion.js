@@ -215,6 +215,7 @@ export class Simulation {
         this._hud = null;                       // No head-up display by default
         this._onReset = () => {};               // Callback function for client when a reset happens
         this._onBeforePhysicsUpdate = () => {}; // Callback function for client before physics update
+        this._updateFunction = () => {}         // Callback function for physics update
         this._onAfterPhysicsUpdate = () => {};  // Callback function for client after physics update
         this._running = false;
         this._simulatedTime = 0;
@@ -282,7 +283,7 @@ export class Simulation {
 
     _updatePhysics(clockTime) {
         for (let substeps = 0; substeps < this._substepsCount; substeps++) {
-            this._updateFunction?.(clockTime, this._simulatedTime);
+            this._updateFunction(clockTime, this._simulatedTime);
             this._simulatedTime += this._dt;
         }
     }
