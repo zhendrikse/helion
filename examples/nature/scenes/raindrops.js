@@ -39,7 +39,7 @@ water.position.set(-128, 0, -128);
 Simulation
     .with({
         htmlDivId: "raindropContainer",
-        cameraPosition: new Vec3(4, .6, 4.2).multiplyScalar(45),
+        cameraPosition: new Vec3(4, 2, 4.2).multiplyScalar(75),
         fieldOfView: 19
     })
     .synchronize(surface.alwaysWith(water))

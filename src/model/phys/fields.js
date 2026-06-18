@@ -2,6 +2,11 @@ import {DiscreteScalarField} from "../math/fields.js";
 import {Registry} from "../../core/helion.js";
 import {DropdownMenu} from "../../core/controls.js";
 
+/**
+ * This PotentialField class can be used as an obstacle mask
+ * for classical wave scattering simulations as well as
+ * quantum wave scattering simulations.
+ */
 export class PotentialField extends DiscreteScalarField {
     static Type = Object.freeze({
         Circle: "Circle",

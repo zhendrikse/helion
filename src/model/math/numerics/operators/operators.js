@@ -182,10 +182,10 @@ export class PerlinNoiseOperator {
 
 export class DoubleSlitOperator {
     constructor({
-                    wavelength = 525,
-                    positionSlit1 = new Vec3(),
-                    positionSlit2 = new Vec3(),
-                }) {
+        wavelength = 525,
+        positionSlit1 = new Vec3(),
+        positionSlit2 = new Vec3(),
+    }) {
         this._wavelength = wavelength;
         this._positionSlit1 = positionSlit1;
         this._positionSlit2 = positionSlit2;
@@ -215,7 +215,7 @@ export class DoubleSlitOperator {
 // js/fft-esm.js
 // ESM-versie van fft.js suitable for browser
 //
-export class FFT {
+class FFT {
     constructor(size) {
         this._size = size | 0;
         if (this._size <= 1) throw new Error("Size must be > 1");
@@ -281,8 +281,10 @@ export class FFT {
             outIm[i] = -outIm[i] / n;
         }
     }
+}
 
-    static fftShift2D(field) {
+export class FFTShift2D {
+    apply(field) {
         const N = field.size;
         const half = N >> 1;
 
@@ -300,23 +302,25 @@ export class FFT {
         field.real = real;
         field.imag = imag;
     }
+}
 
-    static fft2D(gridField) {
-        const N = gridField.size;
+export class FFT2D {
+    apply(field) {
+        const N = field.size;
         const fft = new FFT(N);
 
         // rows
         for (let row = 0; row < N; row++) {
             const offset = row * N;
-            const inRe = gridField.real.slice(offset, offset + N);
-            const inIm = gridField.imag.slice(offset, offset + N);
+            const inRe = field.real.slice(offset, offset + N);
+            const inIm = field.imag.slice(offset, offset + N);
             const outRe = new Float32Array(N);
             const outIm = new Float32Array(N);
 
             fft.transform(outRe, outIm, inRe, inIm);
 
-            gridField.real.set(outRe, offset);
-            gridField.imag.set(outIm, offset);
+            field.real.set(outRe, offset);
+            field.imag.set(outIm, offset);
         }
 
         // columns
@@ -325,8 +329,8 @@ export class FFT {
             const colIm = new Array(N);
 
             for (let i = 0; i < N; i++) {
-                colRe[i] = gridField.real[i * N + j];
-                colIm[i] = gridField.imag[i * N + j];
+                colRe[i] = field.real[i * N + j];
+                colIm[i] = field.imag[i * N + j];
             }
 
             const outRe = new Array(N);
@@ -335,8 +339,8 @@ export class FFT {
             fft.transform(outRe, outIm, colRe, colIm);
 
             for (let i = 0; i < N; i++) {
-                gridField.real[i * N + j] = outRe[i];
-                gridField.imag[i * N + j] = outIm[i];
+                field.real[i * N + j] = outRe[i];
+                field.imag[i * N + j] = outIm[i];
             }
         }
     }

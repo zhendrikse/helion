@@ -1,6 +1,6 @@
 import {
-    FFT, DiscreteComplexField, RadioButton, Simulation, Slider, Vec3, Range,
-    Checkbox, ComplexScalarFieldRaster
+    DiscreteComplexField, RadioButton, Simulation, Slider, Vec3, Range,
+    Checkbox, ComplexScalarFieldRaster, FFTShift2D, FFT2D
 } from "../../../src/index.js";
 
 const Shape = Object.freeze({
@@ -32,8 +32,9 @@ class FourierSimulation {
 
     doFft() {
         this._buildShape();
-        this._field.apply(FFT.fft2D);
-        this._field.apply(FFT.fftShift2D); // Shift back to center
+        this._field
+            .apply(new FFT2D())
+            .apply(new FFTShift2D());
     }
 
     // _pixelAt(i, j, type) {
