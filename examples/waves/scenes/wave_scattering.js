@@ -40,12 +40,11 @@ const obstacle = ObstacleOperators.get(ObstacleType.SingleSlit);
 obstacle.size = 20;
 obstacleField.apply(obstacle);
 
-const equation = new BarrierWaveEquation({
+const solver = new WaveEquationSolver(new BarrierWaveEquation({
     velocity: 10,
     damping: 0.01,
     barrier: obstacleField
-});
-const solver = new WaveEquationSolver(equation);
+}));
 
 const dt = 0.02;
 Simulation
