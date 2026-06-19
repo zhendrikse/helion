@@ -6,22 +6,6 @@ import {
 
 const resolution = 256;
 
-export class WaveEquation {
-    constructor({
-        velocity = 1,
-        damping = 0.05
-    } = {}) {
-        this._velocity = velocity;
-        this._damping = damping;
-    }
-
-    get damping() { return this._damping; }
-
-    acceleration(field, i, j) {
-        return this._velocity * this._velocity * LaplaceOperator.at(field, i, j);
-    }
-}
-
 const water = new StandardSurfaceView({
     resolution: new SurfaceResolution(resolution, resolution),
     normalizer: new Interval(-3, 3),
