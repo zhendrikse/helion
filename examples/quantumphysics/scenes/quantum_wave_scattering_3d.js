@@ -1,8 +1,6 @@
 import {
-    ComplexScalarFieldRaster, DiscreteComplexField, Simulation, Vec3, Slider,
-    Range, DiscreteScalarField, Registry, DropdownMenu, SchrodingerSolver,
-    GaussianImpulseComplex2D, ComplexScalarFieldSurfaceRaster, PotentialField3DRaster,
-    PotentialField, Checkbox
+    ComplexScalarFieldSurfaceRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range, PotentialField,
+    SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, PotentialField3DRaster
 } from "../../../src/index.js";
 
 let xMax = 400;
@@ -10,25 +8,22 @@ const dt = 0.24;		// anything less than 0.25 seems to be stable
 
 const potential = new PotentialField({ nx: xMax, ny: xMax });
 const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
-const solver = new SchrodingerSolver(psi, potential);
-solver.initialize(dt)
+const solver = new SchrodingerSolver(potential);
 const gaussianImpulse = new GaussianImpulseComplex2D();
-psi.apply(gaussianImpulse);
-
-const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
-    width: xMax,
-    height: xMax,
-    scale: 20,
-    zScale: 15,
-    brightness: 1
-});
 
 function reset() {
     psi.reset();
-    solver.initialize(dt)
+    solver.initialize(psi, dt);
     psi.apply(gaussianImpulse);
     potential.reset();
 }
+
+const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
+    width: xMax,
+    height: xMax
+});
+
+reset();
 
 Simulation
     .with({
@@ -44,7 +39,7 @@ Simulation
         height: xMax
     })))
     .onReset(() => reset())
-    .onClockTick(() => solver.step(dt), 15)
+    .onClockTick(() => psi.evolve(solver, dt), 15)
     .append(new Slider("🪜 Height scale")
         .withRange(new Range(10, 25, 0.1))
         .withValue(waveFunctionSurface.zScale)

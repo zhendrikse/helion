@@ -1,16 +1,30 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import {Range, Vec3} from "../../math.js";
-import {DiscreteComplexField} from "../../fields.js";
+import {DiscreteComplexField, DiscreteScalarField} from "../../fields.js";
 import {ComplexScalarFieldRaster} from "../../../../view/2d/views.js";
 import {SchrodingerSolver} from "../solvers/solvers.js";
-import {Simulation} from "../../../../core/helion.js";
+import {Registry, Simulation} from "../../../../core/helion.js";
 import {Slider} from "../../../../core/controls.js";
+import {
+    GradientColorMapper,
+    InfernoColorMapper,
+    RdYlBuColorMapper, ScientificColorMapper,
+    SeismicColorMapper, TerrainColorMapper, UniformColorMapper, ViridisColorMapper,
+    WaterAlternativeColorMapper, WaterColorMapper, WavelengthColorMapper
+} from "../../../../view/colormappers.js";
+import {AxialSymmetricBody} from "../../../phys/bodies.js";
+import {Cylinder} from "../../../../view/3d/primitives/primitives.js";
 
-export class DiamondSquareOperator {
+class Operator {
+    apply(field) {}
+}
+
+export class DiamondSquareOperator extends Operator {
     constructor({
         roughness = 1,
         amplitude = 100
     } = {}) {
+        super();
         this._roughness = roughness;
         this._amplitude = amplitude;
     }
@@ -85,13 +99,14 @@ export class DiamondSquareOperator {
     #random(scale) { return (Math.random() * 2 - 1) * scale; }
 }
 
-export class GaussianImpulse {
+export class GaussianImpulse extends Operator {
     constructor({
         centerX = 100,
         centerY = 100,
         amplitude = 1,
         sigma = 3
     } = {}) {
+        super();
         this._centerX = centerX;
         this._centerY = centerY;
         this._sigma = sigma;
@@ -113,11 +128,12 @@ export class GaussianImpulse {
     }
 }
 
-export class GaussianImpulseComplex2D {
+export class GaussianImpulseComplex2D extends Operator {
     constructor({
         wavePacketEnergy=0.05,
         packetWidth = 48
     } = {}) {
+        super();
         this._packetWidth = packetWidth;
         this._wavePacketEnergy = wavePacketEnergy;
     }
@@ -142,7 +158,7 @@ export class GaussianImpulseComplex2D {
     }
 }
 
-export class PerlinNoiseOperator {
+export class PerlinNoiseOperator extends Operator {
     constructor({
         scale = 50,
         frequency = 0.02,
@@ -150,6 +166,7 @@ export class PerlinNoiseOperator {
         persistence = 0.5,
         z = 0
     } = {}) {
+        super();
         this._scale = scale;
         this._frequency = frequency;
         this._octaves = octaves;
@@ -194,7 +211,7 @@ export class DoubleSlitOperator {
     apply(field) {
         const pos = new Vec3();
         for (let i = 0; i < field.nx; i++)
-            for (let j = 0; j < field.nx; j++) {
+            for (let j = 0; j < field.ny; j++) {
                 const x = (i - field.nx * .5);
                 const y = (j - field.ny * .5);
                 pos.set(x, y, 0);
@@ -210,6 +227,55 @@ export class DoubleSlitOperator {
 
     set wavelength(wavelength) { this._wavelength = wavelength; }
 }
+
+export class Obstacle extends Operator {
+    constructor({
+        size = 40,
+        reflectionStrength = 1.0
+    } = {}) {
+        super();
+        this._size = size;
+        this._reflectionStrength = reflectionStrength;
+    }
+
+    set reflectionStrength(strength) { this._reflectionStrength = strength; }
+    set size(size) { this._size = size; }
+}
+
+export class SingleSlitObstacle extends Obstacle {
+    apply(field) {
+        const holeEdge = Math.round(field.nx / 2 - this._size/2);
+        for (let y = 0; y < field.nx; y++)
+            for (let x = Math.floor(field.nx / 2) - 5; x < Math.floor(field.nx / 2) + 5; x++)
+                if (y <= holeEdge || y > holeEdge + this._size)
+                    field.setValueAt(x, y, this._reflectionStrength);
+    }
+}
+
+export class DoubleSlitObstacle extends Obstacle {
+    apply(field) {
+        const slitDistance = this._size;
+        const dhEdge = Math.round(field.nx / 2 - slitDistance / 2);
+        for (let y = 0; y < field.nx; y++)
+            for (let x = Math.floor(field.nx / 2) - 5; x < Math.floor(field.nx / 2)+5; x++)
+                if (y <= dhEdge-10 || y > dhEdge + slitDistance + 10 || (y > dhEdge && y <= dhEdge + slitDistance))
+                    field.setValueAt(x, y, this._reflectionStrength);
+    }
+}
+
+export const ObstacleType = Object.freeze({
+    SingleSlit: "SingleSlit",
+    DoubleSlit: "DoubleSlit"
+});
+
+export const ObstacleOperators = new Registry({
+    id: "obstacleTypeSelect",
+    label: "Obstacle type ",
+    entries: {
+        SingleSlit: new SingleSlitObstacle(),
+        DoubleSlit: new DoubleSlitObstacle()
+    }
+});
 
 //
 // js/fft-esm.js
@@ -283,7 +349,7 @@ class FFT {
     }
 }
 
-export class FFTShift2D {
+export class FFTShift2D extends Operator {
     apply(field) {
         const N = field.size;
         const half = N >> 1;
@@ -304,7 +370,7 @@ export class FFTShift2D {
     }
 }
 
-export class FFT2D {
+export class FFT2D extends Operator {
     apply(field) {
         const N = field.size;
         const fft = new FFT(N);

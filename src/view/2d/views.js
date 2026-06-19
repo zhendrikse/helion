@@ -115,7 +115,6 @@ export class ScalarFieldIntensityPixelRaster extends Renderable3D {
         this._width = width;
         this._height = height;
         this._colorMapper = colorMapper;
-        this._scalarField = null;
 
         const pixels = new Uint8Array(width * height * 4);
         const texture = new DataTexture(pixels,  width, height, RGBAFormat);
@@ -177,40 +176,65 @@ export class ScalarFieldIntensityPixelRaster extends Renderable3D {
 export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     constructor({
         nx = 100,
-        ny = 1000,
-        edgeHeight= 100,
-        colorMapper = new WavelengthColorMapper()
+        ny = 100,
+        edgeHeight = 100,
+        colorMapper = new WavelengthColorMapper(525)
     } = {}) {
         super();
-        this._edgeHeight = edgeHeight;
-        this._colorMapper = colorMapper;
+
         this._nx = nx;
         this._ny = ny;
-        this._mesh = new InstancedMesh(new BoxGeometry(1, 1, 0.02), new MeshBasicMaterial(), nx * ny);
-        this.add(this._mesh);
+        this._colorMapper = colorMapper;
+        this._pixels = new Uint8Array(nx * 4);
+        this._texture = new DataTexture(this._pixels, nx, 1, RGBAFormat);
+        this._texture.needsUpdate = true;
 
-        this._matrix = new Matrix4();
+        this._mesh = new Mesh(
+            new PlaneGeometry(nx, edgeHeight),
+            new MeshBasicMaterial({
+                map: this._texture,
+                transparent: true,
+                side: DoubleSide
+            })
+        );
+
+        this._mesh.rotation.x = Math.PI * 0.5; // Put edge straight up
+        this._mesh.position.y = ny * 0.5;
+        this.add(this._mesh);
         this._color = new Color();
     }
 
-    canBindTo(model) { return model.valueAt; }
+    canBindTo(field) {
+        return field.valueAt;
+    }
 
-    synchronizeWith(field) {
+    _maxMagnitude(scalarField) {
+        let max = -Infinity;
+
+        for (let i = 0; i < scalarField.nx; i++)
+            for (let j = 0; j < scalarField.ny; j++) {
+                const value = scalarField.valueAt(i, j);
+                if (value > max)
+                    max = value;
+            }
+
+        return max;
+    }
+
+    synchronizeWith(scalarField) {
+        const j = this._ny - 1;
         let index = 0;
-        for (let i = 0; i < this._nx; i++) {
-            const j = this._ny - 1; // fixed, we only need the last row!
-            const x = i - this._nx * .5;
-            const y = j - this._ny * .5;
-            const brightness = this._colorMapper.map(field.valueAt(i, j) * 1e-10, this._color);
+        const max =  this._maxMagnitude(scalarField);
 
-            index++;
-            this._matrix.compose(new Vector3(x, y,0), new Quaternion(), new Vector3(1, 1, this._edgeHeight));
-            this._mesh.setMatrixAt(index, this._matrix);
-            this._mesh.setColorAt(index, this._color.multiplyScalar(brightness));
+        for (let i = 0; i < this._nx; i++) {
+            const brightness = this._colorMapper.map(scalarField.valueAt(i, j) / max, this._color);
+            this._pixels[index++] = this._color.r;
+            this._pixels[index++] = this._color.g;
+            this._pixels[index++] = this._color.b;
+            this._pixels[index++] = brightness;
         }
 
-        this._mesh.instanceMatrix.needsUpdate = true;
-        this._mesh.instanceColor.needsUpdate = true;
+        this._texture.needsUpdate = true;
     }
 }
 

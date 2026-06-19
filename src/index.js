@@ -15,7 +15,7 @@ export {
 
 export {
     LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator,
-    GaussianImpulseComplex2D, FFTShift2D, FFT2D
+    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ObstacleOperators, ObstacleType
 } from "./model/math/numerics/operators/operators.js";
 
 export {

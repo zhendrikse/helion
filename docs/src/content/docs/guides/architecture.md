@@ -30,6 +30,169 @@ However, software adds additional dimensions that are unknown to math and physic
 As a consequence, the mathematical most elegant abstraction 
 is not always tantamount to the best programming abstraction.
 
+
+Ja, dat vind ik eigenlijk een veel sterkere unificatie dan `field.apply(solver)`.
+
+Als ik naar de voorbeelden kijk die je hebt laten zien, dan zie ik twee fundamenteel verschillende soorten transformaties:
+
+### Instantane operatoren
+
+```js
+field.apply(new GaussianImpulse(...));
+field.apply(new FFT2D());
+field.apply(new Blur(...));
+```
+
+Dit zijn directe transformaties:
+
+$$
+x \mapsto O(x)
+$$
+
+Geen tijd, geen geschiedenis.
+
+---
+
+### Evolutie-operatoren
+
+```js
+field.evolve(solver, dt);
+body.evolve(integrator, dt);
+```
+
+Dit zijn tijdstappen:
+
+$$
+x(t) \mapsto x(t+\Delta t)
+$$
+
+Daar zit expliciet tijd in.
+
+---
+
+Vanuit de theoretische natuurkunde is dat onderscheid ook heel natuurlijk.
+
+Een FFT is geen tijdsevolutie.
+
+Een impuls is geen tijdsevolutie.
+
+Een symplectische Euler-stap is wél een tijdsevolutie.
+
+Een Schrödinger-solver is wél een tijdsevolutie.
+
+---
+
+Daardoor krijg je een mooie grammatica:
+
+```js
+state.apply(operator);
+state.evolve(solver, dt);
+```
+
+waarbij:
+
+| Concept    | Betekenis                                 |
+| ---------- | ----------------------------------------- |
+| `apply()`  | algebraïsche / geometrische transformatie |
+| `evolve()` | tijdsevolutie                             |
+
+---
+
+Voor een veld:
+
+```js
+psi
+    .apply(new GaussianImpulse(...))
+    .evolve(new SchrodingerSolver(eq), dt);
+```
+
+---
+
+Voor een lichaam:
+
+```js
+body
+    .apply(force)
+    .evolve(new SymplecticEulerIntegrator(), dt);
+```
+
+of misschien:
+
+```js
+body.evolve(
+    new SymplecticEulerIntegrator(forceField),
+    dt
+);
+```
+
+afhankelijk van hoe je krachten modelleert.
+
+---
+
+Het mooie is dat de semantiek dan overeind blijft.
+
+Ik zou persoonlijk wat huiverig zijn voor:
+
+```js
+body.apply(new SymplecticEulerIntegrator(), dt);
+```
+
+want een integrator is geen operator op een toestand.
+
+Een integrator is een procedure die een toestand door de tijd verplaatst.
+
+`evolve()` drukt dat veel beter uit.
+
+---
+
+Nog iets interessants: hiermee krijg je bijna letterlijk de structuur uit de dynamische systeemtheorie.
+
+Je hebt een toestand (x).
+
+Je hebt operatoren (O):
+
+$$
+x \leftarrow O(x)
+$$
+
+en je hebt een evolutie-operator (E_{\Delta t}):
+
+$$
+x(t+\Delta t) = E_{\Delta t}(x(t))
+$$
+
+Dat vertaalt zich direct naar:
+
+```js
+state.apply(operator);
+state.evolve(solver, dt);
+```
+
+Dat is een heel compacte en mathematisch herkenbare API.
+
+---
+
+Sterker nog, als je later meerdere soorten toestand krijgt:
+
+```js
+DiscreteScalarField
+DiscreteComplexField
+RadialSymmetricBody
+ParticleSystem
+Mesh
+```
+
+dan kun je ze allemaal dezelfde "taal" laten spreken:
+
+```js
+state.apply(operator);
+state.evolve(solver, dt);
+state.alwaysWith(view);
+```
+
+Dat vind ik eerlijk gezegd een van de elegantste richtingen voor Helion die ik tot nu toe in je voorbeelden heb gezien. Het behoudt de semantische verschillen tussen operatoren en tijdintegratie, maar geeft ze wel een uniforme vorm. Dat is meestal een beter resultaat dan proberen alles onder één enkele methode (`apply`) te forceren.
+
+
 ### State
 
 ```js

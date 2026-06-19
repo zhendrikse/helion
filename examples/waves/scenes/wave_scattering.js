@@ -1,10 +1,10 @@
 import {
     ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
-    SurfaceResolution, WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView, ColorMap, PotentialField,
-    PotentialField3DRaster, StandardSurfaceView
+    SurfaceResolution, WaveEquationSolver, ColorMap, PotentialField3DRaster, StandardSurfaceView,
+    ObstacleOperators, ObstacleType
 } from "../../../src/index.js";
 
-// TODO hardcoded 256 resolution => constant
+const resolution = 256;
 
 export class WaveEquation {
     constructor({
@@ -22,27 +22,19 @@ export class WaveEquation {
     }
 }
 
-//
-// First, declare a (discrete) scalar field and a wave equation.
-// Next, define a solver on this field for this equation.
-// Finally, define a surface that can visualize the (scalar) field.
-//
-const field = new DiscreteScalarField({ nx: 256, ny: 256 });
-const surface = new DiscreteFieldSurface(field);
-
 const water = new StandardSurfaceView({
-    resolution: new SurfaceResolution(256, 256),
-    normalizer: new Interval(-2, 2),
+    resolution: new SurfaceResolution(resolution, resolution),
+    normalizer: new Interval(-3, 3),
     colorMapper: ColorMappers.get(ColorMap.WaterAlternative),
     contours: false,
 });
-water.position.set(-128, 0, -128);
+water.position.set(-resolution * .5, 0, -resolution * .5);
 
 export class BarrierWaveEquation {
     constructor({
+        barrier,
         velocity = 1,
-        damping = 0.1,
-        barrier
+        damping = 0.1
     } = {}) {
         this.velocity = velocity;
         this.damping = damping;
@@ -51,51 +43,56 @@ export class BarrierWaveEquation {
 
     acceleration(field, i, j) {
         const transmission = 1.0 - this.barrier.valueAt(i, j);
-        // const transmission =
-        //     Math.exp(-10 * this.barrier.valueAt(i,j));
+        //const transmission = Math.exp(-10 * this.barrier.valueAt(i, j));
         return transmission * this.velocity * this.velocity * LaplaceOperator.at(field, i, j);
     }
 }
 
-const barrier = new PotentialField({
-    nx: 256,
-    ny: 256,
-    energy: 1.0
-});
+const field = new DiscreteScalarField({ nx: resolution, ny: resolution });
+const surface = new DiscreteFieldSurface(field);
+
+const obstacleField = new DiscreteScalarField({ nx: resolution, ny: resolution });
+const obstacle = ObstacleOperators.get(ObstacleType.SingleSlit);
+obstacle.size = 20;
+obstacleField.apply(obstacle);
+
 const equation = new BarrierWaveEquation({
     velocity: 10,
     damping: 0.01,
-    barrier
+    barrier: obstacleField
 });
-const solver = new WaveEquationSolver(field, equation);
+const solver = new WaveEquationSolver(equation);
 
 const dt = 0.02;
 Simulation
     .with({
         htmlDivId: "waveScatteringContainer",
-        cameraPosition: new Vec3(4, 2, 4.2).multiplyScalar(100),
+        cameraPosition: new Vec3(2, 1, 2.1).multiplyScalar(resolution * .75),
         fieldOfView: 19,
         headUpDisplay: true
     })
     .incrementsTimeBy(dt)
     .withMouseClickEventListener()
     .synchronize(surface.alwaysWith(water))
-    .synchronize(barrier.onceWith(new PotentialField3DRaster({
-        width: 256,
-        height: 256,
+    .synchronize(obstacleField.onceWith(new PotentialField3DRaster({
+        width: resolution,
+        height: resolution,
         heightScale: 20,
         opacity: 0.5,
         color: 0x008080
     })))
     .onClockTick((clock, time) => {
-        solver.step(dt);
+        field.evolve(solver, dt);
         if (time < 2.0) {
-
-            const pulse = 3 * Math.sin(10 * time);
+            const pulse = 3 * Math.sin(4 * time);
 
             for (let y = 0; y < field.ny; y++)
                 field.setValueAt(5, y, pulse);
         }
     }, 5)
+    .onReset(() => {
+        solver.reset();
+        obstacleField.apply(ObstacleOperators.get(ObstacleType.SingleSlit)); // Obstacle has been fully reset at this point!
+    })
     .append(water.colormapSelector)
     .append(water.shapeSelector);

@@ -8,23 +8,23 @@ const dt = 0.24;		// anything less than 0.25 seems to be stable
 
 const potential = new PotentialField({ nx: xMax, ny: xMax });
 const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
-const solver = new SchrodingerSolver(psi, potential);
-solver.initialize(dt)
+const solver = new SchrodingerSolver(potential);
 const gaussianImpulse = new GaussianImpulseComplex2D();
-psi.apply(gaussianImpulse);
+
+
+function reset() {
+    psi.reset();
+    solver.initialize(psi, dt);
+    psi.apply(gaussianImpulse);
+    potential.reset();
+}
 
 const waveFunctionRaster = new ComplexScalarFieldRaster({
     width: xMax,
     height: xMax
 });
 
-function reset() {
-    psi.reset();
-    solver.initialize(dt)
-    psi.apply(gaussianImpulse);
-    potential.reset();
-}
-
+reset();
 Simulation
     .with({
         htmlDivId: "doubleSlit2dContainer",
@@ -39,7 +39,7 @@ Simulation
         height: xMax
     })))
     .onReset(() => reset())
-    .onClockTick(() => solver.step(dt), 15)
+    .onClockTick(() => psi.evolve(solver, dt), 15)
     .append(new Slider("🔆 Brightness ")
         .withRange(new Range(0.1, 2, 0.01))
         .withValue(1)

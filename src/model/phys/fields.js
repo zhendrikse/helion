@@ -65,46 +65,46 @@ export class PotentialField extends DiscreteScalarField {
         switch (this._potentialType) {
             case PotentialField.Type.Circle:
                 const rSquared = this._size * this._size/4.0;
-                for (let y=0; y<max; y++)
-                    for (let x=0; x<max; x++)
-                        if ((x-max/2)**2 + (y-max/2)**2 < rSquared)
-                            this._data[y*max+x] = this._energy;
+                for (let y = 0; y < max; y++)
+                    for (let x = 0; x < max; x++)
+                        if ((x - max / 2)**2 + (y - max / 2)**2 < rSquared)
+                            this._data[this.index(x, y)] = this._energy;
                 break;
             case PotentialField.Type.Square:
                 const edge = Math.round(max/2 - this._size/2);
                 for (let y=edge; y<edge+this._size; y++)
                     for (let x=edge; x<edge+this._size; x++)
-                        this._data[y*max+x] = this._energy;
+                        this._data[this.index(x, y)] = this._energy;
                 break;
             case PotentialField.Type.Line:
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2); x<Math.floor(max/2)+this._size; x++)
-                        this._data[y*max+x] = this._energy;
+                        this._data[this.index(x, y)] = this._energy;
                 break;
             case PotentialField.Type.Step:
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2); x<max; x++)
-                        this._data[y*max+x] = this._energy;
+                        this._data[this.index(x, y)] = this._energy;
                 break;
             case PotentialField.Type.SingleHole:
                 const holeEdge = Math.round(max/2 - this._size/2);
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2)-5; x<Math.floor(max/2)+5; x++)
                         if (y <= holeEdge || y > holeEdge+this._size)
-                            this._data[y*max+x] = this._energy;
+                            this._data[this.index(x, y)] = this._energy;
                 break;
             case PotentialField.Type.DoubleHole:
                 const dhEdge = Math.round(max/2 - this._size/2);
                 for (let y=0; y<max; y++)
                     for (let x=Math.floor(max/2)-5; x<Math.floor(max/2)+5; x++)
                         if (y <= dhEdge-10 || y > dhEdge+this._size+10 || (y>dhEdge && y<=dhEdge+this._size))
-                            this._data[y*max+x] = this._energy;
+                            this._data[this.index(x, y)] = this._energy;
                 break;
             case PotentialField.Type.Grating:
                 for (let y=Math.floor(max/4); y<Math.floor(3*max/4); y++)
                     for (let x=Math.floor(max/2)-5; x<Math.floor(max/2)+5; x++)
                         if (y % this._size < this._size/2)
-                            this._data[y*max+x] = this._energy;
+                            this._data[this.index(x, y)] = this._energy;
                 break;
             default:
                 throw new Error(`Unknown potential type "${this._potentialType}"`);

@@ -133,6 +133,10 @@ export class DiscreteFieldSurface extends Surface {
 
         target.set(-dHx, 1.0, -dHy).normalize();
     }
+
+    reset() {
+        this._field.reset();
+    }
 }
 
 export class ScalarFieldOnSurface extends Field {
@@ -293,8 +297,16 @@ export class DiscreteScalarField extends Field {
     get nx() { return this._nx; }
     get ny() { return this._ny; }
 
-    sample(u, v, target) {
-        // bilinear interpolation
+    index(x, y) {
+        return y * this._nx + x;
+    }
+
+    valueAt(x, y) {
+        return this._data[this.index(x, y)];
+    }
+
+    setValueAt(x, y, value) {
+        this._data[this.index(x, y)] = value;
     }
 
     reset() {
@@ -310,16 +322,13 @@ export class DiscreteScalarField extends Field {
         return this;
     }
 
-    index(i, j) {
-        return i * this.nx + j;
+    evolve(solver, dt) {
+        solver.step(this, dt);
+        return this;
     }
 
-    valueAt(i, j) {
-        return this._data[i + this._nx * j];
-    }
-
-    setValueAt(i, j, value) {
-        this._data[i + this._nx * j] = value;
+    sample(u, v, target) {
+        // bilinear interpolation (kan later consistent op index() bouwen)
     }
 }
 
@@ -347,8 +356,8 @@ export class DiscreteComplexField extends Field {
         return this;
     }
 
-    index(i, j) {
-        return i * this.nx + j;
+    index(x, y) {
+        return y * this._nx + x;
     }
 
     reset() {
@@ -356,9 +365,14 @@ export class DiscreteComplexField extends Field {
         this.imag = new Float32Array(this.nx * this.ny)
     }
 
+    evolve(solver, dt) {
+        solver.step(this, dt);
+        return this;
+    }
+
     sample(i, j, target) {
-        target.re = this.real[i * this.nx + j];
-        target.im = this.imag[i * this.nx + j];
+        target.re = this.real[this.index(i, j)];
+        target.im = this.imag[this.index(i, j)];
     }
 }
 

@@ -1,7 +1,7 @@
 import {
     AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider, Sphere, Vec3,
-    DiscreteScalarField, WavelengthColorMapper, ScalarFieldIntensityPixelRaster,
-    FieldEdgeIntensityPixelRaster, DoubleSlitOperator
+    DiscreteScalarField, WavelengthColorMapper, ScalarFieldIntensityPixelRaster, DoubleSlitOperator,
+    FieldEdgeIntensityPixelRaster
 } from "../../../src/index.js";
 
 const resolution = 50;
@@ -43,7 +43,7 @@ const simulation = Simulation
     .synchronize(field.onceWith(new FieldEdgeIntensityPixelRaster({
         nx: field.nx,
         ny: field.ny,
-        edgeHeight: 60 * resolution,
+        edgeHeight: .6 * xMax * resolution,
         colorMapper: wavelengthColorMapper
     })))
     .synchronize(field.onceWith(new ScalarFieldIntensityPixelRaster({
