@@ -1,7 +1,7 @@
 import {MathPhysicsModelBehavior, Registry} from "../../core/helion.js";
 import {Complex, Interval, Vec3} from "./math.js";
 import {
-    InfernoColorMapper, RdYlBuColorMapper, SeismicColorMapper, ViridisColorMapper
+    InfernoColorMapper, RdYlBuColorMapper, ScientificColorMapper, SeismicColorMapper, ViridisColorMapper
 } from "../../view/colormappers.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
 
@@ -168,7 +168,7 @@ export class MeanCurvatureField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return new JetColorMapper();
+        return new ScientificColorMapper();
     }
 
     sample(u, v, target) {

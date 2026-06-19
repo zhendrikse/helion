@@ -66,8 +66,7 @@ class SurfaceView extends Renderable3D {
         return new DropdownMenu()
             .for(SurfaceScalarFields)
             .addEventListener("change", (event) => {
-                const newScalarField = SurfaceScalarFields.get(event.target.value);
-                newScalarField.surface = this._scalarField._surface;
+                const newScalarField = SurfaceScalarFields.get(event.target.value)(this._scalarField._surface);
                 this._normalizedScalarField = new NormalizedScalarField(newScalarField, this._normalizer);
                 this._normalizedScalarField.reset();
                 this._colorMapper = newScalarField.recommendedColorMapper;
