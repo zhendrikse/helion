@@ -25,8 +25,7 @@ export class WaveEquation {
 // Finally, define a surface that can visualize the (scalar) field.
 //
 const field = new DiscreteScalarField({ nx: 256, ny: 256 });
-const equation = new WaveEquation({ velocity: 5 });
-const solver = new WaveEquationSolver(field, equation);
+const solver = new WaveEquationSolver(new WaveEquation({ velocity: 5 }));
 const surface = new DiscreteFieldSurface(field);
 
 const water = new InstancedMeshSurfaceView({
@@ -44,7 +43,7 @@ Simulation
     })
     .synchronize(surface.alwaysWith(water))
     .onClockTick(() => {
-        solver.step(0.02);
+        field.evolve(solver, 0.02);
         if (Math.random() > 0.02)
             return;
         
