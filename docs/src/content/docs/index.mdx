@@ -12,13 +12,17 @@ simulation, and visualization. It is built around high-level mathematical
 concepts such as fields [^1], parametric geometries [^2],
 operators[^3], and numerical solvers [^4].
 
-The central abstractions in Helion are operators, **not** classes.
-Mathematical entities such as fields, bodies, and geometries are transformed
-through composable operations that mirror the structure of the underlying
-mathematics.
+The primary abstraction in Helion is state transformation.
+Fields represent system state, operators transform state algebraically or geometrically,
+and solvers evolve state according to mathematical laws.
 
 Helion is the product of decades of exploration in mathematics, physics, programming,
 and education, driven by a lifelong fascination with the beauty and patterns of nature.
+
+👉 JavaScript / browser-native (no installation or configuration)<br/>
+👉 Code expresses scientific intent directly (object orientiation)<br/>
+👉 It is model-driven (scalar &amp; vector fields, surfaces, operators)<br/>
+👉 Supports multiple real-time views per model (model / view / contoller) <br/>
 
 [^1]: Fields [demos](https://www.hendrikse.name/helion/electromagnetism/)
 [^2]: Parametric geometries [demo](https://www.hendrikse.name/helion/mathematics/parametric_surfaces/)
@@ -26,34 +30,40 @@ and education, driven by a lifelong fascination with the beauty and patterns of 
 [^4]: Numeric solvers [demo 1](https://www.hendrikse.name/helion/mathematics/fourier_transform/) and
 [demo 2](https://www.hendrikse.name/helion/nature/raindrops/)
 
-#### 🧠 Core ideas
+## 🧠 Core concepts
 <div class="header_line"></div>
 
 Helion provides a [low-cognitive-overhead](https://en.wikipedia.org/wiki/Cognitive_load) environment for expressing
 mathematical and physical systems, where models, simulations, and visualizations
 remain tightly synchronized and can be explored interactively in the browser.
 
-```text
+The following concepts form the core of Helion:
+
+| Concept         | Meaning                              |
+|-----------------|--------------------------------------|
+| `Field()`       | System state                         |
+| `apply()`       | Algebraic / geometric transformation |
+| `evolve()`      | System dynamics / time evolution     |
+| `synchronize()` | Synchronization of model with view   |
+
+These concepts are interacting with one another in the following way:
+
+```
    +--------------+
    |    View      |
    +--------------+
           │ reads
           ▼
-+--------------+                +-------------+
-| Field/object | <-- apply to --|   Solver    |
-|   (state)    |                | (evolution) |
-+--------------+                +-------------+
++--------------+               +-------------+
+| Field/object | <-- evolve  --|   Solver    |
+|   (state)    |               | (evolution) |
++--------------+               +-------------+
        │ uses                          │ uses
        ▼                               ▼
    Operator(s)                  Equation (law)
  (Laplace, FFT,                 (physics model)
   gradient, etc.)
 ```
-
-👉 JavaScript / browser-native (no installation or configuration)<br/>
-👉 Code expresses scientific intent directly (object orientiation)<br/>
-👉 It is model-driven (scalar &amp; vector fields, surfaces, operators)<br/>
-👉 Supports multiple real-time views per model (model / view / contoller) <br/>
 
 #### 🎓 Focus on teaching &amp; learning
 <div class="header_line"></div>

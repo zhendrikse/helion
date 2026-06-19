@@ -20,20 +20,35 @@ operators, and numerical solvers<sup>
 <a href="https://www.hendrikse.name/helion/nature/raindrops/">[4]</a>
 </sup>.
 
-The central abstractions in Helion are operators, **not** classes.
-Mathematical entities such as fields, bodies, and geometries are transformed
-through composable operations that mirror the structure of the underlying
-mathematics.
+The primary abstraction in Helion is state transformation.
+Fields represent system state, operators transform state algebraically or geometrically,
+and solvers evolve state according to mathematical laws.
 
 Helion is the product of decades of exploration in mathematics, physics, programming,
 and education, driven by a lifelong fascination with the beauty and patterns of nature.
 
-## 🧠 Core ideas
+👉 JavaScript / browser-native (no installation or configuration)<br/>
+👉 Code expresses scientific intent directly (object orientiation)<br/>
+👉 It is model-driven (scalar &amp; vector fields, surfaces, operators)<br/>
+👉 Supports multiple real-time views per model (model / view / contoller) <br/>
+
+## 🧠 Core concepts
 <div class="header_line"></div>
 
 Helion provides a [low-cognitive-overhead](https://en.wikipedia.org/wiki/Cognitive_load) environment for expressing
 mathematical and physical systems, where models, simulations, and visualizations
 remain tightly synchronized and can be explored interactively in the browser.
+
+The following concepts form the core of Helion:
+
+| Concept         | Meaning                              |
+|-----------------|--------------------------------------|
+| `Field()`       | System state                         |
+| `apply()`       | Algebraic / geometric transformation |
+| `evolve()`      | System dynamics / time evolution     |
+| `synchronize()` | Synchronization of model with view   |
+
+These concepts are interacting with one another in the following way:
 
 ```
    +--------------+
@@ -42,7 +57,7 @@ remain tightly synchronized and can be explored interactively in the browser.
           │ reads
           ▼
 +--------------+               +-------------+
-| Field/object | <-- applies --|   Solver    |
+| Field/object | <-- evolve  --|   Solver    |
 |   (state)    |               | (evolution) |
 +--------------+               +-------------+
        │ uses                          │ uses
@@ -51,11 +66,6 @@ remain tightly synchronized and can be explored interactively in the browser.
  (Laplace, FFT,                 (physics model)
   gradient, etc.)
 ```
-
-👉 JavaScript / browser-native (no installation or configuration)<br/>
-👉 Code expresses scientific intent directly (object orientiation)<br/>
-👉 It is model-driven (scalar &amp; vector fields, surfaces, operators)<br/>
-👉 Supports multiple real-time views per model (model / view / contoller) <br/>
 
 ## 🎓 Focus on teaching &amp; learning
 

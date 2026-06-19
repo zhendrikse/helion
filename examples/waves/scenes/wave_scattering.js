@@ -1,7 +1,7 @@
 import {
     ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
     SurfaceResolution, WaveEquationSolver, ColorMap, PotentialField3DRaster, StandardSurfaceView,
-    ObstacleOperators, ObstacleType
+    ObstacleOperators, ObstacleShape
 } from "../../../src/index.js";
 
 const resolution = 256;
@@ -36,7 +36,7 @@ const field = new DiscreteScalarField({ nx: resolution, ny: resolution });
 const surface = new DiscreteFieldSurface(field);
 
 const obstacleField = new DiscreteScalarField({ nx: resolution, ny: resolution });
-const obstacle = ObstacleOperators.get(ObstacleType.SingleSlit);
+const obstacle = ObstacleOperators.get(ObstacleShape.SingleSlit);
 obstacle.size = 20;
 obstacleField.apply(obstacle);
 
@@ -75,7 +75,7 @@ Simulation
     }, 5)
     .onReset(() => {
         solver.reset();
-        obstacleField.apply(ObstacleOperators.get(ObstacleType.SingleSlit)); // Obstacle has been fully reset at this point!
+        obstacleField.apply(ObstacleOperators.get(ObstacleShape.SingleSlit)); // Obstacle has been fully reset at this point!
     })
     .append(water.colormapSelector)
     .append(water.shapeSelector);

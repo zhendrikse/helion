@@ -228,7 +228,7 @@ export class DoubleSlitOperator {
     set wavelength(wavelength) { this._wavelength = wavelength; }
 }
 
-export class Obstacle extends Operator {
+class ShapeLike extends Operator {
     constructor({
         size = 40,
         reflectionStrength = 1.0
@@ -242,7 +242,7 @@ export class Obstacle extends Operator {
     set size(size) { this._size = size; }
 }
 
-export class SingleSlitObstacle extends Obstacle {
+export class SingleSlit extends ShapeLike {
     apply(field) {
         const holeEdge = Math.round(field.nx / 2 - this._size/2);
         for (let y = 0; y < field.nx; y++)
@@ -252,7 +252,7 @@ export class SingleSlitObstacle extends Obstacle {
     }
 }
 
-export class DoubleSlitObstacle extends Obstacle {
+export class DoubleSlit extends ShapeLike {
     apply(field) {
         const slitDistance = this._size;
         const dhEdge = Math.round(field.nx / 2 - slitDistance / 2);
@@ -263,7 +263,29 @@ export class DoubleSlitObstacle extends Obstacle {
     }
 }
 
-export const ObstacleType = Object.freeze({
+export class Grating extends ShapeLike {
+    apply(field) {
+        const slitDistance = this._size;
+        for (let y = Math.floor(field.nx / 4); y < Math.floor(3 * field.nx / 4); y++)
+            for (let x = Math.floor(field.nx / 2) - 5; x < Math.floor(field.nx / 2) + 5; x++)
+                if (y % slitDistance < slitDistance / 2)
+                    field.setValueAt(x, y, this._reflectionStrength);
+    }
+}
+
+export class Circle extends ShapeLike {
+    apply(field) {
+        const rSquared = this._size * this._size/4.0;
+        for (let y = 0; y < field.nx; y++)
+            for (let x = 0; x < field.nx; x++)
+                if ((x - field.nx / 2)**2 + (y - field.nx / 2)**2 < rSquared)
+                    field.setValueAt(x, y, this._reflectionStrength);
+    }
+}
+
+
+
+export const ObstacleShape = Object.freeze({
     SingleSlit: "SingleSlit",
     DoubleSlit: "DoubleSlit"
 });
@@ -272,8 +294,8 @@ export const ObstacleOperators = new Registry({
     id: "obstacleTypeSelect",
     label: "Obstacle type ",
     entries: {
-        SingleSlit: new SingleSlitObstacle(),
-        DoubleSlit: new DoubleSlitObstacle()
+        SingleSlit: new SingleSlit(),
+        DoubleSlit: new DoubleSlit()
     }
 });
 

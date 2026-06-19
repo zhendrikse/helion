@@ -28,7 +28,24 @@ However, software adds additional dimensions that are unknown to math and physic
 * **maintenance**
 
 As a consequence, the mathematical most elegant abstraction 
-is not always tantamount to the best programming abstraction.
+is not always tantamount to the best programming abstraction. So 
+Helion is built with the following doctrine in mind:
+
+> Unify concepts, but not necessarily the syntax
+
+## Realisation in Helion
+
+```js
+field.apply(operator);
+field.evolve(solver, dt);
+field.synchronize(view);
+```
+
+```text
+apply      → transformatie
+evolve     → dynamica
+synchronize → visualisatie
+```
 
 
 Ja, dat vind ik eigenlijk een veel sterkere unificatie dan `field.apply(solver)`.
@@ -92,9 +109,9 @@ state.evolve(solver, dt);
 waarbij:
 
 | Concept    | Betekenis                                 |
-| ---------- | ----------------------------------------- |
+| ---------- |-------------------------------------------|
 | `apply()`  | algebraïsche / geometrische transformatie |
-| `evolve()` | tijdsevolutie                             |
+| `evolve()` | System dynamics                           |
 
 ---
 
