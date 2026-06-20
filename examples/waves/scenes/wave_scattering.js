@@ -5,7 +5,6 @@ import {
 } from "../../../src/index.js";
 
 const resolution = 256;
-let currentShape = ShapeOperators.Type.DoubleSlit;
 
 const water = new StandardSurfaceView({
     resolution: new SurfaceResolution(resolution, resolution),
@@ -27,8 +26,8 @@ export class BarrierWaveEquation {
     }
 
     acceleration(field, i, j) {
-        const transmission = 1.0 - this.obstacleField.valueAt(i, j);
-        //const transmission = Math.exp(-10 * this.barrier.valueAt(i, j));
+        //const transmission = 1.0 - this.obstacleField.valueAt(i, j);
+        const transmission = Math.exp(-1e2 * this.obstacleField.valueAt(i, j));
         return transmission * this.velocity * this.velocity * LaplaceOperator.at(field, i, j);
     }
 }
@@ -37,29 +36,28 @@ const field = new DiscreteScalarField({ nx: resolution, ny: resolution });
 const surface = new DiscreteFieldSurface(field);
 
 const obstacleField = new DiscreteScalarField({ nx: resolution, ny: resolution });
-obstacleField.apply(ShapeOperators.create(currentShape, {
-    size: 20
-}));
-
 const solver = new WaveEquationSolver(new BarrierWaveEquation({
     velocity: 10,
     damping: 0.01,
     obstacleField
 }));
 
-const dt = 0.02;
-const configuration = new ShapeConfiguration();
-configuration.onChange = () => {
-    solver.reset();
+function reset(settings) {
     field.reset();
+    solver.reset();
     obstacleField.reset();
-    obstacleField.apply(ShapeOperators.create(configuration.settings.shape, {
-        reflectionStrength: configuration.settings.strength,
-        size: configuration.settings.size
+    obstacleField.apply(ShapeOperators.create(settings.shape, {
+        reflectionStrength: settings.strength,
+        size: settings.size
     }));
-    obstacleField.apply(new Softness({ softness: configuration.settings.softness }));
-};
+    obstacleField.apply(new Softness({ softness: settings.softness }));
+}
 
+const configuration = new ShapeConfiguration();
+configuration.onChange = () => reset(configuration.settings);
+reset(configuration.settings);
+
+const dt = 0.02;
 Simulation
     .with({
         htmlDivId: "waveScatteringContainer",
@@ -67,8 +65,8 @@ Simulation
         fieldOfView: 19,
         headUpDisplay: true
     })
+    .withStartStopResetButtons()
     .incrementsTimeBy(dt)
-    .withMouseClickEventListener()
     .synchronize(surface.alwaysWith(water))
     .synchronize(obstacleField.onceWith(new PotentialField3DRaster({
         width: resolution,
@@ -86,9 +84,6 @@ Simulation
                 field.setValueAt(5, y, pulse);
         }
     }, 5)
-    .onReset(() => {
-        solver.reset();
-        obstacleField.apply(ShapeOperators.create(currentShape)); // Obstacle has been fully reset at this point!
-    })
+    .onReset(() => reset(configuration.settings))
     .append(water.colormapSelector)
     .append(configuration.controls());

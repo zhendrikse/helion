@@ -6,7 +6,6 @@ import {
 
 let xMax = 400;
 const dt = 0.24;		// anything less than 0.25 seems to be stable
-let currentShape = ShapeOperators.Type.DoubleSlit;
 const potential = new DiscreteScalarField({ nx: xMax, ny: xMax });
 const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
 const solver = new SchrodingerSolver(potential);
