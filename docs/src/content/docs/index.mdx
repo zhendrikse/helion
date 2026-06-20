@@ -41,36 +41,36 @@ The following concepts form the core of Helion:
 
 | Concept         | Question                      | Example                       |
 | --------------- | ------------------------------| ----------------------------- |
-| `State`         | What is the current state?    | Field / Body / Paricle cloud  |
+| `State`         | What is the current state?    | Field / Body / Particle cloud |
 | `apply()`       | How is the state transformed? | GaussianImpulseOperator       |
-| `evolve()`      | How does the state evolve?    | SchrodingerSolver             |
-| `synchronize()` | How is the state represented? | `syncrhonize(body.with(view))`|
+| `evolve()`      | How does the state evolve?    | SchrödingerSolver             |
+| `synchronize()` | How is the state represented? | `synchronize(body.with(view))`|
 
 These concepts are interacting with one another in the following way:
 
 ```
        Equation (physical law)
-                 ▲
-                 │
-               uses
-                 │
-              Solver
-                 ▲
-                 │
-             evolve()
-                 │
-                 ▼
-   Operator ──► Field ──► View
+                  ▲
+                  │
+                uses
+                  │
+               Solver
+                  ▲
+                  │
+              evolve()
+                  │
+                  ▼
+   Operator ──► State ──► View
      apply()          synchronize()
 ```
 
 #### 🎓 Focus on teaching &amp; learning
 <div class="header_line"></div>
 
-👩🏻‍🎓 Students of physics and mathematics<br/>
-🕵️ Researchers prototyping ideas<br/>
-👨🏻‍🏫 Educators building interactive explanations<br/>
-🧑‍💻 Exploring physical and geometric intuition for self-study<br/>
+👩🏻‍🎓 students learning physics and mathematics
+👨🏻‍🏫 educators building interactive explanations
+🧑‍💻 learners developing physical intuition
+🕵️ researchers prototyping ideas
 
 
 #### 🎯 Positioning

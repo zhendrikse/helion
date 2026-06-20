@@ -41,28 +41,28 @@ remain tightly synchronized and can be explored interactively in the browser.
 
 The following concepts form the core of Helion:
 
-| Concept         | Question                      | Example                       |
-| --------------- | ------------------------------| ----------------------------- |
-| `State`         | What is the current state?    | Field / Body / Paricle cloud  |
-| `apply()`       | How is the state transformed? | GaussianImpulseOperator       |
-| `evolve()`      | How does the state evolve?    | SchrodingerSolver             |
-| `synchronize()` | How is the state represented? | `syncrhonize(body.with(view))`|
+| Concept         | Question                      | Example                        |
+| --------------- | ------------------------------|--------------------------------|
+| `State`         | What is the current state?    | Field / Body / Particle cloud  |
+| `apply()`       | How is the state transformed? | GaussianImpulseOperator        |
+| `evolve()`      | How does the state evolve?    | SchrödingerSolver              |
+| `synchronize()` | How is the state represented? | `synchronize(body.with(view))` |
 
 These concepts are interacting with one another in the following way:
 
 ```
        Equation (physical law)
-                 ▲
-                 │
-               uses
-                 │
-              Solver
-                 ▲
-                 │
-             evolve()
-                 │
-                 ▼
-   Operator ──► Field ──► View
+                  ▲
+                  │
+                uses
+                  │
+               Solver
+                  ▲
+                  │
+              evolve()
+                  │
+                  ▼
+   Operator ──► State ──► View
      apply()          synchronize()
 ```
 
@@ -71,10 +71,10 @@ These concepts are interacting with one another in the following way:
 
 Helion is designed for:
 
-👩🏻‍🎓 students of physics and mathematics<br/>
-🕵️ researchers prototyping ideas<br/>
-👨🏻‍🏫 educators building interactive explanations<br/>
-🧑‍💻 learners exploring physical intuition<br/>
+👩🏻‍🎓 students learning physics and mathematics
+👨🏻‍🏫 educators building interactive explanations
+🧑‍💻 learners developing physical intuition
+🕵️ researchers prototyping ideas
 
 
 ## 🎯 Positioning
