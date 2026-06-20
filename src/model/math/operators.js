@@ -281,7 +281,7 @@ class Square extends ShapeLike {
 
 class Line extends ShapeLike {
     apply(field) {
-        for (let y = 0; y < this.ny; y++)
+        for (let y = 0; y < field.ny; y++)
             for (let x=Math.floor(field.nx / 2); x < Math.floor(field.nx / 2) + this._size; x++)
                 field.setValueAt(x, y, this._reflectionStrength);
     }
@@ -323,11 +323,31 @@ export class ShapeOperators extends Registry {
     }
 
     constructor({
-        id = "obstacleTypeSelect",
-        label = "Obstacle type ",
+        id = "shapeTypeSelect",
+        label = "🟦 Shape  ",
         entries = ShapeOperators.Operators
     } = {}) {
         super({ id, label, entries });
+    }
+}
+
+export class Softness extends Operator {
+    constructor({
+        softness = 0
+    } = {}) {
+        super();
+        this._softness = softness;
+    }
+
+    apply(field) {
+        for (let s = 0; s < this._softness; s++) {
+            const oldV = field._data.slice();
+            for (let y = 1; y < field.ny - 1; y++)
+                for (let x = 1; x < field.nx - 1; x++) {
+                    const i = y * field.nx + x;
+                    field._data[i] = (oldV[i + 1] + oldV[i - 1] + oldV[i + field.nx] + oldV[i - field.nx]) * .25;
+                }
+        }
     }
 }
 

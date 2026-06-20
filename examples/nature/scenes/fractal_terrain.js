@@ -1,5 +1,5 @@
 import {
-    DiscreteScalarField, DiscreteFieldSurface, Simulation, PerlinNoiseOperator, ColorMap,
+    DiscreteScalarField, DiscreteFieldSurface, Simulation, PerlinNoiseOperator,
     StandardSurfaceView, Vec3, DiamondSquareOperator, ColorMappers, RadioButton
 } from "../../../src/index.js";
 

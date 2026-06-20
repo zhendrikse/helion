@@ -6,8 +6,8 @@ export class WaveEquationSolver {
     }
 
     reset() {
-        this._previous.fill(0);
-        this._next.fill(0);
+        this._previous?.fill(0);
+        this._next?.fill(0);
     }
 
     step(field, dt) {

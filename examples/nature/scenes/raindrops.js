@@ -1,6 +1,6 @@
 import {
     ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
-    SurfaceResolution, WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView, ColorMap
+    SurfaceResolution, WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView
 } from "../../../src/index.js";
 
 export class WaveEquation {
@@ -31,7 +31,7 @@ const surface = new DiscreteFieldSurface(field);
 const water = new InstancedMeshSurfaceView({
     resolution: new SurfaceResolution(256, 256),
     normalizer: new Interval(-0.25, 2),
-    colorMapper: ColorMappers.get(ColorMap.WaterAlternative)
+    colorMapper: ColorMappers.create(ColorMappers.Type.WaterAlternative)
 });
 water.position.set(-128, 0, -128);
 

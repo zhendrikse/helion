@@ -1,5 +1,5 @@
 import {
-    ParticleCloudView, Simulation, Vec3, DropdownMenu, ColorMappers, ColorMap
+    ParticleCloudView, Simulation, Vec3, DropdownMenu, ColorMappers
 } from "../../../src/index.js";
 import { MathPhysicsModelBehavior } from "../../../src/core/helion.js";
 import { Color } from "three";
@@ -15,7 +15,7 @@ function normalize(value, minVal, maxVal) {
     return range === 0.0 ? 0.5 : (clampedValue - minVal) / range;
 }
 
-let colorMapper = ColorMappers.get(ColorMap.Scientific);
+let colorMapper = ColorMappers.create(ColorMappers.Type.Scientific);
 
 export class ParticleCloud extends MathPhysicsModelBehavior {
     static areColliding(position1, position2) {

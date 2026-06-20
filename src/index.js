@@ -15,7 +15,7 @@ export {
 
 export {
     LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator,
-    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ShapeOperators
+    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ShapeOperators, Softness
 } from "./model/math/operators.js";
 
 export {
@@ -37,14 +37,13 @@ export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 export { Renderable3D } from "./view/renderer.js";
 export { ComplexScalarFieldSurfaceRaster, PotentialField3DRaster } from "./view/3d/views.js"
-export { PotentialField } from "./model/phys/fields.js";
 
 export {
     OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial, ArrowField
 } from "./view/3d/composite/composites.js";
 
 export {
-    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString, 
+    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString,
     hsvToRgb, WavelengthColorMapper, hsvToRgbNormalized
 } from "./view/colormappers.js";
 

@@ -1,6 +1,6 @@
 import {
     Simulation, ParametricSurface, Domain, StandardSurfaceView, SurfaceResolution,
-    ColorMappers, Registry, DropdownMenu, ColorMap
+    ColorMappers, Registry, DropdownMenu
 } from "../../../src/index.js";
 import {MeshStandardMaterial} from "three";
 

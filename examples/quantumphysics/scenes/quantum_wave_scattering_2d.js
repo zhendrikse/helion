@@ -1,12 +1,13 @@
 import {
-    ComplexScalarFieldRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range, PotentialField,
-    SchrodingerSolver, GaussianImpulseComplex2D, ScalarFieldIntensityPixelRaster, Checkbox
+    ComplexScalarFieldRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range,
+    SchrodingerSolver, GaussianImpulseComplex2D, ScalarFieldIntensityPixelRaster, Checkbox, ShapeOperators,
+    DiscreteScalarField, DropdownMenu, Softness
 } from "../../../src/index.js";
 
 let xMax = 400;
 const dt = 0.24;		// anything less than 0.25 seems to be stable
-
-const potential = new PotentialField({ nx: xMax, ny: xMax });
+let currentShape = ShapeOperators.Type.DoubleSlit;
+const potential = new DiscreteScalarField({ nx: xMax, ny: xMax });
 const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
 const solver = new SchrodingerSolver(potential);
 const gaussianImpulse = new GaussianImpulseComplex2D();
@@ -17,6 +18,8 @@ function reset() {
     solver.initialize(psi, dt);
     psi.apply(gaussianImpulse);
     potential.reset();
+    potential.apply(ShapeOperators.create(currentShape));
+    potential.apply(new Softness());
 }
 
 const waveFunctionRaster = new ComplexScalarFieldRaster({
@@ -74,7 +77,14 @@ Simulation
         .withValue(0)
         .addEventListener("change", () => reset())
     )
-    .append(potential.shapeSelector)
+    .append(new DropdownMenu()
+        .for(new ShapeOperators())
+        .withValue(currentShape)
+        .addEventListener("change", event => {
+            currentShape = event.target.value;
+            reset();
+        })
+    )
     .append(new Checkbox("🌈 Show phase color ")
         .on(waveFunctionRaster)
         .withProperty("phaseColor")
