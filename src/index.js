@@ -15,7 +15,7 @@ export {
 
 export {
     LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator,
-    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ShapeOperators, Softness
+    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ShapeOperators, Softness, ShapeConfiguration
 } from "./model/math/operators.js";
 
 export {

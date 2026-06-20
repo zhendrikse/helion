@@ -1,7 +1,7 @@
 import {
     ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
     SurfaceResolution, WaveEquationSolver, PotentialField3DRaster, StandardSurfaceView,
-    ShapeOperators, DropdownMenu
+    ShapeOperators, DropdownMenu, ShapeConfiguration, Softness
 } from "../../../src/index.js";
 
 const resolution = 256;
@@ -17,17 +17,17 @@ water.position.set(-resolution * .5, 0, -resolution * .5);
 
 export class BarrierWaveEquation {
     constructor({
-        barrier,
+        obstacleField,
         velocity = 1,
         damping = 0.1
     } = {}) {
         this.velocity = velocity;
         this.damping = damping;
-        this.barrier = barrier;
+        this.obstacleField = obstacleField;
     }
 
     acceleration(field, i, j) {
-        const transmission = 1.0 - this.barrier.valueAt(i, j);
+        const transmission = 1.0 - this.obstacleField.valueAt(i, j);
         //const transmission = Math.exp(-10 * this.barrier.valueAt(i, j));
         return transmission * this.velocity * this.velocity * LaplaceOperator.at(field, i, j);
     }
@@ -44,10 +44,22 @@ obstacleField.apply(ShapeOperators.create(currentShape, {
 const solver = new WaveEquationSolver(new BarrierWaveEquation({
     velocity: 10,
     damping: 0.01,
-    barrier: obstacleField
+    obstacleField
 }));
 
 const dt = 0.02;
+const configuration = new ShapeConfiguration();
+configuration.onChange = () => {
+    solver.reset();
+    field.reset();
+    obstacleField.reset();
+    obstacleField.apply(ShapeOperators.create(configuration.settings.shape, {
+        reflectionStrength: configuration.settings.strength,
+        size: configuration.settings.size
+    }));
+    obstacleField.apply(new Softness({ softness: configuration.settings.softness }));
+};
+
 Simulation
     .with({
         htmlDivId: "waveScatteringContainer",
@@ -79,14 +91,4 @@ Simulation
         obstacleField.apply(ShapeOperators.create(currentShape)); // Obstacle has been fully reset at this point!
     })
     .append(water.colormapSelector)
-    .append(new DropdownMenu()
-        .for(new ShapeOperators())
-        .withValue(currentShape)
-        .addEventListener("change", event => {
-            currentShape = event.target.value;
-            solver.reset();
-            field.reset();
-            obstacleField.reset();
-            obstacleField.apply(ShapeOperators.create(currentShape));
-        })
-    );
+    .append(configuration.controls());

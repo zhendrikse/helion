@@ -50,20 +50,20 @@ class HtmlControl {
         return this;
     }
 
-    _appendToButtonRow(control) {
-        this._buttonRow.appendChild(control._label);
-        this._buttonRow.appendChild(control._inputControl);
+    _appendToButtonRow(control, buttonRow) {
+        buttonRow.appendChild(control._label);
+        buttonRow.appendChild(control._inputControl);
         if (control._span)
-            this._buttonRow.appendChild(control._span);
+            buttonRow.appendChild(control._span);
 
         if (control.hasChildControl)
-            this._appendToButtonRow(control._childControl);
+            this._appendToButtonRow(control._childControl, this._buttonRow);
     }
 
     get hasChildControl() { return this._childControl !== null;}
 
     append(controlsDiv) {
-        this._appendToButtonRow(this);
+        this._appendToButtonRow(this, this._buttonRow);
         controlsDiv.appendChild(this._buttonRow);
         return this;
     }
@@ -81,6 +81,33 @@ class HtmlControl {
 
     togetherWith(otherControl) {
         this._childControl = otherControl;
+        return this;
+    }
+}
+
+export class CompoundControl extends HtmlControl {
+    constructor() {
+        super();
+        this._buttonRows = [];
+        this._controls = [];
+    }
+
+    add(control) {
+        this._controls.push(control);
+        const buttonRow = this._createButtonRow();
+        this._buttonRows.push(buttonRow);
+        this._appendToButtonRow(control, buttonRow);
+        return this;
+    }
+
+    to(simulation) {
+        for (const control of this._controls)
+            this._setSimulationOn(control, simulation);
+    }
+
+    append(controlsDiv) {
+        for (const buttonRow of this._buttonRows)
+            controlsDiv.appendChild(buttonRow);
         return this;
     }
 }
