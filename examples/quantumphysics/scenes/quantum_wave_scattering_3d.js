@@ -17,7 +17,7 @@ function reset() {
     solver.initialize(psi, dt);
     psi.apply(gaussianImpulse);
     potential.reset();
-    potential.apply(ShapeOperators.create(currentShape));
+    potential.apply(ShapeOperators.create(currentShape, { reflectionStrength: .1 }));
     potential.apply(new Softness());
 }
 

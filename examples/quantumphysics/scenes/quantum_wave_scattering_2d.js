@@ -12,13 +12,12 @@ const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
 const solver = new SchrodingerSolver(potential);
 const gaussianImpulse = new GaussianImpulseComplex2D();
 
-
 function reset() {
     psi.reset();
     solver.initialize(psi, dt);
     psi.apply(gaussianImpulse);
     potential.reset();
-    potential.apply(ShapeOperators.create(currentShape));
+    potential.apply(ShapeOperators.create(currentShape, { reflectionStrength: .1 }));
     potential.apply(new Softness());
 }
 

@@ -50,8 +50,8 @@ export class WaveEquationSolver {
     }
 
     reset() {
-        this._nextRe.fill(0);
-        this._nextIm.fill(0);
+        this._nextRe?.fill(0);
+        this._nextIm?.fill(0);
     }
 
     // Bump the imaginary part of psi back by one time step
