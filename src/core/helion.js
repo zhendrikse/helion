@@ -149,6 +149,50 @@ export class Viewport {
         this._details.style.visibility = "hidden";
         this._details.open = !parameterMenuCollapsed;
         this._addOnsDiv.appendChild(this._details);
+
+        this.#createFullScreenButton();
+    }
+
+    #createFullScreenButton() {
+        this._fullscreenButton = document.createElement("button");
+        this._fullscreenButton.innerHTML = "⛶";
+        this._fullscreenButton.title = "Fullscreen";
+        this._fullscreenButton.classList.add("helionFullscreenButton");
+
+        Object.assign(this._fullscreenButton.style, {
+            position: "absolute",
+            top: "8px",
+            right: "8px",
+            zIndex: "1000",
+            width: "36px",
+            height: "36px",
+            border: "none",
+            borderRadius: "6px",
+            background: "rgba(0,0,0,0.15)",
+            color: "white",
+            fontSize: "20px",
+            cursor: "pointer",
+            backdropFilter: "blur(4px)"
+        });
+
+        document.addEventListener("fullscreenchange", () => {
+            this._fullscreenButton.innerHTML =
+                document.fullscreenElement ? "⮌" : "⛶";
+        });
+
+        document.addEventListener("fullscreenchange", () => {
+            window.dispatchEvent(new Event("resize"));
+        });
+
+        this._fullscreenButton.addEventListener("click", async () => {
+            if (!document.fullscreenElement) {
+                await this._container.requestFullscreen();
+            } else {
+                await document.exitFullscreen();
+            }
+        });
+
+        this._canvasWrapperDiv.appendChild(this._fullscreenButton);
     }
 
     get simulationButtonsDiv() { return this._simulationButtonsDiv; }
