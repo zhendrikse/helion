@@ -7,18 +7,27 @@ import {
 let xMax = 400;
 const dt = 0.24;		// anything less than 0.25 seems to be stable
 let currentShape = ShapeOperators.Type.DoubleSlit;
+let currentSoftness = 0;
+let currentSize = 40;
+let currentStrength = 0.1;
+
 const potential = new DiscreteScalarField({ nx: xMax, ny: xMax });
 const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
 const solver = new SchrodingerSolver(potential);
 const gaussianImpulse = new GaussianImpulseComplex2D();
 
-function reset() {
+function reset({
+    size = currentSize,
+    shape = currentShape,
+    strength = currentStrength,
+    softness = currentSoftness,
+} = {}) {
     psi.reset();
     solver.initialize(psi, dt);
     psi.apply(gaussianImpulse);
     potential.reset();
-    potential.apply(ShapeOperators.create(currentShape, { reflectionStrength: .1 }));
-    potential.apply(new Softness());
+    potential.apply(ShapeOperators.create(shape, { reflectionStrength: strength, size }));
+    potential.apply(new Softness({ softness: softness }));
 }
 
 const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
@@ -60,22 +69,31 @@ Simulation
         .on(potential)
         .withProperty("energy")
         .withRange(new Range(-0.1, 0.1, .001))
-        .withValue(0.1)
-        .addEventListener("change", () => reset())
+        .withValue(currentStrength)
+        .addEventListener("change", event => {
+            currentStrength = Number(event.target.value);
+            reset();
+        })
     )
     .append(new Slider("📐 Size")
         .on(potential)
         .withProperty("size")
         .withRange(new Range(0, 50, 1))
-        .withValue(40)
-        .addEventListener("change", () => reset())
+        .withValue(currentSize)
+        .addEventListener("change", event => {
+            currentSize = Number(event.target.value);
+            reset();
+        })
     )
     .append(new Slider("🧸 Softness")
         .on(potential)
         .withProperty("softness")
         .withRange(new Range(0, 20, 1))
-        .withValue(0)
-        .addEventListener("change", () => reset())
+        .withValue(currentSoftness)
+        .addEventListener("change", event => {
+            currentSoftness = Number(event.target.value);
+            reset();
+        })
     )
     .append(new DropdownMenu()
         .for(new ShapeOperators())
@@ -88,4 +106,5 @@ Simulation
     .append(new Checkbox("🌈 Show phase color ")
         .on(waveFunctionSurface)
         .withProperty("phaseColor")
-        .checked(true));
+        .checked(true)
+    );
