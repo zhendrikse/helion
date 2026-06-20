@@ -34,7 +34,7 @@ class Landscape {
 
 const landscape = new Landscape();
 const surfaceView = new StandardSurfaceView({
-    colorMapper: ColorMappers.get(ColorMap.Terrain),
+    colorMapper: ColorMappers.create(ColorMappers.Type.Terrain),
     contours: false
 });
 surfaceView.position.set(-128, 0, -128);
