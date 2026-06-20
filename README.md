@@ -41,31 +41,31 @@ remain tightly synchronized and can be explored interactively in the browser.
 
 The following concepts form the core of Helion:
 
-| Concept         | Meaning                              |
-|-----------------|--------------------------------------|
-| `Field()`       | System state                         |
-| `apply()`       | Algebraic / geometric transformation |
-| `evolve()`      | System dynamics / time evolution     |
-| `synchronize()` | Synchronization of model with view   |
+| Concept         | Question                      | Example                       |
+| --------------- | ------------------------------| ----------------------------- |
+| `State`         | What is the current state?    | Field / Body / Paricle cloud  |
+| `apply()`       | How is the state transformed? | GaussianImpulseOperator       |
+| `evolve()`      | How does the state evolve?    | SchrodingerSolver             |
+| `synchronize()` | How is the state represented? | `syncrhonize(body.with(view))`|
 
 These concepts are interacting with one another in the following way:
 
 ```
-   +--------------+
-   |    View      |
-   +--------------+
-          │ reads
-          ▼
-+--------------+               +-------------+
-| Field/object | <-- evolve  --|   Solver    |
-|   (state)    |               | (evolution) |
-+--------------+               +-------------+
-       │ uses                          │ uses
-       ▼                               ▼
-   Operator(s)                  Equation (law)
- (Laplace, FFT,                 (physics model)
-  gradient, etc.)
+       Equation (physical law)
+                 ▲
+                 │
+               uses
+                 │
+              Solver
+                 ▲
+                 │
+             evolve()
+                 │
+                 ▼
+   Operator ──► Field ──► View
+     apply()          synchronize()
 ```
+
 
 ## 🎓 Focus on teaching &amp; learning
 
