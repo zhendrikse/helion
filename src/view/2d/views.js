@@ -1,14 +1,13 @@
 import {
     Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, InstancedMesh, InstancedBufferAttribute,
-    DynamicDrawUsage, Matrix4, Quaternion, Object3D, Color, SphereGeometry, MeshStandardMaterial,
+    DynamicDrawUsage, Object3D, Color, SphereGeometry, MeshStandardMaterial,
     DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry, ConeGeometry, CylinderGeometry, CapsuleGeometry
 } from "three";
 
 import { Renderable3D } from "../renderer.js";
-import { Complex } from "../../model/math/math.js";
 import { DropdownMenu} from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
-import { ColorMap, ColorMappers, hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
+import { ColorMappers, hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({

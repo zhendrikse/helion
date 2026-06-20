@@ -91,6 +91,7 @@ export class DropdownMenu extends HtmlControl {
     }
 
     for(registry) {
+        console.log(registry.id);
         this._label.textContent = registry.label;
 
         this._inputControl = document.createElement("select");

@@ -1,15 +1,16 @@
 import {
     ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
-    SurfaceResolution, WaveEquationSolver, ColorMap, PotentialField3DRaster, StandardSurfaceView,
-    ObstacleOperators, ObstacleShape
+    SurfaceResolution, WaveEquationSolver, PotentialField3DRaster, StandardSurfaceView,
+    ShapeOperators, DropdownMenu
 } from "../../../src/index.js";
 
 const resolution = 256;
+let currentShape = ShapeOperators.Type.DoubleSlit;
 
 const water = new StandardSurfaceView({
     resolution: new SurfaceResolution(resolution, resolution),
     normalizer: new Interval(-3, 3),
-    colorMapper: ColorMappers.get(ColorMap.WaterAlternative),
+    colorMapper: ColorMappers.create(ColorMappers.Type.WaterAlternative),
     contours: false,
 });
 water.position.set(-resolution * .5, 0, -resolution * .5);
@@ -36,9 +37,9 @@ const field = new DiscreteScalarField({ nx: resolution, ny: resolution });
 const surface = new DiscreteFieldSurface(field);
 
 const obstacleField = new DiscreteScalarField({ nx: resolution, ny: resolution });
-const obstacle = ObstacleOperators.get(ObstacleShape.SingleSlit);
-obstacle.size = 20;
-obstacleField.apply(obstacle);
+obstacleField.apply(ShapeOperators.create(currentShape, {
+    size: 20
+}));
 
 const solver = new WaveEquationSolver(new BarrierWaveEquation({
     velocity: 10,
@@ -75,7 +76,17 @@ Simulation
     }, 5)
     .onReset(() => {
         solver.reset();
-        obstacleField.apply(ObstacleOperators.get(ObstacleShape.SingleSlit)); // Obstacle has been fully reset at this point!
+        obstacleField.apply(ShapeOperators.create(currentShape)); // Obstacle has been fully reset at this point!
     })
     .append(water.colormapSelector)
-    .append(water.shapeSelector);
+    .append(new DropdownMenu()
+        .for(new ShapeOperators())
+        .withValue(currentShape)
+        .addEventListener("change", event => {
+            currentShape = event.target.value;
+            solver.reset();
+            field.reset();
+            obstacleField.reset();
+            obstacleField.apply(ShapeOperators.create(currentShape));
+        })
+    );

@@ -15,8 +15,8 @@ export {
 
 export {
     LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator,
-    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ObstacleOperators, ObstacleShape
-} from "./model/math/numerics/operators/operators.js";
+    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ShapeOperators
+} from "./model/math/operators.js";
 
 export {
     ParticleCloudView, ScalarFieldIntensityPixelRaster, ComplexScalarFieldRaster,
@@ -44,7 +44,7 @@ export {
 } from "./view/3d/composite/composites.js";
 
 export {
-    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString, ColorMap,
+    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString, 
     hsvToRgb, WavelengthColorMapper, hsvToRgbNormalized
 } from "./view/colormappers.js";
 

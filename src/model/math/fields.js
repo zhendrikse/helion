@@ -1,9 +1,7 @@
 import {MathPhysicsModelBehavior, Registry} from "../../core/helion.js";
 import {Complex, Interval, Vec3} from "./math.js";
-import {
-    InfernoColorMapper, RdYlBuColorMapper, ScientificColorMapper, SeismicColorMapper, ViridisColorMapper
-} from "../../view/colormappers.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
+import {ColorMappers} from "../../view/colormappers.js";
 
 export class Domain {
     constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
@@ -168,7 +166,7 @@ export class MeanCurvatureField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return new ScientificColorMapper();
+        return new ColorMappers().create(ColorMappers.Type.Scientific);
     }
 
     sample(u, v, target) {

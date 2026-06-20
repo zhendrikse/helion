@@ -1,10 +1,10 @@
 import { Hud } from "./hud.js";
-import {ThreeJsRenderer} from "../view/3d/renderer.js";
-import {Vector3} from "three";
-import {Axes} from "../view/3d/composite/backgrounds.js";
-import {generateUUID, Vec3} from "../model/math/math.js";
-import {UPlotGraph} from "./uplot.js";
-import {Button} from "./controls.js";
+import { ThreeJsRenderer} from "../view/3d/renderer.js";
+import { Vector3} from "three";
+import { Axes} from "../view/3d/composite/backgrounds.js";
+import { generateUUID, Vec3} from "../model/math/math.js";
+import { UPlotGraph} from "./uplot.js";
+import { Button } from "./controls.js";
 
 export class Registry {
     constructor({

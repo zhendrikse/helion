@@ -1,19 +1,6 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import {Range, Vec3} from "../../math.js";
-import {DiscreteComplexField, DiscreteScalarField} from "../../fields.js";
-import {ComplexScalarFieldRaster} from "../../../../view/2d/views.js";
-import {SchrodingerSolver} from "../solvers/solvers.js";
-import {Registry, Simulation} from "../../../../core/helion.js";
-import {Slider} from "../../../../core/controls.js";
-import {
-    GradientColorMapper,
-    InfernoColorMapper,
-    RdYlBuColorMapper, ScientificColorMapper,
-    SeismicColorMapper, TerrainColorMapper, UniformColorMapper, ViridisColorMapper,
-    WaterAlternativeColorMapper, WaterColorMapper, WavelengthColorMapper
-} from "../../../../view/colormappers.js";
-import {AxialSymmetricBody} from "../../../phys/bodies.js";
-import {Cylinder} from "../../../../view/3d/primitives/primitives.js";
+import { Vec3 } from "./math.js";
+import { Registry } from "../../core/helion.js";
 
 class Operator {
     apply(field) {}
@@ -242,62 +229,107 @@ class ShapeLike extends Operator {
     set size(size) { this._size = size; }
 }
 
-export class SingleSlit extends ShapeLike {
+class SingleSlit extends ShapeLike {
     apply(field) {
         const holeEdge = Math.round(field.nx / 2 - this._size/2);
-        for (let y = 0; y < field.nx; y++)
+        for (let y = 0; y < field.ny; y++)
             for (let x = Math.floor(field.nx / 2) - 5; x < Math.floor(field.nx / 2) + 5; x++)
                 if (y <= holeEdge || y > holeEdge + this._size)
                     field.setValueAt(x, y, this._reflectionStrength);
     }
 }
 
-export class DoubleSlit extends ShapeLike {
+class DoubleSlit extends ShapeLike {
     apply(field) {
         const slitDistance = this._size;
         const dhEdge = Math.round(field.nx / 2 - slitDistance / 2);
-        for (let y = 0; y < field.nx; y++)
+        for (let y = 0; y < field.ny; y++)
             for (let x = Math.floor(field.nx / 2) - 5; x < Math.floor(field.nx / 2)+5; x++)
                 if (y <= dhEdge-10 || y > dhEdge + slitDistance + 10 || (y > dhEdge && y <= dhEdge + slitDistance))
                     field.setValueAt(x, y, this._reflectionStrength);
     }
 }
 
-export class Grating extends ShapeLike {
+class Grating extends ShapeLike {
     apply(field) {
         const slitDistance = this._size;
-        for (let y = Math.floor(field.nx / 4); y < Math.floor(3 * field.nx / 4); y++)
+        for (let y = Math.floor(field.ny / 4); y < Math.floor(3 * field.ny / 4); y++)
             for (let x = Math.floor(field.nx / 2) - 5; x < Math.floor(field.nx / 2) + 5; x++)
                 if (y % slitDistance < slitDistance / 2)
                     field.setValueAt(x, y, this._reflectionStrength);
     }
 }
 
-export class Circle extends ShapeLike {
+class Circle extends ShapeLike {
     apply(field) {
         const rSquared = this._size * this._size/4.0;
-        for (let y = 0; y < field.nx; y++)
+        for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++)
                 if ((x - field.nx / 2)**2 + (y - field.nx / 2)**2 < rSquared)
                     field.setValueAt(x, y, this._reflectionStrength);
     }
 }
 
-
-
-export const ObstacleShape = Object.freeze({
-    SingleSlit: "SingleSlit",
-    DoubleSlit: "DoubleSlit"
-});
-
-export const ObstacleOperators = new Registry({
-    id: "obstacleTypeSelect",
-    label: "Obstacle type ",
-    entries: {
-        SingleSlit: new SingleSlit(),
-        DoubleSlit: new DoubleSlit()
+class Square extends ShapeLike {
+    apply(field) {
+        const edge = Math.round(field.nx / 2 - this._size / 2);
+        for (let y = edge; y < edge + this._size; y++)
+            for (let x = edge; x < edge + this._size; x++)
+                field.setValueAt(x, y, this._reflectionStrength);
     }
-});
+}
+
+class Line extends ShapeLike {
+    apply(field) {
+        for (let y = 0; y < this.ny; y++)
+            for (let x=Math.floor(field.nx / 2); x < Math.floor(field.nx / 2) + this._size; x++)
+                field.setValueAt(x, y, this._reflectionStrength);
+    }
+}
+
+class Step extends ShapeLike {
+    apply(field) {
+        for (let y = 0; y <field.ny; y++)
+            for (let x = Math.floor(field.nx / 2); x < field.nx; x++)
+                field.setValueAt(x, y, this._reflectionStrength);
+    }
+}
+
+export class ShapeOperators extends Registry {
+    static Type = Object.freeze({
+        SingleSlit: "SingleSlit",
+        DoubleSlit: "DoubleSlit",
+        Grating: "Grating",
+        Circle: "Circle",
+        Step: "Step",
+        Line: "Line",
+        Square: "Square"
+    });
+
+    static Operators = {
+        SingleSlit: SingleSlit,
+        DoubleSlit: DoubleSlit,
+        Grating: Grating,
+        Circle: Circle,
+        Step: Step,
+        Line: Line,
+        Square: Square
+    };
+
+    static create(key, options = {}) {
+        const this_ = new ShapeOperators();
+        const Type = this_.get(key);
+        return new Type(options);
+    }
+
+    constructor({
+        id = "obstacleTypeSelect",
+        label = "Obstacle type ",
+        entries = ShapeOperators.Operators
+    } = {}) {
+        super({ id, label, entries });
+    }
+}
 
 //
 // js/fft-esm.js

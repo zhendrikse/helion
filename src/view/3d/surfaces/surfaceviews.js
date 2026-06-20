@@ -14,8 +14,8 @@ import {
 import { SurfaceScalarFields } from "../../../model/math/fields.js";
 import { AdaptiveSymmetricNormalizer, Range } from "../../../model/math/math.js";
 import { NormalizedScalarField } from "../../../model/math/fields.js";
-import {ColorMap, ColorMappers} from "../../colormappers.js";
-import {Checkbox, DropdownMenu, Slider} from "../../../core/controls.js";
+import { ColorMappers} from "../../colormappers.js";
+import { Checkbox, DropdownMenu, Slider} from "../../../core/controls.js";
 import { Registry } from "../../../core/helion.js";
 import { Renderable3D } from "../../renderer.js";
 
@@ -55,9 +55,9 @@ class SurfaceView extends Renderable3D {
 
     get colormapSelector() {
         return new DropdownMenu()
-            .for(ColorMappers)
+            .for(new ColorMappers())
             .addEventListener("change", (event) => {
-                this._colorMapper = ColorMappers.get(event.target.value);
+                this._colorMapper = ColorMappers.create(event.target.value);
                 this._dirty = true;
             });
     }
@@ -154,7 +154,7 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         resolution = new SurfaceResolution(100, 100),
         opacity = 1.0,
         scalarFieldType = "Height",
-        colorMapper = ColorMappers.get(ColorMap.Gradient),
+        colorMapper = ColorMappers.create(ColorMappers.Type.Gradient),
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super({resolution, colorMapper, scalarFieldType, normalizer});
@@ -252,7 +252,7 @@ export class StandardSurfaceView extends SurfaceView {
         surface = true,
         opacity = 1,
         scalarFieldType = "Height",
-        colorMapper = ColorMappers.get(ColorMap.Gradient),
+        colorMapper = ColorMappers.create(ColorMappers.Type.Gradient),
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super({resolution, colorMapper, scalarFieldType, normalizer});
