@@ -14,7 +14,7 @@ import {
 import { SurfaceScalarFields } from "../../../model/math/fields.js";
 import { AdaptiveSymmetricNormalizer, Range } from "../../../model/math/math.js";
 import { NormalizedScalarField } from "../../../model/math/fields.js";
-import { ColorMappers} from "../../colormappers.js";
+import { ColorMappersFactory} from "../../colormappers.js";
 import {Checkbox, CompoundControl, DropdownMenu, Slider} from "../../../core/controls.js";
 import { Registry } from "../../../core/helion.js";
 import { Renderable3D } from "../../renderer.js";
@@ -38,7 +38,7 @@ class SurfaceView extends Renderable3D {
     constructor({
         resolution = new SurfaceResolution(100, 100),
         scalarFieldType = "Height",
-        colorMapper = ColorMappers.create(ColorMappers.Type.Gradient),
+        colorMapper = ColorMappersFactory.create(ColorMappersFactory.Type.Gradient),
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super();
@@ -59,9 +59,9 @@ class SurfaceView extends Renderable3D {
         const compoundControl = new CompoundControl();
         compoundControl
             .add(new DropdownMenu()
-                .for(new ColorMappers())
+                .for(new ColorMappersFactory())
                 .addEventListener("change", (event) => {
-                    this._colorMapper = ColorMappers.create(event.target.value);
+                    this._colorMapper = ColorMappersFactory.create(event.target.value);
                     this._dirty = true;
                 })
             );
@@ -160,7 +160,7 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         resolution = new SurfaceResolution(100, 100),
         opacity = 1.0,
         scalarFieldType = "Height",
-        colorMapper = ColorMappers.create(ColorMappers.Type.Gradient),
+        colorMapper = ColorMappersFactory.create(ColorMappersFactory.Type.Gradient),
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super({resolution, colorMapper, scalarFieldType, normalizer});
@@ -258,7 +258,7 @@ export class StandardSurfaceView extends SurfaceView {
         surface = true,
         opacity = 1,
         scalarFieldType = "Height",
-        colorMapper = ColorMappers.create(ColorMappers.Type.Gradient),
+        colorMapper = ColorMappersFactory.create(ColorMappersFactory.Type.Gradient),
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super({resolution, colorMapper, scalarFieldType, normalizer});

@@ -1,6 +1,6 @@
 import {
     ComplexScalarFieldRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range,
-    SchrodingerSolver, GaussianImpulseComplex2D, ScalarFieldIntensityPixelRaster, Checkbox, ShapeOperators,
+    SchrodingerSolver, GaussianImpulseComplex2D, ScalarFieldIntensityPixelRaster, Checkbox, ShapeFactory,
     DiscreteScalarField, ShapeConfiguration, Softness
 } from "../../../src/index.js";
 
@@ -16,7 +16,7 @@ function reset(settings) {
     solver.initialize(psi, dt);
     psi.apply(gaussianImpulse);
     potential.reset();
-    potential.apply(ShapeOperators.create(settings.shape, {
+    potential.apply(ShapeFactory.create(settings.shape, {
         reflectionStrength: settings.strength,
         size: settings.size
     }));

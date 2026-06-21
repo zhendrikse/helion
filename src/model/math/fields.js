@@ -1,7 +1,7 @@
 import {MathPhysicsModelBehavior, Registry} from "../../core/helion.js";
 import {Complex, Interval, Vec3} from "./math.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
-import {ColorMappers} from "../../view/colormappers.js";
+import {ColorMappersFactory} from "../../view/colormappers.js";
 
 export class Domain {
     constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
@@ -155,7 +155,7 @@ export class HeightScalarField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return ColorMappers.create(ColorMappers.Type.Inferno);
+        return ColorMappersFactory.create(ColorMappersFactory.Type.Inferno);
     }
 }
 
@@ -166,7 +166,7 @@ export class MeanCurvatureField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return ColorMappers.create(ColorMappers.Type.Scientific);
+        return ColorMappersFactory.create(ColorMappersFactory.Type.Scientific);
     }
 
     sample(u, v, target) {
@@ -181,7 +181,7 @@ export class GaussianCurvatureField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return ColorMappers.create(ColorMappers.Type.Seismic);
+        return ColorMappersFactory.create(ColorMappersFactory.Type.Seismic);
     }
 
     sample(u, v, target) {
@@ -197,7 +197,7 @@ export class PrincipalCurvatureField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return ColorMappers.create(this._which ? ColorMappers.Type.Viridis : ColorMappers.Type.Inferno);
+        return ColorMappersFactory.create(this._which ? ColorMappersFactory.Type.Viridis : ColorMappersFactory.Type.Inferno);
     }
 
     sample(u, v, target) {
@@ -213,7 +213,7 @@ export class ShapeIndexField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return ColorMappers.create(ColorMappers.Type.RdYlBu);
+        return ColorMappersFactory.create(ColorMappersFactory.Type.RdYlBu);
     }
 
     sample(u, v, target) {
@@ -234,7 +234,7 @@ export class CurvednessField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return ColorMappers.create(ColorMappers.Type.Viridis);
+        return ColorMappersFactory.create(ColorMappersFactory.Type.Viridis);
     }
 
     sample(u, v, target) {
@@ -355,7 +355,7 @@ export class DiscreteComplexField extends Field {
     }
 
     index(x, y) {
-        return y * this._nx + x;
+        return y * this.nx + x;
     }
 
     reset() {

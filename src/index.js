@@ -15,7 +15,7 @@ export {
 
 export {
     LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator,
-    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ShapeOperators, Softness, SineImpulsOperator
+    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ShapeFactory, Softness, SineImpulsOperator
 } from "./model/math/operators.js";
 
 export {
@@ -45,7 +45,7 @@ export {
 } from "./view/3d/composite/composites.js";
 
 export {
-    wavelengthColor, wavelengthToRGBNormalized, ColorMappers, ColorMapper, toColorString,
+    wavelengthColor, wavelengthToRGBNormalized, ColorMappersFactory, ColorMapper, toColorString,
     hsvToRgb, WavelengthColorMapper, hsvToRgbNormalized
 } from "./view/colormappers.js";
 

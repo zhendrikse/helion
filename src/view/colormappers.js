@@ -299,7 +299,7 @@ class TerrainColorMapper extends ColorMapper {
     }
 }
 
-export class ColorMappers extends Registry {
+export class ColorMappersFactory extends Registry {
     static Type = Object.freeze({
         Gradient: "Gradient",
         Inferno: "Inferno",
@@ -314,7 +314,7 @@ export class ColorMappers extends Registry {
     });
 
     static create(key, options = {}) {
-        const this_ = new ColorMappers();
+        const this_ = new ColorMappersFactory();
         const Type = this_.get(key);
         return new Type(options);
     }

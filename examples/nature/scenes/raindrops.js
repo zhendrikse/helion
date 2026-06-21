@@ -1,5 +1,5 @@
 import {
-    ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
+    ColorMappersFactory, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
     SurfaceResolution, WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView
 } from "../../../src/index.js";
 
@@ -31,7 +31,7 @@ const surface = new DiscreteFieldSurface(field);
 const water = new InstancedMeshSurfaceView({
     resolution: new SurfaceResolution(256, 256),
     normalizer: new Interval(-0.25, 2),
-    colorMapper: ColorMappers.create(ColorMappers.Type.WaterAlternative)
+    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative)
 });
 water.position.set(-128, 0, -128);
 

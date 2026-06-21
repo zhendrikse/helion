@@ -1,7 +1,7 @@
 import {
-    ColorMappers, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
+    ColorMappersFactory, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
     SurfaceResolution, WaveEquationSolver, PotentialField3DRaster, StandardSurfaceView,
-    ShapeOperators, SineImpulsOperator, ShapeConfiguration, Softness, BarrierWaveEquation
+    ShapeFactory, SineImpulsOperator, ShapeConfiguration, Softness, BarrierWaveEquation
 } from "../../../src/index.js";
 
 const resolution = 256;
@@ -9,7 +9,7 @@ const resolution = 256;
 const waterSurface = new StandardSurfaceView({
     resolution: new SurfaceResolution(resolution, resolution),
     normalizer: new Interval(-3, 3),
-    colorMapper: ColorMappers.create(ColorMappers.Type.WaterAlternative),
+    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
     contours: false,
 });
 waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
@@ -32,7 +32,7 @@ function reset(settings) {
     field.apply(sineImpuls);
     solver.reset();
     obstacleField.reset();
-    obstacleField.apply(ShapeOperators.create(settings.shape, {
+    obstacleField.apply(ShapeFactory.create(settings.shape, {
         reflectionStrength: settings.strength,
         size: settings.size
     }));

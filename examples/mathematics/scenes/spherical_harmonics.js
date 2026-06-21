@@ -1,7 +1,7 @@
 import {
     ThreeJsRenderer, Canvas, HtmlDiv, Simulation, HtmlControl,
     EventController, Vec3, ParametricSurface,
-    Domain, StandardSurfaceView, ColorMappers
+    Domain, StandardSurfaceView, ColorMappersFactory
 } from "../../../src/index.js";
 
 const sin = Math.sin;
@@ -33,7 +33,7 @@ const renderer = ThreeJsRenderer
     .with({ fieldOfView: 20 });
 
 const surfaceView = new StandardSurfaceView({
-    colorMapperType: ColorMappers.get("RdYlBu"),
+    colorMapperType: ColorMappersFactory.get("RdYlBu"),
     opacity: 0.9
 });
 

@@ -1,6 +1,6 @@
 import {
     Simulation, ParametricSurface, Domain, StandardSurfaceView, SurfaceResolution,
-    ColorMappers, Registry, DropdownMenu
+    ColorMappersFactory, Registry, DropdownMenu
 } from "../../../src/index.js";
 import {MeshStandardMaterial} from "three";
 
@@ -70,7 +70,7 @@ const surfaceView = new StandardSurfaceView({
     opacity: 0.95,
     surfaceResolution: new SurfaceResolution(200, 200),
     contourResolution: new SurfaceResolution(100, 50),
-    colorMapper: ColorMappers.create(ColorMappers.Type.RdYlBu)
+    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.RdYlBu)
 });
 
 const simulation = Simulation

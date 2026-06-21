@@ -810,7 +810,7 @@ Dat voelt voor mij natuurlijker dan PointCloud kunstmatig in een Field te persen
 Je begint nu veel objecten te krijgen:
 
 ```js
-ColorMappers
+ColorMappersFactory
 SurfaceViews
 Integrators
 Operators
@@ -837,7 +837,7 @@ export class SphereSurfaceView {
 Dan kun je automatisch UI's bouwen:
 
 ```js
-createSelect(ColorMappers);
+createSelect(ColorMappersFactory);
 createSelect(SurfaceViews);
 ```
 
@@ -1251,7 +1251,7 @@ HtmlSelect.fromRegistry(
 
 ```js
 HtmlSelect.fromRegistry(
-    ColorMappers
+    ColorMappersFactory
 );
 ```
 

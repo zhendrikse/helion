@@ -1,10 +1,10 @@
 import {CompoundControl, DropdownMenu, Slider} from "./controls.js";
-import {ShapeOperators} from "../model/math/operators.js";
+import {ShapeFactory} from "../model/math/operators.js";
 import { Range } from "../model/math/math.js";
 
 export class ShapeConfiguration {
     constructor({
-        shape = ShapeOperators.Type.DoubleSlit,
+        shape = ShapeFactory.Type.DoubleSlit,
         softness = 0,
         size = 40,
         strength = 0.1,
@@ -33,7 +33,7 @@ export class ShapeConfiguration {
     controls() {
         return new CompoundControl()
             .add(new DropdownMenu()
-                .for(new ShapeOperators())
+                .for(new ShapeFactory())
                 .withValue(this.shape)
                 .addEventListener("change", event => {
                     this.shape = event.target.value;

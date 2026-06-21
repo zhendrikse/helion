@@ -296,7 +296,7 @@ class Step extends ShapeLike {
     }
 }
 
-export class ShapeOperators extends Registry {
+export class ShapeFactory extends Registry {
     static Type = Object.freeze({
         SingleSlit: "SingleSlit",
         DoubleSlit: "DoubleSlit",
@@ -318,7 +318,7 @@ export class ShapeOperators extends Registry {
     };
 
     static create(key, options = {}) {
-        const this_ = new ShapeOperators();
+        const this_ = new ShapeFactory();
         const Type = this_.get(key);
         return new Type(options);
     }
@@ -326,7 +326,7 @@ export class ShapeOperators extends Registry {
     constructor({
         id = "shapeTypeSelect",
         label = "🟦 Shape  ",
-        entries = ShapeOperators.Operators
+        entries = ShapeFactory.Operators
     } = {}) {
         super({ id, label, entries });
     }

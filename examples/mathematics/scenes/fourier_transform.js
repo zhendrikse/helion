@@ -1,6 +1,6 @@
 import {
     DiscreteComplexField, RadioButton, Simulation, Slider, Vec3, Range,
-    Checkbox, ComplexScalarFieldRaster, FFTShift2D, FFT2D
+    Checkbox, ComplexScalarFieldRaster, FFTShift2D, FFT2D, DiscreteScalarField, ShapeFactory
 } from "../../../src/index.js";
 
 const Shape = Object.freeze({
@@ -37,32 +37,12 @@ class FourierSimulation {
             .apply(new FFTShift2D());
     }
 
-    // _pixelAt(i, j, type) {
-    //     switch (type) {
-    //         case FourierSimulation.Type.CIRCULAR:
-    //             return (x * x + y * y <= radius * radius);
-    //     }
-    // }
-
     _buildShape() {
-        const N = this._N;
-        const real =  new Float32Array(N * N);
-        const imag = new Float32Array(N * N);
-        const cx = N / 2;
-        const cy = N / 2;
-        const radius = this._diameter / 2;
-        for (let i = 0; i < N; i++)
-            for (let j = 0; j < N; j++) {
-                const x = i - cx;
-                const y = j - cy;
-                const inside = this._type === Shape.CIRCULAR ?
-                    (x * x + y * y <= radius * radius)
-                    : (Math.abs(x) <= radius && Math.abs(y) <= radius);
-
-                real[j * N + i] = inside ? 1 : 0;
-            }
-        this._field.real = real;
-        this._field.imag = imag;
+        const mask = new DiscreteScalarField({ nx: this._N, ny: this._N });
+        mask.apply(ShapeFactory.create(ShapeFactory.Type.Square), { size: this._diameter });
+        for (let i = 0; i < this._N; i++)
+            for (let j = 0; j < this._N; j++)
+                this._field.real[this._field.index(i, j)] = mask.valueAt(i, j) === 0 ? 0 : 1;
     }
 }
 
