@@ -54,6 +54,6 @@ Simulation
             sigma: 1
         }));
     }, 5)
-    .append(water.colormapSelector)
+    .append(water.controls())
     .append(water.shapeSelector)
     .start();

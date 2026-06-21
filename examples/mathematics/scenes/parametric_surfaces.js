@@ -70,7 +70,7 @@ const simulation = Simulation
         htmlDivId: "parametricSurfacesContainer",
         fieldOfView: 20
     })
-    .append(surfaceView.controls())
+    .append(surfaceView.controls({scalarFieldSelect: true}))
     .append(surfaceView.surfaceLayoutSelector)
     .append(new DropdownMenu()
         .for(surfacesRegistry)

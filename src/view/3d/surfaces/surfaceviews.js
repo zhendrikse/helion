@@ -53,16 +53,21 @@ class SurfaceView extends Renderable3D {
 
     get dirty() { return this._dirty; }
 
-    controls() {
-        return new CompoundControl()
+    controls({
+        scalarFieldSelect = false
+     } = {}) {
+        const compoundControl = new CompoundControl();
+        compoundControl
             .add(new DropdownMenu()
                 .for(new ColorMappers())
                 .addEventListener("change", (event) => {
                     this._colorMapper = ColorMappers.create(event.target.value);
                     this._dirty = true;
                 })
-            )
-            .add(new DropdownMenu()
+            );
+
+        if (scalarFieldSelect)
+            compoundControl.add(new DropdownMenu()
                 .for(SurfaceScalarFields)
                 .addEventListener("change", (event) => {
                     const newScalarField = SurfaceScalarFields.get(event.target.value)(this._scalarField._surface);
@@ -72,6 +77,8 @@ class SurfaceView extends Renderable3D {
                     this._scalarField = newScalarField;
                     this._dirty = true;
                 }));
+
+        return compoundControl;
     }
 
     set normalizer(normalizer) { this._normalizer = normalizer; }
