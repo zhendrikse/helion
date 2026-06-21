@@ -1,7 +1,7 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import {Range, Vec3} from "./math.js";
 import { Registry } from "../../core/helion.js";
-import {CompoundControl, DropdownMenu, Slider} from "../../core/controls.js";
+import {CompoundControl, Slider} from "../../core/controls.js";
 
 class Operator {
     apply(field) {}
@@ -332,71 +332,6 @@ export class ShapeOperators extends Registry {
     }
 }
 
-export class ShapeConfiguration {
-    constructor({
-        shape = ShapeOperators.Type.DoubleSlit,
-        softness = 0,
-        size = 40,
-        strength = 0.1,
-        onChange = (event) => {}
-    } = {}) {
-        this.shape = shape
-        this.softness = softness;
-        this.size = size;
-        this.strength = strength;
-        this._eventListener = onChange;
-    }
-    
-    set onChange(eventListener) {
-        this._eventListener = eventListener;
-    }
-
-    get settings() {
-        return {
-            size: this.size,
-            strength: this.strength,
-            softness: this.softness,
-            shape: this.shape
-        }
-    }
-
-    controls() {
-        return new CompoundControl()
-            .add(new Slider("💪🏻 Energy barrier")
-                .withRange(new Range(-0.1, 0.1, .001))
-                .withValue(this.strength)
-                .addEventListener("input", event => {
-                    this.strength = Number(event.target.value);
-                    this._eventListener(event)
-                })
-            )
-            .add(new Slider("📐 Size")
-                .withRange(new Range(0, 50, 1))
-                .withValue(this.size)
-                .addEventListener("input", event => {
-                    this.size = Number(event.target.value);
-                    this._eventListener(event)
-                })
-            )
-            .add(new Slider("🧸 Softness")
-                .withRange(new Range(0, 20, 1))
-                .withValue(this.softness)
-                .addEventListener("input", event => {
-                    this.softness = Number(event.target.value);
-                    this._eventListener(event)
-                })
-            )
-            .add(new DropdownMenu()
-                .for(new ShapeOperators())
-                .withValue(this.shape)
-                .addEventListener("change", event => {
-                    this.shape = event.target.value;
-                    this._eventListener(event)
-                })
-            )
-    }
-}
-
 export class Softness extends Operator {
     constructor({
         softness = 0
@@ -414,6 +349,53 @@ export class Softness extends Operator {
                     field._data[i] = (oldV[i + 1] + oldV[i - 1] + oldV[i + field.nx] + oldV[i - field.nx]) * .25;
                 }
         }
+    }
+}
+
+export class SineImpulsOperator {
+    constructor({
+        wavelengthInPixels = 10,
+        amplitude = 1,
+        periods = 1
+    } = {}) {
+        this._waveLength = wavelengthInPixels;
+        this._amplitude = amplitude;
+        this._periods = periods;
+    }
+
+    apply(field) {
+        for (let x = 0; x < this._waveLength * this._periods; x++)
+            for (let y = 0; y < field.ny; y++)
+                field.setValueAt(x, y, this._amplitude * Math.sin(2 * Math.PI * x / this._waveLength));
+    }
+
+    controls({
+         wavelengthInPixelsRange = new Range(5, 25, 1),
+         amplitudeRange = new Range(0, 1, .01),
+         periodRange = new Range(0, 2, .01),
+     } = {}) {
+        return new CompoundControl()
+            .add(new Slider("〰️ Wavelength")
+                .withRange(wavelengthInPixelsRange)
+                .withValue(this._waveLength)
+                .addEventListener("input", event => {
+                    this._waveLength = Number(event.target.value);
+                })
+            )
+            .add(new Slider("〽️ Amplitude")
+                .withRange(amplitudeRange)
+                .withValue(this._amplitude)
+                .addEventListener("input", event => {
+                    this._amplitude = Number(event.target.value);
+                })
+            )
+            .add(new Slider("🕓 Period")
+                .withRange(periodRange)
+                .withValue(this._periods)
+                .addEventListener("input", event => {
+                    this._periods = Number(event.target.value);
+                })
+            )
     }
 }
 

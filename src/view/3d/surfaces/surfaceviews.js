@@ -15,7 +15,7 @@ import { SurfaceScalarFields } from "../../../model/math/fields.js";
 import { AdaptiveSymmetricNormalizer, Range } from "../../../model/math/math.js";
 import { NormalizedScalarField } from "../../../model/math/fields.js";
 import { ColorMappers} from "../../colormappers.js";
-import { Checkbox, DropdownMenu, Slider} from "../../../core/controls.js";
+import {Checkbox, CompoundControl, DropdownMenu, Slider} from "../../../core/controls.js";
 import { Registry } from "../../../core/helion.js";
 import { Renderable3D } from "../../renderer.js";
 
@@ -38,7 +38,7 @@ class SurfaceView extends Renderable3D {
     constructor({
         resolution = new SurfaceResolution(100, 100),
         scalarFieldType = "Height",
-        colorMapper = ColorMappers.get(ColorMap.Gradient),
+        colorMapper = ColorMappers.create(ColorMappers.Type.Gradient),
         normalizer = new AdaptiveSymmetricNormalizer()
     } = {}) {
         super();
@@ -53,26 +53,25 @@ class SurfaceView extends Renderable3D {
 
     get dirty() { return this._dirty; }
 
-    get colormapSelector() {
-        return new DropdownMenu()
-            .for(new ColorMappers())
-            .addEventListener("change", (event) => {
-                this._colorMapper = ColorMappers.create(event.target.value);
-                this._dirty = true;
-            });
-    }
-
-    get scalarFieldSelector() {
-        return new DropdownMenu()
-            .for(SurfaceScalarFields)
-            .addEventListener("change", (event) => {
-                const newScalarField = SurfaceScalarFields.get(event.target.value)(this._scalarField._surface);
-                this._normalizedScalarField = new NormalizedScalarField(newScalarField, this._normalizer);
-                this._normalizedScalarField.reset();
-                this._colorMapper = newScalarField.recommendedColorMapper;
-                this._scalarField = newScalarField;
-                this._dirty = true;
-        });
+    controls() {
+        return new CompoundControl()
+            .add(new DropdownMenu()
+                .for(new ColorMappers())
+                .addEventListener("change", (event) => {
+                    this._colorMapper = ColorMappers.create(event.target.value);
+                    this._dirty = true;
+                })
+            )
+            .add(new DropdownMenu()
+                .for(SurfaceScalarFields)
+                .addEventListener("change", (event) => {
+                    const newScalarField = SurfaceScalarFields.get(event.target.value)(this._scalarField._surface);
+                    this._normalizedScalarField = new NormalizedScalarField(newScalarField, this._normalizer);
+                    this._normalizedScalarField.reset();
+                    this._colorMapper = newScalarField.recommendedColorMapper;
+                    this._scalarField = newScalarField;
+                    this._dirty = true;
+                }));
     }
 
     set normalizer(normalizer) { this._normalizer = normalizer; }

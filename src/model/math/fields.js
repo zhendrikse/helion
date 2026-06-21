@@ -155,7 +155,7 @@ export class HeightScalarField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return new InfernoColorMapper();
+        return ColorMappers.create(ColorMappers.Type.Inferno);
     }
 }
 
@@ -166,7 +166,7 @@ export class MeanCurvatureField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return new ColorMappers().create(ColorMappers.Type.Scientific);
+        return ColorMappers.create(ColorMappers.Type.Scientific);
     }
 
     sample(u, v, target) {
@@ -181,7 +181,7 @@ export class GaussianCurvatureField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return new SeismicColorMapper();
+        return ColorMappers.create(ColorMappers.Type.Seismic);
     }
 
     sample(u, v, target) {
@@ -197,7 +197,7 @@ export class PrincipalCurvatureField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return this._which === 1 ? new ViridisColorMapper() : new InfernoColorMapper();
+        return ColorMappers.create(this._which ? ColorMappers.Type.Viridis : ColorMappers.Type.Inferno);
     }
 
     sample(u, v, target) {
@@ -213,7 +213,7 @@ export class ShapeIndexField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return new RdYlBuColorMapper();
+        return ColorMappers.create(ColorMappers.Type.RdYlBu);
     }
 
     sample(u, v, target) {
@@ -234,7 +234,7 @@ export class CurvednessField extends ScalarFieldOnSurface {
     }
 
     get recommendedColorMapper() {
-        return new ViridisColorMapper();
+        return ColorMappers.create(ColorMappers.Type.Viridis);
     }
 
     sample(u, v, target) {
