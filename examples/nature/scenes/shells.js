@@ -70,7 +70,7 @@ const surfaceView = new StandardSurfaceView({
     opacity: 0.95,
     surfaceResolution: new SurfaceResolution(200, 200),
     contourResolution: new SurfaceResolution(100, 50),
-    colorMapper: ColorMappers.get(ColorMap.RdYlBu)
+    colorMapper: ColorMappers.create(ColorMappers.Type.RdYlBu)
 });
 
 const simulation = Simulation
@@ -82,7 +82,7 @@ const simulation = Simulation
     .append(new DropdownMenu()
         .for(surfacesRegistry)
         .addEventListener("change", event => changeSurface(event.target.value)))
-    .append(surfaceView.colormapSelector)
+    .append(surfaceView.controls())
     .append(surfaceView.surfaceLayoutSelector)
     .start();
 
