@@ -42,7 +42,7 @@ Simulation
         padding: 0.7,
         translationY: -1.25
     })
-    .append(surfaceView.colormapSelector)
+    .append(surfaceView.controls())
     .append(surfaceView.surfaceLayoutSelector)
     .append(new Button("Mode-x: ").on(membrane).withProperty("normalModeX").withText(" 1 ")
         .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 2 `)

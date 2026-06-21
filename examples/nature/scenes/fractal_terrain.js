@@ -46,7 +46,7 @@ const simulation = Simulation
         fieldOfView: 30,
     })
     .synchronize(landscape.surface.onceWith(surfaceView))
-    .append(surfaceView.colormapSelector)
+    .append(surfaceView.controls())
     .append(surfaceView.surfaceLayoutSelector)
     .append(new RadioButton("Perlin noise: ")
         .withValue("perlin")
