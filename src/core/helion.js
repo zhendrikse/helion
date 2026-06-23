@@ -296,6 +296,7 @@ export class Simulation {
     }
 
     set autoRotate(autoRotate) { this._renderer.autoRotate = autoRotate; }
+    set cameraPosition(position) { this._renderer.cameraPosition = position; }
 
     addObject3D(object3D) {
         this._renderer.add(object3D);

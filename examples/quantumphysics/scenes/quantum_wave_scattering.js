@@ -1,10 +1,12 @@
 import {
     ComplexScalarFieldSurfaceRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range,
     SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, PotentialField3DRaster, DiscreteScalarField,
-    ShapeConfiguration, Softness, Potential
+    ShapeConfiguration, Softness, Potential, ComplexScalarFieldRaster, ScalarFieldIntensityPixelRaster, RadioButton
 } from "../../../src/index.js";
 
-let xMax = 400;
+let xMax = 400,
+    width = xMax,
+    height = xMax;
 const dt = 0.24;		// anything less than 0.25 seems to be stable
 
 const potential = new DiscreteScalarField({ nx: xMax, ny: xMax });
@@ -23,10 +25,13 @@ function reset(shapeConfig, potentialStrength, softness) {
         .apply(new Softness({ softness }));
 }
 
-const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
-    width: xMax,
-    height: xMax
-});
+const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({ width, height });
+const potentialBarrier = new PotentialField3DRaster({ width, height });
+
+const waveFunctionSurface2d = new ComplexScalarFieldRaster({ width, height });
+const potentialBarrier2d = new ScalarFieldIntensityPixelRaster({ width, height });
+waveFunctionSurface2d.visible = false;
+potentialBarrier2d.visible = false;
 
 const shapeConfiguration = new ShapeConfiguration();
 let softness = 2;
@@ -34,22 +39,27 @@ let potentialStrength = 0.1;
 shapeConfiguration.onChangeEventListener = () => reset(shapeConfiguration, potentialStrength, softness);
 reset(shapeConfiguration, potentialStrength, softness);
 
-Simulation
+const simulation = Simulation
     .with({
-        htmlDivId: "doubleSlit3dContainer",
+        htmlDivId: "quantumScattering",
         headUpDisplay: true,
         cameraPosition: new Vec3(-1, .7, .75).multiplyScalar(.75 * xMax),
         fov: 30
     })
     .withStartStopResetButtons()
     .synchronize(psi.alwaysWith(waveFunctionSurface))
-    .synchronize(potential.onceWith(new PotentialField3DRaster({
-        width: xMax,
-        height: xMax
-    })))
+    .synchronize(psi.alwaysWith(waveFunctionSurface2d))
+    .synchronize(potential.onceWith(potentialBarrier))
+    .synchronize(potential.onceWith(potentialBarrier2d))
     .incrementsTimeBy(dt)
-    .onReset(() => reset())
+    .onReset(() => reset(shapeConfiguration, potentialStrength, softness))
     .onClockTick((clock) => psi.evolve(solver, clock.fixedDt), 15)
+    .append(new RadioButton("2D")
+        .addEventListener("click", event => setDimension(false))
+        .togetherWith(new RadioButton("3D")
+            .checked(true)
+            .addEventListener("click", event => setDimension(true)))
+    )
     .append(new Checkbox("🌈 Show phase color ")
         .on(waveFunctionSurface)
         .withProperty("phaseColor")
@@ -89,3 +99,13 @@ Simulation
             softness = Number(event.target.value);
             reset(shapeConfiguration, potentialStrength, softness);
         }));
+
+function setDimension(dimension3d = true) {
+    waveFunctionSurface.visible = dimension3d;
+    potentialBarrier.visible = dimension3d;
+    waveFunctionSurface2d.visible = !dimension3d;
+    potentialBarrier2d.visible = !dimension3d;
+    simulation.cameraPosition = dimension3d ?
+        new Vec3(-1, .7, .75).multiplyScalar(.75 * xMax) :
+        new Vec3(0, 0, xMax)
+}

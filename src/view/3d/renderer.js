@@ -19,6 +19,7 @@ export class ThreeJsRenderer extends Renderer {
         this._scene.add(this._world, this._background);
         this._axes = null;
         this._viewport = null;
+        this._camera = null;
 
         this._autoRotateTheta = Math.PI / 2;
         this._autoRotatePhi = 0;
@@ -26,6 +27,8 @@ export class ThreeJsRenderer extends Renderer {
     }
 
     set autoRotate(autoRotate) { this._autoRotate = autoRotate; }
+
+    set cameraPosition(position) { this._camera.position.set(position.x, position.y, position.z); }
 
     attach(viewport) {
         this._viewport = viewport;
