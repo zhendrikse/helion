@@ -3,7 +3,8 @@ import {
     BufferAttribute, Vector3, BufferGeometry, Box3, AxesHelper, GridHelper, MeshPhongMaterial,
     DoubleSide
 } from "three";
-import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer";
+import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer";
+import {Checkbox, CompoundControl} from "../../../core/controls.js";
 
 export class SkyDome extends Group {
     constructor({
@@ -137,14 +138,6 @@ export class Axes extends Group {
         MATLAB: "MatLab"
     });
 
-    static toCartesian(radius, theta, phi) {
-        return new Vector3(
-            radius * Math.sin(theta) * Math.cos(phi),
-            radius * Math.sin(theta) * Math.sin(phi),
-            radius * Math.cos(theta)
-        );
-    }
-
     static from(boundingBox, divisions, padding = 1.1) {
         const sizeVec = boundingBox.getSize(new Vector3());
         const maxSize = padding * Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
@@ -201,6 +194,36 @@ export class Axes extends Group {
         this._layout.yz.visible = yzPlane;
         this._annotations.tickLabels.forEach(label => label.visible = tickLabels);
         return this;
+    }
+
+    controls() {
+        return new CompoundControl()
+            .add(new Checkbox("Frame ")
+                .checked(true)
+                .addEventListener("click", event => this._layout.frame.visible = event.target.checked)
+                .togetherWith(new Checkbox("Annotations ")
+                    .checked(true)
+                    .addEventListener("click", event => this._annotations.visible = event.target.checked)
+                    .togetherWith(new Checkbox("Tick labels ")
+                        .checked(true)
+                        .addEventListener("click", event => this._annotations.tickLabels.forEach(label => label.visible = event.target.checked))
+                    )
+                )
+            )
+            .add(new Checkbox("XY-plane")
+                .checked(true)
+                .addEventListener("click", event => this._layout.xy.visible = event.target.checked)
+                .togetherWith(
+                    new Checkbox("XZ-plane")
+                        .checked(true)
+                        .addEventListener("click", event => this._layout.xz.visible = event.target.checked)
+                        .togetherWith(
+                            new Checkbox("YZ-plane")
+                                .checked(true)
+                                .addEventListener("click", event => this._layout.yz.visible = event.target.checked)
+                        )
+                )
+            )
     }
 
     withLayout(type, positiveXZ) {

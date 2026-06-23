@@ -85,6 +85,15 @@ class HtmlControl {
     }
 }
 
+/**
+ * CompoundControl
+ *   ├── row 1
+ *   │     ├── control A
+ *   │     └── control B (via togetherWith)
+ *   ├── row 2
+ *   │     ├── control C
+ *   │     └── control D (via togetherWith)
+ */
 export class CompoundControl extends HtmlControl {
     constructor() {
         super();
@@ -94,9 +103,17 @@ export class CompoundControl extends HtmlControl {
 
     add(control) {
         this._controls.push(control);
-        const buttonRow = this._createButtonRow();
-        this._buttonRows.push(buttonRow);
-        this._appendToButtonRow(control, buttonRow);
+
+        const row = this._createButtonRow();
+        this._buttonRows.push(row);
+
+        const addRecursive = (c) => {
+            this._appendToButtonRow(c, row);
+            if (c.hasChildControl) addRecursive(c._childControl);
+        };
+
+        addRecursive(control);
+
         return this;
     }
 

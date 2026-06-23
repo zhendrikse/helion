@@ -71,7 +71,7 @@ export class ThreeJsRenderer extends Renderer {
         this._labelRenderer.setSize(viewport.width, viewport.height);
         Object.assign(this._labelRenderer.domElement.style, {
             position: "absolute",
-            top: "-20px",
+            top: "0px",
             left: "0px",
             width: "100%",
             height: "100%",

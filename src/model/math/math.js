@@ -1,4 +1,10 @@
-import {MathPhysicsModelBehavior} from "../../core/helion.js";
+export function toCartesian(radius, theta, phi) {
+    return new Vec3(
+        radius * Math.sin(theta) * Math.cos(phi),
+        radius * Math.sin(theta) * Math.sin(phi),
+        radius * Math.cos(theta)
+    );
+}
 
 export function generateUUID() {
     let // Public Domain/MIT

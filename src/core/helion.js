@@ -343,9 +343,14 @@ export class Simulation {
         yzPlane = true,
         axisLabels = ["X", "Y", "Z"],
         positiveXZ = false,
-        bottomAlign = true
+        bottomAlign = true,
+        settingControls = true
     } = {}) {
-        this._renderer.provideAxesAround(anObject, { layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ, bottomAlign } );
+        const axes = this._renderer.provideAxesAround(anObject, {
+            layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ, bottomAlign
+        });
+        if (settingControls)
+            this.append(axes.controls());
         return this;
     }
 
