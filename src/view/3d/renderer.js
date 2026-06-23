@@ -2,7 +2,7 @@ import {
     Scene, PerspectiveCamera, WebGLRenderer, DirectionalLight, Group, Fog, Color,
     PCFShadowMap, AmbientLight, Vector3
 } from "three";
-
+import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Renderer } from "../renderer.js"
 import { Axes, SkyDome } from "./composite/backgrounds.js";
@@ -18,8 +18,13 @@ export class ThreeJsRenderer extends Renderer {
         this._skydome = null;
         this._scene.add(this._world, this._background);
         this._axes = null;
+
+        // The below are set when attach(viewport) is called.
         this._viewport = null;
         this._camera = null;
+        this._renderer = null;
+        this._labelRenderer = null;
+        this._controls = null;
 
         this._autoRotateTheta = Math.PI / 2;
         this._autoRotatePhi = 0;
@@ -37,6 +42,7 @@ export class ThreeJsRenderer extends Renderer {
             antialias: true,
             canvas: viewport.canvas
         });
+        this.#createLabelRenderer(viewport);
 
         const { background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView } = this._options;
 
@@ -58,6 +64,21 @@ export class ThreeJsRenderer extends Renderer {
         this._initBackground(background, backgroundColor);
         this.resize();
         window.addEventListener("resize", () => this.resize());
+    }
+
+    #createLabelRenderer(viewport) {
+        this._labelRenderer = new CSS2DRenderer();
+        this._labelRenderer.setSize(viewport.width, viewport.height);
+        Object.assign(this._labelRenderer.domElement.style, {
+            position: "absolute",
+            top: "-20px",
+            left: "0px",
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+            zIndex: "5"
+        });
+        viewport.canvasWrapper.appendChild(this._labelRenderer.domElement);
     }
 
     resize() {
@@ -128,9 +149,9 @@ export class ThreeJsRenderer extends Renderer {
 
     render(time) {
         this._renderer.render(this._scene, this._camera);
+        this._labelRenderer.render(this._scene, this._camera);
         this._controls?.update();
         this._skydome?.update(time, this._camera);
-        this._axes?.render(this._scene, this._camera);
         if (this._autoRotate)
             this._doAutoRotate();
     }
@@ -181,7 +202,7 @@ export class ThreeJsRenderer extends Renderer {
         const boundingBox = anObject.boundingBox;
         this._axes = Axes.from(boundingBox, options.divisions)
             .withLayout(options.layoutType, options.positiveXZ)
-            .withAnnotations(this._viewport.canvasWrapper, options.layoutType, options.axisLabels)
+            .withAnnotations(options.layoutType, options.axisLabels)
             .withSettings({
                 frame: options.frame,
                 annotations: options.annotations,
@@ -193,9 +214,13 @@ export class ThreeJsRenderer extends Renderer {
 
         if (options.layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed
             this._axes.frameTo(boundingBox, options.bottomAlign);
-        this._axes.onWindowResize();
+        this._onWindowResize();
         this._world.add(this._axes);
         return this._axes;
+    }
+
+    _onWindowResize() {
+        this._labelRenderer.setSize(this._viewport.width, this._viewport.height);
     }
 
     _doAutoRotate() {

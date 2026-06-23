@@ -7,12 +7,12 @@ import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer
 
 export class SkyDome extends Group {
     constructor({
-                    skyRadius = 5000,
-                    starDensity = 5,
-                    glowStarCount = 2000,
-                    pointSize = 4,
-                    blinkSpeed = 5
-                } = {}) {
+        skyRadius = 5000,
+        starDensity = 5,
+        glowStarCount = 2000,
+        pointSize = 4,
+        blinkSpeed = 5
+    } = {}) {
         super();
 
         this._stars = this.#createStars(skyRadius / starDensity); // Non-blinking stars
@@ -187,12 +187,13 @@ export class Axes extends Group {
     }
 
     withSettings({
-                     frame = true,
-                     annotations = true,
-                     xyPlane = true,
-                     xzPlane = true,
-                     yzPlane = true,
-                     tickLabels = true } = {}) {
+         frame = true,
+         annotations = true,
+         xyPlane = true,
+         xzPlane = true,
+         yzPlane = true,
+         tickLabels = true
+    } = {}) {
         this._layout.frame.visible = frame;
         this._annotations.visible = annotations;
         this._layout.xy.visible = xyPlane;
@@ -224,22 +225,16 @@ export class Axes extends Group {
         this.position.z = center.z;
     }
 
-    withAnnotations(container, type, axisLabels = ["X", "Y", "Z"]) {
+    withAnnotations(type, axisLabels = ["X", "Y", "Z"]) {
         this._annotations?.dispose?.();
         this._annotations = (type === Axes.Type.MATLAB) ?
-            new MatlabAnnotations(container, this._size, this._divisions, axisLabels) :
-            new ClassicalAnnotations(container, this._size, this._divisions, axisLabels);
+            new MatlabAnnotations(this._size, this._divisions, axisLabels) :
+            new ClassicalAnnotations(this._size, this._divisions, axisLabels);
         this.add(this._annotations);
         return this;
     }
 
     onWindowResize = () => this._annotations?.onWindowResize()
-    render = (scene, camera) => this._annotations?.render(scene, camera);
-
-    shiftBy(translationVector) {
-        this._annotations?.shiftBy(translationVector);
-        this._layout?.shiftBy(translationVector);
-    }
 
     boundingBox() {
         const axesBoundingBox = new Box3();
@@ -249,27 +244,10 @@ export class Axes extends Group {
 }
 
 class AxesAnnotation extends Group {
-    constructor(container) {
+    constructor() {
         super();
-        this._container = container;
-        this._renderer = new CSS2DRenderer();
-        this._renderer.domElement.style.position = "absolute";
-        this._renderer.domElement.style.top = "-20px";
-        this._renderer.domElement.style.left = "0px";
-        this._renderer.domElement.style.width = "100%";
-        this._renderer.domElement.style.height = "100%";
-        this._renderer.domElement.style.pointerEvents = "none"; // do not process mouse events
-        this._renderer.domElement.style.zIndex = "5"; // on top of canvas
-
         this._tickLabels = [];
         this._axesLabels = [];
-
-        this._container.appendChild(this._renderer.domElement);
-        this.onWindowResize();
-    }
-
-    onWindowResize() {
-        this._renderer.setSize(this._container.clientWidth, this._container.clientHeight);
     }
 
     createLabel(text, pos, color = "yellow", fontSize = "16px") {
@@ -285,10 +263,6 @@ class AxesAnnotation extends Group {
 
     get tickLabels() { return this._tickLabels; }
     get axesLabels() { return this._axesLabels; }
-
-    render(scene, camera) {
-        this._renderer.render(scene, camera);
-    }
 }
 
 class AxesLayout extends Group {
@@ -368,8 +342,8 @@ class MatlabAxesLayout extends AxesLayout {
 }
 
 class ClassicalAnnotations extends AxesAnnotation {
-    constructor(container, size, divisions, axisLabels, positiveXZ = true) {
-        super(container);
+    constructor(size, divisions, axisLabels, positiveXZ = true) {
+        super();
 
         const step = size / divisions;
         for (let v = -size * .5; v <= size * .5; v += step)
@@ -390,8 +364,8 @@ class ClassicalAnnotations extends AxesAnnotation {
 }
 
 class MatlabAnnotations extends AxesAnnotation {
-    constructor(container, size, divisions, axisLabels) {
-        super(container);
+    constructor(size, divisions, axisLabels) {
+        super();
 
         const step = (2 * size) / divisions;
         for (let v = 0; v <= size; v += step)
