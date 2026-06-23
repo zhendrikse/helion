@@ -231,7 +231,7 @@ export class Potential extends Operator {
     }
 }
 
-export class Mask extends Operator {
+export class ShapeMask extends Operator {
     constructor(shapeConfiguration) {
         super();
         this._shapeConfiguration = shapeConfiguration;
@@ -245,7 +245,7 @@ export class Mask extends Operator {
     }
 }
 
-export class ComplexMask extends Operator {
+export class ComplexShapeMask extends Operator {
     constructor(shapeConfiguration) {
         super();
         this._shapeConfiguration = shapeConfiguration;

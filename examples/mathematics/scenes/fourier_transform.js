@@ -1,5 +1,5 @@
 import {
-    DiscreteComplexField, Simulation, Vec3, ComplexScalarFieldRaster, FFTShift2D, FFT2D, ComplexMask,
+    DiscreteComplexField, Simulation, Vec3, ComplexScalarFieldRaster, FFTShift2D, FFT2D, ComplexShapeMask,
     ShapeConfiguration, Shapes, ComplexSoftness, Slider, Range
 } from "../../../src/index.js";
 
@@ -16,7 +16,7 @@ const intensityRaster = new ComplexScalarFieldRaster({
 function reset(shapeConfiguration, softness) {
     field
         .reset()
-        .apply(new ComplexMask(shapeConfiguration))
+        .apply(new ComplexShapeMask(shapeConfiguration))
         .apply(new ComplexSoftness({ softness }))
         .apply(new FFT2D())
         .apply(new FFTShift2D());

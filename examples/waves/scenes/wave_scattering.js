@@ -1,7 +1,7 @@
 import {
     ColorMappersFactory, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
     SurfaceResolution, WaveEquationSolver, PotentialField3DRaster, StandardSurfaceView,
-    SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, Mask
+    SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask
 } from "../../../src/index.js";
 
 const resolution = 256;
@@ -34,7 +34,7 @@ function reset(shapeConfig) {
     solver.reset();
     obstacleField
         .reset()
-        .apply(new Mask(shapeConfig));
+        .apply(new ShapeMask(shapeConfig));
 }
 
 const configuration = new ShapeConfiguration();
