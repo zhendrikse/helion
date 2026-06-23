@@ -123,12 +123,12 @@ renderer.setAnimationLoop((time) => {
 });
 
 
-const simulation = Simulation
-    .with({
-        htmlDivId: "blackHoleRayTraceContainer",
-        cameraPosition: new Vector3(0, 0, .8),
-        fieldOfView: 75
-    });
+// const simulation = Simulation
+//     .with({
+//         htmlDivId: "blackHoleRayTraceContainer",
+//         cameraPosition: new Vector3(0, 0, .8),
+//         fieldOfView: 75
+//     });
 //     .synchronize(blackHoleModel.alwaysWith(view))
 //     .onClockTick((time, simulatedTime) => {
 //         if (!animate) return;
