@@ -1,7 +1,7 @@
 import {
     ColorMappersFactory, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
     SurfaceResolution, WaveEquationSolver, PotentialField3DRaster, StandardSurfaceView,
-    ShapeFactory, SineImpulsOperator, ShapeConfiguration, Softness, BarrierWaveEquation
+    SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, Mask
 } from "../../../src/index.js";
 
 const resolution = 256;
@@ -27,21 +27,19 @@ const solver = new WaveEquationSolver(waveEquation);
 const sineImpuls = new SineImpulsOperator({
     amplitude: 0.5
 });
-function reset(settings) {
-    field.reset();
-    field.apply(sineImpuls);
+function reset(shapeConfig) {
+    field
+        .reset()
+        .apply(sineImpuls);
     solver.reset();
-    obstacleField.reset();
-    obstacleField.apply(ShapeFactory.create(settings.shape, {
-        reflectionStrength: settings.strength,
-        size: settings.size
-    }));
-    obstacleField.apply(new Softness({ softness: settings.softness }));
+    obstacleField
+        .reset()
+        .apply(new Mask(shapeConfig));
 }
 
 const configuration = new ShapeConfiguration();
-configuration.onChange = () => reset(configuration.settings);
-reset(configuration.settings);
+configuration.onChangeEventListener = () => reset(configuration);
+reset(configuration);
 
 Simulation
     .with({
@@ -61,7 +59,7 @@ Simulation
         color: 0x008080
     })))
     .onClockTick((clock) => field.evolve(solver, clock.fixedDt), 5)
-    .onReset(() => reset(configuration.settings))
+    .onReset(() => reset(configuration))
     .append(waterSurface.controls())
     .append(waveEquation.controls())
     .append(sineImpuls.controls())

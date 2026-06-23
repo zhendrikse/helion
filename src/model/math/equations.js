@@ -16,8 +16,8 @@ export class BarrierWaveEquation {
     get damping() { return this._damping; }
 
     acceleration(field, i, j) {
-        //const transmission = 1.0 - this.obstacleField.valueAt(i, j);
-        const transmission = Math.exp(-1e2 * this._obstacleField.valueAt(i, j));
+        const transmission = 1.0 - this._obstacleField.valueAt(i, j);
+        //const transmission = Math.exp(-1e2 * this._obstacleField.valueAt(i, j));
         return transmission * this._velocity * this._velocity * LaplaceOperator.at(field, i, j);
     }
 

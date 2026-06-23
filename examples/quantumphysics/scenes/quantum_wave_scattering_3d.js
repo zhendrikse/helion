@@ -1,7 +1,7 @@
 import {
     ComplexScalarFieldSurfaceRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range,
     SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, PotentialField3DRaster, DiscreteScalarField,
-    ShapeFactory, ShapeConfiguration, Softness
+    ShapeConfiguration, Softness, Potential
 } from "../../../src/index.js";
 
 let xMax = 400;
@@ -12,16 +12,15 @@ const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
 const solver = new SchrodingerSolver(potential);
 const gaussianImpulse = new GaussianImpulseComplex2D();
 
-function reset(settings) {
-    psi.reset();
+function reset(shapeConfig, potentialStrength, softness) {
     solver.initialize(psi, dt);
-    psi.apply(gaussianImpulse);
-    potential.reset();
-    potential.apply(ShapeFactory.create(settings.shape, {
-        reflectionStrength: settings.strength,
-        size: settings.size
-    }));
-    potential.apply(new Softness({ softness: settings.softness }));
+    psi
+        .reset()
+        .apply(gaussianImpulse);
+    potential
+        .reset()
+        .apply(new Potential(shapeConfig, potentialStrength))
+        .apply(new Softness({ softness }));
 }
 
 const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
@@ -29,9 +28,11 @@ const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({
     height: xMax
 });
 
-const configuration = new ShapeConfiguration();
-configuration.onChange = () => reset(configuration.settings);
-reset(configuration.settings);
+const shapeConfiguration = new ShapeConfiguration();
+let softness = 2;
+let potentialStrength = 0.1;
+shapeConfiguration.onChangeEventListener = () => reset(shapeConfiguration, potentialStrength, softness);
+reset(shapeConfiguration, potentialStrength, softness);
 
 Simulation
     .with({
@@ -72,4 +73,19 @@ Simulation
         .withProperty("phaseColor")
         .checked(true)
     )
-    .append(configuration.controls());
+    .append(shapeConfiguration.controls())
+    .append(new Slider("💪🏻 Energy barrier")
+        .withRange(new Range(-0.1, 0.1, .001))
+        .withValue(potentialStrength)
+        .addEventListener("input", event => {
+            potentialStrength = Number(event.target.value);
+            reset(shapeConfiguration, potentialStrength, softness);
+        })
+    )
+    .append(new Slider("🧸 Softness")
+        .withRange(new Range(0, 20, 1))
+        .withValue(softness)
+        .addEventListener("input", event => {
+            softness = Number(event.target.value);
+            reset(shapeConfiguration, potentialStrength, softness);
+        }));

@@ -309,6 +309,7 @@ export class DiscreteScalarField extends Field {
 
     reset() {
         this._data.fill(0);
+        return this;
     }
 
     get data() {
@@ -361,6 +362,7 @@ export class DiscreteComplexField extends Field {
     reset() {
         this.real = new Float32Array(this.nx * this.ny);
         this.imag = new Float32Array(this.nx * this.ny)
+        return this;
     }
 
     evolve(solver, dt) {

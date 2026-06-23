@@ -15,7 +15,8 @@ export {
 
 export {
     LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator,
-    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ShapeFactory, Softness, SineImpulsOperator
+    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ComplexSoftness, SineImpulsOperator, Mask, ComplexMask,
+    Softness, Potential
 } from "./model/math/operators.js";
 
 export {
@@ -24,7 +25,7 @@ export {
 } from "./view/2d/views.js";
 
 export { BarrierWaveEquation } from "./model/math/equations.js";
-export { ShapeConfiguration } from "./core/configuration.js";
+export { Shapes, ShapeConfiguration } from "./model/math/shapes.js";
 export { OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave } from "./model/phys/waves.js";
 export { PointCloud } from "./model/phys/clouds.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";

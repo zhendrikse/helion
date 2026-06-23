@@ -1,7 +1,7 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import {Range, Vec3} from "./math.js";
-import { Registry } from "../../core/helion.js";
+import {Complex, Range, Vec3} from "./math.js";
 import {CompoundControl, Slider} from "../../core/controls.js";
+import {Shapes, ShapesFactory} from "./shapes.js";
 
 class Operator {
     apply(field) {}
@@ -216,119 +216,46 @@ export class DoubleSlitOperator {
     set wavelength(wavelength) { this._wavelength = wavelength; }
 }
 
-class ShapeLike extends Operator {
-    constructor({
-        size = 40,
-        reflectionStrength = 1.0
-    } = {}) {
+export class Potential extends Operator {
+    constructor(shapeConfiguration = Shapes.DoubleSlit, reflectionStrength = 0.1) {
         super();
-        this._size = size;
+        this._shapeConfiguration = shapeConfiguration;
         this._reflectionStrength = reflectionStrength;
     }
 
-    set reflectionStrength(strength) { this._reflectionStrength = strength; }
-    set size(size) { this._size = size; }
-}
-
-class SingleSlit extends ShapeLike {
     apply(field) {
-        const holeEdge = Math.round(field.nx / 2 - this._size/2);
-        for (let y = 0; y < field.ny; y++)
-            for (let x = Math.floor(field.nx / 2) - 5; x < Math.floor(field.nx / 2) + 5; x++)
-                if (y <= holeEdge || y > holeEdge + this._size)
-                    field.setValueAt(x, y, this._reflectionStrength);
-    }
-}
-
-class DoubleSlit extends ShapeLike {
-    apply(field) {
-        const slitDistance = this._size;
-        const dhEdge = Math.round(field.nx / 2 - slitDistance / 2);
-        for (let y = 0; y < field.ny; y++)
-            for (let x = Math.floor(field.nx / 2) - 5; x < Math.floor(field.nx / 2)+5; x++)
-                if (y <= dhEdge-10 || y > dhEdge + slitDistance + 10 || (y > dhEdge && y <= dhEdge + slitDistance))
-                    field.setValueAt(x, y, this._reflectionStrength);
-    }
-}
-
-class Grating extends ShapeLike {
-    apply(field) {
-        const slitDistance = this._size;
-        for (let y = Math.floor(field.ny / 4); y < Math.floor(3 * field.ny / 4); y++)
-            for (let x = Math.floor(field.nx / 2) - 5; x < Math.floor(field.nx / 2) + 5; x++)
-                if (y % slitDistance < slitDistance / 2)
-                    field.setValueAt(x, y, this._reflectionStrength);
-    }
-}
-
-class Circle extends ShapeLike {
-    apply(field) {
-        const rSquared = this._size * this._size/4.0;
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++)
-                if ((x - field.nx / 2)**2 + (y - field.nx / 2)**2 < rSquared)
+                if (ShapesFactory.create(this._shapeConfiguration).sample(x, y, field))
                     field.setValueAt(x, y, this._reflectionStrength);
     }
 }
 
-class Square extends ShapeLike {
-    apply(field) {
-        const edge = Math.round(field.nx / 2 - this._size / 2);
-        for (let y = edge; y < edge + this._size; y++)
-            for (let x = edge; x < edge + this._size; x++)
-                field.setValueAt(x, y, this._reflectionStrength);
+export class Mask extends Operator {
+    constructor(shapeConfiguration) {
+        super();
+        this._shapeConfiguration = shapeConfiguration;
     }
-}
 
-class Line extends ShapeLike {
     apply(field) {
         for (let y = 0; y < field.ny; y++)
-            for (let x=Math.floor(field.nx / 2); x < Math.floor(field.nx / 2) + this._size; x++)
-                field.setValueAt(x, y, this._reflectionStrength);
+            for (let x = 0; x < field.nx; x++)
+                if (ShapesFactory.create(this._shapeConfiguration).sample(x, y, field))
+                    field.setValueAt(x, y, 1);
     }
 }
 
-class Step extends ShapeLike {
+export class ComplexMask extends Operator {
+    constructor(shapeConfiguration) {
+        super();
+        this._shapeConfiguration = shapeConfiguration;
+    }
+
     apply(field) {
-        for (let y = 0; y <field.ny; y++)
-            for (let x = Math.floor(field.nx / 2); x < field.nx; x++)
-                field.setValueAt(x, y, this._reflectionStrength);
-    }
-}
-
-export class ShapeFactory extends Registry {
-    static Type = Object.freeze({
-        SingleSlit: "SingleSlit",
-        DoubleSlit: "DoubleSlit",
-        Grating: "Grating",
-        Circle: "Circle",
-        Step: "Step",
-        Line: "Line",
-        Square: "Square"
-    });
-
-    static Operators = {
-        SingleSlit: SingleSlit,
-        DoubleSlit: DoubleSlit,
-        Grating: Grating,
-        Circle: Circle,
-        Step: Step,
-        Line: Line,
-        Square: Square
-    };
-
-    static create(key, options = {}) {
-        const this_ = new ShapeFactory();
-        const Type = this_.get(key);
-        return new Type(options);
-    }
-
-    constructor({
-        id = "shapeTypeSelect",
-        label = "🟦 Shape  ",
-        entries = ShapeFactory.Operators
-    } = {}) {
-        super({ id, label, entries });
+        for (let y = 0; y < field.ny; y++)
+            for (let x = 0; x < field.nx; x++)
+                if (ShapesFactory.create(this._shapeConfiguration).sample(x, y, field))
+                    field.real[field.index(x, y)] = 1;
     }
 }
 
@@ -345,8 +272,28 @@ export class Softness extends Operator {
             const oldV = field._data.slice();
             for (let y = 1; y < field.ny - 1; y++)
                 for (let x = 1; x < field.nx - 1; x++) {
-                    const i = y * field.nx + x;
+                    const i = field.index(x, y);
                     field._data[i] = (oldV[i + 1] + oldV[i - 1] + oldV[i + field.nx] + oldV[i - field.nx]) * .25;
+                }
+        }
+    }
+}
+
+export class ComplexSoftness extends Operator {
+    constructor({
+        softness = 0
+    } = {}) {
+        super();
+        this._softness = softness;
+    }
+
+    apply(field) {
+        for (let s = 0; s < this._softness; s++) {
+            const oldV = field.real.slice();
+            for (let y = 1; y < field.ny - 1; y++)
+                for (let x = 1; x < field.nx - 1; x++) {
+                    const i = field.index(x, y);
+                    field.real[i] = (oldV[i + 1] + oldV[i - 1] + oldV[i + field.nx] + oldV[i - field.nx]) * .25;
                 }
         }
     }
