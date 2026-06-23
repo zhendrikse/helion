@@ -280,7 +280,7 @@ const simulation = Simulation
     .synchronize(flatComet.alwaysWith(new Trail({ color: 0xff0000 })))
     .synchronize(comet.alwaysWith(new Sphere({ color: 0x00ffff })))
     .synchronize(comet.alwaysWith(new Trail({ color: 0x00ffff })))
-    .onClockTick((clockTime, simulatedTime) => timeStep(clockTime))
+    .onClockTick((clock) => timeStep(clock.clockTime))
     .append(new Checkbox("Grid: ")
         .on(grid)
         .withProperty("visible")

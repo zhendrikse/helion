@@ -5,7 +5,7 @@ import {
 } from "../../../src/index.js";
 
 let xMax = 400;
-const dt = 0.24;		// anything less than 0.25 seems to be stable
+const dt = 0.24;
 const potential = new DiscreteScalarField({ nx: xMax, ny: xMax });
 const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
 const solver = new SchrodingerSolver(potential);
@@ -39,6 +39,7 @@ Simulation
         headUpDisplay: true,
         cameraPosition: new Vec3(0, 0, xMax)
     })
+    .incrementsTimeBy(dt)
     .withStartStopResetButtons()
     .synchronize(psi.alwaysWith(waveFunctionSurface))
     .synchronize(potential.onceWith(new ScalarFieldIntensityPixelRaster({
@@ -46,7 +47,7 @@ Simulation
         height: xMax
     })))
     .onReset(() => reset())
-    .onClockTick(() => psi.evolve(solver, dt), 15)
+    .onClockTick((clock) => psi.evolve(solver, clock.fixedDt), 15)
     .append(new Checkbox("🌈 Show phase color ")
         .on(waveFunctionSurface)
         .withProperty("phaseColor")

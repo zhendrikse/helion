@@ -52,7 +52,6 @@ const arrowField = new ArrowField({
     colorMap: (axis, magnitude) => new Color().setHSL(.5 * Math.sqrt(magnitude), 1, 0.5)
 });
 
-const dt = 2.5e-3;
 const subSteps = 100;
 const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
 Simulation
@@ -65,8 +64,8 @@ Simulation
     .synchronize(magneticField.onceWith(arrowField))
     .synchronize(proton.alwaysWith(sphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })))
-    .incrementsTimeBy(dt)
-    .onClockTick(() => timeStep(dt), subSteps)
+    .incrementsTimeBy(2.5e-3)
+    .onClockTick((clock) => timeStep(clock.fixedDt), subSteps)
     .append(new Slider("🧲 Field: ")
         .withRange(new Range(.1, 1, .01))
         .on(magneticField)

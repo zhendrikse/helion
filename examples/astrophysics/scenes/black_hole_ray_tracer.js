@@ -2,7 +2,8 @@ import { PerspectiveCamera, WebGLRenderer, ACESFilmicToneMapping, SRGBColorSpace
     ShaderMaterial, Vector2, Vector3, Mesh, Scene }  from "three";
 import vertexShader from "./black_hole_vertex_shader.glsl?raw";
 import fragmentShader from "./black_hole_fragment_shader.glsl?raw";
-import {Simulation} from "../../../src/index.js";
+import {Renderable3D, Simulation} from "../../../src/index.js";
+import {MathPhysicsModelBehavior} from "../../../src/core/helion.js";
 
 const containerDiv = document.getElementById("blackHoleRayTraceContainer");
 
@@ -44,35 +45,67 @@ const height = canvas.clientHeight;
 const aspectRatio = width / height;
 
 const camera = new PerspectiveCamera(75, aspectRatio, 0.1, 1000);
-camera.position.z = 1;
+camera.position.z = .8;
 
 const renderer = new WebGLRenderer({antialias: true, canvas: canvas, alpha: false });
-renderer.toneMapping = ACESFilmicToneMapping;
-renderer.toneMappingExposure = 2.2;
-renderer.outputColorSpace = SRGBColorSpace;
+// renderer.toneMapping = ACESFilmicToneMapping;
+// renderer.toneMappingExposure = 2.2;
+// renderer.outputColorSpace = SRGBColorSpace;
 
 // --- throttle pixel ratio ---
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.setSize(width, height);
 
-const fovRadians = MathUtils.degToRad(camera.fov);
-const yFov = camera.position.z * Math.tan(fovRadians / 2) * 2;
+export class BlackHoleModel extends MathPhysicsModelBehavior {
+    constructor({
+        width = canvas.clientWidth,
+        height = canvas.clientHeight,
+        cameraPosition = new Vector3(0, 0, -8),
+        blackHolePosition = new Vector3(0, 0, 0),
+        rotation = new Vector3(MathUtils.degToRad(-4), 0, MathUtils.degToRad(-15))
+    } = {}) {
+        super();
+        this._uniforms = {
+            uResolution:   { value: new Vector2(width, height)},
+            uTime:         { value: 0 },
+            uCamPos:       { value: cameraPosition },
+            uBlackHolePos: { value: blackHolePosition },
+            uRotation:     { value: rotation},
+        }
+    }
 
-const canvasGeometry = new PlaneGeometry(yFov * camera.aspect, yFov);
-const canvasMaterial = new ShaderMaterial({
-    uniforms: {
-        uResolution:   { value: new Vector2(width, height)},
-        uTime:         { value: 0 },
-        uCamPos:       { value: new Vector3(0, 0, -8)},
-        uBlackHolePos: { value: new Vector3(0, 0, 0)},
-        uRotation:     { value: new Vector3(MathUtils.degToRad(-4), 0, MathUtils.degToRad(-15))},
-    },
-    vertexShader,
-    fragmentShader,
-});
+    get uniforms() { return this._uniforms; }
+}
 
-const blackHoleMesh = new Mesh(canvasGeometry, canvasMaterial);
-scene.add(blackHoleMesh);
+
+export class ShaderView extends Renderable3D {
+    constructor({
+        aspectRatio = aspectRatio
+    } = {}) {
+        super();
+        this._canvasGeometry = new PlaneGeometry(aspectRatio, 1);
+    }
+
+    initialize(model) {
+        const canvasMaterial = new ShaderMaterial({
+            uniforms: model.uniforms,
+            vertexShader,
+            fragmentShader,
+        });
+
+        const blackHoleMesh = new Mesh(this._canvasGeometry, canvasMaterial);
+        this.add(blackHoleMesh);
+    }
+
+    canBindTo(model) {
+        return model.uniforms;
+    }
+}
+
+const view = new ShaderView({aspectRatio: aspectRatio});
+const blackHoleModel = new BlackHoleModel();
+view.initialize(blackHoleModel);
+scene.add(view);
 
 // FPS throttling ---
 let lastTime = 0;
@@ -85,25 +118,22 @@ renderer.setAnimationLoop((time) => {
     if (time - lastTime < interval) return;
 
     lastTime = time;
-    canvasMaterial.uniforms.uTime.value = time * 0.001;
+    blackHoleModel.uniforms.uTime.value= time * 0.001;
     renderer.render(scene, camera);
 });
 
-const downloadButton = document.createElement("button");
-downloadButton.textContent = "Download image";
-document.body.appendChild(downloadButton);
 
-downloadButton.addEventListener("click", () => {
-    renderer.render(scene, camera); // laatste frame renderen
-    const link = document.createElement("a");
-    link.download = "blackhole.png";
-    link.href = renderer.domElement.toDataURL("image/png");
-    link.click();
-});
+const simulation = Simulation
+    .with({
+        htmlDivId: "blackHoleRayTraceContainer",
+        cameraPosition: new Vector3(0, 0, .8),
+        fieldOfView: 75
+    });
+//     .synchronize(blackHoleModel.alwaysWith(view))
+//     .onClockTick((time, simulatedTime) => {
+//         if (!animate) return;
+//         if (time - lastTime < interval) return;
 //
-// Simulation
-//     .with({
-//         htmlDivId: "blackHoleRayTraceContainer",
-//         cameraPosition: new Vector3(0, 0, 1),
-//         fieldOfView: 75
-//     })
+//         lastTime = time;
+//         blackHoleModel.uniforms.uTime.value= time * 0.001;
+//     });

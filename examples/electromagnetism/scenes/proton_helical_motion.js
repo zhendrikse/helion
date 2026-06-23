@@ -65,7 +65,6 @@ const arrowField = new ArrowField({
     round: true
 });
 
-const dt = 5e-4;
 const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
 const speedCallback = event => proton.state.velocity = speedToVelocity(event.target.value, proton.velocity);
 Simulation
@@ -79,8 +78,8 @@ Simulation
     .synchronize(proton.alwaysWith(protonSphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
     .synchronize(magneticField.onceWith(arrowField))
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => timeStep(dt), 25)
+    .incrementsTimeBy(5e-4)
+    .onClockTick((clock) => timeStep(clock.fixedDt), 25)
     .addObject3D(new Aquarium({
         color: 0x1e90ff,
         opacity: 0.1,

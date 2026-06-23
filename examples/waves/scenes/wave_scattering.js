@@ -43,7 +43,6 @@ const configuration = new ShapeConfiguration();
 configuration.onChange = () => reset(configuration.settings);
 reset(configuration.settings);
 
-const dt = 0.02;
 Simulation
     .with({
         htmlDivId: "waveScatteringContainer",
@@ -52,7 +51,7 @@ Simulation
         headUpDisplay: true
     })
     .withStartStopResetButtons()
-    .incrementsTimeBy(dt)
+    .incrementsTimeBy(0.02)
     .synchronize(surface.alwaysWith(waterSurface))
     .synchronize(obstacleField.onceWith(new PotentialField3DRaster({
         width: resolution,
@@ -61,7 +60,7 @@ Simulation
         opacity: 0.5,
         color: 0x008080
     })))
-    .onClockTick(() => field.evolve(solver, dt), 5)
+    .onClockTick((clock) => field.evolve(solver, clock.fixedDt), 5)
     .onReset(() => reset(configuration.settings))
     .append(waterSurface.controls())
     .append(waveEquation.controls())

@@ -65,7 +65,6 @@ Simulation
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.5 * resolution),
     })
     .synchronize(fourierSimulation.field.alwaysWith(intensityRaster))
-    .onClockTick()
     .append(new Slider("📏 Size:")
         .on(fourierSimulation)
         .withRange(new Range(20, 50, .1))

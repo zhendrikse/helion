@@ -146,7 +146,6 @@ const electricArrowField = new ArrowField({
     round: true
 });
 
-const dt = 0.01;
 const allGone = () => rod.charges.every(c => c.position.y > 1);
 const simulation = Simulation
     .with({
@@ -156,11 +155,11 @@ const simulation = Simulation
     })
     .synchronize(electricField.alwaysWith(electricArrowField))
     .synchronize(magneticField.alwaysWith(magneticArrowField))
-    .incrementsTimeBy(dt)
+    .incrementsTimeBy(0.01)
     .withMouseClickEventListener()
-    .onClockTick(() => {
+    .onClockTick((clock) => {
         if (!allGone())
-            rod.update(dt);
+            rod.update(clock.fixedDt);
     }, 2);
 
 for (const charge of rod.charges) {

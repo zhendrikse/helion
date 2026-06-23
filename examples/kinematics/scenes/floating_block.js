@@ -48,7 +48,6 @@ const water = new Aquarium({
     frameColor: 0xffff00
 });
 
-const dt = 0.001;
 const substeps = 20;
 const simulation = Simulation
     .with({
@@ -58,10 +57,10 @@ const simulation = Simulation
     })
     .addObject3D(water)
     .withMouseClickEventListener()
-    .incrementsTimeBy(dt)
+    .incrementsTimeBy(1e-3)
     .synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
-    .onClockTick((clockTime, simulationTime) => woodenBlock.apply(woodenBlock.netForce(water), dt), substeps)
-    .onAfterClockTick((clockTime, simulationTime) => plotFunction(simulationTime))
+    .onClockTick((clock) => woodenBlock.apply(woodenBlock.netForce(water), clock.fixedDt), substeps)
+    .onAfterClockTick((clock) => plotFunction(clock.simulationTime))
     .setupGraphWith({
         dataDefinition: [
             { label: "t [s]", color: "yellow" },

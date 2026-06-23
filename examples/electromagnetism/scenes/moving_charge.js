@@ -73,7 +73,6 @@ const speedSlider = new Slider("🚀 Speed: ")
     .withRange(new Range(1, 50, 1))
     .addEventListener(speedCallback);
 
-const dt = 0.01;
 const subSteps = 3;
 const field = new Vec3();
 const simulation = Simulation
@@ -91,14 +90,14 @@ const simulation = Simulation
     .synchronize(movingCharge.alwaysWith(sphere))
     .synchronize(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })))
     .synchronize(capacitorField.onceWith(arrowField))
-    .incrementsTimeBy(dt)
-    .onClockTick(() => {
+    .incrementsTimeBy(0.01)
+    .onClockTick((clock) => {
         if (movingCharge.position.x > 60 / scale)
             return;
 
         capacitorField.sample(movingCharge.position, field);
         const force = field.multiplyScalar(movingCharge.charge);
-        movingCharge.apply(force, dt);
+        movingCharge.apply(force, clock.fixedDt);
     }, subSteps)
     .onReset(() => {
         movingCharge.state.charge = Number(chargeSlider.value) * 5e-42 * EC;

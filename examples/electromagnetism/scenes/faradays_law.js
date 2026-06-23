@@ -41,7 +41,6 @@ class FaradayField extends VectorField {
 const faradayLoopsGroup = new Group(); // Needed to toggle this group on and off via the GUI
 faradayLoopsGroup.visible = false;
 
-const dt = 0.05;
 const simulation = Simulation
     .with({
         htmlDivId: "faradayLawContainer",
@@ -51,16 +50,16 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .synchronize(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
-    .incrementsTimeBy(dt)
+    .incrementsTimeBy(0.05)
     .addObject3D(faradayLoopsGroup)
-    .onClockTick((clockTime, simulatedTime) => {
-        const fieldLength = (simulatedTime % 20) / 25 + 0.001;
+    .onClockTick((clock) => {
+        const fieldLength = (clock.simulatedTime % 20) / 25 + 0.001;
 
         for (const vec of magneticVectors)
             vec.axis.set(0, 0, fieldLength);
 
         for (const charge of charges)
-            charge.position.z = zStart + ((charge.baseZ + simulatedTime * dt) % numCharges);
+            charge.position.z = zStart + ((charge.baseZ + clock.simulatedTime * clock.fixedDt) % numCharges);
     }, 10)
     .append(new Checkbox("Show Faraday loop: ")
         .on(faradayLoopsGroup)

@@ -14,5 +14,4 @@ Simulation
         background: Simulation.Background.STARS
     })
     .synchronize(sun.alwaysWith(new Sun()))
-    .onClockTick()
     .start();

@@ -46,7 +46,6 @@ function updateForces(dt) {
 //
 // Simulation binds view to model
 //
-const dt = 5000;
 const subSteps = 50;
 Simulation
     .with({
@@ -61,6 +60,6 @@ Simulation
     .synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
     .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
     .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
-    .incrementsTimeBy(dt / subSteps)
-    .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps)
+    .incrementsTimeBy(5000 / subSteps)
+    .onClockTick((clock) => updateForces(clock.fixedDt), subSteps)
     .withMouseClickEventListener();

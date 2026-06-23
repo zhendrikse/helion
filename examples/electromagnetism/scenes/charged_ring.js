@@ -124,7 +124,6 @@ const arrowField = new ArrowField({
     round: true
 });
 
-const dt = 2e-19;
 const subSteps = 20;
 const simulation = Simulation
     .with({
@@ -138,8 +137,8 @@ const simulation = Simulation
     .synchronize(electron.alwaysWith(electronSphere))
     .synchronize(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
     .synchronize(electricField.onceWith(arrowField))
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => timeStep(dt), subSteps);
+    .incrementsTimeBy(2e-19)
+    .onClockTick((clock) => timeStep(clock.fixedDt), subSteps);
 
 // Ring rendering
 for (const segment of ring.segments)

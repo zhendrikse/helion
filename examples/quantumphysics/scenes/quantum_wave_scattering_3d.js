@@ -46,8 +46,9 @@ Simulation
         width: xMax,
         height: xMax
     })))
+    .incrementsTimeBy(dt)
     .onReset(() => reset())
-    .onClockTick(() => psi.evolve(solver, dt), 15)
+    .onClockTick((clock) => psi.evolve(solver, clock.fixedDt), 15)
     .append(new Checkbox("🌈 Show phase color ")
         .on(waveFunctionSurface)
         .withProperty("phaseColor")

@@ -98,7 +98,6 @@ class Flock {
 
 const birdCount = 250;
 const flock = new Flock(birdCount);
-const dt = 0.02;
 const simulation = Simulation
     .with({
         htmlDivId: "birdsContainer",
@@ -106,8 +105,8 @@ const simulation = Simulation
         fieldOfView: 30
     })
     .withMouseClickEventListener()
-    .incrementsTimeBy(dt)
-    .onClockTick(() => flock.update(dt))
+    .incrementsTimeBy(0.02)
+    .onClockTick((clock) => flock.update(clock.fixedDt))
     .append(new Slider("Random behavior: ")
         .on(flock)
         .withProperty("randomWeight")

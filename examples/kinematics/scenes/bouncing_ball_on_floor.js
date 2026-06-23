@@ -42,7 +42,6 @@ function ballStep(dt) {
         ball.bounceOffOfFloor(dt, 0.9);
 }
 
-const dt = 2.5e-3;
 const subSteps = 10;
 const sphere = new Sphere({ color: "cyan" });
 const graphDefinition = {
@@ -66,14 +65,14 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .synchronize(ball.alwaysWith(sphere))
     .synchronize(ball.alwaysWith(new Trail({ color: sphere.color})))
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => {
+    .incrementsTimeBy(2.5e-3)
+    .onClockTick((clock) => {
         if (ball.reachedEnd())
             return;
 
-        ballStep(dt);
+        ballStep(clock.fixedDt);
     }, subSteps)
-    .onAfterClockTick((clockTime, simulatedTime) => updateGraph(simulatedTime))
+    .onAfterClockTick((clock) => updateGraph(clock.simulatedTime))
     .addObject3D(new Floor({
         type: Floor.Type.GRID,
         planeSizeXy: new Vector2(5, 5),

@@ -61,7 +61,6 @@ const forceArrow = new Arrow({
     magnitudeMap: mag => mag * 2.5e-2
 });
 
-const dt = 1.5e-3;
 const subSteps = 10;
 Simulation
     .with({
@@ -74,8 +73,8 @@ Simulation
     .synchronize(world.ball.velocityVector.alwaysWith(velocityArrow))
     .synchronize(world.ball.accelerationVector.alwaysWith(forceArrow))
     .synchronize(world.spring.alwaysWith(helix))
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, simulatedTime) => world.timeStep(dt), subSteps)
+    .incrementsTimeBy(1.5e-3)
+    .onClockTick((clock) => world.timeStep(clock.fixedDt), subSteps)
     .addObject3D(floor)
     .append(new Checkbox("🚀 Velocity: ")
         .on(velocityArrow)

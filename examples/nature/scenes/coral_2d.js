@@ -120,7 +120,7 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .synchronize(particleField.alwaysWith(particleView2D))
     .onReset(resetSimulation)
-    .onClockTick((clockTime, simulatedTime) => particleField.update());
+    .onClockTick((_) => particleField.update());
 
 
 function resetSimulation() {

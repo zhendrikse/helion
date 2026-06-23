@@ -78,7 +78,7 @@ const simulation = Simulation
         htmlDivId: "shellsContainer",
         fieldOfView: 20
     })
-    .onClockTick(() => surfaceView.rotation.y += 0.0167)
+    .onClockTick((_) => surfaceView.rotation.y += 0.0167)
     .append(new DropdownMenu()
         .for(surfacesRegistry)
         .addEventListener("change", event => changeSurface(event.target.value)))

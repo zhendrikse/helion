@@ -35,9 +35,9 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .synchronize(antenna.onceWith(new Cylinder({color: 0xcccc77})))
     .incrementsTimeBy(lambda / OneDimensionalPlaneWave.c / 100.0)
-    .onClockTick((clockTime, simulatedTime) => {
+    .onClockTick((clock) => {
         for (let wave of planeWaves)
-            wave.propagate(simulatedTime);
+            wave.propagate(clock.simulatedTime);
     }, 2)
     .append(new Slider("🧲 Field strength: ")
         .withValue(10)

@@ -58,5 +58,5 @@ Simulation
         light: false
     })
     .synchronize(starCluster.onceWith(cloud))
-    .onClockTick((clockTime, simulatedTime) => {cloud.rotation.y += 2.5e-3})
+    .onClockTick((_) => {cloud.rotation.y += 2.5e-3})
     .start();

@@ -133,5 +133,5 @@ Simulation
         light: false
     })
     .synchronize(spiralGalaxy.onceWith(pointCloud))
-    .onClockTick((clockTime, simulatedTime) => { pointCloud.rotation.z += 2.5e-3 })
+    .onClockTick((_) => { pointCloud.rotation.z += 2.5e-3 })
     .start();

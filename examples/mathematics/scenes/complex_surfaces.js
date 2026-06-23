@@ -69,7 +69,7 @@ const simulation = Simulation
 
 const surfaceController = new SurfaceController(simulation, surfaceView);
 simulation
-    .onClockTick((clockTime, simulatedTime) => surfaceController.time = simulatedTime)
+    .onClockTick((clock) => surfaceController.time = clock.simulatedTime)
     .start();
 
 new DropdownMenu(container)

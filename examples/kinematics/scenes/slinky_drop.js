@@ -1,5 +1,5 @@
 import {
-    RadialSymmetricBody, Simulation, Vec3, Sphere, Spring
+    RadialSymmetricBody, Simulation, Vec3, Sphere, Spring, Trail
 } from "../../../src/index.js";
 
 
@@ -74,5 +74,5 @@ Simulation
     .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
     .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
     .incrementsTimeBy(dt / subSteps)
-    .onClockTick((clockTime, simulatedTime) => updateForces(dt), subSteps)
+    .onClockTick((clock) => updateForces(clock.fixedDt), subSteps)
     .withMouseClickEventListener();

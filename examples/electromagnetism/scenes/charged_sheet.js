@@ -90,7 +90,6 @@ const arrowField = new ArrowField({
     round: true
 });
 
-const dt = 5e-20;
 const field = new Vec3();
 const simulation = Simulation
     .with({
@@ -104,11 +103,11 @@ const simulation = Simulation
     .synchronize(electricField.onceWith(arrowField))
     .synchronize(electron.alwaysWith(electronSphere))
     .synchronize(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
-    .incrementsTimeBy(dt)
-    .onClockTick(() => {
+    .incrementsTimeBy(5e-20)
+    .onClockTick((clock) => {
         electricField.sample(electron.position, field);
         const force = field.clone().multiplyScalar(electron.charge);
-        electron.apply(force, dt);
+        electron.apply(force, clock.fixedDt);
     }, 10);
 
 //

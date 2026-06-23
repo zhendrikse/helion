@@ -185,14 +185,25 @@ export class Viewport {
         });
 
         this._fullscreenButton.addEventListener("click", async () => {
-            if (!document.fullscreenElement) {
+            if (!document.fullscreenElement)
                 await this._container.requestFullscreen();
-            } else {
+            else
                 await document.exitFullscreen();
-            }
         });
 
         this._canvasWrapperDiv.appendChild(this._fullscreenButton);
+
+        // const downloadButton = document.createElement("button");
+        // downloadButton.textContent = "Download image";
+        // document.body.appendChild(downloadButton);
+        //
+        // downloadButton.addEventListener("click", () => {
+        //     renderer.render(scene, camera); // laatste frame renderen
+        //     const link = document.createElement("a");
+        //     link.download = "blackhole.png";
+        //     link.href = renderer.domElement.toDataURL("image/png");
+        //     link.click();
+        // });
     }
 
     get simulationButtonsDiv() { return this._simulationButtonsDiv; }
@@ -205,6 +216,18 @@ export class Viewport {
 
     enableParameterMenu() {
         this._details.style.visibility = "visible";
+    }
+}
+
+class SimulationClock {
+    constructor(fixedDt = 0.01) {
+        this.fixedDt = fixedDt;
+        this.simulatedTime = 0;
+        this.clockTime = 0;
+    }
+
+    tick() {
+        this.simulatedTime += this.fixedDt;
     }
 }
 
@@ -262,10 +285,10 @@ export class Simulation {
         this._updateFunction = () => {}         // Callback function for physics update
         this._onAfterPhysicsUpdate = () => {};  // Callback function for client after physics update
         this._running = false;
-        this._simulatedTime = 0;
-        this._dt = 0.01;
+
+        this._clock = new SimulationClock();
+
         this._substepsCount = 1;
-        this._clockTime = 0;
         if (headUpDisplay)
             this._initHud()
 
@@ -280,7 +303,7 @@ export class Simulation {
     }
 
     incrementsTimeBy(dt) {
-        this._dt = dt;
+        this._clock.fixedDt = dt;
         return this;
     }
 
@@ -328,39 +351,39 @@ export class Simulation {
     _updatePhysics(clockTime) {
         for (let substeps = 0; substeps < this._substepsCount; substeps++) {
             this._updateFunction(clockTime, this._simulatedTime);
-            this._simulatedTime += this._dt;
+            this._clock.tick();
         }
     }
 
-    onBeforeClockTick(customFunction = (clockTime, simulatedTime) => {}) {
+    onBeforeClockTick(customFunction = (clock) => {}) {
         this._onBeforePhysicsUpdate = customFunction;
         return this;
     }
 
-    onAfterClockTick(customFunction = (clockTime, simulatedTime) => {}) {
+    onAfterClockTick(customFunction = (clock) => {}) {
         this._onAfterPhysicsUpdate = customFunction;
         return this;
     }
 
     animate = (clockTime) => {
-        this._clockTime = clockTime;
+        this._clock.clockTime = clockTime;
 
         // Physics / math model update
         if (this._running) {
-            this._onBeforePhysicsUpdate(clockTime, this._simulatedTime);
-            this._updatePhysics(clockTime);
-            this._onAfterPhysicsUpdate(clockTime, this._simulatedTime);
+            this._onBeforePhysicsUpdate(this._clock);
+            this._updatePhysics(this._clock);
+            this._onAfterPhysicsUpdate(this._clock);
 
             // Sync model and views after model update
             for (const binding of this._bindings)
-                binding.synchronize(clockTime);
+                binding.synchronize(this._clock.clockTime);
         }
 
         this._renderer.render(clockTime);
         requestAnimationFrame(this.animate);
     };
 
-    onClockTick(updateFunction = () => {}, substepsCount = 1) {
+    onClockTick(updateFunction = (clock) => {}, substepsCount = 1) {
         this._updateFunction = updateFunction;
         this._substepsCount = substepsCount;
         return this;
@@ -446,7 +469,7 @@ export class Simulation {
 
     onUserInteraction(event) {
         for (const binding of this._bindings)
-            binding.forceSynchronize(this._clockTime);
+            binding.forceSynchronize(this._clock.clockTime);
     }
 
     setupGraphWith({

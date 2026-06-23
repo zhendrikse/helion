@@ -32,7 +32,6 @@ function initialDisturbance(displacement = 5) {
 const { balls, springs } = createBallsAndSprings();
 initialDisturbance(7);
 
-const dt = 1e-3;
 const subSteps = 10;
 const simulation = Simulation
     .with({
@@ -45,10 +44,10 @@ const simulation = Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .incrementsTimeBy(dt)
-    .onClockTick((clockTime, _) => {
+    .incrementsTimeBy(1e-3)
+    .onClockTick((clock) => {
         for (let i = 0; i < balls.length - 1; i++)
-            springs[i].oscillate(dt);
+            springs[i].oscillate(clock.fixedDt);
     }, subSteps)
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,

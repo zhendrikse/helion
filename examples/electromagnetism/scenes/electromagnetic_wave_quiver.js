@@ -140,7 +140,6 @@ const magneticArrowField = new ArrowField({
     round: true
 });
 
-const dt = 2e-19;
 Simulation
     .with({
         htmlDivId: "electromagneticWaveContainer",
@@ -150,18 +149,18 @@ Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .incrementsTimeBy(dt)
+    .incrementsTimeBy(2e-19)
     .synchronize(electron.alwaysWith(new Sphere({ color: new Color("red") })))
     .synchronize(electricField.alwaysWith(electricArrowField))
     .synchronize(magneticField.alwaysWith(magneticArrowField))
     .synchronize(proton.alwaysWith(new Sphere({ color: new Color("yellow") })))
-    .onClockTick((clockTime, simulatedTime) => {
-        electron.updateAt(simulatedTime);
-        proton.updateAt(simulatedTime);
+    .onClockTick((clock) => {
+        electron.updateAt(clock.simulatedTime);
+        proton.updateAt(clock.simulatedTime);
 
         for (const field of electricField._fields)
-            field.time = simulatedTime;
+            field.time = clock.simulatedTime;
 
         for (const field of magneticField._fields)
-            field.time = simulatedTime;
+            field.time = clock.simulatedTime;
     }, 2);

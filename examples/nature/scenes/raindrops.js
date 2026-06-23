@@ -42,9 +42,10 @@ Simulation
         fieldOfView: 19
     })
     .synchronize(surface.alwaysWith(water))
-    .onClockTick(() => {
-        field.evolve(solver, 0.02);
-        if (Math.random() > 0.02)
+    .incrementsTimeBy(0.02)
+    .onClockTick((clock) => {
+        field.evolve(solver, clock.fixedDt);
+        if (Math.random() > clock.fixedDt)
             return;
         
         field.apply(new GaussianImpulse( {
