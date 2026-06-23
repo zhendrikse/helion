@@ -98,6 +98,7 @@ export class ThreeJsRenderer extends Renderer {
 
         this._renderer.setPixelRatio(pixelRatio);
         this._renderer.setSize(canvasWidth, canvasHeight, false);
+        this._labelRenderer.setSize(canvasWidth, canvasHeight, false);
         this._camera.aspect = canvasWidth / canvasHeight;
         this._camera.updateProjectionMatrix();
     }
