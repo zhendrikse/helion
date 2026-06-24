@@ -149,12 +149,12 @@ Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .incrementsTimeBy(2e-19)
+    .incrementsTimeBy(3e-21)
     .synchronize(electron.alwaysWith(new Sphere({ color: new Color("red") })))
     .synchronize(electricField.alwaysWith(electricArrowField))
     .synchronize(magneticField.alwaysWith(magneticArrowField))
     .synchronize(proton.alwaysWith(new Sphere({ color: new Color("yellow") })))
-    .onClockTick((clock) => {
+    .onStep((clock, _) => {
         electron.updateAt(clock.simulatedTime);
         proton.updateAt(clock.simulatedTime);
 
@@ -163,4 +163,4 @@ Simulation
 
         for (const field of magneticField._fields)
             field.time = clock.simulatedTime;
-    }, 2);
+    });

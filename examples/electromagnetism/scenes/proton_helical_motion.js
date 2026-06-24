@@ -79,7 +79,7 @@ Simulation
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
     .synchronize(magneticField.onceWith(arrowField))
     .incrementsTimeBy(5e-4)
-    .onClockTick((clock) => timeStep(clock.fixedDt), 25)
+    .onStep((_, dt) => timeStep(dt))
     .addObject3D(new Aquarium({
         color: 0x1e90ff,
         opacity: 0.1,

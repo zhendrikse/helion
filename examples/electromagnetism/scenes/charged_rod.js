@@ -150,17 +150,18 @@ const allGone = () => rod.charges.every(c => c.position.y > 1);
 const simulation = Simulation
     .with({
         htmlDivId: "chargedRodContainer",
-        cameraPosition: new Vec3(2, 1.5, 2.5),
-        fieldOfView: 30
+        cameraPosition: new Vec3(2, .8, 2.5),
+        fieldOfView: 30,
+        headUpDisplay: true
     })
     .synchronize(electricField.alwaysWith(electricArrowField))
     .synchronize(magneticField.alwaysWith(magneticArrowField))
-    .incrementsTimeBy(0.01)
+    .incrementsTimeBy(0.02)
     .withMouseClickEventListener()
-    .onClockTick((clock) => {
+    .onStep((_, dt) => {
         if (!allGone())
-            rod.update(clock.fixedDt);
-    }, 2);
+            rod.update(dt);
+    });
 
 for (const charge of rod.charges) {
     const sphere = new Sphere({ color: new Color("yellow") });

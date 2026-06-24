@@ -110,7 +110,6 @@ const particleView2D = new ParticleCloudView({
 });
 
 let particleField = new ParticleCloud(swarmSize);
-const htmlDiv = document.getElementById();
 const simulation = Simulation
     .with({
         htmlDivId: "coralContainer",
@@ -120,8 +119,13 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .synchronize(particleField.alwaysWith(particleView2D))
     .onReset(resetSimulation)
-    .onClockTick((_) => particleField.update());
-
+    .onFrame(() => particleField.update())
+    .append(particleView2D.controls())
+    .append(new DropdownMenu()
+        .for(new ColorMappersFactory())
+        .addEventListener("change", (event) =>
+            colorMapper = ColorMappersFactory.create(event.target.value))
+    );
 
 function resetSimulation() {
     updateThreshold();
@@ -134,7 +138,4 @@ function resetSimulation() {
         });
 }
 resetSimulation();
-particleView2D.showShapeSelectorIn(htmlDiv);
-new DropdownMenu(htmlDiv).for(ColorMappersFactory).addEventListener("change", (event) =>
-    colorMapper = ColorMappersFactory.get(event.target.value));
 

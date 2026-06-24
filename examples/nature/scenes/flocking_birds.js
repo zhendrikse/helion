@@ -106,7 +106,7 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .incrementsTimeBy(0.02)
-    .onClockTick((clock) => flock.update(clock.fixedDt))
+    .onStep((_, dt) => flock.update(dt))
     .append(new Slider("Random behavior: ")
         .on(flock)
         .withProperty("randomWeight")

@@ -37,7 +37,7 @@ Simulation
     })
     .synchronize(membrane.alwaysWith(surfaceView))
     .incrementsTimeBy(0.016)
-    .onClockTick((clock) => membrane.time = clock.simulatedTime, 3)
+    .onStep((clock, _) => membrane.time = clock.simulatedTime)
     .frameSceneOn(surfaceView, {
         padding: 0.7,
         translationY: -1.25

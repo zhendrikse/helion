@@ -52,7 +52,7 @@ const simulation = Simulation
     .synchronize(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
     .incrementsTimeBy(0.05)
     .addObject3D(faradayLoopsGroup)
-    .onClockTick((clock) => {
+    .onStep((clock, dt) => {
         const fieldLength = (clock.simulatedTime % 20) / 25 + 0.001;
 
         for (const vec of magneticVectors)
@@ -60,7 +60,7 @@ const simulation = Simulation
 
         for (const charge of charges)
             charge.position.z = zStart + ((charge.baseZ + clock.simulatedTime * clock.fixedDt) % numCharges);
-    }, 10)
+    })
     .append(new Checkbox("Show Faraday loop: ")
         .on(faradayLoopsGroup)
         .withProperty("visible")

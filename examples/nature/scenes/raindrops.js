@@ -43,9 +43,9 @@ Simulation
     })
     .synchronize(surface.alwaysWith(water))
     .incrementsTimeBy(0.02)
-    .onClockTick((clock) => {
-        field.evolve(solver, clock.fixedDt);
-        if (Math.random() > clock.fixedDt)
+    .onStep((_, dt) => {
+        field.evolve(solver, dt);
+        if (Math.random() > dt)
             return;
         
         field.apply(new GaussianImpulse( {

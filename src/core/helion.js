@@ -219,15 +219,48 @@ export class Viewport {
     }
 }
 
+/**
+ * Goal:
+ *
+ * A. Real time (requestAnimationFrame)
+ *    - determines how frequent animate() runs/is invoked
+ *    - changes per machine (60fps, 144fps, lag spikes)
+ * B. Simulation time (logical time)
+ *    - runs in fixed time increments (fixedDt)
+ *    - determines correctness of physics
+ * C. Render time (visuals)
+ *    - every frame
+ */
 class SimulationClock {
-    constructor(fixedDt = 0.01) {
+    constructor({
+        fixedDt = 0.01,     // Physics step size => advances simulated time, not the simulation speed!
+        maxAccumulatedTime = 0.25
+    } = {}) {
         this.fixedDt = fixedDt;
+        this.clockTime = 0;         // Our real-world clock time
+        this.previousClockTime = 0;
+        this.elapsedTime = 0;       // The elapsed time per frame on our real-world clock
+        this.simulatedTime = 0;     // The absolute simulated time that is incremented with dt
+        this.accumulator = 0;
+        this.maxAccumulatedTime = maxAccumulatedTime;
+    }
+
+    reset() {
         this.simulatedTime = 0;
-        this.clockTime = 0;
+        this.accumulator = 0;
     }
 
     tick() {
+        this.accumulator -= this.fixedDt;
         this.simulatedTime += this.fixedDt;
+    }
+
+    updateWith(clockTime) {
+        this.previousClockTime = this.clockTime;
+        this.clockTime = clockTime;
+        this.elapsedTime = (this.clockTime - this.previousClockTime) * 0.001;
+        this.elapsedTime = Math.min(this.elapsedTime, this.maxAccumulatedTime);
+        this.accumulator += this.elapsedTime;
     }
 }
 
@@ -281,14 +314,17 @@ export class Simulation {
         this._plot = null;                      // No plot by default
         this._hud = null;                       // No head-up display by default
         this._onReset = () => {};               // Callback function for client when a reset happens
+
+        // TODO obsolete?
         this._onBeforePhysicsUpdate = () => {}; // Callback function for client before physics update
-        this._updateFunction = () => {}         // Callback function for physics update
         this._onAfterPhysicsUpdate = () => {};  // Callback function for client after physics update
+
+        this._onFrame = (clock) => {};          // 1x per frame, no physics, only visuals / UI / rotation / camera
+        this._stepFunction = (clock, dt) => {}; // dt = fixedDt, sub-stepped execution, all physics belongs HERE
         this._running = false;
 
         this._clock = new SimulationClock();
 
-        this._substepsCount = 1;
         if (headUpDisplay)
             this._initHud()
 
@@ -354,11 +390,17 @@ export class Simulation {
         return this;
     }
 
-    _updatePhysics(clockTime) {
-        for (let substeps = 0; substeps < this._substepsCount; substeps++) {
-            this._updateFunction(clockTime, this._simulatedTime);
+    _updatePhysics(clock) {
+        let i = 0;
+        const maxSteps = 10;
+
+        while (this._clock.accumulator >= this._clock.fixedDt && i < maxSteps) {
+            this._stepFunction(this._clock, this._clock.fixedDt);
             this._clock.tick();
+            i++;
         }
+
+        this._clock.accumulator += this._clock.elapsedTime;
     }
 
     onBeforeClockTick(customFunction = (clock) => {}) {
@@ -372,13 +414,15 @@ export class Simulation {
     }
 
     animate = (clockTime) => {
-        this._clock.clockTime = clockTime;
-
-        // Physics / math model update
         if (this._running) {
+            this._clock.updateWith(clockTime);
+
+            // Physics / math model update
             this._onBeforePhysicsUpdate(this._clock);
             this._updatePhysics(this._clock);
             this._onAfterPhysicsUpdate(this._clock);
+
+            this._onFrame(this._clock);
 
             // Sync model and views after model update
             for (const binding of this._bindings)
@@ -389,16 +433,22 @@ export class Simulation {
         requestAnimationFrame(this.animate);
     };
 
-    onClockTick(updateFunction = (clock) => {}, substepsCount = 1) {
-        this._updateFunction = updateFunction;
-        this._substepsCount = substepsCount;
+    onStep(stepFunction = (clock, dt) => {}) {
+        this._stepFunction = stepFunction;
+        return this;
+    }
+
+    onFrame(callback = clock => {}) {
+        this._onFrame = callback;
         return this;
     }
 
     reset() {
-        this._simulatedTime = 0;
+        this._clock.reset();
+
         for (const binding of this._bindings)
             binding.reset();
+
         this._onReset?.();
     }
 

@@ -53,7 +53,7 @@ const simulation = Simulation
     })))
     .withMouseClickEventListener()
     .onReset(() => particles.length = 0)
-    .onClockTick((_) => {
+    .onStep((_) => {
         if (Math.random() > 0.9) spawnParticleFromSlit(slit1.position);
         if (Math.random() > 0.9) spawnParticleFromSlit(slit2.position);
 

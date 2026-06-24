@@ -90,15 +90,15 @@ const simulation = Simulation
     .synchronize(movingCharge.alwaysWith(sphere))
     .synchronize(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })))
     .synchronize(capacitorField.onceWith(arrowField))
-    .incrementsTimeBy(0.01)
-    .onClockTick((clock) => {
+    .incrementsTimeBy(0.001)
+    .onStep((_, dt) => {
         if (movingCharge.position.x > 60 / scale)
             return;
 
         capacitorField.sample(movingCharge.position, field);
         const force = field.multiplyScalar(movingCharge.charge);
-        movingCharge.apply(force, clock.fixedDt);
-    }, subSteps)
+        movingCharge.apply(force, dt);
+    })
     .onReset(() => {
         movingCharge.state.charge = Number(chargeSlider.value) * 5e-42 * EC;
         movingCharge.state.velocity.x = Number(speedSlider.value) / scale;

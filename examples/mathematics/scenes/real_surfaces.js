@@ -104,7 +104,7 @@ const simulation = Simulation
 
 const surfaceController = new SurfaceController(simulation, surfaceView);
 simulation
-    .onClockTick((clock) => surfaceController.time = clock.simulatedTime)
+    .onStep((clock, _) => surfaceController.time = clock.simulatedTime)
     .append(new DropdownMenu()
         .for(surfacesRegistry)
         .addEventListener("change", event => surfaceController.changeSurface(event.target.value))

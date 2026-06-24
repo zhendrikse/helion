@@ -53,7 +53,7 @@ const simulation = Simulation
     .synchronize(potential.onceWith(potentialBarrier2d))
     .incrementsTimeBy(dt)
     .onReset(() => reset(shapeConfiguration, potentialStrength, softness))
-    .onClockTick((clock) => psi.evolve(solver, clock.fixedDt), 15)
+    .onStep((_, dt) => psi.evolve(solver, dt))
     .append(new RadioButton("2D")
         .addEventListener("click", event => setDimension(false))
         .togetherWith(new RadioButton("3D")

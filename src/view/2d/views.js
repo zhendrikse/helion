@@ -36,7 +36,7 @@ export class ParticleCloudView extends Renderable3D {
         particleCount = 5000,
         type = "Sphere",
         scalarField = particle => particle.mass,
-        colorMapper = ColorMappersFactory.get(ColorMap.Scientific)
+        colorMapper = ColorMappersFactory.create(ColorMappersFactory.Type.Scientific)
     } = {}) {
         super();
 
@@ -87,8 +87,8 @@ export class ParticleCloudView extends Renderable3D {
 
     get boundingBox() { return this._boundingBox; }
 
-    showShapeSelectorIn(container) {
-        new DropdownMenu(container).for(ParticleCloudView.Shapes).addEventListener("change",
+    controls() {
+        return new DropdownMenu().for(ParticleCloudView.Shapes).addEventListener("change",
             event => this.shape = event.target.value
         );
     }
