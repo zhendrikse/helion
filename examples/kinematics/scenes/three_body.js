@@ -38,9 +38,9 @@ function updateForces(dt) {
     const force_CB = gravitationalForceBetween(bodyB.and(bodyC));
     const force_AC = gravitationalForceBetween(bodyC.and(bodyA));
 
-    bodyA.apply(force_BA.clone().sub(force_AC), dt / subSteps, Integrators.symplecticEulerStep);
-    bodyB.apply(force_CB.clone().sub(force_BA), dt / subSteps, Integrators.symplecticEulerStep);
-    bodyC.apply(force_AC.clone().sub(force_CB), dt / subSteps, Integrators.symplecticEulerStep);
+    bodyA.apply(force_BA.clone().sub(force_AC), dt, Integrators.symplecticEulerStep);
+    bodyB.apply(force_CB.clone().sub(force_BA), dt, Integrators.symplecticEulerStep);
+    bodyC.apply(force_AC.clone().sub(force_CB), dt, Integrators.symplecticEulerStep);
 }
 
 //
@@ -60,6 +60,6 @@ Simulation
     .synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
     .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
     .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
-    .incrementsTimeBy(5000 / subSteps)
-    .onClockTick((clock) => updateForces(clock.fixedDt), subSteps)
+    .incrementsTimeBy(100)
+    .onClockTick(clock => updateForces(clock.fixedDt), subSteps)
     .withMouseClickEventListener();
