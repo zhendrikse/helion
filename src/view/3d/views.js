@@ -1,9 +1,9 @@
-import {Mesh, PlaneGeometry, MeshPhongMaterial, Color, DoubleSide, ShaderMaterial,
+import {Mesh, PlaneGeometry, DoubleSide, ShaderMaterial,
     BufferAttribute, BoxGeometry, MeshBasicMaterial, InstancedMesh, Object3D
 } from "three";
 
 import {hsvToRgbNormalized, Renderable3D} from "../../../src/index.js";
-import { hsvToRgb } from "../../../src/index.js";
+import { Complex } from "../../model/math/math.js";
 
 //
 // SHADER VERSION WHICH STANDS PERPENDICULAR TO THE PLANE
@@ -177,13 +177,14 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
         this._height = height;
         this._brightness = brightness;
         this._zScale = zScale;
+        this._complexValue = new Complex();
 
         const geometry = new PlaneGeometry(width, height, width - 1, height - 1);
         const material = new ShaderMaterial({
             vertexShader: ComplexScalarFieldSurfaceRaster.vertexShader,
             fragmentShader: ComplexScalarFieldSurfaceRaster.fragmentShader,
             transparent: true,
-            side: DoubleSide,
+            //side: DoubleSide,
             uniforms: {
                 uBrightness: { value: this._brightness }
             }
@@ -211,11 +212,10 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
 
         for (let y = 0; y < field.ny; y++) {
             for (let x = 0; x < field.nx; x++) {
-                const i = y * field.nx + x;
-                const re = field.real[i];
-                const im = field.imag[i];
-                const mag = Math.sqrt(re * re + im * im);
-                const phase = Math.atan2(im, re);
+                field.valueAt(x, y, this._complexValue);
+                const mag = this._complexValue.magnitude;
+                const phase = this._complexValue.phase;
+                const i = field.index(x, y);
 
                 // HEIGHT (surface deformation)
                 const height = Math.log(1 + 20 * mag);
@@ -244,7 +244,7 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
     }
 
     canBindTo(field) {
-        return field.sample && field.nx && field.ny;
+        return field.valueAt && field.nx && field.ny;
     }
 }
 
@@ -323,12 +323,12 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
 
 export class PotentialField3DRaster extends Renderable3D {
     constructor({
-                    width = 200,
-                    height = 200,
-                    heightScale = 100,
-                    color = 0xff0033,
-                    opacity = 0.35
-                }) {
+        width = 200,
+        height = 200,
+        heightScale = 100,
+        color = 0xff0033,
+        opacity = 0.35
+    }) {
         super();
 
         this._heightScale = heightScale;
@@ -345,7 +345,7 @@ export class PotentialField3DRaster extends Renderable3D {
     }
 
     canBindTo(field) {
-        return field.sample && field.nx && field.ny;
+        return field.valueAt && field.nx && field.ny;
     }
 
     synchronizeWith(field) {
@@ -353,8 +353,7 @@ export class PotentialField3DRaster extends Renderable3D {
 
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++) {
-                const i = y * field.nx + x;
-                const v = field._data[i];
+                const v = field.valueAt(x, y);
 
                 // skip empty space → HUGE performance win
                 if (v === 0) {

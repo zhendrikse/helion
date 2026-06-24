@@ -370,9 +370,13 @@ export class DiscreteComplexField extends Field {
         return this;
     }
 
-    sample(i, j, target) {
+    valueAt(i, j, target) {
         target.re = this.real[this.index(i, j)];
         target.im = this.imag[this.index(i, j)];
+    }
+
+    sample(u, v, target) {
+        // bilinear interpolation (kan later consistent op index() bouwen)
     }
 }
 

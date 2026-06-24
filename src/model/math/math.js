@@ -280,7 +280,7 @@ export class Complex {
 
     clone() { return new Complex(this.re, this.im); }
 
-    get phase() { return .5 * Math.atan2(this.im, this.re) / Math.PI; }
+    get phase() { return Math.atan2(this.im, this.re); }
     get absSquared() { return this.re * this.re + this.im * this.im; }
     get magnitude() { return Math.sqrt(this.absSquared); }
     get abs() { return Math.sqrt(this.absSquared); }
