@@ -270,6 +270,7 @@ class UniformColorMapper extends ColorMapper {
     constructor(color = new Color(0xffff00)) {
         super();
         this._color = color;
+        console.log(this._color);
     }
 
     map(value, targetColor) {
@@ -313,10 +314,10 @@ export class ColorMappersFactory extends Registry {
         WaterAlternative: "WaterAlternative"
     });
 
-    static create(key, options = {}) {
+    static create(type) {
         const this_ = new ColorMappersFactory();
-        const Type = this_.get(key);
-        return new Type(options);
+        const Type = this_.get(type);
+        return new Type();
     }
 
     constructor({
