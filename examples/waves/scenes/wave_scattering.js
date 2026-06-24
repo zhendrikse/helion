@@ -8,7 +8,7 @@ const resolution = 256;
 
 const waterSurface = new StandardSurfaceView({
     resolution: new SurfaceResolution(resolution, resolution),
-    normalizer: new Interval(-3, 3),
+    normalizer: new Interval(-1, 1),
     colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
     contours: false,
 });
