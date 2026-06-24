@@ -33,16 +33,6 @@ const bodyC = new RadialSymmetricBody({
     mass: mass * 0.5
 });
 
-function updateForces(dt) {
-    const force_BA = gravitationalForceBetween(bodyA.and(bodyB));
-    const force_CB = gravitationalForceBetween(bodyB.and(bodyC));
-    const force_AC = gravitationalForceBetween(bodyC.and(bodyA));
-
-    bodyA.apply(force_BA.clone().sub(force_AC), dt, Integrators.symplecticEulerStep);
-    bodyB.apply(force_CB.clone().sub(force_BA), dt, Integrators.symplecticEulerStep);
-    bodyC.apply(force_AC.clone().sub(force_CB), dt, Integrators.symplecticEulerStep);
-}
-
 //
 // Simulation binds view to model
 //
@@ -61,5 +51,13 @@ Simulation
     .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
     .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
     .incrementsTimeBy(100)
-    .onClockTick(clock => updateForces(clock.fixedDt), subSteps)
+    .onClockTick(clock => {
+        const force_BA = gravitationalForceBetween(bodyA.and(bodyB));
+        const force_CB = gravitationalForceBetween(bodyB.and(bodyC));
+        const force_AC = gravitationalForceBetween(bodyC.and(bodyA));
+
+        bodyA.apply(force_BA.clone().sub(force_AC), clock.fixedDt, Integrators.symplecticEulerStep);
+        bodyB.apply(force_CB.clone().sub(force_BA), clock.fixedDt, Integrators.symplecticEulerStep);
+        bodyC.apply(force_AC.clone().sub(force_CB), clock.fixedDt, Integrators.symplecticEulerStep);
+    }, subSteps)
     .withMouseClickEventListener();
