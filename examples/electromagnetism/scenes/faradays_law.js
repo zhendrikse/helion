@@ -51,6 +51,7 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .synchronize(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
     .incrementsTimeBy(0.05)
+    .onTimeScale(10)
     .addObject3D(faradayLoopsGroup)
     .onStep((clock, dt) => {
         const fieldLength = (clock.simulatedTime % 20) / 25 + 0.001;

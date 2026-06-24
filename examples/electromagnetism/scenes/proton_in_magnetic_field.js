@@ -33,9 +33,11 @@ const magneticField = new MagneticField(.2);
 
 const fieldVector = new Vec3();
 function timeStep(dt) {
-    magneticField.sample(proton.position, fieldVector);
-    const force = fieldVector.cross(proton.velocity).multiplyScalar(proton.charge);
-    proton.apply(force, dt);
+    for (let substep = 0; substep < 20; substep++) {
+        magneticField.sample(proton.position, fieldVector);
+        const force = fieldVector.cross(proton.velocity).multiplyScalar(proton.charge);
+        proton.apply(force, dt);
+    }
 }
 
 //
@@ -63,7 +65,7 @@ Simulation
     .synchronize(magneticField.onceWith(arrowField))
     .synchronize(proton.alwaysWith(sphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })))
-    .incrementsTimeBy(2.5e-3)
+    .incrementsTimeBy(1e-3)
     .onStep((_, dt) => timeStep(dt))
     .append(new Slider("🧲 Field: ")
         .withRange(new Range(.1, 1, .01))

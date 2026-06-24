@@ -30,7 +30,7 @@ const surface = new DiscreteFieldSurface(field);
 
 const water = new InstancedMeshSurfaceView({
     resolution: new SurfaceResolution(256, 256),
-    normalizer: new Interval(-0.25, 2),
+    normalizer: new Interval(-.3, 2),
     colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative)
 });
 water.position.set(-128, 0, -128);
@@ -42,7 +42,8 @@ Simulation
         fieldOfView: 19
     })
     .synchronize(surface.alwaysWith(water))
-    .incrementsTimeBy(0.02)
+    .incrementsTimeBy(0.01)
+    .onTimeScale(10)
     .onStep((_, dt) => {
         field.evolve(solver, dt);
         if (Math.random() > dt)
@@ -54,7 +55,7 @@ Simulation
             amplitude: .75,
             sigma: 1
         }));
-    }, 5)
+    })
     .append(water.controls())
     .append(water.shapeSelector)
     .start();

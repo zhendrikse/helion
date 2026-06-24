@@ -149,7 +149,7 @@ Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .incrementsTimeBy(3e-21)
+    .incrementsTimeBy(4e-20)
     .synchronize(electron.alwaysWith(new Sphere({ color: new Color("red") })))
     .synchronize(electricField.alwaysWith(electricArrowField))
     .synchronize(magneticField.alwaysWith(magneticArrowField))

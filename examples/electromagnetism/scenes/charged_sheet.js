@@ -103,7 +103,7 @@ const simulation = Simulation
     .synchronize(electricField.onceWith(arrowField))
     .synchronize(electron.alwaysWith(electronSphere))
     .synchronize(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
-    .incrementsTimeBy(1e-20)
+    .incrementsTimeBy(5e-20)
     .onStep((_, dt) => {
         electricField.sample(electron.position, field);
         const force = field.clone().multiplyScalar(electron.charge);

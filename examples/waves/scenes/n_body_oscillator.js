@@ -44,10 +44,6 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .incrementsTimeBy(1e-3)
-    .onStep((_, dt) => {
-        for (let i = 0; i < balls.length - 1; i++)
-            springs[i].oscillate(dt);
-    })
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
         planeSizeXy: new Vector2(200, 200),
@@ -86,11 +82,14 @@ for (let i = 0; i < balls.length; i++) {
 }
 
 simulation
-    .onAfterClockTick((clockTime, simulatedTime) => {
+    .onStep((clock, dt) => {
+        for (let i = 0; i < balls.length - 1; i++)
+            springs[i].oscillate(dt);
+
         if (!simulation.isRunning)
             return;
 
-        const plotData = [clockTime * 0.001];
+        const plotData = [clock.clockTime * 0.001];
         for (let i = 0; i < balls.length; i++)
             plotData.push(balls[i].position.x);
         simulation.plot(plotData);

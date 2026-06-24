@@ -242,7 +242,8 @@ class SimulationClock {
         this.elapsedTime = 0;       // The elapsed time per frame on our real-world clock
         this.simulatedTime = 0;     // The absolute simulated time that is incremented with dt
         this.accumulator = 0;
-        this.maxAccumulatedTime = maxAccumulatedTime;
+        this._maxAccumulatedTime = maxAccumulatedTime;
+
     }
 
     reset() {
@@ -255,12 +256,12 @@ class SimulationClock {
         this.simulatedTime += this.fixedDt;
     }
 
-    updateWith(clockTime) {
+    updateWith(clockTime, timeScale) {
         this.previousClockTime = this.clockTime;
         this.clockTime = clockTime;
         this.elapsedTime = (this.clockTime - this.previousClockTime) * 0.001;
-        this.elapsedTime = Math.min(this.elapsedTime, this.maxAccumulatedTime);
-        this.accumulator += this.elapsedTime;
+        this.elapsedTime = Math.min(this.elapsedTime, this._maxAccumulatedTime);
+        this.accumulator += this.elapsedTime * timeScale;
     }
 }
 
@@ -314,14 +315,10 @@ export class Simulation {
         this._plot = null;                      // No plot by default
         this._hud = null;                       // No head-up display by default
         this._onReset = () => {};               // Callback function for client when a reset happens
-
-        // TODO obsolete?
-        this._onBeforePhysicsUpdate = () => {}; // Callback function for client before physics update
-        this._onAfterPhysicsUpdate = () => {};  // Callback function for client after physics update
-
         this._onFrame = (clock) => {};          // 1x per frame, no physics, only visuals / UI / rotation / camera
         this._stepFunction = (clock, dt) => {}; // dt = fixedDt, sub-stepped execution, all physics belongs HERE
         this._running = false;
+        this._timeScale = 1;
 
         this._clock = new SimulationClock();
 
@@ -354,6 +351,11 @@ export class Simulation {
     _initHud() {
         this._hud = new Hud();
         this._hud.attach(this._viewport)
+    }
+
+    onTimeScale(timeScale) {
+        this._timeScale = timeScale;
+        return this;
     }
 
     get hud() { return this._hud; }
@@ -399,29 +401,13 @@ export class Simulation {
             this._clock.tick();
             i++;
         }
-
-        this._clock.accumulator += this._clock.elapsedTime;
-    }
-
-    onBeforeClockTick(customFunction = (clock) => {}) {
-        this._onBeforePhysicsUpdate = customFunction;
-        return this;
-    }
-
-    onAfterClockTick(customFunction = (clock) => {}) {
-        this._onAfterPhysicsUpdate = customFunction;
-        return this;
     }
 
     animate = (clockTime) => {
         if (this._running) {
-            this._clock.updateWith(clockTime);
+            this._clock.updateWith(clockTime, this._timeScale);
 
-            // Physics / math model update
-            this._onBeforePhysicsUpdate(this._clock);
             this._updatePhysics(this._clock);
-            this._onAfterPhysicsUpdate(this._clock);
-
             this._onFrame(this._clock);
 
             // Sync model and views after model update

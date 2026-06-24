@@ -136,7 +136,7 @@ const simulation = Simulation
     .synchronize(electron.alwaysWith(electronSphere))
     .synchronize(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
     .synchronize(electricField.onceWith(arrowField))
-    .incrementsTimeBy(2e-20)
+    .incrementsTimeBy(3e-19)
     .onStep((_, dt) => timeStep(dt));
 
 // Ring rendering

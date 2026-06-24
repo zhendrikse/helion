@@ -65,13 +65,13 @@ const simulation = Simulation
     .synchronize(ball.alwaysWith(sphere))
     .synchronize(ball.alwaysWith(new Trail({ color: sphere.color})))
     .incrementsTimeBy(2.5e-3)
-    .onStep((_, dt) => {
+    .onStep((clock, dt) => {
         if (ball.reachedEnd())
             return;
 
         ballStep(dt);
+        updateGraph(clock.simulatedTime)
     })
-    .onAfterClockTick((clock) => updateGraph(clock.simulatedTime))
     .addObject3D(new Floor({
         type: Floor.Type.GRID,
         planeSizeXy: new Vector2(5, 5),

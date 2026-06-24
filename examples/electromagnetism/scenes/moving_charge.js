@@ -90,7 +90,7 @@ const simulation = Simulation
     .synchronize(movingCharge.alwaysWith(sphere))
     .synchronize(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })))
     .synchronize(capacitorField.onceWith(arrowField))
-    .incrementsTimeBy(0.001)
+    .incrementsTimeBy(0.005)
     .onStep((_, dt) => {
         if (movingCharge.position.x > 60 / scale)
             return;

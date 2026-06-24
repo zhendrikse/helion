@@ -105,7 +105,7 @@ const simulation = Simulation
         fieldOfView: 30
     })
     .withMouseClickEventListener()
-    .incrementsTimeBy(0.02)
+    .incrementsTimeBy(0.01)
     .onStep((_, dt) => flock.update(dt))
     .append(new Slider("Random behavior: ")
         .on(flock)

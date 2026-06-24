@@ -156,7 +156,8 @@ const simulation = Simulation
     })
     .synchronize(electricField.alwaysWith(electricArrowField))
     .synchronize(magneticField.alwaysWith(magneticArrowField))
-    .incrementsTimeBy(0.02)
+    .incrementsTimeBy(0.01)
+    .onTimeScale(.75)
     .withMouseClickEventListener()
     .onStep((_, dt) => {
         if (!allGone())

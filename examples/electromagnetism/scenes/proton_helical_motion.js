@@ -38,13 +38,15 @@ function timeStep(dt) {
     if (outOfBox(proton.position))
         return;
 
-    // Lorentz force: F = q v × B
-    magneticField.sample(proton.position, field);
-    const force = proton.velocity.clone()
-        .cross(field)
-        .multiplyScalar(proton.charge);
+    for (let substep = 0; substep < 5; substep++) {
+        // Lorentz force: F = q v × B
+        magneticField.sample(proton.position, field);
+        const force = proton.velocity.clone()
+            .cross(field)
+            .multiplyScalar(proton.charge);
 
-    proton.apply(force, dt);
+        proton.apply(force, dt);
+    }
 }
 
 //
@@ -78,7 +80,7 @@ Simulation
     .synchronize(proton.alwaysWith(protonSphere))
     .synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
     .synchronize(magneticField.onceWith(arrowField))
-    .incrementsTimeBy(5e-4)
+    .incrementsTimeBy(1e-3)
     .onStep((_, dt) => timeStep(dt))
     .addObject3D(new Aquarium({
         color: 0x1e90ff,

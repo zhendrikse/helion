@@ -50,6 +50,7 @@ Simulation
     })
     .withStartStopResetButtons()
     .incrementsTimeBy(0.02)
+    .onTimeScale(4)
     .synchronize(surface.alwaysWith(waterSurface))
     .synchronize(obstacleField.onceWith(new PotentialField3DRaster({
         width: resolution,

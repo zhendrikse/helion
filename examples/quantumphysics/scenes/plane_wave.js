@@ -46,7 +46,7 @@ const simulation = Simulation
         .on(planeWave)
         .withProperty("omega")
         .withValue(3.2)
-        .withRange(new Range(0, 25, .1)))
+        .withRange(new Range(0, 10, .1)))
     .append(new Slider("Wave number: ")
         .on(planeWave)
         .withProperty("k")
