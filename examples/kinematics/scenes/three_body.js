@@ -36,7 +36,6 @@ const bodyC = new RadialSymmetricBody({
 //
 // Simulation binds view to model
 //
-const subSteps = 50;
 Simulation
     .with({
         htmlDivId: "threeBodyContainer",
@@ -50,14 +49,14 @@ Simulation
     .synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
     .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
     .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
-    .incrementsTimeBy(100)
-    .onClockTick(clock => {
+    // .incrementsTimeBy(100)
+    .onIteration(_ => {
         const force_BA = gravitationalForceBetween(bodyA.and(bodyB));
         const force_CB = gravitationalForceBetween(bodyB.and(bodyC));
         const force_AC = gravitationalForceBetween(bodyC.and(bodyA));
 
-        bodyA.apply(force_BA.clone().sub(force_AC), clock.fixedDt, Integrators.symplecticEulerStep);
-        bodyB.apply(force_CB.clone().sub(force_BA), clock.fixedDt, Integrators.symplecticEulerStep);
-        bodyC.apply(force_AC.clone().sub(force_CB), clock.fixedDt, Integrators.symplecticEulerStep);
-    }, subSteps)
+        bodyA.apply(force_BA.clone().sub(force_AC), 100, Integrators.symplecticEulerStep);
+        bodyB.apply(force_CB.clone().sub(force_BA), 100, Integrators.symplecticEulerStep);
+        bodyC.apply(force_AC.clone().sub(force_CB), 100, Integrators.symplecticEulerStep)
+    }, 50)
     .withMouseClickEventListener();

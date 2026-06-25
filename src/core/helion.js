@@ -402,7 +402,9 @@ export class Simulation {
                     this._iterationFunction(this._clock);
                     iterations++;
                 }
-            } else {
+            }
+
+            if (this._stepFunction) {
                 this._clock.updateWith(timeStamp, this._timeScale);
                 this._updatePhysics(this._clock);
             }
