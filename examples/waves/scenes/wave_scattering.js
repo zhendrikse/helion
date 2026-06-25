@@ -57,7 +57,9 @@ Simulation
         opacity: 0.5,
         color: 0x008080
     })))
-    .onIteration(() => field.evolve(solver, 0.02), 10)
+    .incrementsTimeBy(0.02)
+    .onTimeScale(3)
+    .onStep((_, dt) => field.evolve(solver, dt))
     .onReset(() => reset(configuration))
     .append(waterSurface.controls())
     .append(waveEquation.controls())
