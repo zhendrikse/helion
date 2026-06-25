@@ -132,6 +132,7 @@ Simulation
         fov: 30,
         light: false
     })
+    .incrementsTimeBy(0.02)
     .synchronize(spiralGalaxy.onceWith(pointCloud))
-    .onFrame(_ => pointCloud.rotation.z += 5e-3 )
+    .onStep(_ => pointCloud.rotation.z += 1e-3 )
     .start();

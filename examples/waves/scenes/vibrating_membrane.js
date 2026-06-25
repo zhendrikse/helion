@@ -7,7 +7,7 @@ const cos = Math.cos;
 
 class Membrane extends MultivariateFunctionSurface {
     constructor({
-        omega = Math.PI / 2,
+        omega = 2 * Math.PI / 3,
         normalModeX = 1,
         normalModeY = 1,
         amplitude = .5,

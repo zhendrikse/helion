@@ -219,18 +219,6 @@ export class Viewport {
     }
 }
 
-/**
- * Goal:
- *
- * A. Real time (requestAnimationFrame)
- *    - determines how frequent animate() runs/is invoked
- *    - changes per machine (60fps, 144fps, lag spikes)
- * B. Simulation time (logical time)
- *    - runs in fixed time increments (fixedDt)
- *    - determines correctness of physics
- * C. Render time (visuals)
- *    - every frame
- */
 class SimulationClock {
     constructor({
         fixedDt = 0.01,     // Physics step size => advances simulated time, not the simulation speed!
@@ -315,8 +303,10 @@ export class Simulation {
         this._plot = null;                      // No plot by default
         this._hud = null;                       // No head-up display by default
         this._onReset = () => {};               // Callback function for client when a reset happens
-        this._onFrame = (clock) => {};          // 1x per frame, no physics, only visuals / UI / rotation / camera
-        this._stepFunction = (clock, dt) => {}; // dt = fixedDt, sub-stepped execution, all physics belongs HERE
+        this._iterationFunction = null;         // Used to maximize CPU performance
+        this._iterationsPerFrame = 10;
+        this._onFrame = (clock) => {};          // 1x per (requestAnimation)frame => machine dependent!
+        this._stepFunction = (clock, dt) => {}; // Called 1/dt times per second if CPU is capable
         this._running = false;
         this._timeScale = 1;
 
@@ -403,28 +393,69 @@ export class Simulation {
         }
     }
 
-    animate = (clockTime) => {
+    animate = (timeStamp) => {
         if (this._running) {
-            this._clock.updateWith(clockTime, this._timeScale);
+            if (this._iterationFunction) {
+                let iterations = 0;
 
-            this._updatePhysics(this._clock);
-            this._onFrame(this._clock);
-
-            // Sync model and views after model update
-            for (const binding of this._bindings)
-                binding.synchronize(this._clock.clockTime);
+                while (iterations < this._iterationsPerFrame) {
+                    this._iterationFunction(this._clock);
+                    iterations++;
+                }
+            } else {
+                this._clock.updateWith(timeStamp, this._timeScale);
+                this._updatePhysics(this._clock);
+            }
         }
 
-        this._renderer.render(clockTime);
+        this._onFrame(timeStamp);
+
+        // Sync model and views after model update
+        for (const binding of this._bindings)
+            binding.synchronize(this._clock.clockTime);
+
+        this._renderer.render(timeStamp);
         requestAnimationFrame(this.animate);
     };
 
+    /**
+     * The stepFunction is called with a frequency that is required to make the simulated time run
+     * synchronously with the real clock time. This makes sure that these kind of simulations run
+     * equally fast on different hardware. Suppose the frame rate is 60 frames / sec. So
+     * elapsed time is approximately 0.0167, so the accumulator is incremented by this amount.
+     * So, for example, with fixedDt = 0.01, so 1/100 onStep() calls per second, the number of
+     * onStep() calls per frame is approximately:
+     * frame 1 -> step
+     * frame 2 -> step + step
+     * frame 3 -> step
+     * frame 4 -> step + step
+     *
+     * @param stepFunction this function is called with the frequency that is required to make
+     * the simulate time run synchronously with the real clock time.
+     */
     onStep(stepFunction = (clock, dt) => {}) {
         this._stepFunction = stepFunction;
         return this;
     }
 
-    onFrame(callback = clock => {}) {
+    /**
+     * Used to maximize CPU utilization.
+     *
+     * @param maxPerformanceFunction The function that is called.
+     * @param iterationsPerFrame The number of times the function is called per (requestAnimation)frame.
+     */
+    onIteration(maxPerformanceFunction, iterationsPerFrame = 10) {
+        this._iterationFunction = maxPerformanceFunction;
+        this._iterationsPerFrame = iterationsPerFrame;
+        return this;
+    }
+
+    /**
+     * Called each (requestAnimation)frame.
+     *
+     * @param callback the function that is called each (requestAnimation)frame.
+     */
+    onFrame(callback = (timeStamp) => {}) {
         this._onFrame = callback;
         return this;
     }

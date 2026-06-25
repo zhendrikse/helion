@@ -1,6 +1,6 @@
 import {
     DiscreteComplexField, Simulation, Vec3, ComplexScalarFieldRaster, FFTShift2D, FFT2D, ComplexShapeMask,
-    ShapeConfiguration, Shapes, ComplexSoftness, Slider, Range
+    ShapeConfiguration, Shapes, ComplexSoftness, Slider, Range, Checkbox
 } from "../../../src/index.js";
 
 const resolution = 512;
@@ -41,4 +41,9 @@ Simulation
         .addEventListener("input", event => {
             softness = Number(event.target.value);
             reset(shapeConfiguration, softness);
-        }));
+        })
+    )
+    .append(new Checkbox("🎨 Phase: ")
+        .on(intensityRaster)
+        .withProperty("phaseColor")
+    );

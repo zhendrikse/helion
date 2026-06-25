@@ -151,11 +151,9 @@ export class PointCloudView extends Points {
         this.geometry.setAttribute('position', this._positionAttribute);
         this.geometry.setAttribute('color', this._colorAttribute);
         this.geometry.setAttribute('size', this._radiusAttribute);
-
-        this._pointCloud = pointCloud;
     }
 
-    synchronizeWith(pointCloud, time) {
+    synchronizeWith(pointCloud) {
         for (let i = 0; i < pointCloud.length; i++) {
             const p = pointCloud.positionAt(i);
             this._positionAttribute.setXYZ(i, p.x, p.y, p.z);
