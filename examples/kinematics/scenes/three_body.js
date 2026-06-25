@@ -49,7 +49,6 @@ Simulation
     .synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
     .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
     .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
-    // .incrementsTimeBy(100)
     .onIteration(_ => {
         const force_BA = gravitationalForceBetween(bodyA.and(bodyB));
         const force_CB = gravitationalForceBetween(bodyB.and(bodyC));
