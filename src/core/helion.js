@@ -300,13 +300,13 @@ export class Simulation {
         this._viewport = viewport;
         this._renderer = renderer;
         this._bindings = [];
-        this._plot = null;                      // No plot by default
-        this._hud = null;                       // No head-up display by default
-        this._onReset = () => {};               // Callback function for client when a reset happens
-        this._iterationFunction = null;         // Used to maximize CPU performance
+        this._plot = null;              // No plot by default
+        this._hud = null;               // No head-up display by default
+        this._onReset = () => {};       // Callback function for client when a reset happens
+        this._iterationFunction = null; // Used to maximize CPU performance
         this._iterationsPerFrame = 10;
-        this._onFrame = (clock) => {};          // 1x per (requestAnimation)frame => machine dependent!
-        this._stepFunction = (clock, dt) => {}; // Called 1/dt times per second if CPU is capable
+        this._onFrame = (time) => {};   // 1x per (requestAnimation)frame => machine dependent!
+        this._stepFunction = null;      // Called 1/dt times per second if CPU is capable
         this._running = false;
         this._timeScale = 1;
 
@@ -434,6 +434,9 @@ export class Simulation {
      * the simulate time run synchronously with the real clock time.
      */
     onStep(stepFunction = (clock, dt) => {}) {
+        if (this._iterationFunction)
+            throw new Error("Cannot mix iteration mode and step mode");
+
         this._stepFunction = stepFunction;
         return this;
     }
@@ -445,6 +448,9 @@ export class Simulation {
      * @param iterationsPerFrame The number of times the function is called per (requestAnimation)frame.
      */
     onIteration(maxPerformanceFunction, iterationsPerFrame = 10) {
+        if (this._stepFunction)
+            throw new Error("Cannot mix iteration mode and step mode");
+
         this._iterationFunction = maxPerformanceFunction;
         this._iterationsPerFrame = iterationsPerFrame;
         return this;
