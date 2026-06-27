@@ -1,17 +1,19 @@
 import {
     ColorMappersFactory, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
-    SurfaceResolution, WaveEquationSolver, PotentialField3DRaster, StandardSurfaceView,
-    SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask
+    SurfaceResolution, WaveEquationSolver, PotentialField3DRaster, SurfaceTypes,
+    SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization
 } from "../../../src/index.js";
 
 const resolution = 256;
 
-const waterSurface = new StandardSurfaceView({
-    resolution: new SurfaceResolution(resolution, resolution),
-    normalizer: new Interval(-1, 1),
-    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
-    contours: false,
-});
+const waterSurface = SurfaceVisualization
+    .ofType(SurfaceTypes.SURFACE)
+    .with({
+        resolution: new SurfaceResolution(resolution, resolution),
+        normalizer: new Interval(-1, 1),
+        colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
+        contours: false,
+    });
 waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
 
 const field = new DiscreteScalarField({ nx: resolution, ny: resolution });

@@ -1,6 +1,6 @@
 import {
     ColorMappersFactory, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
-    SurfaceResolution, WaveEquationSolver, GaussianImpulse, InstancedMeshSurfaceView
+    SurfaceResolution, WaveEquationSolver, GaussianImpulse, SurfaceVisualization, SurfaceTypes
 } from "../../../src/index.js";
 
 export class WaveEquation {
@@ -28,11 +28,13 @@ const field = new DiscreteScalarField({ nx: 256, ny: 256 });
 const solver = new WaveEquationSolver(new WaveEquation({ velocity: 5 }));
 const surface = new DiscreteFieldSurface(field);
 
-const water = new InstancedMeshSurfaceView({
-    resolution: new SurfaceResolution(256, 256),
-    normalizer: new Interval(-.3, 2),
-    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative)
-});
+const water = SurfaceVisualization
+    .ofType(SurfaceTypes.SURFACE)
+    .with({
+        resolution: new SurfaceResolution(256, 256),
+        normalizer: new Interval(-.3, 2),
+        colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative)
+    });
 water.position.set(-128, 0, -128);
 
 Simulation
@@ -57,5 +59,4 @@ Simulation
         }));
     })
     .append(water.controls())
-    .append(water.shapeSelector)
     .start();

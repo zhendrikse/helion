@@ -18,6 +18,7 @@ import { ColorMappersFactory} from "../../colormappers.js";
 import {Checkbox, CompoundControl, DropdownMenu, Slider} from "../../../core/controls.js";
 import { Registry } from "../../../core/helion.js";
 import { Renderable3D } from "../../renderer.js";
+import {PrincipalFrame} from "../../../model/math/numerics/diffgeometry.js";
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) {
@@ -28,7 +29,7 @@ export class SurfaceResolution {
 
 class SurfaceView extends Renderable3D {
     static UP = new Vector3(0, 1, 0);
-    static material = new MeshStandardMaterial({
+    static material = () => new MeshStandardMaterial({
         side: DoubleSide,
         roughness: 0.45,
         metalness: 0.1,
@@ -51,41 +52,20 @@ class SurfaceView extends Renderable3D {
         this._dirty = true;                 // When surface definition has changed, this flag is raised
     }
 
+    get options() {
+        return {
+            resolution: this._resolution,
+            scalarFieldType: this._scalarFieldType,
+            colorMapper: this._colorMapper,
+            normalizer: this._normalizer
+        };
+    }
+
     get dirty() { return this._dirty; }
 
-    controls({
-        scalarFieldSelect = false
-     } = {}) {
-        const compoundControl = new CompoundControl();
-        compoundControl
-            .add(new DropdownMenu()
-                .for(new ColorMappersFactory())
-                .addEventListener("change", (event) => {
-                    this._colorMapper = ColorMappersFactory.create(event.target.value);
-                    this._dirty = true;
-                })
-            );
-
-        if (scalarFieldSelect)
-            compoundControl.add(new DropdownMenu()
-                .for(SurfaceScalarFields)
-                .addEventListener("change", (event) => {
-                    const newScalarField = SurfaceScalarFields.get(event.target.value)(this._scalarField._surface);
-                    this._normalizedScalarField = new NormalizedScalarField(newScalarField, this._normalizer);
-                    this._normalizedScalarField.reset();
-                    this._colorMapper = newScalarField.recommendedColorMapper;
-                    this._scalarField = newScalarField;
-                    this._dirty = true;
-                }));
-
-        return compoundControl;
-    }
+    set colorMapper(colorMapper) { this._colorMapper = colorMapper; this._dirty = true; }
 
     set normalizer(normalizer) { this._normalizer = normalizer; }
-
-    canBindTo(model) {
-        return model.sample;
-    }
 
     initialize(mathSurfaceDefinition) {
         this._scalarField = SurfaceScalarFields.get(this._scalarFieldType)(mathSurfaceDefinition);
@@ -116,15 +96,15 @@ class SurfaceView extends Renderable3D {
 export class InstancedMeshSurfaceView extends SurfaceView {
     static Shape = Object.freeze({
         Box: {
-            geometry: new BoxGeometry(.65, .65, .65),
+            geometry: new BoxGeometry(1, 1, 1),
             orientationAxis: new Vector3(0, 1, 0)
         },
         Capsule: {
-            geometry: new CapsuleGeometry(.35, 1, 4, 8),
+            geometry: new CapsuleGeometry(.33, 1, 4, 8),
             orientationAxis: new Vector3(0, 1, 0)
         },
         Cylinder: {
-            geometry: new CylinderGeometry(.35, .35, 2, 8),
+            geometry: new CylinderGeometry(.33, .33, 2, 8),
             orientationAxis: new Vector3(0, 1, 0)
         },
         Cone: {
@@ -136,7 +116,7 @@ export class InstancedMeshSurfaceView extends SurfaceView {
             orientationAxis: new Vector3(0, 1, 0)
         },
         Plane: {
-            geometry: new PlaneGeometry(1.25, 1.25),
+            geometry: new PlaneGeometry(1, 1),
             orientationAxis: new Vector3(0, 0, 1)
         },
         Sphere: {
@@ -149,30 +129,26 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         // Sphere: "🔴 Sphere",
     });
 
-    static Shapes = new Registry({
-        id: "surfaceShapeSelect",
-        label: "Element shape ",
-        entries: InstancedMeshSurfaceView.Shape
-    });
-
     constructor({
         shape = "Box",
         resolution = new SurfaceResolution(100, 100),
         opacity = 1.0,
         scalarFieldType = "Height",
         colorMapper = ColorMappersFactory.create(ColorMappersFactory.Type.Gradient),
-        normalizer = new AdaptiveSymmetricNormalizer()
+        normalizer = new AdaptiveSymmetricNormalizer(),
+        glyphScale = 0.8
     } = {}) {
         super({resolution, colorMapper, scalarFieldType, normalizer});
+        this._glyphScale = glyphScale;
         this._positionSample = new Vector3();
         this._scalarSample = new Vector3();
         this._dummy = new Object3D();
         this._color = new Color();
-        this._normalVector = new Vector3();
+        this._principalFrame = new PrincipalFrame();
 
         const count = (resolution.u + 1) * (resolution.v + 1);
         const geometry = InstancedMeshSurfaceView.Shape[shape].geometry;
-        this._mesh = new InstancedMesh(geometry, SurfaceView.material, count);
+        this._mesh = new InstancedMesh(geometry, SurfaceView.material(), count);
         this._mesh.material.opacity = opacity;
         this.add(this._mesh);
 
@@ -182,13 +158,6 @@ export class InstancedMeshSurfaceView extends SurfaceView {
 
         this._orientationAxis = new Vector3(0, 0, 1);
         this.shape = shape;
-    }
-
-    get shapeSelector() {
-        return new DropdownMenu()
-            .for(InstancedMeshSurfaceView.Shapes)
-            .addEventListener("change", event => this.shape = event.target.value
-        );
     }
 
     setGeometry(geometry) {
@@ -208,8 +177,14 @@ export class InstancedMeshSurfaceView extends SurfaceView {
         this.setGeometry(shape.geometry);
     }
 
-    initialize(mathSurfaceDefinition) {
-        super.initialize(mathSurfaceDefinition);
+    initialize(model) {
+        super.initialize(model);
+        const spacing = model.sampleSpacing(this._resolution);
+        this._dummy.scale.set(
+            spacing.x,
+            spacing.y,
+            spacing.x
+        ).multiplyScalar(this._glyphScale);
     }
 
     synchronizeWith(model) {
@@ -222,10 +197,9 @@ export class InstancedMeshSurfaceView extends SurfaceView {
                 model.sample(u, v, this._positionSample);
                 this._dummy.position.copy(this._positionSample);
 
-                if (this._orientationAxis) {
-                    model.normalAt(i, j, this._normalVector);
-                    this._dummy.quaternion.setFromUnitVectors(this._orientationAxis, this._normalVector);
-                }
+
+                model.principalFrameAt(u, v, this._principalFrame);
+                this._dummy.quaternion.setFromUnitVectors(this._orientationAxis, this._principalFrame.normal);
 
                 this._dummy.updateMatrix();
                 this._mesh.setMatrixAt(index, this._dummy.matrix);
@@ -249,7 +223,7 @@ export class InstancedMeshSurfaceView extends SurfaceView {
 
 export class StandardSurfaceView extends SurfaceView {
     constructor({
-        material = SurfaceView.material,
+        material = SurfaceView.material(),
         resolution = new SurfaceResolution(100, 100),
         contourResolution = new SurfaceResolution(20, 20),
         contourSegments = 100, // per line
@@ -293,23 +267,6 @@ export class StandardSurfaceView extends SurfaceView {
 
         this._showContours = contours;
         this._showSurface = surface;
-    }
-
-    get surfaceLayoutSelector() {
-        return new Slider("Opacity ")
-            .on(this._mesh.material)
-            .withProperty("opacity")
-            .withRange(new Range(0, 1, 0.01))
-            .withValue(this._mesh.material.opacity)
-            .togetherWith(new Checkbox("Contours ")
-                .on(this)
-                .checked(this._showContours)
-                .withProperty("contoursVisible")
-                .togetherWith(new Checkbox("Wireframe ")
-                    .on(this)
-                    .withProperty("wireframe")
-                )
-            );
     }
 
     set surfaceVisible(value) {

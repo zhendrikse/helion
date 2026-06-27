@@ -1,6 +1,6 @@
 import {
     DiscreteScalarField, DiscreteFieldSurface, Simulation, PerlinNoiseOperator,
-    StandardSurfaceView, Vec3, DiamondSquareOperator, ColorMappersFactory, RadioButton
+    Vec3, DiamondSquareOperator, ColorMappersFactory, RadioButton, SurfaceTypes, SurfaceVisualization
 } from "../../../src/index.js";
 
 class Landscape {
@@ -33,10 +33,12 @@ class Landscape {
 }
 
 const landscape = new Landscape();
-const surfaceView = new StandardSurfaceView({
-    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.Terrain),
-    contours: false
-});
+const surfaceView = SurfaceVisualization
+    .ofType(SurfaceTypes.SURFACE)
+    .with({
+        colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.Terrain),
+        contours: false
+    });
 surfaceView.position.set(-128, 0, -128);
 
 const simulation = Simulation
@@ -47,7 +49,6 @@ const simulation = Simulation
     })
     .synchronize(landscape.surface.onceWith(surfaceView))
     .append(surfaceView.controls())
-    .append(surfaceView.surfaceLayoutSelector)
     .append(new RadioButton("Perlin noise: ")
         .withValue("perlin")
         .on(landscape)

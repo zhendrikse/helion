@@ -1,6 +1,6 @@
 import {
-    Simulation, ParametricSurface, Domain, StandardSurfaceView, SurfaceResolution,
-    ColorMappersFactory, Registry, DropdownMenu
+    Simulation, ParametricSurface, Domain, SurfaceResolution,
+    ColorMappersFactory, Registry, DropdownMenu, SurfaceVisualization, SurfaceTypes
 } from "../../../src/index.js";
 import {MeshStandardMaterial} from "three";
 
@@ -62,8 +62,10 @@ const surfacesRegistry = new Registry({
     entries: surfaces
 });
 
-const surfaceView = new StandardSurfaceView({
-    material: new MeshStandardMaterial({
+const surfaceView = SurfaceVisualization
+    .ofType(SurfaceTypes.SURFACE_CONTOURS)
+    .with({
+        material: new MeshStandardMaterial({
         metalness: 0.5,
         roughness: 0.5,
     }),
@@ -83,7 +85,6 @@ const simulation = Simulation
         .for(surfacesRegistry)
         .addEventListener("change", event => changeSurface(event.target.value)))
     .append(surfaceView.controls())
-    .append(surfaceView.surfaceLayoutSelector)
     .start();
 
 function changeSurface(surfaceId) {

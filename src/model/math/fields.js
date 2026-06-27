@@ -1,5 +1,5 @@
 import {MathPhysicsModelBehavior, Registry} from "../../core/helion.js";
-import {Complex, Interval, Vec3} from "./math.js";
+import {Complex, Interval, Vec3, Vec2} from "./math.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
 import {ColorMappersFactory} from "../../view/colormappers.js";
 
@@ -37,6 +37,18 @@ export class VectorField extends Field {
  * Mathematical definition of a surface.
  */
 export class Surface extends Field {
+    constructor() {
+        super();
+        this._differentialGeometry = new DifferentialGeometry(this);
+    }
+
+    sampleSpacing(resolution) {
+        return new Vec2(1, 1);
+    }
+
+    principalFrameAt(u, v, target) {
+        return this._differentialGeometry.principalFrame(u, v, target);
+    }
 }
 
 /**
@@ -54,6 +66,13 @@ export class ParametricSurface extends Surface {
         this._x = x;
         this._y = y;
         this._z = z;
+    }
+
+    sampleSpacing(resolution) {
+        const dx = this._domain.xRange.range / resolution.u;
+        const dy = this._domain.yRange.range / resolution.v;
+
+        return new Vec2(dx, dy);
     }
 
     sample(u, v, target) {

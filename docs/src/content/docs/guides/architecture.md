@@ -455,6 +455,15 @@ potential
     .apply(new Blur(4));
 ```
 
+# Views
+
+Ik zou daarom tijdens deze refactoring proberen één ontwerpprincipe heel consequent vast te houden:
+
+Een model wordt precies één keer aan een visualisatie gekoppeld. Daarna mag de visualisatie intern alles veranderen zonder dat de binding of de simulator daarvan iets merkt.
+
+Dat principe maakt niet alleen de huidige surface-weergaven netjes, maar vormt ook een sterke basis voor de probabilistische orbitalen, vectorvelden, volumerendering en andere visualisaties die je later wilt toevoegen.
+
+
 
 
 ## Design

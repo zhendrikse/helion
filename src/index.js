@@ -4,7 +4,7 @@ export {
 } from "./model/phys/bodies.js";
 
 export {
-    Range, Vec3, factorial, linspace, Interval, generateUUID,
+    Range, Vec3, factorial, linspace, Interval, generateUUID, Vec2,
     normalDistribution, uniform, randomInt, meshgrid, Complex
 } from "./model/math/math.js";
 
@@ -40,7 +40,8 @@ export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 export { Renderable3D } from "./view/renderer.js";
 export { ComplexScalarFieldSurfaceRaster, PotentialField3DRaster } from "./view/3d/views.js"
-
+export { SurfaceResolution } from "./view/3d/surfaces/surfaceviews.js"
+export { SurfaceVisualization, SurfaceTypes } from "./view/3d/surfaces/visualization.js";
 export {
     OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial, ArrowField
 } from "./view/3d/composite/composites.js";
@@ -50,6 +51,3 @@ export {
     hsvToRgb, WavelengthColorMapper, hsvToRgbNormalized
 } from "./view/colormappers.js";
 
-export {
-    InstancedMeshSurfaceView, SurfaceResolution, StandardSurfaceView
-} from "./view/3d/surfaces/surfaceviews.js"

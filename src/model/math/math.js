@@ -83,6 +83,17 @@ export function meshgrid(x, y) {
     return [X, Y];
 }
 
+export class Vec2 {
+    constructor(x=0, y=0) {
+        this.x = x;
+        this.y = y;
+    }
+
+    clone() {
+        return new Vec3(this.x, this.y);
+    }
+}
+
 export class Vec3 {
     constructor(x=0, y=0, z=0) {
         this.x = x;

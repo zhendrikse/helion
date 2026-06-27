@@ -1,5 +1,5 @@
 import {
-    Simulation, ParametricSurface, Domain, StandardSurfaceView, DropdownMenu, Registry
+    Simulation, ParametricSurface, Domain, DropdownMenu, Registry, SurfaceVisualization, SurfaceTypes
 } from "../../../src/index.js";
 
 const sin = Math.sin, cos = Math.cos, tan = Math.tan, log = Math.log, PI = Math.PI;
@@ -60,10 +60,12 @@ const surfacesRegistry = new Registry({
     entries: surfaces
 });
 
-const surfaceView = new StandardSurfaceView({
-    scalarFieldType: "GaussianCurvature",
-    opacity: 0.925
-});
+const surfaceView = SurfaceVisualization
+    .ofType(SurfaceTypes.SURFACE_CONTOURS)
+    .with({
+        scalarFieldType: "GaussianCurvature",
+        opacity: 0.925
+    });
 
 const simulation = Simulation
     .with({
@@ -71,7 +73,6 @@ const simulation = Simulation
         fieldOfView: 20
     })
     .append(surfaceView.controls({scalarFieldSelect: true}))
-    .append(surfaceView.surfaceLayoutSelector)
     .append(new DropdownMenu()
         .for(surfacesRegistry)
         .addEventListener("change", event => changeSurface(event.target.value))

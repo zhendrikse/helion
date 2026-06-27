@@ -1,5 +1,5 @@
 import {
-    Domain, StandardSurfaceView, Interval, MultivariateFunctionSurface, Simulation, Button
+    Domain, Interval, MultivariateFunctionSurface, Simulation, Button, SurfaceVisualization, SurfaceTypes
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -27,9 +27,11 @@ class Membrane extends MultivariateFunctionSurface {
 }
 
 const membrane = new Membrane();
-const surfaceView = new StandardSurfaceView({
-    normalizer: new Interval(-membrane.amplitude, membrane.amplitude)
-});
+const surfaceView = SurfaceVisualization
+    .ofType(SurfaceTypes.SURFACE_CONTOURS)
+    .with({
+        normalizer: new Interval(-membrane.amplitude, membrane.amplitude)
+    });
 
 Simulation
     .with({
@@ -43,7 +45,6 @@ Simulation
         translationY: -1.25
     })
     .append(surfaceView.controls())
-    .append(surfaceView.surfaceLayoutSelector)
     .append(new Button("Mode-x: ").on(membrane).withProperty("normalModeX").withText(" 1 ")
         .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 2 `)
             .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 3 `)

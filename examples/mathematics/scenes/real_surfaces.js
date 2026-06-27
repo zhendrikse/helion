@@ -1,5 +1,6 @@
 import {
-    Simulation, StandardSurfaceView, DropdownMenu, Checkbox, Interval, MultivariateFunctionSurface, Domain, Registry
+    Simulation, DropdownMenu, Checkbox, Interval, MultivariateFunctionSurface, Domain, Registry, SurfaceVisualization,
+    SurfaceTypes
 } from "../../../src/index.js";
 
 const pi = Math.PI;
@@ -91,9 +92,11 @@ class SurfaceController {
     }
 }
 
-const surfaceView = new StandardSurfaceView({
-    normalizer: new Interval(0, surfaces["Ripple"].amplitude)
-});
+const surfaceView = SurfaceVisualization
+    .ofType(SurfaceTypes.SURFACE_CONTOURS)
+    .with({
+        normalizer: new Interval(0, surfaces["Ripple"].amplitude)
+    });
 
 const simulation = Simulation
     .with({
@@ -110,7 +113,6 @@ simulation
         .addEventListener("change", event => surfaceController.changeSurface(event.target.value))
     )
     .append(surfaceView.controls())
-    .append(surfaceView.surfaceLayoutSelector)
     .append(new Checkbox("Animate surface ")
         .on(surfaceController)
         .withProperty("animate"))

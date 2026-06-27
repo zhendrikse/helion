@@ -2,18 +2,19 @@ import {Vec3} from "../math.js";
 
 export class PrincipalFrame {
     constructor({
-        position,
-        normal,
-        k1, k2,
-        d1, d2
-    }) {
+        position = new Vec3(),
+        normal = new Vec3(),
+        k1 = 0,
+        k2 = 0,
+        d1 = new Vec3(),
+        d2 = new Vec3()
+    } = {}) {
         this.position = position;
         this.normal = normal;
         this.k1 = k1;
         this.k2 = k2;
         this.d1 = d1;  // tangent direction
         this.d2 = d2;
-        Object.freeze(this);
     }
 }
 
@@ -25,103 +26,156 @@ export class DifferentialGeometry {
     constructor(surface, { eps = 1e-4 } = {}) {
         this._surface = surface;
         this.eps = eps;
-        this._position = new Vec3();
+
+        // sample points
+        this._p00 = new Vec3();
+        this._pu1 = new Vec3();
+        this._pu0 = new Vec3();
+        this._pv1 = new Vec3();
+        this._pv0 = new Vec3();
+        this._pu1v1 = new Vec3();
+        this._pu1v0 = new Vec3();
+        this._pu0v1 = new Vec3();
+        this._pu0v0 = new Vec3();
+
+        // derivatives
+        this._Xu = new Vec3();
+        this._Xv = new Vec3();
+        this._Xuu = new Vec3();
+        this._Xuv = new Vec3();
+        this._Xvv = new Vec3();
+
+        // output vectors
+        this._N = new Vec3();
+        this._d1 = new Vec3();
+        this._d2 = new Vec3();
     }
 
-    derivatives(u, v) {
+    principalFrame(u, v, target) {
         const e = this.eps;
-        const sample = (du, dv) => {
-            this._surface.sample(u + du, v + dv, this._position);
-            return this._position.clone();
-        };
+        const inv2e = 1 / (2 * e);
+        const inve2 = 1 / (e * e);
+        const inv4e2 = 1 / (4 * e * e);
+        const s = this._surface;
 
-        const p00 = sample(0, 0),
-            pu1 = sample(+e, 0),
-            pu0 = sample(-e, 0),
-            pv1 = sample(0, +e),
-            pv0 = sample(0, -e),
-            pu1v1 = sample(+e, +e),
-            pu1v0 = sample(+e, -e),
-            pu0v1 = sample(-e, +e),
-            pu0v0 = sample(-e, -e);
+        s.sample(u, v, this._p00);
 
-        const Xu = pu1.clone().sub(pu0).multiplyScalar(1 / (2 * e));
-        const Xv = pv1.clone().sub(pv0).multiplyScalar(1 / (2 * e));
+        s.sample(u + e, v, this._pu1);
+        s.sample(u - e, v, this._pu0);
 
-        const Xuu = pu1.clone().sub(p00.clone().multiplyScalar(2)).add(pu0).multiplyScalar(1 / (e * e));
-        const Xvv = pv1.clone().sub(p00.clone().multiplyScalar(2)).add(pv0).multiplyScalar(1 / (e * e));
-        const Xuv = pu1v1.clone().sub(pu1v0).sub(pu0v1).add(pu0v0).multiplyScalar(1 / (4 * e * e));
+        s.sample(u, v + e, this._pv1);
+        s.sample(u, v - e, this._pv0);
 
-        return { Xu, Xv, Xuu, Xuv, Xvv };
-    }
+        s.sample(u + e, v + e, this._pu1v1);
+        s.sample(u + e, v - e, this._pu1v0);
+        s.sample(u - e, v + e, this._pu0v1);
+        s.sample(u - e, v - e, this._pu0v0);
 
-    fundamentalForms(u, v) {
-        const { Xu, Xv, Xuu, Xuv, Xvv } = this.derivatives(u, v);
-        const N = Xu.clone().cross(Xv).normalize();
+        const Xu = this._Xu
+            .copy(this._pu1)
+            .sub(this._pu0)
+            .multiplyScalar(inv2e);
 
-        const E = Xu.dot(Xu), F = Xu.dot(Xv), G = Xv.dot(Xv);
-        const e = Xuu.dot(N), f = Xuv.dot(N), g = Xvv.dot(N);
+        const Xv = this._Xv
+            .copy(this._pv1)
+            .sub(this._pv0)
+            .multiplyScalar(inv2e);
+
+        const Xuu = this._Xuu
+            .copy(this._pu1)
+            .sub(this._p00)
+            .sub(this._p00)
+            .add(this._pu0)
+            .multiplyScalar(inve2);
+
+        const Xvv = this._Xvv
+            .copy(this._pv1)
+            .sub(this._p00)
+            .sub(this._p00)
+            .add(this._pv0)
+            .multiplyScalar(inve2);
+
+        const Xuv = this._Xuv
+            .copy(this._pu1v1)
+            .sub(this._pu1v0)
+            .sub(this._pu0v1)
+            .add(this._pu0v0)
+            .multiplyScalar(inv4e2);
+
+        const N = this._N
+            .copy(Xu)
+            .cross(Xv)
+            .normalize();
+
+        const E = Xu.dot(Xu);
+        const F = Xu.dot(Xv);
+        const G = Xv.dot(Xv);
+
+        const ee = Xuu.dot(N);
+        const ff = Xuv.dot(N);
+        const gg = Xvv.dot(N);
 
         const detI = E * G - F * F;
-        const invI = detI !== 0 ? [[G / detI, -F / detI], [-F / detI, E / detI]] : null;
-        const S = invI ? [
-            [invI[0][0] * e + invI[0][1] * f, invI[0][0] * f + invI[0][1] * g],
-            [invI[1][0] * e + invI[1][1] * f, invI[1][0] * f + invI[1][1] * g]
-        ] : null;
 
-        return { Xu, Xv, Xuu, Xuv, Xvv, N, E, F, G, e, f, g, detI, invI, S };
-    }
+        if (Math.abs(detI) < 1e-12)
+            return null;
 
-    normalMeanGaussian(u, v) {
-        const f = this.fundamentalForms(u, v);
-        const EG_F2 = f.E * f.G - f.F * f.F;
-        const H = EG_F2 !== 0 ? (f.e * f.G - 2 * f.f * f.F + f.g * f.E) / (2 * EG_F2) : 0;
-        const K = EG_F2 !== 0 ? (f.e * f.g - f.f * f.f) / EG_F2 : 0;
-        return { N: f.N, H, K };
-    }
+        const invDet = 1 / detI;
 
-    principals(u, v) {
-        const { H, K } = this.normalMeanGaussian(u, v);
-        const disc = Math.max(0, H * H - K);
-        const sqrtDisc = Math.sqrt(disc);
-        return { k1: H + sqrtDisc, k2: H - sqrtDisc };
-    }
+        const inv00 = G * invDet;
+        const inv01 = -F * invDet;
+        const inv10 = inv01;
+        const inv11 = E * invDet;
 
-    principalDirections(u, v) {
-        const f = this.fundamentalForms(u, v);
-        if (!f.S) return null;
+        const S00 = inv00 * ee + inv01 * ff;
+        const S01 = inv00 * ff + inv01 * gg;
+        const S10 = inv10 * ee + inv11 * ff;
+        const S11 = inv10 * ff + inv11 * gg;
 
-        const S = f.S;
-        const trace = S[0][0] + S[1][1];
-        const det = S[0][0] * S[1][1] - S[0][1] * S[1][0];
-        const disc = Math.sqrt(Math.max(0, trace * trace / 4 - det));
+        const trace = S00 + S11;
+        const det = S00 * S11 - S01 * S10;
 
-        const k1 = trace / 2 + disc, k2 = trace / 2 - disc;
-        const v1 = Math.abs(S[0][1]) > 1e-6 ? [k1 - S[1][1], S[0][1]] : [1, 0];
-        const v2 = Math.abs(S[0][1]) > 1e-6 ? [k2 - S[1][1], S[0][1]] : [0, 1];
+        const disc = Math.sqrt(Math.max(0, trace * trace * 0.25 - det));
 
-        const d1 = f.Xu.clone().multiplyScalar(v1[0]).add(f.Xv.clone().multiplyScalar(v1[1])).normalize();
-        const d2 = f.Xu.clone().multiplyScalar(v2[0]).add(f.Xv.clone().multiplyScalar(v2[1])).normalize();
+        const k1 = trace * 0.5 + disc;
+        const k2 = trace * 0.5 - disc;
 
-        return { k1, k2, d1, d2 };
-    }
+        let v1x, v1y;
+        let v2x, v2y;
 
-    principalFrame(u, v) {
-        const { Xu, Xv } = this.derivatives(u, v);
-        const N = Xu.clone().cross(Xv).normalize();
-        const result = this.principalDirections(u, v);
-        if (!result) return null;
+        if (Math.abs(S01) > 1e-8) {
+            v1x = k1 - S11;
+            v1y = S01;
 
-        const position = new Vec3();
-        this._surface.sample(u, v, position);
+            v2x = k2 - S11;
+            v2y = S01;
+        } else {
+            v1x = 1;
+            v1y = 0;
 
-        return new PrincipalFrame({
-            position,
-            normal: N,
-            k1: result.k1,
-            k2: result.k2,
-            d1: result.d1,
-            d2: result.d2
-        });
+            v2x = 0;
+            v2y = 1;
+        }
+
+        this._d1.set(
+            Xu.x * v1x + Xv.x * v1y,
+            Xu.y * v1x + Xv.y * v1y,
+            Xu.z * v1x + Xv.z * v1y
+        ).normalize();
+
+        this._d2.set(
+            Xu.x * v2x + Xv.x * v2y,
+            Xu.y * v2x + Xv.y * v2y,
+            Xu.z * v2x + Xv.z * v2y
+        ).normalize();
+
+        target.position.copy(this._p00);
+        target.normal.copy(N);
+        target.k1 = k1;
+        target.k2 = k2;
+        target.d1.copy(this._d1);
+        target.d2.copy(this._d2);
+
+        return target;
     }
 }
