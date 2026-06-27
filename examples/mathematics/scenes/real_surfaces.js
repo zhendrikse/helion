@@ -78,7 +78,6 @@ class SurfaceController {
         this._currentSurface = surfacesRegistry.get(surfaceId).surface;
         const amplitude = surfacesRegistry.get(surfaceId).amplitude;
         this._surfaceView.normalizer = new Interval(0, amplitude);
-        this._surfaceView.dispose();
         this._simulation.synchronize(this._currentSurface.alwaysWith(surfaceView));
         this._simulation.provideAxesAround(surfaceView);
         this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5 * amplitude});
