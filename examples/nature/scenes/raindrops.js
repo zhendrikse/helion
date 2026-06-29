@@ -56,9 +56,9 @@ Simulation
         cameraPosition: new Vec3(4, 2, 4.2).multiplyScalar(75),
         fieldOfView: 19
     })
-    .synchronize(surface.alwaysWith(waterSurface))
-    .incrementsTimeBy(0.01)
-    .onTimeScale(10)
+    .bind(surface.alwaysWith(waterSurface))
+    .runsEvery(0.01)
+    .atSpeed(10)
     .onStep((_, dt) => {
         field.evolve(solver, dt);
         if (Math.random() > dt)

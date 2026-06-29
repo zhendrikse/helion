@@ -57,7 +57,7 @@ Simulation
         fov: 35,
         light: false
     })
-    .incrementsTimeBy(0.02)
-    .synchronize(starCluster.onceWith(cloud))
+    .runsEvery(0.02)
+    .bind(starCluster.onceWith(cloud))
     .onStep(_ => cloud.rotation.y += 2.5e-3)
     .start();

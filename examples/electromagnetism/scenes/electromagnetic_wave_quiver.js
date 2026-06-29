@@ -149,11 +149,11 @@ Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .incrementsTimeBy(4e-20)
-    .synchronize(electron.alwaysWith(new Sphere({ color: new Color("red") })))
-    .synchronize(electricField.alwaysWith(electricArrowField))
-    .synchronize(magneticField.alwaysWith(magneticArrowField))
-    .synchronize(proton.alwaysWith(new Sphere({ color: new Color("yellow") })))
+    .runsEvery(4e-20)
+    .bind(electron.alwaysWith(new Sphere({ color: new Color("red") })))
+    .bind(electricField.alwaysWith(electricArrowField))
+    .bind(magneticField.alwaysWith(magneticArrowField))
+    .bind(proton.alwaysWith(new Sphere({ color: new Color("yellow") })))
     .onStep((clock, _) => {
         electron.updateAt(clock.simulatedTime);
         proton.updateAt(clock.simulatedTime);

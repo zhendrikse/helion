@@ -1025,10 +1025,10 @@ Dan kun je namelijk doen:
 
 ```js
 simulation
-    .synchronize(surface.alwaysWith(
+    .bind(surface.alwaysWith(
         new StandardSurfaceView()
     ))
-    .synchronize(surface.alwaysWith(
+    .bind(surface.alwaysWith(
         new ContourSurfaceView()
     ));
 ```
@@ -2971,7 +2971,7 @@ ParticleField.positionAt(i)
 ## 3. Introduceer “Model wrapper”
 
 ```js
-simulation.synchronize(model.onceWith(view))
+simulation.bind(model.onceWith(view))
 ```
 
 Dit heb je al deels → uitbreiden

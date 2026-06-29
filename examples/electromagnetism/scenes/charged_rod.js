@@ -154,10 +154,10 @@ const simulation = Simulation
         fieldOfView: 30,
         headUpDisplay: true
     })
-    .synchronize(electricField.alwaysWith(electricArrowField))
-    .synchronize(magneticField.alwaysWith(magneticArrowField))
-    .incrementsTimeBy(0.01)
-    .onTimeScale(.75)
+    .bind(electricField.alwaysWith(electricArrowField))
+    .bind(magneticField.alwaysWith(magneticArrowField))
+    .runsEvery(0.01)
+    .atSpeed(.75)
     .withMouseClickEventListener()
     .onStep((_, dt) => {
         if (!allGone())
@@ -166,6 +166,6 @@ const simulation = Simulation
 
 for (const charge of rod.charges) {
     const sphere = new Sphere({ color: new Color("yellow") });
-    simulation.synchronize(charge.alwaysWith(sphere));
-    simulation.synchronize(charge.alwaysWith(new Trail({ maxPoints: 150, color: sphere.color })));
+    simulation.bind(charge.alwaysWith(sphere));
+    simulation.bind(charge.alwaysWith(new Trail({ maxPoints: 150, color: sphere.color })));
 }

@@ -73,9 +73,9 @@ const simulation = Simulation
         scale: scale,
         fieldOfView: 40
     })
-    .synchronize(dipole.positive.onceWith(positiveSphere))
-    .synchronize(dipole.negative.onceWith(negativeSphere))
-    .synchronize(dipoleField.onceWith(arrowField));
+    .bind(dipole.positive.onceWith(positiveSphere))
+    .bind(dipole.negative.onceWith(negativeSphere))
+    .bind(dipoleField.onceWith(arrowField));
 
 simulation.append(new Slider("️⚡ Field strength: ")
     .on(dipoleField)

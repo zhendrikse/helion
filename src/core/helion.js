@@ -326,15 +326,34 @@ export class Simulation {
         return this;
     }
 
-    incrementsTimeBy(dt) {
+    runsEvery(dt) {
         this._clock.fixedDt = dt;
         return this;
     }
 
-    synchronize(binding) {
-        this._renderer.add(binding.view);
-        this._bindings.push(binding);
-        binding.initialize();
+    bind(binding) {
+        // Zoek of deze view al ergens aan gekoppeld is
+        const existingIndex = this._bindings.findIndex(
+            b => b.view === binding.view
+        );
+
+        if (existingIndex >= 0) {
+            const old = this._bindings[existingIndex];
+
+            // Reset de oude view voordat hij opnieuw wordt gebruikt
+            old.view.reset?.();
+
+            // Vervang de binding
+            this._bindings[existingIndex] = binding;
+
+            // Initialiseer de nieuwe binding
+            binding.initialize();
+        } else {
+            this._renderer.add(binding.view);
+            this._bindings.push(binding);
+            binding.initialize();
+        }
+
         return this;
     }
 
@@ -343,7 +362,7 @@ export class Simulation {
         this._hud.attach(this._viewport)
     }
 
-    onTimeScale(timeScale) {
+    atSpeed(timeScale) {
         this._timeScale = timeScale;
         return this;
     }

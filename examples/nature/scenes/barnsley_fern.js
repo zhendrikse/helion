@@ -111,6 +111,6 @@ Simulation
         htmlDivId: "fernContainer",
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(10)
     })
-    .synchronize(fern.field.alwaysWith(fernImage))
+    .bind(fern.field.alwaysWith(fernImage))
     .onClockTick(() => fern.iterate())
     .start();

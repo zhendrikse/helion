@@ -13,5 +13,5 @@ Simulation
         fieldOfView: 45,
         background: Simulation.Background.STARS
     })
-    .synchronize(sun.alwaysWith(new Sun()))
+    .bind(sun.alwaysWith(new Sun()))
     .start();

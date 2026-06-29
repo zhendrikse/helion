@@ -38,15 +38,15 @@ const simulation = Simulation
         cameraPosition: new Vec3(0, -9, 7).multiplyScalar(resolution),
         headUpDisplay: true
     })
-    .synchronize(slit1.onceWith(new Cylinder({ color: 0xffffff })))
-    .synchronize(slit2.onceWith(new Cylinder({ color: 0xffffff })))
-    .synchronize(field.onceWith(new FieldEdgeIntensityPixelRaster({
+    .bind(slit1.onceWith(new Cylinder({ color: 0xffffff })))
+    .bind(slit2.onceWith(new Cylinder({ color: 0xffffff })))
+    .bind(field.onceWith(new FieldEdgeIntensityPixelRaster({
         nx: field.nx,
         ny: field.ny,
         edgeHeight: .6 * xMax * resolution,
         colorMapper: wavelengthColorMapper
     })))
-    .synchronize(field.onceWith(new ScalarFieldIntensityPixelRaster({
+    .bind(field.onceWith(new ScalarFieldIntensityPixelRaster({
         width: field.nx,
         height: field.ny,
         colorMapper: wavelengthColorMapper
@@ -90,5 +90,5 @@ function spawnParticleFromSlit(slitPos) {
         radius: .06 * resolution
     });
     particles.push(particle);
-    simulation.synchronize(particle.alwaysWith(new Sphere({ color: 0xffffff})));
+    simulation.bind(particle.alwaysWith(new Sphere({ color: 0xffffff})));
 }

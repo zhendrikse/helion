@@ -62,9 +62,9 @@ const simulation = Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .synchronize(ball.alwaysWith(sphere))
-    .synchronize(ball.alwaysWith(new Trail({ color: sphere.color})))
-    .incrementsTimeBy(2.5e-3)
+    .bind(ball.alwaysWith(sphere))
+    .bind(ball.alwaysWith(new Trail({ color: sphere.color})))
+    .runsEvery(2.5e-3)
     .onStep((clock, dt) => {
         if (ball.reachedEnd())
             return;

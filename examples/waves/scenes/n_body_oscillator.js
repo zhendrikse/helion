@@ -43,7 +43,7 @@ const simulation = Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .incrementsTimeBy(1e-3)
+    .runsEvery(1e-3)
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
         planeSizeXy: new Vector2(200, 200),
@@ -68,7 +68,7 @@ const simulation = Simulation
 for (let i = 0; i < balls.length; i++) {
     const color = i === 0 || i === balls.length - 1 ? 0x3333ff : 0xff0000;
     const sphere = new Sphere({ color, castShadow: true });
-    simulation.synchronize(balls[i].alwaysWith(sphere));
+    simulation.bind(balls[i].alwaysWith(sphere));
     if (i === 0)
         continue;
 
@@ -78,7 +78,7 @@ for (let i = 0; i < balls.length; i++) {
         color: 0xffff4d,
         castShadow: true
     });
-    simulation.synchronize(springs[i - 1].alwaysWith(helix));
+    simulation.bind(springs[i - 1].alwaysWith(helix));
 }
 
 simulation

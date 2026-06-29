@@ -56,8 +56,8 @@ const simulation = Simulation
     })
     .addObject3D(water)
     .withMouseClickEventListener()
-    .incrementsTimeBy(3e-3)
-    .synchronize(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
+    .runsEvery(3e-3)
+    .bind(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
     .onStep((clock) => {
         woodenBlock.apply(woodenBlock.netForce(water), clock.fixedDt);
         plotFunction(clock.simulationTime);

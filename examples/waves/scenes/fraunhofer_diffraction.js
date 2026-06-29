@@ -137,7 +137,7 @@ Simulation
         htmlDivId: "fraunhoferContainer",
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(50)
     })
-    .synchronize(intensityField.alwaysWith(intensityPixelRaster))
+    .bind(intensityField.alwaysWith(intensityPixelRaster))
     .append(new RadioButton("🟩 Square")
         .on(fraunhoferSimulation)
         .withProperty("apertureType")

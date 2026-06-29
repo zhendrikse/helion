@@ -98,10 +98,10 @@ const simulation = Simulation
         cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
         fieldOfView: 45
     })
-    .synchronize(magneticField.onceWith(arrowField));
+    .bind(magneticField.onceWith(arrowField));
 
 for (const segment of solenoid.segments)
-    simulation.synchronize(segment.onceWith(new Cylinder({ color: new Color("yellow") })));
+    simulation.bind(segment.onceWith(new Cylinder({ color: new Color("yellow") })));
 
 simulation.append(new Slider("️⚡ Field strength: ")
     .on(magneticField)

@@ -77,10 +77,10 @@ Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .synchronize(proton.alwaysWith(protonSphere))
-    .synchronize(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
-    .synchronize(magneticField.onceWith(arrowField))
-    .incrementsTimeBy(1e-3)
+    .bind(proton.alwaysWith(protonSphere))
+    .bind(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
+    .bind(magneticField.onceWith(arrowField))
+    .runsEvery(1e-3)
     .onStep((_, dt) => timeStep(dt))
     .addObject3D(new Aquarium({
         color: 0x1e90ff,

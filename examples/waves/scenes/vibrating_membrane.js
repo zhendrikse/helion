@@ -59,8 +59,8 @@ Simulation
     .with({
         htmlDivId: "membraneContainer"
     })
-    .synchronize(membrane.alwaysWith(surfaceView))
-    .incrementsTimeBy(0.016)
+    .bind(membrane.alwaysWith(surfaceView))
+    .runsEvery(0.016)
     .onStep((clock, _) => {
         membraneNormalizer.update(membrane.amplitude);
         membrane.time = clock.simulatedTime;

@@ -33,8 +33,8 @@ const simulation = Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .incrementsTimeBy(lambda / OneDimensionalPlaneWave.c / 100.0)
-    .synchronize(antenna.onceWith(new Cylinder({color: 0xcccc77})))
+    .runsEvery(lambda / OneDimensionalPlaneWave.c / 100.0)
+    .bind(antenna.onceWith(new Cylinder({color: 0xcccc77})))
     .onStep((clock, _) => {
         for (let wave of planeWaves)
             wave.propagate(clock.clockTime * 5e-12);
@@ -50,7 +50,7 @@ const simulation = Simulation
 
 const slit = new Vec3(0, 0, lambda)
 for (let wave of planeWaves)
-    simulation.synchronize(wave.alwaysWith(new ElectromagneticWave({
+    simulation.bind(wave.alwaysWith(new ElectromagneticWave({
         numArrows: 120,
         arrowSize: 0.2,
         scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)

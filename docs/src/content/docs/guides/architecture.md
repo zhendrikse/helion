@@ -38,7 +38,7 @@ Helion is built with the following doctrine in mind:
 ```js
 field.apply(operator);
 field.evolve(solver, dt);
-field.synchronize(view);
+field.bind(view);
 ```
 
 ```text

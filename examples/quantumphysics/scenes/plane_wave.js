@@ -34,8 +34,8 @@ const simulation = Simulation
         fieldOfView: 20
     })
     // .synchronize(planeWave.alwaysWith(waveView2d))
-    .synchronize(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({ numArrows: 100 })))
-    .incrementsTimeBy(0.01)
+    .bind(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({ numArrows: 100 })))
+    .runsEvery(0.01)
     .onStep((clock, _) => planeWave.propagate(clock.simulatedTime))
     .append(new Slider("Amplitude: ")
         .on(planeWave)

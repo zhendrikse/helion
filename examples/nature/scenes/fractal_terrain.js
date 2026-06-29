@@ -55,7 +55,7 @@ const simulation = Simulation
         cameraPosition: new Vec3(300, 300, 300),
         fieldOfView: 30,
     })
-    .synchronize(landscape.surface.onceWith(surfaceView))
+    .bind(landscape.surface.onceWith(surfaceView))
     .append(surfaceView.controls())
     .append(new RadioGroup(
         new RadioButton("Perlin noise: ")
@@ -63,12 +63,12 @@ const simulation = Simulation
             .on(landscape)
             .withProperty("noiseType")
             .addEventListener("change", () =>
-                simulation.synchronize(landscape.surface.onceWith(surfaceView))),
+                simulation.bind(landscape.surface.onceWith(surfaceView))),
         new RadioButton("Diamond-square: ")
             .withValue("diamondSquare")
             .checked(true)
             .on(landscape)
             .withProperty("noiseType")
             .addEventListener("change", () =>
-                simulation.synchronize(landscape.surface.onceWith(surfaceView))))
+                simulation.bind(landscape.surface.onceWith(surfaceView))))
     );

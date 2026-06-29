@@ -49,9 +49,9 @@ const simulation = Simulation
         fieldOfView: 45
     })
     .withMouseClickEventListener()
-    .synchronize(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
-    .incrementsTimeBy(0.05)
-    .onTimeScale(10)
+    .bind(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
+    .runsEvery(0.05)
+    .atSpeed(10)
     .addObject3D(faradayLoopsGroup)
     .onStep((clock, dt) => {
         const fieldLength = (clock.simulatedTime % 20) / 25 + 0.001;
@@ -83,12 +83,12 @@ function createFaradayLoops(faradayLoopsGroup) {
                 size: 0.05,
                 round: true
             });
-            simulation.synchronize(body.onceWith(arrow));
+            simulation.bind(body.onceWith(arrow));
             faradayLoopsGroup.add(arrow);
         }
 
         const ring = new Ring({ color: new Color("green"), thickness: 3e-2 });
-        simulation.synchronize(new AxialSymmetricBody({
+        simulation.bind(new AxialSymmetricBody({
             position: new Vec3(0, 0, z + .5),
             axis: new Vec3(0, 0, 1),
             radius: .5
@@ -98,7 +98,7 @@ function createFaradayLoops(faradayLoopsGroup) {
 }
 createFaradayLoops(faradayLoopsGroup);
 
-simulation.synchronize(new FaradayField().onceWith(new ArrowField({
+simulation.bind(new FaradayField().onceWith(new ArrowField({
     xRange: new Range(-1, 1, 0.25),
     yRange: new Range(-1, 1, 0.25),
     zRange: new Range(-2, 2, 1),
@@ -116,14 +116,14 @@ for (let i = 0; i < numCharges; i++) {
     const charge = new RadialSymmetricBody({ position: new Vec3(0, 0, i), radius: 0.055 });
     charge.baseZ = i;
     charges.push(charge);
-    simulation.synchronize(charge.alwaysWith(new Sphere({ color: new Color("yellow") })));
+    simulation.bind(charge.alwaysWith(new Sphere({ color: new Color("yellow") })));
 }
 
 const magneticVectors = [];
 for (const position of magneticFieldPositions) {
     const body = new AxialSymmetricBody({ position });
     magneticVectors.push(body);
-    simulation.synchronize(body.alwaysWith(new Arrow({
+    simulation.bind(body.alwaysWith(new Arrow({
         color: new Color("red"),
         size: 7.5e-2,
         round: true

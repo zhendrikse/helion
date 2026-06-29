@@ -39,7 +39,7 @@ const surfaceView = new StandardSurfaceView({
 
 const simulation = Simulation
     .with(renderer)
-    .synchronize(surface.onceWith(surfaceView))
+    .bind(surface.onceWith(surfaceView))
     .onClockTick()
     .start();
 

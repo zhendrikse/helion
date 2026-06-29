@@ -60,16 +60,16 @@ Simulation
         headUpDisplay: true
     })
     .withStartStopResetButtons()
-    .synchronize(surface.alwaysWith(waterSurface))
-    .synchronize(obstacleField.onceWith(new PotentialField3DRaster({
+    .bind(surface.alwaysWith(waterSurface))
+    .bind(obstacleField.onceWith(new PotentialField3DRaster({
         width: resolution,
         height: resolution,
         heightScale: 20,
         opacity: 0.5,
         color: 0x008080
     })))
-    .incrementsTimeBy(0.02)
-    .onTimeScale(3)
+    .runsEvery(0.02)
+    .atSpeed(3)
     .onStep((_, dt) => field.evolve(solver, dt))
     .onReset(() => reset(configuration))
     .append(waveEquation.controls())

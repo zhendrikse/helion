@@ -33,7 +33,7 @@ Simulation
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.25 * resolution),
     })
     .onReset(() => reset(shapeConfiguration))
-    .synchronize(field.alwaysWith(intensityRaster))
+    .bind(field.alwaysWith(intensityRaster))
     .append(shapeConfiguration.controls())
     .append(new Slider("🧸 Softness")
         .withRange(new Range(0, 20, 1))

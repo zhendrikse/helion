@@ -133,14 +133,14 @@ const simulation = Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .synchronize(electron.alwaysWith(electronSphere))
-    .synchronize(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
-    .synchronize(electricField.onceWith(arrowField))
-    .incrementsTimeBy(3e-19)
+    .bind(electron.alwaysWith(electronSphere))
+    .bind(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
+    .bind(electricField.onceWith(arrowField))
+    .runsEvery(3e-19)
     .onStep((_, dt) => timeStep(dt));
 
 // Ring rendering
 for (const segment of ring.segments)
-    simulation.synchronize(segment.onceWith(new Cylinder({ color: "orange" })));
+    simulation.bind(segment.onceWith(new Cylinder({ color: "orange" })));
 
 

@@ -117,7 +117,7 @@ const simulation = Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .synchronize(particleField.alwaysWith(particleView2D))
+    .bind(particleField.alwaysWith(particleView2D))
     .onReset(resetSimulation)
     .onFrame(() => particleField.update())
     .append(particleView2D.controls())
@@ -131,7 +131,7 @@ function resetSimulation() {
     updateThreshold();
     particleField = new ParticleCloud(swarmSize);
 
-    simulation.synchronize(particleField.alwaysWith(particleView2D))
+    simulation.bind(particleField.alwaysWith(particleView2D))
     simulation.frameSceneOn(particleView2D, {
                 padding: 0.5,
             viewDirection: new Vec3(0, 0, 1)

@@ -100,10 +100,10 @@ const simulation = Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .synchronize(electricField.onceWith(arrowField))
-    .synchronize(electron.alwaysWith(electronSphere))
-    .synchronize(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
-    .incrementsTimeBy(5e-20)
+    .bind(electricField.onceWith(arrowField))
+    .bind(electron.alwaysWith(electronSphere))
+    .bind(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
+    .runsEvery(5e-20)
     .onStep((_, dt) => {
         electricField.sample(electron.position, field);
         const force = field.clone().multiplyScalar(electron.charge);
@@ -114,7 +114,7 @@ const simulation = Simulation
 // Sheet rendering
 //
 for (const segment of sheet.segments)
-    simulation.synchronize(segment.onceWith(new Box({
+    simulation.bind(segment.onceWith(new Box({
         color: new Color(0xffffff),
         opacity: 0.6
     })));

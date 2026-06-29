@@ -85,7 +85,7 @@ const blackHoleModel = new BlackHoleModel({
 
 let animate = true;
 simulation
-    .synchronize(blackHoleModel.alwaysWith(view))
+    .bind(blackHoleModel.alwaysWith(view))
     .onFrame(time => {
         if (!animate) return;
         blackHoleModel.uniforms.uTime.value= time * 0.001;

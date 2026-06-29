@@ -11,7 +11,7 @@ Simulation
         light: false
     })
     .addObject3D(new AmbientLight(0xb0b0b0, 1))
-    .synchronize(Planets.saturn.onceWith(new Saturn()))
+    .bind(Planets.saturn.onceWith(new Saturn()))
     .start();
 
 

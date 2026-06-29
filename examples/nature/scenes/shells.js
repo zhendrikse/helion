@@ -86,7 +86,7 @@ const simulation = Simulation
 
 function changeSurface(surfaceId) {
     const newSurface = surfacesRegistry.get(surfaceId);
-    simulation.synchronize(newSurface.onceWith(surfaceView));
+    simulation.bind(newSurface.onceWith(surfaceView));
     simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
 }
 

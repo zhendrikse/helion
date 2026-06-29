@@ -67,12 +67,12 @@ Simulation
         scale: 1e-9,
         headUpDisplay: true
     })
-    .synchronize(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
-    .synchronize(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
-    .synchronize(bodyB.alwaysWith(new Sphere({ color: "cyan" })))
-    .synchronize(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
-    .synchronize(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
-    .synchronize(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
-    .incrementsTimeBy(dt / subSteps)
+    .bind(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
+    .bind(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
+    .bind(bodyB.alwaysWith(new Sphere({ color: "cyan" })))
+    .bind(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
+    .bind(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
+    .bind(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
+    .runsEvery(dt / subSteps)
     .onClockTick((clock) => updateForces(clock.fixedDt), subSteps)
     .withMouseClickEventListener();

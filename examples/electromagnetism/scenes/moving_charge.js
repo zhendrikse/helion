@@ -87,10 +87,10 @@ const simulation = Simulation
     .addObject3D(new PointLight(0xffffff, 2e3))
     .addObject3D(new AmbientLight(0xffffff, 0.8))
     .withMouseClickEventListener()
-    .synchronize(movingCharge.alwaysWith(sphere))
-    .synchronize(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })))
-    .synchronize(capacitorField.onceWith(arrowField))
-    .incrementsTimeBy(0.005)
+    .bind(movingCharge.alwaysWith(sphere))
+    .bind(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })))
+    .bind(capacitorField.onceWith(arrowField))
+    .runsEvery(0.005)
     .onStep((_, dt) => {
         if (movingCharge.position.x > 60 / scale)
             return;
@@ -110,5 +110,5 @@ for (const charge of capacitor.charges) {
     const sphere = new Sphere({
         color: charge.charge > 0 ? new Color(0x4444ff) : new Color(0xff0000)
     });
-    simulation.synchronize(charge.onceWith(sphere)); // Prevent unnecessary updates!
+    simulation.bind(charge.onceWith(sphere)); // Prevent unnecessary updates!
 }

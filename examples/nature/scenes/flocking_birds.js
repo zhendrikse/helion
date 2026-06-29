@@ -105,7 +105,7 @@ const simulation = Simulation
         fieldOfView: 30
     })
     .withMouseClickEventListener()
-    .incrementsTimeBy(0.01)
+    .runsEvery(0.01)
     .onStep((_, dt) => flock.update(dt))
     .append(new Slider("Random behavior: ")
         .on(flock)
@@ -133,7 +133,7 @@ const simulation = Simulation
     .start();
 
 for (let i = 0; i < birdCount; i++)
-    simulation.synchronize(flock.bird(i).velocityVector.alwaysWith(new Arrow({
+    simulation.bind(flock.bird(i).velocityVector.alwaysWith(new Arrow({
         round: true,
         color: 0xffff77,
         size: .25,
