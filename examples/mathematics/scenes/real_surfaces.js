@@ -114,7 +114,7 @@ simulation
         .for(surfacesRegistry)
         .addEventListener("change", event => surfaceController.changeSurface(event.target.value))
     )
-    .append(surfaceView.controls())
+    .append(surfaceView.ui())
     .append(new Checkbox("Animate surface ")
         .on(surfaceController)
         .withProperty("animate"))

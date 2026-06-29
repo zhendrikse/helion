@@ -81,7 +81,7 @@ Simulation
                 .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 4 `)
                     .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 5 `)))))
     )
-    .append(surfaceView.controls())
+    .append(surfaceView.ui())
     .append(
         new RadioGroup(
             new RadioButton("Smooth")
@@ -94,7 +94,7 @@ Simulation
                 .addEventListener("change", () => surfaceView.meshLayer = null)
         ).checked(0)
     )
-    .append(glyphLayer.controls())
+    .append(glyphLayer.ui())
     .append(new Checkbox("Contours ")
         .checked(true)
         .on(contours)

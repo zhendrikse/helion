@@ -71,7 +71,7 @@ Simulation
             sigma: 1
         }));
     })
-    .append(waterSurface.controls())
+    .append(waterSurface.ui())
     .append(
         new RadioGroup(
             new RadioButton("Smooth")
@@ -81,7 +81,7 @@ Simulation
                 .addEventListener("change", () => waterSurface.meshLayer = glyphLayer),
         ).checked(1)
     )
-    .append(glyphLayer.controls())
+    .append(glyphLayer.ui())
     .append(new Checkbox("Wireframe ")
         .on(surfaceLayer)
         .withProperty("wireframe")

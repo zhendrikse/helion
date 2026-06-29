@@ -316,7 +316,7 @@ export class SineImpulsOperator {
                 field.setValueAt(x, y, this._amplitude * Math.sin(2 * Math.PI * x / this._waveLength));
     }
 
-    controls({
+    ui({
          wavelengthInPixelsRange = new Range(5, 25, 1),
          amplitudeRange = new Range(0, 1, .01),
          periodRange = new Range(0, 2, .01),

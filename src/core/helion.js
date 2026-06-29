@@ -397,7 +397,7 @@ export class Simulation {
             layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ, bottomAlign
         });
         if (settingControls)
-            this.append(axes.controls());
+            this.append(axes.ui());
         return this;
     }
 
@@ -543,7 +543,7 @@ export class Simulation {
         return this;
     }
 
-    withStartStopResetButtons() {
+    appendStartStopResetUI() {
         const runButton = new Button().withText("▶︎ Run");
         runButton
             .addEventListener("click", () => {

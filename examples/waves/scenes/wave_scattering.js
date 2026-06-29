@@ -59,7 +59,6 @@ Simulation
         fieldOfView: 19,
         headUpDisplay: true
     })
-    .withStartStopResetButtons()
     .bind(surface.alwaysWith(waterSurface))
     .bind(obstacleField.onceWith(new PotentialField3DRaster({
         width: resolution,
@@ -72,10 +71,11 @@ Simulation
     .atSpeed(3)
     .onStep((_, dt) => field.evolve(solver, dt))
     .onReset(() => reset(configuration))
-    .append(waveEquation.controls())
-    .append(sineImpuls.controls())
-    .append(configuration.controls())
-    .append(waterSurface.controls())
+    .appendStartStopResetUI()
+    .append(waveEquation.ui())
+    .append(sineImpuls.ui())
+    .append(configuration.ui())
+    .append(waterSurface.ui())
     .append(
         new RadioGroup(
             new RadioButton("Smooth")
@@ -85,7 +85,7 @@ Simulation
                 .addEventListener("change", () => waterSurface.meshLayer = glyphLayer),
         ).checked(0)
     )
-    .append(glyphLayer.controls())
+    .append(glyphLayer.ui())
     .append(new Checkbox("Wireframe ")
             .on(surfaceLayer)
             .withProperty("wireframe")

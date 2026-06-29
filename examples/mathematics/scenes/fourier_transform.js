@@ -34,7 +34,7 @@ Simulation
     })
     .onReset(() => reset(shapeConfiguration))
     .bind(field.alwaysWith(intensityRaster))
-    .append(shapeConfiguration.controls())
+    .append(shapeConfiguration.ui())
     .append(new Slider("🧸 Softness")
         .withRange(new Range(0, 20, 1))
         .withValue(softness)

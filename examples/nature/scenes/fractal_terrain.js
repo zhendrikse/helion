@@ -56,7 +56,7 @@ const simulation = Simulation
         fieldOfView: 30,
     })
     .bind(landscape.surface.onceWith(surfaceView))
-    .append(surfaceView.controls())
+    .append(surfaceView.ui())
     .append(new RadioGroup(
         new RadioButton("Perlin noise: ")
             .withValue("perlin")

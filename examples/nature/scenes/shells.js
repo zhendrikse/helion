@@ -81,7 +81,7 @@ const simulation = Simulation
     .append(new DropdownMenu()
         .for(surfacesRegistry)
         .addEventListener("change", event => changeSurface(event.target.value)))
-    .append(surfaceView.controls())
+    .append(surfaceView.ui())
     .start();
 
 function changeSurface(surfaceId) {

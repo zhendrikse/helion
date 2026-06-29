@@ -21,7 +21,7 @@ export class BarrierWaveEquation {
         return transmission * this._velocity * this._velocity * LaplaceOperator.at(field, i, j);
     }
 
-    controls() {
+    ui() {
         return new Slider("💤 Damping")
             .withValue(this._damping * 100)
             .withRange(new Range(0, .1, 1e-4))

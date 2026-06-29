@@ -231,7 +231,7 @@ export class GlyphLayer extends MeshLayer {
         this.setGeometry(shape.geometry);
     }
 
-    controls() {
+    ui() {
         return new DropdownMenu()
             .for(GlyphLayer.Glyphs)
             .addEventListener("change", (event) => this.shape = event.target.value);

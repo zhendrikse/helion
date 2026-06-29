@@ -269,7 +269,7 @@ const simulation = Simulation
         headUpDisplay: true,
         parameterMenuCollapsed: false
     })
-    .withStartStopResetButtons()
+    .appendStartStopResetUI()
     .addObject3D(grid)
     .addObject3D(photonRing)
     .bind(coneGeometry.onceWith(spaceTimeCone))

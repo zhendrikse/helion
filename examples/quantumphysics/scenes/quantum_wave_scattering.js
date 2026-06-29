@@ -46,7 +46,7 @@ const simulation = Simulation
         cameraPosition: new Vec3(-1, .7, .75).multiplyScalar(.75 * xMax),
         fov: 30
     })
-    .withStartStopResetButtons()
+    .appendStartStopResetUI()
     .bind(psi.alwaysWith(waveFunctionSurface))
     .bind(psi.alwaysWith(waveFunctionSurface2d))
     .bind(potential.onceWith(potentialBarrier))
@@ -83,7 +83,7 @@ const simulation = Simulation
         .withProperty("phaseColor")
         .checked(true)
     )
-    .append(shapeConfiguration.controls())
+    .append(shapeConfiguration.ui())
     .append(new Slider("💪🏻 Energy barrier")
         .withRange(new Range(-0.1, 0.1, .001))
         .withValue(potentialStrength)

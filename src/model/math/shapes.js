@@ -131,7 +131,7 @@ export class ShapeConfiguration {
         this._onChangeEventListener = onChangeEventListener;
     }
 
-    controls() {
+    ui() {
         return new CompoundControl()
             .add(new DropdownMenu()
                 .for(new ShapesFactory())

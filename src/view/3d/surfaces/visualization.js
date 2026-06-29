@@ -129,8 +129,7 @@ export class SurfaceVisualization extends Renderable3D {
             layer.initialize(model);
     }
 
-    controls({
-    } = {}) {
+    ui() {
         return new CompoundControl()
             .add(new DropdownMenu()
                 .for(new ColorMappersFactory())
