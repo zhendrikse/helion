@@ -196,7 +196,7 @@ export class Axes extends Group {
         return this;
     }
 
-    controls() {
+    ui() {
         return new CompoundControl()
             .add(new Checkbox("Frame ")
                 .checked(true)

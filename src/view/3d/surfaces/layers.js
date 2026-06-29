@@ -283,6 +283,18 @@ export class ContoursLayer extends Layer {
         this._showContours = true;
     }
 
+    reset() {
+        for (const entry of [...this._uLines, ...this._vLines]) {
+            this.remove(entry.line);
+
+            entry.line.geometry.dispose();
+            entry.line.material?.dispose?.();
+        }
+
+        this._uLines = [];
+        this._vLines = [];
+    }
+
     get contoursVisible() { return this._showContours; }
 
     set contoursVisible(value) {
