@@ -1,6 +1,6 @@
 import {
-    Simulation, DropdownMenu, Checkbox, Interval, MultivariateFunctionSurface, Domain, Registry, SurfaceVisualization,
-    SurfaceTypes
+    Simulation, DropdownMenu, Checkbox, Interval, MultivariateFunctionSurface, Domain, Registry,
+    SurfaceVisualization, HeightLayer, FixedIntervalNormalizer, SurfaceLayer, SurfaceResolution, ContoursLayer
 } from "../../../src/index.js";
 
 const pi = Math.PI;
@@ -67,9 +67,8 @@ const surfacesRegistry = new Registry({
 });
 
 class SurfaceController {
-    constructor(simulation, surfaceView) {
+    constructor(simulation) {
         this._simulation = simulation;
-        this._surfaceView = surfaceView;
         this._currentSurface = surfacesRegistry.get("Ripple").surface;
         this._animate = false;
     }
@@ -77,7 +76,7 @@ class SurfaceController {
     changeSurface(surfaceId) {
         this._currentSurface = surfacesRegistry.get(surfaceId).surface;
         const amplitude = surfacesRegistry.get(surfaceId).amplitude;
-        this._surfaceView.normalizer = new Interval(0, amplitude);
+        this._currentSurface.normalizer = new Interval(0, amplitude);
         this._simulation.synchronize(this._currentSurface.alwaysWith(surfaceView));
         this._simulation.provideAxesAround(surfaceView);
         this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5 * amplitude});
@@ -91,11 +90,15 @@ class SurfaceController {
     }
 }
 
-const surfaceView = SurfaceVisualization
-    .ofType(SurfaceTypes.SURFACE_CONTOURS)
-    .with({
-        normalizer: new Interval(0, surfaces["Ripple"].amplitude)
-    });
+const normalizer = new FixedIntervalNormalizer(new Interval(0, surfaces["Ripple"].amplitude));
+const contoursLayer = new ContoursLayer({
+    normalizer: normalizer
+});
+const surfaceLayer = new SurfaceLayer({
+    normalizer: normalizer,
+    resolution: new SurfaceResolution(200, 200)
+});
+const surfaceView = new SurfaceVisualization(surfaceLayer).addOverlayLayer(contoursLayer);
 
 const simulation = Simulation
     .with({
@@ -104,7 +107,7 @@ const simulation = Simulation
     })
     .incrementsTimeBy(0.016);
 
-const surfaceController = new SurfaceController(simulation, surfaceView);
+const surfaceController = new SurfaceController(simulation);
 simulation
     .onStep((clock, _) => surfaceController.time = clock.simulatedTime)
     .append(new DropdownMenu()

@@ -1,6 +1,6 @@
 import {
     Simulation, ParametricSurface, Domain, SurfaceResolution,
-    ColorMappersFactory, Registry, DropdownMenu, SurfaceVisualization, SurfaceTypes
+    ColorMappersFactory, Registry, DropdownMenu, SurfaceVisualization, SurfaceLayer
 } from "../../../src/index.js";
 import {MeshStandardMaterial} from "three";
 
@@ -62,18 +62,15 @@ const surfacesRegistry = new Registry({
     entries: surfaces
 });
 
-const surfaceView = SurfaceVisualization
-    .ofType(SurfaceTypes.SURFACE_CONTOURS)
-    .with({
-        material: new MeshStandardMaterial({
+const surfaceView = new SurfaceVisualization(new SurfaceLayer({
+    material: new MeshStandardMaterial({
         metalness: 0.5,
         roughness: 0.5,
+        opacity: 0.95
     }),
-    opacity: 0.95,
-    surfaceResolution: new SurfaceResolution(200, 200),
-    contourResolution: new SurfaceResolution(100, 50),
-    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.RdYlBu)
-});
+    resolution: new SurfaceResolution(200, 200),
+    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.Inferno)
+}));
 
 const simulation = Simulation
     .with({

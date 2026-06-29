@@ -10,7 +10,7 @@ export {
 
 export {
     ParametricSurface, MultivariateFunctionSurface, Domain, Surface, DiscreteScalarField,
-    DiscreteComplexField, VectorField, DiscreteFieldSurface, SurfaceScalarFields, ComplexSurface
+    DiscreteComplexField, VectorField, DiscreteFieldSurface, ComplexSurface
 } from "./model/math/fields.js"
 
 export {
@@ -33,15 +33,20 @@ export { Sun } from "./view/3d/astro/sun.js";
 export { Saturn } from "./view/3d/astro/saturn.js";
 export { Planets } from "./model/phys/planets.js";
 export { WaveEquationSolver, SchrodingerSolver } from "./model/math/numerics/solvers/solvers.js";
-export { DropdownMenu, Checkbox, Button, Slider, RadioButton } from "./core/controls.js";
+export { DropdownMenu, Checkbox, Button, Slider, RadioButton, RadioGroup } from "./core/controls.js";
 export { Simulation, Registry } from "./core/helion.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 export { Renderable3D } from "./view/renderer.js";
 export { ComplexScalarFieldSurfaceRaster, PotentialField3DRaster } from "./view/3d/views.js"
-export { SurfaceResolution } from "./view/3d/surfaces/surfaceviews.js"
-export { SurfaceVisualization, SurfaceTypes } from "./view/3d/surfaces/visualization.js";
+export { GlyphLayer, SurfaceLayer, ContoursLayer } from "./view/3d/surfaces/layers.js";
+
+export {
+    SurfaceVisualization, HeightLayer, FixedIntervalNormalizer, SurfaceResolution,
+    GaussianCurvatureLayer
+} from "./view/3d/surfaces/visualization.js";
+
 export {
     OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial, ArrowField
 } from "./view/3d/composite/composites.js";

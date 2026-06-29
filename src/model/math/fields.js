@@ -1,6 +1,6 @@
 import {MathPhysicsModelBehavior, Registry} from "../../core/helion.js";
 import {Complex, Interval, Vec3, Vec2} from "./math.js";
-import {DifferentialGeometry} from "./numerics/diffgeometry.js";
+import {DifferentialGeometry, PrincipalFrame} from "./numerics/diffgeometry.js";
 import {ColorMappersFactory} from "../../view/colormappers.js";
 
 export class Domain {
@@ -36,7 +36,7 @@ export class VectorField extends Field {
 /**
  * Mathematical definition of a surface.
  */
-export class Surface extends Field {
+export class Surface extends MathPhysicsModelBehavior {
     constructor() {
         super();
         this._differentialGeometry = new DifferentialGeometry(this);
@@ -46,7 +46,7 @@ export class Surface extends Field {
         return new Vec2(1, 1);
     }
 
-    principalFrameAt(u, v, target) {
+    frameAt(u, v, target) {
         return this._differentialGeometry.principalFrame(u, v, target);
     }
 }
@@ -132,14 +132,20 @@ export class DiscreteFieldSurface extends Surface {
         this._field = field;
     }
 
-    sample(u, v, target) {
-        const i = Math.floor(u * (this._field.nx - 1));
-        const j = Math.floor(v * (this._field.ny - 1));
-        const z = this._field.valueAt(i, j);
-        target.set(i, z, j);
+    frameAt(u, v, target) {
+        const i = u * (this._field.nx - 1);
+        const j = v * (this._field.ny - 1);
+
+        const ii = Math.floor(i);
+        const jj = Math.floor(j);
+
+        const z = this._field.valueAt(ii, jj);
+        target.position.set(i, z, j);
+
+        this._normalAt(ii, jj, target.normal);
     }
 
-    normalAt(i, j, target) {
+    _normalAt(i, j, target) {
         const hL = this._field.valueAt(i - 1, j);
         const hR = this._field.valueAt(i + 1, j);
         const hD = this._field.valueAt(i, j - 1);
@@ -156,125 +162,130 @@ export class DiscreteFieldSurface extends Surface {
     }
 }
 
-export class ScalarFieldOnSurface extends Field {
-    constructor(surface) {
-        super();
-        if (!surface)
-            throw new Error("Cannot initialize a scalar field on a surface that is null!");
-        this._surface = surface;
-    }
-
-    get recommendedColorMapper() {}
-}
-
-export class HeightScalarField extends ScalarFieldOnSurface {
-    sample(u, v, target) {
-        this._surface.sample(u, v, target);
-        target.set(u, v, target.y);
-    }
-
-    get recommendedColorMapper() {
-        return ColorMappersFactory.create(ColorMappersFactory.Type.Inferno);
-    }
-}
-
-export class MeanCurvatureField extends ScalarFieldOnSurface {
-    constructor(surface) {
-        super(surface);
-        this._geometry = new DifferentialGeometry(surface);
-    }
-
-    get recommendedColorMapper() {
-        return ColorMappersFactory.create(ColorMappersFactory.Type.Scientific);
-    }
-
-    sample(u, v, target) {
-        target.set(u, v, this._geometry.normalMeanGaussian(u, v).H);
-    }
-}
-
-export class GaussianCurvatureField extends ScalarFieldOnSurface {
-    constructor(surface) {
-        super(surface);
-        this._geometry = new DifferentialGeometry(surface);
-    }
-
-    get recommendedColorMapper() {
-        return ColorMappersFactory.create(ColorMappersFactory.Type.Seismic);
-    }
-
-    sample(u, v, target) {
-        target.set(u, v, this._geometry.normalMeanGaussian(u, v).K);
-    }
-}
-
-export class PrincipalCurvatureField extends ScalarFieldOnSurface {
-    constructor(surface, which=1) {
-        super(surface);
-        this._geometry = new DifferentialGeometry(surface);
-        this._which = which;
-    }
-
-    get recommendedColorMapper() {
-        return ColorMappersFactory.create(this._which ? ColorMappersFactory.Type.Viridis : ColorMappersFactory.Type.Inferno);
-    }
-
-    sample(u, v, target) {
-        const { k1, k2 } = this._geometry.principals(u, v);
-        target.set(u, v, this._which === 1 ? k1 : k2);
-    }
-}
-
-export class ShapeIndexField extends ScalarFieldOnSurface {
-    constructor(surface) {
-        super(surface);
-        this._geometry = new DifferentialGeometry(surface);
-    }
-
-    get recommendedColorMapper() {
-        return ColorMappersFactory.create(ColorMappersFactory.Type.RdYlBu);
-    }
-
-    sample(u, v, target) {
-        const { k1, k2 } = this._geometry.principals(u, v);
-        const denominator = k1 - k2;
-
-        if (Math.abs(denominator) < 1e-12)
-            return 0;
-
-        target.set(u, v, (2 / Math.PI) * Math.atan((k1 + k2) / denominator));
-    }
-}
-
-export class CurvednessField extends ScalarFieldOnSurface {
-    constructor(surface) {
-        super(surface);
-        this._geometry = new DifferentialGeometry(surface);
-    }
-
-    get recommendedColorMapper() {
-        return ColorMappersFactory.create(ColorMappersFactory.Type.Viridis);
-    }
-
-    sample(u, v, target) {
-        const { k1, k2 } =  this._geometry.principals(u, v);
-        target.set(u, v, Math.sqrt(0.5 * (k1 * k1 + k2 * k2)));
-    }
-}
-
-export const SurfaceScalarFields = new Registry({
-    id: "surfaceScalarFieldSelect",
-    label: "Surface field ",
-    entries: {
-        Height: surface => new HeightScalarField(surface),
-        MeanCurvature: surface => new MeanCurvatureField(surface),
-        PrincipalCurvature1: surface => new PrincipalCurvatureField(surface,1),
-        PrincipalCurvature2: surface => new PrincipalCurvatureField(surface,2),
-        GaussianCurvature: surface => new GaussianCurvatureField(surface),
-        ShapeIndex: surface => new ShapeIndexField(surface),
-        Curvedness: surface => new CurvednessField(surface)
-    }
-});
+// export class ScalarFieldOnSurface extends Field {
+//     constructor(surface) {
+//         super();
+//         if (!surface)
+//             throw new Error("Cannot initialize a scalar field on a surface that is null!");
+//         this._surface = surface;
+//     }
+//
+//     get recommendedColorMapper() {}
+// }
+//
+// export class HeightScalarField extends ScalarFieldOnSurface {
+//     constructor(surface) {
+//         super(surface);
+//         this._frame = new PrincipalFrame();
+//     }
+//
+//     sample(u, v, target) {
+//         this._surface.frameAt(u, v, this._frame);
+//         target.set(u, v, this._frame.position.y);
+//     }
+//
+//     get recommendedColorMapper() {
+//         return ColorMappersFactory.create(ColorMappersFactory.Type.Inferno);
+//     }
+// }
+//
+// export class MeanCurvatureField extends ScalarFieldOnSurface {
+//     constructor(surface) {
+//         super(surface);
+//         this._geometry = new DifferentialGeometry(surface);
+//     }
+//
+//     get recommendedColorMapper() {
+//         return ColorMappersFactory.create(ColorMappersFactory.Type.Scientific);
+//     }
+//
+//     sample(u, v, target) {
+//         target.set(u, v, this._geometry.normalMeanGaussian(u, v).H);
+//     }
+// }
+//
+// export class GaussianCurvatureField extends ScalarFieldOnSurface {
+//     constructor(surface) {
+//         super(surface);
+//         this._geometry = new DifferentialGeometry(surface);
+//     }
+//
+//     get recommendedColorMapper() {
+//         return ColorMappersFactory.create(ColorMappersFactory.Type.Seismic);
+//     }
+//
+//     sample(u, v, target) {
+//         target.set(u, v, this._geometry.normalMeanGaussian(u, v).K);
+//     }
+// }
+//
+// export class PrincipalCurvatureField extends ScalarFieldOnSurface {
+//     constructor(surface, which=1) {
+//         super(surface);
+//         this._geometry = new DifferentialGeometry(surface);
+//         this._which = which;
+//     }
+//
+//     get recommendedColorMapper() {
+//         return ColorMappersFactory.create(this._which ? ColorMappersFactory.Type.Viridis : ColorMappersFactory.Type.Inferno);
+//     }
+//
+//     sample(u, v, target) {
+//         const { k1, k2 } = this._geometry.principals(u, v);
+//         target.set(u, v, this._which === 1 ? k1 : k2);
+//     }
+// }
+//
+// export class ShapeIndexField extends ScalarFieldOnSurface {
+//     constructor(surface) {
+//         super(surface);
+//         this._geometry = new DifferentialGeometry(surface);
+//     }
+//
+//     get recommendedColorMapper() {
+//         return ColorMappersFactory.create(ColorMappersFactory.Type.RdYlBu);
+//     }
+//
+//     sample(u, v, target) {
+//         const { k1, k2 } = this._geometry.principals(u, v);
+//         const denominator = k1 - k2;
+//
+//         if (Math.abs(denominator) < 1e-12)
+//             return 0;
+//
+//         target.set(u, v, (2 / Math.PI) * Math.atan((k1 + k2) / denominator));
+//     }
+// }
+//
+// export class CurvednessField extends ScalarFieldOnSurface {
+//     constructor(surface) {
+//         super(surface);
+//         this._geometry = new DifferentialGeometry(surface);
+//     }
+//
+//     get recommendedColorMapper() {
+//         return ColorMappersFactory.create(ColorMappersFactory.Type.Viridis);
+//     }
+//
+//     sample(u, v, target) {
+//         const { k1, k2 } =  this._geometry.principals(u, v);
+//         target.set(u, v, Math.sqrt(0.5 * (k1 * k1 + k2 * k2)));
+//     }
+// }
+//
+// export const SurfaceScalarFields = new Registry({
+//     id: "surfaceScalarFieldSelect",
+//     label: "Surface field ",
+//     entries: {
+//         Height: surface => new HeightScalarField(surface),
+//         MeanCurvature: surface => new MeanCurvatureField(surface),
+//         PrincipalCurvature1: surface => new PrincipalCurvatureField(surface,1),
+//         PrincipalCurvature2: surface => new PrincipalCurvatureField(surface,2),
+//         GaussianCurvature: surface => new GaussianCurvatureField(surface),
+//         ShapeIndex: surface => new ShapeIndexField(surface),
+//         Curvedness: surface => new CurvednessField(surface)
+//     }
+// });
 
 
 /**

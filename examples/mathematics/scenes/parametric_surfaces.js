@@ -1,6 +1,8 @@
 import {
-    Simulation, ParametricSurface, Domain, DropdownMenu, Registry, SurfaceVisualization, SurfaceTypes
+    Simulation, ParametricSurface, Domain, DropdownMenu, Registry, SurfaceVisualization, HeightLayer,
+    FixedIntervalNormalizer, Interval, GaussianCurvatureLayer, ContoursLayer, SurfaceLayer, SurfaceResolution
 } from "../../../src/index.js";
+import {DoubleSide, MeshStandardMaterial} from "three";
 
 const sin = Math.sin, cos = Math.cos, tan = Math.tan, log = Math.log, PI = Math.PI;
 const surfaces = {
@@ -60,12 +62,20 @@ const surfacesRegistry = new Registry({
     entries: surfaces
 });
 
-const surfaceView = SurfaceVisualization
-    .ofType(SurfaceTypes.SURFACE_CONTOURS)
-    .with({
-        scalarFieldType: "GaussianCurvature",
-        opacity: 0.925
-    });
+const contoursLayer = new ContoursLayer({
+    resolution: new SurfaceResolution(50, 50)
+});
+const surfaceLayer = new SurfaceLayer({
+    material: new MeshStandardMaterial({
+        side: DoubleSide,
+        roughness: 0.45,
+        metalness: 0.1,
+        transparent: true,
+        opacity: 0.9
+    }),
+    resolution: new SurfaceResolution(200, 200)
+});
+const surfaceView = new SurfaceVisualization(surfaceLayer).addOverlayLayer(contoursLayer);
 
 const simulation = Simulation
     .with({

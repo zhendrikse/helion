@@ -1,7 +1,7 @@
 import { Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
     Floor, Sphere, Trail, Vec3, Simulation, Surface,
-    RadialSymmetricBody, Sun, Checkbox, Slider, Range, SurfaceTypes, SurfaceVisualization
+    RadialSymmetricBody, Sun, Checkbox, Slider, Range, SurfaceVisualization, ContoursLayer
 } from "../../../src/index.js";
 
 let initialCometDistance = 33;
@@ -257,8 +257,8 @@ const grid = new Floor({
 });
 
 // Curved space-time: Flamm's paraboloid
-const spaceTimeCone = SurfaceVisualization.ofType(SurfaceTypes.CONTOURS);
-spaceTimeCone.surfaceVisible = false;
+const spaceTimeCone = new SurfaceVisualization();
+spaceTimeCone.addOverlayLayer(new ContoursLayer());
 
 const simulation = Simulation
     .with({

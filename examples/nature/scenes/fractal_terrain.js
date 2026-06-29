@@ -1,6 +1,16 @@
 import {
-    DiscreteScalarField, DiscreteFieldSurface, Simulation, PerlinNoiseOperator,
-    Vec3, DiamondSquareOperator, ColorMappersFactory, RadioButton, SurfaceTypes, SurfaceVisualization
+    DiscreteScalarField,
+    DiscreteFieldSurface,
+    Simulation,
+    PerlinNoiseOperator,
+    Vec3,
+    DiamondSquareOperator,
+    ColorMappersFactory,
+    RadioButton,
+    SurfaceVisualization,
+    SurfaceLayer,
+    SurfaceResolution,
+    RadioGroup
 } from "../../../src/index.js";
 
 class Landscape {
@@ -33,12 +43,10 @@ class Landscape {
 }
 
 const landscape = new Landscape();
-const surfaceView = SurfaceVisualization
-    .ofType(SurfaceTypes.SURFACE)
-    .with({
-        colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.Terrain),
-        contours: false
-    });
+const surfaceView = new SurfaceVisualization(new SurfaceLayer({
+    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.Terrain),
+    resolution: new SurfaceResolution(128, 128)
+}));
 surfaceView.position.set(-128, 0, -128);
 
 const simulation = Simulation
@@ -49,16 +57,18 @@ const simulation = Simulation
     })
     .synchronize(landscape.surface.onceWith(surfaceView))
     .append(surfaceView.controls())
-    .append(new RadioButton("Perlin noise: ")
-        .withValue("perlin")
-        .on(landscape)
-        .withProperty("noiseType")
-        .addEventListener("click", () => simulation.synchronize(landscape.surface.onceWith(surfaceView)))
-        .togetherWith(new RadioButton("Diamond-square: ")
+    .append(new RadioGroup(
+        new RadioButton("Perlin noise: ")
+            .withValue("perlin")
+            .on(landscape)
+            .withProperty("noiseType")
+            .addEventListener("change", () =>
+                simulation.synchronize(landscape.surface.onceWith(surfaceView))),
+        new RadioButton("Diamond-square: ")
             .withValue("diamondSquare")
             .checked(true)
             .on(landscape)
             .withProperty("noiseType")
-            .addEventListener("click", () => simulation.synchronize(landscape.surface.onceWith(surfaceView))))
-    )
-    .start();
+            .addEventListener("change", () =>
+                simulation.synchronize(landscape.surface.onceWith(surfaceView))))
+    );

@@ -1,5 +1,6 @@
 import {
-    Domain, Interval, MultivariateFunctionSurface, Simulation, Button, SurfaceVisualization, SurfaceTypes
+    Domain, MultivariateFunctionSurface, Simulation, Button, SurfaceVisualization, HeightLayer,
+    FixedIntervalNormalizer, Interval, ContoursLayer, GlyphLayer, SurfaceLayer, Checkbox, RadioButton, RadioGroup
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -26,12 +27,33 @@ class Membrane extends MultivariateFunctionSurface {
     set normalModeY(normalModeY) { this._normalModeY = normalModeY; }
 }
 
+class MembraneNormalizer extends FixedIntervalNormalizer {
+    update(amplitude) {
+        this._interval.from = -amplitude;
+        this._interval.to = amplitude;
+    }
+}
+
 const membrane = new Membrane();
-const surfaceView = SurfaceVisualization
-    .ofType(SurfaceTypes.SURFACE_CONTOURS)
-    .with({
-        normalizer: new Interval(-membrane.amplitude, membrane.amplitude)
-    });
+const membraneNormalizer = new MembraneNormalizer(
+    new Interval(-membrane.amplitude, membrane.amplitude)
+);
+
+const surfaceLayer = new SurfaceLayer({
+    colorLayer: new HeightLayer(),
+    normalizer: membraneNormalizer
+});
+const glyphLayer = new GlyphLayer({
+    glyphType: GlyphLayer.GlyphTypes.BOXES,
+    colorLayer: new HeightLayer(),
+    normalizer: membraneNormalizer
+});
+const contours = new ContoursLayer({
+    colorLayer: new HeightLayer(),
+    normalizer: membraneNormalizer
+});
+
+const surfaceView = new SurfaceVisualization(surfaceLayer).addOverlayLayer(contours);
 
 Simulation
     .with({
@@ -39,12 +61,14 @@ Simulation
     })
     .synchronize(membrane.alwaysWith(surfaceView))
     .incrementsTimeBy(0.016)
-    .onStep((clock, _) => membrane.time = clock.simulatedTime)
+    .onStep((clock, _) => {
+        membraneNormalizer.update(membrane.amplitude);
+        membrane.time = clock.simulatedTime;
+    })
     .frameSceneOn(surfaceView, {
         padding: 0.7,
         translationY: -1.25
     })
-    .append(surfaceView.controls())
     .append(new Button("Mode-x: ").on(membrane).withProperty("normalModeX").withText(" 1 ")
         .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 2 `)
             .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 3 `)
@@ -56,5 +80,27 @@ Simulation
             .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 3 `)
                 .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 4 `)
                     .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 5 `)))))
+    )
+    .append(surfaceView.controls())
+    .append(
+        new RadioGroup(
+            new RadioButton("Smooth")
+                .addEventListener("change", () => surfaceView.meshLayer = surfaceLayer),
+
+            new RadioButton("Glyphs")
+                .addEventListener("change", () => surfaceView.meshLayer = glyphLayer),
+
+            new RadioButton("None")
+                .addEventListener("change", () => surfaceView.meshLayer = null)
+        ).checked(0)
+    )
+    .append(glyphLayer.controls())
+    .append(new Checkbox("Contours ")
+        .checked(true)
+        .on(contours)
+        .withProperty("visible")
+        .togetherWith(new Checkbox("Wireframe ")
+            .on(surfaceLayer)
+            .withProperty("wireframe"))
     )
     .start();

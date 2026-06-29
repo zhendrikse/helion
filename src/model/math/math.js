@@ -333,31 +333,5 @@ export class Complex {
     // }
 }
 
-export class AdaptiveSymmetricNormalizer {
-    constructor({ smoothing = 0.05 } = {}) {
-        this._smoothing = smoothing;
-        this.reset();
-    }
-
-    observe(v) {
-        if (!Number.isFinite(v)) return;
-
-        const a = Math.abs(v);
-        this._maxAbs = Math.max(this._maxAbs * (1 - this._smoothing) + a * this._smoothing, a);
-    }
-
-    normalize(v) {
-        if (!Number.isFinite(v)) return 0.5;
-
-        const r = Math.max(this._maxAbs, 1e-9);
-        const clamped = Math.max(-r, Math.min(r, v));
-
-        return 0.5 + 0.5 * (clamped / r);
-    }
-
-    reset() {
-        this._maxAbs = 1;
-    }
-}
 
 

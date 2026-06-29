@@ -107,9 +107,10 @@ export class CompoundControl extends HtmlControl {
         const row = this._createButtonRow();
         this._buttonRows.push(row);
 
-        const addRecursive = (c) => {
-            this._appendToButtonRow(c, row);
-            if (c.hasChildControl) addRecursive(c._childControl);
+        const addRecursive = control => {
+            this._appendToButtonRow(control, row);
+            if (control.hasChildControl)
+                addRecursive(control._childControl);
         };
 
         addRecursive(control);
@@ -235,17 +236,42 @@ export class Checkbox extends HtmlControl {
     }
 }
 
+export class RadioGroup extends CompoundControl {
+    constructor(...buttons) {
+        super();
+        this._buttons = [];
+
+        const groupName = generateUUID();
+        for (const button of buttons) {
+            if (!(button instanceof RadioButton))
+                throw new Error("RadioGroup can only contain RadioButtons.");
+
+            button._inputControl.name = groupName;
+            for (let i = 0; i < buttons.length - 1; i++)
+                buttons[i].togetherWith(buttons[i + 1]);
+
+            this.add(buttons[0]);
+            this._buttons.push(button);
+        }
+    }
+
+    checked(index) {
+        if (index >= 0 && index < this._controls.length)
+            this._buttons[index].checked(true);
+
+        return this;
+    }
+}
+
 export class RadioButton extends HtmlControl {
     constructor(label) {
         super(label);
         this._targetObject = null;
-        this._nameAttributeValue = generateUUID();
 
         this._inputControl = document.createElement("input");
         this._inputControl.type = "radio";
         this._inputControl.id = this._labelId;
         this._inputControl.style.marginRight = "10px";
-        this._inputControl.name = this._nameAttributeValue;
     }
 
     checked(value) {
@@ -261,11 +287,6 @@ export class RadioButton extends HtmlControl {
     withValue(value) {
         this._inputControl.value = value;
         return this;
-    }
-
-    togetherWith(otherControl) {
-        otherControl._inputControl.name = this._nameAttributeValue;
-        return super.togetherWith(otherControl);
     }
 }
 

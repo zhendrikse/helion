@@ -1,6 +1,7 @@
 import {
     ColorMappersFactory, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
-    SurfaceResolution, WaveEquationSolver, GaussianImpulse, SurfaceVisualization, SurfaceTypes
+    SurfaceResolution, WaveEquationSolver, GaussianImpulse, SurfaceVisualization, SurfaceLayer, HeightLayer,
+    FixedIntervalNormalizer, GlyphLayer, RadioGroup, RadioButton, Checkbox
 } from "../../../src/index.js";
 
 export class WaveEquation {
@@ -28,14 +29,26 @@ const field = new DiscreteScalarField({ nx: 256, ny: 256 });
 const solver = new WaveEquationSolver(new WaveEquation({ velocity: 5 }));
 const surface = new DiscreteFieldSurface(field);
 
-const water = SurfaceVisualization
-    .ofType(SurfaceTypes.SURFACE)
-    .with({
-        resolution: new SurfaceResolution(256, 256),
-        normalizer: new Interval(-.3, 2),
-        colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative)
-    });
-water.position.set(-128, 0, -128);
+
+const resolution = 256;
+const surfaceLayer = new SurfaceLayer({
+    resolution: new SurfaceResolution(resolution, resolution),
+    colorLayer: new HeightLayer(),
+    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
+    normalizer: new FixedIntervalNormalizer(new Interval(-.3, 2)),
+    opacity: 0.8
+});
+const glyphLayer = new GlyphLayer({
+    resolution: new SurfaceResolution(resolution, resolution),
+    glyphType: GlyphLayer.GlyphTypes.BOXES,
+    colorLayer: new HeightLayer(),
+    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
+    normalizer: new FixedIntervalNormalizer(new Interval(-.3, 2)),
+    opacity: 0.8
+});
+
+const waterSurface = new SurfaceVisualization(glyphLayer);
+waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
 
 Simulation
     .with({
@@ -43,7 +56,7 @@ Simulation
         cameraPosition: new Vec3(4, 2, 4.2).multiplyScalar(75),
         fieldOfView: 19
     })
-    .synchronize(surface.alwaysWith(water))
+    .synchronize(surface.alwaysWith(waterSurface))
     .incrementsTimeBy(0.01)
     .onTimeScale(10)
     .onStep((_, dt) => {
@@ -54,9 +67,23 @@ Simulation
         field.apply(new GaussianImpulse( {
             centerX: Math.floor(Math.random() * 256),
             centerY: Math.floor(Math.random() * 256),
-            amplitude: .75,
+            amplitude: .25,
             sigma: 1
         }));
     })
-    .append(water.controls())
+    .append(waterSurface.controls())
+    .append(
+        new RadioGroup(
+            new RadioButton("Smooth")
+                .addEventListener("change", () => waterSurface.meshLayer = surfaceLayer),
+
+            new RadioButton("Glyphs")
+                .addEventListener("change", () => waterSurface.meshLayer = glyphLayer),
+        ).checked(1)
+    )
+    .append(glyphLayer.controls())
+    .append(new Checkbox("Wireframe ")
+        .on(surfaceLayer)
+        .withProperty("wireframe")
+    )
     .start();

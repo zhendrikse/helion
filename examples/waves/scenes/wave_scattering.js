@@ -1,19 +1,28 @@
 import {
-    ColorMappersFactory, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
-    SurfaceResolution, WaveEquationSolver, PotentialField3DRaster, SurfaceTypes,
-    SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization
+    DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
+    WaveEquationSolver, PotentialField3DRaster, FixedIntervalNormalizer,
+    SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization, HeightLayer,
+    SurfaceLayer, GlyphLayer, SurfaceResolution, ColorMappersFactory, RadioGroup, RadioButton, Checkbox
 } from "../../../src/index.js";
 
 const resolution = 256;
+const surfaceLayer = new SurfaceLayer({
+    resolution: new SurfaceResolution(resolution, resolution),
+    colorLayer: new HeightLayer(),
+    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
+    normalizer: new FixedIntervalNormalizer(new Interval(-1, 1)),
+    opacity: 0.4
+});
+const glyphLayer = new GlyphLayer({
+    resolution: new SurfaceResolution(resolution, resolution),
+    glyphType: GlyphLayer.GlyphTypes.BOXES,
+    colorLayer: new HeightLayer(),
+    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
+    normalizer: new FixedIntervalNormalizer(new Interval(-1, 1)),
+    opacity: 0.4
+});
 
-const waterSurface = SurfaceVisualization
-    .ofType(SurfaceTypes.SURFACE)
-    .with({
-        resolution: new SurfaceResolution(resolution, resolution),
-        normalizer: new Interval(-1, 1),
-        colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
-        contours: false,
-    });
+const waterSurface = new SurfaceVisualization(surfaceLayer);
 waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
 
 const field = new DiscreteScalarField({ nx: resolution, ny: resolution });
@@ -63,7 +72,21 @@ Simulation
     .onTimeScale(3)
     .onStep((_, dt) => field.evolve(solver, dt))
     .onReset(() => reset(configuration))
-    .append(waterSurface.controls())
     .append(waveEquation.controls())
     .append(sineImpuls.controls())
-    .append(configuration.controls());
+    .append(configuration.controls())
+    .append(waterSurface.controls())
+    .append(
+        new RadioGroup(
+            new RadioButton("Smooth")
+                .addEventListener("change", () => waterSurface.meshLayer = surfaceLayer),
+
+            new RadioButton("Glyphs")
+                .addEventListener("change", () => waterSurface.meshLayer = glyphLayer),
+        ).checked(0)
+    )
+    .append(glyphLayer.controls())
+    .append(new Checkbox("Wireframe ")
+            .on(surfaceLayer)
+            .withProperty("wireframe")
+    );
