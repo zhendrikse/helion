@@ -2,64 +2,13 @@ import { PerspectiveCamera, WebGLRenderer, ACESFilmicToneMapping, SRGBColorSpace
     ShaderMaterial, Vector2, Vector3, Mesh, Scene }  from "three";
 import vertexShader from "./black_hole_vertex_shader.glsl?raw";
 import fragmentShader from "./black_hole_fragment_shader.glsl?raw";
-import {Renderable3D, Simulation} from "../../../src/index.js";
+import {Checkbox, Renderable3D, Simulation} from "../../../src/index.js";
 import {MathPhysicsModelBehavior} from "../../../src/core/helion.js";
-
-const containerDiv = document.getElementById("blackHoleRayTraceContainer");
-
-
-
-const container = containerDiv;
-container.classList.add('helionContainer');
-container.style.position = "relative";
-container.style.width = "100%";
-container.style.margin = "auto";
-if (container.style.aspectRatio === "")
-    container.style.aspectRatio  = "1/1";
-
-const canvasWrapperDiv = document.createElement("div");
-canvasWrapperDiv.classList.add("helionCanvasWrapper");
-canvasWrapperDiv.style.position = "relative";
-canvasWrapperDiv.style.display = "block";
-canvasWrapperDiv.style.backgroundColor = "transparent";
-canvasWrapperDiv.style.width = "100%";
-canvasWrapperDiv.style.height = "100%";
-container.appendChild(canvasWrapperDiv);
-
-const canvas = document.createElement('canvas');
-canvas.classList.add("helionCanvas");
-canvas.style.display = "block";
-canvas.style.backgroundColor = "transparent";
-canvas.style.width = "100%";
-canvas.style.height = "100%";
-canvasWrapperDiv.appendChild(canvas);
-
-
-
-
-
-const scene = new Scene();
-
-const width = canvas.clientWidth;
-const height = canvas.clientHeight;
-const aspectRatio = width / height;
-
-const camera = new PerspectiveCamera(75, aspectRatio, 0.1, 1000);
-camera.position.z = .8;
-
-const renderer = new WebGLRenderer({antialias: true, canvas: canvas, alpha: false });
-// renderer.toneMapping = ACESFilmicToneMapping;
-// renderer.toneMappingExposure = 2.2;
-// renderer.outputColorSpace = SRGBColorSpace;
-
-// --- throttle pixel ratio ---
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-renderer.setSize(width, height);
 
 export class BlackHoleModel extends MathPhysicsModelBehavior {
     constructor({
-        width = canvas.clientWidth,
-        height = canvas.clientHeight,
+        width = 160,
+        height = 90,
         cameraPosition = new Vector3(0, 0, -8),
         blackHolePosition = new Vector3(0, 0, 0),
         rotation = new Vector3(MathUtils.degToRad(-4), 0, MathUtils.degToRad(-15))
@@ -76,7 +25,6 @@ export class BlackHoleModel extends MathPhysicsModelBehavior {
 
     get uniforms() { return this._uniforms; }
 }
-
 
 export class ShaderView extends Renderable3D {
     constructor({
@@ -102,38 +50,59 @@ export class ShaderView extends Renderable3D {
     }
 }
 
-const view = new ShaderView({aspectRatio: aspectRatio});
-const blackHoleModel = new BlackHoleModel();
-view.initialize(blackHoleModel);
-scene.add(view);
+const simulation = Simulation
+    .with({
+        htmlDivId: "blackHoleRayTraceContainer",
+        cameraPosition: new Vector3(0, 0, .8),
+        fieldOfView: 75
+    });
 
-// FPS throttling ---
-let lastTime = 0;
-const targetFPS = 15; // mobielvriendelijk
-const interval = 1000 / targetFPS;
-let animate = true;
-
-renderer.setAnimationLoop((time) => {
-    if (!animate) return;
-    if (time - lastTime < interval) return;
-
-    lastTime = time;
-    blackHoleModel.uniforms.uTime.value= time * 0.001;
-    renderer.render(scene, camera);
+const width = simulation._viewport.width;
+const height = simulation._viewport.height;
+const aspectRatio = width / height;
+// const scene = new Scene();
+//
+//
+// const camera = new PerspectiveCamera(75, aspectRatio, 0.1, 1000);
+// camera.position.z = .8;
+//
+//
+// const renderer = simulation._renderer; //new WebGLRenderer({antialias: true, canvas: simulation._viewport.canvas, alpha: false });
+// console.log(renderer);
+// // renderer.toneMapping = ACESFilmicToneMapping;
+// // renderer.toneMappingExposure = 2.2;
+// // renderer.outputColorSpace = SRGBColorSpace;
+//
+// // --- throttle pixel ratio ---
+// renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+// renderer.setSize(width, height);
+//
+const view = new ShaderView({ aspectRatio });
+const blackHoleModel = new BlackHoleModel({
+    width: width,
+    height: height
 });
 
+let animate = true;
+simulation
+    .synchronize(blackHoleModel.alwaysWith(view))
+    .onFrame(time => {
+        if (!animate) return;
+        blackHoleModel.uniforms.uTime.value= time * 0.001;
+    })
+    .append(new Checkbox("Animate ")
+        .checked(true)
+        .addEventListener("change", () => animate = !animate))
+    .start();
 
-// const simulation = Simulation
-//     .with({
-//         htmlDivId: "blackHoleRayTraceContainer",
-//         cameraPosition: new Vector3(0, 0, .8),
-//         fieldOfView: 75
-//     });
-//     .synchronize(blackHoleModel.alwaysWith(view))
-//     .onClockTick((time, simulatedTime) => {
-//         if (!animate) return;
-//         if (time - lastTime < interval) return;
+// const downloadButton = document.createElement("button");
+// downloadButton.textContent = "Download image";
+// document.body.appendChild(downloadButton);
 //
-//         lastTime = time;
-//         blackHoleModel.uniforms.uTime.value= time * 0.001;
-//     });
+// downloadButton.addEventListener("click", () => {
+//     renderer.render(scene, camera); // laatste frame renderen
+//     const link = document.createElement("a");
+//     link.download = "blackhole.png";
+//     link.href = renderer.domElement.toDataURL("image/png");
+//     link.click();
+// });
