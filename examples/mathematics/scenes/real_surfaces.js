@@ -1,6 +1,6 @@
 import {
     Simulation, DropdownMenu, Checkbox, Interval, MultivariateFunctionSurface, Domain, Registry,
-    SurfaceVisualization, HeightLayer, FixedIntervalNormalizer, SurfaceLayer, SurfaceResolution, ContoursLayer
+    SurfaceVisualization, FixedIntervalNormalizer, SurfaceResolution, ContoursLayer
 } from "../../../src/index.js";
 
 const pi = Math.PI;
@@ -94,11 +94,11 @@ const normalizer = new FixedIntervalNormalizer(new Interval(0, surfaces["Ripple"
 const contoursLayer = new ContoursLayer({
     normalizer: normalizer
 });
-const surfaceLayer = new SurfaceLayer({
+const surfaceView = new SurfaceVisualization({
     normalizer: normalizer,
     resolution: new SurfaceResolution(200, 200)
-});
-const surfaceView = new SurfaceVisualization(surfaceLayer).addOverlayLayer(contoursLayer);
+}
+).addOverlayLayer(contoursLayer);
 
 const simulation = Simulation
     .with({

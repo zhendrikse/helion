@@ -18,7 +18,7 @@ import {ColorMappersFactory} from "../../colormappers.js";
 import {Registry} from "../../../core/helion.js";
 import {DropdownMenu} from "../../../core/controls.js";
 
-class Layer extends Renderable3D {
+export class Layer extends Renderable3D {
     static UP = new Vector3(0, 1, 0);
     static material = () => new MeshStandardMaterial({
         side: DoubleSide,

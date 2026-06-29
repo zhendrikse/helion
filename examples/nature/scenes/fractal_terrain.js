@@ -1,16 +1,6 @@
 import {
-    DiscreteScalarField,
-    DiscreteFieldSurface,
-    Simulation,
-    PerlinNoiseOperator,
-    Vec3,
-    DiamondSquareOperator,
-    ColorMappersFactory,
-    RadioButton,
-    SurfaceVisualization,
-    SurfaceLayer,
-    SurfaceResolution,
-    RadioGroup
+    DiscreteScalarField, DiscreteFieldSurface, Simulation, PerlinNoiseOperator, Vec3, DiamondSquareOperator,
+    ColorMappersFactory, RadioButton, SurfaceVisualization, SurfaceResolution, RadioGroup
 } from "../../../src/index.js";
 
 class Landscape {
@@ -43,11 +33,12 @@ class Landscape {
 }
 
 const landscape = new Landscape();
-const surfaceView = new SurfaceVisualization(new SurfaceLayer({
+const surfaceView = new SurfaceVisualization({
     colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.Terrain),
     resolution: new SurfaceResolution(128, 128)
-}));
+});
 surfaceView.position.set(-128, 0, -128);
+surfaceView.displaySurfaceLayer();
 
 const simulation = Simulation
     .with({

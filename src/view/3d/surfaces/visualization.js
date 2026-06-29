@@ -2,7 +2,8 @@ import {Renderable3D} from "../../renderer.js";
 import {Box3} from "three";
 import {CompoundControl, DropdownMenu, Slider} from "../../../core/controls.js";
 import {ColorMappersFactory} from "../../colormappers.js";
-import {Range} from "../../../model/math/math.js";
+import {Interval, Range} from "../../../model/math/math.js";
+import {GlyphLayer, Layer, SurfaceLayer} from "./layers.js";
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) {
@@ -79,19 +80,62 @@ export class GaussianCurvatureLayer extends ColorLayer {
 }
 
 export class SurfaceVisualization extends Renderable3D {
-    // meshLayer can be null, e.g. if we only want to show contours and nothing else
-    constructor(meshLayer = null) {
+    constructor({
+        resolution = new SurfaceResolution(100, 100),
+        glyphType = GlyphLayer.GlyphTypes.BOXES,
+        glyphScale = 0.8,
+        colorLayer = new HeightLayer(),
+        colorMapper = ColorMappersFactory.create(ColorMappersFactory.Type.Gradient),
+        normalizer = new AdaptiveSymmetricNormalizer(),
+        opacity = 1
+    } = {}) {
         super();
-        this.meshLayer = meshLayer;
+
+        this._options = {
+            material: Layer.material(),
+            resolution: resolution,
+            glyphType: glyphType,
+            glyphScale: glyphScale,
+            colorLayer: colorLayer,
+            colorMapper: colorMapper,
+            normalizer: normalizer,
+            opacity: opacity
+        }
+
+        this._surfaceLayer = new SurfaceLayer({ ...this._options });
+        this._glyphLayer = new GlyphLayer({ ...this._options });
+
         this._overlayLayers = [];
         this._model = null;
+        this._meshLayer = null; // meshLayer can be null, e.g. when we want to show contours only
+        this.displayNone();
+    }
+
+    get glyphLayer() {
+        return this._glyphLayer;
+    }
+
+    get surfaceLayer() {
+        return this._surfaceLayer;
     }
 
     get meshLayer() {
         return this._meshLayer;
     }
 
-    set meshLayer(layer) {
+    displaySurfaceLayer() {
+        this._display(this._surfaceLayer);
+    }
+
+    displayGlyphLayer() {
+        this._display(this._glyphLayer);
+    }
+
+    displayNone() {
+        this._display(null);
+    }
+
+    _display(layer) {
         if (this._meshLayer)
             this.remove(this._meshLayer);
 
@@ -134,16 +178,16 @@ export class SurfaceVisualization extends Renderable3D {
             .add(new DropdownMenu()
                 .for(new ColorMappersFactory())
                 .addEventListener("change", event => {
-                    if (this._meshLayer)
-                        this._meshLayer.colorMapper = ColorMappersFactory.create(event.target.value);
+                    this._surfaceLayer.colorMapper = ColorMappersFactory.create(event.target.value);
+                    this._glyphLayer.colorMapper = ColorMappersFactory.create(event.target.value);
                 })
             )
             .add(new Slider("Opacity ")
                 .withRange(new Range(0, 1, 0.01))
-                .withValue(this._meshLayer ? this._meshLayer.opacity : 1)
+                .withValue(this._options.opacity)
                 .addEventListener("input", event => {
-                    if (this._meshLayer)
-                        this._meshLayer.opacity = Number(event.target.value);
+                    this._surfaceLayer.opacity = Number(event.target.value);
+                    this._glyphLayer.opacity = Number(event.target.value);
                 })
             );
     }

@@ -1,7 +1,7 @@
 import {
     ColorMappersFactory, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
-    SurfaceResolution, WaveEquationSolver, GaussianImpulse, SurfaceVisualization, SurfaceLayer, HeightLayer,
-    FixedIntervalNormalizer, GlyphLayer, RadioGroup, RadioButton, Checkbox
+    SurfaceResolution, WaveEquationSolver, GaussianImpulse, SurfaceVisualization, HeightLayer,
+    FixedIntervalNormalizer, RadioGroup, RadioButton, Checkbox
 } from "../../../src/index.js";
 
 export class WaveEquation {
@@ -31,23 +31,13 @@ const surface = new DiscreteFieldSurface(field);
 
 
 const resolution = 256;
-const surfaceLayer = new SurfaceLayer({
+const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(resolution, resolution),
     colorLayer: new HeightLayer(),
     colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
     normalizer: new FixedIntervalNormalizer(new Interval(-.3, 2)),
     opacity: 0.8
 });
-const glyphLayer = new GlyphLayer({
-    resolution: new SurfaceResolution(resolution, resolution),
-    glyphType: GlyphLayer.GlyphTypes.BOXES,
-    colorLayer: new HeightLayer(),
-    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
-    normalizer: new FixedIntervalNormalizer(new Interval(-.3, 2)),
-    opacity: 0.8
-});
-
-const waterSurface = new SurfaceVisualization(glyphLayer);
 waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
 
 Simulation
@@ -75,15 +65,15 @@ Simulation
     .append(
         new RadioGroup(
             new RadioButton("Smooth")
-                .addEventListener("change", () => waterSurface.meshLayer = surfaceLayer),
+                .addEventListener("change", () => waterSurface.displaySurfaceLayer()),
 
             new RadioButton("Glyphs")
-                .addEventListener("change", () => waterSurface.meshLayer = glyphLayer),
+                .addEventListener("change", () => waterSurface.displayGlyphLayer()),
         ).checked(1)
     )
-    .append(glyphLayer.ui())
+    .append(waterSurface.glyphLayer.ui())
     .append(new Checkbox("Wireframe ")
-        .on(surfaceLayer)
+        .on(waterSurface.surfaceLayer)
         .withProperty("wireframe")
     )
     .start();

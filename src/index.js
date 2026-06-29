@@ -40,7 +40,7 @@ export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 export { Renderable3D } from "./view/renderer.js";
 export { ComplexScalarFieldSurfaceRaster, PotentialField3DRaster } from "./view/3d/views.js"
-export { GlyphLayer, SurfaceLayer, ContoursLayer } from "./view/3d/surfaces/layers.js";
+export { ContoursLayer } from "./view/3d/surfaces/layers.js";
 
 export {
     SurfaceVisualization, HeightLayer, FixedIntervalNormalizer, SurfaceResolution,

@@ -1,6 +1,6 @@
 import {
     Domain, MultivariateFunctionSurface, Simulation, Button, SurfaceVisualization, HeightLayer,
-    FixedIntervalNormalizer, Interval, ContoursLayer, GlyphLayer, SurfaceLayer, Checkbox, RadioButton, RadioGroup
+    FixedIntervalNormalizer, Interval, ContoursLayer, Checkbox, RadioButton, RadioGroup
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -39,12 +39,7 @@ const membraneNormalizer = new MembraneNormalizer(
     new Interval(-membrane.amplitude, membrane.amplitude)
 );
 
-const surfaceLayer = new SurfaceLayer({
-    colorLayer: new HeightLayer(),
-    normalizer: membraneNormalizer
-});
-const glyphLayer = new GlyphLayer({
-    glyphType: GlyphLayer.GlyphTypes.BOXES,
+const surfaceView = new SurfaceVisualization({
     colorLayer: new HeightLayer(),
     normalizer: membraneNormalizer
 });
@@ -52,8 +47,8 @@ const contours = new ContoursLayer({
     colorLayer: new HeightLayer(),
     normalizer: membraneNormalizer
 });
-
-const surfaceView = new SurfaceVisualization(surfaceLayer).addOverlayLayer(contours);
+surfaceView.addOverlayLayer(contours);
+surfaceView.displaySurfaceLayer();
 
 Simulation
     .with({
@@ -85,22 +80,22 @@ Simulation
     .append(
         new RadioGroup(
             new RadioButton("Smooth")
-                .addEventListener("change", () => surfaceView.meshLayer = surfaceLayer),
+                .addEventListener("change", () => surfaceView.displaySurfaceLayer()),
 
             new RadioButton("Glyphs")
-                .addEventListener("change", () => surfaceView.meshLayer = glyphLayer),
+                .addEventListener("change", () => surfaceView.displayGlyphLayer()),
 
             new RadioButton("None")
-                .addEventListener("change", () => surfaceView.meshLayer = null)
+                .addEventListener("change", () => surfaceView.displayNone())
         ).checked(0)
     )
-    .append(glyphLayer.ui())
+    .append(surfaceView.glyphLayer.ui())
     .append(new Checkbox("Contours ")
         .checked(true)
         .on(contours)
         .withProperty("visible")
         .togetherWith(new Checkbox("Wireframe ")
-            .on(surfaceLayer)
+            .on(surfaceView.surfaceLayer)
             .withProperty("wireframe"))
     )
     .start();

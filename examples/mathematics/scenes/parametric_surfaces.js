@@ -1,6 +1,6 @@
 import {
-    Simulation, ParametricSurface, Domain, DropdownMenu, Registry, SurfaceVisualization, HeightLayer,
-    FixedIntervalNormalizer, Interval, GaussianCurvatureLayer, ContoursLayer, SurfaceLayer, SurfaceResolution
+    Simulation, ParametricSurface, Domain, DropdownMenu, Registry, SurfaceVisualization,
+    GaussianCurvatureLayer, ContoursLayer, SurfaceResolution
 } from "../../../src/index.js";
 import {DoubleSide, MeshStandardMaterial} from "three";
 
@@ -65,7 +65,7 @@ const surfacesRegistry = new Registry({
 const contoursLayer = new ContoursLayer({
     resolution: new SurfaceResolution(50, 50)
 });
-const surfaceLayer = new SurfaceLayer({
+const surfaceView = new SurfaceVisualization({
     material: new MeshStandardMaterial({
         side: DoubleSide,
         roughness: 0.45,
@@ -75,7 +75,8 @@ const surfaceLayer = new SurfaceLayer({
     }),
     resolution: new SurfaceResolution(200, 200)
 });
-const surfaceView = new SurfaceVisualization(surfaceLayer).addOverlayLayer(contoursLayer);
+surfaceView.displaySurfaceLayer();
+surfaceView.addOverlayLayer(contoursLayer);
 
 const simulation = Simulation
     .with({
