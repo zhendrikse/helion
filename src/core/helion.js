@@ -4,7 +4,7 @@ import { Vector3} from "three";
 import { Axes} from "../view/3d/composite/backgrounds.js";
 import { generateUUID, Vec3} from "../model/math/math.js";
 import { UPlotGraph} from "./uplot.js";
-import { Button } from "./controls.js";
+import {AxesUI, Button} from "./controls.js";
 
 export class Registry {
     constructor({
@@ -309,6 +309,7 @@ export class Simulation {
         this._stepFunction = null;      // Called 1/dt times per second if CPU is capable
         this._running = false;
         this._timeScale = 1;
+        this._axesUI = null;
 
         this._clock = new SimulationClock();
 
@@ -390,14 +391,19 @@ export class Simulation {
         yzPlane = true,
         axisLabels = ["X", "Y", "Z"],
         positiveXZ = false,
-        bottomAlign = true,
-        settingControls = true
+        bottomAlign = true
     } = {}) {
         const axes = this._renderer.provideAxesAround(anObject, {
             layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ, bottomAlign
         });
-        if (settingControls)
-            this.append(axes.ui());
+        
+        if (this._axesUI)
+            this._axesUI.axes = axes;
+        else {
+            this._axesUI = new AxesUI(axes);
+            this.append(this._axesUI.ui())
+        }
+
         return this;
     }
 

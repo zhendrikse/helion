@@ -1,4 +1,6 @@
 import { generateUUID } from "../model/math/math.js";
+import {AxesHelper, DoubleSide, GridHelper, Group, Mesh, MeshPhongMaterial, PlaneGeometry, Vector3} from "three";
+import {CSS2DObject} from "three/addons/renderers/CSS2DRenderer.js";
 
 class HtmlControl {
     constructor(labelText) {
@@ -308,5 +310,49 @@ export class Button extends HtmlControl {
     withProperty(name) {
         this.addEventListener("click", event => this._targetObject[name] = event.target.value);
         return this;
+    }
+}
+
+export class AxesUI {
+    constructor(axes) {
+        this._axes = axes;
+    }
+
+    set axes(axes) { this._axes = axes; }
+
+    ui() {
+        return new CompoundControl()
+            .add(new Checkbox("Frame ")
+                .checked(true)
+                .addEventListener("click", event =>
+                    this._axes.withSettings({ frame: event.target.checked }))
+                .togetherWith(new Checkbox("Annotations ")
+                    .checked(true)
+                    .addEventListener("click", event =>
+                        this._axes.withSettings({ annotations: event.target.checked }))
+                    .togetherWith(new Checkbox("Tick labels ")
+                        .checked(true)
+                        .addEventListener("click", event =>
+                            this._axes.withSettings({ tickLabels: event.target.checked }))
+                    )
+                )
+            )
+            .add(new Checkbox("XY-plane")
+                .checked(true)
+                .addEventListener("click", event =>
+                    this._axes.withSettings({ xyPlane: event.target.checked }))
+                .togetherWith(
+                    new Checkbox("XZ-plane")
+                        .checked(true)
+                        .addEventListener("click", event =>
+                            this._axes.withSettings({ xzPlane: event.target.checked }))
+                        .togetherWith(
+                            new Checkbox("YZ-plane")
+                                .checked(true)
+                                .addEventListener("click", event =>
+                                    this._axes.withSettings({ yzPlane: event.target.checked }))
+                        )
+                )
+            )
     }
 }

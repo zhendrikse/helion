@@ -4,7 +4,6 @@ import {
     DoubleSide
 } from "three";
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer";
-import {Checkbox, CompoundControl} from "../../../core/controls.js";
 
 export class SkyDome extends Group {
     constructor({
@@ -180,12 +179,12 @@ export class Axes extends Group {
     }
 
     withSettings({
-         frame = true,
-         annotations = true,
-         xyPlane = true,
-         xzPlane = true,
-         yzPlane = true,
-         tickLabels = true
+         frame = this._layout.frame.visible,
+         annotations = this._annotations.visible,
+         xyPlane = this._layout.xy.visible,
+         xzPlane = this._layout.xz.visible,
+         yzPlane = this._layout.yz.visible,
+         tickLabels = this._annotations.tickLabels[0].visible
     } = {}) {
         this._layout.frame.visible = frame;
         this._annotations.visible = annotations;
@@ -194,36 +193,6 @@ export class Axes extends Group {
         this._layout.yz.visible = yzPlane;
         this._annotations.tickLabels.forEach(label => label.visible = tickLabels);
         return this;
-    }
-
-    ui() {
-        return new CompoundControl()
-            .add(new Checkbox("Frame ")
-                .checked(true)
-                .addEventListener("click", event => this._layout.frame.visible = event.target.checked)
-                .togetherWith(new Checkbox("Annotations ")
-                    .checked(true)
-                    .addEventListener("click", event => this._annotations.visible = event.target.checked)
-                    .togetherWith(new Checkbox("Tick labels ")
-                        .checked(true)
-                        .addEventListener("click", event => this._annotations.tickLabels.forEach(label => label.visible = event.target.checked))
-                    )
-                )
-            )
-            .add(new Checkbox("XY-plane")
-                .checked(true)
-                .addEventListener("click", event => this._layout.xy.visible = event.target.checked)
-                .togetherWith(
-                    new Checkbox("XZ-plane")
-                        .checked(true)
-                        .addEventListener("click", event => this._layout.xz.visible = event.target.checked)
-                        .togetherWith(
-                            new Checkbox("YZ-plane")
-                                .checked(true)
-                                .addEventListener("click", event => this._layout.yz.visible = event.target.checked)
-                        )
-                )
-            )
     }
 
     withLayout(type, positiveXZ) {
