@@ -50,9 +50,9 @@ class GlowMaterial {
                 varying vec3 vNormalView;
 
                 void main(){
-                    vPosition = normalize( vec3(modelViewMatrix * vec4(position,1.)) );
+                    vPosition = normalize( vec3(modelViewMatrix * vec4(position, 1.)) );
                     vNormalView = normalize(normalMatrix * normal);
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.);
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
                 }
                 `,
 
@@ -63,7 +63,7 @@ class GlowMaterial {
 
                 void main(){
                     float rawIntensity = max( dot(vPosition, vNormalView), 0.0 );
-                    float intensity = pow(rawIntensity,4.0);
+                    float intensity = pow(rawIntensity, 4.0);
                     gl_FragColor = vec4(uColor, intensity);
                 }
                 `
@@ -71,11 +71,13 @@ class GlowMaterial {
     }
 }
 
-export class Sun extends Renderable3D {
+export class SunView extends Renderable3D {
     constructor({
-        color = new Color("#ffcc66")
+        color = new Color("#ffcc66"),
+        speed = 2
     } = {}) {
         super();
+        this._speed = speed * 0.001;
         this.uniforms = {
             uTime: { value: 0 },
             uColor: { value: color }
@@ -93,11 +95,11 @@ export class Sun extends Renderable3D {
     }
 
     canBindTo(model) {
-        return model.position && model.radius;
+        return model.position && model.radius && model.time !== undefined;
     }
 
-    synchronizeWith(body, time) {
-        this.uniforms.uTime.value = time * 0.002;
+    synchronizeWith(body) {
+        this.uniforms.uTime.value = body.time * this._speed;
         this.scale.setScalar(body.radius);
     }
 }

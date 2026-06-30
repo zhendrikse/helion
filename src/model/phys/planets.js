@@ -1,4 +1,17 @@
 import {RadialSymmetricBody} from "./bodies.js";
+import {Vec3} from "../math/math.js";
+
+export class Sun extends RadialSymmetricBody {
+    constructor({
+        position = new Vec3(0, 0, 0),
+        velocity = new Vec3(0, 0, 0),
+        mass = 1,
+        radius = 1
+    } = {}) {
+        super({ position, velocity , mass, radius });
+        this.time = 0;
+    }
+}
 
 export class Planet extends RadialSymmetricBody {
     constructor(planetData) {

@@ -9,9 +9,8 @@ export {
 } from "./model/math/math.js";
 
 export {
-    ParametricSurface, MultivariateFunctionSurface, Domain, Surface, DiscreteScalarField,
-    DiscreteComplexField, VectorField, DiscreteFieldSurface, ComplexSurface
-} from "./model/math/fields.js"
+    ParametricSurface, MultivariateFunctionSurface, Surface, DiscreteFieldSurface, ComplexSurface
+} from "./model/math/surfaces.js"
 
 export {
     LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator,
@@ -24,14 +23,15 @@ export {
     FieldEdgeIntensityPixelRaster
 } from "./view/2d/views.js";
 
+export { Domain, DiscreteScalarField, DiscreteComplexField, VectorField } from "./model/math/fields.js"
 export { BarrierWaveEquation } from "./model/math/equations.js";
 export { Shapes, ShapeConfiguration } from "./model/math/shapes.js";
 export { OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave } from "./model/phys/waves.js";
 export { PointCloud } from "./model/phys/clouds.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
-export { Sun } from "./view/3d/astro/sun.js";
+export { SunView } from "./view/3d/astro/sun.js";
 export { Saturn } from "./view/3d/astro/saturn.js";
-export { Planets } from "./model/phys/planets.js";
+export { Planets, Sun } from "./model/phys/planets.js";
 export { WaveEquationSolver, SchrodingerSolver } from "./model/math/numerics/solvers/solvers.js";
 export { DropdownMenu, Checkbox, Button, Slider, RadioButton, RadioGroup } from "./core/controls.js";
 export { Simulation, Registry } from "./core/helion.js";

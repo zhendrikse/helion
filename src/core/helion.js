@@ -341,13 +341,12 @@ export class Simulation {
         if (existingIndex >= 0) {
             const old = this._bindings[existingIndex];
 
-            // Reset de oude view voordat hij opnieuw wordt gebruikt
+            // Reset old view before it is being reused
             old.view.reset?.();
 
-            // Vervang de binding
+            // Replace existing binding
             this._bindings[existingIndex] = binding;
 
-            // Initialiseer de nieuwe binding
             binding.initialize();
         } else {
             this._renderer.add(binding.view);
@@ -396,7 +395,7 @@ export class Simulation {
         const axes = this._renderer.provideAxesAround(anObject, {
             layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ, bottomAlign
         });
-        
+
         if (this._axesUI)
             this._axesUI.axes = axes;
         else {

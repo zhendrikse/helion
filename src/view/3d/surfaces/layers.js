@@ -358,9 +358,7 @@ export class PrincipalDirectionsLayer extends Layer {
 
     initialize(model) {
         super.initialize(model);
-
-        this._uVectors = [];
-        this._vVectors = [];
+        this.disposeGeometry();
 
         for (let i = 0; i <= this._resolution.u; i++) {
             for (let j = 0; j <= this._resolution.v; j++) {
@@ -444,7 +442,7 @@ export class PrincipalDirectionsLayer extends Layer {
             }
     }
 
-    reset() {
+    disposeGeometry() {
         for (const v of this._uVectors) this.remove(v.line);
         for (const v of this._vVectors) this.remove(v.line);
 
@@ -502,7 +500,7 @@ export class ContoursLayer extends Layer {
         this._showContours = true;
     }
 
-    reset() {
+    disposeGeometry() {
         for (const entry of [...this._uLines, ...this._vLines]) {
             this.remove(entry.line);
 
@@ -553,8 +551,7 @@ export class ContoursLayer extends Layer {
 
     initialize(model) {
         super.initialize(model);
-        this._uLines = [];
-        this._vLines = [];
+        this.disposeGeometry();
 
         // u = constant
         for (let i = 0; i <= this._resolution.u; i++) {

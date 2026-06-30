@@ -1,19 +1,19 @@
 import { Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
-    Floor, Sphere, Trail, Vec3, Simulation, Surface,
-    RadialSymmetricBody, Sun, Checkbox, Slider, Range, SurfaceVisualization, ContoursLayer
+    Floor, Sphere, Trail, Vec3, Simulation, RadialSymmetricBody, Sun, Checkbox, Slider, Range,
+    SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView
 } from "../../../src/index.js";
 
 let initialCometDistance = 33;
 let currentIsRingOrbitValue = false;
 const subSteps = (isRingOrbit) => isRingOrbit ? 1000 : 10;
 
-const sun = new RadialSymmetricBody({
+const sun = new Sun({
     mass: 5,
     radius: 10
 });
 
-class SchwarzschildSurface extends Surface {
+class SchwarzschildSurface extends ParametricSurface {
     static yOffset = -10;
     static zAsFunctionOf = (r, M) => Math.sqrt(Math.max(0, 8 * M * r - 16 * M * M));
     static surfacePointAt = (r, phi, M) => new Vec3(
@@ -28,20 +28,24 @@ class SchwarzschildSurface extends Surface {
     );
 
     constructor(mass) {
-        super();
-        this._mass = mass;
-    }
-
-    get rMin() { return 2 * this._mass }
-    get rMax() { return 13 * this._mass; }
-    get mass() { return this._mass; }
-
-    sample(u, v, target) {
         const epsilon = 0.01;
-        const r = (this.rMin + epsilon) + u * (this.rMax - (this.rMin + epsilon));
-        const phi = v * 2 * Math.PI;
-        target.set(r * Math.cos(phi), SchwarzschildSurface.zAsFunctionOf(r, this._mass), r * Math.sin(phi));
+        const rMin = 2 * mass;
+        const rMax = 13 * mass;
+        const r = u  => (rMin + epsilon) + (u + .5) * (rMax - (rMin + epsilon));
+        const phi = v => 2 * Math.PI * v;
+        super({
+            x: (u, v) => r(u) * Math.cos(phi(v)),
+            y: (u, v) => r(u) * Math.sin(phi(v)),
+            z: (u, v) => SchwarzschildSurface.zAsFunctionOf(r(u), mass)
+        });
+        this._mass = mass;
+        this._rMin = rMin;
+        this._rMax = rMax;
     }
+
+    get rMin() { return this._rMin }
+    get rMax() { return this._rMax; }
+    get mass() { return this._mass; }
 }
 
 class StateVector {
@@ -231,8 +235,6 @@ function timeStep(clockTime) {
         if (cometInsideCone() || subSteps(currentIsRingOrbitValue))
             realComet.updateRealMotion(sun.mass, 2e-3);
 
-        photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1);
-
         comet._state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
         realComet._state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
         flatComet._state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
@@ -257,9 +259,17 @@ const grid = new Floor({
 });
 
 // Curved space-time: Flamm's paraboloid
-const spaceTimeCone = new SurfaceVisualization();
-spaceTimeCone.addOverlayLayer(new ContoursLayer());
+const spaceTimeCone = new SurfaceVisualization({
+    display: SurfaceVisualization.Display.None
+});
+spaceTimeCone.addOverlayLayer(new ContoursLayer({
+    resolution: new SurfaceResolution(25, 50),
+    colorMapper: new ColorMappers().get(ColorMappers.Uniform)()
+}));
 
+const realCometTrail = new Trail({ color: 0xff8800 });
+const flatCometTrail = new Trail({ color: 0xff0000 });
+const cometTrail = new Trail({ color: 0x00ffff });
 const simulation = Simulation
     .with({
         htmlDivId: "spaceTimeContainer",
@@ -269,18 +279,23 @@ const simulation = Simulation
         headUpDisplay: true,
         parameterMenuCollapsed: false
     })
-    .appendStartStopResetUI()
     .addObject3D(grid)
     .addObject3D(photonRing)
     .bind(coneGeometry.onceWith(spaceTimeCone))
-    .bind(sun.alwaysWith(new Sun()))
+    .bind(sun.alwaysWith(new SunView()))
     .bind(realComet.alwaysWith(new Sphere({ color: 0xff8800 })))
-    .bind(realComet.alwaysWith(new Trail({ color: 0xff8800 })))
+    .bind(realComet.alwaysWith(realCometTrail))
     .bind(flatComet.alwaysWith(new Sphere({ color: 0xff0000 })))
-    .bind(flatComet.alwaysWith(new Trail({ color: 0xff0000 })))
+    .bind(flatComet.alwaysWith(flatCometTrail))
     .bind(comet.alwaysWith(new Sphere({ color: 0x00ffff })))
-    .bind(comet.alwaysWith(new Trail({ color: 0x00ffff })))
+    .bind(comet.alwaysWith(cometTrail))
+    .runsEvery(0.03)
     .onStep((clock, _) => timeStep(clock.clockTime))
+    .onFrame(clockTime => {
+        sun.time = clockTime;
+        photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1)
+    })
+    .appendStartStopResetUI()
     .append(new Checkbox("Grid: ")
         .on(grid)
         .withProperty("visible")
@@ -299,6 +314,16 @@ const distanceSlider = new Slider("Distance: ")
     .withValue(33)
     .addEventListener("input", event => {
         initialCometDistance = Number(event.target.value);
+        realComet._stateVector = StateVector.initial(currentIsRingOrbitValue);
+        comet.reset();
+        flatComet.reset();
+        flatCometTrail.reset();
+        realCometTrail.reset();
+        cometTrail.reset();
+        comet._stateVector = StateVector.initial(currentIsRingOrbitValue);
+        comet._state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
+        realComet._state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
+        flatComet._state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
     });
 
 simulation

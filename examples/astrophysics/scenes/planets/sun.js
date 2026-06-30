@@ -1,11 +1,8 @@
 import {
-    Simulation, RadialSymmetricBody, Sun, Vec3
+    Simulation, Sun, Vec3, SunView
 } from "../../../../src/index.js";
 
-const sun = new RadialSymmetricBody({
-    radius: 1
-});
-
+const sun = new Sun();
 Simulation
     .with({
         htmlDivId: "sunContainer",
@@ -13,5 +10,6 @@ Simulation
         fieldOfView: 45,
         background: Simulation.Background.STARS
     })
-    .bind(sun.alwaysWith(new Sun()))
+    .bind(sun.alwaysWith(new SunView()))
+    .onFrame(clockTime => sun.time = clockTime)
     .start();
