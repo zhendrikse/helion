@@ -1,6 +1,6 @@
 import { Vector2 } from "three";
 import {
-    RadialSymmetricBody, Vec3, Simulation, Sphere, Helix, Floor, Bond
+    RadialSymmetricBody, Vec3, Simulation, Sphere, Helix, Floor, Bond, SwitchableBondView, RadioGroup, RadioButton
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -36,11 +36,11 @@ const simulation = Simulation
     .with({
         htmlDivId: "oscillatorContainer",
         cameraPosition: new Vec3(17, 6, 17),
-        light: true,
         shadowsEnabled: true,
         fieldOfView: 45,
         background: Simulation.Background.FOG,
-        headUpDisplay: true
+        headUpDisplay: true,
+        parameterMenuCollapsed: false
     })
     .withMouseClickEventListener()
     .runsEvery(1e-3)
@@ -81,7 +81,7 @@ const simulation = Simulation
         if (!simulation.isRunning)
             return;
 
-        const plotData = [clock.clockTime * 0.001];
+        const plotData = [clock.clockTime];
         for (let i = 0; i < balls.length; i++)
             plotData.push(balls[i].position.x);
         simulation.plot(plotData);
@@ -95,6 +95,7 @@ const simulation = Simulation
     });
 
 // Attach spheres and helices to balls and springs
+const bondViews = [];
 for (let i = 0; i < balls.length; i++) {
     const color = i === 0 || i === balls.length - 1 ? 0x3333ff : 0xff0000;
     const sphere = new Sphere({ color, castShadow: true });
@@ -102,12 +103,27 @@ for (let i = 0; i < balls.length; i++) {
     if (i === 0)
         continue;
 
-    const helix = new Helix({
+    const bondView = new SwitchableBondView({
         thickness: 0.075,
         coils: 30,
         color: 0xffff4d,
         castShadow: true
     });
-    simulation.bind(bonds[i - 1].alwaysWith(helix));
+    simulation.bind(bonds[i - 1].alwaysWith(bondView));
+    bondViews.push(bondView);
 }
+
+simulation.append(new RadioGroup(
+    new RadioButton("Springs ")
+        .checked(true)
+        .addEventListener("change", event => {
+            for (const bondView of bondViews)
+                bondView.bondType = SwitchableBondView.Type.Spring;
+    }),
+    new RadioButton("Cylinders")
+        .addEventListener("change", event => {
+            for (const bondView of bondViews)
+                bondView.bondType = SwitchableBondView.Type.Cylinder;
+    })
+))
 

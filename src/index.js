@@ -47,7 +47,8 @@ export {
 } from "./view/3d/surfaces/visualization.js";
 
 export {
-    OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial, ArrowField
+    OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial,
+    ArrowField, SwitchableBondView
 } from "./view/3d/composite/composites.js";
 
 export {

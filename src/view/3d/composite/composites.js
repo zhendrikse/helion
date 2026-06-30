@@ -3,7 +3,7 @@ import {
     BufferGeometry, InstancedMesh, Matrix4, Quaternion, InstancedBufferAttribute,
     MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry
 } from "three";
-import { Arrow } from "../primitives/primitives.js";
+import {Arrow, Cylinder, Helix} from "../primitives/primitives.js";
 import { Complex, Vec3 } from "../../../model/math/math.js";
 import { Renderable3D } from "../../renderer.js";
 import { MathPhysicsModelBehavior } from "../../../core/helion.js";
@@ -298,6 +298,54 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
             this._valueVector.axis.set(0, value.re, value.im);
             this._arrows[i].synchronizeWith(this._valueVector);
         }
+    }
+}
+
+export class SwitchableBondView extends Renderable3D {
+    static Type = Object.freeze({
+        Spring: "Spring",
+        Cylinder: "Cylinder"
+    });
+
+    constructor({
+        color = 0xffff00,
+        coils = 25,
+        wireRadius = 0.125,
+        thickness = 0.01,
+        castShadow = false,
+        bondType = SwitchableBondView.Type.Spring
+    } = {}) {
+        super();
+        this._spring = new Helix({
+            color: color,
+            coils: coils,
+            radius: wireRadius,
+            thickness: thickness,
+            castShadow: castShadow
+        });
+        this._cylinder = new Cylinder({
+            color: color,
+            castShadow: castShadow
+        });
+        this.add(this._cylinder, this._spring);
+        this.bondType = bondType;
+    }
+
+    set bondType(bondViewType) {
+        this._spring.visible = bondViewType === SwitchableBondView.Type.Spring;
+        this._cylinder.visible = bondViewType === SwitchableBondView.Type.Cylinder;
+        this._bondType = bondViewType;
+    }
+
+    canBindTo(body) {
+        return body.position && body.axis && body.radius;
+    }
+
+    synchronizeWith(twoBodies) {
+        if (this._bondType === SwitchableBondView.Type.Cylinder)
+            this._cylinder.synchronizeWith(twoBodies);
+        else
+            this._spring.synchronizeWith(twoBodies);
     }
 }
 
