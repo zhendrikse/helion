@@ -78,7 +78,7 @@ export class HeightLayer extends ColorLayer {
     }
 
     preferredColorMapper() {
-        return new ColorMappers().get(ColorMappers.RdYlBu)();
+        return new ColorMappers().get(ColorMappers.Gradient)();
     }
 }
 
@@ -300,6 +300,10 @@ export class SurfaceVisualization extends Renderable3D {
                 this._surfaceLayer.colorMapper = colorLayer.preferredColorMapper();
                 this._glyphLayer.colorLayer = colorLayer;
                 this._glyphLayer.colorMapper = colorLayer.preferredColorMapper();
+                for (const layer of this._overlayLayers) {
+                    layer.colorLayer = colorLayer;
+                    layer.colorMapper = colorLayer.preferredColorMapper();
+                }
             });
     }
 

@@ -51,6 +51,11 @@ export class Layer extends Renderable3D {
         this._dirty = true;
     }
 
+    set colorLayer(colorLayer) {
+        this._colorLayer = colorLayer;
+        this._dirty = true;
+    }
+
     initialize(mathSurfaceDefinition) {
         this._dirty = true;
     }
@@ -110,11 +115,6 @@ class MeshLayer extends Layer {
 
     set opacity(opacity) {
         this._mesh.material.opacity = opacity;
-        this._dirty = true;
-    }
-
-    set colorLayer(colorLayer) {
-        this._colorLayer = colorLayer;
         this._dirty = true;
     }
 
@@ -470,7 +470,6 @@ export class PrincipalDirectionsLayer extends Layer {
         return new Line(geometry, this._material);
     }
 }
-
 
 export class ContoursLayer extends Layer {
     constructor({

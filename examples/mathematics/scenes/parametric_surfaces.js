@@ -63,8 +63,7 @@ const surfacesRegistry = new Registry({
 
 const contoursLayer = new ContoursLayer({
     resolution: new SurfaceResolution(50, 50),
-    colorMapper: new ColorMappers().get(ColorMappers.Uniform)(),
-    //colorLayer: new ColorLayers().get(ColorLayers.GaussianCurvature)()
+    colorLayer: new ColorLayers().get(ColorLayers.GaussianCurvature)()
 });
 const principalLayer = new PrincipalDirectionsLayer({
     resolution: new SurfaceResolution(40, 40),

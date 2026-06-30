@@ -29,7 +29,6 @@ const field = new DiscreteScalarField({ nx: 256, ny: 256 });
 const solver = new WaveEquationSolver(new WaveEquation({ velocity: 5 }));
 const surface = new DiscreteFieldSurface(field);
 
-
 const resolution = 256;
 const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(resolution, resolution),
