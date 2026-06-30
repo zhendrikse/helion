@@ -1,5 +1,5 @@
-import {Mesh, PlaneGeometry, DoubleSide, ShaderMaterial,
-    BufferAttribute, BoxGeometry, MeshBasicMaterial, InstancedMesh, Object3D
+import {
+    Mesh, PlaneGeometry, ShaderMaterial, BufferAttribute, BoxGeometry, MeshBasicMaterial, InstancedMesh, Object3D
 } from "three";
 
 import {hsvToRgbNormalized, Renderable3D} from "../../../src/index.js";

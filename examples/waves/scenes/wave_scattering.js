@@ -2,14 +2,13 @@ import {
     DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
     WaveEquationSolver, PotentialField3DRaster, FixedIntervalNormalizer,
     SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization, HeightLayer,
-    SurfaceResolution, ColorMappersFactory, RadioGroup, RadioButton, Checkbox
+    SurfaceResolution, RadioGroup, RadioButton, Checkbox, ColorMappers
 } from "../../../src/index.js";
 
 const resolution = 256;
 const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(resolution, resolution),
-    colorLayer: new HeightLayer(),
-    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
+    colorMapper: new ColorMappers().get(ColorMappers.WaterAlternative)(),
     normalizer: new FixedIntervalNormalizer(new Interval(-1, 1)),
     opacity: 0.9
 })

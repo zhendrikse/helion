@@ -8,7 +8,7 @@ import { Button } from "./controls.js";
 
 export class Registry {
     constructor({
-        id = "registryId",
+        id = generateUUID(),
         label = "registryLabel",
         entries = {}
     }) {

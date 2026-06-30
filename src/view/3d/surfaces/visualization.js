@@ -1,9 +1,10 @@
 import {Renderable3D} from "../../renderer.js";
 import {Box3} from "three";
 import {CompoundControl, DropdownMenu, Slider} from "../../../core/controls.js";
-import {ColorMappersFactory} from "../../colormappers.js";
-import {Interval, Range} from "../../../model/math/math.js";
+import {ColorMappers} from "../../colormappers.js";
+import {Range} from "../../../model/math/math.js";
 import {GlyphLayer, Layer, SurfaceLayer} from "./layers.js";
+import {Registry} from "../../../core/helion.js";
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) {
@@ -65,17 +66,106 @@ class ColorLayer {
     value(frame) {
         return 0;
     }
+
+    preferredColorMapper() {
+        return new ColorMappers().get(ColorMappers.Height)();
+    }
 }
 
 export class HeightLayer extends ColorLayer {
     value(frame) {
         return frame.position.y;
     }
+
+    preferredColorMapper() {
+        return new ColorMappers().get(ColorMappers.RdYlBu)();
+    }
 }
 
 export class GaussianCurvatureLayer extends ColorLayer {
     value(frame) {
-        return frame.K;
+        return frame.k1 * frame.k2;
+    }
+
+    preferredColorMapper() {
+        return new ColorMappers().get(ColorMappers.Seismic)();
+    }
+}
+
+export class MeanCurvatureLayer extends ColorLayer {
+    value(frame) {
+        return .5 * (frame.k1 + frame.k2);
+    }
+
+    preferredColorMapper() {
+        return new ColorMappers().get(ColorMappers.Scientific)();
+    }
+}
+
+export class ShapeIndexLayer extends ColorLayer {
+    value(frame) {
+        const denominator = frame.k1 - frame.k2;
+        if (Math.abs(denominator) < 1e-12)
+            return 0;
+
+        return (2 / Math.PI) * Math.atan((frame.k1 + frame.k2) / denominator);
+    }
+
+    preferredColorMapper() {
+        return new ColorMappers().get(ColorMappers.RdYlBu)();
+    }
+}
+
+export class CurvednessLayer extends ColorLayer {
+    preferredColorMapper() {
+        return new ColorMappers().get(ColorMappers.RdYlBu)();
+    }
+
+    value(frame) {
+        return Math.sqrt(0.5 * (frame.k1 * frame.k1 + frame.k2 * frame.k2));
+    }
+}
+
+export class PrincipalCurvature1Layer extends ColorLayer {
+    preferredColorMapper() {
+        return new ColorMappers().get(ColorMappers.Viridis)();
+    }
+
+    value(frame) {
+        return frame.k1;
+    }
+}
+
+export class PrincipalCurvature2Layer extends ColorLayer {
+    preferredColorMapper() {
+        return new ColorMappers().get(ColorMappers.Inferno)();
+    }
+
+    value(frame) {
+        return frame.k2;
+    }
+}
+
+class ColorLayers extends Registry {
+    static Height = "Height";
+    static GaussianCurvature = "GaussianCurvature";
+    static MeanCurvature = "MeanCurvature";
+    static Curvedness = "Curvedness";
+    static ShapeIndex = "ShapeIndex";
+
+    constructor(label = "Color ") {
+        super({
+            label: label,
+            entries: {
+                Height: () => new HeightLayer(),
+                PrincipalCurvature1: () => new PrincipalCurvature1Layer(),
+                PrincipalCurvature2: () => new PrincipalCurvature2Layer(),
+                GaussianCurvature: () => new GaussianCurvatureLayer(),
+                MeanCurvature: () => new MeanCurvatureLayer(),
+                ShapeIndex: () => new ShapeIndexLayer(),
+                Curvedness: () => new CurvednessLayer()
+            }
+        });
     }
 }
 
@@ -85,7 +175,7 @@ export class SurfaceVisualization extends Renderable3D {
         glyphType = GlyphLayer.GlyphTypes.BOXES,
         glyphScale = 0.8,
         colorLayer = new HeightLayer(),
-        colorMapper = ColorMappersFactory.create(ColorMappersFactory.Type.Gradient),
+        colorMapper = new ColorMappers().get(ColorMappers.Gradient)(),
         normalizer = new AdaptiveSymmetricNormalizer(),
         opacity = 1
     } = {}) {
@@ -125,14 +215,17 @@ export class SurfaceVisualization extends Renderable3D {
 
     displaySurfaceLayer() {
         this._display(this._surfaceLayer);
+        return this;
     }
 
     displayGlyphLayer() {
         this._display(this._glyphLayer);
+        return this;
     }
 
     displayNone() {
         this._display(null);
+        return this;
     }
 
     _display(layer) {
@@ -174,15 +267,16 @@ export class SurfaceVisualization extends Renderable3D {
     }
 
     ui() {
+        const colorMappers = new ColorMappers("🎨 Color map");
         return new CompoundControl()
             .add(new DropdownMenu()
-                .for(new ColorMappersFactory())
+                .for(colorMappers)
                 .addEventListener("change", event => {
-                    this._surfaceLayer.colorMapper = ColorMappersFactory.create(event.target.value);
-                    this._glyphLayer.colorMapper = ColorMappersFactory.create(event.target.value);
+                    this._surfaceLayer.colorMapper = colorMappers.get(event.target.value)();
+                    this._glyphLayer.colorMapper = colorMappers.get(event.target.value)();
                 })
             )
-            .add(new Slider("Opacity ")
+            .add(new Slider("🪟 Opacity ")
                 .withRange(new Range(0, 1, 0.01))
                 .withValue(this._options.opacity)
                 .addEventListener("input", event => {
@@ -190,6 +284,19 @@ export class SurfaceVisualization extends Renderable3D {
                     this._glyphLayer.opacity = Number(event.target.value);
                 })
             );
+    }
+
+    colorLayerUI() {
+        const colorLayers = new ColorLayers("🖌️ Color ");
+        return new DropdownMenu()
+            .for(colorLayers)
+            .addEventListener("change", event => {
+                const colorLayer = colorLayers.get(event.target.value)();
+                this._surfaceLayer.colorLayer = colorLayer;
+                this._surfaceLayer.colorMapper = colorLayer.preferredColorMapper();
+                this._glyphLayer.colorLayer = colorLayer;
+                this._glyphLayer.colorMapper = colorLayer.preferredColorMapper();
+            });
     }
 
     synchronizeWith(model) {

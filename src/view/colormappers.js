@@ -300,43 +300,34 @@ class TerrainColorMapper extends ColorMapper {
     }
 }
 
-export class ColorMappersFactory extends Registry {
-    static Type = Object.freeze({
-        Gradient: "Gradient",
-        Inferno: "Inferno",
-        RdYlBu: "RdYlBu",
-        Seismic: "Seismic",
-        Scientific: "Scientific",
-        Terrain: "Terrain",
-        Uniform: "Uniform",
-        Viridis: "Viridis",
-        Water: "Water",
-        WaterAlternative: "WaterAlternative"
-    });
+export class ColorMappers extends Registry {
+    static Gradient = "Gradient";
+    static Inferno = "Inferno";
+    static RdYlBu = "RdYlBu";
+    static Seismic = "Seismic";
+    static Scientific = "Scientific";
+    static Terrain = "Terrain";
+    static Uniform = "Uniform";
+    static Viridis = "Viridis";
+    static Water = "Water";
+    static WaterAlternative = "WaterAlternative";
 
-    static create(type) {
-        const this_ = new ColorMappersFactory();
-        const Type = this_.get(type);
-        return new Type();
-    }
-
-    constructor({
-        id = "colorMapSelect",
-        label = "Color map ",
-        entries = {
-            Gradient: GradientColorMapper,
-            Inferno: InfernoColorMapper,
-            RdYlBu: RdYlBuColorMapper,
-            Seismic: SeismicColorMapper,
-            Scientific: ScientificColorMapper,
-            Terrain: TerrainColorMapper,
-            Uniform: UniformColorMapper,
-            Viridis: ViridisColorMapper,
-            Water: WaterColorMapper,
-            WaterAlternative: WaterAlternativeColorMapper
-        }
-    } = {}) {
-        super({ id, label, entries });
+    constructor(label = "Color map ") {
+        super({
+            label: label,
+            entries: {
+                Gradient: () => new GradientColorMapper(),
+                Inferno: () => new InfernoColorMapper(),
+                RdYlBu: () => new RdYlBuColorMapper(),
+                Seismic: () => new SeismicColorMapper(),
+                Scientific: () => new ScientificColorMapper(),
+                Terrain: () => new TerrainColorMapper(),
+                Uniform: () => new UniformColorMapper(),
+                Viridis: () => new ViridisColorMapper(),
+                Water: () => new WaterColorMapper(),
+                WaterAlternative: () => new WaterAlternativeColorMapper()
+            }
+        });
     }
 }
 

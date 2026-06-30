@@ -51,7 +51,7 @@ export class DifferentialGeometry {
         this._d2 = new Vec3();
     }
 
-    principalFrame(u, v, target) {
+    differentialFrame(u, v, target) {
         const e = this.eps;
         const inv2e = 1 / (2 * e);
         const inve2 = 1 / (e * e);

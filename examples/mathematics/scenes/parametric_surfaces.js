@@ -1,6 +1,6 @@
 import {
     Simulation, ParametricSurface, Domain, DropdownMenu, Registry, SurfaceVisualization,
-    GaussianCurvatureLayer, ContoursLayer, SurfaceResolution
+    ContoursLayer, SurfaceResolution, HeightLayer, PrincipalDirectionsLayer
 } from "../../../src/index.js";
 import {DoubleSide, MeshStandardMaterial} from "three";
 
@@ -65,6 +65,11 @@ const surfacesRegistry = new Registry({
 const contoursLayer = new ContoursLayer({
     resolution: new SurfaceResolution(50, 50)
 });
+const principalLayer = new PrincipalDirectionsLayer({
+    resolution: new SurfaceResolution(40, 40),
+    scale: 0.2
+});
+
 const surfaceView = new SurfaceVisualization({
     material: new MeshStandardMaterial({
         side: DoubleSide,
@@ -73,21 +78,24 @@ const surfaceView = new SurfaceVisualization({
         transparent: true,
         opacity: 0.9
     }),
-    resolution: new SurfaceResolution(200, 200)
-});
-surfaceView.displaySurfaceLayer();
-surfaceView.addOverlayLayer(contoursLayer);
+    resolution: new SurfaceResolution(200, 200),
+    colorLayer: new HeightLayer()
+})
+    .displaySurfaceLayer()
+    .addOverlayLayer(principalLayer)
+    .addOverlayLayer(contoursLayer);
 
 const simulation = Simulation
     .with({
         htmlDivId: "parametricSurfacesContainer",
         fieldOfView: 20
     })
-    .append(surfaceView.ui({scalarFieldSelect: true}))
     .append(new DropdownMenu()
         .for(surfacesRegistry)
         .addEventListener("change", event => changeSurface(event.target.value))
     )
+    .append(surfaceView.ui())
+    .append(surfaceView.colorLayerUI())
     .start();
 
 function changeSurface(surfaceId) {

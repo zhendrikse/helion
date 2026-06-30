@@ -7,7 +7,7 @@ import {
 import { Renderable3D } from "../renderer.js";
 import { DropdownMenu} from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
-import { ColorMappersFactory, hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
+import { ColorMappers, hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -36,7 +36,7 @@ export class ParticleCloudView extends Renderable3D {
         particleCount = 5000,
         type = "Sphere",
         scalarField = particle => particle.mass,
-        colorMapper = ColorMappersFactory.create(ColorMappersFactory.Type.Scientific)
+        colorMapper = new ColorMappers().get(ColorMappers.Gradient)()
     } = {}) {
         super();
 

@@ -1,7 +1,7 @@
 import {
-    ColorMappersFactory, DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
+    DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
     SurfaceResolution, WaveEquationSolver, GaussianImpulse, SurfaceVisualization, HeightLayer,
-    FixedIntervalNormalizer, RadioGroup, RadioButton, Checkbox
+    FixedIntervalNormalizer, RadioGroup, RadioButton, Checkbox, ColorMappers
 } from "../../../src/index.js";
 
 export class WaveEquation {
@@ -34,7 +34,7 @@ const resolution = 256;
 const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(resolution, resolution),
     colorLayer: new HeightLayer(),
-    colorMapper: ColorMappersFactory.create(ColorMappersFactory.Type.WaterAlternative),
+    colorMapper: new ColorMappers().get(ColorMappers.WaterAlternative)(),
     normalizer: new FixedIntervalNormalizer(new Interval(-.3, 2)),
     opacity: 0.8
 });

@@ -90,12 +90,4 @@ Simulation
         ).checked(0)
     )
     .append(surfaceView.glyphLayer.ui())
-    .append(new Checkbox("Contours ")
-        .checked(true)
-        .on(contours)
-        .withProperty("visible")
-        .togetherWith(new Checkbox("Wireframe ")
-            .on(surfaceView.surfaceLayer)
-            .withProperty("wireframe"))
-    )
     .start();

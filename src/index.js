@@ -40,11 +40,10 @@ export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 export { Renderable3D } from "./view/renderer.js";
 export { ComplexScalarFieldSurfaceRaster, PotentialField3DRaster } from "./view/3d/views.js"
-export { ContoursLayer } from "./view/3d/surfaces/layers.js";
+export { ContoursLayer, PrincipalDirectionsLayer } from "./view/3d/surfaces/layers.js";
 
 export {
-    SurfaceVisualization, HeightLayer, FixedIntervalNormalizer, SurfaceResolution,
-    GaussianCurvatureLayer
+    SurfaceVisualization, HeightLayer, FixedIntervalNormalizer, SurfaceResolution
 } from "./view/3d/surfaces/visualization.js";
 
 export {
@@ -52,7 +51,7 @@ export {
 } from "./view/3d/composite/composites.js";
 
 export {
-    wavelengthColor, wavelengthToRGBNormalized, ColorMappersFactory, ColorMapper, toColorString,
-    hsvToRgb, WavelengthColorMapper, hsvToRgbNormalized
+    wavelengthColor, wavelengthToRGBNormalized, ColorMapper, toColorString,
+    hsvToRgb, WavelengthColorMapper, hsvToRgbNormalized, ColorMappers
 } from "./view/colormappers.js";
 
