@@ -1,6 +1,6 @@
 import {
-    Domain, MultivariateFunctionSurface, Simulation, Button, SurfaceVisualization, HeightLayer,
-    FixedIntervalNormalizer, Interval, ContoursLayer, Checkbox, RadioButton, RadioGroup
+    Domain, MultivariateFunctionSurface, Simulation, Button, SurfaceVisualization,
+    FixedIntervalNormalizer, Interval, ContoursLayer, RadioButton, RadioGroup
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -40,11 +40,9 @@ const membraneNormalizer = new MembraneNormalizer(
 );
 
 const surfaceView = new SurfaceVisualization({
-    colorLayer: new HeightLayer(),
     normalizer: membraneNormalizer
 });
 const contours = new ContoursLayer({
-    colorLayer: new HeightLayer(),
     normalizer: membraneNormalizer
 });
 surfaceView.addOverlayLayer(contours);

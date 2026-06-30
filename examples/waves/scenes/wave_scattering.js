@@ -1,7 +1,7 @@
 import {
     DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
     WaveEquationSolver, PotentialField3DRaster, FixedIntervalNormalizer,
-    SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization, HeightLayer,
+    SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization,
     SurfaceResolution, RadioGroup, RadioButton, Checkbox, ColorMappers
 } from "../../../src/index.js";
 
