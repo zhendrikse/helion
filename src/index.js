@@ -43,7 +43,7 @@ export { ComplexScalarFieldSurfaceRaster, PotentialField3DRaster } from "./view/
 export { ContoursLayer, PrincipalDirectionsLayer } from "./view/3d/surfaces/layers.js";
 
 export {
-    SurfaceVisualization, HeightLayer, FixedIntervalNormalizer, SurfaceResolution
+    SurfaceVisualization, ColorLayers, FixedIntervalNormalizer, SurfaceResolution
 } from "./view/3d/surfaces/visualization.js";
 
 export {

@@ -334,7 +334,6 @@ export class PrincipalDirectionsLayer extends Layer {
         material = new LineBasicMaterial({
             vertexColors: true,
             transparent: true,
-            depthWrite: false
         })
     } = {}) {
         super({resolution});
@@ -477,7 +476,7 @@ export class ContoursLayer extends Layer {
     constructor({
         resolution = new SurfaceResolution(40, 40),
         colorLayer = new HeightLayer(),
-        colorMapper = new ColorMappers().get(ColorMappers.Gradient)(),
+        colorMapper = colorLayer.preferredColorMapper(),
         normalizer = new AdaptiveSymmetricNormalizer(),
         material = new LineBasicMaterial({
             vertexColors: true,

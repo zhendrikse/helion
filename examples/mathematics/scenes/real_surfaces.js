@@ -61,8 +61,7 @@ const surfaces = {
 };
 
 const surfacesRegistry = new Registry({
-    id: "realSurfaceSelect",
-    label: "Surface: ",
+    label: "🌫️ Surface ",
     entries: surfaces
 });
 

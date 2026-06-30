@@ -270,7 +270,6 @@ class UniformColorMapper extends ColorMapper {
     constructor(color = new Color(0xffff00)) {
         super();
         this._color = color;
-        console.log(this._color);
     }
 
     map(value, targetColor) {

@@ -1,6 +1,6 @@
 import {
     Simulation, ParametricSurface, Domain, DropdownMenu, Registry, SurfaceVisualization,
-    ContoursLayer, SurfaceResolution, HeightLayer, PrincipalDirectionsLayer
+    ContoursLayer, SurfaceResolution, ColorLayers, PrincipalDirectionsLayer, Checkbox, ColorMappers
 } from "../../../src/index.js";
 import {DoubleSide, MeshStandardMaterial} from "three";
 
@@ -57,29 +57,31 @@ const surfaces = {
 };
 
 const surfacesRegistry = new Registry({
-    id: "parametricSurfaceSelect",
-    label: "Surface ",
+    label: "🌫️ Surface ",
     entries: surfaces
 });
 
 const contoursLayer = new ContoursLayer({
-    resolution: new SurfaceResolution(50, 50)
+    resolution: new SurfaceResolution(50, 50),
+    colorMapper: new ColorMappers().get(ColorMappers.Uniform)(),
+    //colorLayer: new ColorLayers().get(ColorLayers.GaussianCurvature)()
 });
 const principalLayer = new PrincipalDirectionsLayer({
     resolution: new SurfaceResolution(40, 40),
     scale: 0.2
 });
+principalLayer.visible = false;
 
 const surfaceView = new SurfaceVisualization({
     material: new MeshStandardMaterial({
         side: DoubleSide,
         roughness: 0.45,
         metalness: 0.1,
-        transparent: true,
-        opacity: 0.9
+        transparent: true
     }),
     resolution: new SurfaceResolution(200, 200),
-    colorLayer: new HeightLayer()
+    colorLayer: new ColorLayers().get(ColorLayers.GaussianCurvature)(),
+    opacity: 0.85
 })
     .displaySurfaceLayer()
     .addOverlayLayer(principalLayer)
@@ -94,9 +96,18 @@ const simulation = Simulation
         .for(surfacesRegistry)
         .addEventListener("change", event => changeSurface(event.target.value))
     )
-    .append(surfaceView.ui())
     .append(surfaceView.colorLayerUI())
-    .start();
+    .append(surfaceView.ui())
+    .append(new Checkbox("Contours ")
+        .on(contoursLayer)
+        .withProperty("visible")
+        .checked(contoursLayer.visible)
+        .togetherWith(new Checkbox("Principal directions ")
+            .on(principalLayer)
+            .checked(principalLayer.visible)
+            .withProperty("visible")
+        )
+    );
 
 function changeSurface(surfaceId) {
     const newSurface = surfacesRegistry.get(surfaceId);

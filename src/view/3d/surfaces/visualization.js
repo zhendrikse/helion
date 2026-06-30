@@ -1,6 +1,6 @@
 import {Renderable3D} from "../../renderer.js";
 import {Box3} from "three";
-import {CompoundControl, DropdownMenu, Slider} from "../../../core/controls.js";
+import {Checkbox, CompoundControl, DropdownMenu, Slider} from "../../../core/controls.js";
 import {ColorMappers} from "../../colormappers.js";
 import {Range} from "../../../model/math/math.js";
 import {GlyphLayer, Layer, SurfaceLayer} from "./layers.js";
@@ -146,7 +146,7 @@ export class PrincipalCurvature2Layer extends ColorLayer {
     }
 }
 
-class ColorLayers extends Registry {
+export class ColorLayers extends Registry {
     static Height = "Height";
     static GaussianCurvature = "GaussianCurvature";
     static MeanCurvature = "MeanCurvature";
@@ -175,7 +175,7 @@ export class SurfaceVisualization extends Renderable3D {
         glyphType = GlyphLayer.GlyphTypes.BOXES,
         glyphScale = 0.8,
         colorLayer = new HeightLayer(),
-        colorMapper = new ColorMappers().get(ColorMappers.Gradient)(),
+        colorMapper = colorLayer.preferredColorMapper(),
         normalizer = new AdaptiveSymmetricNormalizer(),
         opacity = 1
     } = {}) {
@@ -283,6 +283,10 @@ export class SurfaceVisualization extends Renderable3D {
                     this._surfaceLayer.opacity = Number(event.target.value);
                     this._glyphLayer.opacity = Number(event.target.value);
                 })
+            )
+            .add(new Checkbox("Wireframe ")
+                .on(this._surfaceLayer)
+                .withProperty("wireframe")
             );
     }
 
