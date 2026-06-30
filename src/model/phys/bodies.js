@@ -198,7 +198,8 @@ export class Spring extends Body {
         this.axis = axis;
         this.radius = radius;
         this.restLength = axis.length();
-        this.k = k; // spring constant
+        this.k = k;    // spring constant
+        this.time = 0; // in case user wants to visualize longitudinal waves in spring
     }
 
     get direction() { return this.axis; }

@@ -56,10 +56,10 @@ export class Binding {
         this.view.synchronizeWith(this.model, atClockTime);
     }
 
-    synchronize(atClockTime) {
+    synchronize() {
         const viewNeedsSynchronization = this.mode === Binding.Mode.ALWAYS || this.view?.dirty;
         if (viewNeedsSynchronization)
-            this.view.synchronizeWith(this.model, atClockTime);
+            this.view.synchronizeWith(this.model);
     }
 
     initialize() {
@@ -438,7 +438,7 @@ export class Simulation {
 
         // Sync model and views after model update
         for (const binding of this._bindings)
-            binding.synchronize(this._clock.clockTime);
+            binding.synchronize();
 
         this._renderer.render(timeStamp);
         requestAnimationFrame(this.animate);

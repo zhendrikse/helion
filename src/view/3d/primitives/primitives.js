@@ -442,7 +442,7 @@ export class Helix extends Renderable3D {
     }
 
     canBindTo(body) {
-        return body.position && body.axis && body.radius;
+        return body.position && body.axis && body.radius && body.time !== undefined;
     }
 
     #regenerateTube() {
@@ -450,7 +450,7 @@ export class Helix extends Renderable3D {
         this._mesh.geometry = new TubeGeometry(this._curve, this._tubularSegments, this._thickness, this._radialSegments, false);
     }
 
-    synchronizeWith(body, time) {
+    synchronizeWith(body) {
         this.position.copy(body.position);
         this._curve.radius = body.radius;
         this._axis.copy(body.axis);
@@ -458,7 +458,7 @@ export class Helix extends Renderable3D {
 
         if (this._longitudinalOscillation) {
             // Longitudinal wave amplitude coupled to spring elongation
-            this._curve.wavePhase = time * 4;
+            this._curve.wavePhase = body.time * 4;
             const displacement = this._axis.y - this._curve.start.y;
             this._curve.waveAmp = Math.min(Math.abs(displacement) / 10, 0.3); // max amplitude 0.3
         }
