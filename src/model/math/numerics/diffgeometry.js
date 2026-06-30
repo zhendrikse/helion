@@ -1,6 +1,6 @@
 import {Vec3} from "../math.js";
 
-export class PrincipalFrame {
+export class DifferentialFrame {
     constructor({
         position = new Vec3(),
         normal = new Vec3(),

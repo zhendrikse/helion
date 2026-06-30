@@ -11,7 +11,7 @@ import {
     LineBasicMaterial, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, SphereGeometry, Vector3
 } from "three";
 import {Renderable3D} from "../../renderer.js";
-import {PrincipalFrame} from "../../../model/math/numerics/diffgeometry.js";
+import {DifferentialFrame} from "../../../model/math/numerics/diffgeometry.js";
 import {AdaptiveSymmetricNormalizer, HeightLayer, SurfaceResolution} from "./visualization.js";
 import {ColorMappers} from "../../colormappers.js";
 import {Registry} from "../../../core/helion.js";
@@ -39,7 +39,7 @@ export class Layer extends Renderable3D {
         this._normalizer = normalizer;
         this._colorMapper = colorMapper;
         this._color = new Color();
-        this._frame = new PrincipalFrame();
+        this._frame = new DifferentialFrame();
 
         this._dirty = true;                 // When surface definition has changed, this flag is raised
     }
@@ -348,7 +348,7 @@ export class PrincipalDirectionsLayer extends Layer {
         this._uVectors = [];
         this._vVectors = [];
 
-        this._frame = new PrincipalFrame();
+        this._frame = new DifferentialFrame();
     }
 
     initialize(model) {
