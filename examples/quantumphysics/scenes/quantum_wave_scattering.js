@@ -1,7 +1,8 @@
 import {
     ComplexScalarFieldSurfaceRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range,
     SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, PotentialField3DRaster, DiscreteScalarField,
-    ShapeConfiguration, Softness, Potential, ComplexScalarFieldRaster, ScalarFieldIntensityPixelRaster, RadioButton
+    ShapeConfiguration, Softness, Potential, ComplexScalarFieldRaster, ScalarFieldIntensityPixelRaster, RadioButton,
+    RadioGroup
 } from "../../../src/index.js";
 
 let xMax = 400,
@@ -54,12 +55,13 @@ const simulation = Simulation
     .runsEvery(dt)
     .onReset(() => reset(shapeConfiguration, potentialStrength, softness))
     .onIteration(() => psi.evolve(solver, dt), 20)
-    .append(new RadioButton("2D")
-        .addEventListener("click", event => setDimension(false))
-        .togetherWith(new RadioButton("3D")
+    .append(new RadioGroup(
+        new RadioButton("2D")
+            .addEventListener("click", event => setDimension(false)),
+        new RadioButton("3D")
             .checked(true)
-            .addEventListener("click", event => setDimension(true)))
-    )
+            .addEventListener("click", event => setDimension(true))
+    ))
     .append(new Checkbox("🌈 Show phase color ")
         .on(waveFunctionSurface)
         .withProperty("phaseColor")
