@@ -122,9 +122,9 @@ const simulation = Simulation
     .onFrame(() => particleField.update())
     .append(particleView2D.controls())
     .append(new DropdownMenu()
-        .for(new ColorMappersFactory())
+        .for(new ColorMappers())
         .addEventListener("change", (event) =>
-            colorMapper = ColorMappersFactory.create(event.target.value))
+            colorMapper = ColorMappers.get(event.target.value)())
     );
 
 function resetSimulation() {
