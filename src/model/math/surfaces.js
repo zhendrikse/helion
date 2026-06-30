@@ -1,5 +1,5 @@
 import {Domain} from "./fields.js";
-import {Complex} from "./math.js";
+import {Complex, Vec2} from "./math.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
 
