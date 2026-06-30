@@ -442,7 +442,7 @@ export class Helix extends Renderable3D {
     }
 
     canBindTo(body) {
-        return body.position && body.axis && body.radius && body.time !== undefined;
+        return body.position && body.axis && body.radius;
     }
 
     #regenerateTube() {

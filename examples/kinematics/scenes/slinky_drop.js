@@ -1,22 +1,22 @@
 import {
-    RadialSymmetricBody, Simulation, Vec3, Sphere, Spring, Trail
+    RadialSymmetricBody, Simulation, Vec3, Sphere, Spring, Helix, Cylinder, Bond, Floor, Vec2, AxialSymmetricBody
 } from "../../../src/index.js";
-
 
 const g = new Vec3(0, -9.8, 0);
 const L0 = 2;
 const k = 100;
+const shiftUp = 3.5;
 
 //
 // Physics model
 //
 const ball1 = new RadialSymmetricBody({
-    position: new Vec3(0, L0 / 2, 0),
+    position: new Vec3(0, shiftUp + L0 / 2, 0),
     mass: 5,
     radius: 0.3
 });
 const ball2 = new RadialSymmetricBody({
-    position: new Vec3(0, L0 / 2 - L0 - ball1.mass * g.length() / k, 0),
+    position: new Vec3(0, shiftUp + L0 / 2 - L0 - ball1.mass * g.length() / k, 0),
     mass: 5,
     radius: 0.3
 });
@@ -26,53 +26,57 @@ const ball3 = new RadialSymmetricBody({
     radius: 0.3
 });
 
-const spring = new Spring({
-    position: ball1.position,
-    axis: ball1.positionVectorTo(ball2),
-    k,
-    radius: 0.2
+const bond = Bond.between(ball1.and(ball2), k, 0.2);
+bond.restLength = L0;
+
+// Pole + stick
+const stick1 = new AxialSymmetricBody({
+    position: ball2.position.clone().sub(new Vec3(L0, 2.75 * L0, 0)),
+    axis: new Vec3(0, 3 * L0, 0),
+    radius: L0 / 15
 });
+const stick2 = new AxialSymmetricBody({
+    position: ball2.position.clone().sub(new Vec3(L0, 0, 0)),
+    axis: new Vec3(L0/2, 0, 0),
+    radius: L0 / 15
+});
+////////////////
 
-const onFloor = (ball, floorLevel = 0, epsilon = 1e-1) =>
-    ball.position.y - ball.radius <= epsilon + floorLevel;
-function iterate(dt) {
-    if (onFloor(ball2, -3.5 * L0) || onFloor(ball3, -3.5 * L0))
-        return;
-
-    const springLength = ball1.positionVectorTo(ball2);
-    const springForce = springLength.clone().normalize().multiplyScalar(-k * (springLength.length() - L0));
-    const forceOnBall1 = g.clone().multiplyScalar(ball1.mass).sub(springForce);
-    const forceOnBall2 = g.clone().multiplyScalar(ball2.mass).add(springForce);
-
-    ball1.apply(forceOnBall1, dt);
-    ball2.apply(forceOnBall2, dt);
-    ball3.apply(g.clone().multiplyScalar(ball3.mass), dt);
-
-    spring.position.copy(ball1.position);
-    spring.axis.copy(ball1.positionVectorTo(ball2));
-}
-
-
-
-
-//
-// View
-//
-const dt = 5000;
-const subSteps = 50;
+const onFloor = (ball, floorLevel, epsilon = 2e-2) =>
+    ball.position.y - ball.radius <= shiftUp + floorLevel - epsilon;
 Simulation
-    .inHtmlDiv("threeBodyContainer")
     .with({
-        cameraPosition: new Vec3(30, 30, 30),
-        scale: 1e-9,
-        headUpDisplay: true
+        htmlDivId: "slinkyContainer",
+        cameraPosition: new Vec3(4, 2, 10).multiplyScalar(1.15),
+        headUpDisplay: true,
+        fov: 50
     })
-    .bind(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
-    .bind(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
-    .bind(bodyB.alwaysWith(new Sphere({ color: "cyan" })))
-    .bind(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
-    .bind(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
-    .bind(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
-    .runsEvery(dt / subSteps)
-    .onClockTick((clock) => updateForces(clock.fixedDt), subSteps)
+    .bind(stick1.onceWith(new Cylinder({ color: 0xbbbbbb})))
+    .bind(stick2.onceWith(new Cylinder({ color: 0xbbbbbb})))
+    .bind(ball1.alwaysWith(new Sphere({ color: "red" })))
+    .bind(ball2.alwaysWith(new Sphere({ color: "green" })))
+    .bind(ball3.alwaysWith(new Sphere({ color: "yellow" })))
+    .bind(bond.alwaysWith(new Helix({
+        color: 0xffff00,
+        thickness: 0.015
+    })))
+    .addObject3D(new Floor({
+        position: new Vec3(.5 * L0, -3.5 * L0 + shiftUp, 0),
+        planeSizeXy: new Vec2(L0 * 5 , L0 * 3),
+        type: Floor.Type.PAVING
+    }))
+    .runsEvery(0.01)
+    .atSpeed(0.25)
+    .onStep((_, dt) => {
+        if (onFloor(ball2, -3.5 * L0) || onFloor(ball3, -3.5 * L0))
+            return;
+
+        const forceOnBall1 = g.clone().multiplyScalar(ball1.mass).sub(bond.force);
+        const forceOnBall2 = g.clone().multiplyScalar(ball2.mass).add(bond.force);
+        const forceOnBall3 = g.clone().multiplyScalar(ball3.mass);
+        ball1.apply(forceOnBall1, dt);
+        ball2.apply(forceOnBall2, dt);
+        ball3.apply(forceOnBall3, dt);
+        bond.synchronize();
+    })
     .withMouseClickEventListener();

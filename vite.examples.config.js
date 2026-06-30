@@ -36,6 +36,7 @@ export default defineConfig({
                 raindrops: path.resolve(__dirname, 'examples/nature/scenes/raindrops.js'),
                 real_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/real_surfaces.js'),
                 saturn: path.resolve(__dirname, 'examples/astrophysics/scenes/planets/saturn.js'),
+                slinky_drop: path.resolve(__dirname, 'examples/kinematics/scenes/slinky_drop.js'),
                 solenoid: path.resolve(__dirname, 'examples/electromagnetism/scenes/solenoid.js'),
                 schwarzschild_space_time: path.resolve(__dirname, 'examples/relativity/scenes/schwarzschild_space_time.js'),
                 shells: path.resolve(__dirname, 'examples/nature/scenes/shells.js'),

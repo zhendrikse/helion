@@ -76,11 +76,21 @@ class VelocityVector extends MathPhysicsModelBehavior {
 //
 // Bodies to do physics with
 //
-class TwoBodies {
+export class TwoBodies extends MathPhysicsModelBehavior {
     constructor(body1, body2) {
+        super();
         this.body1 = body1;
         this.body2 = body2;
     }
+
+    reset() {
+        this.body1.reset();
+        this.body2.reset();
+    }
+
+    get axis() { return this.body1.positionVectorTo(this.body2); }
+    get position() { return this.body1.position; }
+    get mass() { return this.body2.mass + this.body1.mass; }
 }
 
 export class Body extends MathPhysicsModelBehavior{
@@ -179,13 +189,38 @@ export class Block extends Body {
     }
 }
 
-export class Spring extends Body {
+export class Bond extends MathPhysicsModelBehavior {
     static between(twoBodies, k = 200, radius = 1) {
-        const axis = twoBodies.body1.positionVectorTo(twoBodies.body2);
-        const position = twoBodies.body1.position;
-        return new Spring({position, axis, k, radius});
+        return new Bond(twoBodies, k, radius);
     }
 
+    constructor(twoBodies, k, radius) {
+        super();
+        this.position = twoBodies.position.clone();
+        this.radius = radius;
+        this.axis = twoBodies.axis;
+        this.k = k;
+        this._twoBodies = twoBodies;
+        this.restLength = this.axis.length();
+    }
+
+    get force() {
+        const u = this.axis.length() - this.restLength;
+        return this.axis.clone().normalize().multiplyScalar(-this.k * u);
+    }
+
+    reset() {
+        this._twoBodies.reset();
+        this.synchronize();
+    }
+
+    synchronize() {
+        this.position.copy(this._twoBodies.position);
+        this.axis = this._twoBodies.axis;
+    }
+}
+
+export class Spring extends Body {
     constructor({
         position = new Vec3(),
         velocity = new Vec3(),

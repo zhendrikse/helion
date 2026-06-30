@@ -1,6 +1,6 @@
 export {
     AxialSymmetricBody, HarmonicOscillator, RadialSymmetricBody,
-    EC, Body, G, Spring, Block, gravitationalForceBetween
+    EC, Body, G, Spring, Block, gravitationalForceBetween, Bond
 } from "./model/phys/bodies.js";
 
 export {
