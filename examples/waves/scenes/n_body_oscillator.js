@@ -1,6 +1,6 @@
 import { Vector2 } from "three";
 import {
-    RadialSymmetricBody, Vec3, HarmonicOscillator, Simulation, Sphere, Helix, Floor
+    RadialSymmetricBody, Vec3, Simulation, Sphere, Helix, Floor, Bond
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -9,7 +9,7 @@ import 'uplot/dist/uPlot.min.css';
 //
 function createBallsAndSprings(numBalls = 5, k = 300) {
     const balls = [];
-    const springs = [];
+    const bonds = [];
 
     for (let i = 0; i < numBalls; i++) {
         balls.push(new RadialSymmetricBody({
@@ -18,18 +18,18 @@ function createBallsAndSprings(numBalls = 5, k = 300) {
             mass: 1.5
         }));
         if (i !== 0)
-            springs.push(HarmonicOscillator.between(balls[i - 1].and(balls[i]), k, 0.5));
+            bonds.push(Bond.between(balls[i - 1].and(balls[i]), k, 0.5));
     }
 
-    return { balls, springs };
+    return { balls, bonds };
 }
 
 function initialDisturbance(displacement = 5) {
     balls[0].position.add(new Vec3(displacement, 0, 0));
-    springs[0].bond.position.copy(balls[0].position);
+    bonds[0].synchronize();
 }
 
-const { balls, springs } = createBallsAndSprings();
+const { balls, bonds } = createBallsAndSprings();
 initialDisturbance(7);
 
 const simulation = Simulation
@@ -63,6 +63,36 @@ const simulation = Simulation
             yLabel: "Displacement"
         }
     )
+    .onStep((clock, dt) => {
+        const damping = 0.2;
+
+        for (let i = 0; i < balls.length - 1; i++) {
+            const relativeVelocity = balls[i].velocity.clone().sub(balls[i + 1].velocity);
+            const dampingForce = relativeVelocity
+                .projectOnVector(bonds[i].axis.clone().normalize())
+                .multiplyScalar(damping);
+            const force = bonds[i].force.add(dampingForce);
+
+            balls[i].apply(force.clone().negate(), dt);
+            balls[i + 1].apply(force, dt);
+            bonds[i].synchronize();
+        }
+
+        if (!simulation.isRunning)
+            return;
+
+        const plotData = [clock.clockTime * 0.001];
+        for (let i = 0; i < balls.length; i++)
+            plotData.push(balls[i].position.x);
+        simulation.plot(plotData);
+    })
+    .onReset(() => {
+        initialDisturbance(7);
+        const plotData = [0];
+        for (let i = 0; i < balls.length; i++)
+            plotData.push(balls[i].position.x);
+        simulation.plot(plotData);
+    });
 
 // Attach spheres and helices to balls and springs
 for (let i = 0; i < balls.length; i++) {
@@ -78,25 +108,6 @@ for (let i = 0; i < balls.length; i++) {
         color: 0xffff4d,
         castShadow: true
     });
-    simulation.bind(springs[i - 1].alwaysWith(helix));
+    simulation.bind(bonds[i - 1].alwaysWith(helix));
 }
 
-simulation
-    .onStep((clock, dt) => {
-        for (let i = 0; i < balls.length - 1; i++)
-            springs[i].oscillate(dt);
-
-        if (!simulation.isRunning)
-            return;
-
-        const plotData = [clock.clockTime * 0.001];
-        for (let i = 0; i < balls.length; i++)
-            plotData.push(balls[i].position.x);
-        simulation.plot(plotData);
-    })
-    .onReset(() => {
-        const plotData = [0];
-        for (let i = 0; i < balls.length; i++)
-            plotData.push(balls[i].position.x);
-        simulation.plot(plotData);
-    })
