@@ -52,9 +52,8 @@ const simulation = Simulation
     .bind(psi.alwaysWith(waveFunctionSurface2d))
     .bind(potential.onceWith(potentialBarrier))
     .bind(potential.onceWith(potentialBarrier2d))
-    .runsEvery(dt)
     .onReset(() => reset(shapeConfiguration, potentialStrength, softness))
-    .onIteration(() => psi.evolve(solver, dt), 20)
+    .maxOutCpu(() => psi.evolve(solver, dt), 20, 10)
     .append(new RadioGroup(
         new RadioButton("2D")
             .addEventListener("click", event => setDimension(false)),

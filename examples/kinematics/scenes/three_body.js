@@ -49,13 +49,13 @@ Simulation
     .bind(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
     .bind(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
     .bind(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
-    .onIteration(_ => {
+    .maxOutCpu(_ => {
         const force_BA = gravitationalForceBetween(bodyA.and(bodyB));
         const force_CB = gravitationalForceBetween(bodyB.and(bodyC));
         const force_AC = gravitationalForceBetween(bodyC.and(bodyA));
 
-        bodyA.apply(force_BA.clone().sub(force_AC), 100, Integrators.symplecticEulerStep);
-        bodyB.apply(force_CB.clone().sub(force_BA), 100, Integrators.symplecticEulerStep);
-        bodyC.apply(force_AC.clone().sub(force_CB), 100, Integrators.symplecticEulerStep)
-    }, 50)
+        bodyA.apply(force_BA.clone().sub(force_AC), 10, Integrators.symplecticEulerStep);
+        bodyB.apply(force_CB.clone().sub(force_BA), 10, Integrators.symplecticEulerStep);
+        bodyC.apply(force_AC.clone().sub(force_CB), 10, Integrators.symplecticEulerStep)
+    }, 30, 1000)
     .withMouseClickEventListener();

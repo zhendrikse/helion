@@ -312,6 +312,9 @@ export class Simulation {
         this._axesUI = null;
 
         this._clock = new SimulationClock();
+        this._lastTime = performance.now();
+        this._framesPerSecond = 0;
+        this._minimumFrameRate = 30;    // Default frames/sec
 
         if (headUpDisplay)
             this._initHud()
@@ -333,7 +336,7 @@ export class Simulation {
     }
 
     bind(binding) {
-        // Zoek of deze view al ergens aan gekoppeld is
+        // See if this view is already attached to some binding
         const existingIndex = this._bindings.findIndex(
             b => b.view === binding.view
         );
@@ -417,15 +420,30 @@ export class Simulation {
         }
     }
 
+    _tuneIterationsPerFrame(timeStamp) {
+        if (this._framesPerSecond < this._minimumFrameRate)
+            this._iterationsPerFrame--;
+        else
+            this._iterationsPerFrame++;
+
+        // start new measurement time interval
+        this._framesPerSecond = 0;
+        this._lastTime = timeStamp;
+    }
+
     animate = (timeStamp) => {
         if (this._running) {
             if (this._iterationFunction) {
-                let iterations = 0;
+                if (timeStamp - this._lastTime > 1000) // Update iterations per RAF every second
+                    this._tuneIterationsPerFrame(timeStamp);
 
+                let iterations = 0;
                 while (iterations < this._iterationsPerFrame) {
                     this._iterationFunction(this._clock);
                     iterations++;
                 }
+
+                this._framesPerSecond++;
             }
 
             if (this._stepFunction) {
@@ -469,16 +487,20 @@ export class Simulation {
 
     /**
      * Used to maximize CPU utilization.
+     * Every second the system tries to optimize the CPU/computation cycles
+     * per animation frame, within the minimum required frame rate constraint.
      *
      * @param maxPerformanceFunction The function that is called.
-     * @param iterationsPerFrame The number of times the function is called per (requestAnimation)frame.
+     * @param minimumFrameRate The number of times per second requestAnimationFrame() needs to be invoked.
+     * @param iterationsPerFrame The initial iterations per frame, that subsequently gets tuned every second!
      */
-    onIteration(maxPerformanceFunction, iterationsPerFrame = 10) {
+    maxOutCpu(maxPerformanceFunction, minimumFrameRate = 30, iterationsPerFrame = 10) {
         if (this._stepFunction)
             throw new Error("Cannot mix iteration mode and step mode");
 
         this._iterationFunction = maxPerformanceFunction;
         this._iterationsPerFrame = iterationsPerFrame;
+        this._minimumFrameRate = minimumFrameRate;
         return this;
     }
 
