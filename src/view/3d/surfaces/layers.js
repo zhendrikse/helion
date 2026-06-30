@@ -15,7 +15,7 @@ import {DifferentialFrame} from "../../../model/math/numerics/diffgeometry.js";
 import {AdaptiveSymmetricNormalizer, HeightLayer, SurfaceResolution} from "./visualization.js";
 import {ColorMappers} from "../../colormappers.js";
 import {Registry} from "../../../core/helion.js";
-import {DropdownMenu} from "../../../core/controls.js";
+import {Checkbox, DropdownMenu} from "../../../core/controls.js";
 import {Vec3} from "../../../model/math/math.js";
 
 export class Layer extends Renderable3D {
@@ -170,6 +170,12 @@ export class SurfaceLayer extends MeshLayer {
         geometry.setAttribute("color", new BufferAttribute(this._colorArray, 3));
     }
 
+    ui() {
+        return new Checkbox("Wireframe ")
+            .on(this)
+            .withProperty("wireframe");
+    }
+
     set wireframe(value) { this._mesh.material.wireframe = value; }
 
     get boundingBox() {
@@ -253,7 +259,7 @@ export class GlyphLayer extends MeshLayer {
         glyphType = MeshLayer.GlyphTypes.BOXES,
         resolution = new SurfaceResolution(100, 100),
         colorLayer = new HeightLayer(),
-        colorMapper = new ColorMappers().get(ColorMappers.Gradient)(),
+        colorMapper = colorLayer.preferredColorMapper(),
         normalizer = new AdaptiveSymmetricNormalizer(),
         material = Layer.material(),
         opacity = 1,
@@ -295,7 +301,7 @@ export class GlyphLayer extends MeshLayer {
     ui() {
         return new DropdownMenu()
             .for(GlyphLayer.Glyphs)
-            .addEventListener("change", (event) => this.shape = event.target.value);
+            .addEventListener("change", event => this.shape = event.target.value);
     }
 
     initialize(model) {
@@ -315,10 +321,10 @@ export class GlyphLayer extends MeshLayer {
     signalRefresh() {
         this._mesh.instanceMatrix.needsUpdate = true;
         this._mesh.instanceColor.needsUpdate = true;
+        this._mesh.computeBoundingSphere();
         this._dirty = false;
     }
 }
-
 
 export class PrincipalDirectionsLayer extends Layer {
     static ColorMode = Object.freeze({

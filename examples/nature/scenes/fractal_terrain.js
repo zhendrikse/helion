@@ -38,7 +38,6 @@ const surfaceView = new SurfaceVisualization({
     resolution: new SurfaceResolution(128, 128)
 });
 surfaceView.position.set(-128, 0, -128);
-surfaceView.displaySurfaceLayer();
 
 const simulation = Simulation
     .with({

@@ -1,6 +1,6 @@
 import {
     Domain, MultivariateFunctionSurface, Simulation, Button, SurfaceVisualization,
-    FixedIntervalNormalizer, Interval, ContoursLayer, RadioButton, RadioGroup
+    FixedIntervalNormalizer, Interval, ContoursLayer, RadioButton, RadioGroup, Checkbox
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -39,14 +39,12 @@ const membraneNormalizer = new MembraneNormalizer(
     new Interval(-membrane.amplitude, membrane.amplitude)
 );
 
-const surfaceView = new SurfaceVisualization({
-    normalizer: membraneNormalizer
-});
 const contours = new ContoursLayer({
     normalizer: membraneNormalizer
 });
-surfaceView.addOverlayLayer(contours);
-surfaceView.displaySurfaceLayer();
+const surfaceView = new SurfaceVisualization({
+    normalizer: membraneNormalizer
+}).addOverlayLayer(contours);
 
 Simulation
     .with({
@@ -75,16 +73,21 @@ Simulation
                     .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 5 `)))))
     )
     .append(surfaceView.ui())
+    .append(new Checkbox("Contours ")
+        .on(contours)
+        .withProperty("visible")
+        .checked(true)
+        .togetherWith(surfaceView.surfaceLayer.ui()))
     .append(
         new RadioGroup(
             new RadioButton("Smooth")
-                .addEventListener("change", () => surfaceView.displaySurfaceLayer()),
+                .addEventListener("change", () => surfaceView.display(SurfaceVisualization.Display.Surface)),
 
             new RadioButton("Glyphs")
-                .addEventListener("change", () => surfaceView.displayGlyphLayer()),
+                .addEventListener("change", () => surfaceView.display(SurfaceVisualization.Display.Glyphs)),
 
             new RadioButton("None")
-                .addEventListener("change", () => surfaceView.displayNone())
+                .addEventListener("change", () => surfaceView.display(SurfaceVisualization.Display.None))
         ).checked(0)
     )
     .append(surfaceView.glyphLayer.ui())

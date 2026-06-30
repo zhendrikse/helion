@@ -71,7 +71,6 @@ const surfaceView = new SurfaceVisualization({
     resolution: new SurfaceResolution(200, 200),
     colorMapper: new ColorMappers().get(ColorMappers.Inferno)(),
 });
-surfaceView.displaySurfaceLayer();
 
 const simulation = Simulation
     .with({

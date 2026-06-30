@@ -82,7 +82,6 @@ const surfaceView = new SurfaceVisualization({
     colorLayer: new ColorLayers().get(ColorLayers.GaussianCurvature)(),
     opacity: 0.85
 })
-    .displaySurfaceLayer()
     .addOverlayLayer(principalLayer)
     .addOverlayLayer(contoursLayer);
 

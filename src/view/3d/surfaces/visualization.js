@@ -170,6 +170,12 @@ export class ColorLayers extends Registry {
 }
 
 export class SurfaceVisualization extends Renderable3D {
+    static Display = Object.freeze({
+        Surface: "surface",
+        Glyphs: "glyphs",
+        None: "none"
+    });
+
     constructor({
         resolution = new SurfaceResolution(100, 100),
         glyphType = GlyphLayer.GlyphTypes.BOXES,
@@ -177,12 +183,12 @@ export class SurfaceVisualization extends Renderable3D {
         colorLayer = new HeightLayer(),
         colorMapper = colorLayer.preferredColorMapper(),
         normalizer = new AdaptiveSymmetricNormalizer(),
-        opacity = 1
+        opacity = 1,
+        display = SurfaceVisualization.Display.Surface
     } = {}) {
         super();
 
         this._options = {
-            material: Layer.material(),
             resolution: resolution,
             glyphType: glyphType,
             glyphScale: glyphScale,
@@ -198,7 +204,7 @@ export class SurfaceVisualization extends Renderable3D {
         this._overlayLayers = [];
         this._model = null;
         this._meshLayer = null; // meshLayer can be null, e.g. when we want to show contours only
-        this.displayNone();
+        this.display(display);
     }
 
     get glyphLayer() {
@@ -213,18 +219,19 @@ export class SurfaceVisualization extends Renderable3D {
         return this._meshLayer;
     }
 
-    displaySurfaceLayer() {
-        this._display(this._surfaceLayer);
-        return this;
-    }
+    display(type) {
+        switch (type) {
+            case SurfaceVisualization.Display.Surface:
+                this._display(this._surfaceLayer);
+                break;
+            case SurfaceVisualization.Display.Glyphs:
+                this._display(this._glyphLayer);
+                break;
+            case SurfaceVisualization.Display.None:
+                this._display(null);
+                break;
+        }
 
-    displayGlyphLayer() {
-        this._display(this._glyphLayer);
-        return this;
-    }
-
-    displayNone() {
-        this._display(null);
         return this;
     }
 
@@ -283,10 +290,6 @@ export class SurfaceVisualization extends Renderable3D {
                     this._surfaceLayer.opacity = Number(event.target.value);
                     this._glyphLayer.opacity = Number(event.target.value);
                 })
-            )
-            .add(new Checkbox("Wireframe ")
-                .on(this._surfaceLayer)
-                .withProperty("wireframe")
             );
     }
 

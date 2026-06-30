@@ -34,7 +34,8 @@ const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(resolution, resolution),
     colorMapper: new ColorMappers().get(ColorMappers.WaterAlternative)(),
     normalizer: new FixedIntervalNormalizer(new Interval(-.3, 2)),
-    opacity: 0.8
+    opacity: 0.8,
+    display: SurfaceVisualization.Display.Glyphs
 });
 waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
 
@@ -63,10 +64,10 @@ Simulation
     .append(
         new RadioGroup(
             new RadioButton("Smooth")
-                .addEventListener("change", () => waterSurface.displaySurfaceLayer()),
+                .addEventListener("change", () => waterSurface.display(SurfaceVisualization.Display.Surface)),
 
             new RadioButton("Glyphs")
-                .addEventListener("change", () => waterSurface.displayGlyphLayer()),
+                .addEventListener("change", () => waterSurface.display(SurfaceVisualization.Display.Glyphs)),
         ).checked(1)
     )
     .append(waterSurface.glyphLayer.ui())

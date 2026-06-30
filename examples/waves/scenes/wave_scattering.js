@@ -13,7 +13,6 @@ const waterSurface = new SurfaceVisualization({
     opacity: 0.9
 })
 waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
-waterSurface.displaySurfaceLayer();
 
 const field = new DiscreteScalarField({ nx: resolution, ny: resolution });
 const surface = new DiscreteFieldSurface(field);
@@ -69,10 +68,10 @@ Simulation
     .append(
         new RadioGroup(
             new RadioButton("Smooth")
-                .addEventListener("change", () => waterSurface.displaySurfaceLayer()),
+                .addEventListener("change", () => waterSurface.display(SurfaceVisualization.Display.Surface)),
 
             new RadioButton("Glyphs")
-                .addEventListener("change", () => waterSurface.displayGlyphLayer()),
+                .addEventListener("change", () => waterSurface.display(SurfaceVisualization.Display.Glyphs)),
         ).checked(0)
     )
     .append(waterSurface.glyphLayer.ui())
