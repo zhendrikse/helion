@@ -101,16 +101,6 @@ class String1D {
         for (const bond of this._bonds)
             bond.synchronize();
     }
-
-    reset() {
-        for (let i = 0; i < this.size; i++) {
-            this._balls[i].reset();
-            this._forces[i].set(0, 0, 0);
-        }
-
-        for (const bond of this._bonds)
-            bond.synchronize();
-    }
 }
 
 const string = new String1D({
