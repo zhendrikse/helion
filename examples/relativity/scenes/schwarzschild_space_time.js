@@ -321,9 +321,9 @@ const distanceSlider = new Slider("Distance: ")
         realCometTrail.reset();
         cometTrail.reset();
         comet._stateVector = StateVector.initial(currentIsRingOrbitValue);
-        comet._state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
-        realComet._state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
-        flatComet._state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
+        comet.state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
+        realComet.state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
+        flatComet.state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
     });
 
 simulation
