@@ -1,7 +1,6 @@
-import { Vector2 } from "three";
 import {
     RadialSymmetricBody, Vec3, Simulation, Sphere, Floor, Bond, SwitchableBondView, RadioGroup, RadioButton,
-    Slider, Range
+    Slider, Range, Vec2
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -72,7 +71,7 @@ const simulation = Simulation
     .runsEvery(1e-3)
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
-        planeSizeXy: new Vector2(200, 200),
+        planeSizeXy: new Vec2(200, 200),
         granularity: 5
     }))
     .setupGraphWith({
