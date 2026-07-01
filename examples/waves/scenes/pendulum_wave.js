@@ -91,7 +91,7 @@ for (let i = 0; i < total; i++) {
 const simulation = Simulation
     .with({
         htmlDivId: "pendulumWaveContainer",
-        cameraPosition: new Vec3(-5.5, -3.15, 1.8),
+        cameraPosition: new Vec3(-5.5, -3.3, 0.4),
         background: Simulation.Background.FOG,
         headUpDisplay: true,
         shadowsEnabled: true,
@@ -105,8 +105,33 @@ const simulation = Simulation
         position: new Vec3(0, -5, 0),
         planeSizeXy: new Vec2(200, 200),
         granularity: 20,
-        type: Floor.Type.PAVING
+        type: Floor.Type.WOOD_WICKER
     }))
+    .bind(new AxialSymmetricBody({
+            axis: new Vec3(3, 0 , 0),
+            position: new Vec3(-1.5, -2, 0),
+            radius: 0.04
+        }).alwaysWith(new Cylinder({ color: 0xDEB887 })))
+    .bind(new AxialSymmetricBody({
+        axis: new Vec3(0, -3 - 0.04 , 2),
+        position: new Vec3(-1.5, -2, 0),
+        radius: 0.04
+    }).alwaysWith(new Cylinder({ color: 0x855E42 })))
+    .bind(new AxialSymmetricBody({
+        axis: new Vec3(0, -3 - 0.04 , -2),
+        position: new Vec3(-1.5, -2, 0),
+        radius: 0.04
+    }).alwaysWith(new Cylinder({ color: 0x855E42 })))
+    .bind(new AxialSymmetricBody({
+        axis: new Vec3(0, -3 , 2),
+        position: new Vec3(1.5, -2, 0),
+        radius: 0.04
+    }).alwaysWith(new Cylinder({ color: 0x855E42 })))
+    .bind(new AxialSymmetricBody({
+        axis: new Vec3(0, -3 , -2),
+        position: new Vec3(1.5, -2, 0),
+        radius: 0.04
+    }).alwaysWith(new Cylinder({ color: 0x855E42 })))
     .onStep((clock, dt) => {
         for (const p of pendulums)
          p.update(dt);
@@ -125,7 +150,7 @@ pendulums.forEach((pendulum, i) =>
 pendulums.forEach(pendulum =>
     simulation.bind(pendulum.rod.alwaysWith(
         new Cylinder({
-            color: 0xeeeeee,
+            color: 0xBB8F68,
             material: new MeshStandardMaterial({
                 roughness: 0.8,
                 metalness: 0.2
