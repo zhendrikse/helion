@@ -32,7 +32,7 @@ class Chain {
 
     set damping(damping) { this._damping = damping; }
 
-    _updateChainElement(ball1, ball2, bond, dt) {
+    _updateChainSegment(ball1, ball2, bond, dt) {
         const relativeVelocity = ball1.velocity.clone().sub(ball2.velocity);
         const dampingForce = relativeVelocity
             .projectOnVector(bond.axis.clone().normalize())
@@ -46,7 +46,7 @@ class Chain {
 
     evolve(dt) {
         for (let i = 0; i < this._balls.length - 1; i++)
-            this._updateChainElement(this._balls[i], this._balls[i + 1], this._bonds[i], dt);
+            this._updateChainSegment(this._balls[i], this._balls[i + 1], this._bonds[i], dt);
     }
 
     initialDisturbance(displacement = 5) {
