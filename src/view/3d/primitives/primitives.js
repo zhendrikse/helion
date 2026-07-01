@@ -271,15 +271,15 @@ export class Cylinder extends Renderable3D {
         color = 0xffff00,
         opacity = 1,
         segments = 24,
-        castShadow = false
-    } = {}) {
-        super();
-        const geometry = new CylinderGeometry(1, 1, 1, segments);
-        const material = new MeshStandardMaterial({
+        castShadow = false,
+        material = new MeshStandardMaterial({
             color,
             opacity,
             transparent: opacity < 1
-        });
+        })
+    } = {}) {
+        super();
+        const geometry = new CylinderGeometry(1, 1, 1, segments);
         this._mesh = new Mesh(geometry, material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);

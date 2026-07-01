@@ -1,36 +1,63 @@
 import { Vector2 } from "three";
 import {
-    RadialSymmetricBody, Vec3, Simulation, Sphere, Helix, Floor, Bond, SwitchableBondView, RadioGroup, RadioButton
+    RadialSymmetricBody, Vec3, Simulation, Sphere, Floor, Bond, SwitchableBondView, RadioGroup, RadioButton,
+    Slider, Range
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
 //
 // Physics model
 //
-function createBallsAndSprings(numBalls = 5, k = 300) {
-    const balls = [];
-    const bonds = [];
+class Chain {
+    constructor(numBalls = 5, k = 300, damping = 0.5) {
+        this._damping = damping;
+        this._balls = [];
+        this._bonds = [];
 
-    for (let i = 0; i < numBalls; i++) {
-        balls.push(new RadialSymmetricBody({
-            position: new Vec3(i * 10 - 30, 3, 0),
-            radius: 1,
-            mass: 1.5
-        }));
-        if (i !== 0)
-            bonds.push(Bond.between(balls[i - 1].and(balls[i]), k, 0.5));
+        for (let i = 0; i < numBalls; i++) {
+            this._balls.push(new RadialSymmetricBody({
+                position: new Vec3(i * 10 - 30, 3, 0),
+                radius: 1,
+                mass: 1.5
+            }));
+
+            if (i !== 0)
+                this._bonds.push(Bond.between(this._balls[i - 1].and(this._balls[i]), k, 0.5));
+        }
     }
 
-    return { balls, bonds };
+    get size() { return this._balls.length; }
+
+    ballAt(index) { return this._balls[index]; }
+    bondAt(index) { return this._bonds[index]; }
+
+    set damping(damping) { this._damping = damping; }
+
+    _updateChainElement(ball1, ball2, bond, dt) {
+        const relativeVelocity = ball1.velocity.clone().sub(ball2.velocity);
+        const dampingForce = relativeVelocity
+            .projectOnVector(bond.axis.clone().normalize())
+            .multiplyScalar(this._damping);
+        const force = bond.force.add(dampingForce);
+
+        ball1.apply(force.clone().negate(), dt);
+        ball2.apply(force, dt);
+        bond.synchronize();
+    }
+
+    evolve(dt) {
+        for (let i = 0; i < this._balls.length - 1; i++)
+            this._updateChainElement(this._balls[i], this._balls[i + 1], this._bonds[i], dt);
+    }
+
+    initialDisturbance(displacement = 5) {
+        this._balls[0].position.add(new Vec3(displacement, 0, 0));
+        this._bonds[0].synchronize();
+    }
 }
 
-function initialDisturbance(displacement = 5) {
-    balls[0].position.add(new Vec3(displacement, 0, 0));
-    bonds[0].synchronize();
-}
-
-const { balls, bonds } = createBallsAndSprings();
-initialDisturbance(7);
+const chain = new Chain();
+chain.initialDisturbance(7);
 
 const simulation = Simulation
     .with({
@@ -39,8 +66,7 @@ const simulation = Simulation
         shadowsEnabled: true,
         fieldOfView: 45,
         background: Simulation.Background.FOG,
-        headUpDisplay: true,
-        parameterMenuCollapsed: false
+        headUpDisplay: true
     })
     .withMouseClickEventListener()
     .runsEvery(1e-3)
@@ -65,41 +91,30 @@ const simulation = Simulation
     )
     .onStep((clock, dt) => {
         const damping = 0.2;
-
-        for (let i = 0; i < balls.length - 1; i++) {
-            const relativeVelocity = balls[i].velocity.clone().sub(balls[i + 1].velocity);
-            const dampingForce = relativeVelocity
-                .projectOnVector(bonds[i].axis.clone().normalize())
-                .multiplyScalar(damping);
-            const force = bonds[i].force.add(dampingForce);
-
-            balls[i].apply(force.clone().negate(), dt);
-            balls[i + 1].apply(force, dt);
-            bonds[i].synchronize();
-        }
+        chain.evolve(dt);
 
         if (!simulation.isRunning)
             return;
 
         const plotData = [clock.clockTime];
-        for (let i = 0; i < balls.length; i++)
-            plotData.push(balls[i].position.x);
+        for (let i = 0; i < chain.size; i++)
+            plotData.push(chain.ballAt(i).position.x);
         simulation.plot(plotData);
     })
     .onReset(() => {
-        initialDisturbance(7);
+        chain.initialDisturbance(7);
         const plotData = [0];
-        for (let i = 0; i < balls.length; i++)
-            plotData.push(balls[i].position.x);
+        for (let i = 0; i < chain.size; i++)
+            plotData.push(chain.ballAt(i).position.x);
         simulation.plot(plotData);
     });
 
 // Attach spheres and helices to balls and springs
 const bondViews = [];
-for (let i = 0; i < balls.length; i++) {
-    const color = i === 0 || i === balls.length - 1 ? 0x3333ff : 0xff0000;
+for (let i = 0; i < chain.size; i++) {
+    const color = i === 0 || i === chain.size - 1 ? 0x3333ff : 0xff0000;
     const sphere = new Sphere({ color, castShadow: true });
-    simulation.bind(balls[i].alwaysWith(sphere));
+    simulation.bind(chain.ballAt(i).alwaysWith(sphere));
     if (i === 0)
         continue;
 
@@ -109,21 +124,28 @@ for (let i = 0; i < balls.length; i++) {
         color: 0xffff4d,
         castShadow: true
     });
-    simulation.bind(bonds[i - 1].alwaysWith(bondView));
+    simulation.bind(chain.bondAt(i - 1).alwaysWith(bondView));
     bondViews.push(bondView);
 }
 
-simulation.append(new RadioGroup(
-    new RadioButton("Springs ")
-        .checked(true)
-        .addEventListener("change", event => {
-            for (const bondView of bondViews)
-                bondView.bondType = SwitchableBondView.Type.Spring;
-    }),
-    new RadioButton("Cylinders")
-        .addEventListener("change", event => {
-            for (const bondView of bondViews)
-                bondView.bondType = SwitchableBondView.Type.Cylinder;
-    })
-))
+simulation
+    .append(new RadioGroup(
+        new RadioButton("Springs ")
+            .checked(true)
+            .addEventListener("change", event => {
+                for (const bondView of bondViews)
+                    bondView.bondType = SwitchableBondView.Type.Spring;
+        }),
+        new RadioButton("Cylinders")
+            .addEventListener("change", event => {
+                for (const bondView of bondViews)
+                    bondView.bondType = SwitchableBondView.Type.Cylinder;
+        }))
+    )
+    .append(new Slider("Damping ")
+        .withRange(new Range(0.2, 1, .01))
+        .on(chain)
+        .withProperty("damping")
+        .withValue(0.5)
+    );
 
