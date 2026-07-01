@@ -26,10 +26,19 @@ class String1D {
         this._l0 = 0.9 * length / (count - 1);
 
         this.#createBalls(ballRadius, totalMass, count);
-        this.#createBonds(ballRadius * .33, count);
+
+        for (let i = 0; i < count - 1; i++)
+            this._bonds.push(
+                Bond.between(this._balls[i].and(this._balls[i + 1]), 1.5 * (count - 1), ballRadius * .33)
+            );
+
         for (let i = 0; i < count; i++)
             this._forces.push(new Vec3());
     }
+
+    set bondForce(value) { this._bonds.forEach(bond => bond.k = (this.size -1) * value); }
+
+    set omega(value) { this._omega = value; }
 
     get size() { return this._balls.length }
 
@@ -48,11 +57,6 @@ class String1D {
                 mass: mass,
                 position: new Vec3(left + i * dx, 0, 0)
             }));
-    }
-
-    #createBonds(radius, count) {
-        for (let i = 0; i < count - 1; i++)
-            this._bonds.push(Bond.between(this._balls[i].and(this._balls[i + 1]), 1.64 * (count - 1), radius));
     }
 
     #driveFirstBall(t) {
@@ -105,7 +109,7 @@ class String1D {
         }
 
         for (const bond of this._bonds)
-            bond.update(0);
+            bond.synchronize();
     }
 }
 
@@ -174,14 +178,20 @@ simulation
     )
     .append(new Checkbox("Show nodes ")
         .addEventListener("change",
-                event => sphereViews.forEach(sphere => sphere.visible = event.target.checked)
+            event => sphereViews.forEach(sphere => sphere.visible = event.target.checked)
         )
         .checked(true)
+    )
+    .append(new Slider("Bond force ")
+        .on(string)
+        .withProperty("bondForce")
+        .withRange(new Range(0.1, 20, .01))
+        .withValue(1.5)
+    )
+    .append(new Slider("Omega ")
+        .on(string)
+        .withProperty("omega")
+        .withRange(new Range(10, 100, 1))
+        .withValue(45)
     );
-//     .append(new Slider("Damping ")
-//         .withRange(new Range(0.2, 1, .01))
-//         .on(chain)
-//         .withProperty("damping")
-//         .withValue(0.5)
-//     );
 
