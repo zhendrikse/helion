@@ -44,7 +44,7 @@ export class ThreeJsRenderer extends Renderer {
         });
         this.#createLabelRenderer(viewport);
 
-        const { background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView } = this._options;
+        const { background, backgroundColor, scale, controls, controlsTarget, light, cameraPosition, shadowsEnabled, fieldOfView } = this._options;
 
         if (shadowsEnabled) {
             this._renderer.shadowMap.enabled = true;
@@ -55,8 +55,10 @@ export class ThreeJsRenderer extends Renderer {
         this._camera = new PerspectiveCamera(fieldOfView, viewport.width / viewport.height, 0.1, 1e6);
         this._camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
-        if (controls)
+        if (controls) {
             this._controls = new OrbitControls(this._camera, viewport.canvas);
+            this._controls.target.set(controlsTarget.x, controlsTarget.y, controlsTarget.z);
+        }
 
         if (light)
             this._initLights(shadowsEnabled);

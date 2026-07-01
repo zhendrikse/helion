@@ -44,8 +44,8 @@ const simulation = Simulation
     .with({
         htmlDivId: "quantumScattering",
         headUpDisplay: true,
-        cameraPosition: new Vec3(-1, .7, .75).multiplyScalar(.75 * xMax),
-        fov: 30
+        cameraPosition: new Vec3(-1, .7, .75).multiplyScalar(1.25 * xMax),
+        fieldOfView: 30
     })
     .appendStartStopResetUI()
     .bind(psi.alwaysWith(waveFunctionSurface))

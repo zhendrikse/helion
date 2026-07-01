@@ -280,6 +280,7 @@ export class Simulation {
         backgroundColor = 0x0088ff,
         scale = 1,
         controls = true,
+        controlsTarget = new Vec3(),
         headUpDisplay = false,
         light = true,
         cameraPosition = new Vec3(3, 3, 3),
@@ -290,7 +291,7 @@ export class Simulation {
         const viewport = Simulation.viewportFromHtmlDiv(htmlDivId, parameterMenuCollapsed);
         viewport.parameterMenuCollapsed = parameterMenuCollapsed;
         const renderer = new ThreeJsRenderer({
-            background, backgroundColor, scale, controls, light, cameraPosition, shadowsEnabled, fieldOfView
+            background, backgroundColor, scale, controls, controlsTarget, light, cameraPosition, shadowsEnabled, fieldOfView
         });
         renderer.attach(viewport);
         return new Simulation(viewport, renderer, headUpDisplay);

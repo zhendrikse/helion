@@ -127,9 +127,9 @@ const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() })
 Simulation
     .with({
         htmlDivId: "galaxyContainer",
-        cameraPosition: new Vec3(1, -12, 4).multiplyScalar(55),
+        cameraPosition: new Vec3(1, -12, 4).multiplyScalar(100),
         background: Simulation.Background.STARS,
-        fov: 30,
+        fieldOfView: 30,
         light: false
     })
     .runsEvery(0.02)

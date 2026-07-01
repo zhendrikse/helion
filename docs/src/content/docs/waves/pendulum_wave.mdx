@@ -1,0 +1,126 @@
+---
+title: "⚖️ Pendulum wave"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div class="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div class="header_line"></div>
+
+🎯 A traveling wave on a string modeled as a mass-spring system<br/>
+⭐ Based on the VPython [PendulumWave](https://glowscript.org/#/user/yizhe/folder/Public/program/PendulumWave) and inspired by [www.dynamicmath.xyz](https://www.dynamicmath.xyz/)<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/MyPrograms/program/TravelingWave) is available as well, see [traveling_wave.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/travleing_wave.py)<br/>
+
+$$
+\theta(t)=\theta_0 \cos \bigg( \sqrt{  \frac {g} {L}} t \bigg)\text{, where }L = \frac{g T^2}{4\pi^2}
+$$
+
+
+### Live experiment
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/waves/scenes/pendulum_wave.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=pendulum_wave.js"/>
+    </a>
+</div>
+
+<div id="pendulumWaveContainer" style="aspect-ratio: 1/1"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/pendulum_wave.js"}></script>
+
+### 🧠 Pendulum wave synchronization
+<div class="header_line"><br/></div>
+
+At first glance the pendulum wave looks chaotic, but it is actually a **perfectly designed periodic motion**!
+
+The key idea:
+
+👉 Each pendulum has a **slightly different period**, chosen very carefully.
+
+Each of the pendulum's period is carefully chosen
+
+$$
+T_i = \frac{T_{pw}}{N + i}
+$$
+
+where $T_{pw}$ is the period of the pendulum wave. As a consequence, after a time $T_{pw}$:
+
+$$
+\text{number of oscillations} = \frac{T_{pw}}{T_i} = N + i
+$$
+
+👉 That is an **integer**.
+
+So every pendulum has completed 15 swings, 16 swings, 17 swings, etc.
+
+Because each pendulum completes an **integer number of cycles**,
+they all return to the same position with the same phase, i.e. they **re-synchronize perfectly**.
+
+#### What happens in between?
+
+Between $t = 0$ and $t = T_{pw}$:
+
+* Phases drift apart
+* The pattern looks like a traveling wave
+* Then becomes messy / “random”
+* Then reorganizes again
+
+This is due to **phase differences evolving linearly**:
+
+$$
+\theta_i(t) \sim \cos(\omega_i t)\text{, with } \omega_i = \frac{2\pi}{T_i}
+$$
+
+#### 🎼 A many-body “beat” phenomenon
+
+Although here you’re seeing **many frequencies interfering in time**, it’s similar to:
+
+* musical harmonics
+* interference patterns
+* Fourier superposition
+
+#### 🧠 Why the wave pattern appears
+
+At intermediate times:
+
+* Neighboring pendulums are slightly out of phase
+* This creates **spatial phase gradients**
+
+Our brain interprets this as a **wave traveling through the system**. However,
+nothing is actually traveling — it's a mere *illusion*.
+
+#### 🧩 The deeper math
+
+This is a system of pendulums, where for each individual pendulum we have:
+
+$$
+\theta_i(t) = A \cos\left(\frac{2\pi}{T_i} t\right)
+$$
+
+Because all $T_i$ are chosen as:
+
+$$
+T_i = \frac{T_{pw}}{N+i}
+$$
+
+all frequencies are **commensurate** (rationally related). This guarantees
+a **common period** and an exact recurrence, since after a time $T_{pw}$:
+
+$$
+\theta_i(t + T_{pw}) = \theta_i(t)
+$$
+
+for *all* pendulums.
+
+#### Summarizing:
+
+👉 The wave comes back because every pendulum “keeps perfect count” and they all land back in sync after completing whole-number cycles.
+

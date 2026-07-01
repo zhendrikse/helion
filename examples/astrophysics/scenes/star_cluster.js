@@ -52,9 +52,9 @@ const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
 Simulation
     .with({
         htmlDivId: "starClusterContainer",
-        cameraPosition: new Vec3(7, 14, 21),
+        cameraPosition: new Vec3(7, 14, 21).multiplyScalar(1.25),
         background: Simulation.Background.STARS,
-        fov: 35,
+        fieldOfView: 35,
         light: false
     })
     .runsEvery(0.02)

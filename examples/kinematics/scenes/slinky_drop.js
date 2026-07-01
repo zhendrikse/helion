@@ -49,7 +49,7 @@ Simulation
         htmlDivId: "slinkyContainer",
         cameraPosition: new Vec3(4, 2, 10).multiplyScalar(1.15),
         headUpDisplay: true,
-        fov: 50
+        fieldOfView: 50
     })
     .bind(stick1.onceWith(new Cylinder({ color: 0xbbbbbb})))
     .bind(stick2.onceWith(new Cylinder({ color: 0xbbbbbb})))

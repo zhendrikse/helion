@@ -31,6 +31,7 @@ export default defineConfig({
                 n_body_oscillator: path.resolve(__dirname, 'examples/waves/scenes/n_body_oscillator.js'),
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),
                 parametric_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/parametric_surfaces.js'),
+                pendulum_wave: path.resolve(__dirname, 'examples/waves/scenes/pendulum_wave.js'),
                 plane_wave: path.resolve(__dirname, 'examples/quantumphysics/scenes/plane_wave.js'),
                 proton_in_magnetic_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_in_magnetic_field.js'),
                 raindrops: path.resolve(__dirname, 'examples/nature/scenes/raindrops.js'),
