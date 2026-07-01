@@ -295,7 +295,7 @@ export class Cylinder extends Renderable3D {
         this._direction.copy(body.axis);
 
         const length = this._direction.length();
-        this.scale.set(body.radius * 1.5, this._direction.length(), body.radius * 1.5);
+        this.scale.set(body.radius, this._direction.length(), body.radius);
         this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
         this.position.add(this._direction.multiplyScalar(length * .5));
     }
@@ -413,7 +413,7 @@ export class Helix extends Renderable3D {
         color = 0x00ffff,
         coils = 20,
         longitudinalOscillation = false,
-        tubularSegments = 100,
+        tubularSegments = 400,
         radialSegments = 16,
         thickness = 0.01,
         visible = true,
@@ -450,7 +450,7 @@ export class Helix extends Renderable3D {
 
     synchronizeWith(body) {
         this.position.copy(body.position);
-        this._curve.radius = body.radius * 1.5;
+        this._curve.radius = body.radius;
         this._axis.copy(body.axis);
         this._curve.updateAxis(this._axis);
 

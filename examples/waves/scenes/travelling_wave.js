@@ -26,7 +26,7 @@ class String1D {
         this._l0 = 0.9 * length / (count - 1);
 
         this.#createBalls(ballRadius, totalMass, count);
-        this.#createBonds(count);
+        this.#createBonds(ballRadius * .5, count);
         for (let i = 0; i < count; i++)
             this._forces.push(new Vec3());
     }
@@ -50,9 +50,9 @@ class String1D {
             }));
     }
 
-    #createBonds(count) {
+    #createBonds(radius, count) {
         for (let i = 0; i < count - 1; i++)
-            this._bonds.push(Bond.between(this._balls[i].and(this._balls[i + 1]), 1.64 * (count - 1), 0.025));
+            this._bonds.push(Bond.between(this._balls[i].and(this._balls[i + 1]), 1.64 * (count - 1), radius));
     }
 
     #driveFirstBall(t) {
