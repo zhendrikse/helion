@@ -118,7 +118,7 @@ for (let i = 0; i < chain.size; i++) {
         continue;
 
     const bondView = new SwitchableBondView({
-        thickness: 0.075,
+        thickness: 0.05,
         coils: 30,
         color: 0xffff4d,
         castShadow: true

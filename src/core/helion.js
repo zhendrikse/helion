@@ -300,21 +300,22 @@ export class Simulation {
         this._viewport = viewport;
         this._renderer = renderer;
         this._bindings = [];
-        this._plot = null;              // No plot by default
-        this._hud = null;               // No head-up display by default
-        this._onReset = () => {};       // Callback function for client when a reset happens
-        this._iterationFunction = null; // Used to maximize CPU performance
-        this._iterationsPerFrame = 10;
-        this._onFrame = (time) => {};   // 1x per (requestAnimation)frame => machine dependent!
-        this._stepFunction = null;      // Called 1/dt times per second if CPU is capable
+        this._plot = null;                   // No plot by default
+        this._hud = null;                    // No head-up display by default
+        this._onReset = () => {};            // Callback function for client when a reset happens
         this._running = false;
-        this._timeScale = 1;
         this._axesUI = null;
 
+        this._timeScale = 1;
         this._clock = new SimulationClock();
+        this._maxPerformanceFunction = null; // Used to maximize CPU utilization
+        this._iterationsPerFrame = 10;       // Automatically tuned during execution to maximize CPU utilization
+        this._minimumFrameRate = 30;         // Limit beyond which number of iterations per frame is no longer increased
+        this._stepFunction = null;           // Called at fixed dt intervals
+        this._stepsPerClockTick = 1;         // At each clock tick, execute this many (sub)steps
+        this._onFrame = (time) => {};        // Called 1x per (requestAnimation)frame => machine dependent!
         this._lastTime = performance.now();
         this._framesPerSecond = 0;
-        this._minimumFrameRate = 30;    // Default frames/sec
 
         if (headUpDisplay)
             this._initHud()
@@ -330,6 +331,11 @@ export class Simulation {
         return this;
     }
 
+    /**
+     * Determines the simulated time increment.
+     * 
+     * @param dt The simulated time is incremented by dt.
+     */
     runsEvery(dt) {
         this._clock.fixedDt = dt;
         return this;
@@ -365,6 +371,11 @@ export class Simulation {
         this._hud.attach(this._viewport)
     }
 
+    /**
+     * Influences how much simulation time passes per second.
+     *
+     * @param timeScale For example, if timescale equals two, simulation time passes two times more quickly.
+     */
     atSpeed(timeScale) {
         this._timeScale = timeScale;
         return this;
@@ -409,13 +420,27 @@ export class Simulation {
         return this;
     }
 
+    /**
+     * Determines the amount of (integration) steps per clock tick.
+     *
+     * @param substeps the number of steps for each clock tick dt.
+     */
+    substeps(substeps) {
+        this._stepsPerClockTick = substeps;
+        return this;
+    }
+
     _updatePhysics(clock) {
         let i = 0;
         const maxSteps = 10;
 
         while (this._clock.accumulator >= this._clock.fixedDt && i < maxSteps) {
-            this._stepFunction(this._clock, this._clock.fixedDt);
-            this._clock.tick();
+
+            for (let j = 0; j < this._stepsPerClockTick; j++) {
+                this._stepFunction(this._clock, this._clock.fixedDt);
+                this._clock.tick();
+            }
+
             i++;
         }
     }
@@ -433,13 +458,13 @@ export class Simulation {
 
     animate = (timeStamp) => {
         if (this._running) {
-            if (this._iterationFunction) {
+            if (this._maxPerformanceFunction) {
                 if (timeStamp - this._lastTime > 1000) // Update iterations per RAF every second
                     this._tuneIterationsPerFrame(timeStamp);
 
                 let iterations = 0;
                 while (iterations < this._iterationsPerFrame) {
-                    this._iterationFunction(this._clock);
+                    this._maxPerformanceFunction(this._clock);
                     iterations++;
                 }
 
@@ -478,7 +503,7 @@ export class Simulation {
      * the simulate time run synchronously with the real clock time.
      */
     onStep(stepFunction = (clock, dt) => {}) {
-        if (this._iterationFunction)
+        if (this._maxPerformanceFunction)
             throw new Error("Cannot mix iteration mode and step mode");
 
         this._stepFunction = stepFunction;
@@ -498,7 +523,7 @@ export class Simulation {
         if (this._stepFunction)
             throw new Error("Cannot mix iteration mode and step mode");
 
-        this._iterationFunction = maxPerformanceFunction;
+        this._maxPerformanceFunction = maxPerformanceFunction;
         this._iterationsPerFrame = iterationsPerFrame;
         this._minimumFrameRate = minimumFrameRate;
         return this;

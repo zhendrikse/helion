@@ -475,6 +475,108 @@ export class PrincipalDirectionsLayer extends Layer {
     }
 }
 
+// TODO
+// Layer
+// │
+// ├── MeshLayer
+// │
+// ├── LineLayer
+// │     ├── ContoursLayer
+// │     │
+// │     └── VectorLayer
+// │            ├── NormalsLayer
+// │            └── PrincipalDirectionsLayer
+// │
+// └── (later)
+//       TubeLayer
+//       RibbonLayer
+//       StreamLineLayer
+export class NormalsLayer extends Layer {
+    constructor({
+        resolution = new SurfaceResolution(30, 30),
+        scale = 0.3,
+        color = 0x00aaff,
+        material = new LineBasicMaterial({
+            color,
+            transparent: true
+        })
+    } = {}) {
+        super({ resolution });
+
+        this._scale = scale;
+        this._material = material;
+        this._lines = [];
+    }
+
+    initialize(model) {
+        super.initialize(model);
+        this.disposeGeometry?.();
+
+        this._lines = [];
+        for (let i = 0; i <= this._resolution.u; i++)
+            for (let j = 0; j <= this._resolution.v; j++) {
+                const line = this.#createLine();
+                this.add(line);
+                this._lines.push({ i, j, line });
+            }
+    }
+
+    synchronizeWith(model) {
+        let index = 0;
+
+        for (let i = 0; i <= this._resolution.u; i++) {
+            const u = i / this._resolution.u;
+            for (let j = 0; j <= this._resolution.v; j++) {
+                const v = j / this._resolution.v;
+                model.frameAt(u, v, this._frame);
+                this.#updateLine(this._lines[index++].line);
+            }
+        }
+    }
+
+    #updateLine(line) {
+        const pos = line.geometry.attributes.position.array;
+
+        const p = this._frame.position;
+        const n = this._frame.normal;
+
+        pos[0] = p.x;
+        pos[1] = p.y;
+        pos[2] = p.z;
+
+        pos[3] = p.x + this._scale * n.x;
+        pos[4] = p.y + this._scale * n.y;
+        pos[5] = p.z + this._scale * n.z;
+
+        line.geometry.attributes.position.needsUpdate = true;
+    }
+
+    #createLine() {
+        const geometry = new BufferGeometry();
+        geometry.setAttribute("position", new BufferAttribute(new Float32Array(6), 3));
+        return new Line(geometry, this._material);
+    }
+
+    disposeGeometry() {
+        for (const entry of this._lines) {
+            this.remove(entry.line);
+            entry.line.geometry.dispose();
+        }
+
+        this._lines = [];
+    }
+
+    reset() {}
+
+    get boundingBox() {
+        const box = new Box3();
+        for (const entry of this._lines)
+            box.expandByObject(entry.line);
+
+        return box;
+    }
+}
+
 export class ContoursLayer extends Layer {
     constructor({
         resolution = new SurfaceResolution(40, 40),

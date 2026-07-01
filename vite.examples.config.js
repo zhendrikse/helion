@@ -44,6 +44,7 @@ export default defineConfig({
                 star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js'),
                 sun: path.resolve(__dirname, 'examples/astrophysics/scenes/planets/sun.js'),
                 three_body: path.resolve(__dirname, 'examples/kinematics/scenes/three_body.js'),
+                travelling_wave: path.resolve(__dirname, 'examples/waves/scenes/travelling_wave.js'),
                 vibrating_membrane: path.resolve(__dirname, 'examples/waves/scenes/vibrating_membrane.js'),
                 wave_scattering: path.resolve(__dirname, 'examples/waves/scenes/wave_scattering.js')
             },
