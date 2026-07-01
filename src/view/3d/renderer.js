@@ -106,8 +106,8 @@ export class ThreeJsRenderer extends Renderer {
     }
 
     _initLights(shadowsEnabled) {
-        const directionalLight = new DirectionalLight(0xffffff, shadowsEnabled ? 2 : 1);
-        directionalLight.position.set(0, this._camera.position.y, 0);
+        const directionalLight = new DirectionalLight(0xffffff, shadowsEnabled ? 5 : 1);
+        directionalLight.position.set(2, 5, 2);
         this._scene.add(directionalLight);
         this._scene.add(new AmbientLight(0xffffff, 0.8));
 

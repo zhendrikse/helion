@@ -113,9 +113,9 @@ const string = new String1D({
 const simulation = Simulation
     .with({
         htmlDivId: "travellingWaveContainer",
-        cameraPosition: new Vec3(-10, .5, 1.5).multiplyScalar(1.2),
+        cameraPosition: new Vec3(-10, .5, 1.5).multiplyScalar(1.5),
         shadowsEnabled: true,
-        fieldOfView: 60,
+        fieldOfView: 30,
         background: Simulation.Background.FOG,
         headUpDisplay: true
     })
@@ -129,7 +129,7 @@ const simulation = Simulation
         type: Floor.Type.WOOD_WICKER,
         position: new Vec3(0, -1.75, 0),
         planeSizeXy: new Vec2(200, 200),
-        granularity: 5
+        granularity: 20
     }));
 
 // Attach spheres and helices to balls and springs

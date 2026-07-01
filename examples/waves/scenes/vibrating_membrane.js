@@ -57,7 +57,7 @@ Simulation
         membrane.time = clock.simulatedTime;
     })
     .frameSceneOn(surfaceView, {
-        padding: 0.7,
+        padding: 0.65,
         translationY: -1.25
     })
     .append(new Button("Mode-x: ").on(membrane).withProperty("normalModeX").withText(" 1 ")

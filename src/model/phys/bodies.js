@@ -84,8 +84,8 @@ export class TwoBodies extends MathPhysicsModelBehavior {
     }
 
     reset() {
-        this.body1.reset();
-        this.body2.reset();
+        this.body1.reset?.();
+        this.body2.reset?.();
     }
 
     get axis() { return this.body1.positionVectorTo(this.body2); }

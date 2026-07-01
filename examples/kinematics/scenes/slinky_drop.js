@@ -51,13 +51,13 @@ Simulation
         headUpDisplay: true,
         fieldOfView: 50
     })
-    .bind(stick1.onceWith(new Cylinder({ color: 0xbbbbbb})))
-    .bind(stick2.onceWith(new Cylinder({ color: 0xbbbbbb})))
+    .bind(stick1.onceWith(new Cylinder({ color: 0x855E42})))
+    .bind(stick2.onceWith(new Cylinder({ color: 0x855E42})))
     .bind(ball1.alwaysWith(new Sphere({ color: "red" })))
     .bind(ball2.alwaysWith(new Sphere({ color: "green" })))
     .bind(ball3.alwaysWith(new Sphere({ color: "yellow" })))
     .bind(bond.alwaysWith(new Helix({
-        color: 0xffff00,
+        color: 0x00ffff,
         thickness: 0.015
     })))
     .addObject3D(new Floor({

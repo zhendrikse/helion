@@ -103,8 +103,8 @@ const simulation = Simulation
     .substeps(25)
     .addObject3D(new Floor({
         position: new Vec3(0, -5, 0),
-        planeSizeXy: new Vec2(200, 200),
-        granularity: 20,
+        planeSizeXy: new Vec2(100, 100),
+        granularity: 15,
         type: Floor.Type.WOOD_WICKER
     }))
     .bind(new AxialSymmetricBody({
@@ -113,25 +113,25 @@ const simulation = Simulation
             radius: 0.04
         }).alwaysWith(new Cylinder({ color: 0xDEB887 })))
     .bind(new AxialSymmetricBody({
-        axis: new Vec3(0, -3 - 0.04 , 2),
-        position: new Vec3(-1.5, -2, 0),
-        radius: 0.04
+            axis: new Vec3(0, -3 - 0.04 , 2),
+            position: new Vec3(-1.5, -2, 0),
+            radius: 0.04
+        }).alwaysWith(new Cylinder({ color: 0x855E42 })))
+    .bind(new AxialSymmetricBody({
+            axis: new Vec3(0, -3 - 0.04 , -2),
+            position: new Vec3(-1.5, -2, 0),
+            radius: 0.04
+        }).alwaysWith(new Cylinder({ color: 0x855E42 })))
+    .bind(new AxialSymmetricBody({
+            axis: new Vec3(0, -3 - 0.04 , 2),
+            position: new Vec3(1.5, -2, 0),
+            radius: 0.04
     }).alwaysWith(new Cylinder({ color: 0x855E42 })))
     .bind(new AxialSymmetricBody({
-        axis: new Vec3(0, -3 - 0.04 , -2),
-        position: new Vec3(-1.5, -2, 0),
-        radius: 0.04
-    }).alwaysWith(new Cylinder({ color: 0x855E42 })))
-    .bind(new AxialSymmetricBody({
-        axis: new Vec3(0, -3 , 2),
-        position: new Vec3(1.5, -2, 0),
-        radius: 0.04
-    }).alwaysWith(new Cylinder({ color: 0x855E42 })))
-    .bind(new AxialSymmetricBody({
-        axis: new Vec3(0, -3 , -2),
-        position: new Vec3(1.5, -2, 0),
-        radius: 0.04
-    }).alwaysWith(new Cylinder({ color: 0x855E42 })))
+            axis: new Vec3(0, -3 - 0.04 , -2),
+            position: new Vec3(1.5, -2, 0),
+            radius: 0.04
+        }).alwaysWith(new Cylinder({ color: 0x855E42 })))
     .onStep((clock, dt) => {
         for (const p of pendulums)
          p.update(dt);
