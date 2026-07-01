@@ -1,0 +1,1 @@
+import{E as e,Nt as t,O as n,xt as r}from"../assets/src-DCXULflv.js";import{i}from"../assets/fresnel_fragment_shader-C6hldLup.js";r.with({htmlDivId:`saturnContainer`,cameraPosition:new t(1,1.5,4).multiplyScalar(.8),fieldOfView:45,background:r.Background.STARS,scale:1e-8,light:!1}).addObject3D(new i(11579568,1)).bind(e.saturn.onceWith(new n)).start();
