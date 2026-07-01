@@ -55,7 +55,7 @@ class Pendulum extends AxialSymmetricBody {
             this._length * Math.sin(this._theta)
         );
 
-        const pivot = new Vec3(x, this._pivotY, 0);
+        const pivot = new Vec3(this._xPosition, this._pivotY, 0);
         this.axis = newPos.clone().sub(pivot);
         this.state.position.copy(newPos);
         this._rod.synchronize();
