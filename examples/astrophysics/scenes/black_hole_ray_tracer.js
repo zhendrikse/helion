@@ -9,7 +9,7 @@ export class BlackHoleModel extends MathPhysicsModelBehavior {
     constructor({
         width = 160,
         height = 90,
-        cameraPosition = new Vector3(0, 0, -8),
+        cameraPosition = new Vector3(0, 0, -8.5),
         blackHolePosition = new Vector3(0, 0, 0),
         rotation = new Vector3(MathUtils.degToRad(-4), 0, MathUtils.degToRad(-15))
     } = {}) {
@@ -53,7 +53,7 @@ export class ShaderView extends Renderable3D {
 const simulation = Simulation
     .with({
         htmlDivId: "blackHoleRayTraceContainer",
-        cameraPosition: new Vector3(0, 0, .8),
+        cameraPosition: new Vector3(0, 0, .6),
         fieldOfView: 75
     });
 

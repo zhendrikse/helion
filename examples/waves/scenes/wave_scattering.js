@@ -9,7 +9,7 @@ const resolution = 256;
 const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(resolution, resolution),
     colorMapper: new ColorMappers().get(ColorMappers.WaterAlternative)(),
-    normalizer: new FixedIntervalNormalizer(new Interval(-1, 1)),
+    normalizer: new FixedIntervalNormalizer(new Interval(-2, 2)),
     opacity: 0.9
 })
 waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
@@ -56,8 +56,9 @@ Simulation
         opacity: 0.5,
         color: 0x008080
     })))
-    .runsEvery(0.02)
+    .runsEvery(0.01)
     .atSpeed(3)
+    .substeps(5)
     .onStep((_, dt) => field.evolve(solver, dt))
     .onReset(() => reset(configuration))
     .appendStartStopResetUI()
