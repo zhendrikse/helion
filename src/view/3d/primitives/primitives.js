@@ -383,6 +383,8 @@ class Coils extends Curve {
         this.radius = radius;
         this.waveAmp = waveAmp;
         this.wavePhase = wavePhase;
+
+        this._quaternion = new Quaternion();
     }
 
     updateAxis = (newAxis) => {
@@ -398,11 +400,9 @@ class Coils extends Curve {
 
         // Longitudinal wave across spring
         const z = t * length + this.waveAmp * Math.sin(Math.PI * t) * Math.sin(2 * Math.PI * t * 3 - this.wavePhase);
-
         const point = new Vector3(x, y, z);
-        const quaternion = new Quaternion();
-        quaternion.setFromUnitVectors(Arrow.FORWARD, this._direction);
-        point.applyQuaternion(quaternion);
+        this._quaternion.setFromUnitVectors(Arrow.FORWARD, this._direction);
+        point.applyQuaternion(this._quaternion);
 
         return point.add(this.start);
     }
@@ -415,13 +415,12 @@ export class Helix extends Renderable3D {
         longitudinalOscillation = false,
         tubularSegments = 400,
         radialSegments = 16,
-        radius = 0.125,
         thickness = 0.01,
         visible = true,
         castShadow = false
     } = {}) {
         super();
-        const curve = new Coils(new Vector3(), new Vector3(), coils, radius, longitudinalOscillation ? 0.05 : 0);
+        const curve = new Coils(new Vector3(), new Vector3(), coils, 1, longitudinalOscillation ? 0.05 : 0);
         const geometry = new TubeGeometry(curve, tubularSegments, thickness, radialSegments, false);
         const material = new MeshStandardMaterial({
             color: color,
@@ -434,7 +433,6 @@ export class Helix extends Renderable3D {
         this.add(this._mesh);
         this._curve = curve;
         this._longitudinalOscillation = longitudinalOscillation;
-        this._radius = radius;
         this._tubularSegments = tubularSegments;
         this._radialSegments = radialSegments;
         this._thickness = thickness;
