@@ -26,7 +26,7 @@ class String1D {
         this._l0 = 0.9 * length / (count - 1);
 
         this.#createBalls(ballRadius, totalMass, count);
-        this.#createBonds(ballRadius * .2, count);
+        this.#createBonds(ballRadius * .33, count);
         for (let i = 0; i < count; i++)
             this._forces.push(new Vec3());
     }

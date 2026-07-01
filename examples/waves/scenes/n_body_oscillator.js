@@ -109,23 +109,24 @@ const simulation = Simulation
     });
 
 // Attach spheres and helices to balls and springs
-const bondViews = [];
-for (let i = 0; i < chain.size; i++) {
-    const color = i === 0 || i === chain.size - 1 ? 0x3333ff : 0xff0000;
-    const sphere = new Sphere({ color, castShadow: true });
-    simulation.bind(chain.ballAt(i).alwaysWith(sphere));
-    if (i === 0)
-        continue;
+const sphereViews = [];
+for (let i = 0; i < chain.size; i++)
+    sphereViews.push(new Sphere({
+        color: i === 0 || i === chain.size - 1 ? 0x3333ff : 0xff0000,
+        castShadow: true
+    }));
 
-    const bondView = new SwitchableBondView({
+const bondViews = [];
+for (let i = 1; i < chain.size; i++)
+    bondViews.push(new SwitchableBondView({
         thickness: 0.05,
         coils: 30,
         color: 0xffff4d,
         castShadow: true
-    });
-    simulation.bind(chain.bondAt(i - 1).alwaysWith(bondView));
-    bondViews.push(bondView);
-}
+    }));
+
+bondViews.forEach((bond, i) => simulation.bind(chain.bondAt(i).alwaysWith(bond)));
+sphereViews.forEach((sphere, i) => simulation.bind(chain.ballAt(i).alwaysWith(sphere)));
 
 simulation
     .append(new RadioGroup(
