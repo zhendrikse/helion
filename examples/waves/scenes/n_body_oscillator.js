@@ -32,15 +32,15 @@ class Chain {
 
     set damping(damping) { this._damping = damping; }
 
-    _updateChainSegment(ball1, ball2, bond, dt) {
-        const relativeVelocity = ball1.velocity.clone().sub(ball2.velocity);
+    _updateChainSegment(left, right, bond, dt) {
+        const relativeVelocity = left.velocity.clone().sub(right.velocity);
         const dampingForce = relativeVelocity
             .projectOnVector(bond.axis.clone().normalize())
             .multiplyScalar(this._damping);
         const force = bond.force.add(dampingForce);
 
-        ball1.apply(force.clone().negate(), dt);
-        ball2.apply(force, dt);
+        left.apply(force.clone().negate(), dt);
+        right.apply(force, dt);
         bond.synchronize();
     }
 
@@ -77,8 +77,8 @@ const simulation = Simulation
     .setupGraphWith({
             dataDefinition: [
                 { label: "t" },
-                { label: "ball1", color: "blue" },
-                { label: "ball2", color: "red" },
+                { label: "left", color: "blue" },
+                { label: "right", color: "red" },
                 { label: "ball3", color: "red" },
                 { label: "ball4", color: "red" },
                 { label: "ball5", color: "blue" },

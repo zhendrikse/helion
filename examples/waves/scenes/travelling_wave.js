@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Vec3, Simulation, Sphere, Floor, Bond, SwitchableBondView, RadioGroup, RadioButton,
-    Slider, Range, Vec2
+    Slider, Range, Vec2, Checkbox
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -26,7 +26,7 @@ class String1D {
         this._l0 = 0.9 * length / (count - 1);
 
         this.#createBalls(ballRadius, totalMass, count);
-        this.#createBonds(ballRadius * .5, count);
+        this.#createBonds(ballRadius * .2, count);
         for (let i = 0; i < count; i++)
             this._forces.push(new Vec3());
     }
@@ -139,23 +139,23 @@ const simulation = Simulation
     }));
 
 // Attach spheres and helices to balls and springs
-const bondViews = [];
-for (let i = 0; i < string.size; i++) {
-    simulation.bind(string.ballAt(i).alwaysWith(new Sphere({ castShadow: true })));
-    if (i === 0)
-        continue;
+const sphereViews = [];
+for (let i = 0; i < string.size; i++)
+    sphereViews.push(new Sphere({ castShadow: true }));
 
-    const bondView = new SwitchableBondView({
+const bondViews = [];
+for (let i = 1; i < string.size; i++)
+    bondViews.push(new SwitchableBondView({
         thickness: 4e-3,
         coils: 10,
         color: 0x00ff00,
         castShadow: true,
         tubularSegments: 100, // for performance
         bondType: SwitchableBondView.Type.Cylinder
-    });
-    simulation.bind(string.bondAt(i - 1).alwaysWith(bondView));
-    bondViews.push(bondView);
-}
+    }));
+
+bondViews.forEach((bond, i) => simulation.bind(string.bondAt(i).alwaysWith(bond)));
+sphereViews.forEach((sphere, i) => simulation.bind(string.ballAt(i).alwaysWith(sphere)));
 
 simulation
     .append(new RadioGroup(
@@ -172,6 +172,12 @@ simulation
             })
         ).checked(1)
     )
+    .append(new Checkbox("Show nodes ")
+        .addEventListener("change",
+                event => sphereViews.forEach(sphere => sphere.visible = event.target.checked)
+        )
+        .checked(true)
+    );
 //     .append(new Slider("Damping ")
 //         .withRange(new Range(0.2, 1, .01))
 //         .on(chain)
