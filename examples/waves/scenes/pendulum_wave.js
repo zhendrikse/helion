@@ -26,7 +26,7 @@ class Pendulum extends AxialSymmetricBody {
         this._mass = mass;
         this._pivotY = pivotY;
 
-        const anchor = new Vec3(position, -2, 0);
+        const anchor = new Vec3(position, pivotY, 0);
         this._rod = Bond.between(
             this.and({
                 position: anchor,
@@ -42,24 +42,20 @@ class Pendulum extends AxialSymmetricBody {
     get rod() { return this._rod; }
 
     update(dt) {
-        // simple pendulum dynamics
         const alpha = (-g / this._length) * Math.sin(this._theta);
-
         this._omega += alpha * dt;
         this._theta += this._omega * dt;
         this.updatePosition();
     }
 
     updatePosition() {
-        const x = this._xPosition;
+        const newPos = new Vec3(
+            this._xPosition,
+            this._pivotY - this._length * Math.cos(this._theta),
+            this._length * Math.sin(this._theta)
+        );
 
         const pivot = new Vec3(x, this._pivotY, 0);
-
-        const y = this._pivotY - this._length * Math.cos(this._theta);
-        const z = this._length * Math.sin(this._theta);
-
-        const newPos = new Vec3(x, y, z);
-
         this.axis = newPos.clone().sub(pivot);
         this.state.position.copy(newPos);
         this._rod.synchronize();
