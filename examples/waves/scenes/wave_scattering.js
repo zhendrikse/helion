@@ -57,8 +57,7 @@ Simulation
         color: 0x008080
     })))
     .runsEvery(1e-3)
-    .substeps(2)
-    .onStep((_, dt) => field.evolve(solver, 0.01))
+    .onStep((_, dt) => field.evolve(solver, 0.015))
     .onReset(() => reset(configuration))
     .appendStartStopResetUI()
     .append(waveEquation.ui())
@@ -66,10 +65,10 @@ Simulation
     .append(configuration.ui())
     .append(waterSurface.ui())
     .append(
-        new RadioGroup(
-            "Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface),
-            "Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs),
-        ).checked(0)
+        new RadioGroup()
+            .add("Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface))
+            .add("Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
+            .checked(0)
     )
     .append(waterSurface.glyphLayer.ui())
     .append(new Checkbox("Wireframe ")

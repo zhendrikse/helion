@@ -79,11 +79,11 @@ Simulation
         .checked(true)
         .togetherWith(surfaceView.surfaceLayer.ui()))
     .append(
-        new RadioGroup(
-            "Smooth", () => surfaceView.display(SurfaceVisualization.Display.Surface),
-            "Glyphs", () => surfaceView.display(SurfaceVisualization.Display.Glyphs),
-            "None", () => surfaceView.display(SurfaceVisualization.Display.None)
-        ).checked(0)
+        new RadioGroup()
+            .add("Smooth", () => surfaceView.display(SurfaceVisualization.Display.Surface))
+            .add("Glyphs", () => surfaceView.display(SurfaceVisualization.Display.Glyphs))
+            .add("None", () => surfaceView.display(SurfaceVisualization.Display.None))
+            .checked(0)
     )
     .append(surfaceView.glyphLayer.ui())
     .start();

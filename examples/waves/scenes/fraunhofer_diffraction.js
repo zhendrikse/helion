@@ -138,10 +138,10 @@ Simulation
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(50)
     })
     .bind(intensityField.alwaysWith(intensityPixelRaster))
-    .append(new RadioGroup(
-        "🟩 Square", () => fraunhoferSimulation.apertureType = Aperture.Type.SQUARE,
-        "🟢 Circle", () => fraunhoferSimulation.apertureType = Aperture.Type.CIRCULAR
-    ).checked(1))
+    .append(new RadioGroup()
+        .add("🟩 Square", () => fraunhoferSimulation.apertureType = Aperture.Type.SQUARE)
+        .add("🟢 Circle", () => fraunhoferSimulation.apertureType = Aperture.Type.CIRCULAR)
+        .checked(1))
     .append(new Slider("Size: ")
         .withValue(200)
         .withRange(new Range(50, 300, 1))

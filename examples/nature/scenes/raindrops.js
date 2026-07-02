@@ -62,10 +62,10 @@ Simulation
     })
     .append(waterSurface.ui())
     .append(
-        new RadioGroup(
-            "Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface),
-            "Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs),
-        ).checked(1)
+        new RadioGroup()
+            .add("Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface))
+            .add("Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
+            .checked(1)
     )
     .append(waterSurface.glyphLayer.ui())
     .append(new Checkbox("Wireframe ")

@@ -47,13 +47,14 @@ const simulation = Simulation
     })
     .bind(landscape.surface.onceWith(surfaceView))
     .append(surfaceView.ui())
-    .append(new RadioGroup(
-        "Perlin noise: ", () => {
+    .append(new RadioGroup()
+        .add("Perlin noise: ", () => {
             landscape.noiseType = "perlin";
             simulation.bind(landscape.surface.onceWith(surfaceView));
-        },
-        "Diamond-square: ", () => {
+        })
+        .add("Diamond-square: ", () => {
             landscape.noiseType = "diamondSquare";
             simulation.bind(landscape.surface.onceWith(surfaceView));
-        }).checked(1)
+        })
+        .checked(1)
     );

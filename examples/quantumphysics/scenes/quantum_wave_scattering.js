@@ -53,10 +53,10 @@ const simulation = Simulation
     .bind(potential.onceWith(potentialBarrier2d))
     .onReset(() => reset(shapeConfiguration, potentialStrength, softness))
     .maxOutCpu(() => psi.evolve(solver, dt), 20, 10)
-    .append(new RadioGroup(
-        "2D", event => setDimension(false),
-        "3D", event => setDimension(true)
-    ).checked(1))
+    .append(new RadioGroup()
+        .add("2D", event => setDimension(false))
+        .add("3D", event => setDimension(true))
+        .checked(1))
     .append(new Checkbox("🌈 Show phase color ")
         .on(waveFunctionSurface)
         .withProperty("phaseColor")
