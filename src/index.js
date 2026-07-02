@@ -1,5 +1,5 @@
 export {
-    AxialSymmetricBody, RadialSymmetricBody, Lattice,
+    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology,
     EC, Body, G, Spring, Block, gravitationalForceBetween, Bond
 } from "./model/phys/bodies.js";
 
@@ -33,7 +33,7 @@ export { SunView } from "./view/3d/astro/sun.js";
 export { Saturn } from "./view/3d/astro/saturn.js";
 export { Planets, Sun } from "./model/phys/planets.js";
 export { WaveEquationSolver, SchrodingerSolver } from "./model/math/numerics/solvers/solvers.js";
-export { DropdownMenu, Checkbox, Button, Slider, RadioButton, RadioGroup } from "./core/controls.js";
+export { DropdownMenu, Checkbox, Button, Slider, RadioGroup } from "./core/controls.js";
 export { Simulation, Registry } from "./core/helion.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
@@ -48,7 +48,7 @@ export {
 
 export {
     OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial,
-    ArrowField, SwitchableBondView
+    ArrowField, SwitchableBondView, LatticeView
 } from "./view/3d/composite/composites.js";
 
 export {

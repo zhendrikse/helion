@@ -1,6 +1,6 @@
 import {
     linspace, meshgrid, ScalarFieldIntensityPixelRaster, WavelengthColorMapper, Vec3,
-    DiscreteScalarField, Simulation, RadioButton, Slider, Checkbox, Range
+    DiscreteScalarField, Simulation, Slider, Checkbox, Range, RadioGroup
 } from "../../../src/index.js";
 
 const initialLambda = 550;
@@ -138,16 +138,10 @@ Simulation
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(50)
     })
     .bind(intensityField.alwaysWith(intensityPixelRaster))
-    .append(new RadioButton("🟩 Square")
-        .on(fraunhoferSimulation)
-        .withProperty("apertureType")
-        .withValue("square")
-        .togetherWith(new RadioButton("🟢 Circle")
-            .on(fraunhoferSimulation)
-            .withProperty("apertureType")
-            .withValue("circle")
-            .checked(true))
-    )
+    .append(new RadioGroup(
+        "🟩 Square", () => fraunhoferSimulation.apertureType = Aperture.Type.SQUARE,
+        "🟢 Circle", () => fraunhoferSimulation.apertureType = Aperture.Type.CIRCULAR
+    ).checked(1))
     .append(new Slider("Size: ")
         .withValue(200)
         .withRange(new Range(50, 300, 1))

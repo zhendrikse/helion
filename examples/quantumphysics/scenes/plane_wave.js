@@ -1,6 +1,6 @@
 import {
     Simulation, OneDimensionalComplexPlaneWave, OneDimensionalComplexPlaneWave3D,
-    Vec3, Button, Slider, RadioButton, Range
+    Vec3, Button, Slider, Range
 } from "../../../src/index.js";
 
 //
@@ -27,7 +27,7 @@ const planeWave = new OneDimensionalComplexPlaneWave({
 //
 // View for 3D canvas
 //
-const simulation = Simulation
+Simulation
     .with({
         htmlDivId: "planeWaveContainer3d",
         cameraPosition: new Vec3(100, 100, 200),

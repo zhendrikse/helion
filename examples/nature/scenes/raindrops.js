@@ -1,7 +1,7 @@
 import {
     DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
     SurfaceResolution, WaveEquationSolver, GaussianImpulse, SurfaceVisualization,
-    FixedIntervalNormalizer, RadioGroup, RadioButton, Checkbox, ColorMappers
+    FixedIntervalNormalizer, RadioGroup, Checkbox, ColorMappers
 } from "../../../src/index.js";
 
 export class WaveEquation {
@@ -63,11 +63,8 @@ Simulation
     .append(waterSurface.ui())
     .append(
         new RadioGroup(
-            new RadioButton("Smooth")
-                .addEventListener("change", () => waterSurface.display(SurfaceVisualization.Display.Surface)),
-
-            new RadioButton("Glyphs")
-                .addEventListener("change", () => waterSurface.display(SurfaceVisualization.Display.Glyphs)),
+            "Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface),
+            "Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs),
         ).checked(1)
     )
     .append(waterSurface.glyphLayer.ui())

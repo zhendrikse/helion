@@ -1,6 +1,6 @@
 import {
     Domain, MultivariateFunctionSurface, Simulation, Button, SurfaceVisualization,
-    FixedIntervalNormalizer, Interval, ContoursLayer, RadioButton, RadioGroup, Checkbox
+    FixedIntervalNormalizer, Interval, ContoursLayer, RadioGroup, Checkbox
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -80,14 +80,9 @@ Simulation
         .togetherWith(surfaceView.surfaceLayer.ui()))
     .append(
         new RadioGroup(
-            new RadioButton("Smooth")
-                .addEventListener("change", () => surfaceView.display(SurfaceVisualization.Display.Surface)),
-
-            new RadioButton("Glyphs")
-                .addEventListener("change", () => surfaceView.display(SurfaceVisualization.Display.Glyphs)),
-
-            new RadioButton("None")
-                .addEventListener("change", () => surfaceView.display(SurfaceVisualization.Display.None))
+            "Smooth", () => surfaceView.display(SurfaceVisualization.Display.Surface),
+            "Glyphs", () => surfaceView.display(SurfaceVisualization.Display.Glyphs),
+            "None", () => surfaceView.display(SurfaceVisualization.Display.None)
         ).checked(0)
     )
     .append(surfaceView.glyphLayer.ui())

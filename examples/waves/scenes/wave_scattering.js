@@ -2,7 +2,7 @@ import {
     DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
     WaveEquationSolver, PotentialField3DRaster, FixedIntervalNormalizer,
     SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization,
-    SurfaceResolution, RadioGroup, RadioButton, Checkbox, ColorMappers
+    SurfaceResolution, RadioGroup, Checkbox, ColorMappers
 } from "../../../src/index.js";
 
 const resolution = 256;
@@ -68,11 +68,8 @@ Simulation
     .append(waterSurface.ui())
     .append(
         new RadioGroup(
-            new RadioButton("Smooth")
-                .addEventListener("change", () => waterSurface.display(SurfaceVisualization.Display.Surface)),
-
-            new RadioButton("Glyphs")
-                .addEventListener("change", () => waterSurface.display(SurfaceVisualization.Display.Glyphs)),
+            "Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface),
+            "Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs),
         ).checked(0)
     )
     .append(waterSurface.glyphLayer.ui())

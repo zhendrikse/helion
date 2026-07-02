@@ -285,7 +285,7 @@ export class Lattice extends MathPhysicsModelBehavior {
         }));
     }
 
-    set bondForce(value) { this._bonds.forEach(bond => bond.k = (this.size -1) * value); }
+    set bondForce(value) { this._bonds.forEach(bond => bond.k = this.bondCount * value); }
 
     set omega(value) { this._omega = value; }
 
@@ -294,7 +294,8 @@ export class Lattice extends MathPhysicsModelBehavior {
             bond.damping = value;
     }
 
-    get size() { return this._balls.length }
+    get bodyCount() { return this._balls.length }
+    get bondCount() { return this._bonds.length }
 
     bodyAt(index) { return this._balls[index]; }
 
@@ -310,8 +311,41 @@ export class Lattice extends MathPhysicsModelBehavior {
         for (const bond of this._bonds)
             bond.applyForce();
 
-        for (let i = 1; i < this.size - 1; i++)
+        for (let i = 1; i < this.bodyCount - 1; i++)
             this._balls[i].integrate(dt);
+    }
+}
+
+export class ChainTopology {
+    constructor({
+        count = 100,
+        length = 20,
+        ballRadius = 7.5e-2,
+        totalMass = 0.025
+    } = {}) {
+        this._count = count;
+        this._length = length;
+        this._ballRadius = ballRadius;
+        this._totalMass = totalMass;
+    }
+
+    applyTo(lattice) {
+        const dx = this._length / (this._count - 1);
+
+        for (let i = 0; i < this._count; i++)
+            lattice.addBody(new RadialSymmetricBody({
+                radius: this._ballRadius,
+                mass: this._totalMass / this._count,
+                position: new Vec3(-this._length / 2 + i * dx, 0, 0)
+            }));
+
+        for (let i = 0; i < this._count - 1; i++)
+            lattice.connect(lattice.bodyAt(i), lattice.bodyAt(i + 1), {
+                k: 1.5 * (this._count - 1),
+                radius: this._ballRadius * .33,
+                restLength: 0.9 * this._length / (this._count - 1),
+                damping: 0.2
+            });
     }
 }
 

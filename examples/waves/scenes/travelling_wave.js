@@ -1,6 +1,6 @@
 import {
-    RadialSymmetricBody, Vec3, Simulation, Sphere, Floor, SwitchableBondView, RadioGroup, RadioButton,
-    Slider, Range, Vec2, Checkbox, Lattice
+    Vec3, Simulation, Sphere, Floor, SwitchableBondView,
+    Slider, Range, Vec2, Lattice, LatticeView, ChainTopology
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -24,45 +24,28 @@ class BoundaryCondition {
     set amplitude(value) { this._amplitude = value; }
 }
 
-export class ChainTopology {
-    constructor({
-        count = 100,
-        length = 20,
-        ballRadius = 7.5e-2,
-        totalMass = 0.025
-    } = {}) {
-        this._count = count;
-        this._length = length;
-        this._ballRadius = ballRadius;
-        this._totalMass = totalMass;
-    }
-
-    applyTo(lattice) {
-        const dx = this._length / (this._count - 1);
-
-        for (let i = 0; i < this._count; i++)
-            lattice.addBody(new RadialSymmetricBody({
-                radius: this._ballRadius,
-                mass: this._totalMass / this._count,
-                position: new Vec3(-this._length / 2 + i * dx, 0, 0)
-            }));
-
-        for (let i = 0; i < this._count - 1; i++)
-            lattice.connect(lattice.bodyAt(i), lattice.bodyAt(i + 1), {
-                k: 1.5 * (this._count - 1),
-                radius: this._ballRadius * .33,
-                restLength: 0.9 * this._length / (this._count - 1),
-                damping: 0.2
-            });
-    }
-}
-
 const boundaryCondition = new BoundaryCondition();
 const chain = new Lattice()
     .apply(new ChainTopology())
     .addBoundaryCondition(boundaryCondition);
 
-const simulation = Simulation
+const latticeView = LatticeView.from({
+    bodyView: Sphere,
+    bondView: SwitchableBondView,
+    bodyArgs: {
+        castShadow: true
+    },
+    bondArgs: {
+        thickness: 4e-3,
+        coils: 10,
+        color: 0x00ff00,
+        castShadow: true,
+        tubularSegments: 100, // for performance
+        bondType: SwitchableBondView.Type.Cylinder
+    }
+});
+
+Simulation
     .with({
         htmlDivId: "travellingWaveContainer",
         cameraPosition: new Vec3(-10, .5, 1.5).multiplyScalar(1.5),
@@ -77,53 +60,14 @@ const simulation = Simulation
     .onStep((clock, dt) => {
         chain.update(clock.simulatedTime, dt)
     })
+    .bind(chain.alwaysWith(latticeView))
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
         position: new Vec3(0, -1.75, 0),
         planeSizeXy: new Vec2(200, 200),
         granularity: 20
-    }));
-
-// Attach spheres and helices to balls and springs
-const sphereViews = [];
-for (let i = 0; i < chain.size; i++)
-    sphereViews.push(new Sphere({ castShadow: true }));
-
-const bondViews = [];
-for (let i = 1; i < chain.size; i++)
-    bondViews.push(new SwitchableBondView({
-        thickness: 4e-3,
-        coils: 10,
-        color: 0x00ff00,
-        castShadow: true,
-        tubularSegments: 100, // for performance
-        bondType: SwitchableBondView.Type.Cylinder
-    }));
-
-bondViews.forEach((bond, i) => simulation.bind(chain.bondAt(i).alwaysWith(bond)));
-sphereViews.forEach((sphere, i) => simulation.bind(chain.bodyAt(i).alwaysWith(sphere)));
-
-simulation
-    .append(new RadioGroup(
-        new RadioButton("Springs ")
-            .checked(true)
-            .addEventListener("change", event => {
-                for (const bondView of bondViews)
-                    bondView.bondType = SwitchableBondView.Type.Spring;
-            }),
-        new RadioButton("Cylinders")
-            .addEventListener("change", event => {
-                for (const bondView of bondViews)
-                    bondView.bondType = SwitchableBondView.Type.Cylinder;
-            })
-        ).checked(1)
-    )
-    .append(new Checkbox("Show nodes ")
-        .addEventListener("change",
-            event => sphereViews.forEach(sphere => sphere.visible = event.target.checked)
-        )
-        .checked(true)
-    )
+    }))
+    .append(latticeView.ui())
     .append(new Slider("Bond force ")
         .on(chain)
         .withProperty("bondForce")

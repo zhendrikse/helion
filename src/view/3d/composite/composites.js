@@ -1,12 +1,13 @@
 import {
-    Group, Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute,
+    Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute,
     BufferGeometry, InstancedMesh, Matrix4, Quaternion, InstancedBufferAttribute,
     MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry
 } from "three";
-import {Arrow, Cylinder, Helix} from "../primitives/primitives.js";
-import { Complex, Vec3 } from "../../../model/math/math.js";
+import {Arrow, Cylinder, Helix, Sphere} from "../primitives/primitives.js";
+import {Vec3} from "../../../model/math/math.js";
 import { Renderable3D } from "../../renderer.js";
-import { MathPhysicsModelBehavior } from "../../../core/helion.js";
+import {MathPhysicsModelBehavior} from "../../../core/helion.js";
+import {Checkbox, CompoundControl, RadioGroup} from "../../../core/controls.js";
 
 //
 // Point cloud
@@ -469,5 +470,76 @@ export class ArrowField extends Renderable3D {
         this._headMesh.instanceMatrix.needsUpdate = true;
         this._shaftMesh.instanceColor.needsUpdate = true;
         this._headMesh.instanceColor.needsUpdate = true;
+    }
+}
+
+export class LatticeView extends Renderable3D {
+    constructor({ bodyViewFactory, bondViewFactory }) {
+        super();
+
+        this._bodyViewFactory = bodyViewFactory;
+        this._bondViewFactory = bondViewFactory;
+
+        this._bodyViews = [];
+        this._bondViews = [];
+    }
+
+    static from({
+                    bodyView = Sphere,
+                    bondView = SwitchableBondView,
+                    bodyArgs = {},
+                    bondArgs = {}
+                }) {
+        return new LatticeView({
+            bodyViewFactory: () => new bodyView(bodyArgs),
+            bondViewFactory: () => new bondView(bondArgs)
+        });
+    }
+
+    ui() {
+        return new CompoundControl()
+            .add(new RadioGroup()
+                .add("Springs", () => {
+                    for (const bondView of this._bondViews)
+                        bondView.bondType = SwitchableBondView.Type.Spring;
+                })
+                .add("Cylinders", () => {
+                    for (const bondView of this._bondViews)
+                        bondView.bondType = SwitchableBondView.Type.Cylinder;
+                })
+                .checked(0)
+            )
+            .add(new Checkbox("Show nodes ")
+                .addEventListener("change",
+                    event => this._bodyViews.forEach(sphere => sphere.visible = event.target.checked)
+                )
+                .checked(true)
+            );
+    }
+
+    canBindTo(model) {
+        return model.bodyAt && model.bondAt;
+    }
+
+    initialize(lattice) {
+        for (let i = 0; i < lattice.bodyCount; i++) {
+            const view = this._bodyViewFactory();
+            this._bodyViews.push(view);
+            this.add(view);
+        }
+
+        for (let i = 0; i < lattice.bondCount; i++) {
+            const view = this._bondViewFactory();
+            this._bondViews.push(view);
+            this.add(view);
+        }
+    }
+
+    synchronizeWith(lattice) {
+        for (let i = 0; i < lattice.bodyCount; i++)
+            this._bodyViews[i].synchronizeWith(lattice.bodyAt(i));
+
+        for (let i = 0; i < lattice.bondCount; i++)
+            this._bondViews[i].synchronizeWith(lattice.bondAt(i));
     }
 }

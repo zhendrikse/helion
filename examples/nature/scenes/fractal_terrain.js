@@ -1,6 +1,6 @@
 import {
     DiscreteScalarField, DiscreteFieldSurface, Simulation, PerlinNoiseOperator, Vec3, DiamondSquareOperator,
-    RadioButton, SurfaceVisualization, SurfaceResolution, RadioGroup, ColorMappers
+    SurfaceVisualization, SurfaceResolution, RadioGroup, ColorMappers
 } from "../../../src/index.js";
 
 class Landscape {
@@ -48,17 +48,12 @@ const simulation = Simulation
     .bind(landscape.surface.onceWith(surfaceView))
     .append(surfaceView.ui())
     .append(new RadioGroup(
-        new RadioButton("Perlin noise: ")
-            .withValue("perlin")
-            .on(landscape)
-            .withProperty("noiseType")
-            .addEventListener("change", () =>
-                simulation.bind(landscape.surface.onceWith(surfaceView))),
-        new RadioButton("Diamond-square: ")
-            .withValue("diamondSquare")
-            .checked(true)
-            .on(landscape)
-            .withProperty("noiseType")
-            .addEventListener("change", () =>
-                simulation.bind(landscape.surface.onceWith(surfaceView))))
+        "Perlin noise: ", () => {
+            landscape.noiseType = "perlin";
+            simulation.bind(landscape.surface.onceWith(surfaceView));
+        },
+        "Diamond-square: ", () => {
+            landscape.noiseType = "diamondSquare";
+            simulation.bind(landscape.surface.onceWith(surfaceView));
+        }).checked(1)
     );

@@ -1,5 +1,5 @@
 import {
-    RadialSymmetricBody, Vec3, Simulation, Sphere, Floor, Bond, SwitchableBondView, RadioGroup, RadioButton,
+    RadialSymmetricBody, Vec3, Simulation, Sphere, Floor, Bond, SwitchableBondView, RadioGroup,
     Slider, Range, Vec2
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
@@ -124,17 +124,14 @@ sphereViews.forEach((sphere, i) => simulation.bind(chain.ballAt(i).alwaysWith(sp
 
 simulation
     .append(new RadioGroup(
-        new RadioButton("Springs ")
-            .checked(true)
-            .addEventListener("change", event => {
+        "Springs ", event => {
                 for (const bondView of bondViews)
                     bondView.bondType = SwitchableBondView.Type.Spring;
-        }),
-        new RadioButton("Cylinders")
-            .addEventListener("change", event => {
+        },
+        "Cylinders", event => {
                 for (const bondView of bondViews)
                     bondView.bondType = SwitchableBondView.Type.Cylinder;
-        }))
+        }).checked(0)
     )
     .append(new Slider("Damping ")
         .withRange(new Range(0.2, 1, .01))

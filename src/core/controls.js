@@ -238,56 +238,43 @@ export class Checkbox extends HtmlControl {
     }
 }
 
-export class RadioGroup extends CompoundControl {
-    constructor(...buttons) {
+export class RadioGroup extends HtmlControl {
+    constructor() {
         super();
+
         this._buttons = [];
+        this._groupName = generateUUID();
 
-        const groupName = generateUUID();
-        for (const button of buttons) {
-            if (!(button instanceof RadioButton))
-                throw new Error("RadioGroup can only contain RadioButtons.");
+        this._inputControl = document.createElement("div");
+        this._inputControl.style.display = "flex";
+        this._inputControl.style.gap = "8px";
+    }
 
-            button._inputControl.name = groupName;
-            for (let i = 0; i < buttons.length - 1; i++)
-                buttons[i].togetherWith(buttons[i + 1]);
+    add(label, callback) {
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = this._groupName;
 
-            this.add(buttons[0]);
-            this._buttons.push(button);
-        }
+        const text = document.createElement("label");
+        text.textContent = label;
+
+        radio.addEventListener("change", event => {
+            if (event.target.checked)
+                callback(event);
+
+            this._simulation.onUserInteraction(event);
+        });
+
+        this._inputControl.append(radio, text);
+        this._buttons.push(radio);
+
+        return this;
     }
 
     checked(index) {
-        if (index >= 0 && index < this._controls.length)
-            this._buttons[index].checked(true);
+        if (index >= 0 && index < this._buttons.length)
+            this._buttons[index].checked = true;
 
-        return this;
-    }
-}
-
-export class RadioButton extends HtmlControl {
-    constructor(label) {
-        super(label);
-        this._targetObject = null;
-
-        this._inputControl = document.createElement("input");
-        this._inputControl.type = "radio";
-        this._inputControl.id = this._labelId;
-        this._inputControl.style.marginRight = "10px";
-    }
-
-    checked(value) {
-        this._inputControl.checked = !!value;
-        return this;
-    }
-
-    withProperty(name) {
-        this.addEventListener("click", event => this._targetObject[name] = event.target.value);
-        return this;
-    }
-
-    withValue(value) {
-        this._inputControl.value = value;
         return this;
     }
 }
