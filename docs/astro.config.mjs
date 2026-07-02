@@ -28,6 +28,11 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
+					label: 'Atomic & molecular physics',
+					items: [{ autogenerate: { directory: 'molecularphysics' } }],
+				},
+				{
+					collapsed: true,
 					label: 'Electromagnetism',
 					items: [{ autogenerate: { directory: 'electromagnetism' } }],
 				},

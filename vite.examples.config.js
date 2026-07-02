@@ -16,6 +16,7 @@ export default defineConfig({
                 charged_rod: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_rod.js'),
                 charged_sheet: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_sheet.js'),
                 coral_2d: path.resolve(__dirname, 'examples/nature/scenes/coral_2d.js'),
+                cubic_lattice: path.resolve(__dirname, 'examples/molecularphysics/scenes/cubic_lattice.js'),
                 dipole_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/dipole_field.js'),
                 double_slit: path.resolve(__dirname, 'examples/quantumphysics/scenes/double_slit.js'),
                 quantum_wave_scattering: path.resolve(__dirname, 'examples/quantumphysics/scenes/quantum_wave_scattering.js'),
