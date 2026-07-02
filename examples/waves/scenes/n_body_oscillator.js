@@ -13,16 +13,15 @@ class Chain {
         this._balls = [];
         this._bonds = [];
 
-        for (let i = 0; i < numBalls; i++) {
+        for (let i = 0; i < numBalls; i++)
             this._balls.push(new RadialSymmetricBody({
                 position: new Vec3(i * 10 - 30, 3, 0),
                 radius: 1,
                 mass: 1.5
             }));
 
-            if (i !== 0)
-                this._bonds.push(Bond.between(this._balls[i - 1].and(this._balls[i]), k, 0.5));
-        }
+        for (let i = 1; i < numBalls; i++)
+            this._bonds.push(Bond.between(this._balls[i - 1].and(this._balls[i]), { k, radius: 0.5 }));
     }
 
     get size() { return this._balls.length; }

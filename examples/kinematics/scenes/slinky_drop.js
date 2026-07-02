@@ -26,8 +26,7 @@ const ball3 = new RadialSymmetricBody({
     radius: 0.3
 });
 
-const bond = Bond.between(ball1.and(ball2), k, 0.2);
-bond.restLength = L0;
+const bond = Bond.between(ball1.and(ball2), { k, radius: 0.2, restLength: L0 });
 
 // Pole + stick
 const stick1 = new AxialSymmetricBody({

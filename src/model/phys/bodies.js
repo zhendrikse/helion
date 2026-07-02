@@ -190,23 +190,30 @@ export class Block extends Body {
 }
 
 export class Bond extends MathPhysicsModelBehavior {
-    static between(twoBodies, k = 200, radius = 1) {
-        return new Bond(twoBodies, k, radius);
+    static between(twoBodies, {
+        k = 200,
+        radius = 1,
+        restLength = twoBodies.axis.length()
+    } = {}) {
+        return new Bond(twoBodies, k, radius, restLength);
     }
 
-    constructor(twoBodies, k, radius) {
+    constructor(twoBodies, k, radius, restLength) {
         super();
         this.position = twoBodies.position.clone();
         this.radius = radius;
         this.axis = twoBodies.axis;
         this.k = k;
         this._twoBodies = twoBodies;
-        this.restLength = this.axis.length();
+        this.restLength = restLength;
     }
 
     get force() {
-        const u = this.axis.length() - this.restLength;
-        return this.axis.clone().normalize().multiplyScalar(-this.k * u);
+        const stretch = this.axis.length() - this.restLength;
+        return this.axis
+            .clone()
+            .normalize()
+            .multiplyScalar(-this.k * stretch);
     }
 
     reset() {

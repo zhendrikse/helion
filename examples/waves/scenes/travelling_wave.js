@@ -7,7 +7,7 @@ import 'uplot/dist/uPlot.min.css';
 //
 // Physics model
 //
-class String1D {
+class Chain {
     constructor({
         count = 80,
         length = 10,
@@ -28,9 +28,11 @@ class String1D {
         this.#createBalls(ballRadius, totalMass, count);
 
         for (let i = 0; i < count - 1; i++)
-            this._bonds.push(
-                Bond.between(this._balls[i].and(this._balls[i + 1]), 1.5 * (count - 1), ballRadius * .33)
-            );
+            this._bonds.push(Bond.between(this._balls[i].and(this._balls[i + 1]), {
+                    k: 1.5 * (count - 1),
+                    radius: ballRadius * .33,
+                    restLength: this._l0
+                }));
 
         for (let i = 0; i < count; i++)
             this._forces.push(new Vec3());
@@ -59,7 +61,7 @@ class String1D {
             }));
     }
 
-    #driveFirstBall(t) {
+    updateBoundaryCondition(t) {
         const firstBall = this._balls[0];
         const x = -this._length / 2;
         firstBall.state.position = new Vec3(x, 0, 0);
@@ -69,41 +71,27 @@ class String1D {
             firstBall.state.position = new Vec3(x, this._amplitude * Math.sin(this._omega * t), 0);
     }
 
-    #updateForces() {
+    updateForces() {
+        for (const bond of this._bonds)
+            bond.synchronize();
+
         for (let i = 1; i < this.size - 1; i++) {
-            const left = this._balls[i - 1];
-            const right = this._balls[i + 1];
-
             this._forces[i].set(0, 0, 0);
-
-            // left
-            const deltaL = this._balls[i].positionVectorTo(left);
-            const stretchL = deltaL.length() - this._l0;
-            this._forces[i].add(deltaL.normalize().multiplyScalar(this._bonds[i - 1].k * stretchL));
-
-            // right
-            const deltaR = this._balls[i].positionVectorTo(right);
-            const stretchR = deltaR.length() - this._l0;
-            this._forces[i].add(deltaR.normalize().multiplyScalar(this._bonds[i].k * stretchR));
+            this._forces[i].add(this._bonds[i - 1].force);
+            this._forces[i].sub(this._bonds[i].force);
         }
     }
 
-    #integrate(dt) {
+    update(t, dt) {
+        this.updateBoundaryCondition(t);
+        this.updateForces();
+
         for (let i = 1; i < this.size - 1; i++)
             this._balls[i].apply(this._forces[i], dt);
     }
-
-    update(t, dt) {
-        this.#driveFirstBall(t);
-        this.#updateForces();
-        this.#integrate(dt);
-
-        for (const bond of this._bonds)
-            bond.synchronize();
-    }
 }
 
-const string = new String1D({
+const string = new Chain({
     amplitude: 1.5,
     count: 100,
     length: 20,

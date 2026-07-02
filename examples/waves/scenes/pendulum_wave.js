@@ -31,9 +31,7 @@ class Pendulum extends AxialSymmetricBody {
             this.and({
                 position: anchor,
                 axis: new Vec3(0, 1, 0)
-            }),
-            1,
-            0.01
+            }), { k: 1, radius: 0.01 }
         );
 
         this.updatePosition();
