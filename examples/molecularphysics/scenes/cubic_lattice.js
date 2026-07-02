@@ -15,15 +15,19 @@ class CornerKick {
     apply(lattice, t) {
         if (this._done) return;
 
-        lattice.bodyAt(0).state.velocity.copy(this._velocity);
+        lattice.bodyAt(lattice.bodyCount - 1).state.position.y += .025;//.copy(this._velocity);
         this._done = true;
+    }
+
+    reset() {
+        this._done = false;
     }
 }
 
 const boundaryCondition = new CornerKick();
 const crystal = new Lattice({
-        damping: 0.2,
-        particleRadius: 0.08
+        damping: 0.05,
+        bodySize: 0.07
     })
     .apply(new CubicLatticeTopology({
         nx: 3,
@@ -36,14 +40,15 @@ const latticeView = LatticeView.from({
     bodyView: Sphere,
     bondView: SwitchableBondView,
     bodyArgs: {
+        color: 0x44eeee,
         castShadow: true
     },
     bondArgs: {
-        thickness: 4e-3,
-        coils: 10,
-        color: 0x00ff00,
+        thickness: 2e-3,
+        coils: 20,
+        color: 0xffffff,
         castShadow: true,
-        tubularSegments: 100, // for performance
+        tubularSegments: 300, // for performance
         bondType: SwitchableBondView.Type.Cylinder
     }
 });
@@ -51,16 +56,17 @@ const latticeView = LatticeView.from({
 Simulation
     .with({
         htmlDivId: "cubicLatticeContainer",
-        cameraPosition: new Vec3(2, 1.5, 2.25),
+        cameraPosition: new Vec3(2, 1.5, 2.25).multiplyScalar(.625),
         fieldOfView: 30,
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .runsEvery(1e-4)
-    .substeps(5)
+    .runsEvery(1e-5)
+    .substeps(50)
     .onStep((clock, dt) => {
         crystal.update(clock.simulatedTime, dt)
     })
+    .onReset(() => boundaryCondition.reset())
     .bind(crystal.alwaysWith(latticeView))
     .append(latticeView.ui())
     .append(new Slider("Bond force ")
@@ -74,17 +80,5 @@ Simulation
         .withProperty("damping")
         .withRange(new Range(0, 1, .01))
         .withValue(0.2)
-    )
-    .append(new Slider("Omega ")
-        .on(boundaryCondition)
-        .withProperty("omega")
-        .withRange(new Range(10, 100, 1))
-        .withValue(45)
-    )
-    .append(new Slider("Amplitude ")
-        .on(boundaryCondition)
-        .withProperty("amplitude")
-        .withRange(new Range(.1, 1, .01))
-        .withValue(0.8)
     );
 

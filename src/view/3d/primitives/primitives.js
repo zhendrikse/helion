@@ -436,7 +436,6 @@ export class Helix extends Renderable3D {
         this._tubularSegments = tubularSegments;
         this._radialSegments = radialSegments;
         this._thickness = thickness;
-        this._axis = new Vector3();
     }
 
     canBindTo(body) {
@@ -451,8 +450,7 @@ export class Helix extends Renderable3D {
     synchronizeWith(body) {
         this.position.copy(body.position);
         this._curve.radius = body.radius;
-        this._axis.copy(body.axis);
-        this._curve.updateAxis(this._axis);
+        this._curve.updateAxis(body.axis);
 
         if (this._longitudinalOscillation) {
             // Longitudinal wave amplitude coupled to spring elongation

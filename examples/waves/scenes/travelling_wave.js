@@ -7,7 +7,7 @@ import 'uplot/dist/uPlot.min.css';
 class BoundaryCondition {
     constructor({
         amplitude = 0.8,
-        omega = 45
+        omega = 45,
     } = {}) {
         this._amplitude = amplitude;
         this._omega = omega;
@@ -30,6 +30,8 @@ const chain = new Lattice({
       k:  1.5 * (count - 1)
     })
     .apply(new ChainTopology({ count }))
+    .fixateBodyAt(0)
+    .fixateBodyAt(count - 1)
     .addBoundaryCondition(boundaryCondition);
 
 const latticeView = LatticeView.from({
@@ -75,7 +77,7 @@ Simulation
         .on(chain)
         .withProperty("bondForce")
         .withRange(new Range(10, 2000, 1))
-        .withValue(100)
+        .withValue(1.5 * (count - 1))
     )
     .append(new Slider("Damping ")
         .on(chain)

@@ -266,6 +266,7 @@ export class Lattice extends MathPhysicsModelBehavior {
         this._bodySize = bodySize;
         this._bondRadius = bondRadius;
         this._bodies = [];
+        this._fixedBodies = [];
         this._bonds = [];
         this._boundaryConditions = [];
     }
@@ -281,6 +282,10 @@ export class Lattice extends MathPhysicsModelBehavior {
             this._damping = damping;
     }
 
+    fixateBodyAt(index) {
+        this._fixedBodies[index] = true;
+        return this;
+    }
 
     apply(topology) {
         topology.applyTo(this);
@@ -289,6 +294,7 @@ export class Lattice extends MathPhysicsModelBehavior {
 
     addBody(body) {
         this._bodies.push(body);
+        this._fixedBodies.push(false);
         return this;
     }
 
@@ -324,10 +330,9 @@ export class Lattice extends MathPhysicsModelBehavior {
         for (const bond of this._bonds)
             bond.applyForce();
 
-        for (let i = 1; i < this.bodyCount - 1; i++)
-            this._bodies[i].integrate(dt);
-        // for (const body of this._bodies)
-        //     body.integrate(dt);
+        for (let i = 0; i < this.bodyCount; i++)
+            if (!this._fixedBodies[i])
+                this._bodies[i].integrate(dt);
     }
 
     reset() {
