@@ -27,7 +27,7 @@ class BoundaryCondition {
 const count = 100;
 const boundaryCondition = new BoundaryCondition();
 const chain = new Lattice({
-    k:  1.5 * (count - 1)
+      k:  1.5 * (count - 1)
     })
     .apply(new ChainTopology({ count }))
     .addBoundaryCondition(boundaryCondition);
@@ -43,7 +43,7 @@ const latticeView = LatticeView.from({
         coils: 10,
         color: 0x00ff00,
         castShadow: true,
-        tubularSegments: 100, // for performance
+        tubularSegments: 80, // for performance
         bondType: SwitchableBondView.Type.Cylinder
     }
 });

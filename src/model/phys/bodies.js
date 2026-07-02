@@ -256,17 +256,24 @@ export class Bond extends MathPhysicsModelBehavior {
 export class Lattice extends MathPhysicsModelBehavior {
     constructor({
         k = 100,
-        damping = 0.2
+        damping = 0.2,
+        bodySize = 7.5e-2,
+        bondRadius = 0.33 * bodySize
     } = {}) {
         super();
         this._k = k;
         this._damping = damping;
+        this._bodySize = bodySize;
+        this._bondRadius = bondRadius;
         this._bodies = [];
         this._bonds = [];
         this._boundaryConditions = [];
     }
 
     get damping() { return this._damping; }
+    get bondRadius() { return this._bondRadius; }
+    get bodySize() { return this._bodySize; }
+    get k () { return this._k; }
 
     set damping(damping) {
         for (const bond of this._bonds)
@@ -274,7 +281,6 @@ export class Lattice extends MathPhysicsModelBehavior {
             this._damping = damping;
     }
 
-    get k () { return this._k; }
 
     apply(topology) {
         topology.applyTo(this);
@@ -323,18 +329,24 @@ export class Lattice extends MathPhysicsModelBehavior {
         // for (const body of this._bodies)
         //     body.integrate(dt);
     }
+
+    reset() {
+        for (const body of this._bodies)
+            body.reset();
+
+        for (const bond of this._bonds)
+            bond.reset();
+    }
 }
 
 export class ChainTopology {
     constructor({
         count = 100,
         length = 20,
-        ballRadius = 7.5e-2,
         totalMass = 0.025
     } = {}) {
         this._count = count;
         this._length = length;
-        this._ballRadius = ballRadius;
         this._totalMass = totalMass;
     }
 
@@ -343,7 +355,7 @@ export class ChainTopology {
 
         for (let i = 0; i < this._count; i++)
             lattice.addBody(new RadialSymmetricBody({
-                radius: this._ballRadius,
+                radius: lattice.bodySize,
                 mass: this._totalMass / this._count,
                 position: new Vec3(-this._length / 2 + i * dx, 0, 0)
             }));
@@ -351,7 +363,7 @@ export class ChainTopology {
         for (let i = 0; i < this._count - 1; i++)
             lattice.connect(lattice.bodyAt(i), lattice.bodyAt(i + 1), {
                 k: lattice.k,
-                radius: this._ballRadius * .33,
+                radius: lattice.bondRadius,
                 restLength: 0.9 * this._length / (this._count - 1),
                 damping: lattice.damping
             });
@@ -364,7 +376,6 @@ export class CubicLatticeTopology {
         ny = 4,
         nz = 4,
         spacing = 0.3,
-        particleRadius = 0.08,
         totalMass = 1
     } = {}) {
         this._nx = nx;
@@ -372,7 +383,6 @@ export class CubicLatticeTopology {
         this._nz = nz;
 
         this._spacing = spacing;
-        this._particleRadius = particleRadius;
         this._totalMass = totalMass;
     }
 
@@ -385,7 +395,7 @@ export class CubicLatticeTopology {
             for (let j = 0; j < this._ny; j++)
                 for (let i = 0; i < this._nx; i++)
                     lattice.addBody(new RadialSymmetricBody({
-                        radius: this._particleRadius,
+                        radius: lattice.bodySize,
                         mass,
                         position: new Vec3(
                             (i - (this._nx - 1) / 2) * this._spacing,
@@ -431,7 +441,7 @@ export class CubicLatticeTopology {
         return {
             k: lattice.k,
             damping: lattice.damping,
-            radius: this._particleRadius * 0.3,
+            radius: lattice.bondRadius,
             restLength: this._spacing
         };
     }

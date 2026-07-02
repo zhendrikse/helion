@@ -324,6 +324,8 @@ export class SwitchableBondView extends Renderable3D {
             color, castShadow
         });
         this.add(this._cylinder, this._spring);
+
+        this._bondType = null; // predefine for optimal JavaScript
         this.bondType = bondType;
     }
 
@@ -332,6 +334,8 @@ export class SwitchableBondView extends Renderable3D {
         this._cylinder.visible = bondViewType === SwitchableBondView.Type.Cylinder;
         this._bondType = bondViewType;
     }
+
+    get bondType() { return this._bondType; }
 
     canBindTo(body) {
         return body.position && body.axis && body.radius;
@@ -507,7 +511,7 @@ export class LatticeView extends Renderable3D {
                     for (const bondView of this._bondViews)
                         bondView.bondType = SwitchableBondView.Type.Cylinder;
                 })
-                .checked(1)
+                .checked(this._bondViews[0].bondType === SwitchableBondView.Type.Spring ? 0 : 1)
             )
             .add(new Checkbox("Show nodes ")
                 .addEventListener("change",

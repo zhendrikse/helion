@@ -1,62 +1,63 @@
 import {
-    RadialSymmetricBody, Vec3, Simulation, Sphere, Floor, Bond, SwitchableBondView, RadioGroup,
-    Slider, Range, Vec2
+    Vec3, Simulation, Sphere, Floor, Bond, SwitchableBondView, RadioGroup,
+    Slider, Range, Vec2, ChainTopology, Lattice, LatticeView
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
-//
-// Physics model
-//
-class Chain {
-    constructor(numBalls = 5, k = 300, damping = 0.5) {
-        this._balls = [];
-        this._bonds = [];
-
-        for (let i = 0; i < numBalls; i++)
-            this._balls.push(new RadialSymmetricBody({
-                position: new Vec3(i * 10 - 30, 3, 0),
-                radius: 1,
-                mass: 1.5
-            }));
-
-        for (let i = 1; i < numBalls; i++)
-            this._bonds.push(Bond.between(this._balls[i - 1].and(this._balls[i]), {
-                k: k,
-                radius: 0.5,
-                damping: damping,
-            }));
+class InitialDisplacement {
+    constructor(displacement = new Vec3(7, 0, 0)) {
+        this._displacement = displacement;
+        this._done = false;
     }
 
-    get size() { return this._balls.length; }
+    apply(lattice) {
+        if (this._done)
+            return;
 
-    ballAt(index) { return this._balls[index]; }
-    bondAt(index) { return this._bonds[index]; }
-
-    set damping(damping) { this._damping = damping; }
-
-    evolve(dt) {
-        for (const ball of this._balls)
-            ball.clearForce();
-
-        for (const bond of this._bonds)
-            bond.applyForce();
-
-        for (const ball of this._balls)
-            ball.integrate(dt);
+        lattice.bodyAt(0).position.add(this._displacement);
+        this._done = true;
     }
 
-    applyBoundaryCondition(displacement = 5) {
-        this._balls[0].position.add(new Vec3(displacement, 0, 0));
+    reset() {
+        this._done = false;
     }
 }
 
-const chain = new Chain();
-chain.applyBoundaryCondition(7);
+const displacement = new InitialDisplacement();
+const chain = new Lattice({
+        k: 300,
+        damping: 0.5,
+        bodySize: 1,
+        bondRadius: 0.6
+    })
+    .apply(new ChainTopology({
+        count: 5,
+        length: 40,
+        totalMass: 7.5
+    }))
+    .addBoundaryCondition(displacement);
+
+const latticeView = LatticeView.from({
+    bodyView: Sphere,
+    bondView: SwitchableBondView,
+    bodyArgs: {
+        castShadow: true,
+        color: "red"
+    },
+    bondArgs: {
+        thickness: 0.04,
+        tubularSegments: 500,
+        coils: 30,
+        color: 0xffff4d,
+        castShadow: true
+    }
+});
+latticeView.position.y = 4
 
 const simulation = Simulation
     .with({
         htmlDivId: "oscillatorContainer",
-        cameraPosition: new Vec3(17, 6, 17),
+        cameraPosition: new Vec3(17, 6, -4).multiplyScalar(1.75),
         shadowsEnabled: true,
         fieldOfView: 45,
         background: Simulation.Background.FOG,
@@ -84,59 +85,30 @@ const simulation = Simulation
         }
     )
     .onStep((clock, dt) => {
-        chain.evolve(dt);
+        chain.update(clock.simulatedTime, dt);
 
         if (!simulation.isRunning)
             return;
 
         const plotData = [clock.clockTime];
-        for (let i = 0; i < chain.size; i++)
-            plotData.push(chain.ballAt(i).position.x);
+        for (let i = 0; i < chain.bodyCount; i++)
+            plotData.push(chain.bodyAt(i).position.x);
+
         simulation.plot(plotData);
     })
+    .bind(chain.alwaysWith(latticeView))
     .onReset(() => {
-        chain.applyBoundaryCondition(7);
         const plotData = [0];
         for (let i = 0; i < chain.size; i++)
             plotData.push(chain.ballAt(i).position.x);
         simulation.plot(plotData);
-    });
-
-// Attach spheres and helices to balls and springs
-const sphereViews = [];
-for (let i = 0; i < chain.size; i++)
-    sphereViews.push(new Sphere({
-        color: i === 0 || i === chain.size - 1 ? 0x3333ff : 0xff0000,
-        castShadow: true
-    }));
-
-const bondViews = [];
-for (let i = 1; i < chain.size; i++)
-    bondViews.push(new SwitchableBondView({
-        thickness: 0.05,
-        coils: 30,
-        color: 0xffff4d,
-        castShadow: true
-    }));
-
-bondViews.forEach((bond, i) => simulation.bind(chain.bondAt(i).alwaysWith(bond)));
-sphereViews.forEach((sphere, i) => simulation.bind(chain.ballAt(i).alwaysWith(sphere)));
-
-simulation
-    .append(new RadioGroup(
-        "Springs ", event => {
-                for (const bondView of bondViews)
-                    bondView.bondType = SwitchableBondView.Type.Spring;
-        },
-        "Cylinders", event => {
-                for (const bondView of bondViews)
-                    bondView.bondType = SwitchableBondView.Type.Cylinder;
-        }).checked(0)
-    )
+        displacement.reset();
+    })
+    .append(latticeView.ui())
     .append(new Slider("Damping ")
-        .withRange(new Range(0.2, 1, .01))
+        .withRange(new Range(0, 1, .01))
         .on(chain)
         .withProperty("damping")
-        .withValue(0.5)
+        .withValue(0.2)
     );
 

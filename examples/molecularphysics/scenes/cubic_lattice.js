@@ -22,7 +22,8 @@ class CornerKick {
 
 const boundaryCondition = new CornerKick();
 const crystal = new Lattice({
-        damping: 0.2
+        damping: 0.2,
+        particleRadius: 0.08
     })
     .apply(new CubicLatticeTopology({
         nx: 3,

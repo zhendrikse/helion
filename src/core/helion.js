@@ -237,6 +237,9 @@ class SimulationClock {
     reset() {
         this.simulatedTime = 0;
         this.accumulator = 0;
+        this.elapsedTime = 0;
+        this.previousClockTime = 0;
+        this.clockTime = 0;
     }
 
     tick() {
