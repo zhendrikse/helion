@@ -203,20 +203,23 @@ export class Bond extends MathPhysicsModelBehavior {
     static between(twoBodies, {
         k = 200,
         radius = 1,
-        restLength = twoBodies.axis.length()
+        restLength = twoBodies.axis.length(),
+        damping = 0
     } = {}) {
-        return new Bond(twoBodies, k, radius, restLength);
+        return new Bond(twoBodies, k, radius, restLength, damping);
     }
 
-    constructor(twoBodies, k, radius, restLength) {
+    constructor(twoBodies, k, radius, restLength, damping) {
         super();
         this.radius = radius;
         this.k = k;
         this._twoBodies = twoBodies;
         this.restLength = restLength;
-
+        this._damping = damping;
         this._scratchVector = new Vec3();
     }
+
+    set damping(damping) { this._damping = damping; }
 
     get position() {
         return this._twoBodies.position;
@@ -229,32 +232,26 @@ export class Bond extends MathPhysicsModelBehavior {
     applyForce() {
         const left = this._twoBodies.body1;
         const right = this._twoBodies.body2
-        this._scratchVector.copy(this.force);
 
-        // const damping = 0.2;
-        // if (damping !== 0) {
-        //     const relativeVelocity = right.velocity.clone().sub(left.velocity);
-        //     const dampingForce = relativeVelocity
-        //         .projectOnVector(this.axis.clone().normalize())
-        //         .multiplyScalar(this._damping);
-        //     this._scratchVector.add(dampingForce);
-        // }
+        // Hooke's law
+        const stretch = this.axis.length() - this.restLength;
+        this._scratchVector.copy(this.axis
+            .clone()
+            .normalize()
+            .multiplyScalar(-this.k * stretch)
+        );
+
+        // Damping
+        if (this._damping !== 0) {
+            const relativeVelocity = right.velocity.clone().sub(left.velocity);
+            const dampingForce = relativeVelocity
+                .projectOnVector(left.positionVectorTo(right).normalize())
+                .multiplyScalar(this._damping);
+            this._scratchVector.sub(dampingForce);
+        }
 
         left.force.sub(this._scratchVector);
         right.force.add(this._scratchVector);
-    }
-
-    get force() {
-        const stretch = this.axis.length() - this.restLength;
-        return this.axis
-            .clone()
-            .normalize()
-            .multiplyScalar(-this.k * stretch); // Hooke's law
-    }
-
-    reset() {
-        this._twoBodies.reset();
-        this.synchronize();
     }
 }
 

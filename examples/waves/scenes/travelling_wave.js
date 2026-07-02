@@ -28,7 +28,8 @@ class Chain {
             this._bonds.push(Bond.between(this._balls[i].and(this._balls[i + 1]), {
                     k: 1.5 * (count - 1),
                     radius: ballRadius * .33,
-                    restLength:  0.9 * length / (count - 1)
+                    restLength:  0.9 * length / (count - 1),
+                    damping: 0.2
                 }));
     }
 

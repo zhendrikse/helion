@@ -9,7 +9,6 @@ import 'uplot/dist/uPlot.min.css';
 //
 class Chain {
     constructor(numBalls = 5, k = 300, damping = 0.5) {
-        this._damping = damping;
         this._balls = [];
         this._bonds = [];
 
@@ -21,7 +20,11 @@ class Chain {
             }));
 
         for (let i = 1; i < numBalls; i++)
-            this._bonds.push(Bond.between(this._balls[i - 1].and(this._balls[i]), { k, radius: 0.5 }));
+            this._bonds.push(Bond.between(this._balls[i - 1].and(this._balls[i]), {
+                k: k,
+                radius: 0.5,
+                damping: damping,
+            }));
     }
 
     get size() { return this._balls.length; }
@@ -81,7 +84,6 @@ const simulation = Simulation
         }
     )
     .onStep((clock, dt) => {
-        const damping = 0.2;
         chain.evolve(dt);
 
         if (!simulation.isRunning)
@@ -93,7 +95,7 @@ const simulation = Simulation
         simulation.plot(plotData);
     })
     .onReset(() => {
-        chain.initialDisturbance(7);
+        chain.applyBoundaryCondition(7);
         const plotData = [0];
         for (let i = 0; i < chain.size; i++)
             plotData.push(chain.ballAt(i).position.x);
