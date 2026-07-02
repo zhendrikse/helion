@@ -485,11 +485,11 @@ export class LatticeView extends Renderable3D {
     }
 
     static from({
-                    bodyView = Sphere,
-                    bondView = SwitchableBondView,
-                    bodyArgs = {},
-                    bondArgs = {}
-                }) {
+        bodyView = Sphere,
+        bondView = SwitchableBondView,
+        bodyArgs = {},
+        bondArgs = {}
+    }) {
         return new LatticeView({
             bodyViewFactory: () => new bodyView(bodyArgs),
             bondViewFactory: () => new bondView(bondArgs)
@@ -507,7 +507,7 @@ export class LatticeView extends Renderable3D {
                     for (const bondView of this._bondViews)
                         bondView.bondType = SwitchableBondView.Type.Cylinder;
                 })
-                .checked(0)
+                .checked(1)
             )
             .add(new Checkbox("Show nodes ")
                 .addEventListener("change",

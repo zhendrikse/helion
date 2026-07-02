@@ -1,5 +1,5 @@
 export {
-    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology,
+    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology, CubicLatticeTopology,
     EC, Body, G, Spring, Block, gravitationalForceBetween, Bond
 } from "./model/phys/bodies.js";
 

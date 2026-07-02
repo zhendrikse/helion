@@ -257,12 +257,27 @@ export class Bond extends MathPhysicsModelBehavior {
 }
 
 export class Lattice extends MathPhysicsModelBehavior {
-    constructor() {
+    constructor({
+        k = 100,
+        damping = 0.2
+    } = {}) {
         super();
-        this._balls = [];
+        this._k = k;
+        this._damping = damping;
+        this._bodies = [];
         this._bonds = [];
         this._boundaryConditions = [];
     }
+
+    get damping() { return this._damping; }
+
+    set damping(damping) {
+        for (const bond of this._bonds)
+            bond.damping = damping;
+            this._damping = damping;
+    }
+
+    get k () { return this._k; }
 
     apply(topology) {
         topology.applyTo(this);
@@ -270,7 +285,7 @@ export class Lattice extends MathPhysicsModelBehavior {
     }
 
     addBody(body) {
-        this._balls.push(body);
+        this._bodies.push(body);
         return this;
     }
 
@@ -285,19 +300,14 @@ export class Lattice extends MathPhysicsModelBehavior {
         }));
     }
 
-    set bondForce(value) { this._bonds.forEach(bond => bond.k = this.bondCount * value); }
+    set bondForce(value) { this._bonds.forEach(bond => bond.k = value); }
 
     set omega(value) { this._omega = value; }
 
-    set damping(value) {
-        for (const bond of this._bonds)
-            bond.damping = value;
-    }
-
-    get bodyCount() { return this._balls.length }
+    get bodyCount() { return this._bodies.length }
     get bondCount() { return this._bonds.length }
 
-    bodyAt(index) { return this._balls[index]; }
+    bodyAt(index) { return this._bodies[index]; }
 
     bondAt(index) { return this._bonds[index]; }
 
@@ -305,14 +315,16 @@ export class Lattice extends MathPhysicsModelBehavior {
         for (const boundaryCondition of this._boundaryConditions)
             boundaryCondition.apply(this, t);
 
-        for (const ball of this._balls)
-            ball.clearForce();
+        for (const body of this._bodies)
+            body.clearForce();
 
         for (const bond of this._bonds)
             bond.applyForce();
 
         for (let i = 1; i < this.bodyCount - 1; i++)
-            this._balls[i].integrate(dt);
+            this._bodies[i].integrate(dt);
+        // for (const body of this._bodies)
+        //     body.integrate(dt);
     }
 }
 
@@ -341,11 +353,90 @@ export class ChainTopology {
 
         for (let i = 0; i < this._count - 1; i++)
             lattice.connect(lattice.bodyAt(i), lattice.bodyAt(i + 1), {
-                k: 1.5 * (this._count - 1),
+                k: lattice.k,
                 radius: this._ballRadius * .33,
                 restLength: 0.9 * this._length / (this._count - 1),
-                damping: 0.2
+                damping: lattice.damping
             });
+    }
+}
+
+export class CubicLatticeTopology {
+    constructor({
+        nx = 4,
+        ny = 4,
+        nz = 4,
+        spacing = 0.3,
+        particleRadius = 0.08,
+        totalMass = 1
+    } = {}) {
+        this._nx = nx;
+        this._ny = ny;
+        this._nz = nz;
+
+        this._spacing = spacing;
+        this._particleRadius = particleRadius;
+        this._totalMass = totalMass;
+    }
+
+    applyTo(lattice) {
+        const count = this._nx * this._ny * this._nz;
+        const mass = this._totalMass / count;
+
+        // Bodies
+        for (let k = 0; k < this._nz; k++)
+            for (let j = 0; j < this._ny; j++)
+                for (let i = 0; i < this._nx; i++)
+                    lattice.addBody(new RadialSymmetricBody({
+                        radius: this._particleRadius,
+                        mass,
+                        position: new Vec3(
+                            (i - (this._nx - 1) / 2) * this._spacing,
+                            (j - (this._ny - 1) / 2) * this._spacing,
+                            (k - (this._nz - 1) / 2) * this._spacing
+                        )
+                    }));
+
+        // Bonds
+        for (let k = 0; k < this._nz; k++)
+            for (let j = 0; j < this._ny; j++)
+                for (let i = 0; i < this._nx; i++) {
+                    const current = lattice.bodyAt(this.index(i, j, k));
+
+                    if (i + 1 < this._nx)
+                        lattice.connect(
+                            current,
+                            lattice.bodyAt(this.index(i + 1, j, k)),
+                            this.bondConfig(lattice)
+                        );
+
+                    if (j + 1 < this._ny)
+                        lattice.connect(
+                            current,
+                            lattice.bodyAt(this.index(i, j + 1, k)),
+                            this.bondConfig(lattice)
+                        );
+
+                    if (k + 1 < this._nz)
+                        lattice.connect(
+                            current,
+                            lattice.bodyAt(this.index(i, j, k + 1)),
+                            this.bondConfig(lattice)
+                        );
+                }
+    }
+
+    index(i, j, k) {
+        return i + this._nx * (j + this._ny * k);
+    }
+
+    bondConfig(lattice) {
+        return {
+            k: lattice.k,
+            damping: lattice.damping,
+            radius: this._particleRadius * 0.3,
+            restLength: this._spacing
+        };
     }
 }
 

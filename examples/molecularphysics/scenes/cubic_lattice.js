@@ -1,54 +1,89 @@
-import {RadialSymmetricBody, Vec3} from "../../../src/index.js";
+import {
+    Vec3, Simulation, Sphere, SwitchableBondView,
+    Slider, Range, Lattice, LatticeView, CubicLatticeTopology
+} from "../../../src/index.js";
+import 'uplot/dist/uPlot.min.css';
 
-function createCubicLattice(system, {
-    nx = 10,
-    ny = 10,
-    nz = 10,
-    spacing = 1,
-    mass = 1,
-    radius = 0.1,
-    k = 1000,
-    damping = 0.1
-}) {
-    const nodes = [];
-
-    const halfX = (nx - 1) * spacing / 2;
-    const halfY = (ny - 1) * spacing / 2;
-    const halfZ = (nz - 1) * spacing / 2;
-
-    for (let z = 0; z < nz; z++) {
-        for (let y = 0; y < ny; y++) {
-            for (let x = 0; x < nx; x++) {
-
-                const body = system.addBody(new RadialSymmetricBody({
-                    position: new Vec3(
-                        x * spacing - halfX,
-                        y * spacing - halfY,
-                        z * spacing - halfZ
-                    ),
-                    mass,
-                    radius
-                }));
-
-                nodes.push(body);
-            }
-        }
+class CornerKick {
+    constructor({
+        velocity = new Vec3(0, .5, 0)
+    } = {}) {
+        this._velocity = velocity;
+        this._done = false;
     }
 
-    const idx = (x, y, z) => x + y * nx + z * nx * ny;
+    apply(lattice, t) {
+        if (this._done) return;
 
-    for (let z = 0; z < nz; z++) {
-        for (let y = 0; y < ny; y++) {
-            for (let x = 0; x < nx; x++) {
-
-                const i = idx(x, y, z);
-
-                if (x < nx - 1) connect(i, idx(x + 1, y, z));
-                if (y < ny - 1) connect(i, idx(x, y + 1, z));
-                if (z < nz - 1) connect(i, idx(x, y, z + 1));
-            }
-        }
+        lattice.bodyAt(0).state.velocity.copy(this._velocity);
+        this._done = true;
     }
-
-    return nodes;
 }
+
+const boundaryCondition = new CornerKick();
+const crystal = new Lattice({
+        damping: 0.2
+    })
+    .apply(new CubicLatticeTopology({
+        nx: 3,
+        ny: 3,
+        nz: 3
+    }))
+    .addBoundaryCondition(boundaryCondition);
+
+const latticeView = LatticeView.from({
+    bodyView: Sphere,
+    bondView: SwitchableBondView,
+    bodyArgs: {
+        castShadow: true
+    },
+    bondArgs: {
+        thickness: 4e-3,
+        coils: 10,
+        color: 0x00ff00,
+        castShadow: true,
+        tubularSegments: 100, // for performance
+        bondType: SwitchableBondView.Type.Cylinder
+    }
+});
+
+Simulation
+    .with({
+        htmlDivId: "cubicLatticeContainer",
+        cameraPosition: new Vec3(2, 1.5, 2.25),
+        fieldOfView: 30,
+        headUpDisplay: true
+    })
+    .withMouseClickEventListener()
+    .runsEvery(1e-4)
+    .substeps(5)
+    .onStep((clock, dt) => {
+        crystal.update(clock.simulatedTime, dt)
+    })
+    .bind(crystal.alwaysWith(latticeView))
+    .append(latticeView.ui())
+    .append(new Slider("Bond force ")
+        .on(crystal)
+        .withProperty("bondForce")
+        .withRange(new Range(0.1, 20, .01))
+        .withValue(1.5)
+    )
+    .append(new Slider("Damping ")
+        .on(crystal)
+        .withProperty("damping")
+        .withRange(new Range(0, 1, .01))
+        .withValue(0.2)
+    )
+    .append(new Slider("Omega ")
+        .on(boundaryCondition)
+        .withProperty("omega")
+        .withRange(new Range(10, 100, 1))
+        .withValue(45)
+    )
+    .append(new Slider("Amplitude ")
+        .on(boundaryCondition)
+        .withProperty("amplitude")
+        .withRange(new Range(.1, 1, .01))
+        .withValue(0.8)
+    );
+

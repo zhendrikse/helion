@@ -24,9 +24,12 @@ class BoundaryCondition {
     set amplitude(value) { this._amplitude = value; }
 }
 
+const count = 100;
 const boundaryCondition = new BoundaryCondition();
-const chain = new Lattice()
-    .apply(new ChainTopology())
+const chain = new Lattice({
+    k:  1.5 * (count - 1)
+    })
+    .apply(new ChainTopology({ count }))
     .addBoundaryCondition(boundaryCondition);
 
 const latticeView = LatticeView.from({
@@ -71,8 +74,8 @@ Simulation
     .append(new Slider("Bond force ")
         .on(chain)
         .withProperty("bondForce")
-        .withRange(new Range(0.1, 20, .01))
-        .withValue(1.5)
+        .withRange(new Range(10, 2000, 1))
+        .withValue(100)
     )
     .append(new Slider("Damping ")
         .on(chain)
