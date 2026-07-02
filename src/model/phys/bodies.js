@@ -233,14 +233,11 @@ export class Bond extends MathPhysicsModelBehavior {
     applyForce() {
         const left = this._twoBodies.body1;
         const right = this._twoBodies.body2
+        const direction = left.positionVectorTo(right);
 
         // Hooke's law
-        const stretch = this.axis.length() - this.restLength;
-        this._scratchVector.copy(this.axis
-            .clone()
-            .normalize()
-            .multiplyScalar(-this.k * stretch)
-        );
+        const stretch = direction.length() - this.restLength;
+        this._scratchVector.copy(direction.normalize().multiplyScalar(-this.k * stretch));
 
         // Damping
         if (this._damping !== 0) {
