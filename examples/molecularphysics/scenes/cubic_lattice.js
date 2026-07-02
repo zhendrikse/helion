@@ -63,9 +63,7 @@ Simulation
     .withMouseClickEventListener()
     .runsEvery(1e-5)
     .substeps(50)
-    .onStep((clock, dt) => {
-        crystal.update(clock.simulatedTime, dt)
-    })
+    .onStep((clock, dt) => crystal.update(clock.simulatedTime, dt))
     .onReset(() => boundaryCondition.reset())
     .bind(crystal.alwaysWith(latticeView))
     .append(latticeView.ui())
