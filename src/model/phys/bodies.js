@@ -102,6 +102,7 @@ export class Body extends MathPhysicsModelBehavior{
     } = {}) {
         super();
         this._state = new PhysicsState({ position, velocity, mass, charge });
+        this.force = new Vec3();
         this._initialState = this._state.clone();
         this.velocityVector = new VelocityVector(this);
         this.accelerationVector = new AccelerationVector(this);
@@ -118,6 +119,10 @@ export class Body extends MathPhysicsModelBehavior{
         this._state = this._initialState.clone();
     }
 
+    clearForce() {
+        this.force.set(0, 0, 0);
+    }
+
     fieldAt(point) {
         const rVec = point.clone().sub(this._state.position);
         const distanceSquared = rVec.dot(rVec);
@@ -129,6 +134,11 @@ export class Body extends MathPhysicsModelBehavior{
 
     apply(force, dt = 0.01, integrator = Integrators.symplecticEulerStep) {
         const accelerationFn = (bodyParam) => force.clone().multiplyScalar(1 / bodyParam.mass);
+        integrator(this._state, dt, accelerationFn);
+    }
+
+    integrate(dt = 0.01, integrator = Integrators.symplecticEulerStep) {
+        const accelerationFn = (bodyParam) => this.force.clone().multiplyScalar(1 / bodyParam.mass);
         integrator(this._state, dt, accelerationFn);
     }
 
@@ -200,12 +210,38 @@ export class Bond extends MathPhysicsModelBehavior {
 
     constructor(twoBodies, k, radius, restLength) {
         super();
-        this.position = twoBodies.position.clone();
         this.radius = radius;
-        this.axis = twoBodies.axis;
         this.k = k;
         this._twoBodies = twoBodies;
         this.restLength = restLength;
+
+        this._scratchVector = new Vec3();
+    }
+
+    get position() {
+        return this._twoBodies.position;
+    }
+
+    get axis() {
+        return this._twoBodies.axis;
+    }
+
+    applyForce() {
+        const left = this._twoBodies.body1;
+        const right = this._twoBodies.body2
+        this._scratchVector.copy(this.force);
+
+        // const damping = 0.2;
+        // if (damping !== 0) {
+        //     const relativeVelocity = right.velocity.clone().sub(left.velocity);
+        //     const dampingForce = relativeVelocity
+        //         .projectOnVector(this.axis.clone().normalize())
+        //         .multiplyScalar(this._damping);
+        //     this._scratchVector.add(dampingForce);
+        // }
+
+        left.force.sub(this._scratchVector);
+        right.force.add(this._scratchVector);
     }
 
     get force() {
@@ -213,17 +249,12 @@ export class Bond extends MathPhysicsModelBehavior {
         return this.axis
             .clone()
             .normalize()
-            .multiplyScalar(-this.k * stretch);
+            .multiplyScalar(-this.k * stretch); // Hooke's law
     }
 
     reset() {
         this._twoBodies.reset();
         this.synchronize();
-    }
-
-    synchronize() {
-        this.position.copy(this._twoBodies.position);
-        this.axis = this._twoBodies.axis;
     }
 }
 

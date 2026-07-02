@@ -19,11 +19,8 @@ class Chain {
         this._amplitude = amplitude;
         this._omega = omega;
         this._balls = [];
-        this._forces = [];
         this._bonds = [];
-
         this._length = length;
-        this._l0 = 0.9 * length / (count - 1);
 
         this.#createBalls(ballRadius, totalMass, count);
 
@@ -31,11 +28,8 @@ class Chain {
             this._bonds.push(Bond.between(this._balls[i].and(this._balls[i + 1]), {
                     k: 1.5 * (count - 1),
                     radius: ballRadius * .33,
-                    restLength: this._l0
+                    restLength:  0.9 * length / (count - 1)
                 }));
-
-        for (let i = 0; i < count; i++)
-            this._forces.push(new Vec3());
     }
 
     set bondForce(value) { this._bonds.forEach(bond => bond.k = (this.size -1) * value); }
@@ -71,23 +65,17 @@ class Chain {
             firstBall.state.position = new Vec3(x, this._amplitude * Math.sin(this._omega * t), 0);
     }
 
-    updateForces() {
-        for (const bond of this._bonds)
-            bond.synchronize();
-
-        for (let i = 1; i < this.size - 1; i++) {
-            this._forces[i].set(0, 0, 0);
-            this._forces[i].add(this._bonds[i - 1].force);
-            this._forces[i].sub(this._bonds[i].force);
-        }
-    }
-
     update(t, dt) {
         this.updateBoundaryCondition(t);
-        this.updateForces();
+
+        for (const ball of this._balls)
+            ball.clearForce();
+
+        for (const bond of this._bonds)
+            bond.applyForce();
 
         for (let i = 1; i < this.size - 1; i++)
-            this._balls[i].apply(this._forces[i], dt);
+            this._balls[i].integrate(dt);
     }
 }
 

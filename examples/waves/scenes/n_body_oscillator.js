@@ -31,31 +31,24 @@ class Chain {
 
     set damping(damping) { this._damping = damping; }
 
-    _updateChainSegment(left, right, bond, dt) {
-        const relativeVelocity = left.velocity.clone().sub(right.velocity);
-        const dampingForce = relativeVelocity
-            .projectOnVector(bond.axis.clone().normalize())
-            .multiplyScalar(this._damping);
-        const force = bond.force.add(dampingForce);
-
-        left.apply(force.clone().negate(), dt);
-        right.apply(force, dt);
-        bond.synchronize();
-    }
-
     evolve(dt) {
-        for (let i = 0; i < this._balls.length - 1; i++)
-            this._updateChainSegment(this._balls[i], this._balls[i + 1], this._bonds[i], dt);
+        for (const ball of this._balls)
+            ball.clearForce();
+
+        for (const bond of this._bonds)
+            bond.applyForce();
+
+        for (const ball of this._balls)
+            ball.integrate(dt);
     }
 
-    initialDisturbance(displacement = 5) {
+    applyBoundaryCondition(displacement = 5) {
         this._balls[0].position.add(new Vec3(displacement, 0, 0));
-        this._bonds[0].synchronize();
     }
 }
 
 const chain = new Chain();
-chain.initialDisturbance(7);
+chain.applyBoundaryCondition(7);
 
 const simulation = Simulation
     .with({

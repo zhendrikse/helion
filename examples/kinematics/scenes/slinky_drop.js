@@ -70,12 +70,12 @@ Simulation
         if (onFloor(ball2, -3.5 * L0) || onFloor(ball3, -3.5 * L0))
             return;
 
-        const forceOnBall1 = g.clone().multiplyScalar(ball1.mass).sub(bond.force);
-        const forceOnBall2 = g.clone().multiplyScalar(ball2.mass).add(bond.force);
-        const forceOnBall3 = g.clone().multiplyScalar(ball3.mass);
-        ball1.apply(forceOnBall1, dt);
-        ball2.apply(forceOnBall2, dt);
-        ball3.apply(forceOnBall3, dt);
-        bond.synchronize();
+        ball1.force.copy(g.clone().multiplyScalar(ball1.mass))
+        ball2.force.copy(g.clone().multiplyScalar(ball2.mass));
+        ball3.force.copy(g.clone().multiplyScalar(ball3.mass));
+        bond.applyForce();
+        ball1.integrate(dt);
+        ball2.integrate(dt);
+        ball3.integrate(dt);
     })
     .withMouseClickEventListener();
