@@ -24,30 +24,43 @@ class BoundaryCondition {
     set amplitude(value) { this._amplitude = value; }
 }
 
-const count = 100;
-const length = 20;
-const dx = length / (count - 1);
-const ballRadius = 7.5e-2;
-const totalMass = 0.025;
+export class ChainTopology {
+    constructor({
+        count = 100,
+        length = 20,
+        ballRadius = 7.5e-2,
+        totalMass = 0.025
+    } = {}) {
+        this._count = count;
+        this._length = length;
+        this._ballRadius = ballRadius;
+        this._totalMass = totalMass;
+    }
 
-const boundaryCondition = new BoundaryCondition()
-const string = new Lattice({count, length, ballRadius})
+    applyTo(lattice) {
+        const dx = this._length / (this._count - 1);
+
+        for (let i = 0; i < this._count; i++)
+            lattice.addBody(new RadialSymmetricBody({
+                radius: this._ballRadius,
+                mass: this._totalMass / this._count,
+                position: new Vec3(-this._length / 2 + i * dx, 0, 0)
+            }));
+
+        for (let i = 0; i < this._count - 1; i++)
+            lattice.connect(lattice.bodyAt(i), lattice.bodyAt(i + 1), {
+                k: 1.5 * (this._count - 1),
+                radius: this._ballRadius * .33,
+                restLength: 0.9 * this._length / (this._count - 1),
+                damping: 0.2
+            });
+    }
+}
+
+const boundaryCondition = new BoundaryCondition();
+const chain = new Lattice()
+    .apply(new ChainTopology())
     .addBoundaryCondition(boundaryCondition);
-
-for (let i = 0; i < count; i++)
-    string.addBody(new RadialSymmetricBody({
-        radius: ballRadius,
-        mass: totalMass / count,
-        position: new Vec3(-length / 2 + i * dx, 0, 0)
-    }));
-
-for (let i = 0; i < count - 1; i++)
-    string.connect(string.bodyAt(i), string.bodyAt(i + 1), {
-        k: 1.5 * (count - 1),
-        radius: ballRadius * .33,
-        restLength:  0.9 * length / (count - 1),
-        damping: 0.2
-    });
 
 const simulation = Simulation
     .with({
@@ -62,7 +75,7 @@ const simulation = Simulation
     .runsEvery(1e-4)
     .substeps(5)
     .onStep((clock, dt) => {
-        string.update(clock.simulatedTime, dt)
+        chain.update(clock.simulatedTime, dt)
     })
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
@@ -73,11 +86,11 @@ const simulation = Simulation
 
 // Attach spheres and helices to balls and springs
 const sphereViews = [];
-for (let i = 0; i < string.size; i++)
+for (let i = 0; i < chain.size; i++)
     sphereViews.push(new Sphere({ castShadow: true }));
 
 const bondViews = [];
-for (let i = 1; i < string.size; i++)
+for (let i = 1; i < chain.size; i++)
     bondViews.push(new SwitchableBondView({
         thickness: 4e-3,
         coils: 10,
@@ -87,8 +100,8 @@ for (let i = 1; i < string.size; i++)
         bondType: SwitchableBondView.Type.Cylinder
     }));
 
-bondViews.forEach((bond, i) => simulation.bind(string.bondAt(i).alwaysWith(bond)));
-sphereViews.forEach((sphere, i) => simulation.bind(string.bodyAt(i).alwaysWith(sphere)));
+bondViews.forEach((bond, i) => simulation.bind(chain.bondAt(i).alwaysWith(bond)));
+sphereViews.forEach((sphere, i) => simulation.bind(chain.bodyAt(i).alwaysWith(sphere)));
 
 simulation
     .append(new RadioGroup(
@@ -112,13 +125,13 @@ simulation
         .checked(true)
     )
     .append(new Slider("Bond force ")
-        .on(string)
+        .on(chain)
         .withProperty("bondForce")
         .withRange(new Range(0.1, 20, .01))
         .withValue(1.5)
     )
     .append(new Slider("Damping ")
-        .on(string)
+        .on(chain)
         .withProperty("damping")
         .withRange(new Range(0, 1, .01))
         .withValue(0.2)

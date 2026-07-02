@@ -264,6 +264,11 @@ export class Lattice extends MathPhysicsModelBehavior {
         this._boundaryConditions = [];
     }
 
+    apply(topology) {
+        topology.applyTo(this);
+        return this;
+    }
+
     addBody(body) {
         this._balls.push(body);
         return this;
