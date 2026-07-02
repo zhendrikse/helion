@@ -56,10 +56,9 @@ Simulation
         opacity: 0.5,
         color: 0x008080
     })))
-    .runsEvery(0.01)
-    .atSpeed(3)
-    .substeps(5)
-    .onStep((_, dt) => field.evolve(solver, dt))
+    .runsEvery(1e-3)
+    .substeps(2)
+    .onStep((_, dt) => field.evolve(solver, 0.01))
     .onReset(() => reset(configuration))
     .appendStartStopResetUI()
     .append(waveEquation.ui())
