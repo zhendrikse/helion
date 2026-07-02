@@ -1,6 +1,7 @@
-import { Complex, Vec3 } from "../math/math.js";
+import {Complex, Vec2, Vec3} from "../math/math.js";
 import { Integrators } from "../math/numerics/integrators/integrators.js";
-import {Binding, MathPhysicsModelBehavior} from "../../core/helion.js";
+import {Binding, MathPhysicsModelBehavior, Simulation} from "../../core/helion.js";
+import {Floor} from "../../view/3d/primitives/decorations.js";
 
 //
 // Constants
@@ -252,6 +253,60 @@ export class Bond extends MathPhysicsModelBehavior {
 
         left.force.sub(this._scratchVector);
         right.force.add(this._scratchVector);
+    }
+}
+
+export class Lattice extends MathPhysicsModelBehavior {
+    constructor() {
+        super();
+        this._balls = [];
+        this._bonds = [];
+        this._boundaryConditions = [];
+    }
+
+    addBody(body) {
+        this._balls.push(body);
+        return this;
+    }
+
+    addBoundaryCondition(boundaryCondition) {
+        this._boundaryConditions.push(boundaryCondition);
+        return this;
+    }
+
+    connect(body1, body2, {k, radius, restLength, damping}) {
+        this._bonds.push(Bond.between(body1.and(body2), {
+            k, radius, restLength, damping
+        }));
+    }
+
+    set bondForce(value) { this._bonds.forEach(bond => bond.k = (this.size -1) * value); }
+
+    set omega(value) { this._omega = value; }
+
+    set damping(value) {
+        for (const bond of this._bonds)
+            bond.damping = value;
+    }
+
+    get size() { return this._balls.length }
+
+    bodyAt(index) { return this._balls[index]; }
+
+    bondAt(index) { return this._bonds[index]; }
+
+    update(t, dt) {
+        for (const boundaryCondition of this._boundaryConditions)
+            boundaryCondition.apply(this, t);
+
+        for (const ball of this._balls)
+            ball.clearForce();
+
+        for (const bond of this._bonds)
+            bond.applyForce();
+
+        for (let i = 1; i < this.size - 1; i++)
+            this._balls[i].integrate(dt);
     }
 }
 
