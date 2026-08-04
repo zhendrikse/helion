@@ -341,6 +341,11 @@ export class SwitchableBondView extends Renderable3D {
         return body.position && body.axis && body.radius;
     }
 
+    initialize(model) {
+        this._spring.initialize(model);
+        this._cylinder.initialize(model);
+    }
+
     synchronizeWith(twoBodies) {
         if (this._bondType === SwitchableBondView.Type.Cylinder)
             this._cylinder.synchronizeWith(twoBodies);
@@ -530,12 +535,14 @@ export class LatticeView extends Renderable3D {
             const view = this._bodyViewFactory();
             this._bodyViews.push(view);
             this.add(view);
+            view.initialize(lattice.bodyAt(i));
         }
 
         for (let i = 0; i < lattice.bondCount; i++) {
             const view = this._bondViewFactory();
             this._bondViews.push(view);
             this.add(view);
+            view.initialize(lattice.bondAt(i));
         }
     }
 

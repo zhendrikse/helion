@@ -44,9 +44,9 @@ const latticeView = LatticeView.from({
         castShadow: true
     },
     bondArgs: {
-        thickness: 2e-3,
+        thickness: 6e-3,
         coils: 20,
-        color: 0xffffff,
+        color: 0xffff00,
         castShadow: true,
         tubularSegments: 300, // for performance
         bondType: SwitchableBondView.Type.Cylinder

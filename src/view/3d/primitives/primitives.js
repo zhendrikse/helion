@@ -420,22 +420,52 @@ export class Helix extends Renderable3D {
         castShadow = false
     } = {}) {
         super();
-        const curve = new Coils(new Vector3(), new Vector3(), coils, 1, longitudinalOscillation ? 0.05 : 0);
-        const geometry = new TubeGeometry(curve, tubularSegments, thickness, radialSegments, false);
-        const material = new MeshStandardMaterial({
-            color: color,
-            visible: visible,
-            metalness: 0.3,
-            roughness: 0.4,
-        });
-        this._mesh = new Mesh(geometry, material);
-        this._mesh.castShadow = castShadow;
-        this.add(this._mesh);
-        this._curve = curve;
+
+        this._curve = new Coils(
+            new Vector3(0, 0, 0),
+            new Vector3(0, 0, 1), // fixed axis; mesh rotation handles direction
+            coils,
+            1, // unit radius
+            0  // no oscillation in this path
+        );
+
         this._longitudinalOscillation = longitudinalOscillation;
         this._tubularSegments = tubularSegments;
         this._radialSegments = radialSegments;
         this._thickness = thickness;
+        this._coils = coils;
+        this._color = color;
+        this._castShadow = castShadow;
+
+        // Reusable math objects
+        this._targetDir = new Vector3();
+        this.visible = visible;
+    }
+
+    initialize(body) {
+        this._restLength = body.axis.length();
+        const curve = new Coils(
+            new Vector3(0, 0, 0),
+            new Vector3(0, 0, this._restLength), // bake real length
+            this._coils,
+            body.radius,
+            0
+        );
+
+        const geometry = new TubeGeometry(
+            curve,
+            this._tubularSegments,
+            this._thickness,
+            this._radialSegments,
+            false
+        );
+
+        const material = new MeshStandardMaterial({
+            color: this._color, metalness: 0.3, roughness: 0.4
+        });
+        this._mesh = new Mesh(geometry, material);
+        this._mesh.castShadow = this._castShadow;
+        this.add(this._mesh);
     }
 
     canBindTo(body) {
@@ -449,15 +479,21 @@ export class Helix extends Renderable3D {
 
     synchronizeWith(body) {
         this.position.copy(body.position);
-        this._curve.radius = body.radius;
-        this._curve.updateAxis(body.axis);
 
         if (this._longitudinalOscillation) {
+            this._curve.radius = body.radius;
+            this._curve.updateAxis(body.axis);
+
             // Longitudinal wave amplitude coupled to spring elongation
             this._curve.wavePhase = body.time * 4;
-            const displacement = this._axis.y - this._curve.start.y;
+            const displacement = body.axis.y - this._curve.start.y;
             this._curve.waveAmp = Math.min(Math.abs(displacement) / 10, 0.3); // max amplitude 0.3
+            this.#regenerateTube();
+        } else {
+            // Rotate mesh so local +Z aligns with bond axis
+            this._targetDir.copy(body.axis).normalize();
+            this.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), this._targetDir)
+            this.scale.set(1, 1, body.axis.length() / this._restLength);
         }
-        this.#regenerateTube();
     }
 }
