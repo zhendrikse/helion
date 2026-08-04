@@ -122,7 +122,7 @@ export class Body extends MathPhysicsModelBehavior{
     }
 
     clearForce() {
-        this.force.set(0, 0, 0);
+        this._force.set(0, 0, 0);
     }
 
     fieldAt(point) {
