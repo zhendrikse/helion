@@ -6,16 +6,14 @@ import 'uplot/dist/uPlot.min.css';
 
 class CornerKick {
     constructor({
-        velocity = new Vec3(0, .5, 0)
     } = {}) {
-        this._velocity = velocity;
         this._done = false;
     }
 
     apply(lattice, t) {
         if (this._done) return;
 
-        lattice.bodyAt(lattice.bodyCount - 1).state.position.y += .025;//.copy(this._velocity);
+        lattice.bodyAt(lattice.bodyCount - 1).state.position.y += .025;
         this._done = true;
     }
 
@@ -46,7 +44,7 @@ const latticeView = LatticeView.from({
     bondArgs: {
         thickness: 3e-3,
         coils: 20,
-        color: 0xffffff,
+        color: 0xffffaa,
         castShadow: true,
         tubularSegments: 300,
         bondType: SwitchableBondView.Type.Cylinder
