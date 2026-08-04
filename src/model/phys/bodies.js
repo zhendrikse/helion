@@ -103,7 +103,7 @@ export class Body extends MathPhysicsModelBehavior{
     } = {}) {
         super();
         this._state = new PhysicsState({ position, velocity, mass, charge });
-        this.force = new Vec3();
+        this._force = new Vec3();
         this._initialState = this._state.clone();
         this.velocityVector = new VelocityVector(this);
         this.accelerationVector = new AccelerationVector(this);
@@ -115,6 +115,7 @@ export class Body extends MathPhysicsModelBehavior{
     get mass() { return this._state.mass; }
     get charge() { return this._state.charge; }
     get state() { return this._state; }
+    get force() { return this._force; }
 
     reset() {
         this._state = this._initialState.clone();
@@ -469,10 +470,9 @@ export class Spring extends Body {
         this.time = 0; // in case user wants to visualize longitudinal waves in spring
     }
 
-    get direction() { return this.axis; }
-    get potentialEnergy() { return 0.5 * this.k * this.displacement * this.displacement; }
     get force() { return this.axis.clone().normalize().multiplyScalar(-this.k * this.displacement); }
-    get displacement() { return  this.axis.length() - this.restLength; }
-    get isCompressed() { return this.axis.length() < this.restLength; }
+    get potentialEnergy() { return 0.5 * this.k * this.displacement * this.displacement; }
+    get displacement() { return this.axis.length() - this.restLength; }
+    get isCompressed() { return this.axis.length() - this.restLength < 0; }
     get endPosition() { return this.position.clone().add(this.axis); }
 }
