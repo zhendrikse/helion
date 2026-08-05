@@ -506,10 +506,18 @@ export class DiatomicMolecule extends Renderable3D {
         });
         this._bond = new SwitchableBondView({
             bondType: bondType,
+            coils: 20,
+            thickness: 0.05,
             color: bondColor,
             radiusScaleFactor
         })
         this.add(this._atom1, this._atom2, this._bond);
+    }
+
+    initialize(model) {
+        this._atom1.initialize(model.body1);
+        this._atom2.initialize(model.body2);
+        this._bond.initialize(model.bond);
     }
 
     canBindTo(model) {
