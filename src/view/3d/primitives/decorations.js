@@ -148,8 +148,7 @@ export class Aquarium extends Mesh {
         size = new Vector3(1, 1, 1),
         opacity = 0.35,
         contentColor = new Color(.1, .3, .78),
-        frameColor = 0xaa9900,
-        frameWidth = 1
+        frameColor = 0xaa9900
     } = {}) {
         const geometry = new BoxGeometry(1, 1, 1);
         const material = new MeshStandardMaterial({
@@ -168,7 +167,6 @@ export class Aquarium extends Mesh {
         const edges = new EdgesGeometry(geometry);
         const lineMaterial = new LineBasicMaterial({
             color: frameColor,
-            linewidth: 1,
             depthTest: true
         });
 
