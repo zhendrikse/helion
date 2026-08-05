@@ -226,5 +226,6 @@ for (let i = 0; i < 150; i++)
 
 for (const molecule of gas)
     simulation.bind(molecule.alwaysWith(new DiatomicMolecule({
-        bondType: SwitchableBondView.Type.Spring
-    })))
+        bondType: SwitchableBondView.Type.Spring,
+        radiusScaleFactor: 1.25
+    })));

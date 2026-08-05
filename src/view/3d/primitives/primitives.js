@@ -412,6 +412,7 @@ class Coils extends Curve {
 }
 
 export class Helix extends Renderable3D {
+    static up = new Vector3(0, 0, 1);
     constructor({
         color = 0x00ffff,
         coils = 20,
@@ -491,7 +492,7 @@ export class Helix extends Renderable3D {
         } else {
             // Rotate mesh so local +Z aligns with bond axis
             this._targetDir.copy(body.axis).normalize();
-            this.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), this._targetDir)
+            this.quaternion.setFromUnitVectors(Helix.up, this._targetDir)
             this.scale.set(1, 1, body.axis.length() / this._restLength);
         }
     }
