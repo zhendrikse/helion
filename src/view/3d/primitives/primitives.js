@@ -272,6 +272,7 @@ export class Cylinder extends Renderable3D {
         opacity = 1,
         segments = 24,
         castShadow = false,
+        radiusScaleFactor = 1.0,
         material = new MeshStandardMaterial({
             color,
             opacity,
@@ -279,6 +280,7 @@ export class Cylinder extends Renderable3D {
         })
     } = {}) {
         super();
+        this._radiusScaleVector = radiusScaleFactor;
         const geometry = new CylinderGeometry(1, 1, 1, segments);
         this._mesh = new Mesh(geometry, material);
         this._mesh.castShadow = castShadow;
@@ -295,7 +297,8 @@ export class Cylinder extends Renderable3D {
         this._direction.copy(body.axis);
 
         const length = this._direction.length();
-        this.scale.set(body.radius, this._direction.length(), body.radius);
+        const scale = body.radius * this._radiusScaleVector;
+        this.scale.set(scale, length, scale);
         this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
         this.position.add(this._direction.multiplyScalar(length * .5));
     }
@@ -417,10 +420,11 @@ export class Helix extends Renderable3D {
         radialSegments = 16,
         thickness = 0.01,
         visible = true,
-        castShadow = false
+        castShadow = false,
+        radiusScaleFactor = 2,
     } = {}) {
         super();
-
+        this._radiusScaleFactor = radiusScaleFactor;
         this._curve = new Coils(
             new Vector3(0, 0, 0),
             new Vector3(0, 0, 1), // fixed axis; mesh rotation handles direction
@@ -481,7 +485,7 @@ export class Helix extends Renderable3D {
         this.position.copy(body.position);
 
         if (this._longitudinalOscillation) {
-            this._curve.radius = body.radius;
+            this._curve.radius = body.radius * this._radiusScaleFactor;
             this._curve.updateAxis(body.axis);
 
             // Longitudinal wave amplitude coupled to spring elongation
@@ -493,7 +497,7 @@ export class Helix extends Renderable3D {
             // Rotate mesh so local +Z aligns with bond axis
             this._targetDir.copy(body.axis).normalize();
             this.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), this._targetDir)
-            this.scale.set(1, 1, body.axis.length() / this._restLength);
+            this.scale.set(this._radiusScaleFactor, this._radiusScaleFactor, body.axis.length() / this._restLength);
         }
     }
 }

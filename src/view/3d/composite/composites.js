@@ -314,14 +314,15 @@ export class SwitchableBondView extends Renderable3D {
         tubularSegments = 400,
         thickness = 0.01,
         castShadow = false,
+        radiusScaleFactor = 1.0,
         bondType = SwitchableBondView.Type.Spring
     } = {}) {
         super();
         this._spring = new Helix({
-            color, coils, thickness, tubularSegments, castShadow
+            color, coils, thickness, tubularSegments, castShadow, radiusScaleFactor
         });
         this._cylinder = new Cylinder({
-            color, castShadow
+            color, castShadow, radiusScaleFactor
         });
         this.add(this._cylinder, this._spring);
 
