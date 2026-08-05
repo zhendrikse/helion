@@ -529,6 +529,10 @@ export class DiatomicMolecule extends Renderable3D {
         this._atom2.synchronizeWith(twoBodies.body2);
         this._bond.synchronizeWith(twoBodies.bond);
     }
+
+    set bondType(type) {
+        this._bond.bondType = type;
+    }
 }
 
 export class LatticeView extends Renderable3D {

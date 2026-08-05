@@ -1,7 +1,8 @@
 import {
     Bond, RadialSymmetricBody, Vec3, resolveSphereSphereCollisionBetween, Simulation, DiatomicMolecule,
-    TwoBodies, SwitchableBondView, Aquarium
+    TwoBodies, SwitchableBondView, Aquarium, RadioGroup, Checkbox
 } from "../../../src/index.js";
+import {CompoundControl} from "../../../src/core/controls.js";
 
 // Simulation constants
 const SCALE = 1e10;
@@ -203,6 +204,14 @@ class CarbonMonoxideGas {
     }
 }
 
+
+const gas = new CarbonMonoxideGas();
+const moleculeViews = [];
+
+// Perform some initial timesteps to make the gas look more realistic
+for (let i = 0; i < 150; i++)
+    gas.update(5e-16);
+
 const simulation = Simulation
     .with({
         htmlDivId: "energyEquipartitionContainer",
@@ -215,17 +224,25 @@ const simulation = Simulation
     .onStep(() => gas.update(5e-16))
     .addObject3D(new Aquarium({
         size: new Vec3(1, 1, 1).multiplyScalar(2 * L)
-    }));
+    }))
+    .append(new RadioGroup()
+        .add("Springs", () => {
+            for (const moleculeView of moleculeViews)
+                moleculeView.bondType = SwitchableBondView.Type.Spring;
+        })
+        .add("Cylinders", () => {
+            for (const moleculeView of moleculeViews)
+                moleculeView.bondType = SwitchableBondView.Type.Cylinder;
+        })
+        .checked(0)
+    );
 
-
-const gas = new CarbonMonoxideGas();
-
-// Perform some initial timesteps to make the gas look more realistic
-for (let i = 0; i < 150; i++)
-    gas.update(5e-16);
-
-for (const molecule of gas)
-    simulation.bind(molecule.alwaysWith(new DiatomicMolecule({
+for (const molecule of gas) {
+    const moleculeView = new DiatomicMolecule({
         bondType: SwitchableBondView.Type.Spring,
         radiusScaleFactor: 1.25
-    })));
+    });
+    moleculeViews.push(moleculeView);
+    simulation.bind(molecule.alwaysWith(moleculeView));
+}
+
