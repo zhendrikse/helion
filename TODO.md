@@ -2,6 +2,29 @@
 
 - [Simulations](https://jsfiddle.net/u/Chenopdodium/collection/quantum-mechanics/) in JavaScript by
   [Chantal Roth](https://www.linkedin.com/in/chantal-roth/)
+- https://www.afreeparticle.com/index.html
+- https://simulateitnow.com/
+- https://www.glowscript.org/#/user/Luinthoron/folder/NR/program/negativecurvature
+
+- https://github.com/Pikachuxxxx/Raytracing-in-a-Weekend-GLSL
+
+- https://mofu-dev.com/en/blog/stable-fluids/
+
+- https://websvg.github.io/voronoi/
+
+- https://www.reddit.com/r/threejs/comments/1cr2a57/implementing_voronoi_fractures/
+
+- https://discourse.threejs.org/t/three-js-voronoi/26386
+
+- GLSL crash course: https://www.youtube.com/watch?v=oKbCaj1J6EI
+
+- Water shader https://www.jotform.com/blog/20-exceptional-three-js-experiments-98740/,
+https://www.reddit.com/r/threejs/comments/thx35q/water_simulation_in_three_js/
+
+- https://www.linkedin.com/pulse/rendering-relativity-webgl-javascript-dmitry-lavrov/
+
+- https://stemkoski.github.io/Three.js/Graphulus-Surface.html,
+https://github.com/stemkoski/stemkoski.github.com/tree/master/MathBox
 
 - Make surface view like [this](https://chrisboligprojects.pythonanywhere.com/fdm), see also [this link](https://discourse.threejs.org/t/finite-difference-method-for-wave-equation/52822) and [repo](https://github.com/chrismars91/fdm)
 - Make Fourier transform demo like this [WaveBuilder](https://physics.weber.edu/schroeder/software/WaveBuilder.html)

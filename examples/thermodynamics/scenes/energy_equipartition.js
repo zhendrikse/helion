@@ -44,7 +44,7 @@ export class CarbonMonoxide extends TwoBodies {
         this._bond.update();
     }
 
-    confineToBox(atom, size) {
+    _confineToBox(atom, size) {
         const half = size / 2;
         ["x", "y", "z"].forEach(axis => {
             if (atom.position[axis] > half - atom.radius)
@@ -55,8 +55,8 @@ export class CarbonMonoxide extends TwoBodies {
     }
 
     checkBoxBounce(boxLength) {
-        this.confineToBox(this.body1, boxLength);
-        this.confineToBox(this.body2, boxLength);
+        this._confineToBox(this.body1, boxLength);
+        this._confineToBox(this.body2, boxLength);
     }
 
     resolveCollisionWith(otherMolecule) {
@@ -64,10 +64,6 @@ export class CarbonMonoxide extends TwoBodies {
         resolveSphereSphereCollisionBetween(this.body1.and(otherMolecule.body2));
         resolveSphereSphereCollisionBetween(this.body2.and(otherMolecule.body1));
         resolveSphereSphereCollisionBetween(this.body2.and(otherMolecule.body2));
-    }
-
-    changeBondType(type) {
-        this._bond.changeBondType(type);
     }
 
     get translationalKineticEnergy() {
@@ -185,34 +181,26 @@ class CarbonMonoxideGas {
     updateToNewTemperature(newTemperature) {
         // Modify the speed of all molecules according to equipartition: v ~ sqrt(T)
         const scaleFactor = Math.sqrt(newTemperature / this._temperature); // ratio new temp / old temp
-        for (let molecule of this._molecules)
+        for (const molecule of this)
             molecule.scaleVelocity(scaleFactor);
         this._temperature = newTemperature;
     }
 
-    changeBondType(type) {
-        for (let molecule of this._molecules)
-            molecule.changeBondType(type);
-        this.update(0);
-    }
-
     get translationalKineticEnergy() {
-        return this._molecules.reduce((sum, m) => sum + m.translationalKineticEnergy, 0);
+        return this._molecules.reduce((sum, molecule) => sum + molecule.translationalKineticEnergy, 0);
     }
 
     get vibrationalKineticEnergy() {
-        return this._molecules.reduce((sum, m) => sum + m.vibrationalKineticEnergy, 0);
+        return this._molecules.reduce((sum, molecule) => sum + molecule.vibrationalKineticEnergy, 0);
     }
 
     get vibrationalPotentialEnergy() {
-        return this._molecules.reduce((sum, m) => sum + m.vibrationalPotentialEnergy, 0);
+        return this._molecules.reduce((sum, molecule) => sum + molecule.vibrationalPotentialEnergy, 0);
     }
 
     get rotationalKineticEnergy() {
-        return this._molecules.reduce((sum, m) => sum + m.rotationalKineticEnergy(), 0);
+        return this._molecules.reduce((sum, molecule) => sum + molecule.rotationalKineticEnergy(), 0);
     }
-
-    get count() { return this._molecules.length; }
 }
 
 const simulation = Simulation
@@ -238,5 +226,5 @@ for (let i = 0; i < 150; i++)
 
 for (const molecule of gas)
     simulation.bind(molecule.alwaysWith(new DiatomicMolecule({
-        bondType: SwitchableBondView.Type.Cylinder
+        bondType: SwitchableBondView.Type.Spring
     })))

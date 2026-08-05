@@ -313,9 +313,9 @@ export class SwitchableBondView extends Renderable3D {
         color = 0xffff00,
         coils = 25,
         tubularSegments = 400,
+        radiusScaleFactor = 1.0,
         thickness = 0.01,
         castShadow = false,
-        radiusScaleFactor = 1.0,
         bondType = SwitchableBondView.Type.Spring
     } = {}) {
         super();
@@ -506,7 +506,6 @@ export class DiatomicMolecule extends Renderable3D {
         this._bond = new SwitchableBondView({
             bondType: bondType,
             color: bondColor,
-            radiusScaleFactor: 1.25,
         })
         this.add(this._atom1, this._atom2, this._bond);
     }

@@ -1,6 +1,7 @@
 import {
     RadialSymmetricBody, Simulation, Vec3, Sphere, Spring, Helix, Cylinder, Bond, Floor, Vec2, AxialSymmetricBody
 } from "../../../src/index.js";
+import {AmbientLight, DirectionalLight} from "three";
 
 const g = new Vec3(0, -9.8, 0);
 const L0 = 2;
@@ -41,6 +42,8 @@ const stick2 = new AxialSymmetricBody({
 });
 ////////////////
 
+const sun = new DirectionalLight(0xffffff, 2);
+sun.position.set(5, 10, 5);
 const onFloor = (ball, floorLevel, epsilon = 2e-2) =>
     ball.position.y - ball.radius <= shiftUp + floorLevel - epsilon;
 Simulation
@@ -48,6 +51,7 @@ Simulation
         htmlDivId: "slinkyContainer",
         cameraPosition: new Vec3(4, 2, 10).multiplyScalar(1.15),
         headUpDisplay: true,
+        light: false,
         fieldOfView: 50
     })
     .bind(stick1.onceWith(new Cylinder({ color: 0x855E42})))
@@ -57,13 +61,15 @@ Simulation
     .bind(ball3.alwaysWith(new Sphere({ color: "yellow" })))
     .bind(bond.alwaysWith(new Helix({
         color: 0x00ffff,
-        thickness: 0.015
+        thickness: 0.075
     })))
     .addObject3D(new Floor({
-        position: new Vec3(.5 * L0, -3.5 * L0 + shiftUp, 0),
-        planeSizeXy: new Vec2(L0 * 5 , L0 * 3),
-        type: Floor.Type.PAVING
+        position: new Vec3(0, -3.5 * L0 + shiftUp, 0),
+        planeSizeXy: new Vec2(L0 * 6 , L0 * 4),
+        type: Floor.Type.GRASS
     }))
+    .addObject3D(sun)
+    .addObject3D(new AmbientLight(0xffffff, .3))
     .runsEvery(0.01)
     .atSpeed(0.25)
     .onStep((_, dt) => {

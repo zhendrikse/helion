@@ -18,7 +18,7 @@ class PhysicsWorld {
         this._spring = new Spring({
             position: new Vec3(0, floor.level, 0),
             axis: new Vec3(0, 0.75, 0),
-            radius: 0.125,
+            radius: ball.radius * .75,
             k: 225
         });
         this._springTopAtRest = this._spring.endPosition;
@@ -48,7 +48,11 @@ const world = new PhysicsWorld(new RadialSymmetricBody({
     mass: 1.5
 }));
 
-const helix = new Helix({ coils: 15, color: "yellow" });
+const helix = new Helix({
+    coils: 15,
+    thickness: 0.075,
+    color: "yellow"
+});
 const sphere = new Sphere({ color: "orange" });
 const velocityArrow = new Arrow({
     color: "cyan",

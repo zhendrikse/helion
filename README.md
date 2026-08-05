@@ -8,8 +8,12 @@
 
 ### ❤️ Visualizing the beauty of math &amp; physics
 
-Helion is a browser-native framework for mathematical and physical modeling,
-simulation, and visualization. It is built around high-level mathematical
+Helion is a _browser-native_ framework for mathematical and physical modeling,
+simulation, and visualization. Therefore, a semantics that is easily understood
+by both mathematicians and physicists is always given higher precedence over
+an optimal software architecture that would require a (steep) learning curve.
+
+The library is built around high-level mathematical
 concepts such as fields<sup>
 <a href="https://www.hendrikse.name/helion/electromagnetism/">[1]</a>
 </sup>, parametric geometries<sup>
@@ -18,11 +22,15 @@ concepts such as fields<sup>
 operators, and numerical solvers<sup>
 <a href="https://www.hendrikse.name/helion/mathematics/fourier_transform/">[3]</a>
 <a href="https://www.hendrikse.name/helion/nature/raindrops/">[4]</a>
-</sup>.
+</sup> and strongly
+decouples models from their respective views:
 
-The primary abstraction in Helion is state transformation.
-Fields represent system state, operators transform state algebraically or geometrically,
-and solvers evolve state according to mathematical laws.
+```js
+// Visualize a ball trajectory with trail
+simulation
+    .bind(ball.alwaysWith(new Sphere()))
+    .bind(ball.alwaysWith(new Trail({ color: sphere.color})))
+```
 
 Helion is the product of decades of exploration in mathematics, physics, programming,
 and education, driven by a lifelong fascination with the beauty and patterns of nature.

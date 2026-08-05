@@ -272,7 +272,7 @@ export class Cylinder extends Renderable3D {
         opacity = 1,
         segments = 24,
         castShadow = false,
-        radiusScaleFactor = 1.0,
+        radiusScaleFactor = 1,
         material = new MeshStandardMaterial({
             color,
             opacity,
@@ -280,12 +280,12 @@ export class Cylinder extends Renderable3D {
         })
     } = {}) {
         super();
-        this._radiusScaleVector = radiusScaleFactor;
         const geometry = new CylinderGeometry(1, 1, 1, segments);
         this._mesh = new Mesh(geometry, material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
         this._direction = new Vector3();
+        this._radiusScaleFactor = radiusScaleFactor;
     }
 
     canBindTo(body) {
@@ -297,7 +297,7 @@ export class Cylinder extends Renderable3D {
         this._direction.copy(body.axis);
 
         const length = this._direction.length();
-        const scale = body.radius * this._radiusScaleVector;
+        const scale = body.radius * this._radiusScaleFactor;
         this.scale.set(scale, length, scale);
         this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
         this.position.add(this._direction.multiplyScalar(length * .5));
@@ -418,21 +418,13 @@ export class Helix extends Renderable3D {
         longitudinalOscillation = false,
         tubularSegments = 400,
         radialSegments = 16,
-        thickness = 0.01,
+        thickness = 0.05, // Percentage of the spring radius
         visible = true,
-        castShadow = false,
-        radiusScaleFactor = 2,
+        radiusScaleFactor = 1.0,
+        castShadow = false
     } = {}) {
         super();
-        this._radiusScaleFactor = radiusScaleFactor;
-        this._curve = new Coils(
-            new Vector3(0, 0, 0),
-            new Vector3(0, 0, 1), // fixed axis; mesh rotation handles direction
-            coils,
-            1, // unit radius
-            0  // no oscillation in this path
-        );
-
+        this._thicknessRatio = thickness;  // fractie, geen absolute waarde
         this._longitudinalOscillation = longitudinalOscillation;
         this._tubularSegments = tubularSegments;
         this._radialSegments = radialSegments;
@@ -444,22 +436,25 @@ export class Helix extends Renderable3D {
         // Reusable math objects
         this._targetDir = new Vector3();
         this.visible = visible;
+        this._curve = null;
+        this._restLength = 1;
+        this._radiusScaleFactor = radiusScaleFactor;
     }
 
     initialize(body) {
         this._restLength = body.axis.length();
-        const curve = new Coils(
+        this._curve = new Coils(
             new Vector3(0, 0, 0),
-            new Vector3(0, 0, this._restLength), // bake real length
+            new Vector3(0, 0, body.axis.length()),
             this._coils,
-            body.radius,
+            body.radius * this._radiusScaleFactor,
             0
         );
 
         const geometry = new TubeGeometry(
-            curve,
+            this._curve,
             this._tubularSegments,
-            this._thickness,
+            body.radius * this._thicknessRatio * this._radiusScaleFactor,
             this._radialSegments,
             false
         );
@@ -497,7 +492,7 @@ export class Helix extends Renderable3D {
             // Rotate mesh so local +Z aligns with bond axis
             this._targetDir.copy(body.axis).normalize();
             this.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), this._targetDir)
-            this.scale.set(this._radiusScaleFactor, this._radiusScaleFactor, body.axis.length() / this._restLength);
+            this.scale.set(1, 1, body.axis.length() / this._restLength);
         }
     }
 }

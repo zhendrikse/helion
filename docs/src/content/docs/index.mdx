@@ -7,14 +7,22 @@ import '../../assets/styles.css';
 #### ❤️ Visualizing the beauty of math &amp; physics
 <div class="header_line"></div>
 
-Helion is a browser-native framework for mathematical and physical modeling,
-simulation, and visualization. It is built around high-level mathematical
-concepts such as fields [^1], parametric geometries [^2],
-operators[^3], and numerical solvers [^4].
+Helion is a _browser-native_ framework for mathematical and physical modeling,
+simulation, and visualization. Therefore, a semantics that is easily understood
+by both mathematicians and physicists is always given higher precedence over
+an optimal software architecture that would require a (steep) learning curve.
 
-The primary abstraction in Helion is state transformation.
-Fields represent system state, operators transform state algebraically or geometrically,
-and solvers evolve state according to mathematical laws.
+The library is built around high-level mathematical
+concepts such as fields [^1], parametric geometries [^2],
+operators[^3], and numerical solvers [^4] and strongly
+decouples models from their respective views:
+
+```js
+// Visualize a ball trajectory with trail
+simulation
+    .bind(ball.alwaysWith(new Sphere()))
+    .bind(ball.alwaysWith(new Trail({ color: sphere.color})))
+```
 
 Helion is the product of decades of exploration in mathematics, physics, programming,
 and education, driven by a lifelong fascination with the beauty and patterns of nature.
@@ -27,8 +35,7 @@ and education, driven by a lifelong fascination with the beauty and patterns of 
 [^1]: Fields [demos](https://www.hendrikse.name/helion/electromagnetism/)
 [^2]: Parametric geometries [demo](https://www.hendrikse.name/helion/mathematics/parametric_surfaces/)
 [^3]: Operator [demo](https://www.hendrikse.name/helion/nature/fractal_terrain/)
-[^4]: Numeric solvers [demo 1](https://www.hendrikse.name/helion/mathematics/fourier_transform/) and
-[demo 2](https://www.hendrikse.name/helion/nature/raindrops/)
+[^4]: Numeric solvers [demo 1](https://www.hendrikse.name/helion/mathematics/fourier_transform/) and [demo 2](https://www.hendrikse.name/helion/nature/raindrops/)
 
 ## 🧠 Core concepts
 <div class="header_line"></div>

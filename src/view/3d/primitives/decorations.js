@@ -10,6 +10,8 @@ import woodWicketRoughnessUrl from '../../../textures/Wood_Wicker_011_roughness.
 import pavingColorUrl from '../../../textures/paving_color.jpg';
 import pavingRoughnessUrl from '../../../textures/paving_roughness.jpg';
 import pavingNormalUrl from '../../../textures/paving_normal.jpg';
+import grassColorUrl from '../../../textures/grass.jpg';
+import grassNormalUrl from '../../../textures/grassNormal.jpg';
 
 /*******************************************
  * Floor, Grid, Ceiling, Aquarium          *
@@ -47,6 +49,7 @@ export class Floor extends Group {
         PLAIN: "PLAIN",
         GRID: "Grid",
         PAVING: "Paving",
+        GRASS: "Grass",
         WOOD_WICKER: "WoodWicker"  // https://3dtextures.me/2024/06/22/wood-wicker-011/
     });
     constructor({
@@ -82,6 +85,10 @@ export class Floor extends Group {
         switch (type) {
             case Floor.Type.PLAIN:
                 this._mesh.material.color.set(color);
+                break;
+            case Floor.Type.GRASS:
+                this._mesh.material.map = this._loadTexture(loader, grassColorUrl, granularity);
+                this._mesh.material.normalMap = this._loadTexture(loader, grassNormalUrl, granularity);
                 break;
             case Floor.Type.GRID:
                 this.add(new Grid({
