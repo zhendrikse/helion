@@ -1,13 +1,14 @@
 import {
     Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute,
     BufferGeometry, InstancedMesh, Matrix4, Quaternion, InstancedBufferAttribute,
-    MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry
+    MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry, Mesh, SphereGeometry
 } from "three";
 import {Arrow, Cylinder, Helix, Sphere} from "../primitives/primitives.js";
 import {Vec3} from "../../../model/math/math.js";
 import { Renderable3D } from "../../renderer.js";
 import {MathPhysicsModelBehavior} from "../../../core/helion.js";
 import {Checkbox, CompoundControl, RadioGroup} from "../../../core/controls.js";
+import {TwoBodies} from "../../../model/phys/bodies.js";
 
 //
 // Point cloud
@@ -480,6 +481,44 @@ export class ArrowField extends Renderable3D {
         this._headMesh.instanceMatrix.needsUpdate = true;
         this._shaftMesh.instanceColor.needsUpdate = true;
         this._headMesh.instanceColor.needsUpdate = true;
+    }
+}
+
+export class DiatomicMolecule extends Renderable3D {
+    constructor({
+        bondType = SwitchableBondView.Type.Cylinder,
+        bondColor = 0xffffaa,
+        atom1Color = 0xff0000,
+        atom1Segments = 24,
+        atom2Color = 0x0000ff,
+        atom2Segments = 24
+    } = {}) {
+        super();
+
+        this._atom1 = new Sphere({
+            color: atom1Color,
+            segments: atom1Segments
+        });
+        this._atom2 = new Sphere({
+            color: atom2Color,
+            segments: atom2Segments
+        });
+        this._bond = new SwitchableBondView({
+            bondType: bondType,
+            color: bondColor,
+            radiusScaleFactor: 1.25,
+        })
+        this.add(this._atom1, this._atom2, this._bond);
+    }
+
+    canBindTo(model) {
+        return model instanceof TwoBodies && model.bond;
+    }
+
+    synchronizeWith(twoBodies) {
+        this._atom1.synchronizeWith(twoBodies.body1);
+        this._atom2.synchronizeWith(twoBodies.body2);
+        this._bond.synchronizeWith(twoBodies.bond);
     }
 }
 

@@ -101,6 +101,7 @@ Helion is designed for:
 🔦 [Optics](https://www.hendrikse.name/helion/optics/)<br/>
 🔱 [Quantum physics](https://www.hendrikse.name/helion/quantumphysics/)<br/>
 🌃 [Relativity](https://www.hendrikse.name/helion/relativity/)<br/>
+🌡️ [Thermodynamics](https://www.hendrikse.name/helion/thermodynamics/)<br/>
 🌊 [Waves](https://www.hendrikse.name/helion/waves/)<br/>
 
 

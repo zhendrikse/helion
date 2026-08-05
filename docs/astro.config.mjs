@@ -65,6 +65,11 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
+					label: 'Thermodynamics',
+					items: [{ autogenerate: { directory: 'thermodynamics' } }],
+				},
+				{
+					collapsed: true,
 					label: 'Waves',
 					items: [{ autogenerate: { directory: 'waves' } }],
 				}

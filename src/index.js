@@ -1,6 +1,6 @@
 export {
-    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology, CubicLatticeTopology,
-    EC, Body, G, Spring, Block, gravitationalForceBetween, Bond
+    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology, CubicLatticeTopology, TwoBodies,
+    EC, Body, G, Spring, Block, gravitationalForceBetween, Bond, resolveSphereSphereCollisionBetween
 } from "./model/phys/bodies.js";
 
 export {
@@ -48,7 +48,7 @@ export {
 
 export {
     OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial,
-    ArrowField, SwitchableBondView, LatticeView
+    ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule
 } from "./view/3d/composite/composites.js";
 
 export {

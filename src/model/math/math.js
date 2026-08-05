@@ -149,6 +149,7 @@ export class Vec3 {
         this.x += v.x * scalar;
         this.y += v.y * scalar;
         this.z += v.z * scalar;
+        return this;
     }
 
     sub(v) {
