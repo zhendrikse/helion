@@ -151,7 +151,7 @@ export class Aquarium extends Mesh {
         frameColor = 0xaa9900,
         frameWidth = 1
     } = {}) {
-        const geometry = new BoxGeometry(size.x, size.y, size.z);
+        const geometry = new BoxGeometry(1, 1, 1);
         const material = new MeshStandardMaterial({
             color: contentColor,
             transparent: true,
@@ -168,12 +168,13 @@ export class Aquarium extends Mesh {
         const edges = new EdgesGeometry(geometry);
         const lineMaterial = new LineBasicMaterial({
             color: frameColor,
-            linewidth: frameWidth,
+            linewidth: 1,
             depthTest: true
         });
 
         const wireframe = new LineSegments(edges, lineMaterial);
         this.add(wireframe); // make it an integral part of the cube
+        this.scale.copy(size);
     }
 
     get size() { return this._size;}
