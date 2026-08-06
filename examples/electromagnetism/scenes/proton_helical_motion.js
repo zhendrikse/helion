@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
-    VectorField, Range, Sphere, Trail, Vec3, ArrowField,
-    Slider, Simulation, Aquarium, RadialSymmetricBody
+    Range, Sphere, Trail, Vec3, ArrowField,
+    Slider, Simulation, Aquarium, RadialSymmetricBody, MagneticField
 } from "../../../src/index.js";
 
 const initialSspeed = 50;
@@ -11,14 +11,17 @@ const boxSize = 40;
 //
 // Physics model
 //
-class UniformMagneticField extends VectorField {
-    constructor(field = new Vec3(0, -5, 0), strength = 1) {
+class UniformMagneticField extends MagneticField {
+    constructor(field = new Vec3(0, 5, 0), strength = 1) {
         super();
         this._field = field;
         this._fieldStrength = strength;
     }
 
-    sample(position, target) { target.copy(this._field.clone().multiplyScalar(this._fieldStrength)); }
+    sample(position, target) {
+        target.copy(this._field.clone().multiplyScalar(this._fieldStrength));
+    }
+
     get fieldStrength() { return this._fieldStrength; }
     set fieldStrength(strength) { this._fieldStrength = strength; }
 }
@@ -33,19 +36,13 @@ const proton = new RadialSymmetricBody({
 });
 
 const outOfBox = (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize || pos.z < -boxSize || pos.z > boxSize;
-const field = new Vec3();
 function timeStep(dt) {
     if (outOfBox(proton.position))
         return;
 
     for (let substep = 0; substep < 5; substep++) {
-        // Lorentz force: F = q v × B
-        magneticField.sample(proton.position, field);
-        const force = proton.velocity.clone()
-            .cross(field)
-            .multiplyScalar(proton.charge);
-
-        proton.apply(force, dt);
+        proton.apply(magneticField);
+        proton.integrate(dt);
     }
 }
 
@@ -102,4 +99,3 @@ Simulation
         .withRange(new Range(1, 100, 1))
         .withValue(50)
         .addEventListener("input", speedCallback));
-

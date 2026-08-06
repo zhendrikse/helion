@@ -1,6 +1,6 @@
 import { Vector2 } from "three";
 import {
-    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, Trail, G
+    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, Trail, G, UniformGravity
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -35,13 +35,7 @@ const ball = new BouncingBall({
     mass: 1
 });
 
-const gravitationalForce = new Vec3(0, -9.8 * ball.mass, 0);
-function ballStep(dt) {
-    ball.apply(gravitationalForce, dt);
-    if (ball.liesOnFloor())
-        ball.bounceOffOfFloor(dt, 0.9);
-}
-
+const gravitationalForce = new UniformGravity();
 const sphere = new Sphere({ color: "cyan" });
 const graphDefinition = {
     dataDefinition: [
@@ -69,7 +63,12 @@ const simulation = Simulation
         if (ball.reachedEnd())
             return;
 
-        ballStep(dt);
+        ball.apply(gravitationalForce);
+        ball.integrate(dt);
+
+        if (ball.liesOnFloor())
+            ball.bounceOffOfFloor(dt, 0.9);
+
         updateGraph(clock.simulatedTime)
     })
     .addObject3D(new Floor({

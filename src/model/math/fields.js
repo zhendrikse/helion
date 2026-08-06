@@ -17,7 +17,6 @@ export class VectorField extends Field {
     sample(positionVector, target) {}
 }
 
-
 /**
  * This is the “adapter” between the physics and rendering.
  */
@@ -76,11 +75,6 @@ export class DiscreteScalarField extends Field {
         return this._data;
     }
 
-    apply(operator) {
-        operator.apply(this);
-        return this;
-    }
-
     evolve(solver, dt) {
         solver.step(this, dt);
         return this;
@@ -109,11 +103,6 @@ export class DiscreteComplexField extends Field {
     }
 
     get size() { return this.nx; }
-
-    apply(operator) {
-        operator.apply(this);
-        return this;
-    }
 
     index(x, y) {
         return y * this.nx + x;

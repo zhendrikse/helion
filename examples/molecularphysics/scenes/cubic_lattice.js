@@ -10,7 +10,7 @@ class CornerKick {
         this._done = false;
     }
 
-    apply(lattice, t) {
+    applyTo(lattice) {
         if (this._done) return;
 
         lattice.bodyAt(lattice.bodyCount - 1).state.position.y += .025;

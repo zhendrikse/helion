@@ -1,5 +1,5 @@
 import {
-    Integrators, RadialSymmetricBody, G, gravitationalForceBetween, Simulation, Vec3, Sphere, Trail
+    Integrators, RadialSymmetricBody, G, Simulation, Vec3, Sphere, Trail, Gravity
 } from "../../../src/index.js";
 
 //
@@ -33,6 +33,8 @@ const bodyC = new RadialSymmetricBody({
     mass: mass * 0.5
 });
 
+const gravity = new Gravity();
+
 //
 // Simulation binds view to model
 //
@@ -50,12 +52,12 @@ Simulation
     .bind(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
     .bind(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
     .maxOutCpu(_ => {
-        const force_BA = gravitationalForceBetween(bodyA.and(bodyB));
-        const force_CB = gravitationalForceBetween(bodyB.and(bodyC));
-        const force_AC = gravitationalForceBetween(bodyC.and(bodyA));
+        bodyA.and(bodyB).apply(gravity);
+        bodyA.and(bodyC).apply(gravity);
+        bodyB.and(bodyC).apply(gravity);
 
-        bodyA.apply(force_BA.clone().sub(force_AC), 10, Integrators.symplecticEulerStep);
-        bodyB.apply(force_CB.clone().sub(force_BA), 10, Integrators.symplecticEulerStep);
-        bodyC.apply(force_AC.clone().sub(force_CB), 10, Integrators.symplecticEulerStep)
+        bodyA.integrate(10, Integrators.symplecticEulerStep);
+        bodyB.integrate(10, Integrators.symplecticEulerStep);
+        bodyC.integrate(10, Integrators.symplecticEulerStep);
     }, 30, 1000)
     .withMouseClickEventListener();

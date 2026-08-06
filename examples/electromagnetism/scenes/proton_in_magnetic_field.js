@@ -1,12 +1,12 @@
 import { Color } from "three";
 import {
-    RadialSymmetricBody, VectorField, Range, Simulation, Slider, Sphere, ArrowField, Trail, Vec3
+    RadialSymmetricBody, MagneticField, Range, Simulation, Slider, Sphere, ArrowField, Trail, Vec3
 } from "../../../src/index.js";
 
 //
 // Physics
 //
-class MagneticField extends VectorField {
+class DemoMagneticField extends MagneticField {
     constructor(fieldStrength) {
         super();
         this._strength = fieldStrength;
@@ -29,21 +29,12 @@ const proton = new RadialSymmetricBody({
     charge: 1
 });
 
-const magneticField = new MagneticField(.2);
-
-const fieldVector = new Vec3();
-function timeStep(dt) {
-    for (let substep = 0; substep < 20; substep++) {
-        magneticField.sample(proton.position, fieldVector);
-        const force = fieldVector.cross(proton.velocity).multiplyScalar(proton.charge);
-        proton.apply(force, dt);
-    }
-}
+const magneticField = new DemoMagneticField(.2);
 
 //
 // View
 //
-const sphere = new Sphere({ color: new Color("red") });
+const sphere = new Sphere({ color: 0xff0000 });
 const arrowField = new ArrowField({
     xRange: new Range(-6, 6, .5),
     yRange: new Range(0, 0, .5),
@@ -66,7 +57,12 @@ Simulation
     .bind(proton.alwaysWith(sphere))
     .bind(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })))
     .runsEvery(1e-3)
-    .onStep((_, dt) => timeStep(dt))
+    .onStep((_, dt) => {
+        for (let substep = 0; substep < 20; substep++) {
+            proton.apply(magneticField);
+            proton.integrate(dt);
+        }
+    })
     .append(new Slider("🧲 Field: ")
         .withRange(new Range(.1, 1, .01))
         .on(magneticField)

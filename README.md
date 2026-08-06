@@ -8,37 +8,48 @@
 
 ### ❤️ Visualizing the beauty of math &amp; physics
 
-Helion is a _browser-native_ framework for mathematical and physical modeling,
-simulation, and visualization. Therefore, a semantics that is easily understood
-by both mathematicians and physicists is always given higher precedence over
-an optimal software architecture that would require a (steep) learning curve.
+Helion is a _browser-native_ framework for interactive mathematics and physics.
+Its API is designed to express scientific ideas as
+directly as possible by offering a scientific domain-specific language
+embedded in JavaScript.
 
-The library is built around high-level mathematical
-concepts such as fields<sup>
-<a href="https://www.hendrikse.name/helion/electromagnetism/">[1]</a>
-</sup>, parametric geometries<sup>
-  <a href="https://www.hendrikse.name/helion/mathematics/parametric_surfaces/">[2]</a>
-</sup>, 
-operators, and numerical solvers<sup>
-<a href="https://www.hendrikse.name/helion/mathematics/fourier_transform/">[3]</a>
-<a href="https://www.hendrikse.name/helion/nature/raindrops/">[4]</a>
-</sup> and strongly
-decouples models from their respective views:
+As a consequence, semantics that are immediately familiar to mathematicians
+and physicists take precedence over software abstractions that would introduce an
+unnecessary learning curve. Examples of such semantics are concepts such as
+transformations, fields, parametric geometries, operators, and numerical solvers.
 
-```js
-// Visualize a ball trajectory with trail
-simulation
-    .bind(ball.alwaysWith(new Sphere()))
-    .bind(ball.alwaysWith(new Trail({ color: sphere.color})))
-```
+Helion is built around the concept of transformations and maintains a clear separation
+between mathematical or physical models and their visual representations. Models evolve
+by applying transformations to them, while one or more views visualize their state.
 
 Helion is the product of decades of exploration in mathematics, physics, programming,
 and education, driven by a lifelong fascination with the beauty and patterns of nature.
 
-👉 JavaScript / browser-native (no installation or configuration)<br/>
-👉 Code expresses scientific intent directly (object orientiation)<br/>
-👉 It is model-driven (scalar &amp; vector fields, surfaces, operators)<br/>
-👉 Supports multiple real-time views per model (model / view / contoller) <br/>
+📌 Code _expresses scientific intent_ directly<br/>
+📌 Browser-native JavaScript &mdash; no installation or build steps<br/>
+📌 Model-driven API built around fields, operators, geometries, and transformations<br/>
+📌 Multiple synchronized views can observe the same model<br/>
+📌 Designed for education, exploration, and interactive simulations <br/>
+
+### Examples
+
+#### Physical transformations
+
+```js
+body.apply(gravity);
+particle.apply(electricField);
+pair.apply(spring);
+pair.apply(collision);
+```
+
+#### Mathematical transformations
+
+```js
+field.apply(new FFT2D());
+field.apply(new Laplacian());
+field.apply(new ShapeMask(...));
+body.apply(new SymplecticEuler());
+```
 
 ## 🧠 Core concepts
 <div class="header_line"></div>
@@ -49,12 +60,12 @@ remain tightly synchronized and can be explored interactively in the browser.
 
 The following concepts form the core of Helion:
 
-| Concept         | Question                      | Example                        |
-| --------------- | ------------------------------|--------------------------------|
-| `State`         | What is the current state?    | Field / Body / Particle cloud  |
-| `apply()`       | How is the state transformed? | GaussianImpulseOperator        |
-| `evolve()`      | How does the state evolve?    | SchrödingerSolver              |
-| `synchronize()` | How is the state represented? | `synchronize(body.with(view))` |
+| Concept         | Question                      | Example                  |
+| --------------- | ------------------------------| ------------------------ |
+| `State`    | What is the current state?    | Field / Body / Particle cloud |
+| `apply()`  | How is the state transformed? | GaussianImpulseOperator       |
+| `evolve()` | How does the state evolve?    | SchrödingerSolver             |
+| `bind()`   | How is the state represented? | `bind(body.alwaysWith(view))` |
 
 These concepts are interacting with one another in the following way:
 
@@ -73,7 +84,6 @@ These concepts are interacting with one another in the following way:
    Operator ──► State ──► View
      apply()          synchronize()
 ```
-
 
 ## 🎓 Focus on teaching &amp; learning
 

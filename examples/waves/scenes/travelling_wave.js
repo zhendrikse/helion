@@ -13,7 +13,7 @@ class BoundaryCondition {
         this._omega = omega;
     }
 
-    apply(chain, t) {
+    applyTo(chain, t) {
         const firstBall = chain.bodyAt(0);
         const halfWaveTime = 2 * Math.PI / this._omega;
         if (t < halfWaveTime)

@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
-    Block, RadialSymmetricBody, VectorField, Range, Sphere, Trail, ArrowField,
-    Box, Simulation, Vec3
+    Block, RadialSymmetricBody, Range, Sphere, Trail, ArrowField,
+    Box, Simulation, Vec3, ElectricField
 } from "../../../src/index.js";
 
 const Q = 1.6e-19;
@@ -30,7 +30,7 @@ class ChargedSheet {
 
     fieldAt(position) {
         const field = new Vec3();
-        for (const segment of this._segments) {
+        for (const segment of this) {
             const r = segment.position.clone().sub(position);
             const r2 = r.lengthSq();
 
@@ -43,19 +43,23 @@ class ChargedSheet {
         return field;
     }
 
-    get segments() { return this._segments; }
+    /**
+     * @returns {Iterator<Block>}
+     */
+    [Symbol.iterator]() {
+        return this._segments[Symbol.iterator]();
+    }
 }
 
-//
-// Electric field wrapper
-//
-class SheetElectricField extends VectorField {
+class SheetElectricField extends ElectricField {
     constructor(sheet) {
         super();
         this._sheet = sheet;
     }
 
-    sample(position, target) { target.copy(this._sheet.fieldAt(position)); }
+    sample(position, target) {
+        target.copy(this._sheet.fieldAt(position));
+    }
 }
 
 //
@@ -90,7 +94,6 @@ const arrowField = new ArrowField({
     round: true
 });
 
-const field = new Vec3();
 const simulation = Simulation
     .with({
         htmlDivId: "chargedSheetContainer",
@@ -105,15 +108,11 @@ const simulation = Simulation
     .bind(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
     .runsEvery(5e-20)
     .onStep((_, dt) => {
-        electricField.sample(electron.position, field);
-        const force = field.clone().multiplyScalar(electron.charge);
-        electron.apply(force, dt);
+        electron.apply(electricField);
+        electron.integrate(dt);
     });
 
-//
-// Sheet rendering
-//
-for (const segment of sheet.segments)
+for (const segment of sheet)
     simulation.bind(segment.onceWith(new Box({
         color: new Color(0xffffff),
         opacity: 0.6

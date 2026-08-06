@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
-    RadialSymmetricBody, AxialSymmetricBody, VectorField, Range, Simulation,
-    Sphere, Cylinder, ArrowField, Vec3, Trail
+    RadialSymmetricBody, AxialSymmetricBody, Range, Simulation,
+    Sphere, Cylinder, ArrowField, Vec3, Trail, ElectricField
 } from "../../../src/index.js";
 
 //
@@ -23,6 +23,13 @@ class ChargedRing {
         this._createSegments(segments, points, charge);
     }
 
+    /**
+     * @returns {Iterator<AxialSymmetricBody>}
+     */
+    [Symbol.iterator]() {
+        return this._segments[Symbol.iterator]();
+    }
+
     _createSegments(segments, points, charge) {
         for (let i = 0; i < segments; i++) {
             const p1 = points[i];
@@ -31,7 +38,7 @@ class ChargedRing {
             this._segments.push(new AxialSymmetricBody({
                 position: p1.clone().add(p2).multiplyScalar(0.5),
                 axis,
-                radius: radius * 2.51e-2,
+                radius: this.radius * 2.51e-2,
                 charge: charge / segments
             }));
         }
@@ -41,7 +48,7 @@ class ChargedRing {
         const points = [];
         for (let i = 0; i <= segments; i++) {
             const theta = i * 2 * Math.PI / segments;
-            points.push(new Vec3(radius * Math.cos(theta), radius * Math.sin(theta), 0));
+            points.push(new Vec3(radius * Math.cos(theta), this.radius * Math.sin(theta), 0));
         }
         return points;
     }
@@ -67,7 +74,7 @@ class ChargedRing {
 //
 // Physics
 //
-class RingElectricField extends VectorField {
+class RingElectricField extends ElectricField {
     constructor(ring) {
         super();
         this._ring = ring;
@@ -95,13 +102,6 @@ const electron = new RadialSymmetricBody({
     charge: Q,
     radius: radius / 20
 });
-
-const field = new Vec3();
-function timeStep(dt) {
-    electricField.sample(electron.position, field);
-    const force = field.clone().multiplyScalar(electron.charge);
-    electron.apply(force, dt);
-}
 
 //
 // View model
@@ -137,10 +137,13 @@ const simulation = Simulation
     .bind(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
     .bind(electricField.onceWith(arrowField))
     .runsEvery(3e-19)
-    .onStep((_, dt) => timeStep(dt));
+    .onStep((_, dt) => {
+        electron.apply(electricField);
+        electron.integrate(dt);
+    });
 
 // Ring rendering
-for (const segment of ring.segments)
+for (const segment of ring)
     simulation.bind(segment.onceWith(new Cylinder({ color: "orange" })));
 
 

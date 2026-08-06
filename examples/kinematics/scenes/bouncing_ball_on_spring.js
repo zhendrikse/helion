@@ -1,5 +1,5 @@
 import {
-    RadialSymmetricBody, Spring, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix, Slider, Range
+    RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix, Slider, Range, UniformGravity, Bond
 } from "../../../src/index.js";
 
 //
@@ -11,26 +11,41 @@ const floor = new Floor({
     type: Floor.Type.PAVING,
 });
 
+
+class Damping {
+    constructor(constant = 0) {
+        this._damping = constant;
+    }
+
+    applyTo(body) {
+        body.force.x -= this._damping * body.velocity.x;
+        body.force.y -= this._damping * body.velocity.y;
+        body.force.z -= this._damping * body.velocity.z;
+    }
+
+    set damping(value) { this._damping = value; }
+}
+
+const gravity = new UniformGravity();
+const damping = new Damping();
+
 class PhysicsWorld {
     constructor(ball) {
         this._ball = ball;
-        this._damping = 0;
-        this._spring = new Spring({
-            position: new Vec3(0, floor.level, 0),
-            axis: new Vec3(0, 0.75, 0),
-            radius: ball.radius * .75,
+        this._spring = new Bond({
+            restLength: 0.75,
             k: 225
         });
-        this._springTopAtRest = this._spring.endPosition;
     }
 
     _ballHitsSpring = (epsilon = 1e-2) =>
         this._springTopAtRest.clone().sub(this._ball.position).length() < epsilon;
 
     timeStep(dt) {
-        netForce.y = -9.8 * this._ball.mass + this._spring.force.y;
-        netForce.y -= this._damping * this._ball.velocity.y;
-        this._ball.apply(netForce, dt);
+        this._ball.apply(gravity);
+        this._ball.apply(damping);
+        this._ball.apply(this._spring)
+        this._ball.integrate(dt);
 
         if (this._ballHitsSpring() || this._spring.isCompressed)
             this._spring.axis = this._spring.positionVectorTo(this._ball);
@@ -38,8 +53,6 @@ class PhysicsWorld {
 
     get ball() { return this._ball; }
     get spring() { return this._spring; }
-
-    set damping(value) { this._damping = value; }
 }
 
 const world = new PhysicsWorld(new RadialSymmetricBody({
@@ -90,7 +103,7 @@ Simulation
     .append(new Slider("🍃 Air resistance: ")
         .withRange(new Range(0, 1, 0.01))
         .withValue(0.2)
-        .on(world)
+        .on(damping)
         .withProperty("damping"));
 
 

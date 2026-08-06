@@ -1,6 +1,6 @@
 import { Color, AmbientLight, PointLight } from "three";
 import {
-    RadialSymmetricBody, EC, VectorField, Range, Simulation, Trail, Vec3, Slider, Sphere, ArrowField
+    RadialSymmetricBody, EC, Range, Simulation, Trail, Vec3, Slider, Sphere, ArrowField, ElectricField
 } from "../../../src/index.js";
 
 const K = 9e9;
@@ -8,32 +8,41 @@ const scale = 1e14;
 
 class Capacitor {
     constructor(topY = 10e-14, bottomY = -10e-14) {
-        this.charges = [];
+        this._charges = [];
 
         for (let x = -20; x <= 20; x += 2)
             for (let z = -20; z <= 20; z += 2)
                 for (const y of [topY, bottomY])
-                    this.charges.push(new RadialSymmetricBody({
+                    this._charges.push(new RadialSymmetricBody({
                         position: new Vec3(x / scale, y, z / scale),
                         radius: 1e-14,
                         charge: EC * (y > 0 ? 1 : -1)
                     }));
     }
 
+    /**
+     * @returns {Iterator<RadialSymmetricBody>}
+     */
+    [Symbol.iterator]() {
+        return this._charges[Symbol.iterator]();
+    }
+
     fieldAt(position, target) {
         target.set(0, 0, 0);
-        for (const charge of this.charges)
+        for (const charge of this)
             target.add(charge.fieldAt(position).multiplyScalar(K));
     }
 }
 
-class CapacitorField extends VectorField {
+class CapacitorField extends ElectricField {
     constructor(capacitor) {
         super();
         this._capacitor = capacitor;
     }
 
-    sample(positionVector, target) { this._capacitor.fieldAt(positionVector, target); }
+    sample(positionVector, target) {
+        this._capacitor.fieldAt(positionVector, target);
+    }
 }
 
 //
@@ -73,8 +82,6 @@ const speedSlider = new Slider("🚀 Speed: ")
     .withRange(new Range(1, 50, 1))
     .addEventListener(speedCallback);
 
-const subSteps = 3;
-const field = new Vec3();
 const simulation = Simulation
     .with({
         htmlDivId: "movingChargeContainer",
@@ -95,9 +102,8 @@ const simulation = Simulation
         if (movingCharge.position.x > 60 / scale)
             return;
 
-        capacitorField.sample(movingCharge.position, field);
-        const force = field.multiplyScalar(movingCharge.charge);
-        movingCharge.apply(force, dt);
+        movingCharge.apply(capacitorField);
+        movingCharge.integrate(dt);
     })
     .onReset(() => {
         movingCharge.state.charge = Number(chargeSlider.value) * 5e-42 * EC;
@@ -106,9 +112,8 @@ const simulation = Simulation
     .append(chargeSlider)
     .append(speedSlider);
 
-for (const charge of capacitor.charges) {
-    const sphere = new Sphere({
+for (const charge of capacitor)
+    simulation.bind(charge.onceWith(new Sphere({
         color: charge.charge > 0 ? new Color(0x4444ff) : new Color(0xff0000)
-    });
-    simulation.bind(charge.onceWith(sphere)); // Prevent unnecessary updates!
-}
+    })));
+

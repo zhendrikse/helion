@@ -8,7 +8,7 @@ import {Vec3} from "../../../model/math/math.js";
 import { Renderable3D } from "../../renderer.js";
 import {MathPhysicsModelBehavior} from "../../../core/helion.js";
 import {Checkbox, CompoundControl, RadioGroup} from "../../../core/controls.js";
-import {TwoBodies} from "../../../model/phys/bodies.js";
+import {BodyPair} from "../../../model/phys/bodies.js";
 
 //
 // Point cloud
@@ -343,16 +343,16 @@ export class SwitchableBondView extends Renderable3D {
         return body.position && body.axis && body.radius;
     }
 
-    initialize(model) {
-        this._spring.initialize(model);
-        this._cylinder.initialize(model);
+    initialize(bodyPair) {
+        this._spring.initialize(bodyPair);
+        this._cylinder.initialize(bodyPair);
     }
 
-    synchronizeWith(twoBodies) {
+    synchronizeWith(bodyPair) {
         if (this._bondType === SwitchableBondView.Type.Cylinder)
-            this._cylinder.synchronizeWith(twoBodies);
+            this._cylinder.synchronizeWith(bodyPair);
         else
-            this._spring.synchronizeWith(twoBodies);
+            this._spring.synchronizeWith(bodyPair);
     }
 }
 
@@ -492,7 +492,7 @@ export class DiatomicMolecule extends Renderable3D {
         atom1Segments = 24,
         atom2Color = 0x0000ff,
         atom2Segments = 24,
-        radiusScaleFactor = 1
+        radiusScaleFactor = .5
     } = {}) {
         super();
 
@@ -514,20 +514,20 @@ export class DiatomicMolecule extends Renderable3D {
         this.add(this._atom1, this._atom2, this._bond);
     }
 
-    initialize(model) {
-        this._atom1.initialize(model.body1);
-        this._atom2.initialize(model.body2);
-        this._bond.initialize(model.bond);
+    initialize(bodyPair) {
+        this._atom1.initialize(bodyPair.body1);
+        this._atom2.initialize(bodyPair.body2);
+        this._bond.initialize(bodyPair);
     }
 
     canBindTo(model) {
-        return model instanceof TwoBodies && model.bond;
+        return model instanceof BodyPair;
     }
 
-    synchronizeWith(twoBodies) {
-        this._atom1.synchronizeWith(twoBodies.body1);
-        this._atom2.synchronizeWith(twoBodies.body2);
-        this._bond.synchronizeWith(twoBodies.bond);
+    synchronizeWith(bodyPair) {
+        this._atom1.synchronizeWith(bodyPair.body1);
+        this._atom2.synchronizeWith(bodyPair.body2);
+        this._bond.synchronizeWith(bodyPair);
     }
 
     set bondType(type) {

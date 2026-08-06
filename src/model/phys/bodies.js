@@ -3,21 +3,6 @@ import { Integrators } from "../math/numerics/integrators/integrators.js";
 import {Binding, MathPhysicsModelBehavior, Simulation} from "../../core/helion.js";
 import {Floor} from "../../view/3d/primitives/decorations.js";
 
-//
-// Constants
-//
-export const G = 6.67e-11; // Gravitational constant
-export const EC = 1.6e-19; // Coulomb charge
-
-//
-// Functions
-//
-export function gravitationalForceBetween(twoBodies) {
-    const radius = twoBodies.body1.positionVectorTo(twoBodies.body2);
-    const rSquared = twoBodies.body1.distanceToSquared(twoBodies.body2);
-    return radius.normalize().multiplyScalar(G * twoBodies.body1.mass * twoBodies.body2.mass / rSquared);
-}
-
 export class PhysicsState {
     constructor({
         position = new Vec3(),
@@ -77,7 +62,7 @@ class VelocityVector extends MathPhysicsModelBehavior {
 //
 // Bodies to do physics with
 //
-export class TwoBodies extends MathPhysicsModelBehavior {
+export class BodyPair extends MathPhysicsModelBehavior {
     constructor(body1, body2) {
         super();
         this.body1 = body1;
@@ -89,57 +74,15 @@ export class TwoBodies extends MathPhysicsModelBehavior {
         this.body2.reset?.();
     }
 
+    integrate(dt = 0.01, integrator = Integrators.symplecticEulerStep) {
+        this.body1.integrate(dt, integrator);
+        this.body2.integrate(dt, integrator);
+    }
+
+    get radius() { return .5 * (this.body1.radius + this.body2.radius); }
     get axis() { return this.body1.positionVectorTo(this.body2); }
     get position() { return this.body1.position; }
     get mass() { return this.body2.mass + this.body1.mass; }
-}
-
-export const resolveSphereSphereCollisionBetween = twoBodies => {
-    const body1 = twoBodies.body1;
-    const body2 = twoBodies.body2;
-    const r = twoBodies.axis;
-    const distance = r.length();
-    const minDist = body1.radius + body2.radius;
-
-    if (distance === 0 || distance >= minDist)
-        return;
-
-    // Penetration correction
-    const overlap = minDist - distance;
-    const n = r.clone().normalize();
-
-    let body1Adjust = 0.5;
-    let body2Adjust = 0.5;
-    if (body1.radius > body2.radius) {
-        body1Adjust = 0;
-        body2Adjust = 1;
-    } else if (body1.radius < body2.radius) {
-        body1Adjust = 1;
-        body2Adjust = 0;
-    }
-
-    body1.state.position.addScaledVector(n, -body1Adjust * overlap);
-    body2.state.position.addScaledVector(n,  body2Adjust * overlap);
-
-    // To center-of-mass frame
-    const frame = body2.velocity.clone();
-    body1.state.velocity.sub(frame);
-    body2.state.velocity.sub(frame);
-
-    // Projection onto normal
-    const projFactor = body1.velocity.dot(r) / r.lengthSq();
-    const p = r.clone().multiplyScalar(projFactor);
-
-    // New velocities
-    const totalMass = body1.mass + body2.mass;
-    const v1 = body1.velocity.clone().sub(p).addScaledVector(p, (body1.mass - body2.mass) / totalMass);
-    const v2 = p.clone().multiplyScalar(2 * body1.mass / totalMass);
-    body1.state.velocity.copy(v1);
-    body2.state.velocity.copy(v2);
-
-    // Back to lab-frame
-    body1.state.velocity.add(frame);
-    body2.state.velocity.add(frame);
 }
 
 export class Body extends MathPhysicsModelBehavior{
@@ -147,12 +90,14 @@ export class Body extends MathPhysicsModelBehavior{
         position = new Vec3(),
         velocity = new Vec3(),
         mass = 1,
-        charge = 0
+        charge = 0,
+        fixed = false
     } = {}) {
         super();
         this._state = new PhysicsState({ position, velocity, mass, charge });
         this._force = new Vec3();
         this._initialState = this._state.clone();
+        this._fixed = fixed;
         this.velocityVector = new VelocityVector(this);
         this.accelerationVector = new AccelerationVector(this);
     }
@@ -169,10 +114,6 @@ export class Body extends MathPhysicsModelBehavior{
         this._state = this._initialState.clone();
     }
 
-    clearForce() {
-        this._force.set(0, 0, 0);
-    }
-
     fieldAt(point) {
         const rVec = point.clone().sub(this._state.position);
         const distanceSquared = rVec.dot(rVec);
@@ -182,17 +123,16 @@ export class Body extends MathPhysicsModelBehavior{
             rVec.normalize().multiplyScalar(this._state.charge / distanceSquared);
     }
 
-    apply(force, dt = 0.01, integrator = Integrators.symplecticEulerStep) {
-        const accelerationFn = (bodyParam) => force.clone().multiplyScalar(1 / bodyParam.mass);
-        integrator(this._state, dt, accelerationFn);
-    }
-
     integrate(dt = 0.01, integrator = Integrators.symplecticEulerStep) {
+        if (this._fixed)
+            return;
+
         const accelerationFn = (bodyParam) => this.force.clone().multiplyScalar(1 / bodyParam.mass);
         integrator(this._state, dt, accelerationFn);
+        this._force.set(0, 0, 0);
     }
 
-    and(otherBody) { return new TwoBodies(this, otherBody) };
+    and(otherBody) { return new BodyPair(this, otherBody) };
 
     positionVectorTo(other) { return other.position.clone().sub(this.position); }
     distanceToSquared(other) { return this.position.distanceSquaredTo(other.position); }
@@ -249,59 +189,6 @@ export class Block extends Body {
     }
 }
 
-export class Bond extends MathPhysicsModelBehavior {
-    static between(twoBodies, {
-        k = 200,
-        radius = 1,
-        restLength = twoBodies.axis.length(),
-        damping = 0
-    } = {}) {
-        return new Bond(twoBodies, k, radius, restLength, damping);
-    }
-
-    constructor(twoBodies, k, radius, restLength, damping) {
-        super();
-        this.radius = radius;
-        this.k = k;
-        this._twoBodies = twoBodies;
-        this.restLength = restLength;
-        this._damping = damping;
-        this._scratchVector = new Vec3();
-    }
-
-    set damping(damping) { this._damping = damping; }
-
-    get position() {
-        return this._twoBodies.position;
-    }
-
-    get axis() {
-        return this._twoBodies.axis;
-    }
-
-    applyForce() {
-        const left = this._twoBodies.body1;
-        const right = this._twoBodies.body2
-        const direction = left.positionVectorTo(right);
-
-        // Hooke's law
-        const stretch = direction.length() - this.restLength;
-        this._scratchVector.copy(direction.normalize().multiplyScalar(-this.k * stretch));
-
-        // Damping
-        if (this._damping !== 0) {
-            const relativeVelocity = right.velocity.clone().sub(left.velocity);
-            const dampingForce = relativeVelocity
-                .projectOnVector(left.positionVectorTo(right).normalize())
-                .multiplyScalar(this._damping);
-            this._scratchVector.sub(dampingForce);
-        }
-
-        left.force.sub(this._scratchVector);
-        right.force.add(this._scratchVector);
-    }
-}
-
 export class Lattice extends MathPhysicsModelBehavior {
     constructor({
         k = 100,
@@ -336,11 +223,6 @@ export class Lattice extends MathPhysicsModelBehavior {
         return this;
     }
 
-    apply(topology) {
-        topology.applyTo(this);
-        return this;
-    }
-
     addBody(body) {
         this._bodies.push(body);
         this._fixedBodies.push(false);
@@ -353,9 +235,7 @@ export class Lattice extends MathPhysicsModelBehavior {
     }
 
     connect(body1, body2, {k, radius, restLength, damping}) {
-        this._bonds.push(Bond.between(body1.and(body2), {
-            k, radius, restLength, damping
-        }));
+        this._bonds.push(body1.and(body2));
     }
 
     set bondForce(value) { this._bonds.forEach(bond => bond.k = value); }
@@ -371,10 +251,7 @@ export class Lattice extends MathPhysicsModelBehavior {
 
     update(t, dt) {
         for (const boundaryCondition of this._boundaryConditions)
-            boundaryCondition.apply(this, t);
-
-        for (const body of this._bodies)
-            body.clearForce();
+            boundaryCondition.applyTo(this, t);
 
         for (const bond of this._bonds)
             bond.applyForce();
@@ -499,28 +376,4 @@ export class CubicLatticeTopology {
             restLength: this._spacing
         };
     }
-}
-
-export class Spring extends Body {
-    constructor({
-        position = new Vec3(),
-        velocity = new Vec3(),
-        axis = new Vec3(0, 1, 0),
-        mass = 1,
-        radius = 1,
-        k=100
-    } = {}) {
-        super({ position, velocity, mass });
-        this.axis = axis;
-        this.radius = radius;
-        this.restLength = axis.length();
-        this.k = k;    // spring constant
-        this.time = 0; // in case user wants to visualize longitudinal waves in spring
-    }
-
-    get force() { return this.axis.clone().normalize().multiplyScalar(-this.k * this.displacement); }
-    get potentialEnergy() { return 0.5 * this.k * this.displacement * this.displacement; }
-    get displacement() { return this.axis.length() - this.restLength; }
-    get isCompressed() { return this.axis.length() - this.restLength < 0; }
-    get endPosition() { return this.position.clone().add(this.axis); }
 }

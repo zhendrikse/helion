@@ -1,19 +1,24 @@
 import {
-    Bond, RadialSymmetricBody, Vec3, resolveSphereSphereCollisionBetween, Simulation, DiatomicMolecule,
-    TwoBodies, SwitchableBondView, Aquarium, RadioGroup, Checkbox
+    RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule,
+    BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, Bond
 } from "../../../src/index.js";
-import {CompoundControl} from "../../../src/core/controls.js";
 
 // Simulation constants
 const SCALE = 1e10;
 const MOLECULES_COUNT = 150;
 const one_third = 1. / 3.;
 const L = ((24.4E-3 / 6E23) * MOLECULES_COUNT) ** one_third / 50; // 2L is the length of the cubic container box
+const radius = 31E-12;
+const distance = 2.5 * radius;
 
-export class CarbonMonoxide extends TwoBodies {
+const sphereSphereCollision = new SphereSphereCollision();
+const bond = new Bond({
+    restLength: distance,
+    k: 18600
+})
+
+export class CarbonMonoxide extends BodyPair {
     constructor(position, initialSpeed) {
-        const radius = 31E-12;
-        const distance = 2.5 * radius;
         const axis = new Vec3(distance, 0, 0);
         const oxygenMass = 16E-23, carbonMass = 12E-23;
         const oxygen = new RadialSymmetricBody({
@@ -29,12 +34,7 @@ export class CarbonMonoxide extends TwoBodies {
             radius: radius
         });
         super(oxygen.and(carbon));
-        
-        this._bond = Bond.between(oxygen.and(carbon), {
-            restLength: distance,
-            k: 18600,
-            radius: .5 * radius
-        });
+
         this.body1 = oxygen;
         this.body2 = carbon;
     }
@@ -61,10 +61,10 @@ export class CarbonMonoxide extends TwoBodies {
     }
 
     resolveCollisionWith(otherMolecule) {
-        resolveSphereSphereCollisionBetween(this.body1.and(otherMolecule.body1));
-        resolveSphereSphereCollisionBetween(this.body1.and(otherMolecule.body2));
-        resolveSphereSphereCollisionBetween(this.body2.and(otherMolecule.body1));
-        resolveSphereSphereCollisionBetween(this.body2.and(otherMolecule.body2));
+        this.body1.and(otherMolecule.body1).apply(sphereSphereCollision);
+        this.body1.and(otherMolecule.body2).apply(sphereSphereCollision);
+        this.body2.and(otherMolecule.body1).apply(sphereSphereCollision);
+        this.body2.and(otherMolecule.body2).apply(sphereSphereCollision);
     }
 
     get translationalKineticEnergy() {
@@ -134,7 +134,6 @@ export class CarbonMonoxide extends TwoBodies {
     }
 
     get mass() { return this.body2.mass + this.body1.mass; }
-    get bond() { return this._bond; }
 }
 
 class CarbonMonoxideGas {
@@ -159,18 +158,12 @@ class CarbonMonoxideGas {
         return this._molecules[Symbol.iterator]();
     }
 
-    update(dt) {
-        for (const molecule of this._molecules) {
-            molecule.body1.clearForce();
-            molecule.body2.clearForce();
-        }
-
+    evolve(dt) {
         for (const molecule of this._molecules)
-            molecule.bond.applyForce();
+            molecule.apply(bond);
 
         for (const molecule of this._molecules) {
-            molecule.body1.integrate(dt);
-            molecule.body2.integrate(dt);
+            molecule.integrate(dt);
             molecule.checkBoxBounce(this._boxSize * 2);
         }
 
@@ -210,7 +203,7 @@ const moleculeViews = [];
 
 // Perform some initial timesteps to make the gas look more realistic
 for (let i = 0; i < 150; i++)
-    gas.update(5e-16);
+    gas.evolve(5e-16);
 
 const simulation = Simulation
     .with({
@@ -221,7 +214,7 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .runsEvery(0.001)
-    .onStep(() => gas.update(5e-16))
+    .onStep(() => gas.evolve(5e-16))
     .addObject3D(new Aquarium({
         size: new Vec3(1, 1, 1).multiplyScalar(2 * L)
     }))
@@ -240,7 +233,7 @@ const simulation = Simulation
 for (const molecule of gas) {
     const moleculeView = new DiatomicMolecule({
         bondType: SwitchableBondView.Type.Spring,
-        radiusScaleFactor: 1.25
+        radiusScaleFactor: .75
     });
     moleculeViews.push(moleculeView);
     simulation.bind(molecule.alwaysWith(moleculeView));

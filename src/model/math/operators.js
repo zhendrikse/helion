@@ -4,7 +4,7 @@ import {CompoundControl, Slider} from "../../core/controls.js";
 import {Shapes, ShapesFactory} from "./shapes.js";
 
 class Operator {
-    apply(field) {}
+    applyTo(field) {}
 }
 
 export class DiamondSquareOperator extends Operator {
@@ -101,7 +101,7 @@ export class GaussianImpulse extends Operator {
         this._amplitude = amplitude;
     }
 
-    apply(field) {
+    applyTo(field) {
         const sigma2 = this._sigma * this._sigma;
         for (let i = this._centerX - 5; i <= this._centerX + 5; i++)
             for (let j = this._centerY - 5; j <= this._centerY + 5; j++) {
@@ -128,7 +128,7 @@ export class GaussianImpulseComplex2D extends Operator {
 
     set wavePacketEnergy(wavePacketEnergy) { this._wavePacketEnergy = wavePacketEnergy; }
 
-    apply(field) {
+    applyTo(field) {
         const packetWidth2 = this._packetWidth * this._packetWidth;
         const centerX = Math.floor(field.nx * 0.22);
         const centerY = field.nx * .5;
@@ -164,7 +164,7 @@ export class PerlinNoiseOperator extends Operator {
         this._noise = new ImprovedNoise();
     }
 
-    apply(field) {
+    applyTo(field) {
         for (let x = 0; x < field.nx; x++)
             for (let y = 0; y < field.ny; y++) {
                 let value = 0;
@@ -185,18 +185,19 @@ export class PerlinNoiseOperator extends Operator {
     }
 }
 
-export class DoubleSlitOperator {
+export class DoubleSlitOperator extends Operator {
     constructor({
         wavelength = 525,
         positionSlit1 = new Vec3(),
         positionSlit2 = new Vec3(),
     }) {
+        super();
         this._wavelength = wavelength;
         this._positionSlit1 = positionSlit1;
         this._positionSlit2 = positionSlit2;
     }
 
-    apply(field) {
+    applyTo(field) {
         const pos = new Vec3();
         for (let i = 0; i < field.nx; i++)
             for (let j = 0; j < field.ny; j++) {
@@ -223,7 +224,7 @@ export class Potential extends Operator {
         this._reflectionStrength = reflectionStrength;
     }
 
-    apply(field) {
+    applyTo(field) {
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++)
                 if (ShapesFactory.create(this._shapeConfiguration).sample(x, y, field))
@@ -237,7 +238,7 @@ export class ShapeMask extends Operator {
         this._shapeConfiguration = shapeConfiguration;
     }
 
-    apply(field) {
+    applyTo(field) {
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++)
                 if (ShapesFactory.create(this._shapeConfiguration).sample(x, y, field))
@@ -251,7 +252,7 @@ export class ComplexShapeMask extends Operator {
         this._shapeConfiguration = shapeConfiguration;
     }
 
-    apply(field) {
+    applyTo(field) {
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++)
                 if (ShapesFactory.create(this._shapeConfiguration).sample(x, y, field))
@@ -267,7 +268,7 @@ export class Softness extends Operator {
         this._softness = softness;
     }
 
-    apply(field) {
+    applyTo(field) {
         for (let s = 0; s < this._softness; s++) {
             const oldV = field._data.slice();
             for (let y = 1; y < field.ny - 1; y++)
@@ -287,7 +288,7 @@ export class ComplexSoftness extends Operator {
         this._softness = softness;
     }
 
-    apply(field) {
+    applyTo(field) {
         for (let s = 0; s < this._softness; s++) {
             const oldV = field.real.slice();
             for (let y = 1; y < field.ny - 1; y++)
@@ -310,7 +311,7 @@ export class SineImpulsOperator {
         this._periods = periods;
     }
 
-    apply(field) {
+    applyTo(field) {
         for (let x = 0; x < this._waveLength * this._periods; x++)
             for (let y = 0; y < field.ny; y++)
                 field.setValueAt(x, y, this._amplitude * Math.sin(2 * Math.PI * x / this._waveLength));
@@ -419,7 +420,7 @@ class FFT {
 }
 
 export class FFTShift2D extends Operator {
-    apply(field) {
+    applyTo(field) {
         const N = field.size;
         const half = N >> 1;
 
@@ -440,7 +441,7 @@ export class FFTShift2D extends Operator {
 }
 
 export class FFT2D extends Operator {
-    apply(field) {
+    applyTo(field) {
         const N = field.size;
         const fft = new FFT(N);
 

@@ -4,12 +4,12 @@ import { Integrators } from "../math/numerics/integrators/integrators.js";
 
 export class PointCloud extends MathPhysicsModelBehavior {
     constructor({
-                    positions = [],
-                    velocities = [],
-                    masses = [],
-                    colors = [],
-                    sizes = [],
-                } = {}) {
+        positions = [],
+        velocities = [],
+        masses = [],
+        colors = [],
+        sizes = [],
+    } = {}) {
         super();
         this._positions = positions;
         this._colors = colors;
@@ -27,7 +27,7 @@ export class PointCloud extends MathPhysicsModelBehavior {
         return this._particleState;
     }
 
-    apply(dt, accelerationFn, integrator = Integrators.symplecticEulerStep) {
+    integrate(dt, accelerationFn, integrator = Integrators.symplecticEulerStep) {
         for (let i = 0; i < this.length; i++) {
             const particle = this.particleAt(i);
             integrator(particle, dt, accelerationFn);

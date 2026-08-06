@@ -1,5 +1,5 @@
 import {
-    RadialSymmetricBody, Simulation, Vec3, Sphere, Spring, Helix, Cylinder, Bond, Floor, Vec2, AxialSymmetricBody
+    RadialSymmetricBody, Simulation, Vec3, Sphere, Helix, Cylinder, Bond, Floor, Vec2, AxialSymmetricBody
 } from "../../../src/index.js";
 import {AmbientLight, DirectionalLight} from "three";
 
@@ -27,7 +27,7 @@ const ball3 = new RadialSymmetricBody({
     radius: 0.3
 });
 
-const bond = Bond.between(ball1.and(ball2), { k, radius: 0.2, restLength: L0 });
+const bond = new Bond({ k, restLength: L0 });
 
 // Pole + stick
 const stick1 = new AxialSymmetricBody({
@@ -59,9 +59,10 @@ Simulation
     .bind(ball1.alwaysWith(new Sphere({ color: "red" })))
     .bind(ball2.alwaysWith(new Sphere({ color: "green" })))
     .bind(ball3.alwaysWith(new Sphere({ color: "yellow" })))
-    .bind(bond.alwaysWith(new Helix({
+    .bind(ball1.and(ball2).alwaysWith(new Helix({
         color: 0x00ffff,
-        thickness: 0.075
+        thickness: 0.075,
+        radiusScaleFactor: 0.75
     })))
     .addObject3D(new Floor({
         position: new Vec3(0, -3.5 * L0 + shiftUp, 0),
@@ -79,7 +80,7 @@ Simulation
         ball1.force.copy(g.clone().multiplyScalar(ball1.mass))
         ball2.force.copy(g.clone().multiplyScalar(ball2.mass));
         ball3.force.copy(g.clone().multiplyScalar(ball3.mass));
-        bond.applyForce();
+        ball1.and(ball2).apply(bond);
         ball1.integrate(dt);
         ball2.integrate(dt);
         ball3.integrate(dt);

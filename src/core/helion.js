@@ -26,12 +26,21 @@ export class Registry {
     add(name, value) { this._entries[name] = value; }
 }
 
+export class Transformation {
+    applyTo(body) {}
+}
+
 export class MathPhysicsModelBehavior {
     alwaysWith(view) {
         return new Binding(this, view, Binding.Mode.ALWAYS);
     }
     onceWith(view) {
         return new Binding(this, view, Binding.Mode.ONCE);
+    }
+
+    apply(transformation) {
+        transformation.applyTo(this);
+        return this;
     }
 
     reset() {}
