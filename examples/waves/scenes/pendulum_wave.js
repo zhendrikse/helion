@@ -1,5 +1,5 @@
 import {
-    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Bond, Cylinder
+    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder
 } from "../../../src/index.js";
 import {Color, MeshStandardMaterial} from "three";
 
@@ -14,9 +14,9 @@ class Pendulum extends AxialSymmetricBody {
         pivotY = -2
     } = {}) {
         super({
-            position: new Vec3(position, 0, 0),
+            position: new Vec3(position, pivotY, 0),
             axis: new Vec3(),
-            radius: 0.1
+            radius: 0.01
         });
         this._xPosition = position;
         this._length = (T * T * 9.8) / (4 * Math.PI * Math.PI);
@@ -26,18 +26,8 @@ class Pendulum extends AxialSymmetricBody {
         this._mass = mass;
         this._pivotY = pivotY;
 
-        const anchor = new Vec3(position, pivotY, 0);
-        this._rod = Bond.between(
-            this.and({
-                position: anchor,
-                axis: new Vec3(0, 1, 0)
-            }), { k: 1, radius: 0.01 }
-        );
-
         this.updatePosition();
     }
-
-    get rod() { return this._rod; }
 
     update(dt) {
         const alpha = (-g / this._length) * Math.sin(this._theta);
@@ -130,14 +120,13 @@ const simulation = Simulation
             radius: 0.04
         }).alwaysWith(new Cylinder({ color: 0x855E42 })))
     .onStep((clock, dt) => {
-        for (const p of pendulums)
-         p.update(dt);
+        for (const pendulum of pendulums)
+         pendulum.update(dt);
     });
 
 pendulums.forEach((pendulum, i) =>
     simulation.bind(pendulum.ball = pendulum.alwaysWith(
         new Sphere({
-            radius: 0.1,
             castShadow: true,
             color: new Color().setHSL(i / (total - 1), 1, 0.5)
         }))
@@ -145,7 +134,7 @@ pendulums.forEach((pendulum, i) =>
 );
 
 pendulums.forEach(pendulum =>
-    simulation.bind(pendulum.rod.alwaysWith(
+    simulation.bind(pendulum.alwaysWith(
         new Cylinder({
             color: 0xBB8F68,
             material: new MeshStandardMaterial({

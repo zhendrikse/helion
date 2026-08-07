@@ -425,7 +425,6 @@ export class Helix extends Renderable3D {
         castShadow = false
     } = {}) {
         super();
-        this._thicknessRatio = thickness;  // fractie, geen absolute waarde
         this._longitudinalOscillation = longitudinalOscillation;
         this._tubularSegments = tubularSegments;
         this._radialSegments = radialSegments;

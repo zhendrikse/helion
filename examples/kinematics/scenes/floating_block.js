@@ -1,4 +1,5 @@
-import { Vec3, Block, Simulation, Box, Aquarium } from "../../../src/index.js";
+import {Vec3, Block, Simulation, Box, Aquarium, UniformGravity} from "../../../src/index.js";
+import {Transformation} from "../../../src/core/helion.js";
 
 const liquidDensity = 1000;
 const g = -9.8;
@@ -6,7 +7,6 @@ const g = -9.8;
 class WoodenBlock extends Block {
     constructor({ density = 500, size = new Vec3(1, 1, 1) } = {}) {
         super({ size: size, mass: density * size.x * size.y * size.z });
-        this._force = new Vec3();
     }
 
     submergedVolume(water) {
@@ -24,20 +24,27 @@ class WoodenBlock extends Block {
 
         return this.size.x * hSubmerged * this.size.z;
     }
+}
 
-    buoyancyForce(water) {
-        return liquidDensity * -g * this.submergedVolume(water);
+class FloatingForce extends Transformation {
+    constructor(water) {
+        super();
+        this._water = water;
     }
 
-    dragForce() {
-        const dragCoefficient = -5.0;
-        return dragCoefficient * this.velocity.y;
+    applyTo(woodenBlock) {
+        woodenBlock.force.y += liquidDensity * -g * woodenBlock.submergedVolume(this._water);
+    }
+}
+
+class DragForce extends Transformation {
+    constructor() {
+        super();
+        this._dragCoefficient = -5.0;
     }
 
-    netForce(water) {
-        const Fg = this.mass * g;
-        this._force.y = Fg + this.buoyancyForce(water) + this.dragForce();
-        return this._force;
+    applyTo(woodenBlock) {
+        woodenBlock.force.y += this._dragCoefficient * woodenBlock.velocity.y;
     }
 }
 
@@ -47,6 +54,9 @@ const water = new Aquarium({
     size: new Vec3(2, 2, 0.75),
     frameColor: 0xffff00
 });
+const floatingForce = new FloatingForce(water);
+const gravity = new UniformGravity();
+const dragForce = new DragForce();
 
 const simulation = Simulation
     .with({
@@ -59,8 +69,12 @@ const simulation = Simulation
     .runsEvery(3e-3)
     .bind(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
     .onStep((clock) => {
-        woodenBlock.apply(woodenBlock.netForce(water), clock.fixedDt);
-        plotFunction(clock.simulationTime);
+        woodenBlock
+            .apply(gravity)
+            .apply(floatingForce)
+            .apply(dragForce)
+            .integrate(clock.fixedDt);
+        //plotFunction(clock.simulationTime); TODO
     })
     .setupGraphWith({
         dataDefinition: [

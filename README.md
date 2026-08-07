@@ -31,9 +31,9 @@ and education, driven by a lifelong fascination with the beauty and patterns of 
 📌 Multiple synchronized views can observe the same model<br/>
 📌 Designed for education, exploration, and interactive simulations <br/>
 
-### Examples
+#### Examples
 
-#### Physical transformations
+##### Physical transformations
 
 ```js
 body.apply(gravity);
@@ -42,13 +42,12 @@ pair.apply(spring);
 pair.apply(collision);
 ```
 
-#### Mathematical transformations
+##### Mathematical transformations
 
 ```js
 field.apply(new FFT2D());
 field.apply(new Laplacian());
 field.apply(new ShapeMask(...));
-body.apply(new SymplecticEuler());
 ```
 
 ## 🧠 Core concepts
