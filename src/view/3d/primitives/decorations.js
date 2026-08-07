@@ -10,8 +10,8 @@ import woodWicketRoughnessUrl from '../../../textures/Wood_Wicker_011_roughness.
 import pavingColorUrl from '../../../textures/paving_color.jpg';
 import pavingRoughnessUrl from '../../../textures/paving_roughness.jpg';
 import pavingNormalUrl from '../../../textures/paving_normal.jpg';
-import grassColorUrl from '../../../textures/grass.jpg';
-import grassNormalUrl from '../../../textures/grassNormal.jpg';
+// import grassColorUrl from '../../../textures/grass.jpg';
+// import grassNormalUrl from '../../../textures/grassNormal.jpg';
 
 /*******************************************
  * Floor, Grid, Ceiling, Aquarium          *
