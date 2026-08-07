@@ -1,0 +1,1 @@
+import{Dt as e,E as t,O as n,zt as r}from"../assets/src-BupUIRuV.js";import{r as i}from"../assets/OrbitControls-zcd7Z0hU.js";e.with({htmlDivId:`saturnContainer`,cameraPosition:new r(1,1.5,4).multiplyScalar(.8),fieldOfView:45,background:e.Background.STARS,scale:1e-8,light:!1}).addObject3D(new i(11579568,1)).bind(t.saturn.onceWith(new n)).start();

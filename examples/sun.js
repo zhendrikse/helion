@@ -1,0 +1,1 @@
+import{D as e,Dt as t,zt as n}from"../assets/src-BupUIRuV.js";import{t as r}from"../assets/sun-hjfeuvmC.js";var i=new e;t.with({htmlDivId:`sunContainer`,cameraPosition:new n(5,7.5,15).multiplyScalar(.3),fieldOfView:45,background:t.Background.STARS}).bind(i.alwaysWith(new r)).onFrame(e=>i.time=e).start();
