@@ -1,4 +1,3 @@
-import {BodyPair, RadialSymmetricBody} from "../phys/bodies.js";
 import {Vec3} from "../math/math.js";
 import {Transformation} from "../../core/helion.js";
 
@@ -16,6 +15,7 @@ export class Bond extends Transformation {
     }
 
     set damping(damping) { this._damping = damping; }
+    set k(bondConstant) { this._k = bondConstant; }
 
     applyTo(bodyPair) {
         const left = bodyPair.body1;

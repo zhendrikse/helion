@@ -1,7 +1,7 @@
-import {Complex, Vec2, Vec3} from "../math/math.js";
+import { Vec3} from "../math/math.js";
 import { Integrators } from "../math/numerics/integrators/integrators.js";
-import {Binding, MathPhysicsModelBehavior, Simulation} from "../../core/helion.js";
-import {Floor} from "../../view/3d/primitives/decorations.js";
+import { MathPhysicsModelBehavior } from "../../core/helion.js";
+import {Bond} from "../transformations/interactions.js";
 
 export class PhysicsState {
     constructor({
@@ -124,7 +124,7 @@ export class Body extends MathPhysicsModelBehavior{
     }
 
     integrate(dt = 0.01, integrator = Integrators.symplecticEulerStep) {
-        if (this._fixed)
+        if (this.fixed)
             return;
 
         const accelerationFn = (bodyParam) => this.force.clone().multiplyScalar(1 / bodyParam.mass);
@@ -202,8 +202,8 @@ export class Lattice extends MathPhysicsModelBehavior {
         this._bodySize = bodySize;
         this._bondRadius = bondRadius;
         this._bodies = [];
-        this._fixedBodies = [];
         this._bonds = [];
+        this._couplings = [];
         this._boundaryConditions = [];
     }
 
@@ -213,19 +213,18 @@ export class Lattice extends MathPhysicsModelBehavior {
     get k () { return this._k; }
 
     set damping(damping) {
-        for (const bond of this._bonds)
-            bond.damping = damping;
+        for (const coupling of this._couplings)
+            coupling.damping = damping;
             this._damping = damping;
     }
 
     fixateBodyAt(index) {
-        this._fixedBodies[index] = true;
+        this._bodies[index].fixed = true;
         return this;
     }
 
     addBody(body) {
         this._bodies.push(body);
-        this._fixedBodies.push(false);
         return this;
     }
 
@@ -234,11 +233,12 @@ export class Lattice extends MathPhysicsModelBehavior {
         return this;
     }
 
-    connect(body1, body2, {k, radius, restLength, damping}) {
+    connect(body1, body2, {k, restLength, damping}) {
         this._bonds.push(body1.and(body2));
+        this._couplings.push(new Bond({k, restLength, damping}));
     }
 
-    set bondForce(value) { this._bonds.forEach(bond => bond.k = value); }
+    set bondForce(value) { this._couplings.forEach(bond => bond.k = value); }
 
     set omega(value) { this._omega = value; }
 
@@ -253,12 +253,11 @@ export class Lattice extends MathPhysicsModelBehavior {
         for (const boundaryCondition of this._boundaryConditions)
             boundaryCondition.applyTo(this, t);
 
-        for (const bond of this._bonds)
-            bond.applyForce();
+        for (let i = 0; i < this.bondCount; i++)
+            this._bonds[i].apply(this._couplings[i]);
 
-        for (let i = 0; i < this.bodyCount; i++)
-            if (!this._fixedBodies[i])
-                this._bodies[i].integrate(dt);
+        for (const body of this._bodies)
+            body.integrate(dt);
     }
 
     reset() {
@@ -294,7 +293,6 @@ export class ChainTopology {
         for (let i = 0; i < this._count - 1; i++)
             lattice.connect(lattice.bodyAt(i), lattice.bodyAt(i + 1), {
                 k: lattice.k,
-                radius: lattice.bondRadius,
                 restLength: 0.9 * this._length / (this._count - 1),
                 damping: lattice.damping
             });

@@ -1,13 +1,10 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import {Complex, Range, Vec3} from "./math.js";
+import { Range, Vec3} from "../math/math.js";
 import {CompoundControl, Slider} from "../../core/controls.js";
-import {Shapes, ShapesFactory} from "./shapes.js";
+import {Shapes, ShapesFactory} from "../math/shapes.js";
+import {Transformation} from "../../core/helion.js";
 
-class Operator {
-    applyTo(field) {}
-}
-
-export class DiamondSquareOperator extends Operator {
+export class DiamondSquareOperator extends Transformation {
     constructor({
         roughness = 1,
         amplitude = 100
@@ -87,7 +84,7 @@ export class DiamondSquareOperator extends Operator {
     #random(scale) { return (Math.random() * 2 - 1) * scale; }
 }
 
-export class GaussianImpulse extends Operator {
+export class GaussianImpulse extends Transformation {
     constructor({
         centerX = 100,
         centerY = 100,
@@ -116,7 +113,7 @@ export class GaussianImpulse extends Operator {
     }
 }
 
-export class GaussianImpulseComplex2D extends Operator {
+export class GaussianImpulseComplex2D extends Transformation {
     constructor({
         wavePacketEnergy=0.05,
         packetWidth = 48
@@ -146,7 +143,7 @@ export class GaussianImpulseComplex2D extends Operator {
     }
 }
 
-export class PerlinNoiseOperator extends Operator {
+export class PerlinNoiseOperator extends Transformation {
     constructor({
         scale = 50,
         frequency = 0.02,
@@ -185,7 +182,7 @@ export class PerlinNoiseOperator extends Operator {
     }
 }
 
-export class DoubleSlitOperator extends Operator {
+export class DoubleSlitOperator extends Transformation {
     constructor({
         wavelength = 525,
         positionSlit1 = new Vec3(),
@@ -217,7 +214,7 @@ export class DoubleSlitOperator extends Operator {
     set wavelength(wavelength) { this._wavelength = wavelength; }
 }
 
-export class Potential extends Operator {
+export class Potential extends Transformation {
     constructor(shapeConfiguration = Shapes.DoubleSlit, reflectionStrength = 0.1) {
         super();
         this._shapeConfiguration = shapeConfiguration;
@@ -232,7 +229,7 @@ export class Potential extends Operator {
     }
 }
 
-export class ShapeMask extends Operator {
+export class ShapeMask extends Transformation {
     constructor(shapeConfiguration) {
         super();
         this._shapeConfiguration = shapeConfiguration;
@@ -246,7 +243,7 @@ export class ShapeMask extends Operator {
     }
 }
 
-export class ComplexShapeMask extends Operator {
+export class ComplexShapeMask extends Transformation {
     constructor(shapeConfiguration) {
         super();
         this._shapeConfiguration = shapeConfiguration;
@@ -260,7 +257,7 @@ export class ComplexShapeMask extends Operator {
     }
 }
 
-export class Softness extends Operator {
+export class Softness extends Transformation {
     constructor({
         softness = 0
     } = {}) {
@@ -280,7 +277,7 @@ export class Softness extends Operator {
     }
 }
 
-export class ComplexSoftness extends Operator {
+export class ComplexSoftness extends Transformation {
     constructor({
         softness = 0
     } = {}) {
@@ -419,7 +416,7 @@ class FFT {
     }
 }
 
-export class FFTShift2D extends Operator {
+export class FFTShift2D extends Transformation {
     applyTo(field) {
         const N = field.size;
         const half = N >> 1;
@@ -440,7 +437,7 @@ export class FFTShift2D extends Operator {
     }
 }
 
-export class FFT2D extends Operator {
+export class FFT2D extends Transformation {
     applyTo(field) {
         const N = field.size;
         const fft = new FFT(N);

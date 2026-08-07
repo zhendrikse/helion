@@ -433,29 +433,31 @@ export class Helix extends Renderable3D {
         this._coils = coils;
         this._color = color;
         this._castShadow = castShadow;
+        this._radiusScaleFactor = radiusScaleFactor;
+        this.visible = visible;
 
         // Reusable math objects
         this._targetDir = new Vector3();
-        this.visible = visible;
         this._curve = null;
         this._restLength = 1;
-        this._radiusScaleFactor = radiusScaleFactor;
+        this._radius = 1;
     }
 
     initialize(body) {
         this._restLength = body.axis.length();
+        this._radius = body.radius * this._radiusScaleFactor;
         this._curve = new Coils(
             new Vector3(0, 0, 0),
             new Vector3(0, 0, body.axis.length()),
             this._coils,
-            body.radius * this._radiusScaleFactor,
+            this._radius,
             0
         );
 
         const geometry = new TubeGeometry(
             this._curve,
             this._tubularSegments,
-            body.radius * this._thicknessRatio * this._radiusScaleFactor,
+            this._radius * this._thickness,
             this._radialSegments,
             false
         );
@@ -474,7 +476,7 @@ export class Helix extends Renderable3D {
 
     #regenerateTube() {
         this._mesh.geometry.dispose();
-        this._mesh.geometry = new TubeGeometry(this._curve, this._tubularSegments, this._thickness, this._radialSegments, false);
+        this._mesh.geometry = new TubeGeometry(this._curve, this._tubularSegments, this._radius * this._thickness, this._radialSegments, false);
     }
 
     synchronizeWith(body) {

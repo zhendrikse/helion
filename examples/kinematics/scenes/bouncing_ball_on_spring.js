@@ -42,10 +42,11 @@ class PhysicsWorld {
         this._springTopAtRest.clone().sub(this._ball.position).length() < epsilon;
 
     timeStep(dt) {
-        this._ball.apply(gravity);
-        this._ball.apply(damping);
-        this._ball.apply(this._spring)
-        this._ball.integrate(dt);
+        this._ball
+            .apply(gravity)
+            .apply(damping)
+            .apply(this._spring)
+            .integrate(dt);
 
         if (this._ballHitsSpring() || this._spring.isCompressed)
             this._spring.axis = this._spring.positionVectorTo(this._ball);

@@ -1,4 +1,4 @@
-import {LaplaceOperator} from "./operators.js";
+import {LaplaceOperator} from "../transformations/operators.js";
 import {Slider} from "../../core/controls.js";
 import {Range} from "./math.js";
 
