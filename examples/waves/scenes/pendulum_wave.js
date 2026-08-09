@@ -1,5 +1,5 @@
 import {
-    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder
+    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody
 } from "../../../src/index.js";
 import {Color, MeshStandardMaterial} from "three";
 
@@ -21,6 +21,10 @@ class Pendulum extends AxialSymmetricBody {
         this._xPosition = position;
         this._length = (T * T * 9.8) / (4 * Math.PI * Math.PI);
 
+        this._ball = new RadialSymmetricBody({
+            position: this.position,
+            radius: 0.1
+        })
         this._omega = 0;
         this._theta = theta0;
         this._mass = mass;
@@ -44,7 +48,7 @@ class Pendulum extends AxialSymmetricBody {
         );
 
         const pivot = new Vec3(this._xPosition, this._pivotY, 0);
-        this.axis = newPos.clone().sub(pivot);
+        this.axis.copy(newPos.clone().sub(pivot).negate());
         this.state.position.copy(newPos);
     }
 
@@ -125,7 +129,7 @@ const simulation = Simulation
     });
 
 pendulums.forEach((pendulum, i) =>
-    simulation.bind(pendulum.ball = pendulum.alwaysWith(
+    simulation.bind(pendulum._ball.alwaysWith(
         new Sphere({
             castShadow: true,
             color: new Color().setHSL(i / (total - 1), 1, 0.5)
