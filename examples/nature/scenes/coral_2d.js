@@ -105,8 +105,7 @@ function updateThreshold() {
 }
 
 const particleView2D = new ParticleCloudView({
-    particleCount: swarmSize,
-    scalarField: particle => particle.position.distanceTo(particleField.particleStateAt(0).position)
+    particleCount: swarmSize
 });
 
 let particleField = new ParticleCloud(swarmSize);
@@ -132,9 +131,10 @@ function resetSimulation() {
     updateThreshold();
     particleField = new ParticleCloud(swarmSize);
 
-    simulation.bind(particleField.alwaysWith(particleView2D))
-    simulation.frameSceneOn(particleView2D, {
-                padding: 0.5,
+    simulation
+        .bind(particleField.alwaysWith(particleView2D))
+        .frameSceneOn(particleView2D, {
+            padding: 0.5,
             viewDirection: new Vec3(0, 0, 1)
         });
 }

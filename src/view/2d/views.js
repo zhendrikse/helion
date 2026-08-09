@@ -34,9 +34,7 @@ export class ParticleCloudView extends Renderable3D {
 
     constructor({
         particleCount = 5000,
-        type = "Sphere",
-        scalarField = particle => particle.mass,
-        colorMapper = new ColorMappers().get(ColorMappers.Gradient)()
+        type = "Sphere"
     } = {}) {
         super();
 
