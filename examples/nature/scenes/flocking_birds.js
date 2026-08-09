@@ -60,8 +60,8 @@ class Flock {
         diff = avoid[count].clone().normalize().sub(bird.position);
         this._acceleration.add(diff.multiplyScalar(this._avoid_weight));
 
-        const force = this._acceleration; // Since the bird mass = 1, the force F = m a = a!
-        bird.apply(force, dt);
+        bird.force.copy(this._acceleration); // Since the bird mass = 1, the force F = m a = a!
+        bird.integrate(dt);
     }
 
     update(dt) {
