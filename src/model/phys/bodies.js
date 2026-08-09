@@ -149,9 +149,10 @@ export class AxialSymmetricBody extends Body {
         axis = new Vec3(),
         radius = 1,
         mass = 1,
-        charge = 0
+        charge = 0,
+        fixed = false
     } = {})  {
-        super({ position, velocity, mass, charge });
+        super({ position, velocity, mass, charge, fixed });
         this.radius = radius;
         this.axis = axis.clone();
         this._initialAxis = axis.clone();
@@ -169,9 +170,10 @@ export class RadialSymmetricBody extends Body {
         velocity = new Vec3(0, 0, 0),
         mass = 1,
         radius = 1,
-        charge = 0
+        charge = 0,
+        fixed = false
     } = {}) {
-        super( {position, velocity, mass, charge})
+        super( {position, velocity, mass, charge, fixed })
         this.radius = radius;
     }
 }
@@ -182,9 +184,10 @@ export class Block extends Body {
         velocity = new Vec3(0, 0, 0),
         size = new Vec3(1, 1, 1),
         mass = 1,
-        charge = 0
+        charge = 0,
+        fixed = false
     } = {}) {
-        super({position, velocity, mass, charge});
+        super({position, velocity, mass, charge, fixed });
         this.size = size;
     }
 }

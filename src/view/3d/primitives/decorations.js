@@ -10,6 +10,7 @@ import woodWicketRoughnessUrl from '../../../textures/Wood_Wicker_011_roughness.
 import pavingColorUrl from '../../../textures/paving_color.jpg';
 import pavingRoughnessUrl from '../../../textures/paving_roughness.jpg';
 import pavingNormalUrl from '../../../textures/paving_normal.jpg';
+import {Vec3, Vec2} from "../../../model/math/math.js";
 // import grassColorUrl from '../../../textures/grass.jpg';
 // import grassNormalUrl from '../../../textures/grassNormal.jpg';
 
@@ -54,8 +55,8 @@ export class Floor extends Group {
     });
     constructor({
         type= Floor.Type.PLAIN,
-        position = new Vector3(),
-        planeSizeXy = new Vector2(2, 2),
+        position = new Vec3(),
+        planeSizeXy = new Vec2(2, 2),
         granularity = 1,
         color = 0x00ff00,
         opacity = null,
@@ -64,7 +65,7 @@ export class Floor extends Group {
         super();
         const planeGeometry = new PlaneGeometry(planeSizeXy.x, planeSizeXy.y);
         const planeMaterial = new MeshStandardMaterial({
-            normalScale: planeSizeXy,
+            normalScale: new Vector2(planeSizeXy.x, planeSizeXy.y),
             roughness: 1,
             transparent: opacity !== null,
             opacity: opacity ? opacity : 1,
@@ -78,7 +79,7 @@ export class Floor extends Group {
         this._mesh.receiveShadow = receiveShadow;
         this._mesh.rotation.x = -Math.PI / 2;
 
-        this.position.copy(position);
+        this.position.set(position.x, position.y, position.z);
         this.add(this._mesh);
 
         const loader = new TextureLoader();

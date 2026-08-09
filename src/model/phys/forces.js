@@ -80,6 +80,8 @@ export class DragForce extends Force {
         this._calculateForceOn(body);
         body.force.add(this._forceVector);
     }
+
+    set dragCoefficient(value) { this._dragCoefficient = value; }
 }
 
 class UniformGravitationalField extends VectorField {
@@ -149,6 +151,7 @@ export class BondForce extends Force {
         this._damping = damping;
     }
 
+    get restLength() { return this._restLength; }
     set damping(damping) { this._damping = damping; }
     set k(bondConstant) { this._k = bondConstant; }
 

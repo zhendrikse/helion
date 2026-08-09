@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix,
-    Slider, Range, UniformGravitationalForce, BondForce
+    Slider, Range, UniformGravitationalForce, BondForce, DragForce
 } from "../../../src/index.js";
 
 //
@@ -11,44 +11,33 @@ const floor = new Floor({
     type: Floor.Type.PAVING,
 });
 
-
-class Damping {
-    constructor(constant = 0) {
-        this._damping = constant;
-    }
-
-    applyTo(body) {
-        body.force.x -= this._damping * body.velocity.x;
-        body.force.y -= this._damping * body.velocity.y;
-        body.force.z -= this._damping * body.velocity.z;
-    }
-
-    set damping(value) { this._damping = value; }
-}
-
+const springRestLength = 0.75;
 const gravity = new UniformGravitationalForce();
-const damping = new Damping();
 const bondForce = new BondForce({
-    restLength: 0.75,
+    restLength: springRestLength,
     k: 225
 });
+const dragForce = new DragForce(-.1);
 
-function timeStep(dt) {
-    this._ball
-        .apply(gravity)
-        .apply(damping)
-        .apply(bondForce)
-        .integrate(dt);
-
-    if (this._ballHitsSpring() || this._spring.isCompressed)
-        this._spring.axis = this._spring.positionVectorTo(this._ball);
-}
-
-const world = new PhysicsWorld(new RadialSymmetricBody({
+const ball = new RadialSymmetricBody({
     position: new Vec3(0, 1.5, 0),
     radius: 0.15,
     mass: 1.5
-}));
+});
+
+const springBottom = new RadialSymmetricBody({
+    fixed: true,
+    position: floor.position,
+    radius: 0.10
+});
+const springTop = new RadialSymmetricBody({
+    position: floor.position.clone().add(new Vec3(0, springRestLength, 0)),
+    radius: 0.10
+});
+const spring = springBottom.and(springTop);
+
+
+const hitsSpring = (ball) => ball.position.y < floor.position.y + springRestLength;
 
 const helix = new Helix({
     coils: 15,
@@ -74,12 +63,21 @@ Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .bind(world.ball.alwaysWith(sphere))
-    .bind(world.ball.velocityVector.alwaysWith(velocityArrow))
-    .bind(world.ball.accelerationVector.alwaysWith(forceArrow))
-    .bind(world.spring.alwaysWith(helix))
+    .bind(ball.alwaysWith(sphere))
+    .bind(ball.velocityVector.alwaysWith(velocityArrow))
+    .bind(ball.accelerationVector.alwaysWith(forceArrow))
+    .bind(spring.alwaysWith(helix))
     .runsEvery(1.5e-3)
-    .onStep((_, dt) => world.timeStep(dt))
+    .onStep((_, dt) => {
+        if (hitsSpring(ball)) {
+            springTop.state.position.y = ball.position.y;
+            ball.and(springBottom).apply(bondForce);
+        }
+        
+        ball.apply(gravity);
+        ball.apply(dragForce);
+        ball.integrate(dt);
+    })
     .addObject3D(floor)
     .append(new Checkbox("🚀 Velocity: ")
         .on(velocityArrow)
@@ -90,10 +88,10 @@ Simulation
             .withProperty("visible")
             .checked(true)))
     .append(new Slider("🍃 Air resistance: ")
-        .withRange(new Range(0, 1, 0.01))
-        .withValue(0.2)
-        .on(damping)
-        .withProperty("damping"));
+        .withRange(new Range(-1, 0, 0.01))
+        .withValue(0)
+        .on(dragForce)
+        .withProperty("dragCoefficient"));
 
 
 
