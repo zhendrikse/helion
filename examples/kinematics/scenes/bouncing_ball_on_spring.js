@@ -1,5 +1,5 @@
 import {
-    RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix, Slider, Range, UniformGravity, Bond
+    RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix, Slider, Range, UniformGravitationalForce, Bond
 } from "../../../src/index.js";
 
 //
@@ -26,7 +26,7 @@ class Damping {
     set damping(value) { this._damping = value; }
 }
 
-const gravity = new UniformGravity();
+const gravity = new UniformGravitationalForce();
 const damping = new Damping();
 
 class PhysicsWorld {

@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     Range, Sphere, Trail, Vec3, ArrowField,
-    Slider, Simulation, Aquarium, RadialSymmetricBody, MagneticField
+    Slider, Simulation, Aquarium, RadialSymmetricBody, LorentzForce, VectorField
 } from "../../../src/index.js";
 
 const initialSspeed = 50;
@@ -11,7 +11,7 @@ const boxSize = 40;
 //
 // Physics model
 //
-class UniformMagneticField extends MagneticField {
+class UniformMagneticField extends VectorField {
     constructor(field = new Vec3(0, 5, 0), strength = 1) {
         super();
         this._field = field;
@@ -27,6 +27,7 @@ class UniformMagneticField extends MagneticField {
 }
 
 const magneticField = new UniformMagneticField();
+const lorentzForce = LorentzForce.in(magneticField);
 const proton = new RadialSymmetricBody({
     position: new Vec3(0, -boxSize, boxSize * .5),
     velocity: new Vec3(initialSspeed * Math.cos(angle), initialSspeed * Math.sin(angle), 0),
@@ -41,8 +42,9 @@ function timeStep(dt) {
         return;
 
     for (let substep = 0; substep < 5; substep++) {
-        proton.apply(magneticField);
-        proton.integrate(dt);
+        proton
+            .apply(lorentzForce)
+            .integrate(dt);
     }
 }
 

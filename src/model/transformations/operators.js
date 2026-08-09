@@ -61,7 +61,7 @@ export class DiamondSquareOperator extends Transformation {
 
     }
 
-    apply(field) {
+    applyTo(field) {
         const size = field.nx - 1;
 
         // corners

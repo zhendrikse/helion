@@ -1,12 +1,12 @@
 import { Color } from "three";
 import {
-    RadialSymmetricBody, MagneticField, Range, Simulation, Slider, Sphere, ArrowField, Trail, Vec3
+    RadialSymmetricBody, LorentzForce, Range, Simulation, Slider, Sphere, ArrowField, Trail, Vec3, VectorField
 } from "../../../src/index.js";
 
 //
 // Physics
 //
-class DemoMagneticField extends MagneticField {
+class DemoMagneticField extends VectorField {
     constructor(fieldStrength) {
         super();
         this._strength = fieldStrength;
@@ -30,6 +30,7 @@ const proton = new RadialSymmetricBody({
 });
 
 const magneticField = new DemoMagneticField(.2);
+const lorentzForce = LorentzForce.in(magneticField);
 
 //
 // View
@@ -59,8 +60,9 @@ Simulation
     .runsEvery(1e-3)
     .onStep((_, dt) => {
         for (let substep = 0; substep < 20; substep++) {
-            proton.apply(magneticField);
-            proton.integrate(dt);
+            proton
+                .apply(lorentzForce)
+                .integrate(dt);
         }
     })
     .append(new Slider("🧲 Field: ")

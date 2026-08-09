@@ -1,6 +1,6 @@
 import { Vector2 } from "three";
 import {
-    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, Trail, G, UniformGravity
+    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, Trail, G, UniformGravitationalForce
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -35,7 +35,7 @@ const ball = new BouncingBall({
     mass: 1
 });
 
-const gravitationalForce = new UniformGravity();
+const gravitationalForce = new UniformGravitationalForce();
 const sphere = new Sphere({ color: "cyan" });
 const graphDefinition = {
     dataDefinition: [

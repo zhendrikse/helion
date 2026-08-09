@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     RadialSymmetricBody, AxialSymmetricBody, Range, Simulation,
-    Sphere, Cylinder, ArrowField, Vec3, Trail, ElectricField
+    Sphere, Cylinder, ArrowField, Vec3, Trail, VectorField, CoulombForce
 } from "../../../src/index.js";
 
 //
@@ -74,7 +74,7 @@ class ChargedRing {
 //
 // Physics
 //
-class RingElectricField extends ElectricField {
+class RingElectricField extends VectorField {
     constructor(ring) {
         super();
         this._ring = ring;
@@ -91,6 +91,8 @@ class RingElectricField extends ElectricField {
 const radius = 0.5e-10;
 const ring = new ChargedRing({ radius, segments: 60 });
 const electricField = new RingElectricField(ring);
+const electricForce = CoulombForce.in(electricField);
+
 const electron = new RadialSymmetricBody({
     position: new Vec3(
         (Math.random() - 0.5) * radius * 3,
@@ -138,8 +140,9 @@ const simulation = Simulation
     .bind(electricField.onceWith(arrowField))
     .runsEvery(3e-19)
     .onStep((_, dt) => {
-        electron.apply(electricField);
-        electron.integrate(dt);
+        electron
+            .apply(electricForce)
+            .integrate(dt);
     });
 
 // Ring rendering

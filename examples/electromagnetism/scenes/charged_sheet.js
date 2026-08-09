@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     Block, RadialSymmetricBody, Range, Sphere, Trail, ArrowField,
-    Box, Simulation, Vec3, ElectricField
+    Box, Simulation, Vec3, CoulombForce, VectorField
 } from "../../../src/index.js";
 
 const Q = 1.6e-19;
@@ -51,7 +51,7 @@ class ChargedSheet {
     }
 }
 
-class SheetElectricField extends ElectricField {
+class SheetElectricField extends VectorField {
     constructor(sheet) {
         super();
         this._sheet = sheet;
@@ -72,6 +72,7 @@ const sheet = new ChargedSheet({
 });
 
 const electricField = new SheetElectricField(sheet);
+const coulombForce = CoulombForce.in(electricField);
 const electron = new RadialSymmetricBody({
     position: new Vec3((Math.random() - 0.5) * sheetSize, (Math.random() - 0.5) * sheetSize, sheetSize * 0.75),
     velocity: new Vec3(),
@@ -108,8 +109,9 @@ const simulation = Simulation
     .bind(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
     .runsEvery(5e-20)
     .onStep((_, dt) => {
-        electron.apply(electricField);
-        electron.integrate(dt);
+        electron
+            .apply(coulombForce)
+            .integrate(dt);
     });
 
 for (const segment of sheet)

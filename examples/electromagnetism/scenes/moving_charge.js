@@ -1,6 +1,6 @@
 import { Color, AmbientLight, PointLight } from "three";
 import {
-    RadialSymmetricBody, EC, Range, Simulation, Trail, Vec3, Slider, Sphere, ArrowField, ElectricField
+    RadialSymmetricBody, EC, Range, Simulation, Trail, Vec3, Slider, Sphere, ArrowField, CoulombForce, VectorField
 } from "../../../src/index.js";
 
 const K = 9e9;
@@ -34,7 +34,7 @@ class Capacitor {
     }
 }
 
-class CapacitorField extends ElectricField {
+class CapacitorField extends VectorField {
     constructor(capacitor) {
         super();
         this._capacitor = capacitor;
@@ -50,6 +50,7 @@ class CapacitorField extends ElectricField {
 //
 const capacitor = new Capacitor();
 const capacitorField = new CapacitorField(capacitor);
+const coulombForce = CoulombForce.in(capacitorField);
 const movingCharge = new RadialSymmetricBody({
     position: new Vec3(-30, 4, 0).divideScalar(scale),
     velocity: new Vec3(15, 0, 0).divideScalar(scale),
@@ -102,8 +103,9 @@ const simulation = Simulation
         if (movingCharge.position.x > 60 / scale)
             return;
 
-        movingCharge.apply(capacitorField);
-        movingCharge.integrate(dt);
+        movingCharge
+            .apply(coulombForce)
+            .integrate(dt);
     })
     .onReset(() => {
         movingCharge.state.charge = Number(chargeSlider.value) * 5e-42 * EC;

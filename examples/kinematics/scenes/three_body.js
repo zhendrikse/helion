@@ -1,5 +1,5 @@
 import {
-    Integrators, RadialSymmetricBody, G, Simulation, Vec3, Sphere, Trail, Gravity
+    Integrators, RadialSymmetricBody, G, Simulation, Vec3, Sphere, Trail, GravitationalForce
 } from "../../../src/index.js";
 
 //
@@ -33,7 +33,7 @@ const bodyC = new RadialSymmetricBody({
     mass: mass * 0.5
 });
 
-const gravity = new Gravity();
+const gravitationalForce = new GravitationalForce();
 
 //
 // Simulation binds view to model
@@ -52,9 +52,9 @@ Simulation
     .bind(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
     .bind(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
     .maxOutCpu(_ => {
-        bodyA.and(bodyB).apply(gravity);
-        bodyA.and(bodyC).apply(gravity);
-        bodyB.and(bodyC).apply(gravity);
+        bodyA.and(bodyB).apply(gravitationalForce);
+        bodyA.and(bodyC).apply(gravitationalForce);
+        bodyB.and(bodyC).apply(gravitationalForce);
 
         bodyA.integrate(10, Integrators.symplecticEulerStep);
         bodyB.integrate(10, Integrators.symplecticEulerStep);

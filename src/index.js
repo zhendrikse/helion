@@ -22,8 +22,12 @@ export {
     FieldEdgeIntensityPixelRaster
 } from "./view/2d/views.js";
 
+export {
+    Force, CoulombForce, LorentzForce, DragForce, UniformGravitationalForce,
+    GravitationalForce, G, EC
+} from "./model/phys/forces.js";
+
 export { Bond, SphereSphereCollision } from "./model/transformations/interactions.js"
-export { ElectricField, MagneticField, Gravity, UniformGravity, G, EC } from "./model/phys/fields.js";
 export { Domain, DiscreteScalarField, DiscreteComplexField, VectorField } from "./model/math/fields.js"
 export { BarrierWaveEquation } from "./model/math/equations.js";
 export { Shapes, ShapeConfiguration } from "./model/math/shapes.js";

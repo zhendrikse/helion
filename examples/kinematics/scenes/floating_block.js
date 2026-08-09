@@ -1,5 +1,4 @@
-import {Vec3, Block, Simulation, Box, Aquarium, UniformGravity} from "../../../src/index.js";
-import {Transformation} from "../../../src/core/helion.js";
+import {Vec3, Block, Simulation, Box, Aquarium, UniformGravitationalForce, DragForce, Force } from "../../../src/index.js";
 
 const liquidDensity = 1000;
 const g = -9.8;
@@ -26,25 +25,19 @@ class WoodenBlock extends Block {
     }
 }
 
-class FloatingForce extends Transformation {
+class FloatingForce extends Force {
     constructor(water) {
         super();
         this._water = water;
     }
 
-    applyTo(woodenBlock) {
-        woodenBlock.force.y += liquidDensity * -g * woodenBlock.submergedVolume(this._water);
-    }
-}
-
-class DragForce extends Transformation {
-    constructor() {
-        super();
-        this._dragCoefficient = -5.0;
+    _calculateForceOn() {
+        this._forceVector.y = liquidDensity * -g * woodenBlock.submergedVolume(this._water);
     }
 
     applyTo(woodenBlock) {
-        woodenBlock.force.y += this._dragCoefficient * woodenBlock.velocity.y;
+        this._calculateForceOn(woodenBlock);
+        woodenBlock.force.y += this._forceVector.y;
     }
 }
 
@@ -55,7 +48,7 @@ const water = new Aquarium({
     frameColor: 0xffff00
 });
 const floatingForce = new FloatingForce(water);
-const gravity = new UniformGravity();
+const gravitationalForce = new UniformGravitationalForce();
 const dragForce = new DragForce();
 
 const simulation = Simulation
@@ -70,11 +63,11 @@ const simulation = Simulation
     .bind(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
     .onStep((clock) => {
         woodenBlock
-            .apply(gravity)
+            .apply(gravitationalForce)
             .apply(floatingForce)
-            .apply(dragForce)
-            .integrate(clock.fixedDt);
-        //plotFunction(clock.simulationTime); TODO
+            .apply(dragForce);
+        woodenBlock.integrate(clock.fixedDt);
+        simulation.plot([clock.simulatedTime, floatingForce.asVector.y, dragForce.asVector.y]);
     })
     .setupGraphWith({
         dataDefinition: [
@@ -86,5 +79,3 @@ const simulation = Simulation
         xLabel: "Simulation time",
         yLabel: "y [m]"
     })
-
-const plotFunction = (simulatedTime) => simulation.plot([simulatedTime, woodenBlock.buoyancyForce(water), woodenBlock.dragForce()]);
