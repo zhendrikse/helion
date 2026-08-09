@@ -67,8 +67,6 @@ class ChargedRing {
 
         return field;
     }
-
-    get segments() { return this._segments; }
 }
 
 //

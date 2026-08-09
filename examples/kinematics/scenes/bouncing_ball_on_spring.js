@@ -6,7 +6,6 @@ import {
 //
 // Physics model
 //
-const netForce = new Vec3();
 const floor = new Floor({
     position: new Vec3(0, -1, 0),
     type: Floor.Type.PAVING,
@@ -29,32 +28,20 @@ class Damping {
 
 const gravity = new UniformGravitationalForce();
 const damping = new Damping();
+const bondForce = new BondForce({
+    restLength: 0.75,
+    k: 225
+});
 
-class PhysicsWorld {
-    constructor(ball) {
-        this._ball = ball;
-        this._spring = new BondForce({
-            restLength: 0.75,
-            k: 225
-        });
-    }
+function timeStep(dt) {
+    this._ball
+        .apply(gravity)
+        .apply(damping)
+        .apply(bondForce)
+        .integrate(dt);
 
-    _ballHitsSpring = (epsilon = 1e-2) =>
-        this._springTopAtRest.clone().sub(this._ball.position).length() < epsilon;
-
-    timeStep(dt) {
-        this._ball
-            .apply(gravity)
-            .apply(damping)
-            .apply(this._spring)
-            .integrate(dt);
-
-        if (this._ballHitsSpring() || this._spring.isCompressed)
-            this._spring.axis = this._spring.positionVectorTo(this._ball);
-    }
-
-    get ball() { return this._ball; }
-    get spring() { return this._spring; }
+    if (this._ballHitsSpring() || this._spring.isCompressed)
+        this._spring.axis = this._spring.positionVectorTo(this._ball);
 }
 
 const world = new PhysicsWorld(new RadialSymmetricBody({
