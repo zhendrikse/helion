@@ -48,7 +48,7 @@ class ChargedRing {
         const points = [];
         for (let i = 0; i <= segments; i++) {
             const theta = i * 2 * Math.PI / segments;
-            points.push(new Vec3(radius * Math.cos(theta), this.radius * Math.sin(theta), 0));
+            points.push(new Vec3(this.radius * Math.cos(theta), this.radius * Math.sin(theta), 0));
         }
         return points;
     }
