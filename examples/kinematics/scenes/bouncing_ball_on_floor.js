@@ -35,8 +35,7 @@ const ball = new BouncingBall({
     mass: 1
 });
 
-const gravitationalForce = new UniformGra
-vitationalForce();
+const gravitationalForce = new UniformGravitationalForce();
 const sphere = new Sphere({ color: "cyan" });
 const graphDefinition = {
     dataDefinition: [
