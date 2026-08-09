@@ -7,7 +7,7 @@ import {
 import { Renderable3D } from "../renderer.js";
 import { DropdownMenu} from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
-import { ColorMappers, hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
+import { hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({

@@ -1,7 +1,7 @@
 import {
     Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute,
     BufferGeometry, InstancedMesh, Matrix4, Quaternion, InstancedBufferAttribute,
-    MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry, Mesh, SphereGeometry
+    MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry
 } from "three";
 import {Arrow, Cylinder, Helix, Sphere} from "../primitives/primitives.js";
 import {Vec3} from "../../../model/math/math.js";
