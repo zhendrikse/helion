@@ -79,7 +79,6 @@ export class BodyPair extends MathPhysicsModelBehavior {
         this.body2.integrate(dt, integrator);
     }
 
-    get radius() { return .5 * (this.body1.radius + this.body2.radius); }
     get axis() { return this.body1.positionVectorTo(this.body2); }
     get position() { return this.body1.position; }
     get mass() { return this.body2.mass + this.body1.mass; }
@@ -216,9 +215,9 @@ export class Lattice extends MathPhysicsModelBehavior {
     get k () { return this._k; }
 
     set damping(damping) {
+        this._damping = damping;
         for (const coupling of this._bondForces)
             coupling.damping = damping;
-            this._damping = damping;
     }
 
     fixateBodyAt(index) {

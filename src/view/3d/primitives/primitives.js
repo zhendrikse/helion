@@ -272,12 +272,12 @@ export class Cylinder extends Renderable3D {
         opacity = 1,
         segments = 24,
         castShadow = false,
-        radiusScaleFactor = 1,
         material = new MeshStandardMaterial({
             color,
             opacity,
             transparent: opacity < 1
-        })
+        }),
+        radiusFunction = body => body.radius
     } = {}) {
         super();
         const geometry = new CylinderGeometry(1, 1, 1, segments);
@@ -285,11 +285,11 @@ export class Cylinder extends Renderable3D {
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
         this._direction = new Vector3();
-        this._radiusScaleFactor = radiusScaleFactor;
+        this._radiusFunction = radiusFunction;
     }
 
     canBindTo(body) {
-        return body.position && body.axis && body.radius;
+        return body.position && body.axis;
     }
 
     synchronizeWith(body) {
@@ -297,7 +297,7 @@ export class Cylinder extends Renderable3D {
         this._direction.copy(body.axis);
 
         const length = this._direction.length();
-        const scale = body.radius * this._radiusScaleFactor;
+        const scale = this._radiusFunction(body);
         this.scale.set(scale, length, scale);
         this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
         this.position.add(this._direction.multiplyScalar(length * .5));
@@ -421,7 +421,7 @@ export class Helix extends Renderable3D {
         radialSegments = 16,
         thickness = 0.05, // Percentage of the spring radius
         visible = true,
-        radiusScaleFactor = 1.0,
+        radiusFunction = pair => .75 * Math.min(pair.body1.radius, pair.body2.radius),
         castShadow = false
     } = {}) {
         super();
@@ -432,7 +432,7 @@ export class Helix extends Renderable3D {
         this._coils = coils;
         this._color = color;
         this._castShadow = castShadow;
-        this._radiusScaleFactor = radiusScaleFactor;
+        this._radiusFunction = radiusFunction;
         this.visible = visible;
 
         // Reusable math objects
@@ -442,12 +442,12 @@ export class Helix extends Renderable3D {
         this._radius = 1;
     }
 
-    initialize(body) {
-        this._restLength = body.axis.length();
-        this._radius = body.radius * this._radiusScaleFactor;
+    initialize(bodyPair) {
+        this._restLength = bodyPair.axis.length();
+        this._radius = this._radiusFunction(bodyPair);
         this._curve = new Coils(
             new Vector3(0, 0, 0),
-            new Vector3(0, 0, body.axis.length()),
+            new Vector3(0, 0, bodyPair.axis.length()),
             this._coils,
             this._radius,
             0
@@ -470,7 +470,7 @@ export class Helix extends Renderable3D {
     }
 
     canBindTo(body) {
-        return body.position && body.axis && body.radius;
+        return body.position && body.axis;
     }
 
     #regenerateTube() {
@@ -482,7 +482,7 @@ export class Helix extends Renderable3D {
         this.position.copy(body.position);
 
         if (this._longitudinalOscillation) {
-            this._curve.radius = body.radius * this._radiusScaleFactor;
+            this._curve.radius = this._radius;
             this._curve.updateAxis(body.axis);
 
             // Longitudinal wave amplitude coupled to spring elongation

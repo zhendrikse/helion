@@ -313,17 +313,17 @@ export class SwitchableBondView extends Renderable3D {
         color = 0xffff00,
         coils = 25,
         tubularSegments = 400,
-        radiusScaleFactor = 1.0,
         thickness = 0.075,
         castShadow = false,
-        bondType = SwitchableBondView.Type.Spring
+        bondType = SwitchableBondView.Type.Spring,
+        radiusFunction = pair => .25 * (pair.body1.radius + pair.body2.radius)
     } = {}) {
         super();
         this._spring = new Helix({
-            color, coils, thickness, tubularSegments, castShadow, radiusScaleFactor
+            color, coils, thickness, tubularSegments, castShadow, radiusFunction
         });
         this._cylinder = new Cylinder({
-            color, castShadow, radiusScaleFactor
+            color, castShadow, radiusFunction,
         });
         this.add(this._cylinder, this._spring);
 
@@ -491,8 +491,7 @@ export class DiatomicMolecule extends Renderable3D {
         atom1Color = 0xff0000,
         atom1Segments = 24,
         atom2Color = 0x0000ff,
-        atom2Segments = 24,
-        radiusScaleFactor = .5
+        atom2Segments = 24
     } = {}) {
         super();
 
@@ -509,7 +508,7 @@ export class DiatomicMolecule extends Renderable3D {
             coils: 20,
             thickness: 0.05,
             color: bondColor,
-            radiusScaleFactor
+            radiusFunction: pair => .33 * (pair.body1.radius + pair.body2.radius)
         })
         this.add(this._atom1, this._atom2, this._bond);
     }

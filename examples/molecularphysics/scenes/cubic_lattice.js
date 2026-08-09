@@ -47,7 +47,6 @@ const latticeView = LatticeView.from({
         color: 0xffffaa,
         castShadow: true,
         tubularSegments: 400,
-        radiusScaleFactor: 0.5,
         bondType: SwitchableBondView.Type.Cylinder
     }
 });

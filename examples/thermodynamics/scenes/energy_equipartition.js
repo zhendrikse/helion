@@ -2,6 +2,7 @@ import {
     RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule,
     BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, BondForce
 } from "../../../src/index.js";
+import 'uplot/dist/uPlot.min.css';
 
 // Simulation constants
 const SCALE = 1e10;
@@ -37,12 +38,6 @@ export class CarbonMonoxide extends BodyPair {
 
         this.body1 = oxygen;
         this.body2 = carbon;
-    }
-
-    update(startPosition, endPosition) {
-        this.body1.moveTo(startPosition);
-        this.body2.moveTo(endPosition);
-        this._bond.update();
     }
 
     _confineToBox(atom, size) {
@@ -87,8 +82,8 @@ export class CarbonMonoxide extends BodyPair {
 
     get vibrationalPotentialEnergy() {
         const length = this.body2.position.clone().sub(this.body1.position).length();
-        const stretch = length - this._bond.restLength;
-        return 0.5 * this._bond.k * stretch * stretch;
+        const stretch = length - distance;
+        return 0.5 * bondForce.k * stretch * stretch;
     }
 
     get rotationalKineticEnergy() {
@@ -193,7 +188,7 @@ class CarbonMonoxideGas {
     }
 
     get rotationalKineticEnergy() {
-        return this._molecules.reduce((sum, molecule) => sum + molecule.rotationalKineticEnergy(), 0);
+        return this._molecules.reduce((sum, molecule) => sum + molecule.rotationalKineticEnergy, 0);
     }
 }
 
@@ -201,9 +196,16 @@ class CarbonMonoxideGas {
 const gas = new CarbonMonoxideGas();
 const moleculeViews = [];
 
+const dt = 5e-16;
+let t = 0,
+    totalTranslational = 0,
+    totalVibrationalKE = 0,
+    totalVibrationalPE = 0,
+    totalRotational = 0;
+
 // Perform some initial timesteps to make the gas look more realistic
 for (let i = 0; i < 150; i++)
-    gas.evolve(5e-16);
+    gas.evolve(dt);
 
 const simulation = Simulation
     .with({
@@ -213,8 +215,38 @@ const simulation = Simulation
         cameraPosition: new Vec3(4.25, 1.25, 7.25).multiplyScalar(1.5)
     })
     .withMouseClickEventListener()
-    .runsEvery(0.001)
-    .onStep(() => gas.evolve(5e-16))
+    .runsEvery(0.003)
+    .substeps(3)
+    .onStep(() => {
+        gas.evolve(dt);
+        t += dt;
+
+        // totalTranslational += gas.translationalKineticEnergy;
+        // totalVibrationalKE += gas.vibrationalKineticEnergy;
+        // totalVibrationalPE += gas.vibrationalPotentialEnergy;
+        // totalRotational += gas.rotationalKineticEnergy;
+        //
+        // const plotData = [t];
+        // plotData.push(totalTranslational);
+        // plotData.push(totalVibrationalKE);
+        // plotData.push(totalVibrationalPE);
+        // plotData.push(totalRotational);
+        //
+        // simulation.plot(plotData);
+    })
+    // .setupGraphWith({
+    //         dataDefinition: [
+    //             { label: "t" },
+    //             { label: "Translational KE", stroke: "green" },
+    //             { label: "Vibrational PE", stroke: "red" },
+    //             { label: "Vibrational KE", stroke: "cyan" },
+    //             { label: "Rotational KE", stroke: "yellow" }
+    //         ],
+    //         title: "Kinetic Energy vs Time",
+    //         xLabel: "Time [ps]",
+    //         yLabel: "KE [J]"
+    //     }
+    // )
     .addObject3D(new Aquarium({
         size: new Vec3(1, 1, 1).multiplyScalar(2 * L)
     }))
@@ -231,10 +263,7 @@ const simulation = Simulation
     );
 
 for (const molecule of gas) {
-    const moleculeView = new DiatomicMolecule({
-        bondType: SwitchableBondView.Type.Spring,
-        radiusScaleFactor: .75
-    });
+    const moleculeView = new DiatomicMolecule();
     moleculeViews.push(moleculeView);
     simulation.bind(molecule.alwaysWith(moleculeView));
 }

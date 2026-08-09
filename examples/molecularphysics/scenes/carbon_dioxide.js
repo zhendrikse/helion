@@ -175,8 +175,7 @@ class CarbonDioxideView extends Renderable3D {
             coils: 10,
             thickness: 0.33,        // ≈ VPython: thickness=0.1*rad, radius=0.3*rad
             tubularSegments: 60,
-            radialSegments: 8,
-            radiusScaleFactor: 1.0
+            radialSegments: 8
         });
         this._bond2 = new SwitchableBondView({
             bondType,
@@ -184,8 +183,7 @@ class CarbonDioxideView extends Renderable3D {
             coils: 10,
             thickness: 0.33,
             tubularSegments: 60,
-            radialSegments: 8,
-            radiusScaleFactor: 1.0
+            radialSegments: 8
         });
 
         this.add(this._o1, this._c, this._o2, this._bond1, this._bond2);

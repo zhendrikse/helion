@@ -443,7 +443,7 @@ export class Simulation {
         return this;
     }
 
-    _updatePhysics(clock) {
+    _updatePhysics() {
         let i = 0;
         const maxSteps = 10;
 
@@ -486,7 +486,7 @@ export class Simulation {
 
             if (this._stepFunction) {
                 this._clock.updateWith(timeStamp, this._timeScale);
-                this._updatePhysics(this._clock);
+                this._updatePhysics();
             }
         }
 

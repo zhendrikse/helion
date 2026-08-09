@@ -297,7 +297,7 @@ export class ComplexSoftness extends Transformation {
     }
 }
 
-export class SineImpulsOperator {
+export class SineImpulseOperator {
     constructor({
         wavelengthInPixels = 10,
         amplitude = 1,

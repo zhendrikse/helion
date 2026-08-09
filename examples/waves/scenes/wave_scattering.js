@@ -1,7 +1,7 @@
 import {
     DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
     WaveEquationSolver, PotentialField3DRaster, FixedIntervalNormalizer,
-    SineImpulsOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization,
+    SineImpulseOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization,
     SurfaceResolution, RadioGroup, Checkbox, ColorMappers
 } from "../../../src/index.js";
 
@@ -24,7 +24,7 @@ const waveEquation = new BarrierWaveEquation({
 });
 const solver = new WaveEquationSolver(waveEquation);
 
-const sineImpuls = new SineImpulsOperator({
+const sineImpuls = new SineImpulseOperator({
     amplitude: 0.5
 });
 function reset(shapeConfig) {

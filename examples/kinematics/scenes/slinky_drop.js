@@ -63,8 +63,7 @@ Simulation
     .bind(ball3.alwaysWith(new Sphere({ color: "yellow" })))
     .bind(ball1.and(ball2).alwaysWith(new Helix({
         color: 0x00ffff,
-        thickness: 0.075,
-        radiusScaleFactor: 0.7
+        thickness: 0.075
     })))
     .addObject3D(new Floor({
         position: new Vec3(0, -3.5 * L0 + shiftUp, 0),
