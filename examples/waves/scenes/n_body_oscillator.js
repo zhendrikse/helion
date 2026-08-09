@@ -1,5 +1,5 @@
 import {
-    Vec3, Simulation, Sphere, Floor, Bond, SwitchableBondView, RadioGroup,
+    Vec3, Simulation, Sphere, Floor, SwitchableBondView,
     Slider, Range, Vec2, ChainTopology, Lattice, LatticeView
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';

@@ -1,7 +1,7 @@
 import { Vec3} from "../math/math.js";
 import { Integrators } from "../math/numerics/integrators/integrators.js";
 import { MathPhysicsModelBehavior } from "../../core/helion.js";
-import {Bond} from "../transformations/interactions.js";
+import {BondForce} from "./forces.js";
 
 export class PhysicsState {
     constructor({
@@ -203,7 +203,7 @@ export class Lattice extends MathPhysicsModelBehavior {
         this._bondRadius = bondRadius;
         this._bodies = [];
         this._bonds = [];
-        this._couplings = [];
+        this._bondForces = [];
         this._boundaryConditions = [];
     }
 
@@ -213,7 +213,7 @@ export class Lattice extends MathPhysicsModelBehavior {
     get k () { return this._k; }
 
     set damping(damping) {
-        for (const coupling of this._couplings)
+        for (const coupling of this._bondForces)
             coupling.damping = damping;
             this._damping = damping;
     }
@@ -235,10 +235,10 @@ export class Lattice extends MathPhysicsModelBehavior {
 
     connect(body1, body2, {k, restLength, damping}) {
         this._bonds.push(body1.and(body2));
-        this._couplings.push(new Bond({k, restLength, damping}));
+        this._bondForces.push(new BondForce({k, restLength, damping}));
     }
 
-    set bondForce(value) { this._couplings.forEach(bond => bond.k = value); }
+    set bondForce(value) { this._bondForces.forEach(bond => bond.k = value); }
 
     set omega(value) { this._omega = value; }
 
@@ -254,7 +254,7 @@ export class Lattice extends MathPhysicsModelBehavior {
             boundaryCondition.applyTo(this, t);
 
         for (let i = 0; i < this.bondCount; i++)
-            this._bonds[i].apply(this._couplings[i]);
+            this._bonds[i].apply(this._bondForces[i]);
 
         for (const body of this._bodies)
             body.integrate(dt);

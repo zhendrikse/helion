@@ -1,44 +1,4 @@
-import {Vec3} from "../math/math.js";
 import {Transformation} from "../../core/helion.js";
-
-export class Bond extends Transformation {
-    constructor({
-        k = 200,
-        restLength,
-        damping = 0
-    } = {}) {
-        super();
-        this._k = k;
-        this._restLength = restLength;
-        this._damping = damping;
-        this._scratchVector = new Vec3();
-    }
-
-    set damping(damping) { this._damping = damping; }
-    set k(bondConstant) { this._k = bondConstant; }
-
-    applyTo(bodyPair) {
-        const left = bodyPair.body1;
-        const right = bodyPair.body2
-        const direction = left.positionVectorTo(right);
-
-        // Hooke's law
-        const stretch = direction.length() - this._restLength;
-        this._scratchVector.copy(direction.normalize().multiplyScalar(-this._k * stretch));
-
-        // Damping
-        if (this._damping !== 0) {
-            const relativeVelocity = right.velocity.clone().sub(left.velocity);
-            const dampingForce = relativeVelocity
-                .projectOnVector(left.positionVectorTo(right).normalize())
-                .multiplyScalar(this._damping);
-            this._scratchVector.sub(dampingForce);
-        }
-
-        left.force.sub(this._scratchVector);
-        right.force.add(this._scratchVector);
-    }
-}
 
 export class SphereSphereCollision extends Transformation {
     applyTo(bodyPair) {

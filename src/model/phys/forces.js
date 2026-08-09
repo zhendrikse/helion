@@ -123,3 +123,47 @@ export class GravitationalForce extends Force {
         twoBodies.body2.force.sub(this._forceVector);
     }
 }
+
+/**
+ * Hooke's law F = -k u between a pair of bodies.
+ */
+export class BondForce extends Force {
+    constructor({
+        k = 200,
+        restLength,
+        damping = 0
+    } = {}) {
+        super();
+        this._k = k;
+        this._restLength = restLength;
+        this._damping = damping;
+    }
+
+    set damping(damping) { this._damping = damping; }
+    set k(bondConstant) { this._k = bondConstant; }
+
+    _calculateForceOn(bodyPair) {
+        const left = bodyPair.body1;
+        const right = bodyPair.body2
+        const direction = left.positionVectorTo(right);
+
+        // Hooke's law
+        const stretch = direction.length() - this._restLength;
+        this._forceVector.copy(direction.normalize().multiplyScalar(-this._k * stretch));
+
+        // Damping
+        if (this._damping !== 0) {
+            const relativeVelocity = right.velocity.clone().sub(left.velocity);
+            const dampingForce = relativeVelocity
+                .projectOnVector(left.positionVectorTo(right).normalize())
+                .multiplyScalar(this._damping);
+            this._forceVector.sub(dampingForce);
+        }
+    }
+
+    applyTo(bodyPair) {
+        this._calculateForceOn(bodyPair);
+        bodyPair.body1.force.sub(this._forceVector);
+        bodyPair.body2.force.add(this._forceVector);
+    }
+}

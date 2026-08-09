@@ -1,5 +1,6 @@
 import {
-    RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix, Slider, Range, UniformGravitationalForce, Bond
+    RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix,
+    Slider, Range, UniformGravitationalForce, BondForce
 } from "../../../src/index.js";
 
 //
@@ -32,7 +33,7 @@ const damping = new Damping();
 class PhysicsWorld {
     constructor(ball) {
         this._ball = ball;
-        this._spring = new Bond({
+        this._spring = new BondForce({
             restLength: 0.75,
             k: 225
         });

@@ -1,5 +1,6 @@
 import {
-    RadialSymmetricBody, Simulation, Vec3, Sphere, Helix, Cylinder, Bond, Floor, Vec2, AxialSymmetricBody
+    RadialSymmetricBody, Simulation, Vec3, Sphere, Helix, Cylinder, BondForce, Floor, Vec2, AxialSymmetricBody,
+    UniformGravitationalForce
 } from "../../../src/index.js";
 import {AmbientLight, DirectionalLight} from "three";
 
@@ -27,7 +28,8 @@ const ball3 = new RadialSymmetricBody({
     radius: 0.3
 });
 
-const bond = new Bond({ k, restLength: L0 });
+const bondForce = new BondForce({ k, restLength: L0 });
+const gravitationalForce = new UniformGravitationalForce();
 
 // Pole + stick
 const stick1 = new AxialSymmetricBody({
@@ -77,10 +79,10 @@ Simulation
         if (onFloor(ball2, -3.5 * L0) || onFloor(ball3, -3.5 * L0))
             return;
 
-        ball1.force.copy(g.clone().multiplyScalar(ball1.mass))
-        ball2.force.copy(g.clone().multiplyScalar(ball2.mass));
-        ball3.force.copy(g.clone().multiplyScalar(ball3.mass));
-        ball1.and(ball2).apply(bond);
+        ball1.apply(gravitationalForce)
+        ball2.apply(gravitationalForce);
+        ball3.apply(gravitationalForce);
+        ball1.and(ball2).apply(bondForce);
         ball1.integrate(dt);
         ball2.integrate(dt);
         ball3.integrate(dt);

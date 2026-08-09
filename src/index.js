@@ -23,11 +23,11 @@ export {
 } from "./view/2d/views.js";
 
 export {
-    Force, CoulombForce, LorentzForce, DragForce, UniformGravitationalForce,
+    Force, CoulombForce, LorentzForce, DragForce, UniformGravitationalForce, BondForce,
     GravitationalForce, G, EC
 } from "./model/phys/forces.js";
 
-export { Bond, SphereSphereCollision } from "./model/transformations/interactions.js"
+export { SphereSphereCollision } from "./model/transformations/interactions.js"
 export { Domain, DiscreteScalarField, DiscreteComplexField, VectorField } from "./model/math/fields.js"
 export { BarrierWaveEquation } from "./model/math/equations.js";
 export { Shapes, ShapeConfiguration } from "./model/math/shapes.js";

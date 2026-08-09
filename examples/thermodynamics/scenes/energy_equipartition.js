@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule,
-    BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, Bond
+    BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, BondForce
 } from "../../../src/index.js";
 
 // Simulation constants
@@ -12,7 +12,7 @@ const radius = 31E-12;
 const distance = 2.5 * radius;
 
 const sphereSphereCollision = new SphereSphereCollision();
-const bond = new Bond({
+const bondForce = new BondForce({
     restLength: distance,
     k: 18600
 })
@@ -160,7 +160,7 @@ class CarbonMonoxideGas {
 
     evolve(dt) {
         for (const molecule of this._molecules)
-            molecule.apply(bond);
+            molecule.apply(bondForce);
 
         for (const molecule of this._molecules) {
             molecule.integrate(dt);
