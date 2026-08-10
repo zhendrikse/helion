@@ -1,6 +1,6 @@
 import {
-    Vec3, Simulation, Sphere, SwitchableBondView,
-    Arrow, RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField
+    Vec3, Simulation, Sphere, SwitchableBondView, PairForce,
+    Arrow, RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField, CoulombForce, BondForce
 } from "../../../src/index.js";
 
 const SPACING = 1.0E-10;
@@ -47,19 +47,21 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
         this._oxygen1 = new RadialSymmetricBody({
             position: o1Pos,
             mass: 16 * U,
-            radius: RADIUS
+            radius: RADIUS,
+            charge: Q
         });
         this._oxygen2 = new RadialSymmetricBody({
             position: o2Pos,
             mass: 16 * U,
-            radius: RADIUS
+            radius: RADIUS,
+            charge: Q
         });
         this._carbon = new RadialSymmetricBody({
             mass: 12 * U,
-            radius: 0.8 * RADIUS
+            radius: 0.8 * RADIUS,
+            charge: -2 * Q
         });
 
-        this._k       = K;       // Transversal bond constant
         this._kt      = KT;      // Longitudinal / torsion bond constant
         this._spacing = SPACING;
         this._theta   = theta;
@@ -76,8 +78,11 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
     }
 
     update(eField, dt) {
-        const v1 = this._oxygen1.position.clone().sub(this._carbon.position);
-        const v2 = this._oxygen2.position.clone().sub(this._carbon.position);
+        const coulombForce = CoulombForce.in(eField);
+        const stretchForce = new BondForce({k: K, restLength: SPACING});
+
+        const v1 = this._carbon.and(this._oxygen1).axis;
+        const v2 = this._carbon.and(this._oxygen2).axis;
 
         // Deviation of angle from linearity: acos( dot(v1,-v2) / (|v1||v2|) )
         const mag1 = v1.length();
@@ -88,34 +93,23 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
             angle = Math.acos(cosA);
         }
 
-        const normV1 = v1.clone().normalize();
-        const normV2 = v2.clone().normalize();
         const bend = v1.clone().add(v2);
-        const bendDir = bend.length() > 1e-20 ? bend.normalize() : new Vec3(0, 0, 0);
-        const E = new Vec3();
+        const bendDir = bend.length() > 1e-20 ? bend.normalize() : new Vec3();
 
-        eField.sample(this._oxygen1.position, E);
-        this._oxygen1.force.copy(E.clone().multiplyScalar(Q)
-            .add(normV1.clone().multiplyScalar(-this._k * (mag1 - this._spacing)))     // Stretch
-            .add(bendDir.clone().multiplyScalar(-this._kt * this._spacing * angle)) // Torsion
-        );
+        this._oxygen1.apply(coulombForce);
+        this._carbon.and(this._oxygen1).apply(stretchForce);
+        this._oxygen1.force.add(bendDir.clone().multiplyScalar(-this._kt * this._spacing * angle));
 
-        eField.sample(this._oxygen2.position, E);
-        this.oxygen2.force.copy(E.clone().multiplyScalar(Q)
-            .add(normV2.clone().multiplyScalar(-this._k * (mag2 - this._spacing)))
-            .add(bendDir.clone().multiplyScalar(-this._kt * this._spacing * angle))
-        );
+        this._oxygen2.apply(coulombForce);
+        this._carbon.and(this._oxygen2).apply(stretchForce);
+        this._oxygen2.force.add(bendDir.clone().multiplyScalar(-this._kt * this._spacing * angle));
 
-        eField.sample(this._carbon.position, E);
-        this.carbon.force.copy(E.clone().multiplyScalar(-2 * Q)
-            .add(normV1.clone().multiplyScalar( this._k * (mag1 - this._spacing)))
-            .add(normV2.clone().multiplyScalar( this._k * (mag2 - this._spacing)))
-            .add(bendDir.clone().multiplyScalar(2 * this._kt * this._spacing * angle))
-        );
+        this._carbon.apply(coulombForce);
+        this._carbon.force.add(bendDir.clone().multiplyScalar(2 * this._kt * this._spacing * angle));
 
-        this.oxygen1.integrate(dt);
-        this.oxygen2.integrate(dt);
-        this.carbon.integrate(dt);
+        this._oxygen1.integrate(dt);
+        this._oxygen2.integrate(dt);
+        this._carbon.integrate(dt);
     }
 }
 

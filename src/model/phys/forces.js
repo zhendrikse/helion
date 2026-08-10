@@ -10,29 +10,46 @@ export const EC = 1.6e-19; // Coulomb charge
 export const g = 9.81;
 
 export class Force extends Transformation {
-    constructor(field) {
+    constructor() {
         super();
-        this._field = field;
-        this._fieldVector = new Vec3();
         this._forceVector = new Vec3();
     }
 
     get asVector() { return this._forceVector; }
 
-    _calculateForceOn(body) {
+    _calculateForceOn(body) {}
+
+    applyTo(body) {
+        this._calculateForceOn(body);
+        body.force.add(this._forceVector);
+    }
+}
+
+export class FieldForce extends Force {
+    constructor(field) {
+        super();
+        this._field = field;
+        this._fieldVector = new Vec3();
     }
 
     applyTo(body) {
         this._field.sample(body.position, this._fieldVector);
-        this._calculateForceOn(body);
-        body.force.add(this._forceVector);
+        super.applyTo(body);
+    }
+}
+
+export class PairForce extends Force {
+    applyTo(bodyPair) {
+        this._calculateForceOn(bodyPair);
+        bodyPair.body1.force.sub(this._forceVector);
+        bodyPair.body2.force.add(this._forceVector);
     }
 }
 
 /**
  * Calculates the Coulomb force F = q x E induced by an electric field.
  */
-export class CoulombForce extends Force{
+export class CoulombForce extends FieldForce{
     static in(electricField) {
         return new CoulombForce(electricField);
     }
@@ -49,7 +66,7 @@ export class CoulombForce extends Force{
 /**
  * Calculates the Lorentz force F = q v x B induced by a magnetic field.
  */
-export class LorentzForce extends Force {
+export class LorentzForce extends FieldForce {
     static in(magneticField) {
         return new LorentzForce(magneticField);
     }
@@ -76,11 +93,6 @@ export class DragForce extends Force {
         this._forceVector.y = this._dragCoefficient * body.velocity.y;
     }
 
-    applyTo(body) {
-        this._calculateForceOn(body);
-        body.force.add(this._forceVector);
-    }
-
     set dragCoefficient(value) { this._dragCoefficient = value; }
 }
 
@@ -98,7 +110,7 @@ class UniformGravitationalField extends VectorField {
 /**
  * Approximate (earth) gravitational field force F = ma by a uniform gravitational field.
  */
-export class UniformGravitationalForce extends Force {
+export class UniformGravitationalForce extends FieldForce {
     constructor() {
         super();
         this._field = new UniformGravitationalField();
@@ -117,7 +129,7 @@ export class UniformGravitationalForce extends Force {
  *  F = G -------
  *         r * r
  */
-export class GravitationalForce extends Force {
+export class GravitationalForce extends PairForce {
     constructor() {
         super();
     }
@@ -128,18 +140,12 @@ export class GravitationalForce extends Force {
         this._forceVector.copy(
             radius.normalize().multiplyScalar(G * twoBodies.body1.mass * twoBodies.body2.mass / rSquared));
     }
-
-    applyTo(twoBodies) {
-        this._calculateForceOn(twoBodies);
-        twoBodies.body1.force.add(this._forceVector);
-        twoBodies.body2.force.sub(this._forceVector);
-    }
 }
 
 /**
  * Hooke's law F = -k u between a pair of bodies.
  */
-export class BondForce extends Force {
+export class BondForce extends PairForce {
     constructor({
         k = 200,
         restLength,
@@ -172,11 +178,5 @@ export class BondForce extends Force {
                 .multiplyScalar(this._damping);
             this._forceVector.sub(dampingForce);
         }
-    }
-
-    applyTo(bodyPair) {
-        this._calculateForceOn(bodyPair);
-        bodyPair.body1.force.sub(this._forceVector);
-        bodyPair.body2.force.add(this._forceVector);
     }
 }

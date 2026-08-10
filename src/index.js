@@ -24,7 +24,7 @@ export {
 
 export {
     Force, CoulombForce, LorentzForce, DragForce, UniformGravitationalForce, BondForce,
-    GravitationalForce, G, EC
+    GravitationalForce, G, EC, PairForce, FieldForce
 } from "./model/phys/forces.js";
 
 export { SphereSphereCollision } from "./model/transformations/interactions.js"
