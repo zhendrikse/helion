@@ -83,8 +83,6 @@ class Water extends MathPhysicsModelBehavior {
     get oxygen() { return this._oxygen; }
     get hydrogen1() { return this._hydrogen1; }
     get hydrogen2() { return this._hydrogen2; }
-    get bond1() { return this._oxygen.and(this._hydrogen1); }
-    get bond2() { return this._oxygen.and(this._hydrogen2); }
 
     _getPositions(
         theta = 0,
@@ -94,17 +92,13 @@ class Water extends MathPhysicsModelBehavior {
         const angle1 = theta;
         const angle2 = this._bondAngle + theta;
 
-        const hydrogen1Position = new Vec3(
-            SPACING * Math.cos(angle1),
-            SPACING * Math.sin(angle1) * Math.cos(tilt),
-            SPACING * Math.sin(angle1) * Math.sin(tilt)
-        );
+        const hydrogen1Position =
+            new Vec3(Math.cos(angle1),Math.sin(angle1) * Math.cos(tilt),Math.sin(angle1) * Math.sin(tilt))
+                .multiplyScalar(SPACING);
 
-        const hydrogen2Position = new Vec3(
-            SPACING * Math.cos(angle2),
-            SPACING * Math.sin(angle2) * Math.cos(tilt),
-            SPACING * Math.sin(angle2) * Math.sin(tilt)
-        );
+        const hydrogen2Position =
+            new Vec3(Math.cos(angle2),Math.sin(angle2) * Math.cos(tilt),Math.sin(angle2) * Math.sin(tilt))
+                .multiplyScalar(SPACING);
 
         return {
             oxygenPosition,
@@ -150,9 +144,7 @@ class Water extends MathPhysicsModelBehavior {
             .clone()
             .multiplyScalar(this._kt * this._spacing * (angle - this._bondAngle));
 
-        const forceH1 = coulombH1.add(stretchH1).add(torqueH1);
-        this._hydrogen1.state.velocity.add(forceH1.divideScalar(this._hydrogen1.mass).multiplyScalar(dt));
-        this._hydrogen1.position.add(this._hydrogen1.state.velocity.clone().multiplyScalar(dt));
+        this._hydrogen1.force.copy(coulombH1.add(stretchH1).add(torqueH1));
 
         eField.sample(this._hydrogen2.position, E);
         const coulombH2 = E.clone().multiplyScalar(this._hydrogen2.charge);
@@ -165,9 +157,7 @@ class Water extends MathPhysicsModelBehavior {
             .clone()
             .multiplyScalar(this._kt * this._spacing * (angle - this._bondAngle));
 
-        const forceH2 = coulombH2.add(stretchH2).add(torqueH2);
-        this._hydrogen2.state.velocity.add(forceH2.divideScalar(this._hydrogen2.mass).multiplyScalar(dt));
-        this._hydrogen2.position.add(this._hydrogen2.state.velocity.clone().multiplyScalar(dt));
+        this.hydrogen2.force.copy(coulombH2.add(stretchH2).add(torqueH2));
 
         eField.sample(this._oxygen.position, E);
         const coulombO = E.clone().multiplyScalar(this._oxygen.charge);
@@ -181,9 +171,11 @@ class Water extends MathPhysicsModelBehavior {
             .clone()
             .multiplyScalar(-2 * this._kt * this._spacing * (angle - this._bondAngle));
 
-        const forceO = coulombO.add(stretchO).add(torqueO);
-        this._oxygen.state.velocity.add(forceO.divideScalar(this._oxygen.mass).multiplyScalar(dt));
-        this._oxygen.position.add(this._oxygen.state.velocity.clone().multiplyScalar(dt));
+        this.oxygen.force.copy(coulombO.add(stretchO).add(torqueO));
+
+        this.oxygen.integrate(dt);
+        this.hydrogen1.integrate(dt);
+        this.hydrogen2.integrate(dt);
     }
 }
 
