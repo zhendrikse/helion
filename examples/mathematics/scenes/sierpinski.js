@@ -1,8 +1,9 @@
 import {Line2} from 'three/addons/lines/Line2.js';
 import {LineMaterial} from 'three/addons/lines/LineMaterial.js';
-import {LineGeometry} from 'three/addons/lines/LineGeometry.js';
 import {Color, Group, Vector2, Vector3} from "three";
 import {Simulation, Vec3} from "../../../src/index.js";
+import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
+import { LineSegmentsGeometry} from 'three/addons/lines/LineSegmentsGeometry.js';
 
 const LEVEL = 5;
 let lineWidth = 1.0;
@@ -121,7 +122,7 @@ function createLineObject() {
         colors.push(edge.color.r, edge.color.g, edge.color.b);
     }
 
-    const geometry = new LineGeometry();
+    const geometry = new LineSegmentsGeometry();
     geometry.setPositions(positions);
     geometry.setColors(colors);
     const material = new LineMaterial({
@@ -131,8 +132,7 @@ function createLineObject() {
         resolution: new Vector2(window.innerWidth, window.innerHeight)
     });
 
-    lineObject = new Line2(geometry, material);
-    lineObject.computeLineDistances();
+    lineObject = new LineSegments2(geometry, material);
     pyramidLines.add(lineObject);
 }
 
