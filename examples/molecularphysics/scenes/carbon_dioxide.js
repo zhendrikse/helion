@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, SwitchableBondView,
-    Arrow, RadioGroup, Renderable3D, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField
+    Arrow, RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField
 } from "../../../src/index.js";
 
 const SPACING = 1.0E-10;
@@ -68,20 +68,11 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
     get oxygen1() { return this._oxygen1; }
     get oxygen2() { return this._oxygen2; }
     get carbon()  { return this._carbon; }
-    get bond1() { return this._carbon.and(this._oxygen1); }
-    get bond2() { return this._carbon.and(this._oxygen2); }
 
     reset() {
-        const s = this._spacing;
-        const t = this._theta;
-        this._oxygen1.position.set( s * Math.cos(t),  s * Math.sin(t), 0);
-        this._oxygen1.state.velocity.set(0, 0, 0);
-
-        this._oxygen2.position.set(-s * Math.cos(t), -s * Math.sin(t), 0);
-        this._oxygen2.state.velocity.set(0, 0, 0);
-
-        this._carbon.position.set(0, 0, 0);
-        this._carbon.state.velocity.set(0, 0, 0);
+        this._oxygen1.reset();
+        this._oxygen2.reset();
+        this._carbon.reset();
     }
 
     update(eField, dt) {
@@ -100,90 +91,36 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
         const normV1 = v1.clone().normalize();
         const normV2 = v2.clone().normalize();
         const bend = v1.clone().add(v2);
-
-        const bendDir = bend.length() > 1e-20
-            ? bend.normalize()
-            : new Vec3(0, 0, 0);
-
+        const bendDir = bend.length() > 1e-20 ? bend.normalize() : new Vec3(0, 0, 0);
         const E = new Vec3();
 
-        // ── Oxygen 1 ──
         eField.sample(this._oxygen1.position, E);
-        const fO1 = E.clone().multiplyScalar(Q)
-            .add(normV1.clone().multiplyScalar(-this._k * (mag1 - this._spacing))) // Stretch
-            .add(bendDir.clone().multiplyScalar(-this._kt * this._spacing * angle)); // Torsie
-        this._oxygen1.state.velocity.add(fO1.divideScalar(this._oxygen1.mass).multiplyScalar(dt));
-        this._oxygen1.position.add(this._oxygen1.state.velocity.clone().multiplyScalar(dt));
+        this._oxygen1.force.copy(E.clone().multiplyScalar(Q)
+            .add(normV1.clone().multiplyScalar(-this._k * (mag1 - this._spacing)))     // Stretch
+            .add(bendDir.clone().multiplyScalar(-this._kt * this._spacing * angle)) // Torsion
+        );
 
-        // ── Oxygen 2 ──
         eField.sample(this._oxygen2.position, E);
-        const fO2 = E.clone().multiplyScalar(Q)
+        this.oxygen2.force.copy(E.clone().multiplyScalar(Q)
             .add(normV2.clone().multiplyScalar(-this._k * (mag2 - this._spacing)))
-            .add(bendDir.clone().multiplyScalar(-this._kt * this._spacing * angle));
-        this._oxygen2.state.velocity.add(fO2.divideScalar(this._oxygen2.mass).multiplyScalar(dt));
-        this._oxygen2.position.add(this._oxygen2.state.velocity.clone().multiplyScalar(dt));
+            .add(bendDir.clone().multiplyScalar(-this._kt * this._spacing * angle))
+        );
 
-        // ── Carbon ──
         eField.sample(this._carbon.position, E);
-        const fC = E.clone().multiplyScalar(-2 * Q)
+        this.carbon.force.copy(E.clone().multiplyScalar(-2 * Q)
             .add(normV1.clone().multiplyScalar( this._k * (mag1 - this._spacing)))
             .add(normV2.clone().multiplyScalar( this._k * (mag2 - this._spacing)))
-            .add(bendDir.clone().multiplyScalar(2 * this._kt * this._spacing * angle));
-        this._carbon.state.velocity.add(fC.divideScalar(this._carbon.mass).multiplyScalar(dt));
-        this._carbon.position.add(this._carbon.state.velocity.clone().multiplyScalar(dt));
-    }
-}
+            .add(bendDir.clone().multiplyScalar(2 * this._kt * this._spacing * angle))
+        );
 
-class CarbonDioxideView extends Renderable3D {
-    constructor({
-        bondType = SwitchableBondView.Type.Spring
-    } = {}) {
-        super();
-
-        this._o1 = new Sphere({ color: 0x00ff00, segments: 36 });
-        this._c  = new Sphere({ color: 0xff0000, segments: 36 });
-        this._o2 = new Sphere({ color: 0x00ff00, segments: 36 });
-
-        this._bond1 = new SwitchableBondView({
-            bondType,
-            thickness: 0.04,
-            tubularSegments: 750,
-            radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
-        });
-        this._bond2 = new SwitchableBondView({
-            bondType,
-            thickness: 0.04,
-            tubularSegments: 750,
-            radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
-        });
-
-        this.add(this._o1, this._c, this._o2, this._bond1, this._bond2);
-    }
-
-    canBindTo(model) {
-        return model instanceof CarbonDioxide;
-    }
-
-    initialize(co2) {
-        this._o1.initialize(co2.oxygen1);
-        this._c.initialize(co2.carbon);
-        this._o2.initialize(co2.oxygen2);
-        this._bond1.initialize(co2.bond1);
-        this._bond2.initialize(co2.bond2);
-    }
-
-    synchronizeWith(co2) {
-        this._o1.synchronizeWith(co2.oxygen1);
-        this._c.synchronizeWith(co2.carbon);
-        this._o2.synchronizeWith(co2.oxygen2);
-        this._bond1.synchronizeWith(co2.bond1);
-        this._bond2.synchronizeWith(co2.bond2);
+        this.oxygen1.integrate(dt);
+        this.oxygen2.integrate(dt);
+        this.carbon.integrate(dt);
     }
 }
 
 const co2   = new CarbonDioxide();
 const field = new ElectricField(new Vec3(1.7 * SPACING, 0, 0), 200, 8.0);
-const co2View = new CarbonDioxideView();
 
 Simulation
     .with({
@@ -205,7 +142,21 @@ Simulation
         co2.reset();
         field.update(0);
     })
-    .bind(co2.alwaysWith(co2View))
+    .bind(co2.oxygen1.alwaysWith(new Sphere({ color: 0x00ff00, segments: 36 })))
+    .bind(co2.oxygen2.alwaysWith(new Sphere({ color: 0x00ff00, segments: 36 })))
+    .bind(co2.carbon.alwaysWith(new Sphere({ color: 0xff0000, segments: 36 })))
+    .bind(co2.oxygen1.and(co2.carbon).alwaysWith(new SwitchableBondView({
+        bondType: SwitchableBondView.Type.Spring,
+        thickness: 0.04,
+        tubularSegments: 750,
+        radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
+    })))
+    .bind(co2.oxygen2.and(co2.carbon).alwaysWith(new SwitchableBondView({
+        bondType: SwitchableBondView.Type.Spring,
+        thickness: 0.04,
+        tubularSegments: 750,
+        radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
+    })))
     .bind(field.alwaysWith(new Arrow({
         color: 0xff00ff,
         round: true,
