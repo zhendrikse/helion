@@ -340,7 +340,7 @@ export class SwitchableBondView extends Renderable3D {
     get bondType() { return this._bondType; }
 
     canBindTo(body) {
-        return body.position && body.axis && body.radius;
+        return body.position && body.axis;
     }
 
     initialize(bodyPair) {
