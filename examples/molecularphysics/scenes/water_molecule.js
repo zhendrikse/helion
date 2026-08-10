@@ -125,16 +125,16 @@ class Water extends MathPhysicsModelBehavior {
         const bondDirection = vSum.length() > 1e-20 ? vSum.normalize() : new Vec3();
 
         this._hydrogen1.apply(coulombForce);
+        this._hydrogen2.apply(coulombForce);
+        this._oxygen.apply(coulombForce);
+
         this._oxygen.and(this._hydrogen1).apply(bondForce);
+        this._oxygen.and(this._hydrogen2).apply(bondForce);
+
         this._hydrogen1.force.add(bondDirection.clone()
             .multiplyScalar(this._kt * this._spacing * (angle - this._bondAngle)));
-
-        this._hydrogen2.apply(coulombForce);
-        this._oxygen.and(this._hydrogen2).apply(bondForce);
         this._hydrogen2.force.add(bondDirection.clone()
             .multiplyScalar(this._kt * this._spacing * (angle - this._bondAngle)));
-
-        this._oxygen.apply(coulombForce);
         this._oxygen.force.add(bondDirection.clone()
             .multiplyScalar(-2 * this._kt * this._spacing * (angle - this._bondAngle)));
 
