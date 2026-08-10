@@ -53,7 +53,7 @@ const latticeView = LatticeView.from({
 Simulation
     .with({
         htmlDivId: "travellingWaveContainer",
-        cameraPosition: new Vec3(-10, .5, 1.5).multiplyScalar(1.5),
+        cameraPosition: new Vec3(-10, .25, 1.5).multiplyScalar(1.4),
         shadowsEnabled: true,
         fieldOfView: 30,
         background: Simulation.Background.FOG,
