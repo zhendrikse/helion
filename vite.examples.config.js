@@ -12,6 +12,7 @@ export default defineConfig({
                 black_hole_ray_tracer: path.resolve(__dirname, 'examples/astrophysics/scenes/black_hole_ray_tracer.js'),
                 bouncing_ball_on_floor: path.resolve(__dirname, 'examples/kinematics/scenes/bouncing_ball_on_floor.js'),
                 bouncing_ball_on_spring: path.resolve(__dirname, 'examples/kinematics/scenes/bouncing_ball_on_spring.js'),
+                carbon_dioxide: path.resolve(__dirname, 'examples/molecularphysics/scenes/carbon_dioxide.js'),
                 charged_ring: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_ring.js'),
                 charged_rod: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_rod.js'),
                 charged_sheet: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_sheet.js'),
