@@ -59,7 +59,7 @@ const simulation = Simulation
 
         for (const particle of particles)
             if (particle.position.y < xMax * resolution - particle.radius * 2)
-                particle.apply(new Vec3(0, 0, 0), 0.1); // Apply zero force ==> velocity stays the same
+                particle.integrate(0.025);
     })
     .append(new Slider("Wavelength ")
         .withRange(new Range(380, 700, 1))
