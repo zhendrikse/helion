@@ -1,7 +1,7 @@
 import {Line2} from 'three/addons/lines/Line2.js';
 import {LineMaterial} from 'three/addons/lines/LineMaterial.js';
 import {LineGeometry} from 'three/addons/lines/LineGeometry.js';
-import {Color, Vector2, Vector3} from "three";
+import {Color, Group, Vector2, Vector3} from "three";
 import {Simulation, Vec3} from "../../../src/index.js";
 
 const LEVEL = 5;
@@ -109,12 +109,7 @@ const initialPyramid = [
     new Vector3(0, 1, 0)
 ];
 
-const simulation = Simulation
-    .with({
-        htmlDivId: "sierpinskiContainer",
-        cameraPosition: new Vec3(3.0, 2.4, 3.2).multiplyScalar(0.8)
-    });
-
+const pyramidLines = new Group();
 function createLineObject() {
     const positions = [];
     const colors = [];
@@ -138,8 +133,15 @@ function createLineObject() {
 
     lineObject = new Line2(geometry, material);
     lineObject.computeLineDistances();
-    simulation.addObject3D(lineObject);
+    pyramidLines.add(lineObject);
 }
 
 sierpinskiPyramid(initialPyramid, LEVEL);
 createLineObject();
+
+Simulation
+    .with({
+        htmlDivId: "sierpinskiContainer",
+        cameraPosition: new Vec3(3.0, 2.4, 3.2).multiplyScalar(0.8)
+    })
+    .addObject3D(pyramidLines);
