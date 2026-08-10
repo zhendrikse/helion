@@ -86,6 +86,7 @@ class Person extends MathPhysicsModelBehavior {
     get body() { return this._balls.slice(1, 22); }
     get arms() { return this._balls.slice(22, 44); }
     get legs() { return this._balls.slice(44, 66); }
+    get all() { return this._balls }
 }
 
 class PersonView extends Renderable3D {
@@ -112,7 +113,7 @@ class PersonView extends Renderable3D {
 
     synchronizeWith(person) {
         for (let i = 0; i < this._spheres.length; i++)
-            this._spheres[i].synchronizeWith(person.body[i]);
+            this._spheres[i].synchronizeWith(person.all[i]);
     }
 }
 
