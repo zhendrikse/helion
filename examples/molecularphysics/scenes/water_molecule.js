@@ -88,22 +88,15 @@ class Water extends MathPhysicsModelBehavior {
         theta = 0,
         tilt = 20 * Math.PI / 180
     ) {
-        const oxygenPosition = new Vec3(0, 0, 0);
-        const angle1 = theta;
         const angle2 = this._bondAngle + theta;
-
-        const hydrogen1Position =
-            new Vec3(Math.cos(angle1),Math.sin(angle1) * Math.cos(tilt),Math.sin(angle1) * Math.sin(tilt))
-                .multiplyScalar(SPACING);
-
-        const hydrogen2Position =
-            new Vec3(Math.cos(angle2),Math.sin(angle2) * Math.cos(tilt),Math.sin(angle2) * Math.sin(tilt))
-                .multiplyScalar(SPACING);
-
         return {
-            oxygenPosition,
-            hydrogen1Position,
-            hydrogen2Position
+            oxygenPosition: new Vec3(0, 0, 0),
+            hydrogen1Position:
+                new Vec3(Math.cos(theta),Math.sin(theta) * Math.cos(tilt),Math.sin(theta) * Math.sin(tilt))
+                    .multiplyScalar(SPACING),
+            hydrogen2Position:
+                new Vec3(Math.cos(angle2),Math.sin(angle2) * Math.cos(tilt),Math.sin(angle2) * Math.sin(tilt))
+                    .multiplyScalar(SPACING)
         };
     }
 
@@ -136,41 +129,29 @@ class Water extends MathPhysicsModelBehavior {
         eField.sample(this._hydrogen1.position, E);
 
         const coulombH1 = E.clone().multiplyScalar(this._hydrogen1.charge);
-        const stretchH1 = normV1
-            .clone()
+        const stretchH1 = normV1.clone()
             .multiplyScalar(-this._k * (mag1 - this._spacing));
-
-        const torqueH1 = bondDirection
-            .clone()
+        const torqueH1 = bondDirection.clone()
             .multiplyScalar(this._kt * this._spacing * (angle - this._bondAngle));
-
-        this._hydrogen1.force.copy(coulombH1.add(stretchH1).add(torqueH1));
 
         eField.sample(this._hydrogen2.position, E);
         const coulombH2 = E.clone().multiplyScalar(this._hydrogen2.charge);
-
-        const stretchH2 = normV2
-            .clone()
+        const stretchH2 = normV2.clone()
             .multiplyScalar(-this._k * (mag2 - this._spacing));
-
-        const torqueH2 = bondDirection
-            .clone()
+        const torqueH2 = bondDirection.clone()
             .multiplyScalar(this._kt * this._spacing * (angle - this._bondAngle));
-
-        this.hydrogen2.force.copy(coulombH2.add(stretchH2).add(torqueH2));
 
         eField.sample(this._oxygen.position, E);
         const coulombO = E.clone().multiplyScalar(this._oxygen.charge);
 
-        const stretchO = normV1
-            .clone()
+        const stretchO = normV1.clone()
             .multiplyScalar(this._k * (mag1 - this._spacing))
             .add(normV2.clone().multiplyScalar(this._k * (mag2 - this._spacing)));
-
-        const torqueO = bondDirection
-            .clone()
+        const torqueO = bondDirection.clone()
             .multiplyScalar(-2 * this._kt * this._spacing * (angle - this._bondAngle));
 
+        this.hydrogen1.force.copy(coulombH1.add(stretchH1).add(torqueH1));
+        this.hydrogen2.force.copy(coulombH2.add(stretchH2).add(torqueH2));
         this.oxygen.force.copy(coulombO.add(stretchO).add(torqueO));
 
         this.oxygen.integrate(dt);
