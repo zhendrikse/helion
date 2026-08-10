@@ -75,29 +75,24 @@ class Person extends MathPhysicsModelBehavior {
         }
     }
 
-    update(dt, blackHolePos) { this._balls.forEach(ball => ball.update(dt, blackHolePos)); }
+    update(dt, blackHolePos) {
+        this._balls.forEach(ball => ball.update(dt, blackHolePos));
+    }
 
     reset() {
         this._balls.forEach(ball => ball.reset());
     }
 
-    get head() { return this._balls[0]; }
     get body() { return this._balls.slice(1, 22); }
-    get leftArm() { return this._balls.slice(22, 33); }
-    get rightArm() { return this._balls.slice(33, 44); }
-    get leftLeg() { return this._balls.slice(44, 55); }
-    get rightLeg() { return this._balls.slice(55, 66); }
+    get arms() { return this._balls.slice(22, 44); }
+    get legs() { return this._balls.slice(44, 66); }
 }
 
 class PersonView extends Renderable3D {
     constructor() {
         super();
-        this._head = new Sphere({ color: new Color(0.7, 0.6, 0.5) });
-        this._body = [];
-        this._leftArm = [];
-        this._rightArm = [];
-        this._leftLeg = [];
-        this._rightLeg = [];
+        this._spheres = [];
+        this._spheres.push(new Sphere({ color: new Color(0.7, 0.6, 0.5) }));
     }
 
     canBindTo(model) {
@@ -106,36 +101,18 @@ class PersonView extends Renderable3D {
 
     initialize(person) {
         for (let i = 0; i < person.body.length; i++)
-            this._body.push(new Sphere({ color: new Color(0.2, 0.4, 0.7) }));
-        for (let i = 0; i < person.leftArm.length; i++)
-            this._leftArm.push(new Sphere({ color: new Color(0.2, 0.8, 0.9) }));
-        for (let i = 0; i < person.rightArm.length; i++)
-            this._rightArm.push(new Sphere({ color: new Color(0.2, 0.8, 0.9) }));
-        for (let i = 0; i < person.leftLeg.length; i++)
-            this._leftLeg.push(new Sphere({ color: new Color(0.2, 0.2, 0.7) }));
-        for (let i = 0; i < person.rightLeg.length; i++)
-            this._rightLeg.push(new Sphere({ color: new Color(0.2, 0.2, 0.7) }));
+            this._spheres.push(new Sphere({ color: new Color(0.2, 0.4, 0.7) }));
+        for (let i = 0; i < person.arms.length; i++)
+            this._spheres.push(new Sphere({ color: new Color(0.2, 0.8, 0.9) }));
+        for (let i = 0; i < person.legs.length; i++)
+            this._spheres.push(new Sphere({ color: new Color(0.2, 0.2, 0.7) }));
 
-        this.add(this._head);
-        this._body.forEach(ball => this.add(ball));
-        this._leftArm.forEach(ball => this.add(ball));
-        this._rightArm.forEach(ball => this.add(ball));
-        this._leftLeg.forEach(ball => this.add(ball));
-        this._rightLeg.forEach(ball => this.add(ball));
+        this._spheres.forEach(sphere => this.add(sphere));
     }
 
     synchronizeWith(person) {
-        this._head.synchronizeWith(person.head);
-        for (let i = 0; i < this._body.length; i++)  
-            this._body[i].synchronizeWith(person.body[i]);
-        for (let i = 0; i < this._leftArm.length; i++)
-            this._leftArm[i].synchronizeWith(person.leftArm[i]);
-        for (let i = 0; i < this._rightArm.length; i++)
-            this._rightArm[i].synchronizeWith(person.rightArm[i]);
-        for (let i = 0; i < this._leftLeg.length; i++)
-            this._leftLeg[i].synchronizeWith(person.leftLeg[i]);
-        for (let i = 0; i < this._rightLeg.length; i++)
-            this._rightLeg[i].synchronizeWith(person.rightLeg[i]);
+        for (let i = 0; i < this._spheres.length; i++)
+            this._spheres[i].synchronizeWith(person.body[i]);
     }
 }
 
