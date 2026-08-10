@@ -1,7 +1,8 @@
 import {
     RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix,
-    Slider, Range, UniformGravitationalForce, BondForce, DragForce
+    Slider, Range, UniformGravitationalForce, BondForce, DragForce, Body, BodyPair
 } from "../../../src/index.js";
+import {MathPhysicsModelBehavior} from "../../../src/core/helion.js";
 
 //
 // Physics model
@@ -13,10 +14,6 @@ const floor = new Floor({
 
 const springRestLength = 0.75;
 const gravity = new UniformGravitationalForce();
-const bondForce = new BondForce({
-    restLength: springRestLength,
-    k: 225
-});
 const dragForce = new DragForce(-.1);
 
 const ball = new RadialSymmetricBody({
@@ -25,24 +22,35 @@ const ball = new RadialSymmetricBody({
     mass: 1.5
 });
 
-const springBottom = new RadialSymmetricBody({
-    fixed: true,
-    position: floor.position,
-    radius: 0.10
-});
-const springTop = new RadialSymmetricBody({
-    position: floor.position.clone().add(new Vec3(0, springRestLength, 0)),
-    radius: 0.10
-});
-const spring = springBottom.and(springTop);
+class Spring extends BodyPair {
+    constructor({
+        position = new Vec3(),
+        axis = new Vec3(0, 1, 0)
+    } = {}) {
+        super(
+            new Body({ position: position.clone() }),
+            new Body({ position: position.clone().add(axis) })
+        );
+        this._bondForce = new BondForce({
+            restLength: axis.length(),
+            k: 225
+        });
+    }
 
+    get force() { return this._bondForce; }
+}
 
 const hitsSpring = (ball) => ball.position.y < floor.position.y + springRestLength;
+const spring = new Spring({
+    position: floor.position,
+    axis: new Vec3(0, springRestLength, 0),
+});
 
 const helix = new Helix({
     coils: 15,
     thickness: 0.075,
-    color: "yellow"
+    color: "yellow",
+    radiusFunction: () => 0.1
 });
 const sphere = new Sphere({ color: "orange" });
 const velocityArrow = new Arrow({
@@ -70,10 +78,10 @@ Simulation
     .runsEvery(1.5e-3)
     .onStep((_, dt) => {
         if (hitsSpring(ball)) {
-            springTop.state.position.y = ball.position.y;
-            ball.and(springBottom).apply(bondForce);
+            spring.body2.state.position.y = ball.position.y;
+            ball.and(spring.body1).apply(spring.force);
         }
-        
+
         ball.apply(gravity);
         ball.apply(dragForce);
         ball.integrate(dt);
