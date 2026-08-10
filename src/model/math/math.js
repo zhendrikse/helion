@@ -159,6 +159,13 @@ export class Vec3 {
         return this;
     }
 
+    subVectors(a, b) {
+        this.x = a.x - b.x;
+        this.y = a.y - b.y;
+        this.z = a.z - b.z;
+        return this;
+    }
+
     divideScalar(s) {
         this.x /= s;
         this.y /= s;
