@@ -157,6 +157,22 @@ const electricArrow = new Arrow({
     magnitudeMap: magnitude => magnitude
 });
 
+const bondView1 = new SwitchableBondView({
+    bondType: SwitchableBondView.Type.Spring,
+    coils: 40,
+    thickness: 0.1,
+    tubularSegments: 750,
+    radiusFunction: pair => 0.15 * (pair.body1.radius + pair.body2.radius)
+});
+
+const bondView2 = new SwitchableBondView({
+    bondType: SwitchableBondView.Type.Spring,
+    coils: 40,
+    thickness: 0.1,
+    tubularSegments: 750,
+    radiusFunction: pair => 0.15 * (pair.body1.radius + pair.body2.radius)
+});
+
 Simulation
     .with({
         htmlDivId: "waterMoleculeContainer",
@@ -180,20 +196,8 @@ Simulation
     .bind(water.oxygen.alwaysWith(new Sphere({color: 0xff0000, segments: 36})))
     .bind(water.hydrogen1.alwaysWith(new Sphere({color: 0x0000ff, segments: 36})))
     .bind(water.hydrogen2.alwaysWith(new Sphere({color: 0x0000ff, segments: 36})))
-    .bind(water.oxygen.and(water.hydrogen1).alwaysWith(new SwitchableBondView({
-        bondType: SwitchableBondView.Type.Spring,
-        coils: 40,
-        thickness: 0.1,
-        tubularSegments: 750,
-        radiusFunction: pair => 0.15 * (pair.body1.radius + pair.body2.radius)
-    })))
-    .bind(water.oxygen.and(water.hydrogen2).alwaysWith(new SwitchableBondView({
-        bondType: SwitchableBondView.Type.Spring,
-        coils: 40,
-        thickness: 0.1,
-        tubularSegments: 750,
-        radiusFunction: pair => 0.15 * (pair.body1.radius + pair.body2.radius)
-    })))
+    .bind(water.oxygen.and(water.hydrogen1).alwaysWith(bondView1))
+    .bind(water.oxygen.and(water.hydrogen2).alwaysWith(bondView2))
     .bind(field.alwaysWith(electricArrow))
     .append(new RadioGroup()
         .add("0.25", () => field.frequency = 0.25)
@@ -201,5 +205,16 @@ Simulation
         .add("5.291", () => field.frequency = 5.291)
         .add("1.5",  () => field.frequency = 1.5)
         .add("2.76", () => field.frequency = 2.76)
+        .checked(0)
+    )
+    .append(new RadioGroup()
+        .add("Springs", () => {
+            bondView1.bondType = SwitchableBondView.Type.Spring;
+            bondView2.bondType = SwitchableBondView.Type.Spring;
+        })
+        .add("Cylinders", () => {
+            bondView1.bondType = SwitchableBondView.Type.Cylinder;
+            bondView2.bondType = SwitchableBondView.Type.Cylinder;
+        })
         .checked(0)
     );

@@ -116,6 +116,19 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
 const co2   = new CarbonDioxide();
 const field = new ElectricField(new Vec3(1.7 * SPACING, 0, 0), 200, 8.0);
 
+const bondView1 = new SwitchableBondView({
+    bondType: SwitchableBondView.Type.Spring,
+    thickness: 0.04,
+    tubularSegments: 750,
+    radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
+});
+const bondView2 = new SwitchableBondView({
+    bondType: SwitchableBondView.Type.Spring,
+    thickness: 0.04,
+    tubularSegments: 750,
+    radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
+});
+
 Simulation
     .with({
         htmlDivId: "carbonDioxideContainer",
@@ -139,18 +152,8 @@ Simulation
     .bind(co2.oxygen1.alwaysWith(new Sphere({ color: 0x00ff00, segments: 36 })))
     .bind(co2.oxygen2.alwaysWith(new Sphere({ color: 0x00ff00, segments: 36 })))
     .bind(co2.carbon.alwaysWith(new Sphere({ color: 0xff0000, segments: 36 })))
-    .bind(co2.oxygen1.and(co2.carbon).alwaysWith(new SwitchableBondView({
-        bondType: SwitchableBondView.Type.Spring,
-        thickness: 0.04,
-        tubularSegments: 750,
-        radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
-    })))
-    .bind(co2.oxygen2.and(co2.carbon).alwaysWith(new SwitchableBondView({
-        bondType: SwitchableBondView.Type.Spring,
-        thickness: 0.04,
-        tubularSegments: 750,
-        radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
-    })))
+    .bind(co2.oxygen1.and(co2.carbon).alwaysWith(bondView1))
+    .bind(co2.oxygen2.and(co2.carbon).alwaysWith(bondView2))
     .bind(field.alwaysWith(new Arrow({
         color: 0xff00ff,
         round: true,
@@ -163,4 +166,16 @@ Simulation
         .add("1.5 ", () => field.frequency = 1.5)
         .add("2.76 ", () => field.frequency = 2.76)
         .checked(0)
+    )
+    .append(new RadioGroup()
+        .add("Springs", () => {
+            bondView1.bondType = SwitchableBondView.Type.Spring;
+            bondView2.bondType = SwitchableBondView.Type.Spring;
+        })
+        .add("Cylinders", () => {
+            bondView1.bondType = SwitchableBondView.Type.Cylinder;
+            bondView2.bondType = SwitchableBondView.Type.Cylinder;
+        })
+        .checked(0)
     );
+
