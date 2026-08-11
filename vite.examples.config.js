@@ -54,6 +54,7 @@ export default defineConfig({
                 travelling_wave: path.resolve(__dirname, 'examples/waves/scenes/travelling_wave.js'),
                 vibrating_membrane: path.resolve(__dirname, 'examples/waves/scenes/vibrating_membrane.js'),
                 water_molecule: path.resolve(__dirname, 'examples/molecularphysics/scenes/water_molecule.js'),
+                water_sprinkler: path.resolve(__dirname, 'examples/nature/scenes/water_sprinkler.js'),
                 wave_scattering: path.resolve(__dirname, 'examples/waves/scenes/wave_scattering.js')
             },
             output: {
