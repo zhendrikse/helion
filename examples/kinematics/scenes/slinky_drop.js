@@ -1,6 +1,6 @@
 import {
-    RadialSymmetricBody, Simulation, Vec3, Sphere, Helix, Cylinder, BondForce, Floor, Vec2, AxialSymmetricBody,
-    UniformGravitationalForce
+    RadialSymmetricBody, Simulation, Vec3, Sphere, Helix, Cylinder, SpringForce, Floor, 
+    Vec2, AxialSymmetricBody, UniformGravitationalForce
 } from "../../../src/index.js";
 import {AmbientLight, DirectionalLight} from "three";
 
@@ -28,7 +28,7 @@ const ball3 = new RadialSymmetricBody({
     radius: 0.3
 });
 
-const bondForce = new BondForce({ k, restLength: L0 });
+const bondForce = new SpringForce({ k, restLength: L0 });
 const gravitationalForce = new UniformGravitationalForce();
 
 // Pole + stick

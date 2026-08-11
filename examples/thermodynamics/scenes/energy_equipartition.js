@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule,
-    BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, BondForce
+    BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, SpringForce
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -13,7 +13,7 @@ const radius = 31E-12;
 const distance = 2.5 * radius;
 
 const sphereSphereCollision = new SphereSphereCollision();
-const bondForce = new BondForce({
+const bondForce = new SpringForce({
     restLength: distance,
     k: 18600
 })

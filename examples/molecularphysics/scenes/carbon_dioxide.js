@@ -1,6 +1,6 @@
 import {
-    Vec3, Simulation, Sphere, SwitchableBondView, PairForce,
-    Arrow, RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField, CoulombForce, BondForce
+    Vec3, Simulation, Sphere, SwitchableBondView, PairForce, SpringForce, Force,
+    Arrow, RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField, CoulombForce
 } from "../../../src/index.js";
 
 const SPACING = 1.0E-10;
@@ -37,10 +37,63 @@ class ElectricField extends VectorField {
     set frequency(value) { this._frequency = value; }
 }
 
-class CarbonDioxide extends MathPhysicsModelBehavior {
-    constructor() {
+class BendForce extends Force {
+    constructor({ k, restLength }) {
         super();
-        const theta = 30 * Math.PI / 180;
+
+        this._k = k;
+        this._restLength = restLength;
+
+        this._v1 = new Vec3();
+        this._v2 = new Vec3();
+        this._sum = new Vec3();
+        this._force = new Vec3();
+    }
+
+    applyTo(bondPairs) {
+        const center = bondPairs.body1.body1;
+        const outer1 = bondPairs.body1.body2;
+        const outer2 = bondPairs.body2.body2;
+
+        this._v1.copy(outer1.position).sub(center.position); // v1 = O1 - C
+        this._v2.copy(outer2.position).sub(center.position); // v2 = O2 - C
+
+        const mag1 = this._v1.length();
+        const mag2 = this._v2.length();
+
+        if (mag1 <= 1e-20 || mag2 <= 1e-20)
+            return;
+
+        // angle = acos(dot(v1, -v2) / (|v1| |v2|))
+        //
+        // This is the deviation from linearity.
+        // Therefore: linear molecule -> angle = 0
+        const cosAngle = Math.max(-1, Math.min(
+            1,
+            -this._v1.dot(this._v2) / (mag1 * mag2)
+        ));
+
+        const angle = Math.acos(cosAngle);
+
+        // norm(v1 + v2)
+        this._sum.copy(this._v1).add(this._v2);
+        const sumLength = this._sum.length();
+        if (sumLength <= 1e-20)
+            return;
+
+        this._sum.multiplyScalar(1 / sumLength);
+
+        // torque_force = -kt * spacing * angle * norm(v1 + v2)
+        this._force.copy(this._sum).multiplyScalar(-this._k * this._restLength * angle);
+        outer1.force.add(this._force);
+        outer2.force.add(this._force);
+        center.force.addScaledVector(this._force, -2);
+    }
+}
+
+class CarbonDioxide extends MathPhysicsModelBehavior {
+    constructor(theta) {
+        super();
         const o1Pos = new Vec3(SPACING * Math.cos(theta), SPACING * Math.sin(theta), 0);
         const o2Pos = o1Pos.clone().negate();
 
@@ -70,6 +123,8 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
     get oxygen1() { return this._oxygen1; }
     get oxygen2() { return this._oxygen2; }
     get carbon()  { return this._carbon; }
+    get bond1() { return this._carbon.and(this._oxygen1); }
+    get bond2() { return this._carbon.and(this._oxygen2); }
 
     reset() {
         this._oxygen1.reset();
@@ -77,44 +132,24 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
         this._carbon.reset();
     }
 
-    update(eField, dt) {
-        const coulombForce = CoulombForce.in(eField);
-        const stretchForce = new BondForce({k: K, restLength: SPACING});
+    apply(force) {
+        this._oxygen1.apply(force);
+        this._oxygen2.apply(force);
+        this._carbon.apply(force);
+    }
 
-        const v1 = this._carbon.and(this._oxygen1).axis;
-        const v2 = this._carbon.and(this._oxygen2).axis;
-
-        // Deviation of angle from linearity: acos( dot(v1,-v2) / (|v1||v2|) )
-        const mag1 = v1.length();
-        const mag2 = v2.length();
-        let angle = 0;
-        if (mag1 > 1e-20 && mag2 > 1e-20) {
-            const cosA = Math.max(-1, Math.min(1, v1.dot(v2.clone().negate()) / (mag1 * mag2)));
-            angle = Math.acos(cosA);
-        }
-
-        const bend = v1.clone().add(v2);
-        const bendDir = bend.length() > 1e-20 ? bend.normalize() : new Vec3();
-
-        this._oxygen1.apply(coulombForce);
-        this._carbon.and(this._oxygen1).apply(stretchForce);
-        this._oxygen1.force.add(bendDir.clone().multiplyScalar(-this._kt * this._spacing * angle));
-
-        this._oxygen2.apply(coulombForce);
-        this._carbon.and(this._oxygen2).apply(stretchForce);
-        this._oxygen2.force.add(bendDir.clone().multiplyScalar(-this._kt * this._spacing * angle));
-
-        this._carbon.apply(coulombForce);
-        this._carbon.force.add(bendDir.clone().multiplyScalar(2 * this._kt * this._spacing * angle));
-
+    integrate(dt) {
         this._oxygen1.integrate(dt);
         this._oxygen2.integrate(dt);
         this._carbon.integrate(dt);
     }
 }
 
-const co2   = new CarbonDioxide();
-const field = new ElectricField(new Vec3(1.7 * SPACING, 0, 0), 200, 8.0);
+const co2   = new CarbonDioxide(30 * Math.PI / 180);
+const electricField = new ElectricField(new Vec3(1.7 * SPACING, 0, 0), 200, 8.0);
+const coulombForce = CoulombForce.in(electricField);
+const bondForce = new SpringForce({k: K, restLength: SPACING});
+const bendForce = new BendForce({k: KT, restLength: SPACING});
 
 const bondView1 = new SwitchableBondView({
     bondType: SwitchableBondView.Type.Spring,
@@ -129,6 +164,8 @@ const bondView2 = new SwitchableBondView({
     radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
 });
 
+const dt = 5e-13;
+let simulatedTime = 0;
 Simulation
     .with({
         htmlDivId: "carbonDioxideContainer",
@@ -139,32 +176,51 @@ Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .runsEvery(1e-13)
+    .runsEvery(2e-3)
     .substeps(2)
-    .onStep((clock, dt) => {
-        field.update(clock.simulatedTime);
-        co2.update(field, dt);
+    .onStep(() => {
+        electricField.update(simulatedTime);
+
+        // Coulomb forces
+        co2.oxygen1.apply(coulombForce);
+        co2.oxygen2.apply(coulombForce);
+        co2.carbon.apply(coulombForce);
+
+        // Bond stretching
+        co2.bond1.apply(bondForce);
+        co2.bond2.apply(bondForce);
+
+        // Angular / bending force
+        co2.bond1.and(co2.bond2).apply(bendForce);
+
+        // Integrate only after ALL forces have been accumulated
+        co2.oxygen1.integrate(dt);
+        co2.oxygen2.integrate(dt);
+        co2.carbon.integrate(dt);
+
+        simulatedTime += dt;
     })
     .onReset(() => {
         co2.reset();
-        field.update(0);
+        electricField.update(0);
+        simulatedTime = 0;
     })
     .bind(co2.oxygen1.alwaysWith(new Sphere({ color: 0x00ff00, segments: 36 })))
     .bind(co2.oxygen2.alwaysWith(new Sphere({ color: 0x00ff00, segments: 36 })))
     .bind(co2.carbon.alwaysWith(new Sphere({ color: 0xff0000, segments: 36 })))
     .bind(co2.oxygen1.and(co2.carbon).alwaysWith(bondView1))
     .bind(co2.oxygen2.and(co2.carbon).alwaysWith(bondView2))
-    .bind(field.alwaysWith(new Arrow({
+    .bind(electricField.alwaysWith(new Arrow({
         color: 0xff00ff,
         round: true,
         size: 1.0e-11,
         magnitudeMap: magnitude => magnitude
     })))
     .append(new RadioGroup()
-        .add("8 ", () => field.frequency = 8.0)
-        .add("5.291 ", () => field.frequency = 5.291)
-        .add("1.5 ", () => field.frequency = 1.5)
-        .add("2.76 ", () => field.frequency = 2.76)
+        .add("8 ", () => electricField.frequency = 8.0)
+        .add("5.291 ", () => electricField.frequency = 5.291)
+        .add("1.5 ", () => electricField.frequency = 1.5)
+        .add("2.76 ", () => electricField.frequency = 2.76)
         .checked(0)
     )
     .append(new RadioGroup()

@@ -23,7 +23,7 @@ export {
 } from "./view/2d/views.js";
 
 export {
-    Force, CoulombForce, LorentzForce, DragForce, UniformGravitationalForce, BondForce,
+    Force, CoulombForce, LorentzForce, DragForce, UniformGravitationalForce, SpringForce,
     GravitationalForce, G, EC, PairForce, FieldForce
 } from "./model/phys/forces.js";
 

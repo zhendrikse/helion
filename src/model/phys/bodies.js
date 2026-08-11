@@ -1,7 +1,7 @@
 import { Vec3} from "../math/math.js";
 import { Integrators } from "../math/numerics/integrators/integrators.js";
 import { MathPhysicsModelBehavior } from "../../core/helion.js";
-import {BondForce} from "./forces.js";
+import {SpringForce} from "./forces.js";
 
 export class PhysicsState {
     constructor({
@@ -131,8 +131,6 @@ export class Body extends MathPhysicsModelBehavior{
         this._force.set(0, 0, 0);
     }
 
-    and(otherBody) { return new BodyPair(this, otherBody) };
-
     positionVectorTo(other) { return other.position.clone().sub(this.position); }
     distanceToSquared(other) { return this.position.distanceSquaredTo(other.position); }
     distanceTo(other) { return this.position.distanceTo(other.position) }
@@ -237,7 +235,7 @@ export class Lattice extends MathPhysicsModelBehavior {
 
     connect(body1, body2, {k, restLength, damping}) {
         this._bonds.push(body1.and(body2));
-        this._bondForces.push(new BondForce({k, restLength, damping}));
+        this._bondForces.push(new SpringForce({k, restLength, damping}));
     }
 
     set bondForce(value) { this._bondForces.forEach(bond => bond.k = value); }

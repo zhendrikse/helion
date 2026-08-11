@@ -108,7 +108,7 @@ class UniformGravitationalField extends VectorField {
 }
 
 /**
- * Approximate (earth) gravitational field force F = ma by a uniform gravitational field.
+ * Approximate (earth) gravitational field force F = ma by a uniform gravitational field
  */
 export class UniformGravitationalForce extends FieldForce {
     constructor() {
@@ -121,9 +121,8 @@ export class UniformGravitationalForce extends FieldForce {
     }
 }
 
-
 /**
- * Newtonian gravity between two bodies:
+ * Newtonian gravity between a pair of two bodies:
  *
  *        m1 * m2
  *  F = G -------
@@ -145,7 +144,7 @@ export class GravitationalForce extends PairForce {
 /**
  * Hooke's law F = -k u between a pair of bodies.
  */
-export class BondForce extends PairForce {
+export class SpringForce extends PairForce {
     constructor({
         k = 200,
         restLength,

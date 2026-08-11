@@ -46,11 +46,14 @@ $$
 F = -c (u - u_0)
 $$
 
-For the angle potential, we have used:
-
+For the angle potential, we have:
+1. The angle is determined from **both bonds at the same time**.
+2. The force on both H-atoms is exact:
 $$
-U=\dfrac{1}{2}​k(\theta − \theta_0​)^2
+\overrightarrow{F}_H = k_t r_0 \left(\theta - \theta_0\right)\dfrac{\overrightarrow{v}_1 + \overrightarrow{v}_2}{\|\overrightarrow{v}_1 + \overrightarrow{v}_2\|}
 $$
+3. The oxygen atom gets the exact opposite sum $\overrightarrow{F}_O = -2\overrightarrow{F}_H$	​
+4. The `TorqueForce` has therefore to be apply to `water.bond1.and(water.bond2)`, not separately on `bond1` and `bond2`.
 
 Finally, for the electric force, we have used the Coulomb force:
 

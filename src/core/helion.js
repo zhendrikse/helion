@@ -1,10 +1,11 @@
 import { Hud } from "./hud.js";
 import { ThreeJsRenderer} from "../view/3d/renderer.js";
-import { Vector3} from "three";
-import { Axes} from "../view/3d/composite/backgrounds.js";
-import { generateUUID, Vec3} from "../model/math/math.js";
-import { UPlotGraph} from "./uplot.js";
-import {AxesUI, Button} from "./controls.js";
+import { Vector3 } from "three";
+import { Axes } from "../view/3d/composite/backgrounds.js";
+import { generateUUID, Vec3 } from "../model/math/math.js";
+import { BodyPair } from "../model/phys/bodies.js";
+import { UPlotGraph } from "./uplot.js";
+import { AxesUI, Button } from "./controls.js";
 
 export class Registry {
     constructor({
@@ -42,6 +43,10 @@ export class MathPhysicsModelBehavior {
         transformation.applyTo(this);
         return this;
     }
+
+    and(otherBody) { 
+        return new BodyPair(this, otherBody) 
+    };
 
     reset() {}
 }

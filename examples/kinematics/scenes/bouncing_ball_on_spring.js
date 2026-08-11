@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix,
-    Slider, Range, UniformGravitationalForce, BondForce, DragForce, Body, BodyPair
+    Slider, Range, UniformGravitationalForce, SpringForce, DragForce, Body, BodyPair
 } from "../../../src/index.js";
 import {MathPhysicsModelBehavior} from "../../../src/core/helion.js";
 
@@ -31,7 +31,7 @@ class Spring extends BodyPair {
             new Body({ position: position.clone() }),
             new Body({ position: position.clone().add(axis) })
         );
-        this._bondForce = new BondForce({
+        this._bondForce = new SpringForce({
             restLength: axis.length(),
             k: 225
         });
