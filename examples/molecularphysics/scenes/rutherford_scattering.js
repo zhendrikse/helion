@@ -89,7 +89,7 @@ const dt = 5e-23; // Physical timestep, independent of Simulation.runsEvery()
 const simulation = Simulation
     .with({
         htmlDivId: "rutherfordScatteringContainer",
-        cameraPosition: new Vec3(0, 0, 5),
+        cameraPosition: new Vec3(0, 0, 5.25),
         fieldOfView: 40,
         scale: 1 / X_MAX,
         headUpDisplay: true
