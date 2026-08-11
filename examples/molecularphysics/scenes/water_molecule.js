@@ -170,12 +170,6 @@ class Water extends MathPhysicsModelBehavior {
         this._hydrogen1.apply(force);
         this._hydrogen2.apply(force);
     }
-
-    integrate(dt) {
-        this._oxygen.integrate(dt);
-        this._hydrogen1.integrate(dt);
-        this._hydrogen2.integrate(dt);
-    }
 }
 
 const bondAngle = 105 * Math.PI / 180;
@@ -224,11 +218,7 @@ Simulation
     .substeps(5)
     .onStep(() => {
         electricField.update(simulatedTime);
-
-        // Coulomb forces
-        water.hydrogen1.apply(coulombForce);
-        water.hydrogen2.apply(coulombForce);
-        water.oxygen.apply(coulombForce);
+        water.apply(coulombForce);
 
         // Bond stretching
         water.bond1.apply(bondForce);
@@ -238,10 +228,7 @@ Simulation
         water.bond1.and(water.bond2).apply(torqueForce);
 
         // Integrate only after ALL forces have been applied.
-        water.hydrogen1.integrate(dt);
-        water.hydrogen2.integrate(dt);
-        water.oxygen.integrate(dt);
-
+        water.integrate(dt);
         simulatedTime += dt;
     })
     .onReset(() => {

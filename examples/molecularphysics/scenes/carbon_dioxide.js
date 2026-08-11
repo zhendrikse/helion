@@ -180,11 +180,7 @@ Simulation
     .substeps(2)
     .onStep(() => {
         electricField.update(simulatedTime);
-
-        // Coulomb forces
-        co2.oxygen1.apply(coulombForce);
-        co2.oxygen2.apply(coulombForce);
-        co2.carbon.apply(coulombForce);
+        co2.apply(coulombForce);
 
         // Bond stretching
         co2.bond1.apply(bondForce);
@@ -193,11 +189,7 @@ Simulation
         // Angular / bending force
         co2.bond1.and(co2.bond2).apply(bendForce);
 
-        // Integrate only after ALL forces have been accumulated
-        co2.oxygen1.integrate(dt);
-        co2.oxygen2.integrate(dt);
-        co2.carbon.integrate(dt);
-
+        co2.integrate(dt);
         simulatedTime += dt;
     })
     .onReset(() => {
