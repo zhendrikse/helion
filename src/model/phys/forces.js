@@ -135,10 +135,10 @@ export class GravitationalForce extends PairForce {
     }
 
     _calculateForceOn(twoBodies) {
-        const radius = twoBodies.body1.positionVectorTo(twoBodies.body2);
-        const rSquared = twoBodies.body1.distanceToSquared(twoBodies.body2);
+        const radius = twoBodies.axis;
+        const rSquared = radius.dot(radius);
         this._forceVector.copy(
-            radius.normalize().multiplyScalar(G * twoBodies.body1.mass * twoBodies.body2.mass / rSquared));
+            radius.negate().normalize().multiplyScalar(G * twoBodies.body1.mass * twoBodies.body2.mass / rSquared));
     }
 }
 
