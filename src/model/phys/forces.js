@@ -8,6 +8,7 @@ import {VectorField} from "../math/fields.js";
 export const G = 6.67e-11; // Gravitational constant
 export const EC = 1.6e-19; // Coulomb charge
 export const g = 9.81;
+export const K = 9e9;
 
 export class Force extends Transformation {
     constructor() {
@@ -156,7 +157,6 @@ export class SpringForce extends PairForce {
         this._damping = damping;
     }
 
-    get restLength() { return this._restLength; }
     set damping(damping) { this._damping = damping; }
     set k(bondConstant) { this._k = bondConstant; }
 
@@ -177,5 +177,30 @@ export class SpringForce extends PairForce {
                 .multiplyScalar(this._damping);
             this._forceVector.sub(dampingForce);
         }
+    }
+}
+
+/**
+ * Coulomb pair force:
+ *
+ *     k * q1 * q2 * r
+ * F = ---------------
+ *     |r| * |r| * |r|
+ */
+export class CoulombPairForce extends PairForce {
+    constructor() {
+        super();
+        this._r = new Vec3();
+    }
+
+    _calculateForceOn(pair) {
+        this._r.copy(pair.axis);
+        const r2 = this._r.lengthSq();
+        if (r2 <= 0)
+            return;
+
+        const r = Math.sqrt(r2);
+        const magnitude = K * pair.body1.charge * pair.body2.charge / (r2 * r);
+        this._forceVector.copy(this._r).multiplyScalar(magnitude);
     }
 }

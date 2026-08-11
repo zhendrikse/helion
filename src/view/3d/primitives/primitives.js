@@ -63,6 +63,7 @@ export class Trail extends Renderable3D {
     initialize(body) {
         this._previousPosition = body.position.clone();
         this._renew();
+        this.startAt(body.position);
     }
 
     canBindTo(model) {
@@ -72,6 +73,12 @@ export class Trail extends Renderable3D {
     reset() {
         this.dispose();
         this._renew();
+    }
+
+    startAt(position) {
+        this._trailAccumulator = 0;
+        this._previousPosition.copy(position);
+        this._trail.addPoint(position);
     }
 
     synchronizeWith(body) {
@@ -95,6 +102,13 @@ export class Trail extends Renderable3D {
             linewidth: this._lineWidth
         });
         this.add(this._trail._line);
+    }
+
+    set color(value) {
+        this._color = value;
+
+        if (this._trail?._line?.material)
+            this._trail._line.material.color.set(value);
     }
 
     dispose() {

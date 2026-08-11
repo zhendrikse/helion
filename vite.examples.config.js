@@ -40,6 +40,7 @@ export default defineConfig({
                 proton_in_magnetic_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_in_magnetic_field.js'),
                 raindrops: path.resolve(__dirname, 'examples/nature/scenes/raindrops.js'),
                 real_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/real_surfaces.js'),
+                rutherford_scattering: path.resolve(__dirname, 'examples/molecularphysics/scenes/rutherford_scattering.js'),
                 saturn: path.resolve(__dirname, 'examples/astrophysics/scenes/planets/saturn.js'),
                 slinky_drop: path.resolve(__dirname, 'examples/kinematics/scenes/slinky_drop.js'),
                 solenoid: path.resolve(__dirname, 'examples/electromagnetism/scenes/solenoid.js'),

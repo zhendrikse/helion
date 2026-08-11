@@ -15,7 +15,10 @@ export class Sun extends RadialSymmetricBody {
 
 export class Planet extends RadialSymmetricBody {
     constructor(planetData) {
-        super({mass: planetData.mass, radius: planetData.radius});
+        super({
+            mass: planetData.mass,
+            radius: planetData.radius
+        });
         this._tilt = planetData.tilt;
         this._spin = planetData.spin;
     }
