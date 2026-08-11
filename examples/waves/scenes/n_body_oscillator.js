@@ -1,16 +1,17 @@
 import {
-    Vec3, Simulation, Sphere, Floor, SwitchableBondView,
+    Vec3, Simulation, Sphere, Floor, SwitchableBondView, Transformation,
     Slider, Range, Vec2, ChainTopology, Lattice, LatticeView
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
-class InitialDisplacement {
+class InitialDisplacement extends Transformation {
     constructor(displacement = new Vec3(7, 0, 0)) {
+        super();
         this._displacement = displacement;
         this._done = false;
     }
 
-    apply(lattice) {
+    applyTo(lattice) {
         if (this._done)
             return;
 
@@ -45,7 +46,7 @@ const latticeView = LatticeView.from({
         color: "red"
     },
     bondArgs: {
-        thickness: 0.04,
+        thickness: 0.075,
         tubularSegments: 500,
         coils: 30,
         color: 0xffff4d,
