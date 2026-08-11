@@ -40,24 +40,92 @@ See below how frantically a water molecule may respond to an alternating electri
 ### Model and implementation
 <div class="header_line"></div>
 
-For the bond potential, we have used Hooke's law:
+The water molecule is modeled as a three-body system consisting of one oxygen atom and two hydrogen atoms.
+
+For the bond potential, we use Hooke's law:
 
 $$
-F = -c (u - u_0)
+\overrightarrow{F}=-k\left(r-r_0\right)\hat{\mathbf{r}}
 $$
 
-For the angle potential, we have:
-1. The angle is determined from **both bonds at the same time**.
-2. The force on both H-atoms is exact:
-$$
-\overrightarrow{F}_H = k_t r_0 \left(\theta - \theta_0\right)\dfrac{\overrightarrow{v}_1 + \overrightarrow{v}_2}{\|\overrightarrow{v}_1 + \overrightarrow{v}_2\|}
-$$
-3. The oxygen atom gets the exact opposite sum $\overrightarrow{F}_O = -2\overrightarrow{F}_H$	​
-4. The `TorqueForce` has therefore to be apply to `water.bond1.and(water.bond2)`, not separately on `bond1` and `bond2`.
+where $r$ is the current bond length and $r_0$ is the equilibrium bond length.
 
-Finally, for the electric force, we have used the Coulomb force:
+For the angular interaction, the angle is determined from **both bonds simultaneously**. Let
 
 $$
-\overrightarrow{F} = q\overrightarrow{E}
+\overrightarrow{v}_1= \overrightarrow{r}_{H_1}-
+\overrightarrow{r}_{O}
 $$
+
+and
+
+$$
+\overrightarrow{v}_2= \overrightarrow{r}_{H_2}-
+\overrightarrow{r}_{O}
+$$
+
+The molecular angle is
+
+$$
+\theta = \arccos
+\left(
+\frac{
+\overrightarrow{v}_1\cdot\overrightarrow{v}_2
+}{
+|\overrightarrow{v}_1| |\overrightarrow{v}_2|
+}
+\right)
+$$
+
+The angular force is directed along the normalized bisector of the two bonds:
+
+$$
+\hat{\mathbf{b}} =\frac{
+\overrightarrow{v}_1+\overrightarrow{v}_2
+}{
+|\overrightarrow{v}_1+\overrightarrow{v}_2|
+}
+$$
+
+The force applied to each hydrogen atom is
+
+$$
+\boxed{
+\overrightarrow{F}_H=k_t r_0
+\left(\theta-\theta_0\right)
+\hat{\mathbf{b}}
+}
+$$
+
+where $\theta_0$ is the equilibrium bond angle.
+
+Since the two hydrogen atoms receive the same angular force, the corresponding force on the oxygen atom is
+
+$$
+\boxed{
+\overrightarrow{F}_O=-2\overrightarrow{F}_H
+}
+$$
+
+This ensures that the total angular force on the molecule is zero.
+
+The angular interaction is therefore a **three-body force**: it depends on both bonds at the same time. Consequently, the `TorqueForce` must be applied to the pair
+
+```js
+water.bond1.and(water.bond2)
+```
+
+rather than independently to `bond1` and `bond2`.
+
+Finally, the interaction with the external electric field is modeled using the electric force
+
+$$
+\boxed{
+\overrightarrow{F}=q\overrightarrow{E}
+}
+$$
+
+where $q$ is the charge of the atom and $\overrightarrow{E}$ is the local electric field.
+
+At each simulation step, all forces are first accumulated on the three atoms. The atoms are then integrated only after all forces have been applied. This mirrors the force/update structure of the original VPython model while allowing the JavaScript implementation to handle the interactions through its force framework.
 

@@ -39,25 +39,91 @@ Discover which frequencies the molecule responds to and if so, how.
 <p style="clear: both;"></p>
 
 ### Model and implementation
+
 <div class="header_line"></div>
 
-For the bond potential, we have used Hooke's law:
+The carbon dioxide molecule is modeled as a three-body system consisting of one carbon atom and two oxygen atoms.
+
+The equilibrium configuration is linear, with the carbon atom between the two oxygen atoms.
+
+For the bond potential, we use Hooke's law:
 
 $$
-F = -c (u - u_0)
+\overrightarrow{F}=-k\left(r-r_0\right)\hat{\mathbf{r}}
 $$
 
-For the angle potential, we have used:
+where $r$ is the current bond length and $r_0$ is the equilibrium bond length.
+
+For the angular interaction, let
 
 $$
-U=\dfrac{1}{2}​k(\theta − \theta_0​)^2
+\overrightarrow{v}_1=\overrightarrow{r}_{O_1}-
+\overrightarrow{r}_{C}
 $$
 
-Finally, for the electric force, we have used the Coulomb force:
+and
 
 $$
-\overrightarrow{F} = q\overrightarrow{E}
+\overrightarrow{v}_2 = \overrightarrow{r}_{O_2}-
+\overrightarrow{r}_{C}
 $$
+
+Because the equilibrium configuration is linear, the angular displacement is measured as the deviation from a straight line:
+
+$$
+\theta = \arccos
+\left(
+\frac{
+\overrightarrow{v}_1\cdot(-\overrightarrow{v}_2)
+}{
+|\overrightarrow{v}_1| |\overrightarrow{v}_2|
+}
+\right)
+$$
+
+Thus, $\theta=0$ corresponds to a perfectly linear molecule. A bent molecule has $\theta>0$.
+
+The direction of the bending force is determined from the sum of the two bond vectors:
+
+$$
+\hat{\mathbf{b}}=\frac{
+\overrightarrow{v}_1+\overrightarrow{v}_2
+}{
+|\overrightarrow{v}_1+\overrightarrow{v}_2|
+}
+$$
+
+The force applied to each oxygen atom is
+
+$$
+\boxed{
+\overrightarrow{F}_O = -k_t r_0\theta \hat{\mathbf{b}}
+}
+$$
+
+while the carbon atom receives the compensating force
+
+$$
+\boxed{\overrightarrow{F}_C =-2\overrightarrow{F}_O}
+$$
+
+The angular interaction is therefore a **three-body force**: the force on each atom depends on the positions of both bonds simultaneously. In the JavaScript implementation, the bending force is consequently applied to both bonds together:
+
+```js
+co2.bond1.and(co2.bond2).apply(bendForce);
+```
+
+This implementation follows the force formulation used in the original VPython CO₂ example. In particular, the angular displacement is defined as the deviation from linearity rather than as the difference from an equilibrium angle of $\pi$.
+
+Finally, the interaction with the external electric field is modeled using the electric force
+
+$$
+\boxed{\overrightarrow{F} = q\overrightarrow{E}}
+$$
+
+where $q$ is the charge of the atom and $\overrightarrow{E}$ is the local electric field.
+
+At each simulation step, the Coulomb, bond-stretching, and angular forces are first accumulated on all three atoms. Only after all forces have been applied are the atoms integrated forward in time. This preserves the same force/update structure as the original VPython model while using the JavaScript force framework.
 
 
 
