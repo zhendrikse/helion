@@ -43,7 +43,6 @@ class ElectricField extends VectorField {
     }
 }
 
-
 /**
  * TorqueForce force F = k * (theta - theta0) * u, where u is the unit 
  * vector along the bisector of the two bonds. The force is applied to 
@@ -65,7 +64,7 @@ class TorqueForce extends Force {
         this._bisector = new Vec3();
     }
 
-    applyTo(bondPairs) {
+    _calculateForceOn(bondPairs) {
         const center = bondPairs.body1.body1;
         const outer1 = bondPairs.body1.body2;
         const outer2 = bondPairs.body2.body2;
@@ -94,13 +93,14 @@ class TorqueForce extends Force {
         this._bisector.multiplyScalar(1 / bisectorLength);
 
         // torque_force = kt * spacing * (angle - bond_angle) * norm(v1 + v2)
-        this._force.copy(
-            this._bisector).multiplyScalar(this._k * this._restLength * (angle - this._restAngle)
-        );
+        this._forceVector.copy(this._bisector).multiplyScalar(this._k * this._restLength * (angle - this._restAngle));
+    }
 
-        outer1.force.add(this._force);
-        outer2.force.add(this._force);
-        center.force.addScaledVector(this._force, -2);
+    applyTo(bondPairs) {
+        this._calculateForceOn(bondPairs);
+        bondPairs.body1.body2.force.add(this._forceVector);
+        bondPairs.body2.body2.force.add(this._forceVector);
+        bondPairs.body1.body1.force.addScaledVector(this._forceVector, -2);
     }
 }
 

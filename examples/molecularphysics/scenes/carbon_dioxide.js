@@ -50,7 +50,7 @@ class BendForce extends Force {
         this._force = new Vec3();
     }
 
-    applyTo(bondPairs) {
+    _calculateForceOn(bondPairs) {
         const center = bondPairs.body1.body1;
         const outer1 = bondPairs.body1.body2;
         const outer2 = bondPairs.body2.body2;
@@ -84,10 +84,14 @@ class BendForce extends Force {
         this._sum.multiplyScalar(1 / sumLength);
 
         // torque_force = -kt * spacing * angle * norm(v1 + v2)
-        this._force.copy(this._sum).multiplyScalar(-this._k * this._restLength * angle);
-        outer1.force.add(this._force);
-        outer2.force.add(this._force);
-        center.force.addScaledVector(this._force, -2);
+        this._forceVector.copy(this._sum).multiplyScalar(-this._k * this._restLength * angle);
+    }
+
+    applyTo(bondPairs) {
+        this._calculateForceOn(bondPairs);
+        bondPairs.body1.body2.force.add(this._forceVector);
+        bondPairs.body2.body2.force.add(this._forceVector);
+        bondPairs.body1.body1.force.addScaledVector(this._forceVector, -2);
     }
 }
 
