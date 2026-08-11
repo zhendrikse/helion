@@ -176,7 +176,7 @@ Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .runsEvery(2e-3)
+    .runsEvery(1e-2)
     .substeps(2)
     .onStep(() => {
         electricField.update(simulatedTime);

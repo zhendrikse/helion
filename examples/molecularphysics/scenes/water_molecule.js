@@ -214,13 +214,13 @@ Simulation
     .with({
         htmlDivId: "waterMoleculeContainer",
         scale: SCALE,
-        cameraPosition: new Vec3(3, 1.5, 3),
+        cameraPosition: new Vec3(3, 0, 3),
         fieldOfView: 40,
         parameterMenuCollapsed: false,
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .runsEvery(2e-3)
+    .runsEvery(2.5e-3)
     .substeps(5)
     .onStep(() => {
         electricField.update(simulatedTime);
