@@ -2,11 +2,8 @@ import { Vec3 } from "../math/math.js";
 import { Transformation} from "../../core/helion.js";
 import {VectorField} from "../math/fields.js";
 
-//
-// Constants
-//
-export const G = 6.67e-11; // Gravitational constant
-export const EC = 1.6e-19; // Coulomb charge
+export const G = 6.67e-11;   // Gravitational constant
+export const EC = 1.602E-19; // Coulomb charge
 export const g = 9.81;
 export const K = 9e9;
 

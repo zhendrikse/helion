@@ -1,13 +1,12 @@
 import {
-    Vec3, Simulation, Sphere, SwitchableBondView, PairForce, SpringForce, Force,
+    Vec3, Simulation, Sphere, SwitchableBondView, EC, SpringForce, Force,
     Arrow, RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField, CoulombForce
 } from "../../../src/index.js";
 
-const SPACING = 1.0E-10;
-const K      = 8.0E-4;
-const KT     = 3.0E-5;
-const U      = 1.660E-27;
-const Q      = 1.602E-19;
+const BOND_LENGTH     = 1.0E-10;
+const BOND_CONSTANT   = 8.0E-4;
+const ANGLE_CONSTANT  = 3.0E-5;
+const ATOMIC_MASS_UNIT= 1.660E-27;
 const RADIUS = 3.0E-11;
 const SCALE  = 1e10; 
 
@@ -24,7 +23,7 @@ class ElectricField extends VectorField {
     update(time) {
         this._time = time;
         const omega = this._frequency * 2 * Math.PI * 1.00001E10;
-        this._axis.set( 0, 0.5 * SPACING * Math.cos(this._time * omega), 0 ); 
+        this._axis.set( 0, 0.5 * BOND_LENGTH * Math.cos(this._time * omega), 0 ); 
     }
 
     sample(position, target) {
@@ -98,25 +97,25 @@ class BendForce extends Force {
 class CarbonDioxide extends MathPhysicsModelBehavior {
     constructor(theta) {
         super();
-        const o1Pos = new Vec3(SPACING * Math.cos(theta), SPACING * Math.sin(theta), 0);
+        const o1Pos = new Vec3(BOND_LENGTH * Math.cos(theta), BOND_LENGTH * Math.sin(theta), 0);
         const o2Pos = o1Pos.clone().negate();
 
         this._oxygen1 = new RadialSymmetricBody({
             position: o1Pos,
-            mass: 16 * U,
+            mass: 16 * ATOMIC_MASS_UNIT,
             radius: RADIUS,
-            charge: Q
+            charge: EC
         });
         this._oxygen2 = new RadialSymmetricBody({
             position: o2Pos,
-            mass: 16 * U,
+            mass: 16 * ATOMIC_MASS_UNIT,
             radius: RADIUS,
-            charge: Q
+            charge: EC
         });
         this._carbon = new RadialSymmetricBody({
-            mass: 12 * U,
+            mass: 12 * ATOMIC_MASS_UNIT,
             radius: 0.8 * RADIUS,
-            charge: -2 * Q
+            charge: -2 * EC
         });
     }
 
@@ -147,10 +146,10 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
 }
 
 const co2   = new CarbonDioxide(30 * Math.PI / 180);
-const electricField = new ElectricField(new Vec3(1.7 * SPACING, 0, 0), 200, 8.0);
+const electricField = new ElectricField(new Vec3(1.7 * BOND_LENGTH, 0, 0), 200, 8.0);
 const coulombForce = CoulombForce.in(electricField);
-const bondForce = new SpringForce({k: K, restLength: SPACING});
-const bendForce = new BendForce({k: KT, restLength: SPACING});
+const bondForce = new SpringForce({k: BOND_CONSTANT, restLength: BOND_LENGTH});
+const bendForce = new BendForce({k: ANGLE_CONSTANT, restLength: BOND_LENGTH});
 
 const bondView1 = new SwitchableBondView({
     bondType: SwitchableBondView.Type.Spring,

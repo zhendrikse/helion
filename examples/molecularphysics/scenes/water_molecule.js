@@ -1,13 +1,12 @@
 import {
     Vec3, Simulation, Sphere, SwitchableBondView, Arrow, RadioGroup, RadialSymmetricBody,
-    MathPhysicsModelBehavior, VectorField, CoulombForce, SpringForce, Force
+    MathPhysicsModelBehavior, VectorField, CoulombForce, SpringForce, Force, EC
 } from "../../../src/index.js";
 
 const BOND_LENGTH   = 1.0E-10;
 const BOND_CONSTANT = 5.0E-6;       // Spring constant
 const ANGLE_CONSTANT= 5.0E-6;       // Bend constant
 const ATOMIC_MASS_UNIT= 1.660E-27;
-const Q             = 1.602E-19;
 const OXYGEN_RADIUS = 1.2 * 3.0E-11;
 const HYDROGEN_RADIUS = 0.4 * 3.0e-11;
 const WATER_ANGLE = 105 * Math.PI / 180;
@@ -121,21 +120,21 @@ class Water extends MathPhysicsModelBehavior {
             position: oxygenPosition,
             mass: 16 * ATOMIC_MASS_UNIT ,
             radius: OXYGEN_RADIUS,
-            charge: -2 * Q
+            charge: -2 * EC
         });
 
         this._hydrogen1 = new RadialSymmetricBody({
             position: hydrogen1Position,
-            mass: 1 * ATOMIC_MASS_UNIT ,
+            mass: ATOMIC_MASS_UNIT ,
             radius: HYDROGEN_RADIUS,
-            charge: Q
+            charge: EC
         });
 
         this._hydrogen2 = new RadialSymmetricBody({
             position: hydrogen2Position,
-            mass: 1 * ATOMIC_MASS_UNIT ,
+            mass: ATOMIC_MASS_UNIT ,
             radius: HYDROGEN_RADIUS,
-            charge: Q
+            charge: EC
         });
     }
 
