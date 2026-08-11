@@ -1,14 +1,15 @@
 import {
-    Vec3, Simulation, Sphere, Floor, SwitchableBondView,
+    Vec3, Simulation, Sphere, Floor, SwitchableBondView, Transformation,
     Slider, Range, Vec2, Lattice, LatticeView, ChainTopology
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
-class BoundaryCondition {
+class BoundaryCondition extends Transformation {
     constructor({
         amplitude = 0.8,
         omega = 45,
     } = {}) {
+        super();
         this._amplitude = amplitude;
         this._omega = omega;
     }
@@ -20,10 +21,7 @@ class BoundaryCondition {
             firstBall.state.position.y = this._amplitude * Math.sin(this._omega * t);
     }
 
-    get pulseDuration() {
-        return 2 * Math.PI / this._omega;
-    }
-
+    get pulseDuration() { return 2 * Math.PI / this._omega; }
     set omega(value) { this._omega = value; }
     set amplitude(value) { this._amplitude = value; }
 }

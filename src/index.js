@@ -39,7 +39,7 @@ export { Saturn } from "./view/3d/astro/saturn.js";
 export { Planets, Sun } from "./model/phys/planets.js";
 export { WaveEquationSolver, SchrodingerSolver } from "./model/math/numerics/solvers/solvers.js";
 export { DropdownMenu, Checkbox, Button, Slider, RadioGroup } from "./core/controls.js";
-export { Simulation, Registry, MathPhysicsModelBehavior } from "./core/helion.js";
+export { Simulation, Registry, MathPhysicsModelBehavior, Transformation } from "./core/helion.js";
 export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail } from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";

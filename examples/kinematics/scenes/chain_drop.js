@@ -175,9 +175,14 @@ const simulation = Simulation
     .substeps(20)
     .onStep(() => {
         chain.update(physicsDt);
+        simulationTime += physicsDt;
+    })
+    .onFrame(() => {
         const endBall = chain.endBall;
         acceleration = endBall.force.y / endBall.mass;
-        simulationTime += physicsDt;
+        const plotData = [simulationTime];
+        plotData.push(acceleration);
+        simulation.plot(plotData);
     })
     .bind(table.onceWith(new Box({ color: 0x888888, opacity: 0.3 })))
     .append(
@@ -208,13 +213,6 @@ for (const bond of chain.bonds)
             color: 0xffff66
         }))
     );
-
-/**
- * Acceleration graph.
- *
- * The exact dataDefinition format depends on the
- * UPlotGraph implementation used by Helion.
- */
 
 simulation.setupGraphWith({
     dataDefinition: [
