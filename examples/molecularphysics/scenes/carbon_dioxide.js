@@ -114,10 +114,6 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
             radius: 0.8 * RADIUS,
             charge: -2 * Q
         });
-
-        this._kt      = KT;      // Longitudinal / torsion bond constant
-        this._spacing = SPACING;
-        this._theta   = theta;
     }
 
     get oxygen1() { return this._oxygen1; }
@@ -136,6 +132,7 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
         this._oxygen1.apply(force);
         this._oxygen2.apply(force);
         this._carbon.apply(force);
+        return this;
     }
 
     integrate(dt) {
@@ -180,16 +177,13 @@ Simulation
     .substeps(2)
     .onStep(() => {
         electricField.update(simulatedTime);
-        co2.apply(coulombForce);
 
-        // Bond stretching
+        co2.apply(coulombForce);
         co2.bond1.apply(bondForce);
         co2.bond2.apply(bondForce);
-
-        // Angular / bending force
         co2.bond1.and(co2.bond2).apply(bendForce);
-
         co2.integrate(dt);
+
         simulatedTime += dt;
     })
     .onReset(() => {
