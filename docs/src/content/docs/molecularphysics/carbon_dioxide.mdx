@@ -38,6 +38,27 @@ Discover which frequencies the molecule responds to and if so, how.
 <script type="module" src={import.meta.env.BASE_URL + "examples/carbon_dioxide.js"}></script>
 <p style="clear: both;"></p>
 
+### Model and implementation
+<div class="header_line"></div>
+
+For the bond potential, we have used Hooke's law:
+
+$$
+F = -c (u - u_0)
+$$
+
+For the angle potential, we have used:
+
+$$
+U=\dfrac{1}{2}​k(\theta − \theta_0​)^2
+$$
+
+Finally, for the electric force, we have used the Coulomb force:
+
+$$
+\overrightarrow{F} = q\overrightarrow{E}
+$$
+
 
 
 
