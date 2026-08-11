@@ -37,3 +37,99 @@ $$
 
 <div id="waterSprinklerContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/water_sprinkler.js"}></script>
+
+### Model and implementation
+
+<div class="header_line"></div>
+
+The sprinkler consists of a rotating arm with two outlets at opposite ends.
+Water droplets are released periodically from these outlets and then move
+freely with constant velocity.
+
+The sprinkler rotates about the $z$-axis with angular velocity
+
+$$
+\boldsymbol{\omega} =\omega\hat{\mathbf{z}}
+$$
+
+If $\theta$ denotes the current rotation angle, the position of an outlet
+relative to the center is
+
+$$
+\overrightarrow{r}=\frac{L}{2}
+\begin{pmatrix}
+\cos\theta \\
+\sin\theta
+\end{pmatrix}
+$$
+
+where $L$ is the length of the sprinkler arm.
+
+The velocity of an outlet due to the rotation of the sprinkler is the tangential velocity
+
+$$
+\overrightarrow{v}_{\mathrm{tan}}=-\overrightarrow{r}\times\boldsymbol{\omega}
+$$
+
+When a droplet leaves the sprinkler, it also receives a radial velocity component.
+Its magnitude is controlled by the water velocity parameter:
+
+$$
+\overrightarrow{v}_{\mathrm{rad}}=a v_w \hat{\mathbf{r}},
+$$
+
+where $v_w$ is the water velocity and
+
+$$
+a=\begin{cases}
++1 & \text{for outward flow}\\
+-1 & \text{for inward flow}.
+\end{cases}
+$$
+
+The initial velocity of a released droplet is therefore
+
+$$
+\boxed{
+\overrightarrow{v}_0= -\overrightarrow{r}\times\boldsymbol{\omega}+a v_w \hat{\mathbf{r}}
+}
+$$
+
+and the droplet subsequently moves with constant velocity:
+
+$$
+\boxed{
+\overrightarrow{r}(t)=\overrightarrow{r}_0+\overrightarrow{v}_0t
+}
+$$
+
+No forces are applied to the droplets after they leave the sprinkler.
+In particular, gravity is not included in this model.
+The simulation therefore represents the kinematics of the rotating sprinkler
+and the emitted water rather than a complete model of a physical water sprinkler.
+
+### Droplet management
+
+The simulation uses a fixed pool of droplets rather than continuously creating new objects.
+Each `WaterBeam` owns a pool of reusable droplets. When a droplet leaves the visible region,
+it becomes inactive and can be reused for a subsequent emission.
+
+This avoids continuously allocating and discarding objects while the simulation is running.
+The views remain bound to the droplets throughout the simulation; an inactive droplet is
+simply hidden.
+
+### Time stepping
+
+The physical timestep used to update the sprinkler and the droplets is independent
+of the rendering/update interval specified by `Simulation.runsEvery()`.
+
+At every simulation step, the droplets are first advanced using their constant velocities,
+new droplets are released according to the emission frequency, and the sprinkler
+angle is advanced according to
+
+$$
+\theta \leftarrow \theta+\omega \Delta t
+$$
+
+The fixed physical timestep allows the same model to evolve consistently on different devices,
+while `Simulation.runsEvery()` controls how frequently the simulation is visually updated.
