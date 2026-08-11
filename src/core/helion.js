@@ -278,6 +278,12 @@ export class Simulation {
         STARS: "Stars"
     });
 
+    static Status = Object.freeze({
+        RUNNING: "Running",
+        PAUSED: "Paused",
+        STOPPED: "Stopped",
+    })
+
     static viewportFromHtmlDiv = (htmlDiv, parameterMenuCollapsed) => {
         let canvasWrapper;
         if (htmlDiv)
@@ -321,7 +327,7 @@ export class Simulation {
         this._plot = null;                   // No plot by default
         this._hud = null;                    // No head-up display by default
         this._onReset = () => {};            // Callback function for client when a reset happens
-        this._running = false;
+        this._status = Simulation.Status.STOPPED;
         this._axesUI = null;
 
         this._timeScale = 1;
@@ -475,7 +481,7 @@ export class Simulation {
     }
 
     animate = (timeStamp) => {
-        if (this._running) {
+        if (this._status === Simulation.Status.RUNNING) {
             if (this._maxPerformanceFunction) {
                 if (timeStamp - this._lastTime > 1000) // Update iterations per RAF every second
                     this._tuneIterationsPerFrame(timeStamp);
@@ -571,36 +577,35 @@ export class Simulation {
      * When calling this function with a custom callback, the default start/stop functionality is
      * lost and needs to be re-added if needed!!
      */
-    withMouseClickEventListener(callback = (event) => this.toggleRunStatus()) {
+    defaultMouseClickCallback = event => {
+        if (this._status === Simulation.Status.STOPPED) {
+            this._hud?.show("Running", 1000);
+            this._status = Simulation.Status.RUNNING;
+        } else if (this._status === Simulation.Status.RUNNING) {
+            this._hud?.show("Click to reset the simulation");
+            this._status = Simulation.Status.PAUSED;
+        } else if (this._status === Simulation.Status.PAUSED) {
+            this.reset();
+            this._hud?.show("Click to restart the simulation");
+            this._status = Simulation.Status.STOPPED;
+        }
+    }
+    withMouseClickEventListener(callback = event => this.defaultMouseClickCallback()) {
         this._viewport.canvasWrapper.addEventListener("click", event => callback(event) );
-        if (!this._running)
-            this._hud?.show("Click to start the simulation");
         return this;
     }
 
-    // When the user has clicked on the canvas, the running state of the application needs to be updated
-    toggleRunStatus() {
-        if (this._running) {
-            this.reset(); // This function is called during execution ==> we need to reset the simulation
-            this.stop();
-            this._hud?.show("Reset: click to restart");
-        } else {
-            this.start();
-            this._hud?.show("Running", 1000);
-        }
-    }
-
     start() {
-        this._running = true;
+        this._status = Simulation.Status.RUNNING;
         return this;
     }
 
     stop() {
-        this._running = false;
+        this._status = Simulation.Status.STOPPED;
         return this;
     }
 
-    get isRunning() { return this._running; }
+    get isRunning() { return this._status === Simulation.Status.RUNNING; }
 
     onReset(resetFunction = () => {}) {
         this._onReset = resetFunction;
@@ -617,7 +622,7 @@ export class Simulation {
         const runButton = new Button().withText("▶︎ Run");
         runButton
             .addEventListener("click", () => {
-                if (this._running) {
+                if (this._status === Simulation.Status.RUNNING) {
                     this._hud?.show("Paused");
                     runButton.withText("▶︎ Run")
                     this.stop();
