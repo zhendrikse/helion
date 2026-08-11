@@ -247,9 +247,7 @@ const simulation = Simulation
     //         yLabel: "KE [J]"
     //     }
     // )
-    .addObject3D(new Aquarium({
-        size: new Vec3(1, 1, 1).multiplyScalar(2 * L)
-    }))
+    .addObject3D(new Aquarium({ size: new Vec3(1, 1, 1).multiplyScalar(2 * L) }))
     .append(new RadioGroup()
         .add("Springs", () => {
             for (const moleculeView of moleculeViews)
@@ -259,7 +257,7 @@ const simulation = Simulation
             for (const moleculeView of moleculeViews)
                 moleculeView.bondType = SwitchableBondView.Type.Cylinder;
         })
-        .checked(0)
+        .checked(1)
     );
 
 for (const molecule of gas) {
