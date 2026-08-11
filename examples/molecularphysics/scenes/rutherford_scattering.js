@@ -2,7 +2,6 @@ import {
     Vec3, Simulation, Sphere, Cylinder, Trail, RadialSymmetricBody, CoulombPairForce, AxialSymmetricBody
 } from "../../../src/index.js";
 
-
 const Q = 1.6e-19;
 const X_MAX = 1e-13;
 const K0 = 10e6 * Q;
@@ -19,9 +18,9 @@ const ALPHA_COLOR = 0x33ffff;
 
 class AlphaSource extends AxialSymmetricBody {
     constructor({
-        position = new Vec3(-1.5 * X_MAX - 2.5 * ALPHA_RADIUS, 0, 0),
+        position = new Vec3(-1.5 * X_MAX - 1.75 * ALPHA_RADIUS, 0, 0),
         radius = SOURCE_RADIUS,
-        axis = new Vec3(0.1 * X_MAX, 0, 0)
+        axis = new Vec3(7.5e-2 * X_MAX, 0, 0)
     } = {}) {
         super({ position, radius, axis });
         this._position = position.clone();
@@ -72,31 +71,22 @@ function createAlphaParticle() {
         color: ALPHA_COLOR
     });
 
-    const departureMarker = new RadialSymmetricBody({
-        position: position.clone(),
-        radius: ALPHA_RADIUS
-    });
+    const departureMarker = new Sphere({ color: 0x33ffff });
     departureMarkers.push(departureMarker);
-
     simulation
         .bind(alpha.alwaysWith(alphaSphere))
         .bind(alpha.alwaysWith(alphaTrail))
-        .bind(departureMarker.alwaysWith(new Sphere({ color: 0x33ffff }))
+        .bind(new RadialSymmetricBody({
+            position: position.clone(),
+            radius: ALPHA_RADIUS
+        }).alwaysWith(departureMarker)
     );
 
     gold.reset();
     return alpha;
 }
 
-const alphaSphere = new Sphere({
-    color: ALPHA_COLOR,
-    segments: 24
-});
-
-const goldCylinder = new Cylinder({
-    color: 0x999999
-});
-
+const alphaSphere = new Sphere({ color: ALPHA_COLOR, segments: 24 });
 const dt = 5e-23;
 const simulation = Simulation
     .with({
@@ -127,8 +117,11 @@ const simulation = Simulation
 
         alpha = null;
         alphaTrail = null;
-
         gold.reset();
+        endpointMarkers.forEach(marker => marker.visible = false);
+        departureMarkers.forEach(marker => marker.visible = false);
+        endpointMarkers.length = 0;
+        departureMarkers.length = 0;
     });
 
 const trails = [];
@@ -154,12 +147,12 @@ function finishAlphaParticle() {
     }
     trails.push(alphaTrail);
 
-    const endpointMarker = new RadialSymmetricBody({
+    const endpointMarker = new Sphere({ color: alphaColor, segments: 12 });
+    endpointMarkers.push(endpointMarker);
+    simulation.bind(new RadialSymmetricBody({
         position: alpha.position.clone(),
         radius: ALPHA_RADIUS
-    });
-    endpointMarkers.push(endpointMarker);
-    simulation.bind(endpointMarker.alwaysWith(new Sphere({ color: alphaColor, segments: 12 })));
+    }).alwaysWith(endpointMarker));
 
     // Remove the current particle from active simulation state.
     alpha = null;
