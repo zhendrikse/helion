@@ -192,7 +192,7 @@ export class Block extends Body {
 export class Lattice extends MathPhysicsModelBehavior {
     constructor({
         k = 100,
-        damping = 0.2,
+        damping = 0,
         bodySize = 7.5e-2,
         bondRadius = 0.33 * bodySize
     } = {}) {
@@ -273,11 +273,13 @@ export class ChainTopology {
     constructor({
         count = 100,
         length = 20,
+        bondRestLength = length / (count -1),
         totalMass = 0.025
     } = {}) {
         this._count = count;
         this._length = length;
         this._totalMass = totalMass;
+        this._bondRestLength = bondRestLength;
     }
 
     applyTo(lattice) {
@@ -293,7 +295,7 @@ export class ChainTopology {
         for (let i = 0; i < this._count - 1; i++)
             lattice.connect(lattice.bodyAt(i), lattice.bodyAt(i + 1), {
                 k: lattice.k,
-                restLength: 0.9 * this._length / (this._count - 1),
+                restLength: this._bondRestLength,
                 damping: lattice.damping
             });
     }

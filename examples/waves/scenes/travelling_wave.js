@@ -15,9 +15,13 @@ class BoundaryCondition {
 
     applyTo(chain, t) {
         const firstBall = chain.bodyAt(0);
-        const halfWaveTime = 2 * Math.PI / this._omega;
-        if (t < halfWaveTime)
+
+        if (t < this.pulseDuration)
             firstBall.state.position.y = this._amplitude * Math.sin(this._omega * t);
+    }
+
+    get pulseDuration() {
+        return 2 * Math.PI / this._omega;
     }
 
     set omega(value) { this._omega = value; }
@@ -25,11 +29,17 @@ class BoundaryCondition {
 }
 
 const count = 100;
+const chainLength = 20;
 const boundaryCondition = new BoundaryCondition();
 const chain = new Lattice({
-      k:  1.5 * (count - 1)
+      k:  1.5 * (count - 1),
+      damping: 0.2
     })
-    .apply(new ChainTopology({ count }))
+    .apply(new ChainTopology({
+        count: count,
+        length: chainLength,
+        bondRestLength: 0.9 * chainLength / (count - 1) // Springs are intentionally stretched to create initial tension
+    }))
     .fixateBodyAt(0)
     .fixateBodyAt(count - 1)
     .addBoundaryCondition(boundaryCondition);
@@ -50,6 +60,8 @@ const latticeView = LatticeView.from({
     }
 });
 
+let time = 0;
+let dt = 2e-4;
 Simulation
     .with({
         htmlDivId: "travellingWaveContainer",
@@ -60,10 +72,11 @@ Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .runsEvery(1e-4)
-    .substeps(5)
-    .onStep((clock, dt) => {
-        chain.update(clock.simulatedTime, dt)
+    .runsEvery(2e-3)
+    .substeps(20)
+    .onStep(() => {
+        chain.update(time, dt);
+        time += dt;
     })
     .bind(chain.alwaysWith(latticeView))
     .addObject3D(new Floor({
@@ -72,6 +85,7 @@ Simulation
         planeSizeXy: new Vec2(200, 200),
         granularity: 20
     }))
+    .onReset(() => time = 0)
     .append(latticeView.ui())
     .append(new Slider("Bond force ")
         .on(chain)

@@ -33,4 +33,103 @@ layout: ../../../layouts/DocsLayout.astro
 <div id="travellingWaveContainer"  style="aspect-ratio: 19 / 12;"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/travelling_wave.js"}></script>
 
+### Model and implementation
+
+<div class="header_line"></div>
+
+The traveling wave is modeled as a one-dimensional chain of identical point-like bodies connected by linear springs.
+
+The chain consists of $N$ bodies with equal mass.
+The equilibrium positions are equally spaced along the $x$-axis.
+Neighboring bodies are connected by springs that exert a restoring force according to Hooke's law,
+
+$$
+\boxed{
+\overrightarrow{F} =-k\left(r-r_0\right)\hat{\mathbf r}
+}
+$$
+
+where $r$ is the current distance between two neighboring bodies,
+$r_0$ is the spring's rest length, and $k$ is the spring constant.
+
+In this simulation, the spring rest length is deliberately chosen to be
+smaller than the initial distance between neighboring bodies:
+
+$$
+r_0 =
+0.9\frac{L}{N-1}
+$$
+
+while the bodies are initially separated by
+
+$$
+\Delta x = \frac{L}{N-1}
+$$
+
+The springs are therefore initially stretched. This creates a non-zero tension in the chain
+and makes the transverse disturbance propagate as a wave through a tensioned medium.
+
+The chain is fixed at both ends. The first body is additionally subject to a time-dependent
+boundary condition. During one oscillation period it is displaced in the
+transverse $y$-direction according to
+
+$$
+\boxed{
+y(t)=A\sin(\omega t)
+}
+$$
+
+where $A$ is the amplitude and $\omega$ is the angular frequency.
+The boundary condition is applied only for one complete period,
+
+$$
+T=\frac{2\pi}{\omega}
+$$
+
+After this initial excitation, the first body is no longer actively driven,
+allowing the generated disturbance to propagate through the chain.
+
+The resulting disturbance is a **transverse traveling wave**.
+Although the individual bodies mainly oscillate perpendicular to the chain,
+the spring forces transmit the disturbance from one body to the next.
+
+A damping coefficient is applied to the spring interactions.
+Damping reduces the energy of the wave as it propagates and therefore
+prevents the chain from oscillating indefinitely with constant amplitude.
+
+The physical model is implemented using the `Lattice` class.
+The lattice stores the bodies, the neighboring body pairs, their spring forces,
+and the boundary conditions. The `ChainTopology` creates the one-dimensional
+chain and connects each body to its immediate neighbor.
+
+At every integration step, the following sequence is used:
+
+1. The boundary conditions are applied.
+2. The spring forces are calculated for all neighboring pairs.
+3. The forces are accumulated on the bodies.
+4. The bodies are integrated forward in time.
+
+Conceptually, the update therefore has the form
+
+$$
+\text{boundary condition}
+\rightarrow
+\text{spring forces}
+\rightarrow
+\text{integration}.
+$$
+
+The simulation uses a fixed integration timestep.
+Multiple integration steps can be performed during each simulation-clock
+interval through the `substeps` setting. This allows the spring dynamics to be integrated with
+smaller repeated steps while keeping the simulation clock and rendering loop separate.
+
+The visualization is independent of the physical model. `LatticeView` represents the bodies as
+spheres and the spring connections as cylinders or springs. The simulation controls allow the spring constant,
+damping, driving frequency, and driving amplitude to be varied interactively.
+
+The resulting model demonstrates how a localized transverse disturbance propagates through a
+mechanically coupled chain and illustrates the role of **spring stiffness, tension,
+damping, amplitude, and driving frequency** in wave propagation.
+
 
