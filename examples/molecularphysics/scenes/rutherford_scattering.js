@@ -4,7 +4,7 @@ import {
 
 const Q = 1.6e-19;
 const X_MAX = 1e-13;
-const K0 = 10e6 * Q;
+const ALPHA_ENERGY  = 10e6 * Q;
 const ALPHA_MASS = 4e-3 / 6.12e23;
 const GOLD_MASS  = 197e-3 / 6.02e23;
 const ALPHA_CHARGE = 2 * Q;
@@ -12,7 +12,6 @@ const GOLD_CHARGE  = 79 * Q;
 const GOLD_RADIUS  = 6e-15;
 const ALPHA_RADIUS = 4e-15;
 const SOURCE_RADIUS = 6e-14;
-const SOURCE_X = -2 * X_MAX;
 const MAX_DISTANCE = 1.8e-13;
 const ALPHA_COLOR = 0x33ffff;
 
@@ -23,17 +22,15 @@ class AlphaSource extends AxialSymmetricBody {
         axis = new Vec3(7.5e-2 * X_MAX, 0, 0)
     } = {}) {
         super({ position, radius, axis });
-        this._position = position.clone();
-        this._radius = radius;
     }
 
     // Uniform random point inside circular source aperture
     beamPosition() {
         let y, z;
         do {
-            y = (2 * Math.random() - 1) * this._radius;
-            z = (2 * Math.random() - 1) * this._radius;
-        } while (y * y + z * z > this._radius * this._radius);
+            y = (2 * Math.random() - 1) * this.radius;
+            z = (2 * Math.random() - 1) * this.radius;
+        } while (y * y + z * z > this.radius * this.radius);
 
         return new Vec3(-1.5 * X_MAX, y, z);
     }
@@ -54,7 +51,7 @@ let alphaTrail = null;
 const departureMarkers = [];
 function createAlphaParticle() {
     const position = source.beamPosition();
-    const momentum = new Vec3(Math.sqrt(2 * ALPHA_MASS * K0), 0, 0);
+    const momentum = new Vec3(Math.sqrt(2 * ALPHA_MASS * ALPHA_ENERGY ), 0, 0);
 
     alpha = new RadialSymmetricBody({
         position: position.clone(),
@@ -86,8 +83,9 @@ function createAlphaParticle() {
     return alpha;
 }
 
+// Only one alpha particle is active at a time, so this view can be reused.
 const alphaSphere = new Sphere({ color: ALPHA_COLOR, segments: 24 });
-const dt = 5e-23;
+const dt = 5e-23; // Physical timestep, independent of Simulation.runsEvery()
 const simulation = Simulation
     .with({
         htmlDivId: "rutherfordScatteringContainer",
@@ -115,9 +113,13 @@ const simulation = Simulation
         if (alphaTrail)
             alphaTrail.reset();
 
+        trails.forEach(trail => trail.reset());
+        trails.length = 0;
+
         alpha = null;
         alphaTrail = null;
         gold.reset();
+
         endpointMarkers.forEach(marker => marker.visible = false);
         departureMarkers.forEach(marker => marker.visible = false);
         endpointMarkers.length = 0;
@@ -134,9 +136,9 @@ function finishAlphaParticle() {
     const directionX = momentum.x / momentum.length();
 
     let alphaColor = ALPHA_COLOR;
-    if (directionX <= Math.cos(Math.PI / 2)) // cos(pi/2) = 0
+    if (directionX <= 0) // cos(pi/2) = 0
         alphaColor = 0xff0000;
-    else if (directionX <= Math.cos(Math.PI / 4)) // cos(pi/4) = sqrt(2)/2
+    else if (directionX <= Math.SQRT1_2)
         alphaColor = 0x0000ff;
     alphaTrail.color = alphaColor;
 

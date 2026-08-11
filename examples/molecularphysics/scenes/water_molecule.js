@@ -3,13 +3,15 @@ import {
     MathPhysicsModelBehavior, VectorField, CoulombForce, SpringForce, Force
 } from "../../../src/index.js";
 
-const SPACING = 1.0E-10;
-const K       = 5.0E-6;       // Spring constant
-const KT      = 5.0E-6;       // Bend constant
-const U       = 1.660E-27;
-const Q       = 1.602E-19;
-const RADIUS  = 3.0E-11;
-const SCALE   = 1e10;
+const BOND_LENGTH   = 1.0E-10;
+const BOND_CONSTANT = 5.0E-6;       // Spring constant
+const ANGLE_CONSTANT= 5.0E-6;       // Bend constant
+const ATOMIC_MASS_UNIT= 1.660E-27;
+const Q             = 1.602E-19;
+const OXYGEN_RADIUS = 1.2 * 3.0E-11;
+const HYDROGEN_RADIUS = 0.4 * 3.0e-11;
+const WATER_ANGLE = 105 * Math.PI / 180;
+const SCALE         = 1e10;
 
 class ElectricField extends VectorField {
     constructor(position, magnitude = 0.0, frequency = 0.25) {
@@ -25,7 +27,7 @@ class ElectricField extends VectorField {
     update(time) {
         this._time = time;
         const omega = this._frequency * 2 * Math.PI * 1.00001E10;
-        this._axis.set(0, 0.5 * SPACING * Math.cos(this._time * omega), 0);
+        this._axis.set(0, 0.5 * BOND_LENGTH   * Math.cos(this._time * omega), 0);
     }
 
     sample(position, target) {
@@ -117,23 +119,23 @@ class Water extends MathPhysicsModelBehavior {
 
         this._oxygen = new RadialSymmetricBody({
             position: oxygenPosition,
-            mass: 16 * U,
-            radius: 1.2 * RADIUS,
+            mass: 16 * ATOMIC_MASS_UNIT ,
+            radius: OXYGEN_RADIUS,
             charge: -2 * Q
         });
 
         this._hydrogen1 = new RadialSymmetricBody({
             position: hydrogen1Position,
-            mass: 1 * U,
-            radius: 0.4 * RADIUS,
-            charge: -Q
+            mass: 1 * ATOMIC_MASS_UNIT ,
+            radius: HYDROGEN_RADIUS,
+            charge: Q
         });
 
         this._hydrogen2 = new RadialSymmetricBody({
             position: hydrogen2Position,
-            mass: 1 * U,
-            radius: 0.4 * RADIUS,
-            charge: -Q
+            mass: 1 * ATOMIC_MASS_UNIT ,
+            radius: HYDROGEN_RADIUS,
+            charge: Q
         });
     }
 
@@ -152,10 +154,10 @@ class Water extends MathPhysicsModelBehavior {
             oxygenPosition: new Vec3(0, 0, 0),
             hydrogen1Position:
                 new Vec3(Math.cos(theta),Math.sin(theta) * Math.cos(tilt),Math.sin(theta) * Math.sin(tilt))
-                    .multiplyScalar(SPACING),
+                    .multiplyScalar(BOND_LENGTH  ),
             hydrogen2Position:
                 new Vec3(Math.cos(angle2),Math.sin(angle2) * Math.cos(tilt),Math.sin(angle2) * Math.sin(tilt))
-                    .multiplyScalar(SPACING)
+                    .multiplyScalar(BOND_LENGTH  )
         };
     }
 
@@ -179,12 +181,11 @@ class Water extends MathPhysicsModelBehavior {
     }
 }
 
-const bondAngle = 105 * Math.PI / 180;
-const water = new Water(bondAngle);
-const electricField = new ElectricField(new Vec3(1.7 * SPACING, 0, 0), 120.0, 0.25);
+const water = new Water(WATER_ANGLE);
+const electricField = new ElectricField(new Vec3(1.7 * BOND_LENGTH  , 0, 0), 120.0, 0.25);
 const coulombForce = CoulombForce.in(electricField);
-const bondForce = new SpringForce({ k: K, restLength: SPACING });
-const torqueForce = new TorqueForce({ k: KT, restAngle: bondAngle, restLength: SPACING });
+const bondForce = new SpringForce({ k: BOND_CONSTANT, restLength: BOND_LENGTH   });
+const torqueForce = new TorqueForce({ k: ANGLE_CONSTANT , restAngle: WATER_ANGLE, restLength: BOND_LENGTH   });
 
 const electricArrow = new Arrow({
     color: 0xff00ff,
