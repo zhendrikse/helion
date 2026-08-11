@@ -98,7 +98,7 @@ const simulation = Simulation
     .bind(movingCharge.alwaysWith(sphere))
     .bind(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })))
     .bind(capacitorField.onceWith(arrowField))
-    .runsEvery(0.005)
+    .runsEvery(5e-3)
     .onStep((_, dt) => {
         if (movingCharge.position.x > 60 / scale)
             return;

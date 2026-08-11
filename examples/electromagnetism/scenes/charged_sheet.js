@@ -107,11 +107,12 @@ const simulation = Simulation
     .bind(electricField.onceWith(arrowField))
     .bind(electron.alwaysWith(electronSphere))
     .bind(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
-    .runsEvery(5e-20)
+    .runsEvery(3e-3)
+    .substeps(5)
     .onStep((_, dt) => {
         electron
             .apply(coulombForce)
-            .integrate(dt);
+            .integrate(5e-20);
     });
 
 for (const segment of sheet)

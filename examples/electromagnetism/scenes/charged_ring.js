@@ -136,11 +136,12 @@ const simulation = Simulation
     .bind(electron.alwaysWith(electronSphere))
     .bind(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
     .bind(electricField.onceWith(arrowField))
-    .runsEvery(3e-19)
+    .runsEvery(3e-3)
+    .substeps(5)
     .onStep((_, dt) => {
         electron
             .apply(electricForce)
-            .integrate(dt);
+            .integrate(3e-19);
     });
 
 // Ring rendering
