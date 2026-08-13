@@ -1,11 +1,11 @@
 export {
     AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology,
-    CubicLatticeTopology, BodyPair, Body, Block
+    CubicLatticeTopology, BodyPair, Body, Block, BlockSegments
 } from "./model/phys/bodies.js";
 
 export {
     Range, Vec3, factorial, linspace, Interval, generateUUID, Vec2,
-    normalDistribution, uniform, randomInt, meshgrid, Complex
+    normalDistribution, uniform, randomInt, meshgrid, Complex, toCartesian
 } from "./model/math/math.js";
 
 export {
@@ -57,7 +57,7 @@ export {
 
 export {
     OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial,
-    ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule
+    ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule, BoxSegmentsView
 } from "./view/3d/composite/composites.js";
 
 export {

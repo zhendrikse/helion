@@ -1,7 +1,7 @@
 import {
     Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute,
     BufferGeometry, InstancedMesh, Matrix4, Quaternion, InstancedBufferAttribute,
-    MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry
+    MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry, Object3D
 } from "three";
 import {Arrow, Cylinder, Helix, Sphere} from "../primitives/primitives.js";
 import {Vec3} from "../../../model/math/math.js";
@@ -604,5 +604,51 @@ export class LatticeView extends Renderable3D {
 
         for (let i = 0; i < lattice.bondCount; i++)
             this._bondViews[i].synchronizeWith(lattice.bondAt(i));
+    }
+}
+
+export class BoxSegmentsView extends Renderable3D {
+    constructor(count) {
+        super();
+        if (count === null || count === 0)
+            throw new Error("Cannot initialize SegmentsView without knowing the number of segments");
+        const geometry = new BoxGeometry(1, 1, 1);
+        const material = new MeshStandardMaterial({ roughness: 0.55, metalness: 0.75 });
+        this._mesh = new InstancedMesh(geometry, material, count);
+        this.add(this._mesh);
+
+        this._dummy = new Object3D();
+        this._instanceColor = new Color();
+    }
+
+    _draw(pos, size, instanceIndex) {
+        this._dummy.position.set(pos.x, pos.y, pos.z);
+        this._dummy.scale.set(size, size, size);
+        this._dummy.updateMatrix();
+        this._mesh.setMatrixAt(instanceIndex, this._dummy.matrix);
+
+        let hue = 0.175 + pos.y / 600;
+        // HSV hue between 0 en 1
+        hue = ((hue % 1) + 1) % 1;
+
+        this._instanceColor.setHSL(hue, 1.0, 0.5);
+        this._mesh.setColorAt(instanceIndex, this._instanceColor);
+    }
+
+    canBindTo(segments) {
+        return segments.count > 0;
+    }
+
+    initialize(segments) {
+        let instanceIndex = 0;
+        for (const segment of segments) {
+            this._draw(segment.position, segment.size, instanceIndex);
+            instanceIndex++;
+        }
+        this._mesh.instanceMatrix.needsUpdate = true;
+        this._mesh.instanceColor.needsUpdate = true;
+    }
+
+    synchronizeWith(model) {
     }
 }

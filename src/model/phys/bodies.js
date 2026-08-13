@@ -376,3 +376,23 @@ export class CubicLatticeTopology {
         };
     }
 }
+
+export class BlockSegments extends MathPhysicsModelBehavior {
+    constructor() {
+        super();
+        this._segments = [];
+    }
+
+    get count() { return this._segments.length }
+
+    /**
+     * @returns {Iterator<{Vec3, Vec3}>}
+     */
+    [Symbol.iterator]() {
+        return this._segments[Symbol.iterator]();
+    }
+
+    push(position, size) {
+        this._segments.push({position, size});
+    }
+}
