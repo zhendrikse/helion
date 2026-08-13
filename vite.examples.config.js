@@ -38,6 +38,7 @@ export default defineConfig({
                 parametric_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/parametric_surfaces.js'),
                 pendulum_wave: path.resolve(__dirname, 'examples/waves/scenes/pendulum_wave.js'),
                 plane_wave: path.resolve(__dirname, 'examples/quantumphysics/scenes/plane_wave.js'),
+                polar_coordinates_integration: path.resolve(__dirname, 'examples/mathematics/scenes/polar_coordinates_integration.js'),
                 proton_in_magnetic_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_in_magnetic_field.js'),
                 raindrops: path.resolve(__dirname, 'examples/nature/scenes/raindrops.js'),
                 real_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/real_surfaces.js'),

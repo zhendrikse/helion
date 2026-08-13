@@ -1,6 +1,6 @@
 export {
     AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology,
-    CubicLatticeTopology, BodyPair, Body, Block, BlockSegments
+    CubicLatticeTopology, BodyPair, Body, Block, BlockSegments, LineSegments
 } from "./model/phys/bodies.js";
 
 export {
@@ -57,7 +57,7 @@ export {
 
 export {
     OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial,
-    ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule, BoxSegmentsView
+    ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule, BoxSegmentsView, LineSegmentsView
 } from "./view/3d/composite/composites.js";
 
 export {

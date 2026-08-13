@@ -1,8 +1,12 @@
 import {
     Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute,
     BufferGeometry, InstancedMesh, Matrix4, Quaternion, InstancedBufferAttribute,
-    MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry, Object3D
+    MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry, Object3D, Vector2
 } from "three";
+import {LineMaterial} from 'three/addons/lines/LineMaterial.js';
+import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
+import { LineSegmentsGeometry} from 'three/addons/lines/LineSegmentsGeometry.js';
+
 import {Arrow, Cylinder, Helix, Sphere} from "../primitives/primitives.js";
 import {Vec3} from "../../../model/math/math.js";
 import { Renderable3D } from "../../renderer.js";
@@ -655,5 +659,73 @@ export class BoxSegmentsView extends Renderable3D {
     }
 
     synchronizeWith(model) {
+    }
+}
+
+export class LineSegmentsView extends Renderable3D {
+    constructor({
+        segments = model => model.edges,
+        color = null,
+        lineWidth = 1,
+        visible = true
+    } = {}) {
+        super();
+
+        this._segments = segments;
+        this._geometry = new LineSegmentsGeometry();
+        this._material = new LineMaterial({
+            color: color ?? 0xffffff,
+            linewidth: lineWidth,
+            vertexColors: color === null,
+            resolution: new Vector2(
+                window.innerWidth,
+                window.innerHeight
+            )
+        });
+
+        this._line = new LineSegments2(
+            this._geometry,
+            this._material
+        );
+
+        this.add(this._line);
+        this.visible = visible;
+    }
+
+    canBindTo(model) {
+        return this._segments(model) !== undefined;
+    }
+
+    synchronizeWith(model) {
+        const segments = this._segments(model);
+        const positions = [];
+        const colors = [];
+
+        for (const segment of segments) {
+            positions.push(
+                segment.from.x, segment.from.y, segment.from.z,
+                segment.to.x, segment.to.y, segment.to.z
+            );
+
+            if (segment.color)
+                colors.push(
+                    segment.color.r, segment.color.g, segment.color.b,
+                    segment.color.r, segment.color.g, segment.color.b
+                );
+        }
+
+        this._geometry.setPositions(positions);
+        if (colors.length > 0)
+            this._geometry.setColors(colors);
+    }
+
+    dispose() {
+        this._geometry.dispose();
+        this._material.dispose();
+
+        this.remove(this._line);
+        this._line = null;
+
+        this.clear();
     }
 }

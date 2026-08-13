@@ -396,3 +396,24 @@ export class BlockSegments extends MathPhysicsModelBehavior {
         this._segments.push(block);
     }
 }
+
+export class LineSegments extends MathPhysicsModelBehavior {
+    constructor() {
+        super();
+        this._segments = [];
+    }
+
+    get segments() { return this._segments; }
+
+    add(from, to, color) {
+        this._segments.push({
+            from: from.clone(),
+            to: to.clone(),
+            color: color?.clone()
+        });
+    }
+
+    clear() {
+        this._segments.length = 0;
+    }
+}
