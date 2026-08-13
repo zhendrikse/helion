@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Box, RadioGroup,
-    RadialSymmetricBody, MathPhysicsModelBehavior, Renderable3D
+    RadialSymmetricBody, MathPhysicsModelBehavior, Renderable3D, Block
 } from "../../../src/index.js";
 
 const LENGTH = 0.1;
@@ -96,12 +96,14 @@ class WaterBeam {
     }
 }
 
-class Sprinkler extends MathPhysicsModelBehavior {
+class Sprinkler extends Block {
     constructor({
         length = LENGTH,
         dropletPoolSize = 100
     } = {}) {
-        super();
+        super({
+            size: new Vec3(length, 0.05 * length, 0.05 * length),
+        });
 
         this._length = length;
         this._omega = Math.PI;
@@ -117,7 +119,6 @@ class Sprinkler extends MathPhysicsModelBehavior {
     }
 
     get length() {return this._length;}
-    get theta() {return this._theta;}
 
     get droplets() {
         return [
@@ -127,8 +128,7 @@ class Sprinkler extends MathPhysicsModelBehavior {
     }
 
     rotate(dt) {
-        const angle = this._omega * dt;
-        this._theta += angle;
+        this.orientation.z += this._omega * dt;
     }
 
     shedWater(dt) {
@@ -153,7 +153,8 @@ class Sprinkler extends MathPhysicsModelBehavior {
 
     // Endpoint positions: r = (length / 2) * (cos(theta), sin(theta), 0)
     _endpointPositions() {
-        const r = new Vec3(Math.cos(this._theta), Math.sin(this._theta), 0).multiplyScalar(this._length / 2);
+        const theta = this.orientation.z;
+        const r = new Vec3(Math.cos(theta), Math.sin(theta), 0).multiplyScalar(this._length / 2);
         return [r, r.clone().negate()];
     }
 
@@ -198,37 +199,6 @@ class Sprinkler extends MathPhysicsModelBehavior {
     }
 }
 
-class SprinklerView extends Renderable3D {
-    constructor({
-        length = LENGTH
-    } = {}) {
-        super();
-        this._length = length;
-        this._stick = new Box({color: 0xffff00});
-        this._center = new Sphere({color: 0xff0000});
-
-        this.add(this._stick);
-        this.add(this._center);
-    }
-
-    canBindTo(model) {
-        return model.theta !== undefined && model.length !== undefined;
-    }
-
-    synchronizeWith(model) {
-        //
-        // The Box primitive is centered at its local origin.
-        //
-        this._stick.position.set(0, 0, 0);
-        this._stick.scale.set(model.length, 0.05 * model.length, 0.05 * model.length);
-        this._stick.rotation.z = model.theta;
-
-        // Red center sphere.
-        this._center.position.set(0, 0, 0);
-        this._center.scale.setScalar(0.03 * model.length);
-    }
-}
-
 class DropletView extends Renderable3D {
     constructor({
         color = 0x00ffff
@@ -254,7 +224,6 @@ class DropletView extends Renderable3D {
 }
 
 const sprinkler = new Sprinkler({ length: LENGTH, dropletPoolSize: 100 });
-const sprinklerView = new SprinklerView({ length: LENGTH });
 
 const simulation = Simulation
     .with({
@@ -266,7 +235,8 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .runsEvery(1e-2)
-    .bind(sprinkler.alwaysWith(sprinklerView))
+    .bind(sprinkler.alwaysWith(new Box({ color: 0xffff00 })))
+    .bind(new RadialSymmetricBody({ radius: 0.03 * LENGTH }).onceWith(new Sphere({color: 0xff0000})))
     .onStep((clock, dt) => {
         sprinkler.shedWater(dt);
         sprinkler.rotate(dt);

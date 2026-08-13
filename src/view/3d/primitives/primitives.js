@@ -343,12 +343,13 @@ export class Box extends Renderable3D {
     }
 
     canBindTo(body) {
-        return body.position && body.size && body.size.x;
+        return body.position && body.size && body.size.x && body.orientation;
     }
 
     synchronizeWith(body) {
         this.position.copy(body.position);
         this.scale.copy(body.size);
+        this.rotation.set(body.orientation.x, body.orientation.y, body.orientation.z);
     }
 }
 
