@@ -1,9 +1,8 @@
 import {Color, Vector3} from "three";
 import {
-    LineSegments, LineSegmentsView, Simulation, Vec3
+    LineSegments, LineSegmentsView, RadioGroup, Simulation, Vec3
 } from "../../../src/index.js";
 
-const fractal = new LineSegments();
 const LEVEL = 5;
 
 function colour(vertex) {
@@ -102,9 +101,20 @@ const initialPyramid = [
     new Vector3(0, 1, 0)
 ];
 
+const fractal = new LineSegments();
+buildPyramid();
 
-sierpinskiPyramid(initialPyramid, LEVEL);
-const pyramidView = new LineSegmentsView({
+function buildPyramid() {
+    fractal.clear();
+    sierpinskiPyramid(initialPyramid, LEVEL);
+}
+
+function buildTetrahedron() {
+    fractal.clear();
+    sierpinskiTetrahedron(initialTetrahedron, LEVEL);
+}
+
+const fractalView = new LineSegmentsView({
     segments: model => model.segments,
     lineWidth: 1
 });
@@ -114,4 +124,9 @@ Simulation
         htmlDivId: "sierpinskiContainer",
         cameraPosition: new Vec3(3.0, 2.4, 3.2).multiplyScalar(0.8)
     })
-    .bind(fractal.onceWith(pyramidView));
+    .bind(fractal.alwaysWith(fractalView))
+    .append(new RadioGroup()
+        .add("Pyramid", buildPyramid)
+        .add("Tetrahedron", buildTetrahedron)
+        .checked(0)
+    );
