@@ -392,7 +392,7 @@ export class BlockSegments extends MathPhysicsModelBehavior {
         return this._segments[Symbol.iterator]();
     }
 
-    push(position, size) {
-        this._segments.push(new Block({position, size}));
+    push(block) {
+        this._segments.push(block);
     }
 }
