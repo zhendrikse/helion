@@ -413,6 +413,8 @@ export class Simulation {
         minDistance = 2,
         viewDirection = new Vector3(1, 1, 1)
     } = {}) {
+        if (!anObject.boundingBox)
+            throw new Error('Trying to provide axes for an object that does not have a boundingBox property');
         this._renderer.frameSceneOn(anObject, { padding, translationY, minDistance, viewDirection });
         return this;
     }
@@ -430,6 +432,8 @@ export class Simulation {
         positiveXZ = false,
         bottomAlign = true
     } = {}) {
+        if (!anObject.boundingBox)
+            throw new Error('Trying to provide axes for an object that does not have a boundingBox property');
         const axes = this._renderer.provideAxesAround(anObject, {
             layoutType, divisions, frame, annotations, tickLabels, xyPlane, xzPlane, yzPlane, axisLabels, positiveXZ, bottomAlign
         });

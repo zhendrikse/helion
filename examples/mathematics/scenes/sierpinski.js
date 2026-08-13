@@ -1,4 +1,3 @@
-import {Line2} from 'three/addons/lines/Line2.js';
 import {LineMaterial} from 'three/addons/lines/LineMaterial.js';
 import {Color, Group, Vector2, Vector3} from "three";
 import {Simulation, Vec3} from "../../../src/index.js";
