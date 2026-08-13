@@ -2,9 +2,7 @@ import {BlockSegments, BoxSegmentsView, Simulation, Vec3} from "../../../src/ind
 
 const depth = 4;
 const finalSize = 200;
-const cubeCount = Math.pow(20, depth);
 
-const segmentsView = new BoxSegmentsView(cubeCount);
 const sponge = new BlockSegments();
 function mengerSponge(pos, size, currentDepth) {
     if (currentDepth === 0) {
@@ -28,4 +26,4 @@ Simulation
         htmlDivId: "mengerSpongeContainer",
         cameraPosition: new Vec3(180, 165, 205).multiplyScalar(1.3)
     })
-    .bind(sponge.onceWith(segmentsView));
+    .bind(sponge.onceWith(new BoxSegmentsView(sponge.count)));
