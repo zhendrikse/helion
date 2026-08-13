@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Box, RadioGroup,
-    RadialSymmetricBody, MathPhysicsModelBehavior, Renderable3D, Block
+    RadialSymmetricBody, MathPhysicsModelBehavior, Renderable3D, Block, VisibleWhen
 } from "../../../src/index.js";
 
 const LENGTH = 0.1;
@@ -199,30 +199,6 @@ class Sprinkler extends Block {
     }
 }
 
-class DropletView extends Renderable3D {
-    constructor({
-        color = 0x00ffff
-    } = {}) {
-        super();
-        this._sphere = new Sphere({ color });
-        this.add(this._sphere);
-    }
-
-    canBindTo(droplet) {
-        return droplet.position && droplet.radius && droplet.active !== undefined;
-    }
-
-    synchronizeWith(droplet) {
-        this.visible = droplet.active;
-
-        if (!droplet.active)
-            return;
-
-        this._sphere.position.copy(droplet.position);
-        this._sphere.scale.setScalar(droplet.radius);
-    }
-}
-
 const sprinkler = new Sprinkler({ length: LENGTH, dropletPoolSize: 100 });
 
 const simulation = Simulation
@@ -276,5 +252,8 @@ const simulation = Simulation
 // the simulation droplets simply become active/inactive.
 //
 for (const droplet of sprinkler.droplets)
-    simulation.bind(droplet.alwaysWith(new DropletView({ color: 0x00ffff })));
+    simulation.bind(droplet.alwaysWith(new VisibleWhen(
+        new Sphere({ color: 0x00ffff }),
+        droplet => droplet.active
+    )));
 
