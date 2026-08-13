@@ -26,11 +26,8 @@ class Droplet extends RadialSymmetricBody {
             return;
 
         this.position.addScaledVector(this.velocity, dt);
-
-        if (this.position.length() > OUT_OF_SIGHT_DISTANCE) {
-            this.velocity.set(0, 0, 0);
-            this._active = false;
-        }
+        if (this.position.length() > OUT_OF_SIGHT_DISTANCE)
+            this.reset();
     }
 
     get active() {return this._active;}
