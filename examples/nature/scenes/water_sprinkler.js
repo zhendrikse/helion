@@ -1,6 +1,5 @@
 import {
-    Vec3, Simulation, Sphere, Box, RadioGroup,
-    RadialSymmetricBody, MathPhysicsModelBehavior, Renderable3D, Block, VisibleWhen
+    Vec3, Simulation, Sphere, Box, RadioGroup, RadialSymmetricBody, Block, VisibleWhen, Slider, Range
 } from "../../../src/index.js";
 
 const LENGTH = 0.1;
@@ -12,14 +11,7 @@ const OUT_OF_SIGHT_DISTANCE = 3 * LENGTH;
 // visible region.
 class Droplet extends RadialSymmetricBody {
     constructor() {
-        super({
-            position: new Vec3(),
-            velocity: new Vec3(),
-            mass: 1,
-            charge: 0,
-            radius: DROPLET_RADIUS
-        });
-
+        super({ radius: DROPLET_RADIUS });
         this._active = false;
     }
 
@@ -118,13 +110,15 @@ class Sprinkler extends Block {
         ];
     }
 
-    get length() {return this._length;}
-
-    get droplets() {
-        return [
+    /**
+     * @returns {Iterator<Droplet>}
+     */
+    [Symbol.iterator]() {
+        const allDroplets = [
             ...this._waterBeams[0].droplets,
             ...this._waterBeams[1].droplets
         ];
+        return allDroplets[Symbol.iterator]();
     }
 
     rotate(dt) {
@@ -185,10 +179,11 @@ class Sprinkler extends Block {
         return velocities;
     }
 
-    setOmega(value) { this._omega = value; }
-    setDropletFrequency(value) { this._frequency = value; }
-    setWaterVelocity(value) { this._waterVelocity = value; }
-    setShootOutward(value) { this._shootOutward = value; }
+    set omega(value) { this._omega = value; }
+    set dropletFrequency(value) { this._frequency = value; }
+    set waterVelocity(value) { this._waterVelocity = value; }
+    set shootOutward(value) { this._shootOutward = value; }
+    get length() {return this._length;}
 
     reset() {
         this._clockTicks = 0;
@@ -219,39 +214,33 @@ const simulation = Simulation
     })
     .onReset(() => sprinkler.reset())
     .append(new RadioGroup()
-        .add("Outward", () => sprinkler.setShootOutward(true))
-        .add("Inward", () => sprinkler.setShootOutward(false))
+        .add("Outward", () => sprinkler.shootOutward = true)
+        .add("Inward", () => sprinkler.shootOutward = false)
         .checked(0)
     )
-    .append(new RadioGroup()
-        .add("π", () => sprinkler.setOmega(Math.PI))
-        .add("0.5π", () => sprinkler.setOmega(0.5 * Math.PI))
-        .add("1.5π", () => sprinkler.setOmega(1.5 * Math.PI))
-        .add("2π", () => sprinkler.setOmega(2 * Math.PI))
-        .checked(0)
+    .append(new Slider("Omega")
+        .on(sprinkler)
+        .withProperty("omega")
+        .withRange(new Range(-2 * Math.PI, 2 * Math.PI, .1))
+        .withValue(Math.PI)
     )
-    .append(new RadioGroup()
-        .add("15", () => sprinkler.setDropletFrequency(15))
-        .add("20", () => sprinkler.setDropletFrequency(20))
-        .add("30", () => sprinkler.setDropletFrequency(30))
-        .checked(0)
+    .append(new Slider("Droplet / s")
+        .on(sprinkler)
+        .withProperty("dropletFrequency")
+        .withRange(new Range(1, 30, 1))
+        .withValue(15)
     )
-    .append(new RadioGroup()
-        .add("0.0", () => sprinkler.setWaterVelocity(0.0))
-        .add("0.3", () => sprinkler.setWaterVelocity(0.3))
-        .add("0.6", () => sprinkler.setWaterVelocity(0.6))
-        .add("1.0", () => sprinkler.setWaterVelocity(1.0))
-        .checked(1)
+    .append(new Slider("Water velocity")
+        .on(sprinkler)
+        .withProperty("waterVelocity")
+        .withRange(new Range(0, 1, .01))
+        .withValue(.3)
     );
 
 
-//
-// Bind the droplet views.
-//
 // The pool is allocated once and all views remain bound. During
 // the simulation droplets simply become active/inactive.
-//
-for (const droplet of sprinkler.droplets)
+for (const droplet of sprinkler)
     simulation.bind(droplet.alwaysWith(new VisibleWhen(
         new Sphere({ color: 0x00ffff }),
         droplet => droplet.active

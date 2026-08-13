@@ -184,7 +184,7 @@ export class Slider extends HtmlControl {
 
     withValue(value) {
         this._inputControl.value = value;
-        this._span.textContent = value + this._units;
+        this._span.textContent = value.toFixed(2) + this._units;
         return this;
     }
 
@@ -200,7 +200,7 @@ export class Slider extends HtmlControl {
     withProperty(name) {
         this.addEventListener("input", (event) => {
             this._targetObject[name] = Number(event.target.value);
-            this._span.textContent = event.target.value + this._units;
+            this._span.textContent = event.target.value.toFixed(2) + this._units;
         });
         return this;
     }
