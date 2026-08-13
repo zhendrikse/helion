@@ -90,14 +90,17 @@ export class Body extends MathPhysicsModelBehavior{
         velocity = new Vec3(),
         mass = 1,
         charge = 0,
-        fixed = false
+        fixed = false,
+        orientation = new Vec3() // Euler angle in radians
     } = {}) {
         super();
         this._state = new PhysicsState({ position, velocity, mass, charge });
         this._force = new Vec3();
-        this._initialState = this._state.clone();
         this.fixed = fixed;
-        this.orientation = new Vec3(); // Euler angle in radians
+        this.orientation = orientation;
+        this._initialState = this._state.clone();
+        this._initialOrientation = orientation.clone();
+        this._initialFixed = fixed;
     }
 
     get position() { return this._state.position; }
@@ -109,7 +112,9 @@ export class Body extends MathPhysicsModelBehavior{
     get force() { return this._force; }
 
     reset() {
-        this._state = this._initialState.clone();
+        this._state= this._initialState.clone();
+        this.orientation.copy(this._initialOrientation);
+        this.fixed = this._initialFixed;
     }
 
     fieldAt(point) {

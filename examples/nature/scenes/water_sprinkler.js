@@ -12,30 +12,25 @@ const OUT_OF_SIGHT_DISTANCE = 3 * LENGTH;
 class Droplet extends RadialSymmetricBody {
     constructor() {
         super({ radius: DROPLET_RADIUS });
-        this._active = false;
     }
 
     launch(position, velocity) {
         this.position.copy(position);
         this.velocity.copy(velocity);
-        this._active = true;
+        this.fixed = false;
     }
 
     update(dt) {
-        if (!this._active)
-            return;
-
-        this.position.addScaledVector(this.velocity, dt);
+        this.integrate(dt);
         if (this.position.length() > OUT_OF_SIGHT_DISTANCE)
             this.reset();
     }
 
-    get active() {return this._active;}
+    get active() { return !this.fixed; }
 
     reset() {
-        this.position.set(0, 0, 0);
-        this.velocity.set(0, 0, 0);
-        this._active = false;
+        super.reset();
+        this.fixed = true;
     }
 }
 
