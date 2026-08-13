@@ -1,5 +1,6 @@
 export {
-    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology, CubicLatticeTopology, BodyPair, Body, Block
+    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology,
+    CubicLatticeTopology, BodyPair, Body, Block
 } from "./model/phys/bodies.js";
 
 export {
@@ -40,12 +41,15 @@ export { Planets, Sun } from "./model/phys/planets.js";
 export { WaveEquationSolver, SchrodingerSolver } from "./model/math/numerics/solvers/solvers.js";
 export { DropdownMenu, Checkbox, Button, Slider, RadioGroup } from "./core/controls.js";
 export { Simulation, Registry, MathPhysicsModelBehavior, Transformation } from "./core/helion.js";
-export { Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail, VisibleWhen} from "./view/3d/primitives/primitives.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 export { Renderable3D } from "./view/renderer.js";
 export { ComplexScalarFieldSurfaceRaster, PotentialField3DRaster } from "./view/3d/views.js"
 export { ContoursLayer, PrincipalDirectionsLayer } from "./view/3d/surfaces/layers.js";
+
+export {
+    Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail, VisibleWhen, VectorView
+} from "./view/3d/primitives/primitives.js";
 
 export {
     SurfaceVisualization, ColorLayers, FixedIntervalNormalizer, SurfaceResolution

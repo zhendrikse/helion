@@ -15,7 +15,7 @@ A state can may change in time. This change in time can be thought of
 as applying an operator to that state:
 
 $$
-\frac{d}{dt}\text{state} = \mathcal{L}(\text{state})
+\frac{d}{dt} \text{state} = \mathcal{L}(\text{state})
 $$
 
 Eventually, everything may thus be conceptualized as states and operators.

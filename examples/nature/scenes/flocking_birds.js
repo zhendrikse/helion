@@ -1,4 +1,4 @@
-import { Body, Simulation, Vec3, Arrow, Slider, Range, Button } from "../../../src/index.js";
+import {Body, Simulation, Vec3, Arrow, Slider, Range, Button, VectorView} from "../../../src/index.js";
 
 // Simulation parameters
 const speed = 6;  // initial horizontal speed
@@ -133,9 +133,9 @@ const simulation = Simulation
     .start();
 
 for (let i = 0; i < birdCount; i++)
-    simulation.bind(flock.bird(i).velocityVector.alwaysWith(new Arrow({
-        round: true,
-        color: 0xffff77,
-        size: .25,
-        magnitudeMap: magnitude => magnitude * .1
-    })));
+    simulation.bind(flock.bird(i).alwaysWith(new VectorView({
+    vectorProperty: body => body.velocity,
+    color: 0x77ff77,
+    size: 0.2,
+    magnitudeMap: mag => .7
+})));

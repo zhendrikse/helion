@@ -84,14 +84,12 @@ export class LorentzForce extends FieldForce {
 export class DragForce extends Force {
     constructor(dragCoefficient = -5.0) {
         super();
-        this._dragCoefficient = dragCoefficient;
+        this.dragCoefficient = dragCoefficient;
     }
 
     _calculateForceOn(body) {
-        this._forceVector.y = this._dragCoefficient * body.velocity.y;
+        this._forceVector.set(0, this.dragCoefficient * body.velocity.y, 0);
     }
-
-    set dragCoefficient(value) { this._dragCoefficient = value; }
 }
 
 class UniformGravitationalField extends VectorField {

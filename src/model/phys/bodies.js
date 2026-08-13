@@ -98,8 +98,6 @@ export class Body extends MathPhysicsModelBehavior{
         this._initialState = this._state.clone();
         this._fixed = fixed;
         this.orientation = new Vec3(); // Euler angle in radians
-        this.velocityVector = new VelocityVector(this);
-        this.accelerationVector = new AccelerationVector(this);
     }
 
     get position() { return this._state.position; }

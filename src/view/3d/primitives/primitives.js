@@ -259,8 +259,12 @@ export class Arrow extends Renderable3D {
     }
 
     synchronizeWith(body) {
-        this.position.copy(body.position);
-        this._tempAxis.copy(body.axis);
+        this.setVector(body.position, body.axis);
+    }
+
+    setVector(position, vector) {
+        this.position.copy(position);
+        this._tempAxis.copy(vector);
         const magnitude = this._tempAxis.length();
 
         if (magnitude < 1e-12) {
@@ -297,6 +301,45 @@ export class Arrow extends Renderable3D {
 
     set opacity(opacity) { this._material.opacity = opacity; }
     set color(color) { this._material.color.set(color); }
+}
+
+export class VectorView extends Renderable3D {
+    constructor({
+            vectorProperty = body => body.velocity,
+            color = 0xff0000,
+            size = 1,
+            opacity = 1,
+            round = false,
+            visible = true,
+            castShadow = false,
+            magnitudeMap = magnitude => Math.max(magnitude, 0.1),
+            colorMap = null
+        } = {}) {
+        super();
+
+        this._vectorPropertyOf = vectorProperty;
+        this._arrow = new Arrow({
+            color,
+            size,
+            opacity,
+            round,
+            visible,
+            castShadow,
+            magnitudeMap,
+            colorMap
+        });
+
+        this.add(this._arrow);
+    }
+
+    canBindTo(body) {
+        return body.position && this._vectorPropertyOf;
+    }
+
+    synchronizeWith(body) {
+        this._arrow.visible = this.visible;
+        this._arrow.setVector(body.position, this._vectorPropertyOf(body));
+    }
 }
 
 //

@@ -2,6 +2,54 @@
 title: "🚀 Getting started"
 ---
 
+Any simulation is structured as follows:
+
+##### A physics model with properties that have physical meaning only:
+
+```text
+Body
+ ├── position
+ ├── velocity
+ ├── acceleration
+ ├── mass
+ ├── charge
+ ├── force
+ └── fixed
+
+Block
+ ├── size
+ └── orientation
+
+RadialSymmetricBody
+ └── radius
+```
+
+##### Generic view objects visualize model properties:
+
+```text
+Sphere          → radius + position
+Box             → size + position + orientation
+VectorView      → willekeurige Vec3
+ConditionalView → zichtbaarheid op basis van model state
+BondView        → BodyPair
+```
+
+##### Simulations combine model and generic view objects:
+
+```js
+simulation.bind(ball.alwaysWith(new Sphere(...)));
+
+simulation.bind(ball.alwaysWith(new VectorView({
+    vector: body => body.velocity,
+    color: "cyan"
+})));
+
+simulation.bind(ball.alwaysWith(new VectorView({
+    vector: body => body.force,
+    color: "red"
+})));
+```
+
 ## My first simulation
 <div class="header_line"></div>
 
@@ -37,13 +85,13 @@ const bodyC = new RadialSymmetricBody({
 });
 
 function updateForces(dt) {
-    const force_BA = gravitationalForceBetween(bodyA.and(bodyB));
-    const force_CB = gravitationalForceBetween(bodyB.and(bodyC));
-    const force_AC = gravitationalForceBetween(bodyC.and(bodyA));
+    bodyA.and(bodyB).apply(gravitationalForce);
+    bodyA.and(bodyC).apply(gravitationalForce);
+    bodyB.and(bodyC).apply(gravitationalForce);
 
-    bodyA.apply(force_BA.clone().sub(force_AC), dt / subSteps, Integrators.symplecticEulerStep);
-    bodyB.apply(force_CB.clone().sub(force_BA), dt / subSteps, Integrators.symplecticEulerStep);
-    bodyC.apply(force_AC.clone().sub(force_CB), dt / subSteps, Integrators.symplecticEulerStep);
+    bodyA.integrate(10, Integrators.symplecticEulerStep);
+    bodyB.integrate(10, Integrators.symplecticEulerStep);
+    bodyC.integrate(10, Integrators.symplecticEulerStep);
 }
 ```
 

@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix,
-    Slider, Range, UniformGravitationalForce, SpringForce, DragForce, Body, BodyPair
+    Slider, Range, UniformGravitationalForce, SpringForce, DragForce, Body, BodyPair, VectorView
 } from "../../../src/index.js";
 import {MathPhysicsModelBehavior} from "../../../src/core/helion.js";
 
@@ -58,10 +58,19 @@ const velocityArrow = new Arrow({
     size: .1,
     magnitudeMap: mag => mag * .1
 });
-const forceArrow = new Arrow({
+
+const velocityView = new VectorView({
+    vectorProperty: body => body.velocity,
+    color: "cyan",
+    size: 0.1,
+    magnitudeMap: mag => mag * 0.15
+});
+
+const forceArrow = new VectorView({
+    vectorProperty: body => body.acceleration,
     color: "red",
-    size: .1,
-    magnitudeMap: mag => mag * 2.5e-2
+    size: 0.1,
+    magnitudeMap: mag => mag * .025
 });
 
 Simulation
@@ -72,8 +81,8 @@ Simulation
     })
     .withMouseClickEventListener()
     .bind(ball.alwaysWith(sphere))
-    .bind(ball.velocityVector.alwaysWith(velocityArrow))
-    .bind(ball.accelerationVector.alwaysWith(forceArrow))
+    .bind(ball.alwaysWith(velocityView))
+    .bind(ball.alwaysWith(forceArrow))
     .bind(spring.alwaysWith(helix))
     .runsEvery(1.5e-3)
     .onStep((_, dt) => {
@@ -81,7 +90,6 @@ Simulation
             spring.body2.state.position.y = ball.position.y;
             ball.and(spring.body1).apply(spring.force);
         }
-
         ball.apply(gravity);
         ball.apply(dragForce);
         ball.integrate(dt);
@@ -97,7 +105,7 @@ Simulation
             .checked(true)))
     .append(new Slider("🍃 Air resistance: ")
         .withRange(new Range(-1, 0, 0.01))
-        .withValue(0)
+        .withValue(dragForce.dragCoefficient)
         .on(dragForce)
         .withProperty("dragCoefficient"));
 
