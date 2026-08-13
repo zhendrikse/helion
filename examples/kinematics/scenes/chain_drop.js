@@ -159,7 +159,6 @@ const table = new Block({
 });
 
 const physicsDt = 1e-4;
-let acceleration = 0;
 let simulationTime = 0;
 const simulation = Simulation
     .with({
@@ -179,7 +178,7 @@ const simulation = Simulation
     })
     .onFrame(() => {
         const endBall = chain.endBall;
-        acceleration = endBall.force.y / endBall.mass;
+        const acceleration = endBall.acceleration.y / endBall.mass * 1e-3;
         const plotData = [simulationTime];
         plotData.push(acceleration);
         simulation.plot(plotData);
