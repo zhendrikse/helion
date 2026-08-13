@@ -123,7 +123,7 @@ export class Body extends MathPhysicsModelBehavior{
     }
 
     integrate(dt = 0.01, integrator = Integrators.symplecticEulerStep) {
-        if (this.fixed)
+        if (this._fixed)
             return;
 
         const accelerationFn = (bodyParam) => this.force.clone().multiplyScalar(1 / bodyParam.mass);
