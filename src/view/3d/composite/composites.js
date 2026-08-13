@@ -608,12 +608,20 @@ export class LatticeView extends Renderable3D {
 }
 
 export class BoxSegmentsView extends Renderable3D {
-    constructor(count) {
+    constructor({
+        count = 0,
+        opacity = 1,
+    } = {}) {
         super();
         if (count === null || count === 0)
             throw new Error("Cannot initialize SegmentsView without knowing the number of segments");
         const geometry = new BoxGeometry(1, 1, 1);
-        const material = new MeshStandardMaterial({ roughness: 0.55, metalness: 0.75 });
+        const material = new MeshStandardMaterial({
+            transparent: true,
+            opacity: opacity,
+            roughness: 0.55,
+            metalness: 0.75
+        });
         this._mesh = new InstancedMesh(geometry, material, count);
         this.add(this._mesh);
 
@@ -623,15 +631,15 @@ export class BoxSegmentsView extends Renderable3D {
 
     _draw(pos, size, instanceIndex) {
         this._dummy.position.set(pos.x, pos.y, pos.z);
-        this._dummy.scale.set(size, size, size);
+        this._dummy.scale.set(size.x, size.y, size.z);
         this._dummy.updateMatrix();
         this._mesh.setMatrixAt(instanceIndex, this._dummy.matrix);
 
         let hue = 0.175 + pos.y / 600;
         // HSV hue between 0 en 1
         hue = ((hue % 1) + 1) % 1;
-
         this._instanceColor.setHSL(hue, 1.0, 0.5);
+
         this._mesh.setColorAt(instanceIndex, this._instanceColor);
     }
 
