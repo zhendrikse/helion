@@ -627,20 +627,12 @@ export class BoxSegmentsView extends Renderable3D {
 
         this._dummy = new Object3D();
         this._instanceColor = new Color();
+        this._instanceIndex = 0;
     }
 
-    _draw(pos, size, instanceIndex) {
-        this._dummy.position.set(pos.x, pos.y, pos.z);
-        this._dummy.scale.set(size.x, size.y, size.z);
-        this._dummy.updateMatrix();
-        this._mesh.setMatrixAt(instanceIndex, this._dummy.matrix);
-
-        let hue = 0.175 + pos.y / 600;
-        // HSV hue between 0 en 1
-        hue = ((hue % 1) + 1) % 1;
-        this._instanceColor.setHSL(hue, 1.0, 0.5);
-
-        this._mesh.setColorAt(instanceIndex, this._instanceColor);
+    colorFor(segment, targetColor) {
+        let hue = 0.175 + segment.position.y / 600;
+        targetColor.setHSL(hue % 1, 1.0, 0.5);
     }
 
     canBindTo(segments) {
@@ -648,10 +640,15 @@ export class BoxSegmentsView extends Renderable3D {
     }
 
     initialize(segments) {
-        let instanceIndex = 0;
         for (const segment of segments) {
-            this._draw(segment.position, segment.size, instanceIndex);
-            instanceIndex++;
+            this._dummy.position.copy(segment.position);
+            this._dummy.scale.copy(segment.size);
+            this._dummy.updateMatrix();
+            this._mesh.setMatrixAt(this._instanceIndex, this._dummy.matrix);
+
+            this.colorFor(segment, this._instanceColor);
+            this._mesh.setColorAt(this._instanceIndex, this._instanceColor);
+            this._instanceIndex++;
         }
         this._mesh.instanceMatrix.needsUpdate = true;
         this._mesh.instanceColor.needsUpdate = true;
