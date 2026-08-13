@@ -393,6 +393,7 @@ export class Simulation {
     _initHud() {
         this._hud = new Hud();
         this._hud.attach(this._viewport)
+        this._hud.show("Click to start the simulation");
     }
 
     /**
@@ -404,8 +405,6 @@ export class Simulation {
         this._timeScale = timeScale;
         return this;
     }
-
-    get hud() { return this._hud; }
 
     frameSceneOn(anObject, {
         padding = 1.2,
@@ -600,11 +599,13 @@ export class Simulation {
     }
 
     start() {
+        this._hud?.show("Running", 1000);
         this._status = Simulation.Status.RUNNING;
         return this;
     }
 
     stop() {
+        this._hud?.show("Simulation stopped");
         this._status = Simulation.Status.STOPPED;
         return this;
     }

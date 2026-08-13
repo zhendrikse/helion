@@ -96,7 +96,7 @@ export class Body extends MathPhysicsModelBehavior{
         this._state = new PhysicsState({ position, velocity, mass, charge });
         this._force = new Vec3();
         this._initialState = this._state.clone();
-        this._fixed = fixed;
+        this.fixed = fixed;
         this.orientation = new Vec3(); // Euler angle in radians
     }
 
@@ -122,7 +122,7 @@ export class Body extends MathPhysicsModelBehavior{
     }
 
     integrate(dt = 0.01, integrator = Integrators.symplecticEulerStep) {
-        if (this._fixed)
+        if (this.fixed)
             return;
 
         const accelerationFn = (bodyParam) => this.force.clone().multiplyScalar(1 / bodyParam.mass);
