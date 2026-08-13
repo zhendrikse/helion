@@ -1,4 +1,4 @@
-import {BlockSegments, BoxSegmentsView, Simulation, Vec3} from "../../../src/index.js";
+import {Block, BlockSegments, BoxSegmentsView, Simulation, Vec3} from "../../../src/index.js";
 
 const depth = 4;
 const finalSize = 200;
@@ -6,7 +6,7 @@ const finalSize = 200;
 const sponge = new BlockSegments();
 function mengerSponge(pos, size, currentDepth) {
     if (currentDepth === 0) {
-        sponge.push(pos, size);
+        sponge.push(new Block({position: pos, size: new Vec3(size, size, size)}));
         return;
     }
 
@@ -24,6 +24,7 @@ mengerSponge(new Vec3(), finalSize, depth);
 Simulation
     .with({
         htmlDivId: "mengerSpongeContainer",
-        cameraPosition: new Vec3(180, 165, 205).multiplyScalar(1.3)
+        cameraPosition: new Vec3(-180, 165, -200).multiplyScalar(2.1),
+        fieldOfView: 30
     })
-    .bind(sponge.onceWith(new BoxSegmentsView(sponge.count)));
+    .bind(sponge.onceWith(new BoxSegmentsView({count: sponge.count})));
