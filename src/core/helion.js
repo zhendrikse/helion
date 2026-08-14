@@ -235,17 +235,19 @@ export class Viewport {
 
 class SimulationClock {
     constructor({
-        fixedDt = 0.01,     // Physics step size => advances simulated time, not the simulation speed!
+        realTimeStep = 0.01,
+        simulationTimeStep = realTimeStep,
         maxAccumulatedTime = 0.25
     } = {}) {
-        this.fixedDt = fixedDt;
-        this.clockTime = 0;         // Our real-world clock time
+        this.realTimeStep = realTimeStep;             // realtime scheduling interval
+        this.simulationTimeStep = simulationTimeStep;   // simulated-time increment
+
+        this.clockTime = 0;
         this.previousClockTime = 0;
-        this.elapsedTime = 0;       // The elapsed time per frame on our real-world clock
-        this.simulatedTime = 0;     // The absolute simulated time that is incremented with dt
+        this.elapsedTime = 0;
+        this.simulatedTime = 0;
         this.accumulator = 0;
         this._maxAccumulatedTime = maxAccumulatedTime;
-
     }
 
     reset() {
@@ -257,14 +259,14 @@ class SimulationClock {
     }
 
     tick() {
-        this.accumulator -= this.fixedDt;
-        this.simulatedTime += this.fixedDt;
+        this.accumulator -= this.realTimeStep;
+        this.simulatedTime += this.simulationTimeStep;
     }
 
     updateWith(clockTime, timeScale) {
         this.previousClockTime = this.clockTime;
         this.clockTime = clockTime;
-        this.elapsedTime = (this.clockTime - this.previousClockTime) * 0.001;
+        this.elapsedTime = (this.clockTime - this.previousClockTime) * 1e-3;
         this.elapsedTime = Math.min(this.elapsedTime, this._maxAccumulatedTime);
         this.accumulator += this.elapsedTime * timeScale;
     }
@@ -354,14 +356,31 @@ export class Simulation {
         this._renderer.add(object3D);
         return this;
     }
-
+    
     /**
-     * Determines the simulated time increment.
-     * 
-     * @param dt The simulated time is incremented by dt.
+     * Determines how frequently simulation steps are executed
+     * relative to real-world time.
+     *
+     * This controls the scheduling interval, not the amount of
+     * simulated time advanced by each step.
+     *
+     * @param dt Real-world time interval between simulation steps.
      */
     runsEvery(dt) {
-        this._clock.fixedDt = dt;
+        this._clock.realTimeStep = dt;
+        return this;
+    }
+
+    /**
+     * Determines how much simulated time passes during each
+     * simulation step.
+     *
+     * This is independent of the real-world scheduling interval.
+     *
+     * @param dt Simulated time increment per step.
+     */
+    advancesBy(dt) {
+        this._clock.simulationTimeStep = dt;
         return this;
     }
 
@@ -461,10 +480,10 @@ export class Simulation {
         let i = 0;
         const maxSteps = 10;
 
-        while (this._clock.accumulator >= this._clock.fixedDt && i < maxSteps) {
+        while (this._clock.accumulator >= this._clock.realTimeStep && i < maxSteps) {
 
             for (let j = 0; j < this._stepsPerClockTick; j++) {
-                this._stepFunction(this._clock, this._clock.fixedDt);
+                this._stepFunction(this._clock, this._clock.simulationTimeStep);
                 this._clock.tick();
             }
 
@@ -519,7 +538,7 @@ export class Simulation {
      * synchronously with the real clock time. This makes sure that these kind of simulations run
      * equally fast on different hardware. Suppose the frame rate is 60 frames / sec. So
      * elapsed time is approximately 0.0167, so the accumulator is incremented by this amount.
-     * So, for example, with fixedDt = 0.01, so 1/100 onStep() calls per second, the number of
+     * So, for example, with realTimeStep = 0.01, so 1/100 onStep() calls per second, the number of
      * onStep() calls per frame is approximately:
      * frame 1 -> step
      * frame 2 -> step + step

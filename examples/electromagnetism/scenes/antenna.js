@@ -33,11 +33,12 @@ const simulation = Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .runsEvery(lambda / OneDimensionalPlaneWave.c / 100.0)
+    .runsEvery(1e-2)
+    .advancesBy(lambda / OneDimensionalPlaneWave.c / 100.0)
     .bind(antenna.onceWith(new Cylinder({color: 0xcccc77})))
     .onStep((clock, _) => {
         for (let wave of planeWaves)
-            wave.propagate(clock.clockTime * 5e-12);
+            wave.propagate(clock.simulatedTime);
     })
     .append(new Slider("🧲 Field strength: ")
         .withValue(10)

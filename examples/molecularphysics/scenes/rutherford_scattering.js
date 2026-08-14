@@ -85,7 +85,6 @@ function createAlphaParticle() {
 
 // Only one alpha particle is active at a time, so this view can be reused.
 const alphaSphere = new Sphere({ color: ALPHA_COLOR, segments: 24 });
-const dt = 5e-23; // Physical timestep, independent of Simulation.runsEvery()
 const simulation = Simulation
     .with({
         htmlDivId: "rutherfordScatteringContainer",
@@ -98,7 +97,8 @@ const simulation = Simulation
     .bind(source.onceWith(new Cylinder({segments: 48, color: 0x999999})))
     .bind(gold.alwaysWith(new Sphere({ color: 0xffff00, segments: 36 })))
     .runsEvery(1e-3)
-    .onStep(() => {
+    .advancesBy(5e-23)
+    .onStep((_, dt) => {
         if (!alpha)
             createAlphaParticle();
 

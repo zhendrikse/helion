@@ -149,7 +149,8 @@ Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .runsEvery(4e-20)
+    .runsEvery(1e-3)
+    .advancesBy(4e-20)
     .bind(electron.alwaysWith(new Sphere({ color: new Color("red") })))
     .bind(electricField.alwaysWith(electricArrowField))
     .bind(magneticField.alwaysWith(magneticArrowField))

@@ -164,8 +164,6 @@ const bondView2 = new SwitchableBondView({
     radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
 });
 
-const dt = 5e-13;
-let simulatedTime = 0;
 Simulation
     .with({
         htmlDivId: "carbonDioxideContainer",
@@ -178,21 +176,19 @@ Simulation
     .withMouseClickEventListener()
     .runsEvery(1e-2)
     .substeps(2)
-    .onStep(() => {
-        electricField.update(simulatedTime);
+    .advancesBy(5e-13)
+    .onStep((clock, dt) => {
+        electricField.update(clock.simulatedTime);
 
         co2.apply(coulombForce);
         co2.bond1.apply(bondForce);
         co2.bond2.apply(bondForce);
         co2.bond1.and(co2.bond2).apply(bendForce);
         co2.integrate(dt);
-
-        simulatedTime += dt;
     })
     .onReset(() => {
         co2.reset();
         electricField.update(0);
-        simulatedTime = 0;
     })
     .bind(co2.oxygen1.alwaysWith(new Sphere({ color: 0x00ff00, segments: 36 })))
     .bind(co2.oxygen2.alwaysWith(new Sphere({ color: 0x00ff00, segments: 36 })))

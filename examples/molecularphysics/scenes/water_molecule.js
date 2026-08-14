@@ -209,8 +209,6 @@ const bondView2 = new SwitchableBondView({
     radiusFunction: pair => 0.15 * (pair.body1.radius + pair.body2.radius)
 });
 
-let simulatedTime = 0;
-const dt = 5e-13;
 Simulation
     .with({
         htmlDivId: "waterMoleculeContainer",
@@ -223,21 +221,19 @@ Simulation
     .withMouseClickEventListener()
     .runsEvery(2.5e-3)
     .substeps(5)
-    .onStep(() => {
-        electricField.update(simulatedTime);
+    .advancesBy(5e-13)
+    .onStep((clock, dt) => {
+        electricField.update(clock.simulatedTime);
 
         water.apply(coulombForce);
         water.bond1.apply(bondForce);
         water.bond2.apply(bondForce);
         water.bond1.and(water.bond2).apply(torqueForce);
         water.integrate(dt);
-
-        simulatedTime += dt;
     })
     .onReset(() => {
         water.reset();
         electricField.reset();
-        simulatedTime = 0;
     })
     .bind(water.oxygen.alwaysWith(new Sphere({color: 0xff0000, segments: 36})))
     .bind(water.hydrogen1.alwaysWith(new Sphere({color: 0x0000ff, segments: 36})))

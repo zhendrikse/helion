@@ -1,21 +1,20 @@
 import { Color } from "three";
 import {
     Block, RadialSymmetricBody, Range, Sphere, Trail, ArrowField,
-    Box, Simulation, Vec3, CoulombForce, VectorField
+    EC, Simulation, Vec3, CoulombForce, VectorField, BlockSegments, BoxSegmentsView
 } from "../../../src/index.js";
 
-const Q = 1.6e-19;
 const K = 9e9;
 
 class ChargedSheet {
     constructor({
         size = 0.5e-10,
         segments = 40,
-        charge = Q
+        charge = EC
     } = {}) {
         this.size = size;
         this.charge = charge;
-        this._segments = [];
+        this._segments = new BlockSegments();
 
         const dx = size / segments;
         const dq = charge / (segments * segments);
@@ -30,7 +29,7 @@ class ChargedSheet {
 
     fieldAt(position) {
         const field = new Vec3();
-        for (const segment of this) {
+        for (const segment of this._segments) {
             const r = segment.position.clone().sub(position);
             const r2 = r.lengthSq();
 
@@ -43,12 +42,7 @@ class ChargedSheet {
         return field;
     }
 
-    /**
-     * @returns {Iterator<Block>}
-     */
-    [Symbol.iterator]() {
-        return this._segments[Symbol.iterator]();
-    }
+    get segments() { return this._segments; }
 }
 
 class SheetElectricField extends VectorField {
@@ -77,7 +71,7 @@ const electron = new RadialSymmetricBody({
     position: new Vec3((Math.random() - 0.5) * sheetSize, (Math.random() - 0.5) * sheetSize, sheetSize * 0.75),
     velocity: new Vec3(),
     mass: 9.11e-31,
-    charge: Q,
+    charge: EC,
     radius: sheetSize / 35
 });
 
@@ -95,7 +89,7 @@ const arrowField = new ArrowField({
     round: true
 });
 
-const simulation = Simulation
+Simulation
     .with({
         htmlDivId: "chargedSheetContainer",
         cameraPosition: new Vec3(12, 8, 16),
@@ -107,16 +101,12 @@ const simulation = Simulation
     .bind(electricField.onceWith(arrowField))
     .bind(electron.alwaysWith(electronSphere))
     .bind(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
+    .bind(sheet.segments.onceWith(new BoxSegmentsView({ count: sheet.segments.count, opacity: 0.6 })))
     .runsEvery(3e-3)
     .substeps(5)
+    .advancesBy(5e-20)
     .onStep((_, dt) => {
         electron
             .apply(coulombForce)
-            .integrate(5e-20);
+            .integrate(dt);
     });
-
-for (const segment of sheet)
-    simulation.bind(segment.onceWith(new Box({
-        color: new Color(0xffffff),
-        opacity: 0.6
-    })));
