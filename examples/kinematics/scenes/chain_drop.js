@@ -38,7 +38,7 @@ class PivotForce extends Force {
 }
 
 const gravitationalForce = new UniformGravitationalForce();
-class ChainDrop extends MathPhysicsModelBehavior {
+class Chain extends MathPhysicsModelBehavior {
     constructor({
         totalBalls = 20,
         length = 1,
@@ -90,7 +90,6 @@ class ChainDrop extends MathPhysicsModelBehavior {
 
             this._balls.push(new RadialSymmetricBody({
                 position: position.clone(),
-                velocity: new Vec3(),
                 mass: bodyMass,
                 radius: this.ballRadius
             }));
@@ -105,7 +104,6 @@ class ChainDrop extends MathPhysicsModelBehavior {
             position.y -= spacing;
             this._balls.push(new RadialSymmetricBody({
                 position: position.clone(),
-                velocity: new Vec3(),
                 mass: bodyMass,
                 radius: this.ballRadius
             }));
@@ -145,7 +143,7 @@ class ChainDrop extends MathPhysicsModelBehavior {
     }
 }
 
-const chain = new ChainDrop({
+const chain = new Chain({
     totalBalls: 20,
     length: 1,
     mass: 0.1,
@@ -158,8 +156,6 @@ const table = new Block({
     size: new Vec3(1, 0.1, 0.3)
 });
 
-const physicsDt = 1e-4;
-let simulationTime = 0;
 const simulation = Simulation
     .with({
         htmlDivId: "chainDropContainer",
@@ -172,15 +168,14 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .runsEvery(1e-3)
     .substeps(20)
-    .onStep(() => {
-        chain.update(physicsDt);
-        simulationTime += physicsDt;
-    })
-    .onFrame(() => {
+    .advancesBy(1e-4)
+    .onStep((clock, dt) => chain.update(dt))
+    .onFrame(timestep => {
         const endBall = chain.endBall;
         const acceleration = endBall.acceleration.y / endBall.mass * 1e-3;
-        const plotData = [simulationTime];
+        const plotData = [timestep];
         plotData.push(acceleration);
+        plotData.push(-9.8);
         simulation.plot(plotData);
     })
     .bind(table.onceWith(new Box({ color: 0x888888, opacity: 0.3 })))
@@ -215,18 +210,9 @@ for (const bond of chain.bonds)
 
 simulation.setupGraphWith({
     dataDefinition: [
-        {
-            label: "t",
-            value: () => simulationTime
-        },
-        {
-            label: "a (chain end)",
-            value: () => acceleration
-        },
-        {
-            label: "g",
-            value: () => -9.8
-        }
+        { label: "t" },
+        { label: "a (chain end)" },
+        { label: "g" }
     ],
     title: "Acceleration of chain end",
     xLabel: "Time [s]",
