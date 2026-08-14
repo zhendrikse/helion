@@ -80,21 +80,21 @@ const sphereView = new BoxSegmentsView({
     visibilityMapper: (segment, index) => sphere.segmentVisibleAt(index)
 });
 
-// TODO
-// const boundingBox = new Box3();
-// boundingBox.setFromObject( sphereView );
-// boundingBox.expandByScalar(.5 * R, .5 * R, .5 * R);
 
-Simulation
+const simulation = Simulation
     .with({
         htmlDivId: "polarCoordinatesIntegration",
     })
     .bind(sphere.onceWith(sphereView))
-    // .provideAxesAround({boundingBox: boundingBox})
-    // .frameSceneOn({boundingBox: boundingBox}, {padding: 1})
     .append(new Slider("θ_min")
         .on(sphere)
         .withProperty("thetaMin")
         .withValue(0)
         .withRange(new Range(0, 180, 1))
     );
+
+// TODO
+const boundingBox = new Box3();
+boundingBox.setFromObject( sphereView );
+simulation.provideAxesAround({boundingBox: boundingBox})
+simulation.frameSceneOn({boundingBox: boundingBox}, {padding: 1})
