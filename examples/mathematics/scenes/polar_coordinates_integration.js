@@ -86,8 +86,8 @@ class SegmentedSphere extends BlockSegments {
 
     thetaPhiAt(index) { return this._thetaPhi[index]; }
 }
-const sphere = new SegmentedSphere();
 
+const sphere = new SegmentedSphere();
 const sphereView = new BoxSegmentsView({
     opacity: 0.75,
     colorMapper: (segment, index, targetColor) => {
@@ -98,7 +98,6 @@ const sphereView = new BoxSegmentsView({
     },
     visibilityMapper: (segment, index) => sphere.segmentVisibleAt(index)
 });
-
 
 const simulation = Simulation
     .with({
@@ -131,7 +130,7 @@ const simulation = Simulation
     );
 
 simulation._viewport.controlsDiv.append(integralValueDiv);
-sphere.updateIntegral(sphere.integrate(functionToIntegrate).toFixed(2));
+sphere.updateIntegral(sphere.integrate(functionToIntegrate));
 
 // TODO
 const boundingBox = new Box3();
