@@ -101,7 +101,7 @@ Simulation
     .bind(electricField.onceWith(arrowField))
     .bind(electron.alwaysWith(electronSphere))
     .bind(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
-    .bind(sheet.segments.onceWith(new BoxSegmentsView({ count: sheet.segments.count, opacity: 0.6 })))
+    .bind(sheet.segments.onceWith(new BoxSegmentsView({ opacity: 0.6 })))
     .runsEvery(3e-3)
     .substeps(5)
     .advancesBy(5e-20)

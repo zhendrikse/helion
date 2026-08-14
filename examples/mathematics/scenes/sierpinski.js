@@ -116,7 +116,7 @@ function buildTetrahedron() {
 
 const fractalView = new LineSegmentsView({
     segments: model => model.segments,
-    lineWidth: 1
+    lineWidth: 2
 });
 
 Simulation

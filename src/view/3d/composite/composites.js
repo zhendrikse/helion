@@ -1,6 +1,6 @@
 import {
     Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute,
-    BufferGeometry, InstancedMesh, Matrix4, Quaternion, InstancedBufferAttribute,
+    BufferGeometry, InstancedMesh, Matrix4, Quaternion, InstancedBufferAttribute, Box3,
     MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry, Object3D, Vector2
 } from "three";
 import {LineMaterial} from 'three/addons/lines/LineMaterial.js';
@@ -613,24 +613,14 @@ export class LatticeView extends Renderable3D {
 
 export class BoxSegmentsView extends Renderable3D {
     constructor({
-        count = 0,
         colorMapper = (segment, index, targetColor) => new Color(1, 1, 0),
         visibilityMapper = (segment, index) => true,
         opacity = 1,
     } = {}) {
         super();
-        if (count === null || count === 0)
-            throw new Error("Cannot initialize SegmentsView without knowing the number of segments");
-        const geometry = new BoxGeometry(1, 1, 1);
-        const material = new MeshStandardMaterial({
-            transparent: true,
-            opacity: opacity,
-            roughness: 0.55,
-            metalness: 0.75
-        });
-        this._mesh = new InstancedMesh(geometry, material, count);
-        this.add(this._mesh);
 
+        this._mesh = null;
+        this._opacity = opacity;
         this._colorMapper = colorMapper;
         this._visibilityMapper = visibilityMapper;
         this._dummy = new Object3D();
@@ -643,6 +633,15 @@ export class BoxSegmentsView extends Renderable3D {
     }
 
     initialize(segments) {
+        const geometry = new BoxGeometry(1, 1, 1);
+        const material = new MeshStandardMaterial({
+            transparent: true,
+            opacity: this._opacity,
+            roughness: 0.55,
+            metalness: 0.75
+        });
+        this._mesh = new InstancedMesh(geometry, material, segments.count);
+        this.add(this._mesh);
     }
 
     synchronizeWith(segments) {
@@ -690,11 +689,8 @@ export class LineSegmentsView extends Renderable3D {
             )
         });
 
-        this._line = new LineSegments2(
-            this._geometry,
-            this._material
-        );
-
+        this._line = new LineSegments2(this._geometry, this._material);
+        this._boundingBox = new Box3();
         this.add(this._line);
         this.visible = visible;
     }
@@ -703,11 +699,14 @@ export class LineSegmentsView extends Renderable3D {
         return this._segments(model) !== undefined;
     }
 
+    initialize(model) {
+    }
+
     synchronizeWith(model) {
         const segments = this._segments(model);
         const positions = [];
         const colors = [];
-
+        this._boundingBox.makeEmpty();
         for (const segment of segments) {
             positions.push(
                 segment.from.x, segment.from.y, segment.from.z,
@@ -719,12 +718,17 @@ export class LineSegmentsView extends Renderable3D {
                     segment.color.r, segment.color.g, segment.color.b,
                     segment.color.r, segment.color.g, segment.color.b
                 );
+
+            this._boundingBox.expandByPoint(segment.from);
+            this._boundingBox.expandByPoint(segment.to);
         }
 
         this._geometry.setPositions(positions);
         if (colors.length > 0)
             this._geometry.setColors(colors);
     }
+
+    get boundingBox() { return this._boundingBox; }
 
     dispose() {
         this._geometry.dispose();

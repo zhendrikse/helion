@@ -70,7 +70,6 @@ const updateIntegral = () =>
     document.getElementById("integral-title").textContent = "Integral evaluates to: " + sphere.integrate(views).toFixed(2);
 
 const sphereView = new BoxSegmentsView({
-    count: sphere.count,
     opacity: 0.35,
     colorMapper: (segment, index, targetColor) => {
         const {theta, phi} = sphere.thetaPhiAt(index);
@@ -82,17 +81,17 @@ const sphereView = new BoxSegmentsView({
 });
 
 // TODO
-const boundingBox = new Box3();
-boundingBox.setFromObject( sphereView );
-boundingBox.expandByScalar(.5 * R, .5 * R, .5 * R);
+// const boundingBox = new Box3();
+// boundingBox.setFromObject( sphereView );
+// boundingBox.expandByScalar(.5 * R, .5 * R, .5 * R);
 
 Simulation
     .with({
         htmlDivId: "polarCoordinatesIntegration",
     })
     .bind(sphere.onceWith(sphereView))
-    .provideAxesAround({boundingBox: boundingBox})
-    .frameSceneOn({boundingBox: boundingBox}, {padding: 1})
+    // .provideAxesAround({boundingBox: boundingBox})
+    // .frameSceneOn({boundingBox: boundingBox}, {padding: 1})
     .append(new Slider("θ_min")
         .on(sphere)
         .withProperty("thetaMin")

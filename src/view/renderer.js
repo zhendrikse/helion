@@ -5,6 +5,8 @@ export class Renderable3D extends Object3D {
     initialize(model) {}
     synchronizeWith(model) {}
     reset() {}
+
+    get boundingBox() {}
 }
 
 export class Renderer {
