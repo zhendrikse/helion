@@ -614,6 +614,8 @@ export class LatticeView extends Renderable3D {
 export class BoxSegmentsView extends Renderable3D {
     constructor({
         count = 0,
+        colorMapper = (segment, index, targetColor) => new Color(1, 1, 0),
+        visibilityMapper = (segment, index) => true,
         opacity = 1,
     } = {}) {
         super();
@@ -629,14 +631,11 @@ export class BoxSegmentsView extends Renderable3D {
         this._mesh = new InstancedMesh(geometry, material, count);
         this.add(this._mesh);
 
+        this._colorMapper = colorMapper;
+        this._visibilityMapper = visibilityMapper;
         this._dummy = new Object3D();
         this._instanceColor = new Color();
         this._instanceIndex = 0;
-    }
-
-    colorFor(segment, targetColor) {
-        let hue = 0.175 + segment.position.y / 600;
-        targetColor.setHSL(hue % 1, 1.0, 0.5);
     }
 
     canBindTo(segments) {
@@ -644,21 +643,29 @@ export class BoxSegmentsView extends Renderable3D {
     }
 
     initialize(segments) {
-        for (const segment of segments) {
-            this._dummy.position.copy(segment.position);
-            this._dummy.scale.copy(segment.size);
-            this._dummy.updateMatrix();
-            this._mesh.setMatrixAt(this._instanceIndex, this._dummy.matrix);
-
-            this.colorFor(segment, this._instanceColor);
-            this._mesh.setColorAt(this._instanceIndex, this._instanceColor);
-            this._instanceIndex++;
-        }
-        this._mesh.instanceMatrix.needsUpdate = true;
-        this._mesh.instanceColor.needsUpdate = true;
     }
 
-    synchronizeWith(model) {
+    synchronizeWith(segments) {
+        this._instanceIndex = 0;
+
+        for (const segment of segments) {
+            this._dummy.position.copy(segment.position);
+            if (this._visibilityMapper(segment, this._instanceIndex))
+                this._dummy.scale.copy(segment.size);
+            else
+                this._dummy.scale.set(0, 0, 0);
+
+            this._dummy.updateMatrix();
+
+            this._mesh.setMatrixAt(this._instanceIndex, this._dummy.matrix);
+            this._colorMapper(segment, this._instanceIndex, this._instanceColor);
+            this._mesh.setColorAt(this._instanceIndex, this._instanceColor);
+
+            this._instanceIndex++;
+        }
+
+        this._mesh.instanceMatrix.needsUpdate = true;
+        this._mesh.instanceColor.needsUpdate = true;
     }
 }
 

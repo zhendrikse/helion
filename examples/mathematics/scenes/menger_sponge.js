@@ -27,4 +27,10 @@ Simulation
         cameraPosition: new Vec3(-180, 165, -200).multiplyScalar(2.1),
         fieldOfView: 30
     })
-    .bind(sponge.onceWith(new BoxSegmentsView({count: sponge.count})));
+    .bind(sponge.onceWith(new BoxSegmentsView({
+        count: sponge.count,
+        colorMapper: (segment, index, targetColor) => {
+            let hue = 0.175 + segment.position.y / 600;
+            targetColor.setHSL(hue % 1, 1.0, 0.5);
+        }
+    })));
