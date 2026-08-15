@@ -1,7 +1,7 @@
 export class Integrators {
     static eulerStep(physicsState, dt) {
-        physicsState.velocity.addScaledVector(physicsState.acceleration, dt);
         physicsState.position.addScaledVector(physicsState.velocity, dt);
+        physicsState.velocity.addScaledVector(physicsState.acceleration, dt);
     }
 
     static symplecticEulerStep(physicsState, dt) {
