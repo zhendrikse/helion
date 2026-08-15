@@ -1,4 +1,4 @@
-import { Object3D } from "three";
+import { Object3D, Box3 } from "three";
 
 export class Renderable3D extends Object3D {
     canBindTo(model) {}
@@ -6,7 +6,11 @@ export class Renderable3D extends Object3D {
     synchronizeWith(model) {}
     reset() {}
 
-    get boundingBox() {}
+    get boundingBox() {
+        const boundingBox = new Box3();
+        boundingBox.setFromObject(this);
+        return boundingBox;
+    }
 }
 
 export class Renderer {

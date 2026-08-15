@@ -1,5 +1,5 @@
 import {
-    Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute,
+    Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute, MeshBasicMaterial,
     BufferGeometry, InstancedMesh, Matrix4, Quaternion, InstancedBufferAttribute, Box3,
     MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry, Object3D, Vector2
 } from "three";
@@ -613,6 +613,7 @@ export class LatticeView extends Renderable3D {
 
 export class BoxSegmentsView extends Renderable3D {
     constructor({
+        material = new MeshBasicMaterial({ transparent: true }),
         colorMapper = (segment, index, targetColor) => new Color(1, 1, 0),
         visibilityMapper = (segment, index) => true,
         opacity = 1,
@@ -620,7 +621,8 @@ export class BoxSegmentsView extends Renderable3D {
         super();
 
         this._mesh = null;
-        this._opacity = opacity;
+        this._material = material;
+        this._material.opacity = opacity;
         this._colorMapper = colorMapper;
         this._visibilityMapper = visibilityMapper;
         this._dummy = new Object3D();
@@ -633,14 +635,7 @@ export class BoxSegmentsView extends Renderable3D {
     }
 
     initialize(segments) {
-        const geometry = new BoxGeometry(1, 1, 1);
-        const material = new MeshStandardMaterial({
-            transparent: true,
-            opacity: this._opacity,
-            roughness: 0.55,
-            metalness: 0.75
-        });
-        this._mesh = new InstancedMesh(geometry, material, segments.count);
+        this._mesh = new InstancedMesh(new BoxGeometry(1, 1, 1), this._material, segments.count);
         this.add(this._mesh);
     }
 
@@ -655,8 +650,8 @@ export class BoxSegmentsView extends Renderable3D {
                 this._dummy.scale.set(0, 0, 0);
 
             this._dummy.updateMatrix();
-
             this._mesh.setMatrixAt(this._instanceIndex, this._dummy.matrix);
+
             this._colorMapper(segment, this._instanceIndex, this._instanceColor);
             this._mesh.setColorAt(this._instanceIndex, this._instanceColor);
 
@@ -665,12 +660,6 @@ export class BoxSegmentsView extends Renderable3D {
 
         this._mesh.instanceMatrix.needsUpdate = true;
         this._mesh.instanceColor.needsUpdate = true;
-    }
-
-    get boundingBox() {
-        const boundingBox = new Box3();
-        boundingBox.setFromObject(this);
-        return boundingBox;
     }
 }
 

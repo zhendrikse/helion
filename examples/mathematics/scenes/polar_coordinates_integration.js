@@ -104,7 +104,7 @@ const simulation = Simulation
     })
     .bind(sphere.onceWith(sphereView))
     .provideAxesAround(sphereView)
-    .frameSceneOn(sphereView)
+    .frameSceneOn(sphereView, {padding: 1, translationY: -1.5})
     .append(new Slider("θ_min")
         .on(sphere)
         .withProperty("thetaMin")

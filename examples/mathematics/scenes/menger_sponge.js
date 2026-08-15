@@ -1,3 +1,4 @@
+import { MeshStandardMaterial } from "three";
 import {Block, BlockSegments, BoxSegmentsView, Simulation, Vec3} from "../../../src/index.js";
 
 const depth = 4;
@@ -28,6 +29,10 @@ Simulation
         fieldOfView: 30
     })
     .bind(sponge.onceWith(new BoxSegmentsView({
+        material: new MeshStandardMaterial({
+            roughness: 0.55,
+            metalness: 0.75
+        }),
         colorMapper: (segment, index, targetColor) => {
             let hue = 0.175 + segment.position.y / 600;
             targetColor.setHSL(hue % 1, 1.0, 0.5);
