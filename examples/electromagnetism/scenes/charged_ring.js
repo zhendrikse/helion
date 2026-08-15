@@ -1,33 +1,22 @@
 import { Color } from "three";
 import {
-    RadialSymmetricBody, AxialSymmetricBody, Range, Simulation,
-    Sphere, Cylinder, ArrowField, Vec3, Trail, VectorField, CoulombForce
+    RadialSymmetricBody, AxialSymmetricBody, Range, Simulation, EC,
+    Sphere, CylinderSegmentsView, ArrowField, Vec3, Trail, VectorField, CoulombForce, Segments
 } from "../../../src/index.js";
 
-//
-// Constants
-//
-const Q = 1.6e-19;
 const K = 9e9;
 
-class ChargedRing {
+class ChargedRing extends Segments {
     constructor({
         radius = 0.5e-10,
         segments = 60,
-        charge = Q
+        charge = EC
     } = {}) {
+        super();
         this.radius = radius;
         this.charge = charge;
-        this._segments = [];
         const points = this._createSegmentPositions(segments);
         this._createSegments(segments, points, charge);
-    }
-
-    /**
-     * @returns {Iterator<AxialSymmetricBody>}
-     */
-    [Symbol.iterator]() {
-        return this._segments[Symbol.iterator]();
     }
 
     _createSegments(segments, points, charge) {
@@ -35,7 +24,7 @@ class ChargedRing {
             const p1 = points[i];
             const p2 = points[i + 1];
             const axis = p2.clone().sub(p1);
-            this._segments.push(new AxialSymmetricBody({
+            this.push(new AxialSymmetricBody({
                 position: p1.clone().add(p2).multiplyScalar(0.5),
                 axis,
                 radius: this.radius * 2.51e-2,
@@ -56,7 +45,7 @@ class ChargedRing {
     fieldAt(position) {
         const field = new Vec3();
 
-        for (const segment of this._segments) {
+        for (const segment of this) {
             const r = segment.position.clone().sub(position);
             const r2 = r.lengthSq();
             if (r2 < 3e-23) // Cut off arrows that are too close to the ring, i.e. that are too big!
@@ -99,7 +88,7 @@ const electron = new RadialSymmetricBody({
     ),
     velocity: new Vec3(),
     mass: 9.1093837e-31,
-    charge: Q,
+    charge: EC,
     radius: radius / 20
 });
 
@@ -136,6 +125,7 @@ const simulation = Simulation
     .bind(electron.alwaysWith(electronSphere))
     .bind(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
     .bind(electricField.onceWith(arrowField))
+    .bind(ring.onceWith(new CylinderSegmentsView()))
     .runsEvery(3e-3)
     .advancesBy(3e-19)
     .substeps(5)
@@ -144,9 +134,5 @@ const simulation = Simulation
             .apply(electricForce)
             .integrate(dt);
     });
-
-// Ring rendering
-for (const segment of ring)
-    simulation.bind(segment.onceWith(new Cylinder({ color: "orange" })));
 
 
