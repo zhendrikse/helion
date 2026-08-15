@@ -1,3 +1,7 @@
+export function degToRad(angle) {
+    return angle * Math.PI / 180;
+}
+
 export function toCartesian(radius, theta, phi) {
     return new Vec3(
         radius * Math.sin(theta) * Math.cos(phi),

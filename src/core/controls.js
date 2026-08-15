@@ -44,8 +44,12 @@ class HtmlControl {
         return buttonRow;
     }
 
-    addEventListener(type, callback) {
-        this._inputControl.addEventListener(type, event => {
+    addEventListener(eventType, callback) {
+        const isString = typeof eventType === "string" || eventType instanceof String;
+        if (!isString)
+            throw new Error("First argument must be an event type string");
+
+        this._inputControl.addEventListener(eventType, event => {
             callback(event);
             this._simulation.onUserInteraction(event);
         });
@@ -205,8 +209,12 @@ export class Slider extends HtmlControl {
         return this;
     }
 
-    addEventListener(type, callback) {
-        this._inputControl.addEventListener(type, event => {
+    addEventListener(eventType, callback) {
+        const isString = typeof eventType === "string" || eventType instanceof String;
+        if (!isString)
+            throw new Error("First argument must be an event type string");
+
+        this._inputControl.addEventListener(eventType, event => {
             callback(event);
             this._simulation.onUserInteraction(event);
             const value = parseFloat(event.target.value);
