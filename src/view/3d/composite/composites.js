@@ -689,15 +689,15 @@ export class LineSegmentsView extends Renderable3D {
     }
 
     canBindTo(model) {
-        return model.segments;
+        return model.count;
     }
 
     initialize(model) {}
 
-    synchronizeWith(model) {
+    synchronizeWith(segments) {
         const positions = [];
         const colors = [];
-        for (const segment of model.segments) {
+        for (const segment of segments) {
             positions.push(
                 segment.from.x, segment.from.y, segment.from.z,
                 segment.to.x, segment.to.y, segment.to.z

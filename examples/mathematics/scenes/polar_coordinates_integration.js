@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, Block, degToRad, toCartesian, BlockSegments, BoxSegmentsView, Slider, Range, Interval
+    Simulation, Vec3, Block, degToRad, toCartesian, Segments, BoxSegmentsView, Slider, Range, Interval
 } from "../../../src/index.js";
 
 const functionToIntegrate = (theta, phi) => theta * theta * (phi - Math.PI) * (phi - Math.PI);
@@ -7,7 +7,7 @@ const integralValueDiv = document.createElement("div");
 const updateIntegral = (value) =>
     integralValueDiv.textContent = "Integral evaluates to: " + Number(value).toFixed(2);
 
-class SegmentedSphere extends BlockSegments {
+class SegmentedSphere extends Segments {
     constructor(radius = 1, da = 0.05) {
         super();
         this._thetaPhi = [];

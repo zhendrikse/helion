@@ -1,6 +1,6 @@
 export {
     AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology,
-    CubicLatticeTopology, BodyPair, Body, Block, BlockSegments, LineSegments
+    CubicLatticeTopology, BodyPair, Body, Block
 } from "./model/phys/bodies.js";
 
 export {
@@ -28,6 +28,7 @@ export {
     GravitationalForce, G, EC, PairForce, FieldForce, CoulombPairForce
 } from "./model/phys/forces.js";
 
+export { Turtle, StrangeAttractor, LineSegment, Segments} from "./model/math/objects.js"
 export { SphereSphereCollision } from "./model/transformations/interactions.js"
 export { Domain, DiscreteScalarField, DiscreteComplexField, VectorField } from "./model/math/fields.js"
 export { BarrierWaveEquation } from "./model/math/equations.js";

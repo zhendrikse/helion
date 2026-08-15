@@ -1,6 +1,6 @@
 import { Color } from "three";
 import {
-    Button, LineSegments, LineSegmentsView, normalDistribution, randomInt, Simulation, uniform, Vec3
+    LineSegment, Segments, LineSegmentsView, normalDistribution, randomInt, Simulation, uniform, Vec3
 } from "../../../src/index.js";
 
 function scale(length) {
@@ -21,7 +21,7 @@ function scale(length) {
     return [a1, a2, length / (scaleFactor * max)];
 }
 
-export class Harmonograph extends LineSegments {
+export class Harmonograph extends Segments {
     constructor({
         depth = 600,
         width = 600,
@@ -36,7 +36,6 @@ export class Harmonograph extends LineSegments {
         this._iterations = iterations;
         this._hueIncrement = hueIncrement;
         this._decayFactor = decayFactor;
-        this._color = new Color();
     }
 
     generate(standardDeviation = 0.002) {
@@ -86,8 +85,9 @@ export class Harmonograph extends LineSegments {
 
             const current = new Vec3(x, y, z);
             if (previous) {
-                this._color.setHSL((hue % 360) / 360, 1, 0.5);
-                this.add(previous, current, this._color);
+                const color = new Color();
+                color.setHSL((hue % 360) / 360, 1, 0.5);
+                this.push(new LineSegment(previous, current, color));
             }
             previous = current;
 

@@ -1,10 +1,10 @@
 import { MeshStandardMaterial } from "three";
-import {Block, BlockSegments, BoxSegmentsView, Simulation, Vec3} from "../../../src/index.js";
+import {Block, Segments, BoxSegmentsView, Simulation, Vec3} from "../../../src/index.js";
 
 const depth = 4;
 const finalSize = 200;
 
-const sponge = new BlockSegments();
+const sponge = new Segments();
 function mengerSponge(pos, size, currentDepth) {
     if (currentDepth === 0) {
         sponge.push(new Block({position: pos, size: new Vec3(size, size, size)}));

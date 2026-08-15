@@ -24,6 +24,25 @@ export class Integrators {
         physicsState.velocity.addScaledVector(k1.dv.clone().add(k2.dv), dt / 2);
     }
 
+    static rk4VectorStep(state, dt, derivativeFn) {
+        const k1 = derivativeFn(state);
+
+        const s2 = state.clone().addScaledVector(k1, dt / 2);
+        const k2 = derivativeFn(s2);
+
+        const s3 = state.clone().addScaledVector(k2, dt / 2);
+        const k3 = derivativeFn(s3);
+
+        const s4 = state.clone().addScaledVector(k3, dt);
+        const k4 = derivativeFn(s4);
+
+        state
+            .addScaledVector(k1, dt / 6)
+            .addScaledVector(k2, dt / 3)
+            .addScaledVector(k3, dt / 3)
+            .addScaledVector(k4, dt / 6);
+    }
+
     static rk4Step(physicsState, dt) {
         const derivative = body => ({
             dx: body.velocity.clone(),

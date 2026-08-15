@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     Block, RadialSymmetricBody, Range, Sphere, Trail, ArrowField,
-    EC, Simulation, Vec3, CoulombForce, VectorField, BlockSegments, BoxSegmentsView
+    EC, Simulation, Vec3, CoulombForce, VectorField, Segments, BoxSegmentsView
 } from "../../../src/index.js";
 
 const K = 9e9;
@@ -14,7 +14,7 @@ class ChargedSheet {
     } = {}) {
         this.size = size;
         this.charge = charge;
-        this._segments = new BlockSegments();
+        this._segments = new Segments();
 
         const dx = size / segments;
         const dq = charge / (segments * segments);

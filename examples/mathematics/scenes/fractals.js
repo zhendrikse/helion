@@ -1,76 +1,7 @@
 import { Color } from "three";
-import {Button, degToRad, hsvToRgb, LineSegments, LineSegmentsView, Simulation, Vec3} from "../../../src/index.js";
-
-class Turtle extends LineSegments {
-    static PenState = Object.freeze({
-        UP: false,
-        DOWN: true
-    });
-
-    constructor({
-        penState = Turtle.PenState.UP,
-        color = new Color(0xffff00)
-    } = {}) {
-        super();
-
-        this.currentColor = color;
-        this.penState = penState;
-
-        this.angle = 0;
-        this.x = 0;
-        this.y = 0;
-    }
-
-    right(angle) {
-        this.angle += degToRad(angle);
-        return this;
-    }
-
-    left(angle) {
-        this.angle -= degToRad(angle);
-        return this;
-    }
-
-    backward(distance) {
-        return this.forward(-distance);
-    }
-
-    penDown() {
-        this.penState = Turtle.PenState.DOWN;
-        return this;
-    }
-
-    penUp() {
-        this.penState = Turtle.PenState.UP;
-        return this;
-    }
-
-    color(color) {
-        this.currentColor = color;
-        return this;
-    }
-
-    forward(distance) {
-        const newX = this.x + distance * Math.cos(this.angle);
-        const newY = this.y + distance * Math.sin(this.angle);
-
-        this.goto(newX, newY);
-        return this;
-    }
-
-    goto(x, y) {
-        const from = new Vec3(this.x, this.y, 0);
-        const to = new Vec3(x, y, 0);
-
-        if (this.penState === Turtle.PenState.DOWN)
-            this.add(from, to, this.currentColor);
-
-        this.x = x;
-        this.y = y;
-
-        return this;
-    }
-}
+import {
+    Button, hsvToRgb, LineSegmentsView, Simulation, Vec3, Turtle
+} from "../../../src/index.js";
 
 function kochSnowflake(turtle, length, depth) {
     if (depth === 0) {

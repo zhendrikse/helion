@@ -1,7 +1,7 @@
 import {Color} from "three";
-import {LineSegments, LineSegmentsView, Simulation, Vec3} from "../../../src/index.js";
+import {LineSegment, Segments, LineSegmentsView, Simulation, Vec3} from "../../../src/index.js";
 
-export class LorenzAttractor extends LineSegments {
+export class LorenzAttractor extends Segments {
     constructor({
         sigma = 10,
         rho = 28,
@@ -47,7 +47,7 @@ export class LorenzAttractor extends LineSegments {
             const derivative = this.derivative(current);
             const next = current.clone().add(derivative.clone().multiplyScalar(this.dt));
             const distance = next.clone().sub(current).length();
-            this.add(current, next, this.color(distance));
+            this.push(new LineSegment(current, next, this.color(distance)));
             current = next;
         }
     }
