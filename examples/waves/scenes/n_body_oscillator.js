@@ -37,7 +37,7 @@ const latticeView = LatticeView.from({
     },
     bondArgs: {
         thickness: 0.075,
-        tubularSegments: 500,
+        tubularSegments: 600,
         coils: 30,
         color: 0xffff4d,
         castShadow: true
@@ -94,7 +94,7 @@ const simulation = Simulation
         for (let i = 0; i < chain.size; i++)
             plotData.push(chain.ballAt(i).position.x);
         simulation.plot(plotData);
-        displacement.reset();
+        chain.apply(new InitialDisplacement());
     })
     .append(latticeView.ui())
     .append(new Slider("Damping ")
