@@ -7,10 +7,10 @@ import { LineSegmentsGeometry} from 'three/addons/lines/LineSegmentsGeometry.js'
 import {Renderable3D} from "../../renderer.js";
 import {Vec3} from "../../../model/math/math.js";
 
-export class CylinderSegmentsView extends Renderable3D {
+class InstancedSegmentsView extends Renderable3D {
     constructor({
-        material = new MeshStandardMaterial({ transparent: true }),
-        colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, .5, 0),
+        material,
+        colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, 1, 1),
         opacity = 1,
     } = {}) {
         super();
@@ -21,7 +21,6 @@ export class CylinderSegmentsView extends Renderable3D {
         this._colorMapper = colorMapper;
 
         this._dummy = new Object3D();
-        this._direction = new Vec3();
         this._instanceColor = new Color();
         this._instanceIndex = 0;
     }
@@ -31,25 +30,32 @@ export class CylinderSegmentsView extends Renderable3D {
     }
 
     initialize(segments) {
-        this._mesh = new InstancedMesh(new CylinderGeometry(1, 1, 1, 16), this._material, segments.count);
+        this._mesh = new InstancedMesh(
+            this.createGeometry(),
+            this._material,
+            segments.count
+        );
+
         this.add(this._mesh);
+    }
+
+    createGeometry() {
+        throw new Error("createGeometry() must be implemented");
+    }
+
+    updateTransform(segment) {
+        throw new Error("updateTransform() must be implemented");
     }
 
     synchronizeWith(segments) {
         this._instanceIndex = 0;
-        for (const segment of segments) {
-            this._dummy.position.copy(segment.position);
 
-            this._direction.copy(segment.axis);
-            const length = this._direction.length();
-            this._dummy.scale.set(segment.radius, length, segment.radius);
-            this._dummy.quaternion.setFromUnitVectors(new Vec3(0, 1, 0), this._direction.normalize());
+        for (const segment of segments) {
+            this.updateTransform(segment);
             this._dummy.updateMatrix();
             this._mesh.setMatrixAt(this._instanceIndex, this._dummy.matrix);
-
             this._colorMapper(segment, this._instanceIndex, this._instanceColor);
             this._mesh.setColorAt(this._instanceIndex, this._instanceColor);
-
             this._instanceIndex++;
         }
 
@@ -58,55 +64,53 @@ export class CylinderSegmentsView extends Renderable3D {
     }
 }
 
-export class BoxSegmentsView extends Renderable3D {
+export class CylinderSegmentsView extends InstancedSegmentsView {
+    constructor({
+        material = new MeshStandardMaterial({ transparent: true }),
+        colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, .5, 0),
+        opacity = 1,
+    } = {}) {
+        super({ material, colorMapper, opacity });
+
+        this._direction = new Vec3();
+    }
+
+    createGeometry() {
+        return new CylinderGeometry(1, 1, 1, 16);
+    }
+
+    updateTransform(segment) {
+        this._dummy.position.copy(segment.position);
+        this._direction.copy(segment.axis);
+        const length = this._direction.length();
+        this._dummy.scale.set(segment.radius, length, segment.radius);
+        this._dummy.quaternion.setFromUnitVectors(new Vec3(0, 1, 0), this._direction.normalize());
+    }
+}
+
+export class BoxSegmentsView extends InstancedSegmentsView {
     constructor({
         material = new MeshBasicMaterial({ transparent: true }),
         colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, 1, 1),
         visibilityMapper = (segment, index) => true,
         opacity = 1,
     } = {}) {
-        super();
+        super({ material, colorMapper, opacity });
 
-        this._mesh = null;
-        this._material = material;
-        this._material.opacity = opacity;
-        this._colorMapper = colorMapper;
         this._visibilityMapper = visibilityMapper;
-        this._dummy = new Object3D();
-        this._instanceColor = new Color();
-        this._instanceIndex = 0;
     }
 
-    canBindTo(segments) {
-        return segments.count > 0;
+    createGeometry() {
+        return new BoxGeometry(1, 1, 1);
     }
 
-    initialize(segments) {
-        this._mesh = new InstancedMesh(new BoxGeometry(1, 1, 1), this._material, segments.count);
-        this.add(this._mesh);
-    }
-
-    synchronizeWith(segments) {
-        this._instanceIndex = 0;
-
-        for (const segment of segments) {
-            this._dummy.position.copy(segment.position);
-            if (this._visibilityMapper(segment, this._instanceIndex))
-                this._dummy.scale.copy(segment.size);
-            else
-                this._dummy.scale.set(0, 0, 0);
-
-            this._dummy.updateMatrix();
-            this._mesh.setMatrixAt(this._instanceIndex, this._dummy.matrix);
-
-            this._colorMapper(segment, this._instanceIndex, this._instanceColor);
-            this._mesh.setColorAt(this._instanceIndex, this._instanceColor);
-
-            this._instanceIndex++;
-        }
-
-        this._mesh.instanceMatrix.needsUpdate = true;
-        this._mesh.instanceColor.needsUpdate = true;
+    updateTransform(segment) {
+        this._dummy.position.copy(segment.position);
+        if (this._visibilityMapper(segment, this._instanceIndex))
+            this._dummy.scale.copy(segment.size);
+        else
+            this._dummy.scale.set(0, 0, 0);
+        this._dummy.quaternion.identity();
     }
 }
 
@@ -123,10 +127,7 @@ export class LineSegmentsView extends Renderable3D {
             color: color ?? 0xffffff,
             linewidth: lineWidth,
             vertexColors: color === null,
-            resolution: new Vector2(
-                window.innerWidth,
-                window.innerHeight
-            )
+            resolution: new Vector2(window.innerWidth, window.innerHeight)
         });
 
         this._line = new LineSegments2(this._geometry, this._material);
