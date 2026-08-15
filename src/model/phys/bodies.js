@@ -208,7 +208,6 @@ export class Lattice extends MathPhysicsModelBehavior {
         this._bodies = [];
         this._bonds = [];
         this._bondForces = [];
-        this._boundaryConditions = [];
     }
 
     get damping() { return this._damping; }
@@ -232,11 +231,6 @@ export class Lattice extends MathPhysicsModelBehavior {
         return this;
     }
 
-    addBoundaryCondition(boundaryCondition) {
-        this._boundaryConditions.push(boundaryCondition);
-        return this;
-    }
-
     connect(body1, body2, {k, restLength, damping}) {
         this._bonds.push(body1.and(body2));
         this._bondForces.push(new SpringForce({k, restLength, damping}));
@@ -250,18 +244,22 @@ export class Lattice extends MathPhysicsModelBehavior {
     get bondCount() { return this._bonds.length }
 
     bodyAt(index) { return this._bodies[index]; }
-
     bondAt(index) { return this._bonds[index]; }
 
-    update(t, dt) {
-        for (const boundaryCondition of this._boundaryConditions)
-            boundaryCondition.applyTo(this, t);
+    // apply(transformation) {
+    //     for (const body of this._bodies)
+    //         transformation.applyTo(body);
+    //     return this;
+    // }
 
+    integrate(dt) {
         for (let i = 0; i < this.bondCount; i++)
             this._bonds[i].apply(this._bondForces[i]);
 
         for (const body of this._bodies)
             body.integrate(dt);
+
+        return this;
     }
 
     reset() {

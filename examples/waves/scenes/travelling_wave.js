@@ -12,15 +12,17 @@ class BoundaryCondition extends Transformation {
         super();
         this._amplitude = amplitude;
         this._omega = omega;
+        this._time = 0;
     }
 
-    applyTo(chain, t) {
+    applyTo(chain) {
         const firstBall = chain.bodyAt(0);
 
-        if (t < this.pulseDuration)
-            firstBall.state.position.y = this._amplitude * Math.sin(this._omega * t);
+        if (this._time < this.pulseDuration)
+            firstBall.state.position.y = this._amplitude * Math.sin(this._omega * this._time);
     }
 
+    set time(time) { this._time = time; }
     get pulseDuration() { return 2 * Math.PI / this._omega; }
     set omega(value) { this._omega = value; }
     set amplitude(value) { this._amplitude = value; }
@@ -39,8 +41,7 @@ const chain = new Lattice({
         bondRestLength: 0.9 * chainLength / (count - 1) // Springs are intentionally stretched to create initial tension
     }))
     .fixateBodyAt(0)
-    .fixateBodyAt(count - 1)
-    .addBoundaryCondition(boundaryCondition);
+    .fixateBodyAt(count - 1);
 
 const latticeView = LatticeView.from({
     bodyView: Sphere,
@@ -71,7 +72,11 @@ Simulation
     .runsEvery(2e-3)
     .substeps(20)
     .advancesBy(2e-4)
-    .onStep((clock, dt) => chain.update(clock.simulatedTime, dt))
+    .onStep((clock, dt) => {
+        boundaryCondition.time = clock.simulatedTime;
+        chain.apply(boundaryCondition);
+        chain.integrate(dt);
+    })
     .bind(chain.alwaysWith(latticeView))
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
