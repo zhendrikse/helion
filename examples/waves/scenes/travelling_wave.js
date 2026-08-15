@@ -63,6 +63,7 @@ Simulation
     .with({
         htmlDivId: "travellingWaveContainer",
         cameraPosition: new Vec3(-10, .25, 1.5).multiplyScalar(1.4),
+        controlsTarget: new Vec3(-5, 0, 0),
         shadowsEnabled: true,
         fieldOfView: 30,
         background: Simulation.Background.FOG,
@@ -88,7 +89,7 @@ Simulation
     .append(new Slider("Bond force ")
         .on(chain)
         .withProperty("bondForce")
-        .withRange(new Range(10, 2000, 1))
+        .withRange(new Range(10, 1000, 1))
         .withValue(1.5 * (count - 1))
     )
     .append(new Slider("Damping ")
