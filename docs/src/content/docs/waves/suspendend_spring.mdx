@@ -1,0 +1,36 @@
+---
+title: "➰ Suspended string"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div class="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div class="header_line"></div>
+
+🎯 A suspended string that eventually comes to rest in a catenary form<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/MyPrograms/program/SuspendedSpring) is available as well, see [suspended_spring.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/suspended_spring.py)<br/>
+👉 The Catenary (Free-Hanging String):<br/>
+
+$$
+y=a\cosh \left(\frac{x}{a}\right)+c
+$$
+
+### Live experiment
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/waves/scenes/suspended_spring.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=suspended_spring.js"/>
+    </a>
+</div>
+
+<div id="suspendedSpringContainer" style="aspect-ratio: 4/3"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/suspended_spring.js"}></script>
