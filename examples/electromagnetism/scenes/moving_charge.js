@@ -76,12 +76,12 @@ const chargeSlider = new Slider("🪫 Charge: ")
     .withUnits(" electron charge(s)")
     .withValue(1)
     .withRange(new Range(0, 5, .1))
-    .addEventListener(chargeCallback);
+    .addEventListener("input", chargeCallback);
 const speedSlider = new Slider("🚀 Speed: ")
     .withUnits(" x 1E-14 m/s")
     .withValue(25)
     .withRange(new Range(1, 50, 1))
-    .addEventListener(speedCallback);
+    .addEventListener("input", speedCallback);
 
 const simulation = Simulation
     .with({
