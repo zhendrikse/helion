@@ -8,23 +8,13 @@ class InitialDisplacement extends Transformation {
     constructor(displacement = new Vec3(7, 0, 0)) {
         super();
         this._displacement = displacement;
-        this._done = false;
     }
 
     applyTo(lattice) {
-        if (this._done)
-            return;
-
         lattice.bodyAt(0).position.add(this._displacement);
-        this._done = true;
-    }
-
-    reset() {
-        this._done = false;
     }
 }
 
-const displacement = new InitialDisplacement();
 const chain = new Lattice({
         k: 300,
         damping: 0.5,
@@ -36,7 +26,7 @@ const chain = new Lattice({
         length: 40,
         totalMass: 7.5
     }))
-    .addBoundaryCondition(displacement);
+    .apply(new InitialDisplacement());
 
 const latticeView = LatticeView.from({
     bodyView: Sphere,
@@ -65,7 +55,8 @@ const simulation = Simulation
         headUpDisplay: true
     })
     .withMouseClickEventListener()
-    .runsEvery(1e-3)
+    .runsEvery(4e-3)
+    .advancesBy(1e-3)
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
         planeSizeXy: new Vec2(200, 200),
@@ -86,7 +77,7 @@ const simulation = Simulation
         }
     )
     .onStep((clock, dt) => {
-        chain.update(clock.simulatedTime, dt);
+        chain.integrate(dt);
 
         if (!simulation.isRunning)
             return;
