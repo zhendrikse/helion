@@ -90,8 +90,7 @@ const simulation = Simulation
         fieldOfView: 50
     })
     .withMouseClickEventListener()
-    .runsEvery(0.001)
-    .substeps(25)
+    .runsEvery(0.01)
     .addObject3D(new Floor({
         position: new Vec3(0, -5, 0),
         planeSizeXy: new Vec2(100, 100),
