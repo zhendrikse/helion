@@ -561,23 +561,24 @@ export class LatticeView extends Renderable3D {
         });
     }
 
+    set bondType(type) {
+        for (const bondView of this._bondViews)
+            bondView.bondType = type;
+    }
+
+    set nodesVisible(booleanValue) {
+        this._bodyViews.forEach(sphere => sphere.visible = booleanValue);
+    }
+
     ui() {
         return new CompoundControl()
             .add(new RadioGroup()
-                .add("Springs", () => {
-                    for (const bondView of this._bondViews)
-                        bondView.bondType = SwitchableBondView.Type.Spring;
-                })
-                .add("Cylinders", () => {
-                    for (const bondView of this._bondViews)
-                        bondView.bondType = SwitchableBondView.Type.Cylinder;
-                })
+                .add("Springs", () => this.bondType = SwitchableBondView.Type.Spring)
+                .add("Cylinders", () => this.bondType = SwitchableBondView.Type.Cylinder)
                 .checked(this._bondViews[0].bondType === SwitchableBondView.Type.Spring ? 0 : 1)
             )
             .add(new Checkbox("Show nodes ")
-                .addEventListener("change",
-                    event => this._bodyViews.forEach(sphere => sphere.visible = event.target.checked)
-                )
+                .addEventListener("change", event => this.nodesVisible = event.target.checked)
                 .checked(true)
             );
     }
