@@ -54,7 +54,7 @@ export class LorenzAttractor extends LineSegments {
 }
 
 const lorenz = new LorenzAttractor();
-const lorenzView = new LineSegmentsView({ lineWidth: 1.5 });
+const lorenzView = new LineSegmentsView({ lineWidth: 1.25 });
 
 const simulation = Simulation
     .with({
@@ -64,5 +64,7 @@ const simulation = Simulation
     // .frameSceneOn(lorenzView)
     .bind(lorenz.alwaysWith(lorenzView));
 
-simulation.provideAxesAround(lorenzView);
-simulation.frameSceneOn(lorenzView, {translationY: -40, padding: 1});
+simulation.provideAxesAround(lorenzView, {
+    tickLabels: false
+});
+simulation.frameSceneOn(lorenzView, {translationY: -40, padding: 0.9});

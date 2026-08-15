@@ -130,9 +130,9 @@ export class Body extends MathPhysicsModelBehavior{
         if (this.fixed)
             return;
 
-        const accelerationFn = (bodyParam) => this.force.clone().multiplyScalar(1 / bodyParam.mass);
-        integrator(this._state, dt, accelerationFn);
-        this._force.set(0, 0, 0);
+        this._state.acceleration.copy(this.force.multiplyScalar(1 / this.mass));
+        this._force.set(0, 0, 0); // Force has been divided by mass => thus dirty => thus clean
+        integrator(this._state, dt);
     }
 
     positionVectorTo(other) { return other.position.clone().sub(this.position); }

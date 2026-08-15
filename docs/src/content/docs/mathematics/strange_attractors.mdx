@@ -24,12 +24,19 @@ layout: ../../../layouts/DocsLayout.astro
 🧠 Inspired by [Lorenz Attractor](https://prettymathpics.com/lorenz-attractor/) blog and code contained therein<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/LorentzAttractor) is available as well, see [lorenz_attractor.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/lorenz_attractor.py)<br/>
 
+$$
+\begin{cases}
+\dfrac{dx}{dt} = a (y - x) \\
+\dfrac{dy}{dt} = x (b - z) - y  \\
+\dfrac{dz}{dt} = xy - c z
+\end{cases}
+$$
+
 <div id="lorenzAttractorContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/lorenz_attractor.js"}></script>
 <p style="clear: both;"></p>
 
-### Background
-<div style="border-top: 1px solid #999999"><br/></div>
+#### Background
 
 The [lorenz attractor](https://en.wikipedia.org/wiki/Lorenz_system) was first studied by [Edward N. Lorenz](https://en.wikipedia.org/wiki/Edward_Norton_Lorenz), 
 a meteorologist. It was derived from a simplified model of convection in the earth's atmosphere. 
@@ -39,11 +46,14 @@ A tiny rounding error in his input led to wildly different outcomes &mdash; chao
 from seemingly deterministic equations. This  discovery became the foundation of chaos theory and is beautifully captured 
 in the Lorenz equations, a set of three coupled non-linear differential equations:
 
-- $\dfrac{dx}{dt} = a (y - x)$, the stream function
 
-- $\dfrac{dy}{dt} = x (b - z) - y$, the temperature gradient
-
-- $\dfrac{dz}{dt} = xy - c z$, the deviation in (linear) temperature
+$$
+\begin{cases}
+\dfrac{dx}{dt} = a (y - x),\ \text{stream function} \\
+\dfrac{dy}{dt} = x (b - z) - y,\ \text{temperature gradient} \\
+\dfrac{dz}{dt} = xy - c z,\ \text{deviation in (linear) temperature}
+\end{cases}
+$$
 
 The constant $a$ is sometimes known as the 
 Prandtl number and $b$ the Rayleigh number.
@@ -62,3 +72,29 @@ it turns out, is full of delicate interconnections.
 
 For further reading: the website of [Paul Bourke](https://paulbourke.net/fractals/lorenz/) contains 
 [a comprehensive page](https://paulbourke.net/fractals/lorenz/) on the Lorenz attractor.
+<p style="clear: both;"></p>
+
+
+### Rössler attractor
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/rossler_attractor.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=rossler_attractor.js"/>
+    </a>
+</div>
+
+🧠 Inspired by [RoesslerAttractor.ipynb](https://nbviewer.org/url/sites.science.oregonstate.edu/~landaur/Books/Problems/Codes/JupyterNB/RoesslerAttractor.ipynb)<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/RoesslerAttractor) is available as well, see [rossler_attractor.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/rossler_attractor.py)<br/>
+
+$$
+\begin{cases}
+\dfrac{dx}{dt} = -y-z \\
+\dfrac{dy}{dt} = x + ay  \\
+\dfrac{dz}{dt} = b+z(x-c)
+\end{cases}
+$$
+
+<div id="rosslerAttractorContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/rossler_attractor.js"}></script>
+
