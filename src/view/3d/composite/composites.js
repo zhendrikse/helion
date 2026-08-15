@@ -666,6 +666,12 @@ export class BoxSegmentsView extends Renderable3D {
         this._mesh.instanceMatrix.needsUpdate = true;
         this._mesh.instanceColor.needsUpdate = true;
     }
+
+    get boundingBox() {
+        const boundingBox = new Box3();
+        boundingBox.setFromObject(this);
+        return boundingBox;
+    }
 }
 
 export class LineSegmentsView extends Renderable3D {

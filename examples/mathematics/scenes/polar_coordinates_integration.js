@@ -3,19 +3,19 @@ import {
     Simulation, Vec3, Block, toCartesian, BlockSegments, BoxSegmentsView, Slider, Range, Interval
 } from "../../../src/index.js";
 
-const R = 1, da = 0.05;
 const functionToIntegrate = (theta, phi) => theta * theta * (phi - Math.PI) * (phi - Math.PI);
-
 const integralValueDiv = document.createElement("div");
 
 class SegmentedSphere extends BlockSegments {
-    constructor() {
+    constructor(radius = 1, da = 0.05) {
         super();
         this._thetaPhi = [];
         this._thetaMin = 0;
-        this._thetaMax = 180;
         this._phiMin = 0;
+        this._thetaMax = 180;
         this._phiMax = 360;
+        this._radius = radius;
+        this._da = da;
 
         const values = [];
         for (let theta = 0; theta <= Math.PI; theta += da)
@@ -31,20 +31,19 @@ class SegmentedSphere extends BlockSegments {
         const val = functionToIntegrate(theta, phi);
         values.push(val);
         this.push(new Block({
-            position: toCartesian(R, theta, phi),
-            size: new Vec3(da, da, da)
+            position: toCartesian(this._radius, theta, phi),
+            size: new Vec3(this._da, this._da, this._da)
         }));
         this._thetaPhi.push({theta:theta, phi:phi});
     }
 
     segmentVisibleAt(index) {
-        const t = this._thetaPhi[index].theta;
-        const p = this._thetaPhi[index].phi;
+        const {theta, phi} = this.thetaPhiAt(index);
         return (
-            t >= MathUtils.degToRad(this._thetaMin) &&
-            t <= MathUtils.degToRad(this._thetaMax) &&
-            p >= MathUtils.degToRad(this._phiMin) &&
-            p <= MathUtils.degToRad(this._phiMax)
+            theta >= MathUtils.degToRad(this._thetaMin) &&
+            theta <= MathUtils.degToRad(this._thetaMax) &&
+            phi >= MathUtils.degToRad(this._phiMin) &&
+            phi <= MathUtils.degToRad(this._phiMax)
         );
     }
 
@@ -81,7 +80,7 @@ class SegmentedSphere extends BlockSegments {
             if (this.segmentVisibleAt(index))
                 sum += func(theta, phi) * Math.sin(theta);
         }
-        return sum * R * R * da * da;
+        return sum * this._radius * this._radius * this._da * this._da;
     }
 
     thetaPhiAt(index) { return this._thetaPhi[index]; }
@@ -104,6 +103,8 @@ const simulation = Simulation
         htmlDivId: "polarCoordinatesIntegration",
     })
     .bind(sphere.onceWith(sphereView))
+    .provideAxesAround(sphereView)
+    .frameSceneOn(sphereView)
     .append(new Slider("θ_min")
         .on(sphere)
         .withProperty("thetaMin")
@@ -131,9 +132,3 @@ const simulation = Simulation
 
 simulation._viewport.controlsDiv.append(integralValueDiv);
 sphere.updateIntegral(sphere.integrate(functionToIntegrate));
-
-// TODO
-const boundingBox = new Box3();
-boundingBox.setFromObject( sphereView );
-simulation.provideAxesAround({boundingBox: boundingBox})
-simulation.frameSceneOn({boundingBox: boundingBox}, {padding: 1})
