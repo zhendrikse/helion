@@ -106,7 +106,7 @@ const harmonograph = new Harmonograph();
 harmonograph.generate();
 const harmonographView = new LineSegmentsView({
     segments: model => model.segments,
-    lineWidth: 1.5
+    lineWidth: 1.25
 });
 
 const simulation = Simulation
@@ -115,6 +115,8 @@ const simulation = Simulation
         parameterMenuCollapsed: false
     })
     .bind(harmonograph.alwaysWith(harmonographView))
-    .append(new Button("Generate").addEventListener("click", () => harmonograph.generate()));
+    .append(new Button()
+        .withText("Generate")
+        .addEventListener("click", () => harmonograph.generate()));
 
 simulation.frameSceneOn(harmonographView, {padding: 0.9});
