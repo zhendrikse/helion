@@ -100,7 +100,6 @@ export class Body extends MathPhysicsModelBehavior{
         this.orientation = orientation;
         this._initialState = this._state.clone();
         this._initialOrientation = orientation.clone();
-        this._initialFixed = fixed;
     }
 
     get position() { return this._state.position; }
@@ -114,7 +113,6 @@ export class Body extends MathPhysicsModelBehavior{
     reset() {
         this._state= this._initialState.clone();
         this.orientation.copy(this._initialOrientation);
-        this.fixed = this._initialFixed;
     }
 
     fieldAt(point) {
@@ -246,11 +244,12 @@ export class Lattice extends MathPhysicsModelBehavior {
     bodyAt(index) { return this._bodies[index]; }
     bondAt(index) { return this._bonds[index]; }
 
-    // apply(transformation) {
-    //     for (const body of this._bodies)
-    //         transformation.applyTo(body);
-    //     return this;
-    // }
+    applyToBodies(transformation) {
+        for (const body of this._bodies)
+            transformation.applyTo(body);
+
+        return this;
+    }
 
     integrate(dt) {
         for (let i = 0; i < this.bondCount; i++)
