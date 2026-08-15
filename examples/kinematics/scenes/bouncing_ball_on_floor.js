@@ -58,7 +58,9 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .bind(ball.alwaysWith(sphere))
     .bind(ball.alwaysWith(new Trail({ color: sphere.color})))
-    .runsEvery(2.5e-3)
+    .runsEvery(1e-3)
+    .substeps(4)
+    .advancesBy(1e-3)
     .onStep((clock, dt) => {
         if (ball.reachedEnd())
             return;
@@ -68,9 +70,8 @@ const simulation = Simulation
 
         if (ball.liesOnFloor())
             ball.bounceOffOfFloor(dt, 0.9);
-
-        updateGraph(clock.simulatedTime)
     })
+    .onFrame((timeStamp) => updateGraph(timeStamp))
     .addObject3D(new Floor({
         type: Floor.Type.GRID,
         planeSizeXy: new Vector2(5, 5),

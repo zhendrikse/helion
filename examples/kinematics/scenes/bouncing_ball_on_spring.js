@@ -84,7 +84,9 @@ Simulation
     .bind(ball.alwaysWith(velocityView))
     .bind(ball.alwaysWith(forceArrow))
     .bind(spring.alwaysWith(helix))
-    .runsEvery(1.5e-3)
+    .runsEvery(2e-3)
+    .substeps(2)
+    .advancesBy(1e-3)
     .onStep((_, dt) => {
         if (hitsSpring(ball)) {
             spring.body2.state.position.y = ball.position.y;

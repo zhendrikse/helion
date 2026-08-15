@@ -1,7 +1,8 @@
 import {
     Vec3, Simulation, Sphere, Box, Slider, Range, SwitchableBondView, RadialSymmetricBody,
-    MathPhysicsModelBehavior, SpringForce, Force, UniformGravitationalForce, Block
+    MathPhysicsModelBehavior, SpringForce, Force, UniformGravitationalForce, Block, G
 } from "../../../src/index.js";
+import {g} from "../../../src/model/phys/forces.js";
 
 /**
  * Artificial restoring force used to keep the chain close to
@@ -171,14 +172,23 @@ const simulation = Simulation
     .advancesBy(1e-4)
     .onStep((clock, dt) => chain.update(dt))
     .onFrame(timestep => {
-        const endBall = chain.endBall;
-        const acceleration = endBall.acceleration.y / endBall.mass * 1e-3;
-        const plotData = [timestep];
-        plotData.push(acceleration);
-        plotData.push(-9.8);
-        simulation.plot(plotData);
+        if (!simulation.isRunning)
+            return;
+        simulation.plot([timestep, chain.endBall.acceleration.y, g]);
     })
     .bind(table.onceWith(new Box({ color: 0x888888, opacity: 0.3 })))
+    .setupGraphWith({
+        dataDefinition: [
+            { label: "t", color: "yellow" },
+            { label: "a (chain end)", color: "white" },
+            { label: "g", color: "red" }
+        ],
+        title: "Acceleration of chain end",
+        xLabel: "Time [s]",
+        yLabel: "Acceleration [m/s²]",
+        maxPoints: 500,
+        labelColor: "yellow"
+    })
     .append(
         new Slider("Spring force ")
             .on(chain)
@@ -208,15 +218,3 @@ for (const bond of chain.bonds)
         }))
     );
 
-simulation.setupGraphWith({
-    dataDefinition: [
-        { label: "t" },
-        { label: "a (chain end)" },
-        { label: "g" }
-    ],
-    title: "Acceleration of chain end",
-    xLabel: "Time [s]",
-    yLabel: "Acceleration [m/s²]",
-    maxPoints: 500,
-    labelColor: "yellow"
-});

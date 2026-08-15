@@ -1,6 +1,5 @@
 import { Vec3 } from "../math/math.js";
 import { Transformation} from "../../core/helion.js";
-import {VectorField} from "../math/fields.js";
 
 export const G = 6.67e-11;   // Gravitational constant
 export const EC = 1.602E-19; // Coulomb charge
@@ -92,28 +91,16 @@ export class DragForce extends Force {
     }
 }
 
-class UniformGravitationalField extends VectorField {
-    constructor() {
-        super();
-        this._fieldVector = new Vec3(0, -g, 0);
-    }
-
-    sample(positionVector, target) {
-        target.copy(this._fieldVector);
-    }
-}
-
 /**
  * Approximate (earth) gravitational field force F = ma by a uniform gravitational field
  */
-export class UniformGravitationalForce extends FieldForce {
+export class UniformGravitationalForce extends Force {
     constructor() {
         super();
-        this._field = new UniformGravitationalField();
     }
 
     _calculateForceOn(body) {
-        this._forceVector.y = body.mass * this._fieldVector.y;
+        this._forceVector.set(0, -body.mass * g, 0);
     }
 }
 
