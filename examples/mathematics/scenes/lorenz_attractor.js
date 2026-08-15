@@ -54,10 +54,7 @@ export class LorenzAttractor extends LineSegments {
 }
 
 const lorenz = new LorenzAttractor();
-const lorenzView = new LineSegmentsView({
-    segments: model => model.segments,
-    lineWidth: 1.5
-});
+const lorenzView = new LineSegmentsView({ lineWidth: 1.5 });
 
 const simulation = Simulation
     .with({

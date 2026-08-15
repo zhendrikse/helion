@@ -665,14 +665,12 @@ export class BoxSegmentsView extends Renderable3D {
 
 export class LineSegmentsView extends Renderable3D {
     constructor({
-        segments = model => model.edges,
         color = null,
         lineWidth = 1,
         visible = true
     } = {}) {
         super();
 
-        this._segments = segments;
         this._geometry = new LineSegmentsGeometry();
         this._material = new LineMaterial({
             color: color ?? 0xffffff,
@@ -685,24 +683,20 @@ export class LineSegmentsView extends Renderable3D {
         });
 
         this._line = new LineSegments2(this._geometry, this._material);
-        this._boundingBox = new Box3();
         this.add(this._line);
         this.visible = visible;
     }
 
     canBindTo(model) {
-        return this._segments(model) !== undefined;
+        return model.segments;
     }
 
-    initialize(model) {
-    }
+    initialize(model) {}
 
     synchronizeWith(model) {
-        const segments = this._segments(model);
         const positions = [];
         const colors = [];
-        this._boundingBox.makeEmpty();
-        for (const segment of segments) {
+        for (const segment of model.segments) {
             positions.push(
                 segment.from.x, segment.from.y, segment.from.z,
                 segment.to.x, segment.to.y, segment.to.z
@@ -713,17 +707,12 @@ export class LineSegmentsView extends Renderable3D {
                     segment.color.r, segment.color.g, segment.color.b,
                     segment.color.r, segment.color.g, segment.color.b
                 );
-
-            this._boundingBox.expandByPoint(segment.from);
-            this._boundingBox.expandByPoint(segment.to);
         }
 
         this._geometry.setPositions(positions);
         if (colors.length > 0)
             this._geometry.setColors(colors);
     }
-
-    get boundingBox() { return this._boundingBox; }
 
     dispose() {
         this._geometry.dispose();

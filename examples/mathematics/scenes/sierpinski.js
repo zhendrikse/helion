@@ -114,17 +114,16 @@ function buildTetrahedron() {
     sierpinskiTetrahedron(initialTetrahedron, LEVEL);
 }
 
-const fractalView = new LineSegmentsView({
-    segments: model => model.segments,
-    lineWidth: 2
-});
+const fractalView = new LineSegmentsView({ lineWidth: 2 });
 
 Simulation
     .with({
         htmlDivId: "sierpinskiContainer",
-        cameraPosition: new Vec3(3.0, 2.4, 3.2).multiplyScalar(0.8)
+        parameterMenuCollapsed: false,
+        fieldOfView: 30
     })
     .bind(fractal.alwaysWith(fractalView))
+    .frameSceneOn(fractalView, {padding: 1, translationY: -1})
     .append(new RadioGroup()
         .add("Pyramid", buildPyramid)
         .add("Tetrahedron", buildTetrahedron)
