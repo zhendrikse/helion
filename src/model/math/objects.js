@@ -54,12 +54,13 @@ export class StrangeAttractor extends Segments {
 
     generate() {
         this.clear();
-
         let position = this.initialPosition.clone();
+
         for (let i = 0; i < this.steps; i++) {
             const previous = position.clone();
-            Integrators.rk4VectorStep(position, this.dt, this.derivative);
-            this.push(new LineSegment(previous, position, this.color(position, i)));
+            Integrators.rk4VectorStep(position, this.dt, p => this.derivative(p));
+            const distance = position.distanceTo(previous);
+            this.push(new LineSegment(previous, position.clone(), this.color(distance)));
         }
     }
 }

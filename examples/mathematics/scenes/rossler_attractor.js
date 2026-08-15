@@ -1,7 +1,7 @@
 import {Color} from "three";
-import { Integrators, LineSegment, LineSegmentsView, Segments, Simulation, Vec3 } from "../../../src/index.js";
+import { Integrators, LineSegment, LineSegmentsView, StrangeAttractor, Simulation, Vec3 } from "../../../src/index.js";
 
-export class RoesslerAttractor extends Segments {
+export class RoesslerAttractor extends StrangeAttractor {
     constructor({
         a = 0.343,
         b = 1.82,
@@ -11,15 +11,13 @@ export class RoesslerAttractor extends Segments {
         duration = 200,
         maxDistance = 3.70356
     } = {}) {
-        super();
+        const steps = Math.floor(duration / dt);
+        super({initialPosition, dt, steps});
 
         this.a = a;
         this.b = b;
         this.c = c;
 
-        this.initialPosition = initialPosition;
-        this.dt = dt;
-        this.duration = duration;
         this.maxDistance = maxDistance;
 
         this.generate();
@@ -38,18 +36,6 @@ export class RoesslerAttractor extends Segments {
         return new Color().setHSL(hue % 1, 1, 0.5);
     }
 
-    generate() {
-        this.clear();
-        let position = this.initialPosition.clone();
-        const steps = Math.floor(this.duration / this.dt);
-
-        for (let i = 0; i < steps; i++) {
-            const previous = position.clone();
-            Integrators.rk4VectorStep(position, this.dt, p => this.derivative(p));
-            const distance = position.distanceTo(previous);
-            this.push(new LineSegment(previous, position.clone(), this.color(distance)));
-        }
-    }
 }
 
 const roessler = new RoesslerAttractor({
