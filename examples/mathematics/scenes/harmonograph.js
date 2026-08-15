@@ -1,7 +1,6 @@
 import { Color } from "three";
 import {
-    Button,
-    LineSegments, LineSegmentsView, normalDistribution, randomInt, Simulation, uniform, Vec3
+    Button, LineSegments, LineSegmentsView, normalDistribution, randomInt, Simulation, uniform, Vec3
 } from "../../../src/index.js";
 
 function scale(length) {
@@ -27,7 +26,6 @@ export class Harmonograph extends LineSegments {
         depth = 600,
         width = 600,
         iterations = 150,
-        trailThickness = 0.5,
         hueIncrement = 0.159,
         decayFactor = 0.9999
     } = {}) {
@@ -36,7 +34,6 @@ export class Harmonograph extends LineSegments {
         this._depth = depth;
         this._width = width;
         this._iterations = iterations;
-        this._trailThickness = trailThickness;
         this._hueIncrement = hueIncrement;
         this._decayFactor = decayFactor;
     }
@@ -109,14 +106,13 @@ const harmonographView = new LineSegmentsView({
     lineWidth: 1.25
 });
 
-const simulation = Simulation
+Simulation
     .with({
         htmlDivId: "harmonographContainer",
         parameterMenuCollapsed: false
     })
     .bind(harmonograph.alwaysWith(harmonographView))
+    .frameSceneOn(harmonographView, {padding: 0.9})
     .append(new Button()
         .withText("Generate")
         .addEventListener("click", () => harmonograph.generate()));
-
-simulation.frameSceneOn(harmonographView, {padding: 0.9});
