@@ -1,11 +1,11 @@
 import { Color } from "three";
 import {
     Range, Sphere, Trail, Vec3, ArrowField,
-    Slider, Simulation, Aquarium, RadialSymmetricBody, LorentzForce, VectorField
+    Slider, Simulation, Aquarium, RadialSymmetricBody, LorentzForce, VectorField, degToRad
 } from "../../../src/index.js";
 
 const initialSspeed = 50;
-const angle = 10 * Math.PI / 180;
+const angle = degToRad(10);
 const boxSize = 40;
 
 //
@@ -36,18 +36,6 @@ const proton = new RadialSymmetricBody({
     radius: 1.5
 });
 
-const outOfBox = (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize || pos.z < -boxSize || pos.z > boxSize;
-function timeStep(dt) {
-    if (outOfBox(proton.position))
-        return;
-
-    for (let substep = 0; substep < 5; substep++) {
-        proton
-            .apply(lorentzForce)
-            .integrate(dt);
-    }
-}
-
 //
 // View
 //
@@ -68,6 +56,8 @@ const arrowField = new ArrowField({
 
 const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
 const speedCallback = event => proton.state.velocity = speedToVelocity(event.target.value, proton.velocity);
+const outOfBox = (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize || pos.z < -boxSize || pos.z > boxSize;
+
 Simulation
     .with({
         htmlDivId: "helicalProtonContainer",
@@ -80,7 +70,16 @@ Simulation
     .bind(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
     .bind(magneticField.onceWith(arrowField))
     .runsEvery(1e-3)
-    .onStep((_, dt) => timeStep(dt))
+    .advancesBy(5e-4)
+    .substeps(20)
+    .onStep((_, dt) => {
+        if (outOfBox(proton.position))
+            return;
+
+        proton
+            .apply(lorentzForce)
+            .integrate(dt);
+    })
     .addObject3D(new Aquarium({
         color: 0x1e90ff,
         opacity: 0.1,

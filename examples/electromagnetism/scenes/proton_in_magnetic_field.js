@@ -58,12 +58,11 @@ Simulation
     .bind(proton.alwaysWith(sphere))
     .bind(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })))
     .runsEvery(1e-3)
+    .substeps(5)
     .onStep((_, dt) => {
-        for (let substep = 0; substep < 20; substep++) {
-            proton
-                .apply(lorentzForce)
-                .integrate(dt);
-        }
+        proton
+            .apply(lorentzForce)
+            .integrate(dt);
     })
     .append(new Slider("🧲 Field: ")
         .withRange(new Range(.1, 1, .01))

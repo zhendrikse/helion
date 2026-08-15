@@ -59,14 +59,16 @@ const simulation = Simulation
     })
     .addObject3D(water)
     .withMouseClickEventListener()
-    .runsEvery(3e-3)
+    .runsEvery(2e-3)
+    .advancesBy(1e-3)
+    .substeps(4)
     .bind(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
-    .onStep((clock) => {
+    .onStep((clock, dt) => {
         woodenBlock
             .apply(gravitationalForce)
             .apply(floatingForce)
             .apply(dragForce);
-        woodenBlock.integrate(clock.fixedDt);
+        woodenBlock.integrate(dt);
         simulation.plot([clock.simulatedTime, floatingForce.asVector.y, dragForce.asVector.y]);
     })
     .setupGraphWith({

@@ -68,12 +68,13 @@ Simulation
     .addObject3D(new Floor({
         position: new Vec3(0, -3.5 * L0 + shiftUp, 0),
         planeSizeXy: new Vec2(L0 * 6 , L0 * 4),
-        type: Floor.Type.PLAIN
+        type: Floor.Type.PLAIN,
+        color: 0x008800
     }))
     .addObject3D(sun)
     .addObject3D(new AmbientLight(0xffffff, .3))
-    .runsEvery(0.01)
-    .atSpeed(0.25)
+    .runsEvery(4e-3)
+    .advancesBy(1e-3)
     .onStep((_, dt) => {
         if (onFloor(ball2, -3.5 * L0) || onFloor(ball3, -3.5 * L0))
             return;
