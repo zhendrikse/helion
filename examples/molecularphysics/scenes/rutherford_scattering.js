@@ -1,14 +1,13 @@
 import {
-    Vec3, Simulation, Sphere, Cylinder, Trail, RadialSymmetricBody, CoulombPairForce, AxialSymmetricBody
+    Vec3, Simulation, Sphere, Cylinder, Trail, RadialSymmetricBody, CoulombPairForce, AxialSymmetricBody, EC
 } from "../../../src/index.js";
 
-const Q = 1.6e-19;
 const X_MAX = 1e-13;
-const ALPHA_ENERGY  = 10e6 * Q;
+const ALPHA_ENERGY  = 10e6 * EC;
 const ALPHA_MASS = 4e-3 / 6.12e23;
 const GOLD_MASS  = 197e-3 / 6.02e23;
-const ALPHA_CHARGE = 2 * Q;
-const GOLD_CHARGE  = 79 * Q;
+const ALPHA_CHARGE = 2 * EC;
+const GOLD_CHARGE  = 79 * EC;
 const GOLD_RADIUS  = 6e-15;
 const ALPHA_RADIUS = 4e-15;
 const SOURCE_RADIUS = 6e-14;
