@@ -13,13 +13,11 @@ class ChargedRing extends Segments {
         charge = EC
     } = {}) {
         super();
-        this.radius = radius;
-        this.charge = charge;
-        const points = this._createSegmentPositions(segments);
-        this._createSegments(segments, points, charge);
+        const points = this._createSegmentPositions(segments, radius);
+        this._createSegments(segments, points, charge, radius);
     }
 
-    _createSegments(segments, points, charge) {
+    _createSegments(segments, points, charge, radius) {
         for (let i = 0; i < segments; i++) {
             const p1 = points[i];
             const p2 = points[i + 1];
@@ -27,17 +25,17 @@ class ChargedRing extends Segments {
             this.push(new AxialSymmetricBody({
                 position: p1.clone().add(p2).multiplyScalar(0.5),
                 axis,
-                radius: this.radius * 2.51e-2,
+                radius: radius * 2.51e-2,
                 charge: charge / segments
             }));
         }
     }
 
-    _createSegmentPositions(segments) {
+    _createSegmentPositions(segments, radius) {
         const points = [];
         for (let i = 0; i <= segments; i++) {
             const theta = i * 2 * Math.PI / segments;
-            points.push(new Vec3(this.radius * Math.cos(theta), this.radius * Math.sin(theta), 0));
+            points.push(new Vec3(radius * Math.cos(theta), radius * Math.sin(theta), 0));
         }
         return points;
     }
