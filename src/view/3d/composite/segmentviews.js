@@ -1,7 +1,7 @@
 import {
     Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry, BoxGeometry, Object3D, Vector2
 } from "three";
-import {LineMaterial} from 'three/addons/lines/LineMaterial.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry} from 'three/addons/lines/LineSegmentsGeometry.js';
 import {Renderable3D} from "../../renderer.js";
@@ -61,7 +61,7 @@ export class CylinderSegmentsView extends Renderable3D {
 export class BoxSegmentsView extends Renderable3D {
     constructor({
         material = new MeshBasicMaterial({ transparent: true }),
-        colorMapper = (segment, index, targetColor) => targetColor.set(0xffff00),
+        colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, 1, 1),
         visibilityMapper = (segment, index) => true,
         opacity = 1,
     } = {}) {

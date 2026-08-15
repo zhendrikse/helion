@@ -50,8 +50,9 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .bind(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
-    .runsEvery(0.05)
-    .atSpeed(10)
+    .runsEvery(1e-3)
+    .advancesBy(.01)
+    .substeps(10)
     .addObject3D(faradayLoopsGroup)
     .onStep((clock, dt) => {
         const fieldLength = (clock.simulatedTime % 20) / 25 + 0.001;
@@ -60,7 +61,7 @@ const simulation = Simulation
             vec.axis.set(0, 0, fieldLength);
 
         for (const charge of charges)
-            charge.position.z = zStart + ((charge.baseZ + clock.simulatedTime * clock.fixedDt) % numCharges);
+            charge.position.z = zStart + ((charge.baseZ + (clock.simulatedTime % 20) / 25) % numCharges);
     })
     .append(new Checkbox("Show Faraday loop: ")
         .on(faradayLoopsGroup)
@@ -116,7 +117,7 @@ for (let i = 0; i < numCharges; i++) {
     const charge = new RadialSymmetricBody({ position: new Vec3(0, 0, i), radius: 0.055 });
     charge.baseZ = i;
     charges.push(charge);
-    simulation.bind(charge.alwaysWith(new Sphere({ color: new Color("yellow") })));
+    simulation.bind(charge.alwaysWith(new Sphere({ color: new Color("orange") })));
 }
 
 const magneticVectors = [];

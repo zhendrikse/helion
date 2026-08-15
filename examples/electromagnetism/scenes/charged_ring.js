@@ -84,7 +84,6 @@ const electron = new RadialSymmetricBody({
         (Math.random() - 0.5) * radius * 3,
         radius + (Math.random() - 0.5) * radius * 3
     ),
-    velocity: new Vec3(),
     mass: 9.1093837e-31,
     charge: EC,
     radius: radius / 20
@@ -111,7 +110,7 @@ const arrowField = new ArrowField({
     round: true
 });
 
-const simulation = Simulation
+Simulation
     .with({
         htmlDivId: "chargedRingContainer",
         cameraPosition: new Vec3(15, 5, 20),
