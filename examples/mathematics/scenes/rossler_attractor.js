@@ -1,5 +1,5 @@
 import {Color} from "three";
-import { Integrators, LineSegment, LineSegmentsView, StrangeAttractor, Simulation, Vec3 } from "../../../src/index.js";
+import { LineSegmentsView, StrangeAttractor, Simulation, Vec3 } from "../../../src/index.js";
 
 export class RoesslerAttractor extends StrangeAttractor {
     constructor({

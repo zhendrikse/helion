@@ -1,5 +1,5 @@
 import {Color} from "three";
-import {LineSegment, StrangeAttractor, LineSegmentsView, Simulation, Vec3} from "../../../src/index.js";
+import {StrangeAttractor, LineSegmentsView, Simulation, Vec3} from "../../../src/index.js";
 
 export class LorenzAttractor extends StrangeAttractor {
     constructor({
