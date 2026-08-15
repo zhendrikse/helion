@@ -96,19 +96,17 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .bind(source.onceWith(new Cylinder({segments: 48, color: 0x999999})))
     .bind(gold.alwaysWith(new Sphere({ color: 0xffff00, segments: 36 })))
-    .runsEvery(1e-3)
-    .advancesBy(5e-23)
-    .onStep((_, dt) => {
+    .maxOutCpu(() => {
         if (!alpha)
             createAlphaParticle();
 
         gold.and(alpha).apply(coulombForce);
-        alpha.integrate(dt);
-        gold.integrate(dt);
+        alpha.integrate(2.5e-23);
+        gold.integrate(2.5e-23);
 
         if (alpha.position.length() >= MAX_DISTANCE)
             finishAlphaParticle();
-    })
+    }, 30, 60)
     .onReset(() => {
         if (alphaTrail)
             alphaTrail.reset();
