@@ -108,11 +108,8 @@ const harmonographView = new LineSegmentsView({
 
 Simulation
     .with({
-        htmlDivId: "harmonographContainer",
-        parameterMenuCollapsed: false
+        htmlDivId: "harmonographContainer"
     })
     .bind(harmonograph.alwaysWith(harmonographView))
     .frameSceneOn(harmonographView, {padding: 0.9})
-    .append(new Button()
-        .withText("Generate")
-        .addEventListener("click", () => harmonograph.generate()));
+    .withMouseClickEventListener(() => harmonograph.generate());
