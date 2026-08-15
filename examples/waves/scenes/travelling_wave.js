@@ -58,8 +58,6 @@ const latticeView = LatticeView.from({
     }
 });
 
-let time = 0;
-let dt = 2e-4;
 Simulation
     .with({
         htmlDivId: "travellingWaveContainer",
@@ -72,10 +70,8 @@ Simulation
     .withMouseClickEventListener()
     .runsEvery(2e-3)
     .substeps(20)
-    .onStep(() => {
-        chain.update(time, dt);
-        time += dt;
-    })
+    .advancesBy(2e-4)
+    .onStep((clock, dt) => chain.update(clock.simulatedTime, dt))
     .bind(chain.alwaysWith(latticeView))
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
@@ -83,7 +79,6 @@ Simulation
         planeSizeXy: new Vec2(200, 200),
         granularity: 20
     }))
-    .onReset(() => time = 0)
     .append(latticeView.ui())
     .append(new Slider("Bond force ")
         .on(chain)
@@ -109,4 +104,3 @@ Simulation
         .withRange(new Range(.1, 1, .01))
         .withValue(0.8)
     );
-
