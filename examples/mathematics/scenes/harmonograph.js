@@ -36,6 +36,7 @@ export class Harmonograph extends LineSegments {
         this._iterations = iterations;
         this._hueIncrement = hueIncrement;
         this._decayFactor = decayFactor;
+        this._color = new Color();
     }
 
     generate(standardDeviation = 0.002) {
@@ -85,11 +86,9 @@ export class Harmonograph extends LineSegments {
 
             const current = new Vec3(x, y, z);
             if (previous) {
-                const color = new Color();
-                color.setHSL((hue % 360) / 360, 1, 0.5);
-                this.add(previous, current, color);
+                this._color.setHSL((hue % 360) / 360, 1, 0.5);
+                this.add(previous, current, this._color);
             }
-
             previous = current;
 
             hue += dt * this._hueIncrement * 50;
@@ -101,15 +100,12 @@ export class Harmonograph extends LineSegments {
 
 const harmonograph = new Harmonograph();
 harmonograph.generate();
-const harmonographView = new LineSegmentsView({
-    segments: model => model.segments,
-    lineWidth: 1.25
-});
+const harmonographView = new LineSegmentsView({ lineWidth: 1.25 });
 
 Simulation
     .with({
         htmlDivId: "harmonographContainer"
     })
     .bind(harmonograph.alwaysWith(harmonographView))
-    .frameSceneOn(harmonographView, {padding: 0.9})
+    .frameSceneOn(harmonographView, { padding: 0.75 })
     .withMouseClickEventListener(() => harmonograph.generate());
