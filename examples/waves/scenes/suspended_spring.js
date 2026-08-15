@@ -19,8 +19,6 @@ const chain = new Lattice({
     .fixateBodyAt(count - 1);
 
 const latticeView = LatticeView.from({
-    bodyView: Sphere,
-    bondView: SwitchableBondView,
     bodyArgs: {
         castShadow: true
     },
@@ -29,8 +27,6 @@ const latticeView = LatticeView.from({
         coils: 6,
         color: 0xffff99,
         castShadow: true,
-        tubularSegments: 400,
-        bondType: SwitchableBondView.Type.Spring,
         radiusFunction: pair => .4 * (pair.body1.radius + pair.body2.radius)
     }
 });
@@ -45,6 +41,7 @@ const pole2 = new Block({
 })
 
 const gravitationalForce = new UniformGravitationalForce();
+const dragForce = new DragForce(1e-4);
 Simulation
     .with({
         htmlDivId: "suspendedSpringContainer",
@@ -61,7 +58,7 @@ Simulation
     .advancesBy(5e-4)
     .onStep((clock, dt) => {
         chain
-            .applyToBodies(new DragForce(-1e-4))
+            .applyToBodies(dragForce)
             .applyToBodies(gravitationalForce)
             .integrate(dt);
     })
