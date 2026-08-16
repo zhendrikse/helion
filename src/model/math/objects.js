@@ -79,10 +79,21 @@ export class Turtle extends Segments {
 
         this.currentColor = color;
         this.penState = penState;
+        this._initialColor = color;
+        this._initialPenState = penState;
 
         this.angle = 0;
         this.x = 0;
         this.y = 0;
+    }
+
+    reset() {
+        this.angle = 0;
+        this.x = 0;
+        this.y = 0;
+        this.currentColor = this._initialColor;
+        this.penState = this._initialPenState;
+        this.clear();
     }
 
     right(angle) {

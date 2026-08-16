@@ -23,7 +23,7 @@ function kochSnowflake(turtle, length, depth) {
 }
 
 function drawSnowflake(turtle) {
-    turtle.clear();
+    turtle.reset();
     turtle.goto(-150, 90);
     turtle.penDown();
     turtle.color(new Color(0xffff00));
@@ -48,6 +48,7 @@ function cesaroFractal(turtle, depth, length) {
 }
 
 function drawCesaro(turtle) {
+    turtle.reset();
     turtle.goto(10, 300);
     turtle.penDown();
     turtle.color(new Color(0x00ff00));
@@ -82,6 +83,7 @@ function sierpinskiTriangle(turtle, length, depth) {
 }
 
 function drawSierpinskiTriangle(turtle) {
+    turtle.reset();
     turtle.goto(50, 375);
     turtle.penDown();
     turtle.color(new Color(0xffffff));
@@ -129,7 +131,7 @@ function dragonCurve(n) {
 }
 
 function drawDragonCurve(turtle) {
-    turtle.clear();
+    turtle.reset();
     const points = dragonCurve(12);
 
     const scale = 400;
@@ -179,7 +181,7 @@ function tSquare(turtle, n, x, y, w) {
 }
 
 function drawTSquare(turtle) {
-    turtle.clear();
+    turtle.reset();
     const n = 7;
     const w = 2 ** n;
 
