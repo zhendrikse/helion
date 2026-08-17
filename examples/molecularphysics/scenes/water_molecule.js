@@ -1,5 +1,5 @@
 import {
-    Vec3, Simulation, Sphere, SwitchableBondView, Arrow, RadioGroup, RadialSymmetricBody,
+    Vec3, Simulation, Sphere, SwitchableBondView, VectorView, RadioGroup, RadialSymmetricBody,
     MathPhysicsModelBehavior, VectorField, CoulombForce, SpringForce, Force, EC
 } from "../../../src/index.js";
 
@@ -20,27 +20,22 @@ class ElectricField extends VectorField {
         this._magnitude = magnitude;
         this._frequency = frequency;
         this._time      = 0;
-        this._axis = new Vec3();
-    }
-
-    update(time) {
-        this._time = time;
-        const omega = this._frequency * 2 * Math.PI * 1.00001E10;
-        this._axis.set(0, 0.5 * BOND_LENGTH   * Math.cos(this._time * omega), 0);
+        this._direction = new Vec3();
     }
 
     sample(position, target) {
-        const omega = this._frequency * 2 * Math.PI * 1.00001E10;
-        target.set(0, this._magnitude * Math.cos(this._time * omega), 0);
+        target.set(0, this._magnitude * this.direction.y, 0);
     }
 
+    get omega() { return this._frequency * 2 * Math.PI * 1.00001E10; }
+    get direction() { return this._direction.set(0, Math.cos(this._time * this.omega), 0); }
     get position() { return this._position; }
-    get axis() { return this._axis; }
     set frequency(value) { this._frequency = value; }
+    set time(value) { this._time = value; }
 
     reset() {
         this._time = 0;
-        this._axis.set(0, 0, 0);
+        this._direction.set(0, 0, 0);
     }
 }
 
@@ -186,11 +181,11 @@ const coulombForce = CoulombForce.in(electricField);
 const bondForce = new SpringForce({ k: BOND_CONSTANT, restLength: BOND_LENGTH   });
 const torqueForce = new TorqueForce({ k: ANGLE_CONSTANT , restAngle: WATER_ANGLE, restLength: BOND_LENGTH   });
 
-const electricArrow = new Arrow({
+const electricArrow = new VectorView({
+    vectorProperty: body => body.direction,
     color: 0xff00ff,
-    round: true,
     size: 1.0e-11,
-    magnitudeMap: magnitude => magnitude
+    magnitudeMap: magnitude => magnitude * BOND_LENGTH * 0.5
 });
 
 const bondView1 = new SwitchableBondView({
@@ -223,7 +218,7 @@ Simulation
     .substeps(5)
     .advancesBy(5e-13)
     .onStep((clock, dt) => {
-        electricField.update(clock.simulatedTime);
+        electricField.time = clock.simulatedTime;
 
         water.apply(coulombForce);
         water.bond1.apply(bondForce);

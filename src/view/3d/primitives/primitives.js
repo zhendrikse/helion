@@ -89,7 +89,9 @@ export class Trail extends Renderable3D {
     }
 
     canBindTo(model) {
-        return model.position;
+        if (!model.position)
+            throw new Error("Trail can only bind to bodies with a position.");
+        return true;
     }
 
     reset() {
@@ -176,7 +178,9 @@ export class Sphere extends Renderable3D {
     }
 
     canBindTo(body) {
-        return body.position && body.radius;
+        if (!body.position || !body.radius)
+            throw new Error("Sphere can only bind to bodies with a position and a radius.");
+        return true;
     }
 
     synchronizeWith(body) {
@@ -255,7 +259,9 @@ export class Arrow extends Renderable3D {
     }
 
     canBindTo(body) {
-        return body.position && body.axis;
+        if (!body.position || !body.axis)
+            throw new Error("Arrow can only bind to bodies with a position and an axis.");
+        return true;
     }
 
     synchronizeWith(body) {
@@ -303,37 +309,38 @@ export class Arrow extends Renderable3D {
     set color(color) { this._material.color.set(color); }
 }
 
+/**
+ * VectorView is a 3D view of a vector property of a body, such as velocity or acceleration.
+ * It uses an Arrow to represent the vector, with the arrow's position at the body's position,
+ * and the arrow's direction and length determined by the vector property.
+ * The arrow's color and size can be customized, and the arrow can be made visible or invisible.
+ * The vector property is a function that takes a body and returns a Vec3 representing the vector.
+ * The magnitude of the vector can be mapped to a different scale using the magnitudeMap function.
+ * The color of the arrow can be mapped to a different color using the colorMap function. 
+ */
 export class VectorView extends Renderable3D {
     constructor({
-            vectorProperty = body => body.velocity,
-            color = 0xff0000,
-            size = 1,
-            opacity = 1,
-            round = false,
-            visible = true,
-            castShadow = false,
-            magnitudeMap = magnitude => Math.max(magnitude, 0.1),
-            colorMap = null
-        } = {}) {
+        vectorProperty = body => body.velocity,
+        color = 0xff0000,
+        size = 1,
+        opacity = 1,
+        round = false,
+        visible = true,
+        castShadow = false,
+        magnitudeMap = magnitude => Math.max(magnitude, 0.1),
+        colorMap = null
+    } = {}) {
         super();
 
         this._vectorPropertyOf = vectorProperty;
-        this._arrow = new Arrow({
-            color,
-            size,
-            opacity,
-            round,
-            visible,
-            castShadow,
-            magnitudeMap,
-            colorMap
-        });
-
+        this._arrow = new Arrow({ color,size, opacity, round, visible, castShadow, magnitudeMap, colorMap });
         this.add(this._arrow);
     }
 
     canBindTo(body) {
-        return body.position && this._vectorPropertyOf;
+        if (!body.position || !this._vectorPropertyOf)
+            throw new Error("VectorView can only bind to bodies with a position and a vector property.");
+        return true;
     }
 
     synchronizeWith(body) {
@@ -368,7 +375,9 @@ export class Cylinder extends Renderable3D {
     }
 
     canBindTo(body) {
-        return body.position && body.axis;
+        if (!body.position || !body.axis)
+            throw new Error("Cylinder can only bind to bodies with a position and an axis.");
+        return true;
     }
 
     synchronizeWith(body) {
@@ -408,7 +417,9 @@ export class Box extends Renderable3D {
     }
 
     canBindTo(body) {
-        return body.position && body.size && body.size.x && body.orientation;
+        if (!body.position || !body.size || !body.size.x || !body.orientation)
+            throw new Error("Box can only bind to bodies with a position, size, and orientation.");
+        return true;
     }
 
     synchronizeWith(body) {
@@ -441,7 +452,9 @@ export class Ring extends Renderable3D {
     }
 
     canBindTo(body) {
-        return body.position && body.axis && body.radius;
+        if (!body.position || !body.axis || !body.radius)
+            throw new Error("Ring can only bind to bodies with a position, axis, and radius.");
+        return true;
     }
 
     synchronizeWith(body) {
@@ -550,7 +563,9 @@ export class Helix extends Renderable3D {
     }
 
     canBindTo(body) {
-        return body.position && body.axis;
+        if (!body.position || !body.axis)
+            throw new Error("Helix can only bind to bodies with a position and an axis.");
+        return true;
     }
 
     #regenerateTube() {
