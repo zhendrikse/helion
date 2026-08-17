@@ -1,6 +1,6 @@
 import {
-    Vec3, Simulation, Sphere, SwitchableBondView, EC, SpringForce, Force,
-    Arrow, RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField, CoulombForce
+    Vec3, Simulation, Sphere, SwitchableBondView, EC, SpringForce, Force, VectorView,
+    RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField, CoulombForce
 } from "../../../src/index.js";
 
 const BOND_LENGTH     = 1.0E-10;
@@ -15,25 +15,20 @@ class ElectricField extends VectorField {
         super();
         this._position = position.clone();
         this._magnitude = magnitude;
-        this._frequency = frequency; // Current simulation time.
+        this._frequency = frequency;
         this._time = 0;              
-        this._axis = new Vec3();     // Reusable vector for Arrow.
-    }
-
-    update(time) {
-        this._time = time;
-        const omega = this._frequency * 2 * Math.PI * 1.00001E10;
-        this._axis.set( 0, 0.5 * BOND_LENGTH * Math.cos(this._time * omega), 0 ); 
+        this._direction = new Vec3();
     }
 
     sample(position, target) {
-        const omega = this._frequency * 2 * Math.PI * 1.00001E10;
-        target.set( 0, this._magnitude * Math.cos(this._time * omega), 0 );
+        target.set(0, this._magnitude * this.direction.y, 0);
     }
 
+    get omega() { return this._frequency * 2 * Math.PI * 1.00001E10; }
+    get direction() { return this._direction.set(0, Math.cos(this._time * this.omega), 0); }
     get position() { return this._position; }
-    get axis() { return this._axis; }
     set frequency(value) { this._frequency = value; }
+    set time(value) { this._time = value; }
 }
 
 class BendForce extends Force {
@@ -157,11 +152,19 @@ const bondView1 = new SwitchableBondView({
     tubularSegments: 750,
     radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
 });
+
 const bondView2 = new SwitchableBondView({
     bondType: SwitchableBondView.Type.Spring,
     thickness: 0.04,
     tubularSegments: 750,
     radiusFunction: pair => .3 * (pair.body1.radius + pair.body2.radius)
+});
+
+const electricArrow = new VectorView({
+    vectorProperty: body => body.direction,
+    color: 0xff00ff,
+    size: 1.0e-11,
+    magnitudeMap: magnitude => magnitude * BOND_LENGTH * 0.5
 });
 
 Simulation
@@ -178,7 +181,7 @@ Simulation
     .substeps(2)
     .advancesBy(5e-13)
     .onStep((clock, dt) => {
-        electricField.update(clock.simulatedTime);
+        electricField.time = clock.simulatedTime;
 
         co2.apply(coulombForce);
         co2.bond1.apply(bondForce);
@@ -195,12 +198,7 @@ Simulation
     .bind(co2.carbon.alwaysWith(new Sphere({ color: 0xff0000, segments: 36 })))
     .bind(co2.oxygen1.and(co2.carbon).alwaysWith(bondView1))
     .bind(co2.oxygen2.and(co2.carbon).alwaysWith(bondView2))
-    .bind(electricField.alwaysWith(new Arrow({
-        color: 0xff00ff,
-        round: true,
-        size: 1.0e-11,
-        magnitudeMap: magnitude => magnitude
-    })))
+    .bind(electricField.alwaysWith(electricArrow))
     .append(new RadioGroup()
         .add("8 ", () => electricField.frequency = 8.0)
         .add("5.291 ", () => electricField.frequency = 5.291)

@@ -1,5 +1,5 @@
 ---
-title: "🏭 Carbon dioxide"
+title: "🎶 Molecule resonance frequencies"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
@@ -11,6 +11,29 @@ layout: ../../../layouts/DocsLayout.astro
         <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
     </a>
 </div>
+
+### Oscillating water molecule
+<div class="header_line"></div>
+
+Why does water vapor absorb in so many wavelengths? Due to its non-linear shape, it oscillates in many ways!
+See below how frantically a water molecule may respond to an alternating electric field.
+
+🎯 Resonance frequencies of water<br/>
+🧠 Original [h2o.py](https://www.mso.anu.edu.au/pfrancis/simulations/h2o.py) by [Paul Francis](http://www.mso.anu.edu.au/pfrancis/simulations/)<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/MyPrograms/program/Water) is available as well, see [water_molecule.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/water_molecule.py)<br/>
+
+### Live demo
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/molecularphysics/scenes/water_molecule.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=water_molecule.js"/>
+    </a>
+</div>
+
+<div id="waterMoleculeContainer" style="aspect-ratio: 4/3"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/water_molecule.js"}></script>
+<p style="clear: both;"></p>
 
 ### Greenhouse effect of carbon dioxide
 <div class="header_line"></div>
@@ -42,9 +65,10 @@ Discover which frequencies the molecule responds to and if so, how.
 
 <div class="header_line"></div>
 
-The carbon dioxide molecule is modeled as a three-body system consisting of one carbon atom and two oxygen atoms.
-
-The equilibrium configuration is linear, with the carbon atom between the two oxygen atoms.
+The carbon dioxide and water molecules are modeled as a three-body 
+system consisting of one central and two outer atoms.
+For carbon dioxide, the equilibrium configuration is linear, 
+with the carbon atom between the two oxygen atoms.
 
 For the bond potential, we use Hooke's law:
 
@@ -57,18 +81,19 @@ where $r$ is the current bond length and $r_0$ is the equilibrium bond length.
 For the angular interaction, let
 
 $$
-\overrightarrow{v}_1=\overrightarrow{r}_{O_1}-
-\overrightarrow{r}_{C}
+\overrightarrow{v}_1=\overrightarrow{r}_{outer_1}-
+\overrightarrow{r}_{central}
 $$
 
 and
 
 $$
-\overrightarrow{v}_2 = \overrightarrow{r}_{O_2}-
-\overrightarrow{r}_{C}
+\overrightarrow{v}_2 = \overrightarrow{r}_{outer_2}-
+\overrightarrow{r}_{central}
 $$
 
-Because the equilibrium configuration is linear, the angular displacement is measured as the deviation from a straight line:
+Because the equilibrium configuration is linear, the angular displacement is 
+measured as the deviation from a straight line:
 
 $$
 \theta = \arccos
@@ -93,27 +118,32 @@ $$
 }
 $$
 
-The force applied to each oxygen atom is
+The force applied to each outer atom is
 
 $$
 \boxed{
-\overrightarrow{F}_O = -k_t r_0\theta \hat{\mathbf{b}}
+\overrightarrow{F}_{outer} = -k_t r_0\theta \hat{\mathbf{b}}
 }
 $$
 
-while the carbon atom receives the compensating force
+while the central atom receives the compensating force
 
 $$
-\boxed{\overrightarrow{F}_C =-2\overrightarrow{F}_O}
+\boxed{\overrightarrow{F}_{central} =-2\overrightarrow{F}_{outer}}
 $$
 
-The angular interaction is therefore a **three-body force**: the force on each atom depends on the positions of both bonds simultaneously. In the JavaScript implementation, the bending force is consequently applied to both bonds together:
+The angular interaction is therefore a **three-body force**: the force on 
+each atom depends on the positions of both bonds simultaneously. 
+In the JavaScript implementation, the bending force is consequently 
+applied to both bonds together, for example for carbon dioxide:
 
 ```js
 co2.bond1.and(co2.bond2).apply(bendForce);
 ```
 
-This implementation follows the force formulation used in the original VPython CO₂ example. In particular, the angular displacement is defined as the deviation from linearity rather than as the difference from an equilibrium angle of $\pi$.
+This implementation follows the force formulation used in the original VPython examples. 
+In particular, for CO2 the angular displacement is defined as the deviation from 
+linearity rather than as the difference from an equilibrium angle of $\pi$.
 
 Finally, the interaction with the external electric field is modeled using the electric force
 
@@ -123,10 +153,6 @@ $$
 
 where $q$ is the charge of the atom and $\overrightarrow{E}$ is the local electric field.
 
-At each simulation step, the Coulomb, bond-stretching, and angular forces are first accumulated on all three atoms. Only after all forces have been applied are the atoms integrated forward in time. This preserves the same force/update structure as the original VPython model while using the JavaScript force framework.
-
-
-
-
-
+At each simulation step, the Coulomb, bond-stretching, and angular forces are first accumulated 
+on all three atoms. Only after all forces have been applied are the atoms integrated forward in time. 
 
