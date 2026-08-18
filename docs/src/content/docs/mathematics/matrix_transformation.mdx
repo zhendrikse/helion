@@ -16,12 +16,22 @@ layout: ../../../layouts/DocsLayout.astro
 <div class="header_line"></div>
 
 🎯 Illustration of visualizing matrix transformations<br/>
-🎯 A matrix transforms space → some directions remain invariant → the eigen vectors
-🎯 [spectral theorem](https://en.wikipedia.org/wiki/Spectral_theorem): each real symmetric matrix has an orthonormal base of eigen vectors
-👉 We start with the following transformation in $\mathbb{R}^2$:<br/>
+🎯 A matrix transforms space → some directions remain invariant → the eigen vectors<br/>
+🎯 [Spectral theorem](https://en.wikipedia.org/wiki/Spectral_theorem): each real symmetric matrix has an orthonormal base of eigen vectors<br/>
+
+### Visualization
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/matrix_transformation.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=matrix_transformation.js"/>
+    </a>
+</div>
+
+The simulation starts with the following transformation in $\mathbb{R}^2$:
 
 $$
-\begin{pmatrix}
+👉\ \begin{pmatrix}
 x' \\
 y'
 \end{pmatrix}=
@@ -41,15 +51,6 @@ c && d
 0 && 1
 \end{pmatrix}
 $$
-
-### Visualization
-<div class="header_line"></div>
-
-<div class="badgeRow">
-    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/matrix_transformation.js">
-        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=matrix_transformation.js"/>
-    </a>
-</div>
 
 <div id="matrixTransformationContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/matrix_transformation.js"}></script>
@@ -151,7 +152,8 @@ $$
 }
 $$
 
-This is an important distinction: an eigenvalue can occur twice in the characteristic polynomial without giving us two independent eigenvectors.
+This is an important distinction: an eigenvalue can occur twice in the characteristic
+polynomial without giving us two independent eigenvectors.
 
 ### A different matrix with the same eigenvalue
 
@@ -168,7 +170,7 @@ $$
 
 The characteristic polynomial is again $p(\lambda)=(2-\lambda)^2$,
 so the eigenvalue $\lambda=2$ again has algebraic multiplicity 2.
-But now $Av=2v$ is true for **every** vector (v).
+But now $Av=2v$ is true for **every** vector $v$.
 Therefore, the eigenspace is the entire plane: $E_2=\mathbb{R}^2$.
 Its dimension is 2, so the geometric multiplicity is also 2:
 
@@ -317,7 +319,7 @@ This is a good reminder that **eigenvalues alone do not tell us the complete str
 
 
 
-
+// TODO
 
 En dat kunnen we in Helion fantastisch zichtbaar maken.
 

@@ -106,7 +106,7 @@ disableLabels();
 Simulation
     .with({
         htmlDivId: "matrixTransformationContainer",
-        cameraPosition: new Vec3(0, 0, 4 * (size + 0.1)),
+        cameraPosition: new Vec3(0, 0, 5 * (size + 0.1)),
         parameterMenuCollapsed: false
     })
     .bind(originalGrid.onceWith(new LineSegmentsView({ lineWidth: 1.25 })))
@@ -117,7 +117,7 @@ Simulation
         material: new MeshBasicMaterial()
     })))
     .bind(transformedVector.onceWith(new Arrow({
-        color: 0x44aaff,
+        color: 0xffff00,
         size: 0.2,
         material: new MeshBasicMaterial()
     })))
