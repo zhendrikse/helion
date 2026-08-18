@@ -24,12 +24,12 @@ function kochSnowflake(turtle, length, depth) {
 
 function drawSnowflake(turtle) {
     turtle.reset();
-    turtle.goto(-150, 90);
+    turtle.goto(-300, -100);
     turtle.penDown();
     turtle.color(new Color(0xffff00));
 
     for (let i = 0; i < 3; i++)
-        kochSnowflake(turtle, 300, 4);
+        kochSnowflake(turtle, 200, 4);
 
     turtle.right(120);
 }
@@ -49,7 +49,7 @@ function cesaroFractal(turtle, depth, length) {
 
 function drawCesaro(turtle) {
     turtle.reset();
-    turtle.goto(10, 300);
+    turtle.goto(-300, -200);
     turtle.penDown();
     turtle.color(new Color(0x00ff00));
 
@@ -84,7 +84,7 @@ function sierpinskiTriangle(turtle, length, depth) {
 
 function drawSierpinskiTriangle(turtle) {
     turtle.reset();
-    turtle.goto(50, 375);
+    turtle.goto(-200, -150);
     turtle.penDown();
     turtle.color(new Color(0xffffff));
 
@@ -134,8 +134,8 @@ function drawDragonCurve(turtle) {
     turtle.reset();
     const points = dragonCurve(12);
 
-    const scale = 400;
-    const offsetX = 0;
+    const scale = 300;
+    const offsetX = -150;
     const offsetY = 0;
 
     const [x0, y0] = points[0];
@@ -159,7 +159,7 @@ function tSquare(turtle, n, x, y, w) {
     if (n === 0)
         return;
 
-    const { r, g, b } = hsvToRgb(w * 0.5, 1, 1);
+    const { r, g, b } = hsvToRgb(w * 0.25, 1, 1);
     turtle.color(new Color(r, g, b));
 
     turtle.goto(x, y);
@@ -182,14 +182,13 @@ function tSquare(turtle, n, x, y, w) {
 
 function drawTSquare(turtle) {
     turtle.reset();
-    const n = 7;
+    const n = 8;
     const w = 2 ** n;
 
     turtle.color(new Color(0xff0000));
     turtle.penUp();
-    turtle.goto(0, 0);
 
-    tSquare(turtle, n, 0, 0, w);
+    tSquare(turtle, n, -150, -150, w);
 }
 
 const turtle = new Turtle();
@@ -199,9 +198,8 @@ drawDragonCurve(turtle);
 Simulation
     .with({
         htmlDivId: "fractalsContainer",
-        fieldOfView: 40,
-        cameraPosition: new Vec3(0, 0, 1000),
-        controlsTarget: new Vec3(+150, +0, 0),
+        fieldOfView: 30,
+        cameraPosition: new Vec3(0, 0, 1100),
         parameterMenuCollapsed: false
     })
     .bind(turtle.alwaysWith(turtleView))
@@ -216,4 +214,12 @@ Simulation
     .append(new Button()
         .withText("Koch snowflake ❄️")
         .addEventListener("click", () => drawSnowflake(turtle))
+        .togetherWith(new Button()
+            .withText("Cesaro fractal 🏛️")
+            .addEventListener("click", () => drawCesaro(turtle))
+        )
     )
+    .append(new Button()
+        .withText("Sierpinski triangle 🔺️")
+        .addEventListener("click", () => drawSierpinskiTriangle(turtle))
+    );

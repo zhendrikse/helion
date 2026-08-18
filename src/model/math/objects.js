@@ -134,7 +134,7 @@ export class Turtle extends Segments {
 
     forward(distance) {
         const newX = this.x + distance * Math.cos(this.angle);
-        const newY = this.y + distance * Math.sin(this.angle);
+        const newY = this.y - distance * Math.sin(this.angle);
 
         this.goto(newX, newY);
         return this;
