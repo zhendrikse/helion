@@ -73,11 +73,9 @@ const sphereView = new BoxSegmentsView({
 
 const simulation = Simulation
     .with({
-        htmlDivId: "polarCoordinatesIntegration",
-        parameterMenuCollapsed: false
+        htmlDivId: "polarCoordinatesIntegration"
     })
     .bind(sphere.onceWith(sphereView))
-    .provideAxesAround(sphereView)
     .frameSceneOn(sphereView, {padding: 1, translationY: -1.5})
     .append(new Slider("θ_min")
         .on(sphere)
@@ -106,7 +104,9 @@ const simulation = Simulation
         .withRange(new Range(0, 360, 1))
         .withValue(sphere.phiMax)
         .addEventListener("input", () => updateIntegral(sphere.integrate(functionToIntegrate)))
-    );
+    )
+    .provideAxesAround(sphereView);
+
 
 simulation._viewport.controlsDiv.append(integralValueDiv);
 updateIntegral(sphere.integrate(functionToIntegrate));
