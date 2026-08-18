@@ -84,8 +84,7 @@ const view = new LineSegmentsView({
 
 Simulation
     .with({
-        htmlDivId: "pythagorasContainer",
-        parameterMenuCollapsed: false
+        htmlDivId: "pythagorasContainer"
     })
     .bind(pythagoras.onceWith(view))
     .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3})))
