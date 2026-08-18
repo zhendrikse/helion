@@ -56,6 +56,14 @@ class HtmlControl {
         return this;
     }
 
+    onChange(callback) {
+        return this.addEventListener("change", callback);
+    }
+
+    onInput(callback) {
+        return this.addEventListener("input", callback);
+    }
+
     _appendToButtonRow(control, buttonRow) {
         buttonRow.appendChild(control._label);
         buttonRow.appendChild(control._inputControl);

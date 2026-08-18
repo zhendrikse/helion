@@ -8,9 +8,10 @@
 
 ### ❤️ Visualizing the beauty of math &amp; physics
 
-Helion is a _browser-native_ framework for interactive mathematics and physics.
-Its API is designed to express scientific ideas as
-directly as possible by offering a scientific domain-specific language
+[Helion](https://github.com/zhendrikse/helion) is a _browser-native_ framework for
+interactive mathematics and physics. It uses your browser as if it were a
+virtual laboratory. Its API is designed to express scientific ideas
+as directly as possible by offering a scientific domain-specific language
 embedded in JavaScript.
 
 As a consequence, semantics that are immediately familiar to mathematicians

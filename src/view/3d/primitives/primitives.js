@@ -1,9 +1,11 @@
 import {
-    Group, Vector3, BufferAttribute, TorusGeometry,
-    MeshStandardMaterial, SphereGeometry, Mesh, BufferGeometry, LineBasicMaterial, Line, TubeGeometry,
+    Vector3, BufferAttribute, TorusGeometry, LineBasicMaterial, Line, TubeGeometry,
+    MeshStandardMaterial, SphereGeometry, Mesh, BufferGeometry,
     CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion
 } from "three";
 import { Renderable3D } from "../../renderer.js";
+import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+import {Vec3} from "../../../model/math/math.js";
 
 export class VisibleWhen extends Renderable3D {
     constructor(view, predicate) {
@@ -591,5 +593,56 @@ export class Helix extends Renderable3D {
             this.quaternion.setFromUnitVectors(Helix.up, this._targetDir)
             this.scale.set(1, 1, body.axis.length() / this._restLength);
         }
+    }
+}
+
+export class LabelView extends Renderable3D {
+    constructor({
+        text = model => "" ,
+        offset = new Vec3(),
+        color = "white",
+        fontSize = "16px",
+        visible = true
+    } = {}) {
+        super();
+
+        this._element = document.createElement("div");
+        this._element.className = "helionLabel";
+
+        Object.assign(this._element.style, {
+            color,
+            fontSize,
+            margin: "0",
+            padding: "0",
+            lineHeight: "normal",
+            whiteSpace: "nowrap"
+        });
+
+        this._label = new CSS2DObject(this._element);
+        this._label.center.set(0.5, 0.5);
+        this._text = text;
+        this._offset = offset;
+
+        this.add(this._label);
+        this.visible = visible;
+    }
+
+    canBindTo(model) {
+        if(model.position === undefined)
+            throw new Error("A label can only bind to bodies with a position");
+        return true;
+    }
+
+    synchronizeWith(model) {
+        this._label.position.copy(model.position.clone().add(this._offset));
+        this._element.textContent = this._text(model);
+    }
+
+    dispose() {
+        this.remove(this._label);
+        this._label = null;
+        this._element = null;
+
+        this.clear();
     }
 }

@@ -2,11 +2,18 @@ import {MathPhysicsModelBehavior} from "../../core/helion.js";
 import {degToRad, Vec3} from "./math.js";
 import {Integrators} from "./numerics/integrators/integrators.js";
 
-export class LineSegment {
+export class LineSegment extends MathPhysicsModelBehavior {
     constructor(from, to, color) {
+        super();
         this.from = from;
         this.to = to;
         this.color = color;
+    }
+
+    get position() {
+        return this.from.clone()
+            .add(this.to)
+            .multiplyScalar(0.5);
     }
 }
 

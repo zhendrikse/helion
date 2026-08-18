@@ -102,6 +102,91 @@ export class ParticleCloudView extends Renderable3D {
     }
 }
 
+export class PixelRasterView extends Renderable3D {
+    constructor({
+        width = 512,
+        height = 512,
+        transparent = false
+    } = {}) {
+        super();
+
+        this._width = width;
+        this._height = height;
+        this._pixels = new Uint8Array(width * height * 4);
+        this._texture = new DataTexture(this._pixels, width, height, RGBAFormat);
+        this._texture.needsUpdate = true;
+        this._mesh = new Mesh(new PlaneGeometry(width, height), new MeshBasicMaterial({
+            map: this._texture,
+            transparent,
+            side: DoubleSide
+        }));
+
+        this.add(this._mesh);
+    }
+
+    get width() { return this._width; }
+    get height() { return this._height; }
+
+    canBindTo(model) {
+        return model.pixelAt || model.pixels;
+    }
+
+    setPixel(x, y, r, g, b, a = 255) {
+        if (x < 0 || x >= this._width ||
+            y < 0 || y >= this._height)
+            return;
+
+        const index = (y * this._width + x) * 4;
+
+        this._pixels[index]     = r;
+        this._pixels[index + 1] = g;
+        this._pixels[index + 2] = b;
+        this._pixels[index + 3] = a;
+    }
+
+    clear(r = 0, g = 0, b = 0, a = 255) {
+        for (let i = 0; i < this._pixels.length; i += 4) {
+            this._pixels[i]     = r;
+            this._pixels[i + 1] = g;
+            this._pixels[i + 2] = b;
+            this._pixels[i + 3] = a;
+        }
+
+        this._texture.needsUpdate = true;
+    }
+
+    synchronizeWith(model) {
+        if (model.pixels)
+            this._pixels.set(model.pixels);
+        else
+            for (let y = 0; y < this._height; y++)
+                for (let x = 0; x < this._width; x++) {
+                    const color = model.pixelAt(x, y);
+                    this.setPixel(
+                        x, y,
+                        color[0], color[1], color[2], color[3] ?? 255
+                    );
+                }
+
+        this._texture.needsUpdate = true;
+    }
+
+    resize(width, height) {
+        this._width = width;
+        this._height = height;
+
+        this._pixels = new Uint8Array(width * height * 4);
+        this._texture.dispose();
+        this._texture = new DataTexture(this._pixels, width, height, RGBAFormat);
+        this._texture.needsUpdate = true;
+
+        this._mesh.geometry.dispose();
+        this._mesh.geometry = new PlaneGeometry(width, height);
+        this._mesh.material.map = this._texture;
+        this._mesh.material.needsUpdate = true;
+    }
+}
+
 export class ScalarFieldIntensityPixelRaster extends Renderable3D {
     constructor({
         width = 512,

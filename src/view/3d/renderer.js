@@ -66,42 +66,53 @@ export class ThreeJsRenderer extends Renderer {
         this._initBackground(background, backgroundColor);
         this.resize();
         window.addEventListener("resize", () => this.resize());
+        // console.log({
+        //     wrapper: viewport.canvasWrapper.getBoundingClientRect(),
+        //     canvas: viewport.canvas.getBoundingClientRect(),
+        //     labels: this._labelRenderer.domElement.getBoundingClientRect()
+        // });
+        // console.log(
+        //     getComputedStyle(this._labelRenderer.domElement).top,
+        //     getComputedStyle(this._labelRenderer.domElement).left,
+        //     getComputedStyle(this._labelRenderer.domElement).transform
+        // );
     }
 
     #createLabelRenderer(viewport) {
         this._labelRenderer = new CSS2DRenderer();
-        this._labelRenderer.setSize(viewport.width, viewport.height);
+        this._labelRenderer.setSize(viewport.width, viewport.height, false);
+
         Object.assign(this._labelRenderer.domElement.style, {
             position: "absolute",
-            top: "0px",
-            left: "0px",
+            top: "0",
+            left: "0",
             width: "100%",
             height: "100%",
+            margin: "0",
+            padding: "0",
+            display: "block",
             pointerEvents: "none",
             zIndex: "5"
         });
+
         viewport.canvasWrapper.appendChild(this._labelRenderer.domElement);
     }
 
     resize() {
         const canvas = this._renderer.domElement;
-        const canvasWidth = canvas.clientWidth;
-        const canvasHeight = canvas.clientHeight;
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
 
-        if (!canvasWidth || !canvasHeight)
+        if (!width || !height)
             return;
 
         const pixelRatio = Math.min(window.devicePixelRatio, 2);
-        const width = Math.floor(canvasWidth * pixelRatio);
-        const height = Math.floor(canvasHeight * pixelRatio);
-
-        if (canvas.width === width && canvas.height === height)
-            return;
 
         this._renderer.setPixelRatio(pixelRatio);
-        this._renderer.setSize(canvasWidth, canvasHeight, false);
-        this._labelRenderer.setSize(canvasWidth, canvasHeight, false);
-        this._camera.aspect = canvasWidth / canvasHeight;
+        this._renderer.setSize(width, height, false);
+        this._labelRenderer.setSize(width, height, false);
+
+        this._camera.aspect = width / height;
         this._camera.updateProjectionMatrix();
     }
 
@@ -151,9 +162,9 @@ export class ThreeJsRenderer extends Renderer {
     }
 
     render(time) {
+        this._controls?.update();
         this._renderer.render(this._scene, this._camera);
         this._labelRenderer.render(this._scene, this._camera);
-        this._controls?.update();
         this._skydome?.update(time, this._camera);
         if (this._autoRotate)
             this._doAutoRotate();
@@ -217,13 +228,8 @@ export class ThreeJsRenderer extends Renderer {
 
         if (options.layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed
             this._axes.frameTo(boundingBox, options.bottomAlign);
-        this._onWindowResize();
         this._world.add(this._axes);
         return this._axes;
-    }
-
-    _onWindowResize() {
-        this._labelRenderer.setSize(this._viewport.width, this._viewport.height);
     }
 
     _doAutoRotate() {

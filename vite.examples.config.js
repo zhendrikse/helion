@@ -43,6 +43,7 @@ export default defineConfig({
                 polar_coordinates_integration: path.resolve(__dirname, 'examples/mathematics/scenes/polar_coordinates_integration.js'),
                 proton_helical_motion: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_helical_motion.js'),
                 proton_in_magnetic_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_in_magnetic_field.js'),
+                pythagoras: path.resolve(__dirname, 'examples/mathematics/scenes/pythagoras.js'),
                 raindrops: path.resolve(__dirname, 'examples/nature/scenes/raindrops.js'),
                 real_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/real_surfaces.js'),
                 rossler_attractor: path.resolve(__dirname, 'examples/mathematics/scenes/rossler_attractor.js'),

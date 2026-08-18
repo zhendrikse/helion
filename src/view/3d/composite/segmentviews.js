@@ -6,6 +6,7 @@ import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry} from 'three/addons/lines/LineSegmentsGeometry.js';
 import {Renderable3D} from "../../renderer.js";
 import {Vec3} from "../../../model/math/math.js";
+import {LineSegment, Segments} from "../../../model/math/objects.js";
 
 class InstancedSegmentsView extends Renderable3D {
     constructor({
@@ -26,7 +27,9 @@ class InstancedSegmentsView extends Renderable3D {
     }
 
     canBindTo(segments) {
-        return segments.count > 0;
+        if (!(segments instanceof Segments))
+            throw new Error("An instanced segments view can only be bound to a Segments collection.");
+        return true;
     }
 
     initialize(segments) {
@@ -114,9 +117,8 @@ export class BoxSegmentsView extends InstancedSegmentsView {
     }
 }
 
-export class LineSegmentsView extends Renderable3D {
+export class LineSegmentView extends Renderable3D {
     constructor({
-        color = null,
         lineWidth = 1,
         visible = true
     } = {}) {
@@ -124,42 +126,33 @@ export class LineSegmentsView extends Renderable3D {
 
         this._geometry = new LineSegmentsGeometry();
         this._material = new LineMaterial({
-            color: color ?? 0xffffff,
             linewidth: lineWidth,
-            vertexColors: color === null,
+            vertexColors: true,
             resolution: new Vector2(window.innerWidth, window.innerHeight)
         });
 
         this._line = new LineSegments2(this._geometry, this._material);
+
         this.add(this._line);
         this.visible = visible;
     }
 
     canBindTo(model) {
-        return model.count;
+        if (!(model instanceof LineSegment))
+            throw new Error("This view can only be bound to a LineSegment");
+        return true;
     }
 
-    initialize(model) {}
+    synchronizeWith(segment) {
+        this._geometry.setPositions([
+            segment.from.x, segment.from.y, segment.from.z,
+            segment.to.x, segment.to.y, segment.to.z
+        ]);
 
-    synchronizeWith(segments) {
-        const positions = [];
-        const colors = [];
-        for (const segment of segments) {
-            positions.push(
-                segment.from.x, segment.from.y, segment.from.z,
-                segment.to.x, segment.to.y, segment.to.z
-            );
-
-            if (segment.color)
-                colors.push(
-                    segment.color.r, segment.color.g, segment.color.b,
-                    segment.color.r, segment.color.g, segment.color.b
-                );
-        }
-
-        this._geometry.setPositions(positions);
-        if (colors.length > 0)
-            this._geometry.setColors(colors);
+        this._geometry.setColors([
+            segment.color.r, segment.color.g, segment.color.b,
+            segment.color.r, segment.color.g, segment.color.b
+        ]);
     }
 
     dispose() {
@@ -170,5 +163,39 @@ export class LineSegmentsView extends Renderable3D {
         this._line = null;
 
         this.clear();
+    }
+}
+
+export class LineSegmentsView extends LineSegmentView {
+    constructor({
+        lineWidth = 1,
+        visible = true
+    } = {}) {
+        super({lineWidth, visible});
+    }
+
+    canBindTo(segments) {
+        if (!(segments instanceof Segments))
+            throw new Error("An instanced segments view can only be bound to a Segments collection.");
+        return true;
+    }
+
+    synchronizeWith(segments) {
+        const positions = [];
+        const colors = [];
+        for (const segment of segments) {
+            positions.push(
+                segment.from.x, segment.from.y, segment.from.z,
+                segment.to.x, segment.to.y, segment.to.z
+            );
+
+            colors.push(
+                segment.color.r, segment.color.g, segment.color.b,
+                segment.color.r, segment.color.g, segment.color.b
+            );
+        }
+
+        this._geometry.setPositions(positions);
+        this._geometry.setColors(colors);
     }
 }
