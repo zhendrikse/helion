@@ -99,29 +99,29 @@ Simulation
     })))
     .bind(pythagoras.ac.onceWith(new LabelView({
         text: model => "b=" + pythagoras.b,
-        offset: new Vec3(-1.1, 0, 0),
+        offset: new Vec3(-.90, 0, 0),
         color: "#44dd88",
         fontSize: "30px"
     })))
     .bind(pythagoras.bc.onceWith(new LabelView({
         text: model => "c=" + pythagoras.c.toFixed(2),
-        offset: new Vec3(.75, .75, 0),
+        offset: new Vec3(.55, .55, 0),
         color: "#ffaa44",
         fontSize: "30px"
     })))
     .frameSceneOn(view, {
-        padding: 0.75,
+        padding: 0.55,
         viewDirection: new Vec3(0, 0, 1)
     })
     .append(new Slider("a")
         .on(pythagoras)
         .withProperty("a")
-        .withRange(new Range(1, 8, 0.01))
+        .withRange(new Range(1, 4, 0.01))
         .withValue(4)
     )
     .append(new Slider("b")
         .on(pythagoras)
         .withProperty("b")
-        .withRange(new Range(1, 8, 0.01))
+        .withRange(new Range(1, 3, 0.01))
         .withValue(3)
     );
