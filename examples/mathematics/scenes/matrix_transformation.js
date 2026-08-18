@@ -74,7 +74,7 @@ const labelOriginalVector = new LabelView({
 
 const labelTransformedVector = new LabelView({
     text: () => "v₂=Av₁",
-    offset: model => model.axis.clone().multiplyScalar(1.3),
+    offset: model => model.axis.clone().multiplyScalar(1.2),
     fontSize: "20px",
     color: "#44aaff"
 });
@@ -109,39 +109,39 @@ Simulation
         cameraPosition: new Vec3(0, 0, 4 * (size + 0.1)),
         parameterMenuCollapsed: false
     })
-    .bind(originalGrid.onceWith(new LineSegmentsView({ lineWidth: 2 })))
+    .bind(originalGrid.onceWith(new LineSegmentsView({ lineWidth: 1.25 })))
     .bind(transformedGrid.onceWith(new LineSegmentsView({ lineWidth: 1 })))
     .bind(originalVector.onceWith(new Arrow({
         color: 0xffffff,
-        size: 0.5,
+        size: 0.4,
         material: new MeshBasicMaterial()
     })))
     .bind(transformedVector.onceWith(new Arrow({
         color: 0x44aaff,
-        size: 0.33,
+        size: 0.2,
         material: new MeshBasicMaterial()
     })))
     .bind(eigenvector1.onceWith(new Arrow({
         color: 0xff4444,
-        size: 0.5,
+        size: 0.4,
         material: new MeshBasicMaterial(),
         magnitudeMap: magnitude => 3 * magnitude
     })))
     .bind(eigenvector2.onceWith(new Arrow({
         color: 0x44dd88,
-        size: 0.5,
+        size: 0.4,
         material: new MeshBasicMaterial(),
         magnitudeMap: magnitude => 3 * magnitude
     })))
     .bind(transformedEigenvector1.onceWith(new Arrow({
         color: 0xff0000,
-        size: 0.3,
+        size: 0.2,
         material: new MeshBasicMaterial(),
         magnitudeMap: magnitude => 3 * magnitude
     })))
     .bind(transformedEigenvector2.onceWith(new Arrow({
         color: 0x00ff00,
-        size: 0.3,
+        size: 0.2,
         material: new MeshBasicMaterial(),
         magnitudeMap: magnitude => 3 * magnitude
     })))

@@ -16,6 +16,8 @@ layout: ../../../layouts/DocsLayout.astro
 <div class="header_line"></div>
 
 🎯 Illustration of visualizing matrix transformations<br/>
+🎯 A matrix transforms space → some directions remain invariant → the eigen vectors
+🎯 [spectral theorem](https://en.wikipedia.org/wiki/Spectral_theorem): each real symmetric matrix has an orthonormal base of eigen vectors
 👉 We start with the following transformation in $\mathbb{R}^2$:<br/>
 
 $$
@@ -49,5 +51,454 @@ $$
     </a>
 </div>
 
-<div id="matrixTransformationContainer" style="aspect-ratio: 19/12"></div>
+<div id="matrixTransformationContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/matrix_transformation.js"}></script>
+
+## What do I see?
+<div class="header_line"></div>
+
+### Algebraic and geometric multiplicity
+
+When an eigenvalue occurs more than once, we have to distinguish between two different notions of multiplicity.
+
+#### Algebraic multiplicity
+
+The **algebraic multiplicity** of an eigenvalue is the number of times it occurs as a root of the characteristic polynomial.
+For a $2\times2$ matrix, the characteristic polynomial is $p(\lambda)=\det(A-\lambda I)$.
+
+Consider
+
+$$
+A=
+\begin{pmatrix}
+2&1\\\
+0&2
+\end{pmatrix}
+$$
+
+Its characteristic polynomial is
+
+$$
+p(\lambda)=
+\det
+\begin{pmatrix}
+2-\lambda&1\\
+0&2-\lambda
+\end{pmatrix}
+=
+(2-\lambda)^2.
+$$
+
+Therefore, the only eigenvalue is $\lambda=2$,
+and it has **algebraic multiplicity 2**.
+But this does not yet tell us how many independent eigenvectors the matrix has.
+
+#### Geometric multiplicity
+
+The **geometric multiplicity** of an eigenvalue is the dimension of its eigenspace: $E_\lambda = {v\mid Av=\lambda v}$.
+In other words, it tells us how many **linearly independent eigenvectors** belong to that eigenvalue.
+
+For example, solving $Av=2v$ for the matrix
+
+$$
+A=
+\begin{pmatrix}
+2&1\\
+0&2
+\end{pmatrix},\qquad
+v=\begin{pmatrix}
+x\\y
+\end{pmatrix}
+$$
+
+gives
+
+$$
+\begin{pmatrix}
+2&1\\
+0&2
+\end{pmatrix}
+\begin{pmatrix}
+x\\y
+\end{pmatrix}
+=
+\begin{pmatrix}
+2x\\2y
+\end{pmatrix}.
+$$
+
+Therefore, $2x+y=2x$ and hence $y=0$.
+
+The eigenvectors are therefore all vectors of the form
+
+$$
+v=
+\begin{pmatrix}
+x\\0
+\end{pmatrix},
+\qquad x\neq0.
+$$
+
+They all lie on the same line. There is only **one linearly independent eigenvector**.
+
+Thus:
+
+$$
+\boxed{
+\text{algebraic multiplicity}=2,
+\qquad
+\text{geometric multiplicity}=1
+}
+$$
+
+This is an important distinction: an eigenvalue can occur twice in the characteristic polynomial without giving us two independent eigenvectors.
+
+### A different matrix with the same eigenvalue
+
+Now consider
+
+$$
+A=
+\begin{pmatrix}
+2&0\\
+0&2
+\end{pmatrix}
+=2I.
+$$
+
+The characteristic polynomial is again $p(\lambda)=(2-\lambda)^2$,
+so the eigenvalue $\lambda=2$ again has algebraic multiplicity 2.
+But now $Av=2v$ is true for **every** vector (v).
+Therefore, the eigenspace is the entire plane: $E_2=\mathbb{R}^2$.
+Its dimension is 2, so the geometric multiplicity is also 2:
+
+$$
+\boxed{
+\text{algebraic multiplicity}=2,
+\qquad
+\text{geometric multiplicity}=2
+}
+$$
+
+This gives us two very different situations with exactly the same characteristic polynomial.
+
+### The general rule
+
+For every eigenvalue,
+
+$$
+\boxed{
+1\leq
+\text{geometric multiplicity}
+\leq
+\text{algebraic multiplicity}
+}
+$$
+
+The geometric multiplicity can never be larger than the algebraic multiplicity.
+
+For a repeated eigenvalue with algebraic multiplicity 2, there are therefore two possibilities:
+
+$$
+\begin{array}{c|c|c}
+&\text{Algebraic multiplicity}&\text{Geometric multiplicity}\\
+\hline
+\begin{pmatrix}
+2&1\\
+0&2
+\end{pmatrix} & 2 & 1
+\\
+\begin{pmatrix}
+2&0\\
+0&2
+\end{pmatrix}
+&2&2
+\end{array}
+$$
+
+In the first case there is only one eigenvector direction. In the second case every direction is an eigenvector.
+
+### Why this matters for the spectral theorem
+
+This distinction becomes particularly important when we arrive at the **spectral theorem**.
+A general matrix does not necessarily have enough independent eigenvectors to form a basis. The matrix
+
+$$
+\begin{pmatrix}
+2&1\\
+0&2
+\end{pmatrix}
+$$
+
+is an example: it has only one independent eigenvector, even though its characteristic polynomial has degree two.
+Therefore, it cannot be diagonalized.
+
+Real **symmetric** matrices are special as the spectral theorem tells us that every
+real symmetric matrix has an **orthonormal basis of eigenvectors**. So for a $2\times 2$-matrix
+
+$$A =
+\begin{pmatrix}
+a & b\\
+b & d
+\end{pmatrix}
+$$
+
+the eigen vectors are always **perpendicular to one another**.
+In other words, even when eigenvalues are repeated, there are always enough
+independent eigenvectors to span the entire space. For example,
+
+$$
+A=
+\begin{pmatrix}
+2&1\\
+1&2
+\end{pmatrix}
+$$
+
+has eigenvalues $\lambda_1=3,\ \lambda_2=1$ with orthogonal eigenvectors
+
+$$
+e_1=
+\frac{1}{\sqrt2}
+\begin{pmatrix}
+1\\1
+\end{pmatrix},
+\qquad e_2=
+\frac{1}{\sqrt2}
+\begin{pmatrix}
+1\\-1
+\end{pmatrix}.
+$$
+
+These two eigenvectors form an orthonormal basis of $\mathbb{R}^2$.
+This is the deeper reason why symmetric matrices can be written as
+
+$$
+\boxed{A=Q\Lambda Q^T}
+$$
+
+where $Q$ contains the orthonormal eigenvectors and $\Lambda$ contains the eigenvalues.
+The visual interpretation that is implied is:
+
+1. rotate space so that the eigen vectors are the axes;
+2. scale independently in those two directions;
+3. rotate space back to its original position.
+
+So for a general symmetric transformation we have have:
+
+$$
+\boxed{\text{rotation} \rightarrow \text{scaling} \rightarrow \text{rotation}}
+$$
+
+So the distinction between algebraic and geometric multiplicity is not merely a technical detail.
+It tells us whether the eigenvectors provide enough directions to completely describe the transformation.
+
+### A nice observation for the demo
+
+The transition between
+
+$$
+\begin{pmatrix}
+2&1\\
+0&2
+\end{pmatrix}\ \text{and}\ \begin{pmatrix}
+2&0\\
+0&2
+\end{pmatrix}
+$$
+
+is particularly instructive.
+
+In the first case, the two eigenvalues have **merged**, but the two eigenvector directions have **not** appeared: there is only one.
+
+In the second case, the same repeated eigenvalue corresponds to an entire plane of eigenvectors.
+
+This is a good reminder that **eigenvalues alone do not tell us the complete structure of a matrix**. We also have to look at the eigenspaces.
+
+
+
+
+
+En dat kunnen we in Helion fantastisch zichtbaar maken.
+
+### Ik zou de demo precies zo opbouwen
+
+Links:
+
+```text
+        e₂
+        ↗
+       /
+      /
+-----●----------→ e₁
+```
+
+met de oorspronkelijke standaardbasis (x,y) bijvoorbeeld in grijs.
+
+En daarnaast laat je de matrix zien:
+
+$$
+A =
+\begin{pmatrix}
+a & b\\
+b & d
+\end{pmatrix}
+$$
+
+met sliders voor $a,b,d$.
+
+De twee eigenvectoren krijgen verschillende kleuren:
+
+* 🔴 $e_1$
+* 🟢 $e_2$
+
+en vooral: **ze blijven loodrecht terwijl je aan de sliders trekt.**
+
+Dat is het visuele hart van het spectraaltheorema.
+
+## En dan de spectaculaire stap
+
+Je hebt eigenlijk al bijna alle infrastructuur.
+
+Voor een symmetrische matrix geldt:$A = Q\Lambda Q^T$
+
+waarbij
+
+$$
+Q =
+\begin{pmatrix}
+| & |\\
+e_1 & e_2\\
+| & |
+\end{pmatrix}
+$$
+
+en
+
+$$
+\Lambda =
+\begin{pmatrix}
+\lambda_1 & 0\
+0 & \lambda_2
+\end{pmatrix}.
+$$
+
+Dat zegt visueel:
+
+1. draai de ruimte zodat de eigenvectoren de assen zijn;
+2. schaal onafhankelijk in die twee richtingen;
+3. draai de ruimte weer terug.
+
+Dus een algemene symmetrische transformatie is eigenlijk:
+
+$$
+\boxed{\text{rotatie} \rightarrow \text{schaling} \rightarrow \text{rotatie}}
+$$
+
+En **dát** is volgens mij de demo die je wilt bouwen.
+
+---
+
+### Nog mooier: laat een cirkel transformeren
+
+Hier zou ik zelfs je grid-demo iets uitbreiden.
+
+Neem een cirkel:
+
+$$
+x^2+y^2=1.
+$$
+
+Onder een willekeurige symmetrische matrix wordt die in het algemeen een **ellips**.
+
+En dan teken je de eigenvectoren door het middelpunt.
+
+Dan ziet de gebruiker letterlijk:
+
+```text
+              e₂
+             ╱
+         .--------.
+       .'          '.
+      /              \
+-----●------------------→ e₁
+      \              /
+       '.          .'
+         '--------'
+```
+
+De eigenvectoren zijn precies de **hoofdrichtingen van de ellips**.
+
+Dat is een ontzettend mooie geometrische interpretatie van het spectraaltheorema.
+
+Want de matrix zegt dan niet alleen abstract:
+
+> "Ik heb twee eigenvectoren."
+
+Je ziet:
+
+> **deze twee loodrechte richtingen zijn de natuurlijke assen waarin de transformatie gewoon een onafhankelijke schaling is.**
+
+---
+
+## En dit sluit perfect aan op je hoofdstuk
+
+Je kunt dan letterlijk de overgang maken:
+
+### Matrix
+
+$$
+A=
+\begin{pmatrix}
+a&b\\
+b&d
+\end{pmatrix}
+$$
+
+↓
+
+### Eigenwaarden/eigenvectoren
+
+$$
+Ae_i=\lambda_i e_i
+$$
+
+↓
+
+### Spectraaltheorema
+
+$$
+e_1\perp e_2
+$$
+
+↓
+
+### Orthonormale matrix
+
+$$
+Q=(e_1\ e_2)
+$$
+
+↓
+
+### Diagonale matrix
+
+$$
+\Lambda=
+\begin{pmatrix}
+\lambda_1&0\\
+0&\lambda_2
+\end{pmatrix}
+$$
+
+↓
+
+### Spectrale decompositie
+
+$$
+\boxed{A=Q\Lambda Q^T}
+$$
+
+Dat is pedagogisch echt sterk, omdat je dan niet eindigt met "hier is nog een theorem". De demo **maakt duidelijk waarom het theorem interessant is**.
+
+En misschien nog belangrijker voor jouw Fermat-project: dit is precies het soort moment waarop je filosofie van de site zichtbaar wordt. Je introduceert niet zomaar lineaire algebra omdat die "later nodig is". Je laat zien dat een ogenschijnlijk willekeurige matrixtransformatie een verborgen structuur heeft — en dat je die structuur kunt **zien**.
