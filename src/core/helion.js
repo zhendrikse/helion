@@ -32,9 +32,21 @@ export class Transformation {
 }
 
 export class MathPhysicsModelBehavior {
+    /**
+     * Keeps the model and view synchronized at all times!
+     * @param view view to synchronize the model with.
+     * @returns {Binding} a new binding between the model and view.
+     */
     alwaysWith(view) {
         return new Binding(this, view, Binding.Mode.ALWAYS);
     }
+
+    /**
+     * Synchronize model only once with the view. Important: the
+     * model is also synchronized with the view at every user interaction!!
+     * @param view view to synchronize the model with.
+     * @returns {Binding} a new binding between the model and view.
+     */
     onceWith(view) {
         return new Binding(this, view, Binding.Mode.ONCE);
     }
