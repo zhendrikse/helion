@@ -92,19 +92,19 @@ Simulation
     .bind(pythagoras.bc.onceWith(new LineSegmentView({lineWidth: 3})))
     .bind(pythagoras.ab.onceWith(new LabelView({
         text: model => "a=" + pythagoras.a,
-        offset: new Vec3(0, -.5, 0),
+        offset: model => new Vec3(0, -.5, 0),
         color: "#44aaff",
         fontSize: "30px"
     })))
     .bind(pythagoras.ac.onceWith(new LabelView({
         text: model => "b=" + pythagoras.b,
-        offset: new Vec3(-.90, 0, 0),
+        offset: model => new Vec3(-.90, 0, 0),
         color: "#44dd88",
         fontSize: "30px"
     })))
     .bind(pythagoras.bc.onceWith(new LabelView({
         text: model => "c=" + pythagoras.c.toFixed(2),
-        offset: new Vec3(.55, .55, 0),
+        offset: model => new Vec3(.55, .55, 0),
         color: "#ffaa44",
         fontSize: "30px"
     })))

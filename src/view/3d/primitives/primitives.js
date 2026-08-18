@@ -197,9 +197,25 @@ export class Sphere extends Renderable3D {
     set color(newColor) { this._mesh.material.color.set(newColor); }
 }
 
-//
-// Arrow
-//
+/**
+ * Arrow is a 3D view of the axis property of a body.
+ * It uses an Arrow to represent the vector, with the arrow's position at the body's position,
+ * and the arrow's direction and length determined by the vector property.
+ *
+ * origin
+ *    │
+ *    │ shaft
+ *    │
+ *    ├─────────┐
+ *    │         │ head
+ *    │         ▼
+ *    └─────────●  ← exact arrowLength
+ *
+ * The arrow's color and size can be customized, and the arrow can be made visible or invisible.
+ * The vector property is a function that takes a body and returns a Vec3 representing the vector.
+ * The magnitude of the vector can be mapped to a different scale using the magnitudeMap function.
+ * The color of the arrow can be mapped to a different color using the colorMap function.
+ */
 export class Arrow extends Renderable3D {
     static UP = new Vector3(0, 1, 0);
     static FORWARD = new Vector3(0, 0, 1);
@@ -217,8 +233,15 @@ export class Arrow extends Renderable3D {
         visible = true,
         castShadow = false,
         magnitudeMap = magnitude => Math.max(magnitude, 0.1),
-        colorMap = null
-    } = {}) {
+        colorMap = null,
+        material = new MeshStandardMaterial({
+            roughness: 0.5,
+            metalness: 0.35,
+            emissive: new Color(0x888888),
+            emissiveIntensity: 0.2,
+            envMapIntensity: 1.2,
+            transparent: true,
+        })} = {}) {
         super();
 
         const shaftGeometry = round
@@ -229,17 +252,9 @@ export class Arrow extends Renderable3D {
             ? Arrow.HeadGeometryRound
             : Arrow.HeadGeometrySquare;
 
-        this._material = new MeshStandardMaterial({
-            color,
-            roughness: 0.25,
-            metalness: 0.35,
-            emissive: new Color(0x333333),
-            emissiveIntensity: 0.2,
-            envMapIntensity: 1.2,
-            transparent: true,
-            opacity
-        });
-
+        this._material = material;
+        this._material.color.set(color);
+        this._material.opacity = opacity;
         this._shaft = new Mesh(shaftGeometry, this._material);
         this._head = new Mesh(headGeometry, this._material);
 
@@ -286,10 +301,11 @@ export class Arrow extends Renderable3D {
             this._material.color.copy(color);
         }
 
-        const shaftLength = this._magnitudeMap(magnitude);
+        const arrowLength = this._magnitudeMap(magnitude);
+        const shaftLength = Math.max(arrowLength - this._headLength, 0);
+
         this.quaternion.setFromUnitVectors(Arrow.UP, this._tempAxis.normalize());
         this._shaft.scale.set(this._shaftRadius, shaftLength, this._shaftRadius);
-
         this._head.scale.set(this._headRadius, this._headLength, this._headRadius);
         this._head.position.y = shaftLength;
     }
@@ -312,13 +328,9 @@ export class Arrow extends Renderable3D {
 }
 
 /**
- * VectorView is a 3D view of a vector property of a body, such as velocity or acceleration.
- * It uses an Arrow to represent the vector, with the arrow's position at the body's position,
- * and the arrow's direction and length determined by the vector property.
- * The arrow's color and size can be customized, and the arrow can be made visible or invisible.
- * The vector property is a function that takes a body and returns a Vec3 representing the vector.
- * The magnitude of the vector can be mapped to a different scale using the magnitudeMap function.
- * The color of the arrow can be mapped to a different color using the colorMap function. 
+ * VectorView is a 3D view of a vector property of a body (other than axis),
+ * such as velocity or acceleration. It passes this property on to the Arrow class,
+ * as if it had an axis property.
  */
 export class VectorView extends Renderable3D {
     constructor({
@@ -599,8 +611,8 @@ export class Helix extends Renderable3D {
 export class LabelView extends Renderable3D {
     constructor({
         text = model => "" ,
-        offset = new Vec3(),
-        color = "white",
+        offset = model => new Vec3(),
+        color = "#ffff00",
         fontSize = "16px",
         visible = true
     } = {}) {
@@ -634,7 +646,7 @@ export class LabelView extends Renderable3D {
     }
 
     synchronizeWith(model) {
-        this._label.position.copy(model.position.clone().add(this._offset));
+        this._label.position.copy(model.position.clone().add(this._offset(model)));
         this._element.textContent = this._text(model);
     }
 

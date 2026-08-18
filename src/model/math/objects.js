@@ -2,6 +2,35 @@ import {MathPhysicsModelBehavior} from "../../core/helion.js";
 import {degToRad, Vec3} from "./math.js";
 import {Integrators} from "./numerics/integrators/integrators.js";
 
+/**
+ * A vector model.
+ *
+ * Arrow expects:
+ *     position
+ *     axis
+ */
+export class VectorModel extends MathPhysicsModelBehavior {
+    constructor(position = new Vec3(), axis = new Vec3()) {
+        super();
+        this.position = position;
+        this.axis = axis;
+    }
+
+    clone() {
+        return new VectorModel(this.position.clone(), this.axis.clone());
+    }
+
+    copy(vectorModel) {
+        this.axis.copy(vectorModel.axis);
+        this.position.copy(vectorModel.position);
+    }
+
+    apply(transformation) {
+        transformation.applyTo(this.axis);
+        return this;
+    }
+}
+
 export class LineSegment extends MathPhysicsModelBehavior {
     constructor(from, to, color) {
         super();
@@ -10,10 +39,20 @@ export class LineSegment extends MathPhysicsModelBehavior {
         this.color = color;
     }
 
+    clone() {
+        return new LineSegment(this.from.clone(), this.to.clone(), this.color);
+    }
+
     get position() {
         return this.from.clone()
             .add(this.to)
             .multiplyScalar(0.5);
+    }
+
+    apply(transformation) {
+        transformation.applyTo(this.from);
+        transformation.applyTo(this.to);
+        return this;
     }
 }
 
@@ -35,6 +74,30 @@ export class Segments extends MathPhysicsModelBehavior {
 
     push(segment) {
         this._segments.push(segment);
+    }
+}
+
+export class Grid extends Segments {
+    constructor({
+        size = 5,
+        color = 0xffaa55
+    } = {}) {
+        super();
+        this._color = color;
+        this._gridLines = [];
+        for (let i = -size; i <= size; i++) {
+            const verticalLine = new LineSegment(new Vec3(i, -size, 0), new Vec3(i,  size, 0), color);
+            this._gridLines.push(verticalLine);
+            const horizontalLine = new LineSegment(new Vec3(-size, i, 0), new Vec3( size, i, 0), color);
+            this._gridLines.push(horizontalLine);
+        }
+        this._gridLines.forEach(line => this.push(line));
+    }
+
+    apply(matrix) {
+        this.clear();
+        for (const segment of this._gridLines)
+            this.push(segment.clone().apply(matrix));
     }
 }
 
