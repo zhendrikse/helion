@@ -10,4 +10,7 @@ export function renderMath(element, latex, {
         throwOnError,
         output: "html"
     });
+    console.log("HELION TITLE HTML:", element.outerHTML);
+    console.log("Quarto:", window.Quarto);
+    console.log("MathJax:", window.MathJax);
 }
