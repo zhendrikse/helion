@@ -75,7 +75,7 @@ const electron = new RadialSymmetricBody({
     radius: sheetSize / 35
 });
 
-const electronSphere = new Sphere({ color: "yellow" });
+const electronSphere = new Sphere({ color: 0xffff00 });
 const arrowField = new ArrowField({
     xRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
     yRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
@@ -101,7 +101,7 @@ Simulation
     .bind(electricField.onceWith(arrowField))
     .bind(electron.alwaysWith(electronSphere))
     .bind(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
-    .bind(sheet.segments.onceWith(new BoxSegmentsView({ opacity: 0.6 })))
+    .bind(sheet.segments.onceWith(new BoxSegmentsView({ opacity: 0.6, colorMapper: (_, _1, target) => target.setRGB(.2, .8, .2) })))
     .runsEvery(3e-3)
     .substeps(5)
     .advancesBy(5e-20)
