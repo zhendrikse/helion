@@ -28,31 +28,7 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-The simulation starts with the following transformation in $\mathbb{R}^2$:
-
-$$
-👉\ \begin{pmatrix}
-x' \\
-y'
-\end{pmatrix}=
-\begin{pmatrix}
-a && b \\
-c && d
-\end{pmatrix}
-\begin{pmatrix}
-x \\
-y
-\end{pmatrix},\ \text{with}\ \begin{pmatrix}
-a && b \\
-c && d
-\end{pmatrix}=
-\begin{pmatrix}
-2 && 1 \\
-0 && 1
-\end{pmatrix}
-$$
-
-<div id="matrixTransformationContainer"></div>
+<div id="matrixTransformationContainer" style="aspect-ratio: 19/12"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/matrix_transformation.js"}></script>
 
 ## What do I see?

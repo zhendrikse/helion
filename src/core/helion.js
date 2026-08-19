@@ -6,6 +6,9 @@ import { generateUUID, Vec3 } from "../model/math/math.js";
 import { BodyPair } from "../model/phys/bodies.js";
 import { UPlotGraph } from "./uplot.js";
 import { AxesUI, Button } from "./controls.js";
+import katex from "katex";
+import "katex/dist/katex.min.css";
+import {renderMath} from "../view/mathrenderer.js";
 
 export class Registry {
     constructor({
@@ -106,6 +109,8 @@ export class Binding {
  * Bridge between the simulation, browser DOM, and renderer.
  *
  * containerDiv
+ * ├── titleDiv      (dynamic titles)
+ * │
  * ├── canvasWrapperDiv
  * │   ├── canvas        (with simulation inside!)
  * │   ├── HUD           (shows head-up display messages)
@@ -128,10 +133,20 @@ export class Viewport {
         this._container = containerDiv;
         this._container.classList.add('helionContainer');
         this._container.style.position = "relative";
-        this._container.style.width = "100%";
         this._container.style.margin = "auto";
-        if (this._container.style.aspectRatio === "")
-            this._container.style.aspectRatio  = "1/1";
+
+        this._titleDiv = document.createElement("div");
+        this._titleDiv.classList.add("helionTitle");
+        this._titleDiv.style.position = "relative";
+        this._titleDiv.style.paddingTop = "15px";
+        this._titleDiv.style.left = "0";
+        this._titleDiv.style.width = "100%";
+        this._titleDiv.style.zIndex = "10";
+        this._titleDiv.style.textAlign = "center";
+        this._titleDiv.style.pointerEvents = "none";
+        this._titleDiv.style.fontSize = "16px";
+        this._titleDiv.style.color = "yellow";
+        this._container.appendChild(this._titleDiv);
 
         this._canvasWrapperDiv = document.createElement("div");
         this._canvasWrapperDiv.classList.add("helionCanvasWrapper");
@@ -139,7 +154,9 @@ export class Viewport {
         this._canvasWrapperDiv.style.display = "block";
         this._canvasWrapperDiv.style.backgroundColor = "transparent";
         this._canvasWrapperDiv.style.width = "100%";
-        this._canvasWrapperDiv.style.height = "100%";
+        this._canvasWrapperDiv.style.paddingBottom = "15px";
+        if (this._canvasWrapperDiv.style.aspectRatio === "")
+            this._canvasWrapperDiv.style.aspectRatio  = "1/1";
         this._container.appendChild(this._canvasWrapperDiv);
 
         this._canvas = document.createElement('canvas');
@@ -173,6 +190,7 @@ export class Viewport {
         summary.textContent = "⚙️ Parameters";
         this._details.appendChild(summary);
         this._details.style.visibility = "hidden";
+        this._details.style.paddingBottom = "15px";
         this._details.open = !parameterMenuCollapsed;
         this._addOnsDiv.appendChild(this._details);
 
@@ -239,6 +257,7 @@ export class Viewport {
     get canvas() { return this._canvas; }
     get width() { return this._canvasWrapperDiv.clientWidth; }
     get height() { return this._canvasWrapperDiv.clientHeight; }
+    get titleDiv() { return this._titleDiv; }
 
     enableParameterMenu() {
         this._details.style.visibility = "visible";
@@ -366,6 +385,21 @@ export class Simulation {
 
     addObject3D(object3D) {
         this._renderer.add(object3D);
+        return this;
+    }
+
+    setLatexTitle(latex) {
+        renderMath(this._viewport.titleDiv, latex);
+        return this;
+    }
+
+    setTextTitle(text) {
+        this._viewport.titleDiv.textContent = text;
+        return this;
+    }
+
+    clearTitle() {
+        this._viewport.titleDiv.replaceChildren();
         return this;
     }
     

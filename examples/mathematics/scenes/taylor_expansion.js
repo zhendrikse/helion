@@ -4,10 +4,16 @@ import {
     Arrow
 } from "../../../src/index.js";
 
-
 const xMin = -4;
 const xMax = 4;
 const samples = 200;
+
+const simulation = Simulation
+    .with({
+        htmlDivId: "taylorSeriesContainer",
+        cameraPosition: new Vec3(0, 0, 10),
+        parameterMenuCollapsed: false
+    });
 
 /**
  * Create a graph from a function.
@@ -66,6 +72,18 @@ function exp(x) {
     return Math.exp(x);
 }
 
+const tayorTerms = [
+    "1",
+    "+x",
+    "+\\dfrac{x^2}{2!}",
+    "+\\dfrac{x^3}{3!}",
+    "+\\dfrac{x^4}{4!}",
+    "+\\dfrac{x^5}{5!}",
+    "+\\dfrac{x^6}{6!}",
+    "+\\dfrac{x^7}{7!}",
+    "+\\dfrac{x^8}{8!}",
+    "+\\dfrac{x^9}{9!}",
+];
 
 /**
  * Taylor polynomial for e^x:
@@ -75,6 +93,13 @@ function exp(x) {
 function taylorExp(x, terms) {
     let sum = 0;
     let term = 1;
+
+    let latexTitle = "e^x = ";
+
+    for (let n = 0; n < terms; n++)
+        latexTitle += tayorTerms[n];
+    latexTitle += "+\\cdots";
+    simulation.setLatexTitle(latexTitle);
 
     for (let n = 0; n < terms; n++) {
         if (n > 0)
@@ -105,12 +130,8 @@ const approximationGraph = new FunctionGraph({
     color: 0xff0000
 });
 
-Simulation
-    .with({
-        htmlDivId: "taylorSeriesContainer",
-        cameraPosition: new Vec3(0, 0, 10),
-        parameterMenuCollapsed: false
-    })
+simulation
+    .setLatexTitle("e^x = 1 + \\cdots")
     .bind(grid.onceWith(new LineSegmentsView({ lineWidth: 2, dashed: true, dashSize: .05, gapSize: .1 })))
     .bind(xAxis.onceWith(new Arrow({
         size: .075,

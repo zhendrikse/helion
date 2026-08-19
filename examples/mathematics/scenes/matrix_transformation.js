@@ -25,6 +25,14 @@ const transformedEigenvector1 = new VectorModel();
 const eigenvector2 = new VectorModel();
 const transformedEigenvector2 = new VectorModel();
 
+const simulation = Simulation
+    .with({
+        htmlDivId: "matrixTransformationContainer",
+        cameraPosition: new Vec3(0, 0, 5 * (size + 0.1)),
+        parameterMenuCollapsed: false,
+        controls: false
+    })
+
 function updateVectors() {
     transformedVector.copy(originalVector.clone().apply(transformation));
 
@@ -45,8 +53,30 @@ function updateVectors() {
         transformedEigenvector2.axis.copy(eigenvectors[1].vector);
         transformedEigenvector2.apply(transformation);
     }
+
+    updateTitle(eigenvectors);
 }
-updateVectors();
+
+function updateTitle(eigenvectors) {
+    let latexTitleString = "\\begin{pmatrix} x' \\\\ y' \\end{pmatrix}=\\begin{pmatrix}";
+    latexTitleString += transformation.a + " &&";
+    latexTitleString += transformation.b + " \\\\";
+    latexTitleString += transformation.c + " &&";
+    latexTitleString += transformation.d + " \\end{pmatrix}";
+    latexTitleString += "\\begin{pmatrix} x \\\\ y \\end{pmatrix}";
+
+    console.log(eigenvectors.length);
+    if (eigenvectors.length !== 0)
+        latexTitleString += "\\quad \\overrightarrow{e_1} = \\begin{pmatrix}" +
+            eigenvectors[0].vector.x.toFixed(1) + "\\\\" +
+            eigenvectors[0].vector.y.toFixed(1) + "\\end{pmatrix}";
+    if (eigenvectors.length === 2)
+        latexTitleString += "\\quad \\overrightarrow{e_2} = \\begin{pmatrix}" +
+            eigenvectors[1].vector.x.toFixed(1) + "\\\\" +
+            eigenvectors[1].vector.y.toFixed(1) + "\\end{pmatrix}";
+
+    simulation.setLatexTitle(latexTitleString);
+}
 
 const onMatrixModified = (property, value) => {
     transformation[property] = value;
@@ -104,15 +134,11 @@ function labelsVisibleIs(trueOrFalse) {
     labelTransformedEigenVector2.visible = trueOrFalse;
     labelTransformedEigenVector1.visible = trueOrFalse;
 }
-labelsVisibleIs(false);
 
-Simulation
-    .with({
-        htmlDivId: "matrixTransformationContainer",
-        cameraPosition: new Vec3(0, 0, 5 * (size + 0.1)),
-        parameterMenuCollapsed: false,
-        controls: false
-    })
+labelsVisibleIs(false);
+updateVectors();
+
+simulation
     .bind(originalGrid.onceWith(new LineSegmentsView({ lineWidth: 1.25, dashed:true, dashSize: .2, gapSize: .2 })))
     .bind(transformedGrid.onceWith(new LineSegmentsView({ lineWidth: 1, dashed: true, dashSize: .2, gapSize: .2  })))
     .bind(xAxis.onceWith(new LineSegmentView({lineWidth: 1.5})))
