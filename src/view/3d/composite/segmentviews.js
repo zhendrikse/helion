@@ -149,9 +149,10 @@ export class LineSegmentView extends Renderable3D {
             segment.to.x, segment.to.y, segment.to.z
         ]);
 
+        const colour = new Color(segment.color);
         this._geometry.setColors([
-            segment.color.r, segment.color.g, segment.color.b,
-            segment.color.r, segment.color.g, segment.color.b
+            colour.r, colour.g, colour.b,
+            colour.r, colour.g, colour.b
         ]);
     }
 

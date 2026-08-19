@@ -608,7 +608,7 @@ export class Helix extends Renderable3D {
     }
 }
 
-export class LabelView extends Renderable3D {
+export class Label extends Renderable3D {
     constructor({
         text = model => "" ,
         offset = model => new Vec3(),

@@ -1,6 +1,6 @@
 import { Color } from "three";
 import {
-    Segments, LineSegment, Simulation, LineSegmentsView, Vec3, Slider, Range, LineSegmentView, LabelView
+    Segments, LineSegment, Simulation, LineSegmentsView, Vec3, Slider, Range, LineSegmentView, Label
 } from "../../../src/index.js";
 
 const triangleColor = new Color(0xffffff);
@@ -90,19 +90,19 @@ Simulation
     .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3})))
     .bind(pythagoras.ac.onceWith(new LineSegmentView({lineWidth: 3})))
     .bind(pythagoras.bc.onceWith(new LineSegmentView({lineWidth: 3})))
-    .bind(pythagoras.ab.onceWith(new LabelView({
+    .bind(pythagoras.ab.onceWith(new Label({
         text: model => "a=" + pythagoras.a,
         offset: model => new Vec3(0, -.5, 0),
         color: "#44aaff",
         fontSize: "30px"
     })))
-    .bind(pythagoras.ac.onceWith(new LabelView({
+    .bind(pythagoras.ac.onceWith(new Label({
         text: model => "b=" + pythagoras.b,
         offset: model => new Vec3(-.90, 0, 0),
         color: "#44dd88",
         fontSize: "30px"
     })))
-    .bind(pythagoras.bc.onceWith(new LabelView({
+    .bind(pythagoras.bc.onceWith(new Label({
         text: model => "c=" + pythagoras.c.toFixed(2),
         offset: model => new Vec3(.55, .55, 0),
         color: "#ffaa44",
