@@ -120,6 +120,9 @@ export class BoxSegmentsView extends InstancedSegmentsView {
 export class LineSegmentView extends Renderable3D {
     constructor({
         lineWidth = 1,
+        dashed = false,
+        dashSize = 1,
+        gapSize = 1,
         visible = true
     } = {}) {
         super();
@@ -128,11 +131,13 @@ export class LineSegmentView extends Renderable3D {
         this._material = new LineMaterial({
             linewidth: lineWidth,
             vertexColors: true,
+            dashed,
+            dashSize,
+            gapSize,
             resolution: new Vector2(window.innerWidth, window.innerHeight)
         });
 
         this._line = new LineSegments2(this._geometry, this._material);
-
         this.add(this._line);
         this.visible = visible;
     }
@@ -154,6 +159,10 @@ export class LineSegmentView extends Renderable3D {
             colour.r, colour.g, colour.b,
             colour.r, colour.g, colour.b
         ]);
+
+        this._geometry.computeBoundingSphere();
+        if (this._material.dashed)
+            this._line.computeLineDistances();
     }
 
     dispose() {
@@ -170,9 +179,12 @@ export class LineSegmentView extends Renderable3D {
 export class LineSegmentsView extends LineSegmentView {
     constructor({
         lineWidth = 1,
+        dashed = false,
+        dashSize = 1,
+        gapSize = 1,
         visible = true
     } = {}) {
-        super({lineWidth, visible});
+        super({lineWidth, dashed, dashSize, gapSize, visible});
     }
 
     canBindTo(segments) {
@@ -184,6 +196,7 @@ export class LineSegmentsView extends LineSegmentView {
     synchronizeWith(segments) {
         const positions = [];
         const colors = [];
+
         for (const segment of segments) {
             positions.push(
                 segment.from.x, segment.from.y, segment.from.z,
@@ -199,5 +212,8 @@ export class LineSegmentsView extends LineSegmentView {
 
         this._geometry.setPositions(positions);
         this._geometry.setColors(colors);
+
+        if (this._material.dashed)
+            this._line.computeLineDistances();
     }
 }

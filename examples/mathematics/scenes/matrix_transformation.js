@@ -122,12 +122,12 @@ Simulation
         parameterMenuCollapsed: false,
         controls: false
     })
-    .bind(originalGrid.onceWith(new LineSegmentsView({ lineWidth: 1.25 })))
-    .bind(transformedGrid.onceWith(new LineSegmentsView({ lineWidth: 1 })))
-    .bind(xAxis.onceWith(new LineSegmentView({lineWidth: 2})))
+    .bind(originalGrid.onceWith(new LineSegmentsView({ lineWidth: 1.25, dashed:true, dashSize: .2, gapSize: .2 })))
+    .bind(transformedGrid.onceWith(new LineSegmentsView({ lineWidth: 1, dashed: true, dashSize: .2, gapSize: .2  })))
+    .bind(xAxis.onceWith(new LineSegmentView({lineWidth: 1.5})))
     .bind(xAxis.onceWith(new Label({text: () => "X", offset: () => new Vec3(.6 * size, 0, 0)})))
     .bind(yAxis.onceWith(new Label({text: () => "Y", offset: () => new Vec3(0, .6 * size, 0)})))
-    .bind(yAxis.onceWith(new LineSegmentView({lineWidth: 2})))
+    .bind(yAxis.onceWith(new LineSegmentView({lineWidth: 1.25})))
     .bind(originalVector.onceWith(new Arrow({
         color: 0xff991c,
         size: 0.4,
