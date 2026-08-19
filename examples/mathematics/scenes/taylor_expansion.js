@@ -82,7 +82,7 @@ const tayorTerms = [
     "+\\dfrac{x^6}{6!}",
     "+\\dfrac{x^7}{7!}",
     "+\\dfrac{x^8}{8!}",
-    "+\\dfrac{x^9}{9!}",
+    "+\\dfrac{x^9}{9!}"
 ];
 
 /**
