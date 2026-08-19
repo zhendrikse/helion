@@ -60,6 +60,7 @@ export default defineConfig({
                 star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js'),
                 sun: path.resolve(__dirname, 'examples/astrophysics/scenes/planets/sun.js'),
                 suspended_spring: path.resolve(__dirname, 'examples/waves/scenes/suspended_spring.js'),
+                taylor_expansion: path.resolve(__dirname, 'examples/mathematics/scenes/taylor_expansion.js'),
                 three_body: path.resolve(__dirname, 'examples/kinematics/scenes/three_body.js'),
                 travelling_wave: path.resolve(__dirname, 'examples/waves/scenes/travelling_wave.js'),
                 vibrating_membrane: path.resolve(__dirname, 'examples/waves/scenes/vibrating_membrane.js'),

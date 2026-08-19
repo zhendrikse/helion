@@ -49,6 +49,10 @@ export class LineSegment extends MathPhysicsModelBehavior {
             .multiplyScalar(0.5);
     }
 
+    get axis() {
+         return this.to.clone().sub(this.from);
+    }
+
     apply(transformation) {
         transformation.applyTo(this.from);
         transformation.applyTo(this.to);
@@ -80,16 +84,22 @@ export class Segments extends MathPhysicsModelBehavior {
 export class Grid extends Segments {
     constructor({
         size = 5,
+        stepSize = 1,
         color = 0xffaa55
     } = {}) {
         super();
         this._color = color;
         this._gridLines = [];
-        for (let i = -size; i <= size; i++) {
-            const verticalLine = new LineSegment(new Vec3(i, -size, 0), new Vec3(i,  size, 0), color);
+        if (stepSize <=0 || stepSize > size)
+            throw new Error("Step size must be between 0 and size, but was " + stepSize);
+
+        let pos = -size;
+        for (let i = -size / stepSize; i <= size / stepSize; i++) {
+            const verticalLine = new LineSegment(new Vec3(pos, -size, 0), new Vec3(pos, size, 0), color);
             this._gridLines.push(verticalLine);
-            const horizontalLine = new LineSegment(new Vec3(-size, i, 0), new Vec3( size, i, 0), color);
+            const horizontalLine = new LineSegment(new Vec3(-size, pos, 0), new Vec3(size, pos,0), color);
             this._gridLines.push(horizontalLine);
+            pos += stepSize;
         }
         this._gridLines.forEach(line => this.push(line));
     }

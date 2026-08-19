@@ -15,17 +15,8 @@ const originalGrid = new Grid({ size: size, color: 0xffaa55 });
 const transformedGrid = new Grid({ size: size, color: 0x44aaff });
 transformedGrid.apply(transformation);
 
-const xAxis = new LineSegment(
-    new Vec3(0, 0, 0),
-    new Vec3(size, 0, 0),
-    0xffffff
-);
-
-const yAxis = new LineSegment(
-    new Vec3(0, 0, 0),
-    new Vec3(0, size, 0),
-    0xffffff
-);
+const xAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(size, 0, 0), 0xffffff);
+const yAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(0, size, 0), 0xffffff);
 
 const originalVector = new VectorModel(new Vec3(), new Vec3(2, 1, 0));
 const transformedVector = new VectorModel();
