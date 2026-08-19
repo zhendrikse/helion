@@ -7,6 +7,7 @@ export function renderMath(element, latex, {
 } = {}) {
     katex.render(latex, element, {
         displayMode,
-        throwOnError
+        throwOnError,
+        output: "html"
     });
 }
