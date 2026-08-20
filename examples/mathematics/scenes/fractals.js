@@ -1,6 +1,5 @@
-import { Color } from "three";
 import {
-    Button, hsvToRgb, LineSegmentsView, Simulation, Vec3, Turtle, hsvToHexValue, ColorMappers
+    Button, LineSegmentsView, Simulation, Vec3, Turtle, hsvToHexValue, ColorMappers
 } from "../../../src/index.js";
 
 function kochSnowflake(turtle, length, depth) {
