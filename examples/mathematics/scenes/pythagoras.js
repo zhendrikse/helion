@@ -2,10 +2,6 @@ import {
     Segments, LineSegment, Simulation, LineSegmentsView, Vec3, Slider, Range, LineSegmentView, Label, ColorMappers
 } from "../../../src/index.js";
 
-const aColor = 0x44aaff;
-const bColor = 0x44dd88;
-const cColor = 0xffaa44;
-
 class Pythagoras extends Segments {
     constructor(a = 4.0, b = 3.0) {
         super();
@@ -35,9 +31,9 @@ class Pythagoras extends Segments {
         this.push(this._ac);
         this.push(this._bc);
 
-        this.addSquare(this._A, this._B, aColor, -1);
-        this.addSquare(this._A, this._C, bColor, 1);
-        this.addSquare(this._C, this._B, cColor, 1);
+        this.addSquare(this._A, this._B, 0x44aaff, -1);
+        this.addSquare(this._A, this._C, 0x44dd88, 1);
+        this.addSquare(this._C, this._B, 0xffaa44, 1);
     }
 
     addSquare(p1, p2, color, direction = 1) {
@@ -75,7 +71,6 @@ class Pythagoras extends Segments {
 }
 
 const pythagoras = new Pythagoras(4, 3);
-
 const segmentsView = new LineSegmentsView({
     lineWidth: 3,
     colorMapper: ColorMappers.get(ColorMappers.HexValueColorMapper)
@@ -83,7 +78,8 @@ const segmentsView = new LineSegmentsView({
 
 Simulation
     .with({
-        htmlDivId: "pythagorasContainer"
+        htmlDivId: "pythagorasContainer",
+        controls: false
     })
     .bind(pythagoras.onceWith(segmentsView))
     .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3})))
