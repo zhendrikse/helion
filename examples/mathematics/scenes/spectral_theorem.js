@@ -1,18 +1,8 @@
 import { MeshBasicMaterial } from "three";
 
 import {
-    Segments,
-    LineSegment,
-    LineSegmentsView,
-    Simulation,
-    Vec3,
-    Slider,
-    Range,
-    Arrow,
-    Label,
-    Matrix2D,
-    VectorModel,
-    ColorMappers
+    Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow, Label, Matrix2D,
+    VectorModel, ColorMappers
 } from "../../../src/index.js";
 
 const size = 5;
@@ -37,10 +27,6 @@ const transformation = new Matrix2D(
     1, 2
 );
 
-
-/*
- * A circle represented by line segments.
- */
 class Circle extends Segments {
     constructor({
         radius = originalCircleRadius,
