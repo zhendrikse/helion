@@ -1,7 +1,7 @@
 import { MeshBasicMaterial } from "three";
 import {
     LineSegmentsView, Simulation, Vec3, Slider, Range,
-    Arrow, Label, Matrix2D, VectorModel, Grid, RadioGroup, LineSegment, LineSegmentView
+    Arrow, Label, Matrix2D, VectorModel, Grid, RadioGroup, LineSegment, LineSegmentView, ColorMappers
 } from "../../../src/index.js";
 
 const size = 5;
@@ -11,12 +11,12 @@ const transformation = new Matrix2D(
     0, 1
 );
 
-const originalGrid = new Grid({ size: size, color: 0xffaa55 });
-const transformedGrid = new Grid({ size: size, color: 0x44aaff });
+const originalGrid = new Grid({ size: size });
+const transformedGrid = new Grid({ size: size });
 transformedGrid.apply(transformation);
 
-const xAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(size, 0, 0), 0xffffff);
-const yAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(0, size, 0), 0xffffff);
+const xAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(size, 0, 0));
+const yAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(0, size, 0));
 
 const originalVector = new VectorModel(new Vec3(), new Vec3(2, 1, 0));
 const transformedVector = new VectorModel();
@@ -138,12 +138,30 @@ labelsVisibleIs(false);
 updateVectors();
 
 simulation
-    .bind(originalGrid.onceWith(new LineSegmentsView({ lineWidth: 1.25, dashed:true, dashSize: .2, gapSize: .2 })))
-    .bind(transformedGrid.onceWith(new LineSegmentsView({ lineWidth: 1, dashed: true, dashSize: .2, gapSize: .2  })))
-    .bind(xAxis.onceWith(new LineSegmentView({lineWidth: 1.5})))
+    .bind(originalGrid.onceWith(new LineSegmentsView({
+        lineWidth: 1.25,
+        dashed:true,
+        dashSize: .2,
+        gapSize: .2,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffaa55 })
+    })))
+    .bind(transformedGrid.onceWith(new LineSegmentsView({
+        lineWidth: 1,
+        dashed: true,
+        dashSize: .2,
+        gapSize: .2,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0x44aaff})
+    })))
+    .bind(xAxis.onceWith(new LineSegmentView({
+        lineWidth: 1.5,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffffff })
+    })))
     .bind(xAxis.onceWith(new Label({text: () => "X", offset: () => new Vec3(.6 * size, 0, 0)})))
     .bind(yAxis.onceWith(new Label({text: () => "Y", offset: () => new Vec3(0, .6 * size, 0)})))
-    .bind(yAxis.onceWith(new LineSegmentView({lineWidth: 1.25})))
+    .bind(yAxis.onceWith(new LineSegmentView({
+        lineWidth: 1.25,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffffff })
+    })))
     .bind(originalVector.onceWith(new Arrow({
         color: 0xff991c,
         size: 0.4,

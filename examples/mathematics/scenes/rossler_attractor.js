@@ -1,5 +1,5 @@
 import {Color} from "three";
-import { LineSegmentsView, StrangeAttractor, Simulation, Vec3 } from "../../../src/index.js";
+import {LineSegmentsView, StrangeAttractor, Simulation, Vec3, ColorMappers} from "../../../src/index.js";
 
 export class RoesslerAttractor extends StrangeAttractor {
     constructor({
@@ -31,11 +31,9 @@ export class RoesslerAttractor extends StrangeAttractor {
         );
     }
 
-    color(distance) {
-        const hue = distance / this.maxDistance;
-        return new Color().setHSL(hue % 1, 1, 0.5);
+    hue(distance) {
+        return distance / this.maxDistance;
     }
-
 }
 
 const roessler = new RoesslerAttractor({
@@ -44,7 +42,10 @@ const roessler = new RoesslerAttractor({
     c: 9.75
 });
 
-const view = new LineSegmentsView({ lineWidth: 1.25 });
+const view = new LineSegmentsView({
+    lineWidth: 1.25,
+    colorMapper: ColorMappers.get(ColorMappers.Hue)
+});
 view.rotation.x = -Math.PI / 2
 Simulation
     .with({

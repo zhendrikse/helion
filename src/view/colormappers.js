@@ -61,6 +61,11 @@ export function hsvToRgb(h, s, v) {
     };
 }
 
+export function hsvToHexValue(h, s, v) {
+    const { r, g, b } = hsvToRgb(h, s, v);
+    return (r << 16) | (g << 8) | b;
+}
+
 export function wavelengthColor(lambdaInNanos, intensity, targetColor) {
     const base = wavelengthToRGBNormalized(lambdaInNanos);
 
@@ -266,14 +271,28 @@ class GradientColorMapper extends ColorMapper {
     }
 }
 
+class HueColorMapper extends ColorMapper {
+    map(value, targetColor) {
+        targetColor.setHSL(value % 1, 1.0, 0.5);
+    }
+}
+
+class HexValueColorMapper extends ColorMapper {
+    map(hexValue, targetColor) {
+        targetColor.setHex(hexValue);
+    }
+}
+
 class UniformColorMapper extends ColorMapper {
-    constructor(color = new Color(0xffff00)) {
+    constructor({
+        color = 0xffff00
+    }={}) {
         super();
-        this._color = color;
+        this.color = color;
     }
 
     map(value, targetColor) {
-        targetColor.setRGB(this._color.r, this._color.g, this._color.b);
+        targetColor.setHex(this.color);
     }
 }
 
@@ -300,7 +319,13 @@ class TerrainColorMapper extends ColorMapper {
 }
 
 export class ColorMappers extends Registry {
+    static get(type, options = {}) {
+        return new ColorMappers().get(type)(options);
+    }
+
     static Gradient = "Gradient";
+    static Hue = "Hue";
+    static HexValueColorMapper = "HexValueColorMapper";
     static Inferno = "Inferno";
     static RdYlBu = "RdYlBu";
     static Seismic = "Seismic";
@@ -315,16 +340,18 @@ export class ColorMappers extends Registry {
         super({
             label: label,
             entries: {
-                Gradient: () => new GradientColorMapper(),
-                Inferno: () => new InfernoColorMapper(),
-                RdYlBu: () => new RdYlBuColorMapper(),
-                Seismic: () => new SeismicColorMapper(),
-                Scientific: () => new ScientificColorMapper(),
-                Terrain: () => new TerrainColorMapper(),
-                Uniform: () => new UniformColorMapper(),
-                Viridis: () => new ViridisColorMapper(),
-                Water: () => new WaterColorMapper(),
-                WaterAlternative: () => new WaterAlternativeColorMapper()
+                Gradient: options => new GradientColorMapper(),
+                HexValueColorMapper: options => new HexValueColorMapper(),
+                Hue: options => new HueColorMapper(),
+                Inferno: options => new InfernoColorMapper(),
+                RdYlBu: options => new RdYlBuColorMapper(),
+                Seismic: options => new SeismicColorMapper(),
+                Scientific: options => new ScientificColorMapper(),
+                Terrain: options => new TerrainColorMapper(),
+                Uniform: options => new UniformColorMapper(options),
+                Viridis: options => new ViridisColorMapper(),
+                Water: options => new WaterColorMapper(),
+                WaterAlternative: options => new WaterAlternativeColorMapper()
             }
         });
     }

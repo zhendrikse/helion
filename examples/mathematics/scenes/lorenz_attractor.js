@@ -1,5 +1,5 @@
 import {Color} from "three";
-import {StrangeAttractor, LineSegmentsView, Simulation, Vec3} from "../../../src/index.js";
+import {StrangeAttractor, LineSegmentsView, Simulation, Vec3, ColorMappers} from "../../../src/index.js";
 
 export class LorenzAttractor extends StrangeAttractor {
     constructor({
@@ -29,16 +29,16 @@ export class LorenzAttractor extends StrangeAttractor {
         );
     }
 
-    color(distance) {
-        const hue = distance / this.maxDistance;
-        const color = new Color();
-        color.setHSL(hue % 1, 1.0, 0.5);
-        return color;
+    hue(distance) {
+        return distance / this.maxDistance;
     }
 }
 
 const lorenz = new LorenzAttractor();
-const lorenzView = new LineSegmentsView({ lineWidth: 1.25 });
+const lorenzView = new LineSegmentsView({
+    lineWidth: 1.25,
+    colorMapper: ColorMappers.get(ColorMappers.Hue)
+});
 
 const simulation = Simulation
     .with({

@@ -1,12 +1,81 @@
-import { MeshBasicMaterial } from "three";
+import { MeshBasicMaterial, Color } from "three";
 import {
     Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Grid, LineSegmentView, Interval, Label,
-    Arrow
+    Arrow, ColorMappers
 } from "../../../src/index.js";
 
 const xMin = -4;
 const xMax = 4;
 const samples = 200;
+
+class LinearCombination {
+    constructor({
+        basis,
+        coefficients,
+        terms
+    }) {
+        this._basis = basis;
+        this._coefficients = coefficients;
+        this._terms = terms;
+    }
+
+    evaluate(x, terms) {
+        let sum = 0;
+        for (let n = 0; n < terms; n++)
+            sum += this._coefficients[n] * this._basis[n](x);
+
+        return sum;
+    }
+
+    latex(terms) {
+        let result = "";
+        for (let n = 0; n < terms; n++)
+            result += this._terms[n];
+
+        return result + "+\\cdots";
+    }
+}
+
+const taylorExpansion = new LinearCombination({
+    basis: [
+        x => 1,
+        x => x,
+        x => x * x,
+        x => x * x * x,
+        x => x * x * x * x,
+        x => x * x * x * x * x,
+        x => x * x * x * x * x * x,
+        x => x * x * x * x * x * x * x,
+        x => x * x * x * x * x * x * x * x,
+        x => x * x * x * x * x * x * x * x * x
+    ],
+
+    coefficients: [
+        1,
+        1,
+        1 / 2,
+        1 / 6,
+        1 / 24,
+        1 / 120,
+        1 / 720,
+        1 / 5040,
+        1 / 40320,
+        1 / 362_880
+    ],
+
+    terms: [
+        "1",
+        "+x",
+        "+\\dfrac{x^2}{2!}",
+        "+\\dfrac{x^3}{3!}",
+        "+\\dfrac{x^4}{4!}",
+        "+\\dfrac{x^5}{5!}",
+        "+\\dfrac{x^6}{6!}",
+        "+\\dfrac{x^7}{7!}",
+        "+\\dfrac{x^8}{8!}",
+        "+\\dfrac{x^9}{9!}"
+    ]
+});
 
 const simulation = Simulation
     .with({
@@ -22,15 +91,13 @@ class FunctionGraph extends Segments {
     constructor({
         func: fn,
         interval,
-        samples = 200,
-        color = 0xffffff
+        samples = 200
     }) {
         super();
 
         this._function = fn;
         this._interval = interval;
         this._samples = samples;
-        this._color = color;
 
         this.update();
     }
@@ -44,7 +111,6 @@ class FunctionGraph extends Segments {
         this.clear();
 
         const dx = this._interval.range / this._samples;
-
         let x1 = this._interval.from;
         let y1 = this._function(x1);
 
@@ -53,9 +119,8 @@ class FunctionGraph extends Segments {
             const y2 = this._function(x2);
 
             this.push(new LineSegment(
-                new Vec3(x1, y1 - 0.5 * (xMax - xMin), 0),
-                new Vec3(x2, y2- 0.5 * (xMax - xMin), 0),
-                this._color
+                new Vec3(x1, y1 - 0.5 * this._interval.range, 0),
+                new Vec3(x2, y2- 0.5 * this._interval.range, 0),
             ));
 
             x1 = x2;
@@ -64,51 +129,8 @@ class FunctionGraph extends Segments {
     }
 }
 
-
-/**
- * e^x
- */
 function exp(x) {
     return Math.exp(x);
-}
-
-const tayorTerms = [
-    "1",
-    "+x",
-    "+\\dfrac{x^2}{2!}",
-    "+\\dfrac{x^3}{3!}",
-    "+\\dfrac{x^4}{4!}",
-    "+\\dfrac{x^5}{5!}",
-    "+\\dfrac{x^6}{6!}",
-    "+\\dfrac{x^7}{7!}",
-    "+\\dfrac{x^8}{8!}",
-    "+\\dfrac{x^9}{9!}"
-];
-
-/**
- * Taylor polynomial for e^x:
- *
- * e^x = 1 + x + x²/2! + x³/3! + ...
- */
-function taylorExp(x, terms) {
-    let sum = 0;
-    let term = 1;
-
-    let latexTitle = "e^x = ";
-
-    for (let n = 0; n < terms; n++)
-        latexTitle += tayorTerms[n];
-    latexTitle += "+\\cdots";
-    simulation.setLatexTitle(latexTitle);
-
-    for (let n = 0; n < terms; n++) {
-        if (n > 0)
-            term *= x / n;
-
-        sum += term;
-    }
-
-    return sum;
 }
 
 const size = .5 * (xMax - xMin);
@@ -119,20 +141,24 @@ const yAxis = new LineSegment(new Vec3(0, -2 * size, 0), new Vec3(0, 0.25, 0), 0
 const exactGraph = new FunctionGraph({
     func: exp,
     interval: new Interval(xMin, xMax),
-    samples,
-    color: 0x00ff00
+    samples
 });
 
 const approximationGraph = new FunctionGraph({
-    func: x => taylorExp(x, 1),
+    func: x => taylorExpansion.evaluate(x, 1),
     interval: new Interval(xMin, xMax),
-    samples,
-    color: 0xff0000
+    samples
 });
 
 simulation
     .setLatexTitle("e^x = 1 + \\cdots")
-    .bind(grid.onceWith(new LineSegmentsView({ lineWidth: 2, dashed: true, dashSize: .05, gapSize: .1 })))
+    .bind(grid.onceWith(new LineSegmentsView({
+        lineWidth: 2,
+        dashed: true,
+        dashSize: .05,
+        gapSize: .1,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0xffaa55})
+    })))
     .bind(xAxis.onceWith(new Arrow({
         size: .075,
         material: new MeshBasicMaterial(),
@@ -156,10 +182,20 @@ simulation
         fontSize: "20px",
         offset: () => new Vec3(0, 2.1 * size, 0)
     })))
-    .bind(exactGraph.onceWith(new LineSegmentsView({ lineWidth: 3 })))
-    .bind(approximationGraph.onceWith(new LineSegmentsView({ lineWidth: 2 })))
+    .bind(exactGraph.onceWith(new LineSegmentsView({
+        lineWidth: 3,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0x00ff00})
+    })))
+    .bind(approximationGraph.onceWith(new LineSegmentsView({
+        lineWidth: 2,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0xff0000})
+    })))
     .append(new Slider("Terms")
         .withRange(new Range(1, 10, 1))
         .withValue(1)
-        .onInput(event => approximationGraph.setFunction(x => taylorExp(x, Number(event.target.value))))
+        .onInput(event => {
+            const terms = Number(event.target.value);
+            approximationGraph.setFunction(x => taylorExpansion.evaluate(x, terms));
+            simulation.setLatexTitle("e^x = " + taylorExpansion.latex(terms));
+        })
     );

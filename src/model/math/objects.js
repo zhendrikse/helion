@@ -31,16 +31,24 @@ export class VectorModel extends MathPhysicsModelBehavior {
     }
 }
 
+/**
+ * A line (segment) between two points.
+ */
 export class LineSegment extends MathPhysicsModelBehavior {
-    constructor(from, to, color) {
+    /**
+     * @param fromVec3 coordinates of from-point.
+     * @param toVec3 coordinates of to-point.
+     * @param value a color can be passed on to this segment by using the hue scalar value for a color.
+     */
+    constructor(fromVec3, toVec3, value=0) {
         super();
-        this.from = from;
-        this.to = to;
-        this.color = color;
+        this.from = fromVec3;
+        this.to = toVec3;
+        this.scalar = value;
     }
 
     clone() {
-        return new LineSegment(this.from.clone(), this.to.clone(), this.color);
+        return new LineSegment(this.from.clone(), this.to.clone(), this.scalar);
     }
 
     get position() {
@@ -84,20 +92,18 @@ export class Segments extends MathPhysicsModelBehavior {
 export class Grid extends Segments {
     constructor({
         size = 5,
-        stepSize = 1,
-        color = 0xffaa55
+        stepSize = 1
     } = {}) {
         super();
-        this._color = color;
         this._gridLines = [];
         if (stepSize <=0 || stepSize > size)
             throw new Error("Step size must be between 0 and size, but was " + stepSize);
 
         let pos = -size;
         for (let i = -size / stepSize; i <= size / stepSize; i++) {
-            const verticalLine = new LineSegment(new Vec3(pos, -size, 0), new Vec3(pos, size, 0), color);
+            const verticalLine = new LineSegment(new Vec3(pos, -size, 0), new Vec3(pos, size, 0));
             this._gridLines.push(verticalLine);
-            const horizontalLine = new LineSegment(new Vec3(-size, pos, 0), new Vec3(size, pos,0), color);
+            const horizontalLine = new LineSegment(new Vec3(-size, pos, 0), new Vec3(size, pos,0));
             this._gridLines.push(horizontalLine);
             pos += stepSize;
         }
@@ -128,8 +134,8 @@ export class StrangeAttractor extends Segments {
 
     derivative(point) {}
 
-    color(param, index) {
-        return 0xffff00;
+    hue(parameter, index) {
+        return 0.5;
     }
 
     generate() {
@@ -140,7 +146,7 @@ export class StrangeAttractor extends Segments {
             const previous = position.clone();
             Integrators.rk4VectorStep(position, this.dt, p => this.derivative(p));
             const distance = position.distanceTo(previous);
-            this.push(new LineSegment(previous, position.clone(), this.color(distance)));
+            this.push(new LineSegment(previous, position.clone(), this.hue(distance)));
         }
     }
 }

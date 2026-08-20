@@ -1,6 +1,6 @@
 import { Color } from "three";
 import {
-    Button, hsvToRgb, LineSegmentsView, Simulation, Vec3, Turtle
+    Button, hsvToRgb, LineSegmentsView, Simulation, Vec3, Turtle, hsvToHexValue, ColorMappers
 } from "../../../src/index.js";
 
 function kochSnowflake(turtle, length, depth) {
@@ -26,7 +26,7 @@ function drawSnowflake(turtle) {
     turtle.reset();
     turtle.goto(-300, -100);
     turtle.penDown();
-    turtle.color(new Color(0xffff00));
+    turtle.color(0xffff00);
 
     for (let i = 0; i < 3; i++)
         kochSnowflake(turtle, 200, 4);
@@ -51,7 +51,7 @@ function drawCesaro(turtle) {
     turtle.reset();
     turtle.goto(-300, -200);
     turtle.penDown();
-    turtle.color(new Color(0x00ff00));
+    turtle.color(0x00ff00);
 
     cesaroFractal(turtle, 6, 4000);
 }
@@ -86,7 +86,7 @@ function drawSierpinskiTriangle(turtle) {
     turtle.reset();
     turtle.goto(-200, -150);
     turtle.penDown();
-    turtle.color(new Color(0xffffff));
+    turtle.color(0xffffff);
 
     sierpinskiTriangle(turtle, 400, 5);
 }
@@ -146,8 +146,7 @@ function drawDragonCurve(turtle) {
 
     for (let i = 1; i < points.length; i++) {
         const [x, y] = points[i];
-        const { r, g, b } = hsvToRgb(i / points.length, 1, 1);
-        turtle.color(new Color(r, g, b));
+        turtle.color(hsvToHexValue(i / points.length, 1, 1));
         turtle.goto(
             x * scale + offsetX,
             y * scale + offsetY
@@ -159,8 +158,7 @@ function tSquare(turtle, n, x, y, w) {
     if (n === 0)
         return;
 
-    const { r, g, b } = hsvToRgb(w * 0.25, 1, 1);
-    turtle.color(new Color(r, g, b));
+    turtle.color(hsvToHexValue(w * .25, 1, 1));
 
     turtle.goto(x, y);
     turtle.penDown();
@@ -185,14 +183,16 @@ function drawTSquare(turtle) {
     const n = 8;
     const w = 2 ** n;
 
-    turtle.color(new Color(0xff0000));
+    turtle.color(0xff0000);
     turtle.penUp();
 
     tSquare(turtle, n, -150, -150, w);
 }
 
 const turtle = new Turtle();
-const turtleView = new LineSegmentsView();
+const turtleView = new LineSegmentsView({
+    colorMapper: ColorMappers.get(ColorMappers.HexValueColorMapper)
+});
 
 drawDragonCurve(turtle);
 Simulation

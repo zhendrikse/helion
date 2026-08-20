@@ -1,15 +1,12 @@
 import {Color, Vector3} from "three";
-import {Segments, LineSegmentsView, RadioGroup, Simulation, LineSegment} from "../../../src/index.js";
+import {Segments, LineSegmentsView, RadioGroup, Simulation, LineSegment, ColorMappers} from "../../../src/index.js";
 
 const LEVEL = 5;
 
 function colour(vertex) {
     let hue = 0.25 * (1 + vertex.y);
     hue = ((hue % 1) + 1) % 1;
-
-    const color = new Color();
-    color.setHSL(hue, 1.0, 0.5);
-    return color;
+    return hue;
 }
 
 function sierpinskiPyramid(vertices, level) {
@@ -112,7 +109,10 @@ function buildTetrahedron() {
     sierpinskiTetrahedron(initialTetrahedron, LEVEL);
 }
 
-const fractalView = new LineSegmentsView({ lineWidth: 2 });
+const fractalView = new LineSegmentsView({
+    lineWidth: 2,
+    colorMapper: ColorMappers.get(ColorMappers.Hue)
+});
 
 Simulation
     .with({

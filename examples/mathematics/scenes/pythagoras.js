@@ -1,12 +1,10 @@
-import { Color } from "three";
 import {
-    Segments, LineSegment, Simulation, LineSegmentsView, Vec3, Slider, Range, LineSegmentView, Label
+    Segments, LineSegment, Simulation, LineSegmentsView, Vec3, Slider, Range, LineSegmentView, Label, ColorMappers
 } from "../../../src/index.js";
 
-const triangleColor = new Color(0xffffff);
-const aColor = new Color(0x44aaff);
-const bColor = new Color(0x44dd88);
-const cColor = new Color(0xffaa44);
+const aColor = 0x44aaff;
+const bColor = 0x44dd88;
+const cColor = 0xffaa44;
 
 class Pythagoras extends Segments {
     constructor(a = 4.0, b = 3.0) {
@@ -19,9 +17,9 @@ class Pythagoras extends Segments {
         this._B = new Vec3();
         this._C = new Vec3();
 
-        this._ab = new LineSegment(this._A, this._B, triangleColor);
-        this._ac = new LineSegment(this._A, this._C, triangleColor);
-        this._bc = new LineSegment(this._B, this._C, triangleColor);
+        this._ab = new LineSegment(this._A, this._B);
+        this._ac = new LineSegment(this._A, this._C);
+        this._bc = new LineSegment(this._B, this._C);
 
         this.generate();
     }
@@ -78,15 +76,16 @@ class Pythagoras extends Segments {
 
 const pythagoras = new Pythagoras(4, 3);
 
-const view = new LineSegmentsView({
-    lineWidth: 3
+const segmentsView = new LineSegmentsView({
+    lineWidth: 3,
+    colorMapper: ColorMappers.get(ColorMappers.HexValueColorMapper)
 });
 
 Simulation
     .with({
         htmlDivId: "pythagorasContainer"
     })
-    .bind(pythagoras.onceWith(view))
+    .bind(pythagoras.onceWith(segmentsView))
     .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3})))
     .bind(pythagoras.ac.onceWith(new LineSegmentView({lineWidth: 3})))
     .bind(pythagoras.bc.onceWith(new LineSegmentView({lineWidth: 3})))
@@ -108,7 +107,7 @@ Simulation
         color: "#ffaa44",
         fontSize: "30px"
     })))
-    .frameSceneOn(view, {
+    .frameSceneOn(segmentsView, {
         padding: 0.55,
         viewDirection: new Vec3(0, 0, 1)
     })

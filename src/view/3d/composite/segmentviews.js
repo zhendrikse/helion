@@ -1,5 +1,6 @@
 import {
-    Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry, BoxGeometry, Object3D, Vector2
+    Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
+    BoxGeometry, Object3D, Vector2
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
@@ -7,6 +8,7 @@ import { LineSegmentsGeometry} from 'three/addons/lines/LineSegmentsGeometry.js'
 import {Renderable3D} from "../../renderer.js";
 import {Vec3} from "../../../model/math/math.js";
 import {LineSegment, Segments} from "../../../model/math/objects.js";
+import {ColorMappers} from "../../colormappers.js";
 
 class InstancedSegmentsView extends Renderable3D {
     constructor({
@@ -123,7 +125,8 @@ export class LineSegmentView extends Renderable3D {
         dashed = false,
         dashSize = 1,
         gapSize = 1,
-        visible = true
+        visible = true,
+        colorMapper = ColorMappers.get(ColorMappers.Uniform, {color: 0xffffff})
     } = {}) {
         super();
 
@@ -136,7 +139,8 @@ export class LineSegmentView extends Renderable3D {
             gapSize,
             resolution: new Vector2(window.innerWidth, window.innerHeight)
         });
-
+        this._colorMapper = colorMapper;
+        this._color = new Color();
         this._line = new LineSegments2(this._geometry, this._material);
         this.add(this._line);
         this.visible = visible;
@@ -154,10 +158,10 @@ export class LineSegmentView extends Renderable3D {
             segment.to.x, segment.to.y, segment.to.z
         ]);
 
-        const colour = new Color(segment.color);
+        this._colorMapper.map(segment.scalar, this._color);
         this._geometry.setColors([
-            colour.r, colour.g, colour.b,
-            colour.r, colour.g, colour.b
+            this._color.r, this._color.g, this._color.b,
+            this._color.r, this._color.g, this._color.b
         ]);
 
         this._geometry.computeBoundingSphere();
@@ -182,9 +186,10 @@ export class LineSegmentsView extends LineSegmentView {
         dashed = false,
         dashSize = 1,
         gapSize = 1,
-        visible = true
+        visible = true,
+        colorMapper = ColorMappers.get(ColorMappers.Uniform, {color: new Color(0xffff00)})
     } = {}) {
-        super({lineWidth, dashed, dashSize, gapSize, visible});
+        super({lineWidth, dashed, dashSize, gapSize, visible, colorMapper});
     }
 
     canBindTo(segments) {
@@ -203,10 +208,10 @@ export class LineSegmentsView extends LineSegmentView {
                 segment.to.x, segment.to.y, segment.to.z
             );
 
-            const colour = new Color(segment.color);
+            this._colorMapper.map(segment.scalar, this._color);
             colors.push(
-                colour.r, colour.g, colour.b,
-                colour.r, colour.g, colour.b
+                this._color.r, this._color.g, this._color.b,
+                this._color.r, this._color.g, this._color.b
             );
         }
 
