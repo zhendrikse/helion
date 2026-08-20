@@ -1,49 +1,245 @@
+import { MeshBasicMaterial } from "three";
 import {
-    DiscreteComplexField, Simulation, Vec3, ComplexScalarFieldRaster, FFTShift2D, FFT2D, ComplexShapeMask,
-    ShapeConfiguration, Shapes, ComplexSoftness, Slider, Range, Checkbox
+    Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
+    Grid, Interval, Label, Arrow, ColorMappers
 } from "../../../src/index.js";
 
-const resolution = 512;
-const field = new DiscreteComplexField({nx: resolution, ny: resolution});
+const xMin = -2 * Math.PI;
+const xMax = 2 * Math.PI;
+const samples = 300;
+const integrationSamples = 2000;
+const interval = new Interval(xMin, xMax);
+const halfPeriod = interval.range / 2;
 
-const intensityRaster = new ComplexScalarFieldRaster({
-    width: resolution,
-    height: resolution,
-    showPhaseColour: false,
-    brightness: 5e-3
-});
+/**
+ * A linear combination of basis functions:
+ *
+ *     f(x) = sum c_n phi_n(x)
+ *
+ * The basis functions and their coordinates are completely independent
+ * of how the combination is visualized.
+ */
+class LinearCombination {
+    constructor({
+        basis,
+        coefficients
+    }) {
+        this._basis = basis;
+        this._coefficients = coefficients;
+    }
 
-function reset(shapeConfiguration, softness) {
-    field
-        .reset()
-        .apply(new ComplexShapeMask(shapeConfiguration))
-        .apply(new ComplexSoftness({ softness }))
-        .apply(new FFT2D())
-        .apply(new FFTShift2D());
+    evaluate(x, numberOfBasisFunctions) {
+        let sum = 0;
+
+        for (let n = 0; n < numberOfBasisFunctions; n++)
+            sum += this._coefficients[n] * this._basis[n](x);
+
+        return sum;
+    }
 }
 
-const shapeConfiguration = new ShapeConfiguration({ defaultShape: Shapes.Circle });
-let softness = 2;
-shapeConfiguration.onChangeEventListener = (_) => reset(shapeConfiguration, softness);
-reset(shapeConfiguration, softness);
+/**
+ * Numerical integration using the midpoint rule.
+ */
+function integrate(func, interval, samples = 1000) {
+    const dx = interval.range / samples;
 
-Simulation
+    let sum = 0;
+
+    for (let i = 0; i < samples; i++) {
+        const x = interval.from + (i + 0.5) * dx;
+        sum += func(x);
+    }
+
+    return sum * dx;
+}
+
+//
+// Implementation of Fourier coefficients:
+//
+const frequency = (n) => n * Math.PI / halfPeriod;
+
+const cosineCoefficient = (func, n) => integrate(
+    x => func(x) * Math.cos(frequency(n) * x),
+    interval,
+    integrationSamples
+) / halfPeriod;
+
+const sineCoefficient= (func, n) => integrate(
+        x => func(x) * Math.sin(frequency(n) * x),
+        interval,
+        integrationSamples
+    ) / halfPeriod;
+
+const constantCoefficient = (func) => integrate(
+        func,
+        interval,
+        integrationSamples
+    ) / (2 * halfPeriod);
+
+/**
+ * Create a graph from a function.
+ */
+class FunctionGraph extends Segments {
+    constructor({
+        func,
+        interval,
+        samples = 200
+    }) {
+        super();
+
+        this._function = func;
+        this._interval = interval;
+        this._samples = samples;
+
+        this.update();
+    }
+
+    setFunction(func) {
+        this._function = func;
+        this.update();
+    }
+
+    update() {
+        this.clear();
+
+        const dx = this._interval.range / this._samples;
+        let x1 = this._interval.from;
+        let y1 = this._function(x1);
+
+        for (let i = 1; i <= this._samples; i++) {
+            const x2 = this._interval.from + i * dx;
+            const y2 = this._function(x2);
+
+            this.push(new LineSegment(new Vec3(x1, y1, 0), new Vec3(x2, y2, 0)));
+
+            x1 = x2;
+            y1 = y2;
+        }
+    }
+}
+
+// Example function: f(x) = 2 cos(x) + 0.7 sin(x) + 3 cos(2x) - 1.2 sin(3x)
+// This function was chosen because its Fourier coordinates are easy to recognize
+function functionToExpand(x) {
+    return 2 * Math.cos(x / 2) + 0.7 * Math.sin(x / 2) + 3 * Math.cos(x) - 1.2 * Math.sin(3 * x / 2);
+}
+
+/**
+ * Construct the Fourier basis. The first basis vector is the constant function 1:
+ *     1,
+ *     cos(x/2),sin(x/2),
+ *     cos(x),sin(x),
+ *     cos(3x/2),sin(3x/2), etc.
+ *
+ * The corresponding first coefficient is a_0 / 2.
+ */
+const maximumFrequency = 3;
+const basis = [x => 1];
+const coefficients = [constantCoefficient(functionToExpand)];
+const terms = ["a_0/2"];
+
+for (let n = 1; n <= maximumFrequency; n++) {
+    basis.push(x => Math.cos(frequency(n) * x), x => Math.sin(frequency(n) * x));
+    coefficients.push(cosineCoefficient(functionToExpand, n), sineCoefficient(functionToExpand, n));
+    terms.push(`a_${n}`, `b_${n}`);
+}
+
+const fourierExpansion = new LinearCombination({basis, coefficients});
+
+/**
+ * Number of terms in the linear combination for a given frequency.
+ *
+ * Frequency 0: a_0 / 2
+ * Frequency 1: a_0 / 2 + a_1 cos(x) + b_1 sin(x)
+ * Frequency 2: a_0 / 2 + ... + a_2 cos(2x) + b_2 sin(2x)
+ * etc.
+ */
+function numberOfTermsForFrequency(frequency) {
+    return 1 + 2 * frequency;
+}
+
+function fourierLatex(frequency) {
+    if (frequency === 0)
+        return "f(x) \\approx \\dfrac{a_0}{2}";
+
+    return `f(x) \\approx \\dfrac{a_0}{2}`
+        + ` + \\sum_{n=1}^{${frequency}}`
+        + `\\left(a_n\\cos(nx)+b_n\\sin(nx)\\right)`;
+}
+
+const simulation = Simulation
     .with({
         htmlDivId: "fourierTransformContainer",
-        cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.25 * resolution),
-    })
-    .onReset(() => reset(shapeConfiguration))
-    .bind(field.alwaysWith(intensityRaster))
-    .append(shapeConfiguration.ui())
-    .append(new Slider("🧸 Softness")
-        .withRange(new Range(0, 20, 1))
-        .withValue(softness)
-        .addEventListener("input", event => {
-            softness = Number(event.target.value);
-            reset(shapeConfiguration, softness);
+        cameraPosition: new Vec3(0, 0, 17.5),
+        parameterMenuCollapsed: false
+    });
+
+const size = .5 * interval.range;
+const grid = new Grid({size, stepSize: Math.PI / 3});
+const xAxis = new LineSegment(new Vec3(-2 * size, 0, 0), new Vec3(0.25, 0, 0));
+const yAxis = new LineSegment(new Vec3(0, -2 * size, 0), new Vec3(0, 0.25, 0));
+
+const exactGraph = new FunctionGraph({
+    func: functionToExpand,
+    interval,
+    samples
+});
+
+const approximationGraph = new FunctionGraph({
+    func: x => fourierExpansion.evaluate(x, numberOfTermsForFrequency(0)),
+    interval,
+    samples
+});
+
+simulation
+    .setLatexTitle(fourierLatex(0))
+    .bind(grid.onceWith(new LineSegmentsView({
+        lineWidth: 2,
+        dashed: true,
+        dashSize: .05,
+        gapSize: .1,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffaa55 })
+    })))
+    .bind(xAxis.onceWith(new Arrow({
+        size: .15,
+        material: new MeshBasicMaterial(),
+        color: 0xbbbbbb,
+        round: true
+    })))
+    .bind(yAxis.onceWith(new Arrow({
+        size: .15,
+        material: new MeshBasicMaterial(),
+        color: 0xbbbbbb,
+        round: true
+    })))
+    .bind(xAxis.onceWith(new Label({
+        text: () => "X",
+        fontSize: "20px",
+        color: "#ffffff",
+        offset: () => new Vec3(2.2 * size, 0, 0)
+    })))
+    .bind(yAxis.onceWith(new Label({
+        text: () => "Y",
+        fontSize: "20px",
+        color: "#ffffff",
+        offset: () => new Vec3(0, 2.2 * size, 0)
+    })))
+    .bind(exactGraph.onceWith(new LineSegmentsView({
+        lineWidth: 3,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0x00ff00 })
+    })))
+    .bind(approximationGraph.onceWith(new LineSegmentsView({
+        lineWidth: 2,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xff0000 })
+    })))
+    .append(new Slider("Maximum frequency")
+        .withRange(new Range(0, maximumFrequency, 1))
+        .withValue(0)
+        .onInput(event => {
+            const frequency = Number(event.target.value);
+            const terms = numberOfTermsForFrequency(frequency);
+            approximationGraph.setFunction(x => fourierExpansion.evaluate(x, terms));
+            simulation.setLatexTitle(fourierLatex(frequency));
         })
-    )
-    .append(new Checkbox("🎨 Phase: ")
-        .on(intensityRaster)
-        .withProperty("phaseColor")
     );

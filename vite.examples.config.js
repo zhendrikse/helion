@@ -30,6 +30,7 @@ export default defineConfig({
                 fractal_terrain: path.resolve(__dirname, 'examples/nature/scenes/fractal_terrain.js'),
                 fractals: path.resolve(__dirname, 'examples/mathematics/scenes/fractals.js'),
                 fourier_transform: path.resolve(__dirname, 'examples/mathematics/scenes/fourier_transform.js'),
+                fourier_transform_2d: path.resolve(__dirname, 'examples/mathematics/scenes/fourier_transform_2d.js'),
                 faradays_law: path.resolve(__dirname, 'examples/electromagnetism/scenes/faradays_law.js'),
                 fraunhofer_diffraction: path.resolve(__dirname, 'examples/waves/scenes/fraunhofer_diffraction.js'),
                 harmonograph: path.resolve(__dirname, 'examples/mathematics/scenes/harmonograph.js'),
