@@ -151,6 +151,44 @@ export class StrangeAttractor extends Segments {
     }
 }
 
+export class FunctionGraph extends Segments {
+    constructor({
+        func,
+        interval,
+        samples = 200,
+        yOffset = 0
+    }) {
+        super();
+
+        this._function = func;
+        this._interval = interval;
+        this._samples = samples;
+        this._yOffset = yOffset;
+
+        this.update();
+    }
+
+    setFunction(func) {
+        this._function = func;
+        this.update();
+    }
+
+    update() {
+        this.clear();
+        const dx = this._interval.range / this._samples;
+        let x1 = this._interval.from;
+        let y1 = this._function(x1) + this._yOffset;
+
+        for (let i = 1; i <= this._samples; i++) {
+            const x2 = this._interval.from + i * dx;
+            const y2 = this._function(x2) + this._yOffset;
+            this.push(new LineSegment(new Vec3(x1, y1, 0), new Vec3(x2, y2, 0)));
+            x1 = x2;
+            y1 = y2;
+        }
+    }
+}
+
 export class Turtle extends Segments {
     static PenState = Object.freeze({
         UP: false,

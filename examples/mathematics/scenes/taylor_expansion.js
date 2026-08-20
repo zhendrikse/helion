@@ -1,7 +1,7 @@
 import { MeshBasicMaterial, Color } from "three";
 import {
-    Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Grid, LineSegmentView, Interval, Label,
-    Arrow, ColorMappers
+    LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Grid, Interval, Label,
+    Arrow, ColorMappers, FunctionGraph
 } from "../../../src/index.js";
 
 const xMin = -4;
@@ -90,53 +90,9 @@ const simulation = Simulation
     .with({
         htmlDivId: "taylorSeriesContainer",
         cameraPosition: new Vec3(0, 0, 10),
-        parameterMenuCollapsed: false
+        parameterMenuCollapsed: false,
+        controls: false
     });
-
-/**
- * Create a graph from a function.
- */
-class FunctionGraph extends Segments {
-    constructor({
-        func: fn,
-        interval,
-        samples = 200
-    }) {
-        super();
-
-        this._function = fn;
-        this._interval = interval;
-        this._samples = samples;
-
-        this.update();
-    }
-
-    setFunction(fn) {
-        this._function = fn;
-        this.update();
-    }
-
-    update() {
-        this.clear();
-
-        const dx = this._interval.range / this._samples;
-        let x1 = this._interval.from;
-        let y1 = this._function(x1);
-
-        for (let i = 1; i <= this._samples; i++) {
-            const x2 = this._interval.from + i * dx;
-            const y2 = this._function(x2);
-
-            this.push(new LineSegment(
-                new Vec3(x1, y1 - 0.5 * this._interval.range, 0),
-                new Vec3(x2, y2- 0.5 * this._interval.range, 0),
-            ));
-
-            x1 = x2;
-            y1 = y2;
-        }
-    }
-}
 
 function exp(x) {
     return Math.exp(x);
@@ -150,13 +106,15 @@ const yAxis = new LineSegment(new Vec3(0, -2 * size, 0), new Vec3(0, 0.25, 0), 0
 const exactGraph = new FunctionGraph({
     func: exp,
     interval: new Interval(xMin, xMax),
-    samples
+    samples,
+    yOffset: -size
 });
 
 const approximationGraph = new FunctionGraph({
     func: x => taylorExpansion.evaluate(x, 1),
     interval: new Interval(xMin, xMax),
-    samples
+    samples,
+    yOffset: -size
 });
 
 simulation

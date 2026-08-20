@@ -1,6 +1,6 @@
 import { MeshBasicMaterial } from "three";
 import {
-    Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
+    FunctionGraph, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
     Grid, Interval, Label, Arrow, ColorMappers
 } from "../../../src/index.js";
 
@@ -77,48 +77,6 @@ const constantCoefficient = (func) => integrate(
         integrationSamples
     ) / (2 * halfPeriod);
 
-/**
- * Create a graph from a function.
- */
-class FunctionGraph extends Segments {
-    constructor({
-        func,
-        interval,
-        samples = 200
-    }) {
-        super();
-
-        this._function = func;
-        this._interval = interval;
-        this._samples = samples;
-
-        this.update();
-    }
-
-    setFunction(func) {
-        this._function = func;
-        this.update();
-    }
-
-    update() {
-        this.clear();
-
-        const dx = this._interval.range / this._samples;
-        let x1 = this._interval.from;
-        let y1 = this._function(x1);
-
-        for (let i = 1; i <= this._samples; i++) {
-            const x2 = this._interval.from + i * dx;
-            const y2 = this._function(x2);
-
-            this.push(new LineSegment(new Vec3(x1, y1, 0), new Vec3(x2, y2, 0)));
-
-            x1 = x2;
-            y1 = y2;
-        }
-    }
-}
-
 // Example function: f(x) = 2 cos(x) + 0.7 sin(x) + 3 cos(2x) - 1.2 sin(3x)
 // This function was chosen because its Fourier coordinates are easy to recognize
 function functionToExpand(x) {
@@ -172,7 +130,8 @@ const simulation = Simulation
     .with({
         htmlDivId: "fourierTransformContainer",
         cameraPosition: new Vec3(0, 0, 17.5),
-        parameterMenuCollapsed: false
+        parameterMenuCollapsed: false,
+        controls: false
     });
 
 const size = .5 * interval.range;

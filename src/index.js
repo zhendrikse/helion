@@ -28,7 +28,10 @@ export {
     GravitationalForce, G, EC, PairForce, FieldForce, CoulombPairForce
 } from "./model/phys/forces.js";
 
-export { Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid } from "./model/math/objects.js"
+export {
+    Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid, FunctionGraph
+} from "./model/math/objects.js"
+
 export { SphereSphereCollision } from "./model/transformations/interactions.js"
 export { Domain, DiscreteScalarField, DiscreteComplexField, VectorField } from "./model/math/fields.js"
 export { BarrierWaveEquation } from "./model/math/equations.js";
