@@ -81,6 +81,7 @@ Simulation
         htmlDivId: "pythagorasContainer",
         controls: false
     })
+    .setLatexTitle("\\Huge{a^2 = b^2 + c^2}")
     .bind(pythagoras.onceWith(segmentsView))
     .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3})))
     .bind(pythagoras.ac.onceWith(new LineSegmentView({lineWidth: 3})))

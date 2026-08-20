@@ -17,7 +17,8 @@ const surfaces = {
         "surface": new MultivariateFunctionSurface({
             domain: new Domain([-pi, pi], [-pi, pi]),
             z: (x, y, t) => surfaces["Ripple"].amplitude * sin(1.25 * rSquared(x, y) - pi * t)
-        })
+        }),
+        "latex": "\\sin(x^2 + y^2)"
     },
     "Monkey saddle": {
         "amplitude": 0.3,
@@ -26,6 +27,7 @@ const surfaces = {
             z: (x, y, t) => surfaces["Monkey saddle"].amplitude *
                 (x * x * x - 3 * y * y * x) * modulation(t)
         }),
+        "latex": "x^3 - 3xy^2"
     },
     "Peak": {
         "amplitude": 7.5,
@@ -34,6 +36,7 @@ const surfaces = {
             z: (x, y, t) => surfaces["Peak"].amplitude *
                 exp(-rSquared(x, y) / 4) * modulation(t)
         }),
+        "latex": "\\exp(-x^2 - y^2)"
     },
     "Ricker": {
         "amplitude": 2,
@@ -42,13 +45,15 @@ const surfaces = {
             z: (x, y, t) => surfaces["Ricker"].amplitude *
                 (1 - rSquared(x, y)) * exp(-1 * rSquared(x, y)) * modulation(t)
         }),
+        "latex": "(1 - (x^2 + y^2)\\exp(-(x^2 + y^2))"
     },
     "Polynomial": {
         "amplitude": .1,
         "surface": new MultivariateFunctionSurface({
             domain: new Domain([-.55, .55], [-.55, .55]),
             z: (x, y, t) => (x * x * x - y * y * y) * modulation(t)
-        })
+        }),
+        "latex": "x^3 - y^3"
     },
     "Wavelet": {
         "amplitude": .15,
@@ -56,7 +61,8 @@ const surfaces = {
             domain: new Domain([-.3, .3], [-.3, .3]),
             z: (x, y, t) => surfaces["Wavelet"].amplitude + surfaces["Wavelet"].amplitude *
                 (sin(4 * sqrt(x * x + y * y) / sqrt(x * x + y * y + .01) - pi * t))
-        })
+        }),
+        "latex": "\\dfrac{\\sin(\\sqrt{x^2 + y^2})}{\\sqrt{x^2 + y^2}}"
     }
 };
 
@@ -79,6 +85,7 @@ class SurfaceController {
         this._simulation.bind(this._currentSurface.alwaysWith(surfaceView));
         this._simulation.provideAxesAround(surfaceView);
         this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5 * amplitude});
+        this._simulation.setLatexTitle("\\Large{f(x,y) = " + surfacesRegistry.get(surfaceId).latex + "}");
     }
 
     set animate(value) { this._animate = value; }
