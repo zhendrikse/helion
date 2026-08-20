@@ -704,7 +704,7 @@ export class Simulation {
             })
             .togetherWith(new Button()
                 .addEventListener("click", () => {
-                    this._hud.show("Reset", 1000);
+                    this._hud?.show("Reset", 1000);
                     this.reset();
                 })
                 .withText("⟳ Reset"));
