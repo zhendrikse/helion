@@ -151,6 +151,22 @@ export class StrangeAttractor extends Segments {
     }
 }
 
+export class LinearCombination {
+    constructor({ basis, coefficients }) {
+        this._basis = basis;
+        this._coefficients = coefficients;
+    }
+
+    evaluate(x, numberOfTerms = this._basis.length) {
+        let result = 0;
+
+        for (let n = 0; n < numberOfTerms; n++)
+            result += this._coefficients[n] * this._basis[n](x);
+
+        return result;
+    }
+}
+
 export class FunctionGraph extends Segments {
     constructor({
         func,

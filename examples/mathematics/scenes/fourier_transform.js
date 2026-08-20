@@ -1,7 +1,7 @@
 import { MeshBasicMaterial } from "three";
 import {
     FunctionGraph, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
-    Grid, Interval, Label, Arrow, ColorMappers
+    Grid, Interval, Label, Arrow, ColorMappers, LinearCombination
 } from "../../../src/index.js";
 
 const xMin = -2 * Math.PI;
@@ -10,33 +10,6 @@ const samples = 300;
 const integrationSamples = 2000;
 const interval = new Interval(xMin, xMax);
 const halfPeriod = interval.range / 2;
-
-/**
- * A linear combination of basis functions:
- *
- *     f(x) = sum c_n phi_n(x)
- *
- * The basis functions and their coordinates are completely independent
- * of how the combination is visualized.
- */
-class LinearCombination {
-    constructor({
-        basis,
-        coefficients
-    }) {
-        this._basis = basis;
-        this._coefficients = coefficients;
-    }
-
-    evaluate(x, numberOfBasisFunctions) {
-        let sum = 0;
-
-        for (let n = 0; n < numberOfBasisFunctions; n++)
-            sum += this._coefficients[n] * this._basis[n](x);
-
-        return sum;
-    }
-}
 
 /**
  * Numerical integration using the midpoint rule.
@@ -54,9 +27,7 @@ function integrate(func, interval, samples = 1000) {
     return sum * dx;
 }
 
-//
 // Implementation of Fourier coefficients:
-//
 const frequency = (n) => n * Math.PI / halfPeriod;
 
 const cosineCoefficient = (func, n) => integrate(

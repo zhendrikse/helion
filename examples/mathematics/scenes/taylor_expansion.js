@@ -1,40 +1,12 @@
 import { MeshBasicMaterial, Color } from "three";
 import {
     LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Grid, Interval, Label,
-    Arrow, ColorMappers, FunctionGraph
+    Arrow, ColorMappers, FunctionGraph, LinearCombination
 } from "../../../src/index.js";
 
 const xMin = -4;
 const xMax = 4;
 const samples = 200;
-
-class LinearCombination {
-    constructor({
-        basis,
-        coefficients,
-        terms
-    }) {
-        this._basis = basis;
-        this._coefficients = coefficients;
-        this._terms = terms;
-    }
-
-    evaluate(x, terms) {
-        let sum = 0;
-        for (let n = 0; n < terms; n++)
-            sum += this._coefficients[n] * this._basis[n](x);
-
-        return sum;
-    }
-
-    latex(terms) {
-        let result = "";
-        for (let n = 0; n < terms; n++)
-            result += this._terms[n];
-
-        return result + "+\\cdots";
-    }
-}
 
 const taylorExpansion = new LinearCombination({
     basis: [
