@@ -65,7 +65,6 @@ function updateTitle(eigenvectors) {
     latexTitleString += transformation.d + " \\end{pmatrix}";
     latexTitleString += "\\begin{pmatrix} x \\\\ y \\end{pmatrix}";
 
-    console.log(eigenvectors.length);
     if (eigenvectors.length !== 0)
         latexTitleString += "\\quad \\overrightarrow{e_1} = \\begin{pmatrix}" +
             eigenvectors[0].vector.x.toFixed(1) + "\\\\" +
