@@ -61,21 +61,30 @@ const taylorExpansion = new LinearCombination({
         1 / 5040,
         1 / 40320,
         1 / 362_880
-    ],
-
-    terms: [
-        "1",
-        "+x",
-        "+\\dfrac{x^2}{2!}",
-        "+\\dfrac{x^3}{3!}",
-        "+\\dfrac{x^4}{4!}",
-        "+\\dfrac{x^5}{5!}",
-        "+\\dfrac{x^6}{6!}",
-        "+\\dfrac{x^7}{7!}",
-        "+\\dfrac{x^8}{8!}",
-        "+\\dfrac{x^9}{9!}"
     ]
 });
+
+const taylorTerms = [
+    "1",
+    "+x",
+    "+\\dfrac{x^2}{2!}",
+    "+\\dfrac{x^3}{3!}",
+    "+\\dfrac{x^4}{4!}",
+    "+\\dfrac{x^5}{5!}",
+    "+\\dfrac{x^6}{6!}",
+    "+\\dfrac{x^7}{7!}",
+    "+\\dfrac{x^8}{8!}",
+    "+\\dfrac{x^9}{9!}"
+];
+
+function taylorLatex(terms) {
+    let result = "e^x = ";
+
+    for (let n = 0; n < terms; n++)
+        result += taylorTerms[n];
+
+    return result + "+\\cdots";
+}
 
 const simulation = Simulation
     .with({
@@ -196,6 +205,6 @@ simulation
         .onInput(event => {
             const terms = Number(event.target.value);
             approximationGraph.setFunction(x => taylorExpansion.evaluate(x, terms));
-            simulation.setLatexTitle("e^x = " + taylorExpansion.latex(terms));
+            simulation.setLatexTitle("e^x = " + taylorLatex(terms));
         })
     );
