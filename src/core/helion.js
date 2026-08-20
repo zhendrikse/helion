@@ -146,7 +146,6 @@ export class Viewport {
         this._titleDiv.style.pointerEvents = "none";
         this._titleDiv.style.fontSize = "16px";
         this._titleDiv.style.color = "yellow";
-        this._titleDiv.classList.add("helionTitle", "mathjax_ignore"); // Fix for Quarto
         this._container.appendChild(this._titleDiv);
 
         this._canvasWrapperDiv = document.createElement("div");

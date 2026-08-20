@@ -5,12 +5,22 @@ export function renderMath(element, latex, {
     displayMode = true,
     throwOnError = false
 } = {}) {
+
+    if (window.Quarto) {
+        element.textContent = displayMode
+            ? `\\[${latex}\\]`
+            : `\\(${latex}\\)`;
+
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([element]);
+        }
+
+        return;
+    }
+
     katex.render(latex, element, {
         displayMode,
         throwOnError,
         output: "html"
     });
-    console.log("HELION TITLE HTML:", element.outerHTML);
-    console.log("Quarto:", window.Quarto);
-    console.log("MathJax:", window.MathJax);
 }
