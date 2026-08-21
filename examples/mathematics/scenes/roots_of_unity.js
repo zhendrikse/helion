@@ -7,39 +7,11 @@ const range = 12;
 const unitCircleRadius = 1;
 const circleSegments = 128;
 
-// The n-th roots of unity: z_k = exp(2πik/n) = cos(2πk/n) + i sin(2πk/n)
-class RootsOfUnity extends Segments {
-    constructor({
-        n = 3,
-        radius = 1
-    } = {}) {
-        super();
-
-        this._radius = radius;
-        this._rootLines = [];
-        this.update(n);
-    }
-
-    update(n) {
-        this.clear();
-        this._rootLines = [];
-
-        for (let k = 0; k < n; k++) {
-            const angle = 2 * Math.PI * k / n;
-            const root = new Vec3(this._radius * Math.cos(angle), this._radius * Math.sin(angle), 0);
-            const line = new LineSegment(new Vec3(0, 0, 0), root);
-            this._rootLines.push(line);
-            this.push(line);
-        }
-
-        return this;
-    }
-}
-
-class RootPolygon extends Segments {
+class Roots extends Segments {
     constructor({
         maxN = 12,
-        radius = 1
+        radius = 1,
+        initialRootCount = 3
     } = {}) {
         super();
 
@@ -47,14 +19,53 @@ class RootPolygon extends Segments {
         this._maxN = maxN;
         this._rootLines = [];
 
-        // Create the maximum number of segments once.
+        // Create the maximum number of root vectors once.
         for (let k = 0; k < maxN; k++) {
             const line = new LineSegment(new Vec3(), new Vec3());
             this._rootLines.push(line);
             this.push(line);
         }
 
-        this.update(3);
+        this.update(initialRootCount);
+    }
+
+    update(rootCount) {}
+}
+
+// The n-th roots of unity: z_k = exp(2πik/n) = cos(2πk/n) + i sin(2πk/n)
+class RootsOfUnity extends Roots {
+    constructor({
+        maxN = 12,
+        radius = 1
+    } = {}) {
+        super({maxN, radius});
+    }
+
+    update(n) {
+        for (let k = 0; k < this._maxN; k++) {
+            const line = this._rootLines[k];
+
+            if (k < n) {
+                const angle = 2 * Math.PI * k / n;
+                line.from.set(0, 0, 0);
+                line.to.set(this._radius * Math.cos(angle), this._radius * Math.sin(angle), 0);
+            } else {
+                // Hide unused root vectors.
+                line.from.set(0, 0, 0);
+                line.to.set(0, 0, 0);
+            }
+        }
+
+        return this;
+    }
+}
+
+class RootPolygon extends Roots {
+    constructor({
+        maxN = 12,
+        radius = 1
+    } = {}) {
+        super({maxN, radius});
     }
 
     update(n) {
@@ -80,7 +91,7 @@ const unitCircle = new SegmentedCircle( {
     radius: unitCircleRadius,
     segments: circleSegments
 });
-const roots = new RootsOfUnity({ n: 3, radius: unitCircleRadius });
+const roots = new RootsOfUnity({ maxN: range, radius: unitCircleRadius });
 const polygon = new RootPolygon({ maxN: range, radius: unitCircleRadius });
 
 const simulation = Simulation
