@@ -26,12 +26,50 @@ class RootsOfUnity extends Segments {
 
         for (let k = 0; k < n; k++) {
             const angle = 2 * Math.PI * k / n;
-
             const root = new Vec3(this._radius * Math.cos(angle), this._radius * Math.sin(angle), 0);
             const line = new LineSegment(new Vec3(0, 0, 0), root);
-
             this._rootLines.push(line);
             this.push(line);
+        }
+
+        return this;
+    }
+}
+
+class RootPolygon extends Segments {
+    constructor({
+        maxN = 12,
+        radius = 1
+    } = {}) {
+        super();
+
+        this._radius = radius;
+        this._maxN = maxN;
+        this._rootLines = [];
+
+        // Create the maximum number of segments once.
+        for (let k = 0; k < maxN; k++) {
+            const line = new LineSegment(new Vec3(), new Vec3());
+            this._rootLines.push(line);
+            this.push(line);
+        }
+
+        this.update(3);
+    }
+
+    update(n) {
+        for (let k = 0; k < this._maxN; k++) {
+            const line = this._rootLines[k];
+
+            if (k < n && n >= 3) {
+                const angle1 = 2 * Math.PI * k / n;
+                const angle2 = 2 * Math.PI * ((k + 1) % n) / n;
+                line.from.set(this._radius * Math.cos(angle1), this._radius * Math.sin(angle1), 0);
+                line.to.set(this._radius * Math.cos(angle2), this._radius * Math.sin(angle2), 0);
+            } else {
+                line.from.set(0, 0, 0);
+                line.to.set(0, 0, 0);
+            }
         }
 
         return this;
@@ -42,11 +80,8 @@ const unitCircle = new SegmentedCircle( {
     radius: unitCircleRadius,
     segments: circleSegments
 });
-
-const roots = new RootsOfUnity({
-    n: 3,
-    radius: unitCircleRadius
-});
+const roots = new RootsOfUnity({ n: 3, radius: unitCircleRadius });
+const polygon = new RootPolygon({ maxN: range, radius: unitCircleRadius });
 
 const simulation = Simulation
     .with({
@@ -96,12 +131,17 @@ simulation
         gapSize: 0.1,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xaaaaaa })
     })))
+    .bind(polygon.onceWith(new LineSegmentsView({
+        lineWidth: 2,
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffff88 })
+    })))
     .append(new Slider("n")
         .withRange(new Range(1, range, 1))
         .withValue(3)
         .onInput(event => {
             const n = Number(event.target.value);
-            roots.update(n);
             updateRoots(n);
+            roots.update(n);
+            polygon.update(n);
         })
     );
