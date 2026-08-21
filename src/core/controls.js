@@ -1,6 +1,4 @@
 import { generateUUID } from "../model/math/math.js";
-import {AxesHelper, DoubleSide, GridHelper, Group, Mesh, MeshPhongMaterial, PlaneGeometry, Vector3} from "three";
-import {CSS2DObject} from "three/addons/renderers/CSS2DRenderer.js";
 
 class HtmlControl {
     constructor(labelText) {
