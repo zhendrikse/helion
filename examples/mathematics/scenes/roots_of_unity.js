@@ -36,9 +36,10 @@ class Roots extends Segments {
 class RootsOfUnity extends Roots {
     constructor({
         maxN = 12,
-        radius = 1
+        radius = 1,
+        initialRootCount = 3
     } = {}) {
-        super({maxN, radius});
+        super({maxN, radius, initialRootCount});
     }
 
     update(n) {
@@ -63,9 +64,10 @@ class RootsOfUnity extends Roots {
 class RootPolygon extends Roots {
     constructor({
         maxN = 12,
-        radius = 1
+        radius = 1,
+        initialRootCount = 3
     } = {}) {
-        super({maxN, radius});
+        super({maxN, radius, initialRootCount});
     }
 
     update(n) {
