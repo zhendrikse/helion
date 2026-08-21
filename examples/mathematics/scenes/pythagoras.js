@@ -100,7 +100,7 @@ Simulation
     })))
     .bind(pythagoras.bc.onceWith(new Label({
         text: model => "c=" + pythagoras.c.toFixed(2),
-        offset: model => new Vec3(.55, .55, 0),
+        offset: model => new Vec3(.75, .75, 0),
         color: "#ffaa44",
         fontSize: "30px"
     })))
