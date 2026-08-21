@@ -29,7 +29,8 @@ export {
 } from "./model/phys/forces.js";
 
 export {
-    Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid, FunctionGraph, LinearCombination
+    Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid, FunctionGraph, LinearCombination,
+    SegmentedCircle
 } from "./model/math/objects.js"
 
 export { SphereSphereCollision } from "./model/transformations/interactions.js"

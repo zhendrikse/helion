@@ -117,6 +117,47 @@ export class Grid extends Segments {
     }
 }
 
+export class SegmentedCircle extends Segments {
+    constructor({
+        radius = 1,
+        segments = 96,
+        color = 0xffaa55
+    } = {}) {
+        super();
+
+        this._color = color;
+        this._points = [];
+
+        for (let i = 0; i < segments; i++) {
+            const t1 = 2 * Math.PI * i / segments;
+            const t2 = 2 * Math.PI * (i + 1) / segments;
+
+            this._points.push({
+                from: new Vec3(radius * Math.cos(t1), radius * Math.sin(t1), 0),
+                to: new Vec3(radius * Math.cos(t2), radius * Math.sin(t2), 0)
+            });
+        }
+
+        this._points.forEach(segment => this.push(new LineSegment(segment.from.clone(), segment.to.clone(), color)));
+    }
+
+    apply(matrix) {
+        this.clear();
+
+        for (const segment of this._points) {
+            const from = segment.from.clone();
+            const to = segment.to.clone();
+
+            matrix.applyTo(from);
+            matrix.applyTo(to);
+
+            this.push(new LineSegment(from, to, this._color));
+        }
+
+        return this;
+    }
+}
+
 export class StrangeAttractor extends Segments {
     constructor({
         initialPosition = new Vec3(),

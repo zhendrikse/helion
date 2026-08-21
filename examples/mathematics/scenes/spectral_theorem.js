@@ -1,7 +1,7 @@
 import { MeshBasicMaterial } from "three";
 
 import {
-    Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow, Label, Matrix2D,
+    SegmentedCircle, LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow, Label, Matrix2D,
     VectorModel, ColorMappers
 } from "../../../src/index.js";
 
@@ -27,54 +27,13 @@ const transformation = new Matrix2D(
     1, 2
 );
 
-class Circle extends Segments {
-    constructor({
-        radius = originalCircleRadius,
-        segments = 96,
-        color = 0xffaa55
-    } = {}) {
-        super();
-
-        this._color = color;
-        this._points = [];
-
-        for (let i = 0; i < segments; i++) {
-            const t1 = 2 * Math.PI * i / segments;
-            const t2 = 2 * Math.PI * (i + 1) / segments;
-
-            this._points.push({
-                from: new Vec3(radius * Math.cos(t1), radius * Math.sin(t1), 0),
-                to: new Vec3(radius * Math.cos(t2), radius * Math.sin(t2), 0)
-            });
-        }
-
-        this._points.forEach(segment => this.push(new LineSegment(segment.from.clone(), segment.to.clone(), color)));
-    }
-
-    apply(matrix) {
-        this.clear();
-
-        for (const segment of this._points) {
-            const from = segment.from.clone();
-            const to = segment.to.clone();
-
-            matrix.applyTo(from);
-            matrix.applyTo(to);
-
-            this.push(new LineSegment(from, to, this._color));
-        }
-
-        return this;
-    }
-}
-
-const circle = new Circle({
+const circle = new SegmentedCircle({
     radius: originalCircleRadius,
     segments: 128,
     color: 0xffaa55
 });
 
-const transformedCircle = new Circle({
+const transformedCircle = new SegmentedCircle({
     radius: originalCircleRadius,
     segments: 128,
     color: 0x44aaff
@@ -116,7 +75,6 @@ function updateEigenVectors() {
 
     updateTitle(eigenvectors);
 }
-
 
 // Construct the live mathematical expression A = Q Λ Qᵀ showing the actual numerical matrices.
 function updateTitle(eigenvectors) {

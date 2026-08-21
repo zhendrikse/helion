@@ -6,6 +6,7 @@ import {
 import { Renderable3D } from "../../renderer.js";
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import {Vec3} from "../../../model/math/math.js";
+import {ColorMappers} from "../../colormappers.js";
 
 export class VisibleWhen extends Renderable3D {
     constructor(view, predicate) {
@@ -233,14 +234,14 @@ export class Arrow extends Renderable3D {
         visible = true,
         castShadow = false,
         magnitudeMap = magnitude => Math.max(magnitude, 0.1),
-        colorMap = null,
+        colorMapper = ColorMappers.get(ColorMappers.Uniform, {color}),
         material = new MeshStandardMaterial({
             roughness: 0.5,
             metalness: 0.35,
-            emissive: new Color(0x888888),
+            emissive: new Color(0xcccccc),
             emissiveIntensity: 0.2,
             envMapIntensity: 1.2,
-            transparent: true,
+            transparent: true
         })} = {}) {
         super();
 
@@ -271,7 +272,8 @@ export class Arrow extends Renderable3D {
         this._headRadius = 0.75 * size;
         this._headLength = size;
         this._magnitudeMap = magnitudeMap;
-        this._colorMap = colorMap;
+        this._colorMapper = colorMapper;
+        this._color = new Color();
         this._tempAxis = new Vector3();
     }
 
@@ -296,10 +298,11 @@ export class Arrow extends Renderable3D {
             return;
         }
 
-        if (this._colorMap) {
-            const color = this._colorMap(this._tempAxis, magnitude);
-            this._material.color.copy(color);
-        }
+        const angle = Math.atan2(vector.y, vector.x);
+        const t = (angle + Math.PI) / (2 * Math.PI);
+        const hue = 0.92 - 0.65 * t;
+        this._colorMapper.map(hue, this._color);
+        this._material.color.copy(this._color);
 
         const arrowLength = this._magnitudeMap(magnitude);
         const shaftLength = Math.max(arrowLength - this._headLength, 0);
