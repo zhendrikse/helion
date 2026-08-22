@@ -158,7 +158,7 @@ export class ThreeJsRenderer extends Renderer {
 
         if (options.layoutType === Axes.Type.MATLAB) // center the MatLab axes around the object to be displayed
             this._axes.frameTo(boundingBox, options.bottomAlign);
-        this._world.add(this._axes);
+        this._scene.addToWorld(this._axes);
         return this._axes;
     }
 }
