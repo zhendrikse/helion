@@ -62,4 +62,8 @@ export class ThreeJsScene {
     }
 
     get scene() { return this._scene; }
+
+    removeFromWorld(view) {
+        this._world.remove(view);
+    }
 }

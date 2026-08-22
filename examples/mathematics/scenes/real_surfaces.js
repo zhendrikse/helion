@@ -12,14 +12,6 @@ const rSquared = (x, y) => x * x + y * y;
 const modulation = (t) => (1 - sin(pi * (t - 0.5)));
 
 const surfaces = {
-    "Ripple": {
-        "amplitude": 1,
-        "surface": new MultivariateFunctionSurface({
-            domain: new Domain([-pi, pi], [-pi, pi]),
-            z: (x, y, t) => surfaces["Ripple"].amplitude * sin(1.25 * rSquared(x, y) - pi * t)
-        }),
-        "latex": "\\sin(x^2 + y^2)"
-    },
     "Monkey saddle": {
         "amplitude": 0.3,
         "surface": new MultivariateFunctionSurface({
@@ -28,6 +20,14 @@ const surfaces = {
                 (x * x * x - 3 * y * y * x) * modulation(t)
         }),
         "latex": "x^3 - 3xy^2"
+    },
+    "Ripple": {
+        "amplitude": 1,
+        "surface": new MultivariateFunctionSurface({
+            domain: new Domain([-pi, pi], [-pi, pi]),
+            z: (x, y, t) => surfaces["Ripple"].amplitude * sin(1.25 * rSquared(x, y) - pi * t)
+        }),
+        "latex": "\\sin(x^2 + y^2)"
     },
     "Peak": {
         "amplitude": 7.5,
@@ -131,4 +131,4 @@ simulation
         .withProperty("animate"))
     .start();
 
-surfaceController.changeSurface("Ripple");
+surfaceController.changeSurface("Monkey saddle");

@@ -132,7 +132,7 @@ export class ThreeJsRenderer extends Renderer {
 
     remove(view) {
         view.dispose?.();
-        this._world.remove(view);
+        this._scene.removeFromWorld(view);
     }
 
     frameSceneOn(anObject, options) {
