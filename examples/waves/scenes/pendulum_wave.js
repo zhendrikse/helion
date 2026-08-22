@@ -1,5 +1,5 @@
 import {
-    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody
+    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody, ThreeJsScene
 } from "../../../src/index.js";
 import {Color, MeshStandardMaterial} from "three";
 
@@ -82,12 +82,17 @@ for (let i = 0; i < total; i++) {
 const simulation = Simulation
     .with({
         htmlDivId: "pendulumWaveContainer",
-        cameraPosition: new Vec3(-5.5, -3.3, 0.4),
-        background: Simulation.Background.FOG,
-        headUpDisplay: true,
-        shadowsEnabled: true,
-        controlsTarget: new Vec3(0.2, -3.3, -0.4),
-        fieldOfView: 50
+        camera: {
+            target: new Vec3(0.2, -3.3, -0.4),
+            fieldOfView: 50,
+            position: new Vec3(-5.5, -3.3, 0.4)
+        },
+        scene: {
+            background: ThreeJsScene.Background.FOG,
+        },
+        lighting: {
+            shadows: true
+        }
     })
     .withMouseClickEventListener()
     .runsEvery(0.01)

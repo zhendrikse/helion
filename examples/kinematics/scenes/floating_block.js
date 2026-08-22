@@ -54,8 +54,9 @@ const dragForce = new DragForce();
 const simulation = Simulation
     .with({
         htmlDivId: "floatingBlockContainer",
-        cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7),
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
+        }
     })
     .addObject3D(water)
     .withMouseClickEventListener()

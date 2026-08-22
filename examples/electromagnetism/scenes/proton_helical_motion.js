@@ -61,9 +61,10 @@ const outOfBox = (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize
 Simulation
     .with({
         htmlDivId: "helicalProtonContainer",
-        cameraPosition: new Vec3(7, 4, 4.5).multiplyScalar(27),
-        fieldOfView: 30,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(7, 4, 4.5).multiplyScalar(27),
+            fieldOfView: 30
+        }
     })
     .withMouseClickEventListener()
     .bind(proton.alwaysWith(protonSphere))

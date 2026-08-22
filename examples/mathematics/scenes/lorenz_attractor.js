@@ -42,7 +42,10 @@ const lorenzView = new LineSegmentsView({
 
 const simulation = Simulation
     .with({
-        htmlDivId: "lorenzAttractorContainer"
+        htmlDivId: "lorenzAttractorContainer",
+        headUpDisplay: {
+            enabled: false
+        }
     })
     //.provideAxesAround(lorenzView)
     // .frameSceneOn(lorenzView)

@@ -160,11 +160,14 @@ const table = new Block({
 const simulation = Simulation
     .with({
         htmlDivId: "chainDropContainer",
-        cameraPosition: new Vec3(1, 0.5, 2).multiplyScalar(1.75),
-        controlsTarget: new Vec3(.2, -.7, 0),
-        fieldOfView: 30,
-        scale: 1,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(1, 0.5, 2).multiplyScalar(1.75),
+            controls: new Vec3(.2, -.7, 0),
+            fieldOfView: 30,
+        },
+        scene: {
+            scale: 1
+        }
     })
     .withMouseClickEventListener()
     .runsEvery(1e-3)

@@ -75,7 +75,12 @@ const surfaceView = new SurfaceVisualization({
 const simulation = Simulation
     .with({
         htmlDivId: "shellsContainer",
-        fieldOfView: 20
+        camera: {
+            fieldOfView: 20
+        },
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .onFrame((_) => surfaceView.rotation.y += 0.0167)
     .append(new DropdownMenu()

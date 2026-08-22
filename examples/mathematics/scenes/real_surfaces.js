@@ -109,7 +109,12 @@ const surfaceView = new SurfaceVisualization({
 const simulation = Simulation
     .with({
         htmlDivId: "realSurfacesContainer",
-        fieldOfView: 20
+        headUpDisplay: {
+            enabled: false
+        },
+        camera: {
+            fieldOfView: 20
+        }
     })
     .runsEvery(0.016);
 

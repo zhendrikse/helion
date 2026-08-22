@@ -112,8 +112,12 @@ let particleField = new ParticleCloud(swarmSize);
 const simulation = Simulation
     .with({
         htmlDivId: "coralContainer",
-        controls: false,
-        headUpDisplay: true
+        camera:  {
+            controls: false
+        },
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .withMouseClickEventListener()
     .bind(particleField.alwaysWith(particleView2D))

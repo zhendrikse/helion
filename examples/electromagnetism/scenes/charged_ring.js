@@ -113,10 +113,13 @@ const arrowField = new ArrowField({
 Simulation
     .with({
         htmlDivId: "chargedRingContainer",
-        cameraPosition: new Vec3(15, 5, 20),
-        fieldOfView: 22,
-        scale: 5e10,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(15, 5, 20),
+            fieldOfView: 22,
+        },
+        scene: {
+            scale: 5e10,
+        }
     })
     .withMouseClickEventListener()
     .bind(electron.alwaysWith(electronSphere))

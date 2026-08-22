@@ -1,7 +1,7 @@
 import { Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
     Floor, Sphere, Trail, Vec3, Simulation, RadialSymmetricBody, Sun, Checkbox, Slider, Range,
-    SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView
+    SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene
 } from "../../../src/index.js";
 
 let initialCometDistance = 33;
@@ -273,10 +273,13 @@ const cometTrail = new Trail({ color: 0x00ffff });
 const simulation = Simulation
     .with({
         htmlDivId: "spaceTimeContainer",
-        cameraPosition: new Vec3(5, 7.5, 15).multiplyScalar(13),
-        fieldOfView: 45,
-        background: Simulation.Background.STARS,
-        headUpDisplay: true,
+        camera: {
+            position: new Vec3(5, 7.5, 15).multiplyScalar(13),
+            fieldOfView: 45,
+        },
+        scene: {
+            background: ThreeJsScene.Background.STARS,
+        },
         parameterMenuCollapsed: false
     })
     .addObject3D(grid)

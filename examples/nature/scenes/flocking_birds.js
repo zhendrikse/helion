@@ -101,8 +101,13 @@ const flock = new Flock(birdCount);
 const simulation = Simulation
     .with({
         htmlDivId: "birdsContainer",
-        cameraPosition: new Vec3(15, 0, 30).multiplyScalar(1.5),
-        fieldOfView: 30
+        camera: {
+            position: new Vec3(15, 0, 30).multiplyScalar(1.5),
+            fieldOfView: 30
+        },
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .withMouseClickEventListener()
     .runsEvery(0.01)

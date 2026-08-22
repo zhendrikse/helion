@@ -1,6 +1,6 @@
 import {
-    Vec3, Simulation, Sphere, Floor, SwitchableBondView, Box, Block,
-    Slider, Range, Vec2, Lattice, LatticeView, ChainTopology, UniformGravitationalForce, DragForce,
+    Vec3, Simulation, Floor, Box, Block, Slider, Range, Vec2, Lattice, LatticeView,
+    ChainTopology, UniformGravitationalForce, DragForce, ThreeJsScene
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -45,12 +45,20 @@ const dragForce = new DragForce(1e-4);
 Simulation
     .with({
         htmlDivId: "suspendedSpringContainer",
-        cameraPosition: new Vec3(-10, .25, 5).multiplyScalar(1.25),
-        controlsTarget: new Vec3(-1.5, -1.5, 0),
-        shadowsEnabled: true,
-        fieldOfView: 20,
-        background: Simulation.Background.FOG,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(-10, .25, 5).multiplyScalar(1.25),
+            target: new Vec3(-1.5, -1.5, 0),
+            fieldOfView: 20,
+        },
+        scene: {
+            background: ThreeJsScene.Background.FOG,
+        },
+        viewport: {
+            aspectRatio: 4/3
+        },
+        lighting: {
+            shadows: true,
+        }
     })
     .withMouseClickEventListener()
     .runsEvery(1e-3)

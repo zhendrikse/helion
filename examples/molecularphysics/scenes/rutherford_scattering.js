@@ -87,10 +87,13 @@ const alphaSphere = new Sphere({ color: ALPHA_COLOR, segments: 24 });
 const simulation = Simulation
     .with({
         htmlDivId: "rutherfordScatteringContainer",
-        cameraPosition: new Vec3(0, 0, 5.25),
-        fieldOfView: 40,
-        scale: 1 / X_MAX,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(0, 0, 5.25),
+            fieldOfView: 40
+        },
+        scene: {
+            scale: 1 / X_MAX
+        }
     })
     .withMouseClickEventListener()
     .bind(source.onceWith(new Cylinder({segments: 48, color: 0x999999})))

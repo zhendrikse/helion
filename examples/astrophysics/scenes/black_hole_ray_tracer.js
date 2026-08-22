@@ -1,9 +1,8 @@
-import { PerspectiveCamera, WebGLRenderer, ACESFilmicToneMapping, SRGBColorSpace, MathUtils, PlaneGeometry,
-    ShaderMaterial, Vector2, Vector3, Mesh, Scene }  from "three";
+import { MathUtils, PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh }  from "three";
 import vertexShader from "./black_hole_vertex_shader.glsl?raw";
 import fragmentShader from "./black_hole_fragment_shader.glsl?raw";
 import {Checkbox, Renderable3D, Simulation} from "../../../src/index.js";
-import {MathPhysicsModelBehavior} from "../../../src/core/helion.js";
+import {MathPhysicsModelBehavior} from "../../../src/index.js";
 
 export class BlackHoleModel extends MathPhysicsModelBehavior {
     constructor({
@@ -53,13 +52,15 @@ export class ShaderView extends Renderable3D {
 const simulation = Simulation
     .with({
         htmlDivId: "blackHoleRayTraceContainer",
-        cameraPosition: new Vector3(0, 0, .6),
-        fieldOfView: 75
+        camera: {
+            position: new Vector3(0, 0, .6),
+            fieldOfView: 75
+        },
+        viewport: {
+            aspectRatio: "16/9"
+        }
     });
 
-const width = simulation._viewport.width;
-const height = simulation._viewport.height;
-const aspectRatio = width / height;
 // const scene = new Scene();
 //
 //
@@ -77,10 +78,11 @@ const aspectRatio = width / height;
 // renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 // renderer.setSize(width, height);
 //
+const aspectRatio = simulation.width / simulation.height;
 const view = new ShaderView({ aspectRatio });
 const blackHoleModel = new BlackHoleModel({
-    width: width,
-    height: height
+    width: simulation.width,
+    height: simulation.height
 });
 
 let animate = true;

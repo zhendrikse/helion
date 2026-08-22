@@ -42,9 +42,13 @@ reset(shapeConfiguration, potentialStrength, softness);
 const simulation = Simulation
     .with({
         htmlDivId: "quantumScattering",
-        headUpDisplay: true,
-        cameraPosition: new Vec3(-1, .7, .75).multiplyScalar(1.25 * xMax),
-        fieldOfView: 30
+        camera: {
+            position: new Vec3(-1, .7, .75).multiplyScalar(1.25 * xMax),
+            fieldOfView: 30
+        },
+        viewport: {
+            aspectRatio: "19/12"
+        }
     })
     .appendStartStopResetUI()
     .bind(psi.alwaysWith(waveFunctionSurface))

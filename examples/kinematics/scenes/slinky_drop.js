@@ -51,10 +51,16 @@ const onFloor = (ball, floorLevel, epsilon = 2e-2) =>
 Simulation
     .with({
         htmlDivId: "slinkyContainer",
-        cameraPosition: new Vec3(4, 2, 10).multiplyScalar(1.15),
-        headUpDisplay: true,
-        light: false,
-        fieldOfView: 50
+        camera: {
+            position: new Vec3(4, 2, 10).multiplyScalar(1.15),
+            fieldOfView: 50
+        },
+        lighting: {
+            enabled: false,
+        },
+        viewport: {
+            aspectRatio: "4/3"
+        }
     })
     .bind(stick1.onceWith(new Cylinder({ color: 0x855E42})))
     .bind(stick2.onceWith(new Cylinder({ color: 0x855E42})))

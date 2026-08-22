@@ -197,8 +197,14 @@ drawDragonCurve(turtle);
 Simulation
     .with({
         htmlDivId: "fractalsContainer",
-        fieldOfView: 30,
-        cameraPosition: new Vec3(0, 0, 1100),
+        camera: {
+            fieldOfView: 30,
+            position: new Vec3(0, 0, 1100),
+            controls: false
+        },
+        headUpDisplay: {
+            enabled: false
+        },
         parameterMenuCollapsed: false
     })
     .bind(turtle.alwaysWith(turtleView))

@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Floor, SwitchableBondView, Transformation,
-    Slider, Range, Vec2, Lattice, LatticeView, ChainTopology
+    Slider, Range, Vec2, Lattice, LatticeView, ChainTopology, ThreeJsScene
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -62,12 +62,20 @@ const latticeView = LatticeView.from({
 Simulation
     .with({
         htmlDivId: "travellingWaveContainer",
-        cameraPosition: new Vec3(-10, .25, 1.5).multiplyScalar(1.4),
-        controlsTarget: new Vec3(-5, 0, 0),
-        shadowsEnabled: true,
-        fieldOfView: 30,
-        background: Simulation.Background.FOG,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(-10, .25, 1.5).multiplyScalar(1.4),
+            fieldOfView: 30,
+            target: new Vec3(-5, 0, 0)
+        },
+        viewport: {
+            aspectRatio: "19/12",
+        },
+        scene: {
+            background: ThreeJsScene.Background.FOG
+        },
+        lighting: {
+            shadows: true
+        },
     })
     .withMouseClickEventListener()
     .runsEvery(2e-3)

@@ -61,9 +61,14 @@ function taylorLatex(terms) {
 const simulation = Simulation
     .with({
         htmlDivId: "taylorSeriesContainer",
-        cameraPosition: new Vec3(0, 0, 10),
-        parameterMenuCollapsed: false,
-        controls: false
+        headUpDisplay: {
+            enabled: false
+        },
+        camera: {
+            position: new Vec3(0, 0, 10),
+            parameterMenuCollapsed: false,
+            controls: false
+        }
     });
 
 function exp(x) {

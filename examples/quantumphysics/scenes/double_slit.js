@@ -35,8 +35,12 @@ const particles = [];
 const simulation = Simulation
     .with({
         htmlDivId: "doubleSlitContainer",
-        cameraPosition: new Vec3(0, -9, 7).multiplyScalar(resolution),
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(0, -9, 7).multiplyScalar(resolution),
+        },
+        viewport: {
+            aspectRatio: "2/1"
+        }
     })
     .bind(slit1.onceWith(new Cylinder({ color: 0xffffff })))
     .bind(slit2.onceWith(new Cylinder({ color: 0xffffff })))

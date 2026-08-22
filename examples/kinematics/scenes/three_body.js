@@ -41,9 +41,12 @@ const gravitationalForce = new GravitationalForce();
 Simulation
     .with({
         htmlDivId: "threeBodyContainer",
-        cameraPosition: new Vec3(30, 30, 30),
-        scale: 1e-9,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(30, 30, 30),
+        },
+        scene: {
+            scale: 1e-9
+        }
     })
     .bind(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
     .bind(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))

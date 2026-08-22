@@ -105,7 +105,10 @@ const harmonographView = new LineSegmentsView({
 
 Simulation
     .with({
-        htmlDivId: "harmonographContainer"
+        htmlDivId: "harmonographContainer",
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .bind(harmonograph.alwaysWith(harmonographView))
     .frameSceneOn(harmonographView, { padding: 0.75 })

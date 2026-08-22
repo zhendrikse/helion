@@ -95,8 +95,13 @@ const arrowField = new ArrowField({
 const simulation = Simulation
     .with({
         htmlDivId: "solenoidContainer",
-        cameraPosition: new Vec3(32, 16, 48).multiplyScalar(1.25),
-        fieldOfView: 45
+        headUpDisplay: {
+            enabled: false
+        },
+        camera: {
+            position: new Vec3(32, 16, 48).multiplyScalar(1.25),
+            fieldOfView: 45
+        }
     })
     .bind(magneticField.onceWith(arrowField));
 

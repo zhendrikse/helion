@@ -100,9 +100,14 @@ function fourierLatex(frequency) {
 const simulation = Simulation
     .with({
         htmlDivId: "fourierTransformContainer",
-        cameraPosition: new Vec3(0, 0, 17.5),
-        parameterMenuCollapsed: false,
-        controls: false
+        camera: {
+            position: new Vec3(0, 0, 17.5),
+            controls: false
+        },
+        headUpDisplay: {
+            enabled: false
+        },
+        parameterMenuCollapsed: false
     });
 
 const size = .5 * interval.range;

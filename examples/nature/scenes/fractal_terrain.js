@@ -42,8 +42,13 @@ surfaceView.position.set(-128, 0, -128);
 const simulation = Simulation
     .with({
         htmlDivId: "terrainContainer",
-        cameraPosition: new Vec3(300, 300, 300),
-        fieldOfView: 30,
+        camera: {
+            position: new Vec3(300, 300, 300),
+            fieldOfView: 30
+        },
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .bind(landscape.surface.onceWith(surfaceView))
     .append(surfaceView.ui())

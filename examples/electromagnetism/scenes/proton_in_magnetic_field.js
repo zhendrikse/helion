@@ -50,8 +50,9 @@ const speedToVelocity = (speed, direction) => direction.clone().normalize().mult
 Simulation
     .with({
         htmlDivId: "protonInFieldContainer",
-        cameraPosition: new Vec3(0, 5, -10),
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(0, 5, -10)
+        }
     })
     .withMouseClickEventListener()
     .bind(magneticField.onceWith(arrowField))

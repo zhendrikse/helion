@@ -170,11 +170,17 @@ const electricArrow = new VectorView({
 Simulation
     .with({
         htmlDivId: "carbonDioxideContainer",
-        scale: SCALE,
-        cameraPosition: new Vec3(3, 0, 3),
-        fieldOfView: 40,
+        camera: {
+            cameraPosition: new Vec3(3, 0, 3),
+            fieldOfView: 40,
+        },
+        scene: {
+            scale: SCALE,
+        },
+        viewport: {
+            aspectRatio: "4/3"
+        },
         parameterMenuCollapsed: false,
-        headUpDisplay: true
     })
     .withMouseClickEventListener()
     .runsEvery(1e-2)

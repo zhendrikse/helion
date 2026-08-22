@@ -50,9 +50,14 @@ const eigenvector2 = new VectorModel();
 const simulation = Simulation
     .with({
         htmlDivId: "spectralTheoremContainer",
-        cameraPosition: new Vec3(0, 0, 4 * (size + 0.1)),
-        parameterMenuCollapsed: false,
-        controls: false
+        headUpDisplay: {
+            enabled: false
+        },
+        camera: {
+            position: new Vec3(0, 0, 4 * (size + 0.1)),
+            parameterMenuCollapsed: false,
+            controls: false
+        }
     });
 
 function updateEigenVectors() {

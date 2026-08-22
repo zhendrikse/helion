@@ -135,7 +135,12 @@ const intensityPixelRaster = new ScalarFieldIntensityPixelRaster({
 Simulation
     .with({
         htmlDivId: "fraunhoferContainer",
-        cameraPosition: new Vec3(2, .5, .75).multiplyScalar(50)
+        camera: {
+            position: new Vec3(2, .5, .75).multiplyScalar(50)
+        },
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .bind(intensityField.alwaysWith(intensityPixelRaster))
     .append(new RadioGroup()

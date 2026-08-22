@@ -73,7 +73,10 @@ const sphereView = new BoxSegmentsView({
 
 const simulation = Simulation
     .with({
-        htmlDivId: "polarCoordinatesIntegration"
+        htmlDivId: "polarCoordinatesIntegration",
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .bind(sphere.onceWith(sphereView))
     .frameSceneOn(sphereView, {padding: 1, translationY: -1.5})

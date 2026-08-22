@@ -48,7 +48,13 @@ const surfaceView = new SurfaceVisualization({
 
 Simulation
     .with({
-        htmlDivId: "membraneContainer"
+        htmlDivId: "membraneContainer",
+        viewport: {
+            aspectRatio: "19/12"
+        },
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .bind(membrane.alwaysWith(surfaceView))
     .runsEvery(0.016)

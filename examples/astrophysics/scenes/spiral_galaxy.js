@@ -1,6 +1,7 @@
 import { Vector3, Color } from "three";
 import {
-    normalDistribution, uniform, randomInt, Vec3, Simulation, PointCloud, PointCloudMaterial, PointCloudView
+    normalDistribution, uniform, randomInt, Vec3, Simulation, PointCloud,
+    PointCloudMaterial, PointCloudView, ThreeJsScene
 } from "../../../src/index.js";
 
 class SpiralGalaxy extends PointCloud {
@@ -127,10 +128,22 @@ const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() })
 Simulation
     .with({
         htmlDivId: "galaxyContainer",
-        cameraPosition: new Vec3(1, -12, 4).multiplyScalar(100),
-        background: Simulation.Background.STARS,
-        fieldOfView: 30,
-        light: false
+        viewport: {
+            aspectRatio: "4/3"
+        },
+        headUpDisplay: {
+            enabled: false
+        },
+        camera: {
+            position: new Vec3(1, -12, 4).multiplyScalar(100),
+            fieldOfView: 30
+        },
+        scene: {
+            background: ThreeJsScene.Background.STARS,
+        },
+        lighting: {
+            enabled: false
+        }
     })
     .runsEvery(0.02)
     .bind(spiralGalaxy.onceWith(pointCloud))

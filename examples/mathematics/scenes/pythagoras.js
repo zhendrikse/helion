@@ -79,7 +79,12 @@ const segmentsView = new LineSegmentsView({
 Simulation
     .with({
         htmlDivId: "pythagorasContainer",
-        controls: false
+        headUpDisplay: {
+            enabled: false
+        },
+        camera: {
+            controls: false
+        }
     })
     .setLatexTitle("\\Huge{a^2 = b^2 + c^2}")
     .bind(pythagoras.onceWith(segmentsView))

@@ -99,9 +99,14 @@ const polygon = new RootPolygon({ maxN: range, radius: unitCircleRadius });
 const simulation = Simulation
     .with({
         htmlDivId: "rootsOfUnityContainer",
-        cameraPosition: new Vec3(0, 0, 2.5),
+        headUpDisplay: {
+            enabled: false
+        },
         parameterMenuCollapsed: false,
-        controls: false
+        camera: {
+            position: new Vec3(0, 0, 2.5),
+            controls: false
+        }
     });
 
 // Root vectors: the actual points z_k on the unit circle.

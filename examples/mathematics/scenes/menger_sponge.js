@@ -25,8 +25,13 @@ mengerSponge(new Vec3(), finalSize, depth);
 Simulation
     .with({
         htmlDivId: "mengerSpongeContainer",
-        cameraPosition: new Vec3(-180, 165, -200).multiplyScalar(2.1),
-        fieldOfView: 30
+        headUpDisplay: {
+            enabled: false
+        },
+        camera: {
+            position: new Vec3(-180, 165, -200).multiplyScalar(2.1),
+            fieldOfView: 30
+        }
     })
     .bind(sponge.onceWith(new BoxSegmentsView({
         material: new MeshStandardMaterial({

@@ -33,6 +33,7 @@ export {
     SegmentedCircle
 } from "./model/math/objects.js"
 
+export { ThreeJsScene } from "./view/3d/scene.js"
 export { SphereSphereCollision } from "./model/transformations/interactions.js"
 export { Domain, DiscreteScalarField, DiscreteComplexField, VectorField } from "./model/math/fields.js"
 export { BarrierWaveEquation } from "./model/math/equations.js";

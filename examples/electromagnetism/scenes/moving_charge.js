@@ -86,11 +86,16 @@ const speedSlider = new Slider("🚀 Speed: ")
 const simulation = Simulation
     .with({
         htmlDivId: "movingChargeContainer",
-        light: false, // setting our own lights
-        cameraPosition: new Vec3(-50, 0, 75).multiplyScalar(0.5),
-        fieldOfView: 60,
-        scale: scale,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(-50, 0, 75).multiplyScalar(0.5),
+            fieldOfView: 60,
+        },
+        scene: {
+            scale: scale
+        },
+        lighting: {
+            light: false // setting our own lights
+        }
     })
     .addObject3D(new PointLight(0xffffff, 2e3))
     .addObject3D(new AmbientLight(0xffffff, 0.8))

@@ -30,8 +30,16 @@ const planeWave = new OneDimensionalComplexPlaneWave({
 Simulation
     .with({
         htmlDivId: "planeWaveContainer3d",
-        cameraPosition: new Vec3(100, 100, 200),
-        fieldOfView: 20
+        camera: {
+            position: new Vec3(100, 100, 200),
+            fieldOfView: 20
+        },
+        headUpDisplay: {
+            enabled: false
+        },
+        viewport: {
+            aspectRatio: "2/1"
+        }
     })
     // .synchronize(planeWave.alwaysWith(waveView2d))
     .bind(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({ numArrows: 100 })))

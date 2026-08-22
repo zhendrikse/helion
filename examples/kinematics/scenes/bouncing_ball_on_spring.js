@@ -76,8 +76,9 @@ const forceArrow = new VectorView({
 Simulation
     .with({
         htmlDivId: "bouncingBallOnSpringContainer",
-        cameraPosition: new Vec3(1, 0.4, 2).multiplyScalar(1.7),
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
+        }
     })
     .withMouseClickEventListener()
     .bind(ball.alwaysWith(sphere))

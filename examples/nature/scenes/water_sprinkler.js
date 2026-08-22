@@ -191,10 +191,13 @@ const sprinkler = new Sprinkler({ length: LENGTH, dropletPoolSize: 100 });
 const simulation = Simulation
     .with({
         htmlDivId: "waterSprinklerContainer",
-        cameraPosition: new Vec3(0, 15, 35).multiplyScalar(.275),
-        fieldOfView: 40,
-        scale: 10,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(0, 15, 35).multiplyScalar(.275),
+            fieldOfView: 40
+        },
+        scene: {
+            scale: 10
+        }
     })
     .withMouseClickEventListener()
     .runsEvery(1e-2)

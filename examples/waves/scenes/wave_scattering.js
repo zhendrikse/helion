@@ -44,9 +44,14 @@ reset(configuration);
 Simulation
     .with({
         htmlDivId: "waveScatteringContainer",
-        cameraPosition: new Vec3(2, 1, 2.1).multiplyScalar(resolution * .75),
-        fieldOfView: 19,
-        headUpDisplay: true
+        viewport: {
+            aspectRatio: "19 / 12"
+        },
+        camera: {
+            position: new Vec3(2, 1, 2.1).multiplyScalar(resolution * .75),
+            aspectRatio: "19/12",
+            fieldOfView: 20
+        }
     })
     .bind(surface.alwaysWith(waterSurface))
     .bind(obstacleField.onceWith(new PotentialField3DRaster({

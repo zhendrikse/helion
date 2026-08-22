@@ -207,11 +207,17 @@ const bondView2 = new SwitchableBondView({
 Simulation
     .with({
         htmlDivId: "waterMoleculeContainer",
-        scale: SCALE,
-        cameraPosition: new Vec3(3, 0, 3),
-        fieldOfView: 40,
-        parameterMenuCollapsed: false,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(3, 0, 3),
+            fieldOfView: 40,
+        },
+        scene: {
+            scale: SCALE
+        },
+        viewport: {
+            aspectRatio: "4/3"
+        },
+        parameterMenuCollapsed: false
     })
     .withMouseClickEventListener()
     .runsEvery(2.5e-3)

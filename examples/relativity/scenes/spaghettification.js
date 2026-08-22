@@ -1,4 +1,6 @@
-import {Simulation, RadialSymmetricBody, Vec3, Sphere, Renderable3D, MathPhysicsModelBehavior } from "../../../src/index.js";
+import {
+    Simulation, RadialSymmetricBody, Vec3, Sphere, Renderable3D, MathPhysicsModelBehavior, ThreeJsScene
+} from "../../../src/index.js";
 import {AmbientLight, Color, PointLight} from "three";
 
 const vel0 = new Vec3(0, 0.65, 0);
@@ -123,11 +125,19 @@ const blackHole = new RadialSymmetricBody({ position: blackHolePos })
 Simulation
     .with({
         htmlDivId: "spaghettificationContainer",
-        cameraPosition: new Vec3(0, 0, 20),
-        fieldOfView: 40,
-        headUpDisplay: true,
-        background: Simulation.Background.STARS,
-        light: false
+        viewport: {
+            aspectRatio: "19/12"
+        },
+        camera: {
+            position: new Vec3(0, 0, 20),
+            fieldOfView: 40
+        },
+        scene: {
+            background: ThreeJsScene.Background.STARS,
+        },
+        lighting: {
+            enabled: false
+        }
     })
     .addObject3D(new PointLight(0xffffff, 2.0, 0, .1)) // intense, no max distance
     .addObject3D(new AmbientLight(0xffffff, 1))

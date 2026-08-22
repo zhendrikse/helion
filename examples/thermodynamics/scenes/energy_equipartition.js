@@ -210,9 +210,12 @@ for (let i = 0; i < 150; i++)
 const simulation = Simulation
     .with({
         htmlDivId: "energyEquipartitionContainer",
-        scale: SCALE,
-        headUpDisplay: true,
-        cameraPosition: new Vec3(4.25, 1.25, 7.25).multiplyScalar(1.5)
+        scene: {
+            scale: SCALE
+        },
+        camera: {
+            position: new Vec3(4.25, 1.25, 7.25).multiplyScalar(1.5)
+        }
     })
     .withMouseClickEventListener()
     .runsEvery(0.003)

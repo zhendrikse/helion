@@ -28,9 +28,17 @@ const transformedEigenvector2 = new VectorModel();
 const simulation = Simulation
     .with({
         htmlDivId: "matrixTransformationContainer",
-        cameraPosition: new Vec3(0, 0, 5 * (size + 0.1)),
+        camera: {
+            position: new Vec3(0, 0, 5 * (size + 0.1)),
+            controls: false
+        },
+        headUpDisplay: {
+            enabled: false
+        },
+        viewport: {
+            aspectRatio: "19/12"
+        },
         parameterMenuCollapsed: false,
-        controls: false
     })
 
 function updateVectors() {

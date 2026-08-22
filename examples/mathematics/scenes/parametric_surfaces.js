@@ -88,7 +88,12 @@ const surfaceView = new SurfaceVisualization({
 const simulation = Simulation
     .with({
         htmlDivId: "parametricSurfacesContainer",
-        fieldOfView: 20
+        headUpDisplay: {
+            enabled: false
+        },
+        camera: {
+            fieldOfView: 20
+        }
     })
     .append(new DropdownMenu()
         .for(surfacesRegistry)

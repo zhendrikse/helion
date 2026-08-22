@@ -1,0 +1,80 @@
+import { PerspectiveCamera, Vector3 } from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { Vec3 } from "../../model/math/math.js";
+
+export class ThreeJsCamera {
+    constructor(viewport, {
+        position = new Vec3(3, 3, 3),
+        target = new Vec3(0, 0, 0),
+        fieldOfView = 50,
+        controls = true,
+        autoRotate = false
+    } = {}) {
+        this._camera = new PerspectiveCamera(fieldOfView, viewport.width / viewport.height, 0.1, 1e6);
+        this._camera.position.copy(position);
+        this._controls = null;
+        this._autoRotate = autoRotate;
+        this._autoRotateTheta = Math.PI / 2;
+        this._autoRotatePhi = 0;
+
+        if (controls) {
+            this._controls = new OrbitControls(this._camera, viewport.canvas);
+            this._controls.target.copy(target);
+        }
+    }
+
+    onResize(width, height) {
+        this._camera.aspect = width / height;
+        this._camera.updateProjectionMatrix();
+    }
+
+    update() {
+        this._controls?.update();
+        if (this._autoRotate)
+            this._doAutoRotate();
+    }
+
+    _doAutoRotate() {
+        const distance = this._camera.position.length();
+        this._autoRotateTheta += -Math.PI / (7.5 * 100);
+        this._autoRotatePhi += Math.PI / (7.5 * 100) * 2;
+        this._camera.position.set(
+            distance * Math.sin(this._autoRotateTheta) * Math.sin(this._autoRotatePhi),
+            distance * Math.cos(this._autoRotateTheta),
+            distance * Math.sin(this._autoRotateTheta) * Math.cos(this._autoRotatePhi) );
+        this._camera.lookAt(0, 0, 0);
+    }
+
+    #calculateCenter(boundingBox) {
+        const size = new Vector3();
+        let center = new Vector3();
+        boundingBox.getSize(size);
+        boundingBox.getCenter(center);
+        return { center, size };
+    }
+
+    frameSceneOn(anObject, options) {
+        const boundingBox = anObject.boundingBox;
+        const { center, size } = this.#calculateCenter(boundingBox);
+
+        // distance so that bounding box is always in view
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const verticalFieldOfView = Math.PI  * this._camera.fov / 180;
+        let distance = maxDim / Math.tan(verticalFieldOfView / 2);
+        distance = Math.max(distance * options.padding, options.minDistance);
+
+        const direction = options.viewDirection.clone().normalize();
+        this._camera.position
+            .set(center.x, center.y + options.translationY, center.z)
+            .addScaledVector(new Vector3(direction.x, direction.y, direction.z), distance);
+        this._camera.near = distance / 100;
+        this._camera.far = distance * 10;
+        this._camera.updateProjectionMatrix();
+
+        this._controls?.target.copy(center);
+        this._controls?.update();
+    }
+
+    set autoRotate(trueOrFalse) { this._autoRotate = trueOrFalse; }
+    get camera() { return this._camera }
+}

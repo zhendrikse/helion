@@ -143,10 +143,13 @@ const magneticArrowField = new ArrowField({
 Simulation
     .with({
         htmlDivId: "electromagneticWaveContainer",
-        cameraPosition: new Vec3(15, 5, 20),
-        fieldOfView: 45,
-        scale: 1e10,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(15, 5, 20),
+            fieldOfView: 45
+        },
+        scene: {
+            scale: 1e10
+        }
     })
     .withMouseClickEventListener()
     .runsEvery(1e-3)

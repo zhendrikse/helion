@@ -50,7 +50,12 @@ view.rotation.x = -Math.PI / 2
 Simulation
     .with({
         htmlDivId: "rosslerAttractorContainer",
-        fieldOfView: 30
+        camera: {
+            fieldOfView: 30
+        },
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .bind(roessler.alwaysWith(view))
     .provideAxesAround(view, {tickLabels: false})

@@ -30,7 +30,12 @@ reset(shapeConfiguration, softness);
 Simulation
     .with({
         htmlDivId: "fourierTransform2dContainer",
-        cameraPosition: new Vec3(2, .5, .75).multiplyScalar(.25 * resolution),
+        camera: {
+            position: new Vec3(2, .5, .75).multiplyScalar(.25 * resolution),
+        },
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .onReset(() => reset(shapeConfiguration))
     .bind(field.alwaysWith(intensityRaster))

@@ -59,9 +59,10 @@ const latticeView = LatticeView.from({
 Simulation
     .with({
         htmlDivId: "cubicLatticeContainer",
-        cameraPosition: new Vec3(2, 1.5, 2.25).multiplyScalar(.625),
-        fieldOfView: 30,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(2, 1.5, 2.25).multiplyScalar(.625),
+            fieldOfView: 30,
+        }
     })
     .withMouseClickEventListener()
     .runsEvery(1e-3)

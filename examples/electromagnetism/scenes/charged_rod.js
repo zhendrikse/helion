@@ -150,9 +150,10 @@ const allGone = () => rod.charges.every(c => c.position.y > 1);
 const simulation = Simulation
     .with({
         htmlDivId: "chargedRodContainer",
-        cameraPosition: new Vec3(2, .8, 2.5),
-        fieldOfView: 30,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(2, .8, 2.5),
+            fieldOfView: 30
+        }
     })
     .bind(electricField.alwaysWith(electricArrowField))
     .bind(magneticField.alwaysWith(magneticArrowField))

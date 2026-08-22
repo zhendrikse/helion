@@ -117,8 +117,16 @@ const fractalView = new LineSegmentsView({
 Simulation
     .with({
         htmlDivId: "sierpinskiContainer",
+        headUpDisplay: {
+            enabled: false
+        },
+        camera: {
+            fieldOfView: 30
+        },
+        viewport: {
+            aspectRatio: "3/4"
+        },
         parameterMenuCollapsed: false,
-        fieldOfView: 30
     })
     .bind(fractal.alwaysWith(fractalView))
     .frameSceneOn(fractalView, {padding: 1, translationY: -1})

@@ -42,8 +42,16 @@ waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
 Simulation
     .with({
         htmlDivId: "raindropContainer",
-        cameraPosition: new Vec3(4, 2, 4.2).multiplyScalar(75),
-        fieldOfView: 19
+        camera: {
+            position: new Vec3(4, 2, 4.2).multiplyScalar(75),
+            fieldOfView: 19
+        },
+        viewport: {
+            aspectRatio: "19/12"
+        },
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .bind(surface.alwaysWith(waterSurface))
     .runsEvery(0.01)

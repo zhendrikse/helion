@@ -1,6 +1,6 @@
 import { Color, Vector3 } from "three";
 import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
-import { Simulation, Vec3, PointCloud, PointCloudView, PointCloudMaterial } from "../../../src/index.js";
+import {Simulation, Vec3, PointCloud, PointCloudView, PointCloudMaterial, ThreeJsScene} from "../../../src/index.js";
 
 class StarCluster extends PointCloud {
     constructor(N=40000) {
@@ -52,10 +52,16 @@ const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
 Simulation
     .with({
         htmlDivId: "starClusterContainer",
-        cameraPosition: new Vec3(7, 14, 21).multiplyScalar(1.25),
-        background: Simulation.Background.STARS,
-        fieldOfView: 35,
-        light: false
+        camera: {
+            fieldOfView: 35,
+            position: new Vec3(7, 14, 21).multiplyScalar(1.25)
+        },
+        scene: {
+            background: ThreeJsScene.Background.STARS
+        },
+        lighting: {
+            enabled: false
+        }
     })
     .runsEvery(0.02)
     .bind(starCluster.onceWith(cloud))

@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Floor, SwitchableBondView, Transformation,
-    Slider, Range, Vec2, ChainTopology, Lattice, LatticeView
+    Slider, Range, Vec2, ChainTopology, Lattice, LatticeView, ThreeJsScene
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -48,11 +48,19 @@ latticeView.position.y = 4
 const simulation = Simulation
     .with({
         htmlDivId: "oscillatorContainer",
-        cameraPosition: new Vec3(17, 6, -4).multiplyScalar(1.75),
-        shadowsEnabled: true,
-        fieldOfView: 45,
-        background: Simulation.Background.FOG,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(17, 6, -4).multiplyScalar(1.75),
+            fieldOfView: 45
+        },
+        scene: {
+            background: ThreeJsScene.Background.FOG
+        },
+        lighting: {
+            shadows: true
+        },
+        viewport: {
+            aspectRatio: "19/12"
+        }
     })
     .withMouseClickEventListener()
     .runsEvery(4e-3)

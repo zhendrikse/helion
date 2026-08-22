@@ -44,9 +44,10 @@ faradayLoopsGroup.visible = false;
 const simulation = Simulation
     .with({
         htmlDivId: "faradayLawContainer",
-        headUpDisplay: true,
-        cameraPosition: new Vec3(3, 1, 4),
-        fieldOfView: 45
+        camera: {
+            position: new Vec3(3, 1, 4),
+            fieldOfView: 45
+        }
     })
     .withMouseClickEventListener()
     .bind(wire.onceWith(new Cylinder({ color: new Color("yellow") })))

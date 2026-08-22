@@ -1,69 +1,74 @@
-import {
-    Scene, PerspectiveCamera, WebGLRenderer, DirectionalLight, Group, Fog, Color,
-    PCFShadowMap, AmbientLight, Vector3
-} from "three";
+import { WebGLRenderer, DirectionalLight, PCFShadowMap, AmbientLight } from "three";
 import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Renderer } from "../renderer.js"
-import { Axes, SkyDome } from "./composite/backgrounds.js";
-import { Simulation } from "../../core/helion.js";
+import { Axes } from "./composite/backgrounds.js";
+import { ThreeJsCamera } from "./camera.js";
+import { ThreeJsScene } from "./scene.js";
+
+export class Lighting {
+    constructor(scene, {
+        enabled = true,
+        shadows = false
+    } = {}) {
+        if (enabled)
+            this.#initLights(scene, shadows);
+    }
+
+    #initLights(scene, shadowsEnabled) {
+        const directionalLight = new DirectionalLight(0xffffff, shadowsEnabled ? 5 : 1);
+        directionalLight.position.set(2, 5, 2);
+        scene.addLight(directionalLight);
+        scene.addLight(new AmbientLight(0xffffff, 0.8));
+
+        if (!shadowsEnabled)
+            return;
+
+        // Adjust shadow camera settings
+        directionalLight.shadow.camera.near = 0.5; // Default is 0.5
+        directionalLight.shadow.camera.far = 50; // Default is 500
+        directionalLight.shadow.camera.top = 20;
+        directionalLight.shadow.camera.right = 20;
+        directionalLight.shadow.camera.bottom = -20;
+        directionalLight.shadow.camera.left = -20;
+        directionalLight.castShadow = true;
+
+        // Adjust shadow map settings
+        directionalLight.shadow.mapSize.width = 2048; // Default is 512
+        directionalLight.shadow.mapSize.height = 2048; // Default is 512
+    }
+}
 
 export class ThreeJsRenderer extends Renderer {
     constructor(options) {
         super();
         this._options = options;
-        this._scene = new Scene();
-        this._world = new Group();
-        this._background = new Group();
-        this._skydome = null;
-        this._scene.add(this._world, this._background);
+        this._scene = new ThreeJsScene(options.camera.position, options.scene);
         this._axes = null;
 
         // The below are set when attach(viewport) is called.
-        this._viewport = null;
         this._camera = null;
         this._renderer = null;
         this._labelRenderer = null;
         this._controls = null;
-
-        this._autoRotateTheta = Math.PI / 2;
-        this._autoRotatePhi = 0;
-        this._autoRotate = false;
     }
 
-    set autoRotate(autoRotate) { this._autoRotate = autoRotate; }
-
-    set cameraPosition(position) { this._camera.position.set(position.x, position.y, position.z); }
+    set autoRotate(autoRotate) { this._camera.autoRotate = autoRotate; }
 
     attach(viewport) {
-        this._viewport = viewport;
         this._renderer = new WebGLRenderer({
             alpha: true,
             antialias: true,
             canvas: viewport.canvas
         });
-        this.#createLabelRenderer(viewport);
-
-        const { background, backgroundColor, scale, controls, controlsTarget, light, cameraPosition, shadowsEnabled, fieldOfView } = this._options;
-
-        if (shadowsEnabled) {
+        if (this._options.lighting.shadows) {
             this._renderer.shadowMap.enabled = true;
             this._renderer.shadowMap.type = PCFShadowMap;
         }
 
-        this._world.scale.setScalar(scale);
-        this._camera = new PerspectiveCamera(fieldOfView, viewport.width / viewport.height, 0.1, 1e6);
-        this._camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        this.#createLabelRenderer(viewport);
+        this._camera = new ThreeJsCamera(viewport, this._options.camera)
+        const _ = new Lighting(this._scene, this._options.lighting);
 
-        if (controls) {
-            this._controls = new OrbitControls(this._camera, viewport.canvas);
-            this._controls.target.set(controlsTarget.x, controlsTarget.y, controlsTarget.z);
-        }
-
-        if (light)
-            this._initLights(shadowsEnabled);
-
-        this._initBackground(background, backgroundColor);
         this.resize();
         window.addEventListener("resize", () => this.resize());
         // console.log({
@@ -111,67 +116,18 @@ export class ThreeJsRenderer extends Renderer {
         this._renderer.setPixelRatio(pixelRatio);
         this._renderer.setSize(width, height, false);
         this._labelRenderer.setSize(width, height, false);
-
-        this._camera.aspect = width / height;
-        this._camera.updateProjectionMatrix();
+        this._camera.onResize(width, height);
     }
 
-    _initLights(shadowsEnabled) {
-        const directionalLight = new DirectionalLight(0xffffff, shadowsEnabled ? 5 : 1);
-        directionalLight.position.set(2, 5, 2);
-        this._scene.add(directionalLight);
-        this._scene.add(new AmbientLight(0xffffff, 0.8));
-
-        if (!shadowsEnabled)
-            return;
-
-        // Adjust shadow camera settings
-        directionalLight.shadow.camera.near = 0.5; // Default is 0.5
-        directionalLight.shadow.camera.far = 50; // Default is 500
-        directionalLight.shadow.camera.top = 20;
-        directionalLight.shadow.camera.right = 20;
-        directionalLight.shadow.camera.bottom = -20;
-        directionalLight.shadow.camera.left = -20;
-        directionalLight.castShadow = true;
-
-        // Adjust shadow map settings
-        directionalLight.shadow.mapSize.width = 2048; // Default is 512
-        directionalLight.shadow.mapSize.height = 2048; // Default is 512
-    }
-
-    _initBackground(background, backgroundColor) {
-        switch (background) {
-            case Simulation.Background.PLAIN:
-                this._scene.background = new Color(backgroundColor);
-                break;
-            case Simulation.Background.FOG:
-                this._scene.background = new Color(backgroundColor);
-                this._scene.fog = new Fog(backgroundColor, 1, 100);
-                break;
-            case Simulation.Background.STARS:
-                this._skydome = new SkyDome({
-                    skyRadius: this._camera.position.clone().length() * 10,
-                    blinkSpeed: 2.5
-                });
-                this._background.add(this._skydome);
-                break;
-            case Simulation.Background.TRANSPARENT:
-            default:
-                break;
-        }
+    add(object3D) {
+        this._scene.addToWorld(object3D);
     }
 
     render(time) {
-        this._controls?.update();
-        this._renderer.render(this._scene, this._camera);
-        this._labelRenderer.render(this._scene, this._camera);
-        this._skydome?.update(time, this._camera);
-        if (this._autoRotate)
-            this._doAutoRotate();
-    }
-
-    add(threeJsObject) {
-        this._world.add(threeJsObject);
+        this._renderer.render(this._scene.scene, this._camera.camera);
+        this._labelRenderer.render(this._scene.scene, this._camera.camera);
+        this._skydome?.update(time, this._camera.camera);
+        this._camera.update();
     }
 
     remove(view) {
@@ -179,34 +135,8 @@ export class ThreeJsRenderer extends Renderer {
         this._world.remove(view);
     }
 
-    #calculateCenter(boundingBox) {
-        const size = new Vector3();
-        let center = new Vector3();
-        boundingBox.getSize(size);
-        boundingBox.getCenter(center);
-        return { center, size };
-    }
-
     frameSceneOn(anObject, options) {
-        const boundingBox = anObject.boundingBox;
-        const { center, size } = this.#calculateCenter(boundingBox);
-
-        // distance so that bounding box is always in view
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const verticalFieldOfView = Math.PI  * this._camera.fov / 180;
-        let distance = maxDim / Math.tan(verticalFieldOfView / 2);
-        distance = Math.max(distance * options.padding, options.minDistance);
-
-        const direction = options.viewDirection.clone().normalize();
-        this._camera.position
-            .set(center.x, center.y + options.translationY, center.z)
-            .addScaledVector(new Vector3(direction.x, direction.y, direction.z), distance);
-        this._camera.near = distance / 100;
-        this._camera.far = distance * 10;
-        this._camera.updateProjectionMatrix();
-
-        this._controls?.target.copy(center);
-        this._controls?.update();
+        this._camera.frameSceneOn(anObject, options);
     }
 
     provideAxesAround(anObject, options) {
@@ -230,16 +160,5 @@ export class ThreeJsRenderer extends Renderer {
             this._axes.frameTo(boundingBox, options.bottomAlign);
         this._world.add(this._axes);
         return this._axes;
-    }
-
-    _doAutoRotate() {
-        const distance = this._camera.position.length();
-        this._autoRotateTheta += -Math.PI / (7.5 * 100);
-        this._autoRotatePhi += Math.PI / (7.5 * 100) * 2;
-        this._camera.position.set(
-            distance * Math.sin(this._autoRotateTheta) * Math.sin(this._autoRotatePhi),
-            distance * Math.cos(this._autoRotateTheta),
-            distance * Math.sin(this._autoRotateTheta) * Math.cos(this._autoRotatePhi) );
-        this._camera.lookAt(0, 0, 0);
     }
 }

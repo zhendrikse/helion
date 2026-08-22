@@ -92,10 +92,13 @@ const arrowField = new ArrowField({
 Simulation
     .with({
         htmlDivId: "chargedSheetContainer",
-        cameraPosition: new Vec3(12, 8, 16),
-        fieldOfView: 20,
-        scale: 5e10,
-        headUpDisplay: true
+        camera: {
+            position: new Vec3(12, 8, 16),
+            fieldOfView: 20
+        },
+        scene: {
+            scale: 5e10
+        }
     })
     .withMouseClickEventListener()
     .bind(electricField.onceWith(arrowField))
