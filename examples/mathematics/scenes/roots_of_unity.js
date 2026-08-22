@@ -95,6 +95,8 @@ const unitCircle = new SegmentedCircle( {
 });
 const roots = new RootsOfUnity({ maxN: range, radius: unitCircleRadius });
 const polygon = new RootPolygon({ maxN: range, radius: unitCircleRadius });
+const xAxis = new VectorModel(new Vec3(0, 0, 0), new Vec3(1.25, 0, 0));
+const yAxis = new VectorModel(new Vec3(0, 0, 0), new Vec3(0, 1.25, 0));
 
 const simulation = Simulation
     .with({
@@ -104,7 +106,7 @@ const simulation = Simulation
         },
         parameterMenuCollapsed: false,
         camera: {
-            position: new Vec3(0, 0, 2.5),
+            position: new Vec3(0, 0, 3),
             controls: false
         }
     });
@@ -152,6 +154,26 @@ simulation
     .bind(polygon.onceWith(new LineSegmentsView({
         lineWidth: 2,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffff88 })
+    })))
+    .bind(xAxis.onceWith(new Arrow({
+        color: 0xeeeeee,
+        size: 0.04,
+        round: true
+    })))
+    .bind(yAxis.onceWith(new Arrow({
+        color: 0xeeeeee,
+        size: 0.04,
+        round: true
+    })))
+    .bind(xAxis.onceWith(new Label({
+        text: () => "Re",
+        offset: () => new Vec3(1.25, .1, 0),
+        fontSize: "20px"
+    })))
+    .bind(xAxis.onceWith(new Label({
+        text: () => "Im",
+        offset: () => new Vec3(.15, 1.25, 0),
+        fontSize: "20px"
     })))
     .append(new Slider("n")
         .withRange(new Range(1, range, 1))
