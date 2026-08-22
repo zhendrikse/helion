@@ -153,6 +153,9 @@ const simulation = Simulation
         camera: {
             position: new Vec3(2, .8, 2.5),
             fieldOfView: 30
+        },
+        viewport: {
+            aspectRatio: "3/4"
         }
     })
     .bind(electricField.alwaysWith(electricArrowField))

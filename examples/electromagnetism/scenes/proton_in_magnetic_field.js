@@ -52,6 +52,9 @@ Simulation
         htmlDivId: "protonInFieldContainer",
         camera: {
             position: new Vec3(0, 5, -10)
+        },
+        viewport: {
+            aspectRatio: "19/12"
         }
     })
     .withMouseClickEventListener()

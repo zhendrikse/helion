@@ -90,6 +90,9 @@ const simulation = Simulation
             position: new Vec3(-50, 0, 75).multiplyScalar(0.5),
             fieldOfView: 60,
         },
+        viewport: {
+            aspectRatio: "19/12",
+        },
         scene: {
             scale: scale
         },

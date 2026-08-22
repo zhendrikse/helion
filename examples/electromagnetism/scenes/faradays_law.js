@@ -47,6 +47,9 @@ const simulation = Simulation
         camera: {
             position: new Vec3(3, 1, 4),
             fieldOfView: 45
+        },
+        viewport: {
+            aspectRatio: "19/12"
         }
     })
     .withMouseClickEventListener()
