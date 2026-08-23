@@ -3,7 +3,7 @@
 
 <figure>
    <a href="https://svs.gsfc.nasa.gov/13326">
-     <img alt="Black hole explained" src="../../public/images/relativity/black_hole_explained.jpg"/>
+     <img alt="Black hole explained" src="/images/relativity/black_hole_explained.jpg"/>
    </a>
    <figcaption>Black hole picture explained (<a href="https://svs.gsfc.nasa.gov/13326">nasa.gov</a>)</figcaption>
 </figure>
@@ -19,7 +19,7 @@ showing a bright ring formed as light bends in the intense gravity around a blac
 <div class="double_image">
   <figure class="left_image">
     <a href="https://cdn.mos.cms.futurecdn.net/F2qM9GBVYhTWeZ9W3C7Eij.jpg.html">
-      <img alt="Sagittarius A*" src="../../public/images/relativity/sagittarius_a.png"/>
+      <img alt="Sagittarius A*" src="/images/relativity/sagittarius_a.png"/>
     </a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <figcaption>On May 12, 2022, the 
     <a href="https://eventhorizontelescope.org/">Event Horizon Telescope</a> 
@@ -28,7 +28,7 @@ showing a bright ring formed as light bends in the intense gravity around a blac
   </figure>
   <figure class="right_image">
     <a href="https://www.jpl.nasa.gov/edu/resources/teachable-moment/how-scientists-captured-the-first-image-of-a-black-hole/">
-      <img alt="Black hole M87" src="../../public/images/relativity/galaxy_M87_black_hole.png"/>
+      <img alt="Black hole M87" src="/images/relativity/galaxy_M87_black_hole.png"/>
     </a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <figcaption>Another supermassive black hole, at the center of the galaxy M87, 
     that is 6.5 billion times more massive than the sun, taken 
@@ -43,14 +43,14 @@ showing a bright ring formed as light bends in the intense gravity around a blac
 <div class="double_image">
 <figure class="left_image">
   <a href="images/star_evolution.jpg">
-    <img alt="Evolution of stars" src="../../public/images/relativity/star_evolution.jpg"/>
+    <img alt="Evolution of stars" src="/images/relativity/star_evolution.jpg"/>
   </a>
   <figcaption>A black hole is one of the possible ways in which the life of a star can end.
   </figcaption>
 </figure>
 <figure class="right_image">
   <a href="images/size_of_black_hole.png">
-    <img alt="Black hole size comparison" src="../../public/images/relativity/size_of_black_hole.png"/>
+    <img alt="Black hole size comparison" src="/images/relativity/size_of_black_hole.png"/>
   </a>
   <figcaption>Size comparison for supermassive black holes such as TON 618, 
   see also this <a href="https://www.youtube.com/watch?v=aKMmeLhVRC4">fantastic video</a>.
@@ -65,7 +65,7 @@ showing a bright ring formed as light bends in the intense gravity around a blac
 
 ![Time dilation](../../public/images/relativity/time_near_black_hole.jpg)
 
-<img alt="Time dilation" src={import.meta.env.BASE_URL + "/images/electromagnetism/electric_field.jpg"}/>
+<img alt="Time dilation" src="/images/relativity/time_near_black_hole.jpg"/>
 
 ## A concise history
 <div class="header_line"><br/></div>
@@ -120,7 +120,7 @@ which describes the collapse of an extremely massive object into a black hole.
 
 <figure style="text-align: center;">
   <a href="https://www.facebook.com/photo/?fbid=10233598208964588&set=a.10200946882861842">
-    <img alt="Einstein and Oppenheimer" src="../../public/images/relativity/einstein_oppenheimer.jpg"/>
+    <img alt="Einstein and Oppenheimer" src="/images/relativity/einstein_oppenheimer.jpg"/>
   </a>
   <figcaption>Einstein did, in fact, tell Oppenheimer to give up his security clearance and walk away 
   from government work. The scene in the movie Oppenheimer is based on true events.</figcaption>
