@@ -126,5 +126,31 @@ export class DiscreteComplexField extends Field {
 
     sample(u, v, target) {
         // bilinear interpolation
+        const x = u * (this._nx - 1);
+        const y = v * (this._ny - 1);
+
+        const x0 = Math.floor(x);
+        const y0 = Math.floor(y);
+
+        const x1 = Math.min(x0 + 1, this._nx - 1);
+        const y1 = Math.min(y0 + 1, this._ny - 1);
+
+        const tx = x - x0;
+        const ty = y - y0;
+
+        const i00 = this.index(x0, y0);
+        const i10 = this.index(x1, y0);
+        const i01 = this.index(x0, y1);
+        const i11 = this.index(x1, y1);
+
+        const r0 = this.real[i00] * (1 - tx) + this.real[i10] * tx;
+        const r1 = this.real[i01] * (1 - tx) + this.real[i11] * tx;
+        const i0 = this.imag[i00] * (1 - tx) + this.imag[i10] * tx;
+        const i1 = this.imag[i01] * (1 - tx) + this.imag[i11] * tx;
+
+        target.re = r0 * (1 - ty) + r1 * ty;
+        target.im = i0 * (1 - ty) + i1 * ty;
+
+        return target;
     }
 }

@@ -1,18 +1,13 @@
-import { TextureLoader, PlaneGeometry, ShaderMaterial,
-    Vector2, Vector3, Mesh } from "three";
-import {degToRad, Simulation, Vec3} from "../../../src/index.js";
+import { TextureLoader, PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh } from "three";
+import {degToRad, Simulation, Slider, Vec3, Range } from "../../../src/index.js";
+import galaxyPicture from '../../../src/textures/space_pano.jpg';
 
-// TODO const massSlider = document.getElementById("massSlider");
 const cameraPosition = new Vec3(0, 0, 1);
 const cameraFov = 75;
 const fovRadians = degToRad(cameraFov);
 const yFov = cameraPosition.z * Math.tan(fovRadians / 2) * 2;
 const spaceTexture = new TextureLoader()
-    .load("../astrophysics/images/space_pano.jpg",
-        //.load("https://www.hendrikse.name/science/astrophysics/images/background.jpg",
-        //.load("https://i.imgur.com/1nVWbbd.jpg",
-        () => renderer.render(scene, camera)
-    );
+    .load(galaxyPicture);
 
 const vertexShader = `
     varying vec2 vUv;
@@ -66,19 +61,24 @@ const simulation = Simulation
         htmlDivId: "blackHoleSpaceTimeContainer",
         camera: {
             position: cameraPosition,
-            fieldOfView: cameraFov
+            fieldOfView: cameraFov,
+            controls: false
         },
         viewport: {
             aspectRatio: "2/1"
         },
+        headUpDisplay: {
+            enabled: false
+        }
     })
     .runsEvery(0.01)
+    .advancesBy(0.005)
     .onStep((clock, _) => canvasMaterial.uniforms.uBlackholePos.value.set(
         Math.sin(clock.simulatedTime) * 0.9,
         Math.cos(clock.simulatedTime * 0.7) * 0.2,
         0
-    ));
-
+    ))
+    .start();
 
 const canvasGeometry = new PlaneGeometry(yFov * 2/1, yFov);
 const canvasMaterial = new ShaderMaterial({
@@ -93,10 +93,11 @@ const canvasMaterial = new ShaderMaterial({
     fragmentShader
 });
 const canvasMesh = new Mesh(canvasGeometry, canvasMaterial);
-simulation.addObject3D(canvasMesh);
-
-// TODO
-// massSlider.addEventListener('change', (event) =>
-//     canvasMaterial.uniforms.uGM.value = event.target.value
-// );
+simulation
+    .addObject3D(canvasMesh)
+    .append(new Slider("Mass")
+        .withRange(new Range(1, 100, 1))
+        .withValue(0.025)
+        .onInput(event => canvasMaterial.uniforms.uGM.value = Number(event.target.value)/ 1000)
+    );
 

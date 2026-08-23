@@ -11,8 +11,8 @@ import pavingColorUrl from '../../../textures/paving_color.jpg';
 import pavingRoughnessUrl from '../../../textures/paving_roughness.jpg';
 import pavingNormalUrl from '../../../textures/paving_normal.jpg';
 import {Vec3, Vec2} from "../../../model/math/math.js";
-// import grassColorUrl from '../../../textures/grass.jpg';
-// import grassNormalUrl from '../../../textures/grassNormal.jpg';
+import grassColorUrl from '../../../textures/grass.jpg';
+import grassNormalUrl from '../../../textures/grassNormal.jpg';
 
 /*******************************************
  * Floor, Grid, Ceiling, Aquarium          *
