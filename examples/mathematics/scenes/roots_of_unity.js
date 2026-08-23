@@ -108,7 +108,7 @@ const simulation = Simulation
         camera: {
             position: new Vec3(0, 0, 3),
             controls: false
-        }
+        },
     });
 
 // Root vectors: the actual points z_k on the unit circle.

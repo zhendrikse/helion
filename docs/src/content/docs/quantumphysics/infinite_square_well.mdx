@@ -1,0 +1,44 @@
+---
+title: "Infinite square well 📦"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div className="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### About
+<div class="header_line"></div>
+
+The infinite square well is also known as the infinite potential well or the infinite square well.
+
+> A 2D Infinite Square Well (ISW) is a potential well that has zero potential energy over
+> a finite domain in two directions, say the $x$- and $y$-directions, and is infinite outside that
+> domain. The simplest case is a rectangular domain in the $xy$-plane with sides $L_x$ and $L_y$.
+> In this case the 2D time-independent Schrödinger wave equation factors into two 1D
+> time-independent Schrödinger wave equations, one in the $x$-direction and one
+> in the $y$-direction. The wavefunction is then a product of the two 1D wavefunctions. The
+> wavefunction is then given by a superposition of energy eigenstate wavefunctions of the
+> form $\psi_{nm}(x, y) = A \sin(n\pi x/L_x) \sin(n\pi y/L_y )$.
+> &mdash; [Visualizing Quantum Mechanics with Python](https://www.amazon.com/Visualizing-Quantum-Mechanics-Python-Spicklemire/dp/1032569247)
+
+### A 2D square well visualized in 3D
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/quantumphysics/scenes/infinite_square_well_2d.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=infinite_square_well_2d.js"/>
+    </a>
+</div>
+
+🧠 Idea taken from the book [Visualizing Quantum Mechanics with Python](https://www.amazon.com/Visualizing-Quantum-Mechanics-Python-Spicklemire/dp/1032569247)<br/>
+📌 **Highly recommended background information**: [Visualizing complex numbers and wavefunctions in one and two dimensions](https://ben.land/post/2022/03/17/complex-wavefunction-visualization/)<br/>
+
+<div id="infiniteSquareWell2D" ></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/infinite_square_well_2d.js"}></script>
+

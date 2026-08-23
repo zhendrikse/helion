@@ -188,15 +188,18 @@ export class Simulation {
         headUpDisplay = {
             enabled: true
         },
+        infoPanel = {
+            text: ""
+        },
         parameterMenuCollapsed = true
     } = {}) {
         const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, parameterMenuCollapsed, viewport.aspectRatio);
         const renderer = new ThreeJsRenderer({ camera, viewport, lighting, scene });
         renderer.attach(viewPort);
-        return new Simulation(viewPort, renderer, headUpDisplay.enabled);
+        return new Simulation(viewPort, renderer, headUpDisplay.enabled, infoPanel);
     }
 
-    constructor(viewport, renderer, headUpDisplay) {
+    constructor(viewport, renderer, headUpDisplay, infoPanel) {
         this._viewport = viewport;
         this._renderer = renderer;
         this._bindings = [];
@@ -220,13 +223,16 @@ export class Simulation {
         if (headUpDisplay)
             this._initHud()
 
+        if (infoPanel.text)
+            this._viewport.infoPanelText = infoPanel.text;
+
         requestAnimationFrame(this.animate);
     }
 
     get width() { return this._viewport.width; }
     get height() { return this._viewport.height; }
 
-    set autoRotate(autoRotate) { this._renderer.autoRotate = autoRotate; }
+    set autoRotate(autoRotate) { this._renderer.autoRotate = autoRotate; return this;}
 
     addObject3D(object3D) {
         this._renderer.add(object3D);

@@ -77,3 +77,22 @@ button {
 button:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+
+.helionInfoPanel {
+    color: #d0d0d0;
+    position: absolute;
+    left: 5px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 10px 14px;
+    border-radius: 10px;
+    line-height: 1.5;
+    user-select: none;
+    max-width: min(250px, calc(100vw - 20px));
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+}
+
+.helionInfoPanel strong {
+    color: #ffff00;
+}

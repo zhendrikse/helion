@@ -11,9 +11,8 @@ export function renderMath(element, latex, {
             ? `\\[${latex}\\]`
             : `\\(${latex}\\)`;
 
-        if (window.MathJax) {
+        if (window.MathJax)
             window.MathJax.typesetPromise([element]);
-        }
 
         return;
     }

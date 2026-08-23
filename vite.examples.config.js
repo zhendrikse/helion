@@ -34,6 +34,7 @@ export default defineConfig({
                 faradays_law: path.resolve(__dirname, 'examples/electromagnetism/scenes/faradays_law.js'),
                 fraunhofer_diffraction: path.resolve(__dirname, 'examples/waves/scenes/fraunhofer_diffraction.js'),
                 harmonograph: path.resolve(__dirname, 'examples/mathematics/scenes/harmonograph.js'),
+                infinite_square_well_2d: path.resolve(__dirname, 'examples/quantumphysics/scenes/infinite_square_well_2d.js'),
                 lorenz_attractor: path.resolve(__dirname, 'examples/mathematics/scenes/lorenz_attractor.js'),
                 matrix_transformation: path.resolve(__dirname, 'examples/mathematics/scenes/matrix_transformation.js'),
                 menger_sponge: path.resolve(__dirname, 'examples/mathematics/scenes/menger_sponge.js'),

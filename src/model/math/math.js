@@ -94,7 +94,7 @@ export class Vec2 {
     }
 
     clone() {
-        return new Vec3(this.x, this.y);
+        return new Vec2(this.x, this.y);
     }
 }
 
@@ -296,53 +296,35 @@ export class Interval {
 }
 
 export class Complex {
+    static fromPhase = (theta) => new Complex(Math.cos(theta), Math.sin(theta));
+
     constructor(re, im) {
         this.re = re;
         this.im = im;
     }
 
-    clone() { return new Complex(this.re, this.im); }
-
-    get phase() { return Math.atan2(this.im, this.re); }
+    get phase() { return Math.atan2(this.im, this.re) / (2* Math.PI); }
     get absSquared() { return this.re * this.re + this.im * this.im; }
     get magnitude() { return Math.sqrt(this.absSquared); }
     get abs() { return Math.sqrt(this.absSquared); }
 
-    multiply(c) {
-        this.re = this.re * c.re - this.im * c.im;
-        this.im = this.re * c.im + this.im * c.re
+    multiply(complex) {
+        const real = this.re * complex.re - this.im * complex.im;
+        const imag = this.re * complex.im + this.im * complex.re
+        this.re = real;
+        this.im = imag;
         return this;
     }
 
-    // static multiplyScalar = (a, scalar) => new Complex(a.re * scalar, a.im * scalar);
-    // static fromPhase = (theta) => new Complex(Math.cos(theta), Math.sin(theta));
-    // static absSquared(z_) { return z_.re * z_.re + z_.im * z_.im; }
-    // static abs = (z) => Math.sqrt(Complex.absSquared(z));
-    // static add = (a, b) => new Complex(a.re + b.re, a.im + b.im);
-    // static subtract = (a, b) => new Complex(a.re - b.re, a.im - b.im);
-    // static multiply = (a, b) => new Complex(
-    //     a.re * b.re - a.im * b.im,
-    //     a.re * b.im + a.im * b.re
-    // );
-    // static log = (z) => new Complex(Math.log(Complex.abs(z)), Math.atan2(z.im, z.re));
-    // static exp = (z) => new Complex(Math.exp(z.re) * Math.cos(z.im), Math.exp(z.re) * Math.sin(z.im))
-    // static sin(z) {
-    //     const a = Complex.exp(new Complex(-z.im, z.re));
-    //     const b = Complex.exp(new Complex(z.im, -z.re));
-    //     return new Complex((a.im - b.im) / 2, (b.re - a.re) / 2);
-    // }
-    // static divide = (z1, z2) => {
-    //     const denominator = z2.re * z2.re + z2.im * z2.im;
-    //     const re = z1.re * z2.re + z1.im * z2.im;
-    //     const im = z1.im * z2.re - z1.re * z2.im;
-    //     return new Complex(re / denominator, im / denominator);
-    // }
-    // static sqrt(z) {
-    //     const r = Complex.abs(z);
-    //     const real = Math.sqrt((r + z.re) / 2);
-    //     const imag = Math.sign(z.im || 1) * Math.sqrt((r - z.re) / 2);
-    //     return new Complex(real, imag);
-    // }
+    add(complex) {
+        this.re += complex.re;
+        this.im += complex.im;
+    }
+
+    multiplyScalar(scalar) {
+        this.re *= scalar;
+        this.im *= scalar;
+    }
 }
 
 

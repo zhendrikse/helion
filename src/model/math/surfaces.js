@@ -57,9 +57,9 @@ export class ParametricSurface extends Surface {
  */
 export class MultivariateFunctionSurface extends ParametricSurface {
     constructor({
-                    domain = new Domain(),
-                    z = (x, y, t) => 0
-                } = {}) {
+        domain = new Domain(),
+        z = (x, y, t) => 0
+    } = {}) {
         super({domain, z});
         this._time = 0;
     }
@@ -72,6 +72,15 @@ export class MultivariateFunctionSurface extends ParametricSurface {
 
     set time(time) { this._time = time; }
 }
+
+export class ComplexFunctionSurface extends ParametricSurface {
+    constructor({
+        domain = new Domain(),
+    } = {}) {
+        super({domain})
+    }
+}
+
 
 export class ComplexSurface extends Surface {
     constructor({

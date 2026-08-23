@@ -187,7 +187,7 @@ export class DoubleSlitOperator extends Transformation {
         wavelength = 525,
         positionSlit1 = new Vec3(),
         positionSlit2 = new Vec3(),
-    }) {
+    } = {}) {
         super();
         this._wavelength = wavelength;
         this._positionSlit1 = positionSlit1;
