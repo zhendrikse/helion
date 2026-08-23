@@ -61,8 +61,8 @@ export class WaveEquationSolver {
         const V = this._potential.data;
         const w = psi.nx;
 
-        for (let x = 1; x < w - 1; x++)
-            for (let y = 1; y < w - 1; y++) {
+        for (let x = 1; x < psi.nx - 1; x++)
+            for (let y = 1; y < psi.ny - 1; y++) {
                 const i = y * w + x;
                 im[i] += 0.5 * dt * (-re[i + 1] -re[i - 1] -re[i + w] -re[i - w] + 2 * (2 + V[i]) * re[i]);
             }
