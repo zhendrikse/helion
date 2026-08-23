@@ -196,8 +196,9 @@ Simulation.with({
         },
         infoPanel: {
             text: "<strong>Particle in a 2D box</strong><ul>" +
-                "<li>Cylinders \\propto \\|\\Psi\\|</li>" +
-                "<li>Height \\propto Re(\\Psi), radius \\propto Im(\\Psi)</li>" +
+                "<li>Cylinders $\\propto \\|\\Psi\\|$</li>" +
+                "<li>Height $\\propto Re(\\Psi)$</li>" +
+                "<li>Radius $\\propto Im(\\Psi)$</li>" +
                 "<li>Color represents the value of the phase factor</li>" +
                 "<li>System evolves by summing the Fourier coefficients times the eigenstates</li></ul>"
         }

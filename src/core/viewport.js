@@ -1,3 +1,5 @@
+import {renderMathInHtml} from "../view/mathrenderer.js";
+
 /**
  * Bridge between the simulation, browser DOM, and renderer.
  *
@@ -127,10 +129,12 @@ export class Viewport {
         this._infoPanelDiv.classList.add("helionInfoPanel");
         this._canvasWrapperDiv.appendChild(this._infoPanelDiv);
 
-        this._infoButton.addEventListener("click", () =>
-            this._infoPanelDiv.style.visibility = this._infoPanelDiv.style.visibility === "visible"
-                ? "hidden" : "visible"
-        );
+        this._infoButton.addEventListener("click", event => {
+            event.stopPropagation();
+            const visible = this._infoPanelDiv.style.visibility === "visible";
+            this._infoPanelDiv.style.visibility = visible ? "hidden" : "visible";
+        });
+
         this._infoPanelDiv.style.visibility = "hidden";  // Until info button is pressed
         this._infoButton.style.visibility = "hidden";    // Until content is set
     }
@@ -188,7 +192,6 @@ export class Viewport {
         //     link.click();
         // });
 
-
     get simulationButtonsDiv() { return this._simulationButtonsDiv; }
     get addOnsDiv() { return this._addOnsDiv; }
     get controlsDiv() { return this._details; }
@@ -199,9 +202,10 @@ export class Viewport {
     get titleDiv() { return this._titleDiv; }
 
     set infoPanelText(text) {
-        this._infoPanelDiv.innerHTML = text;
+        renderMathInHtml(this._infoPanelDiv, text);
         this._infoButton.style.visibility = "visible";
     }
+
 
     enableParameterMenu() {
         this._details.style.visibility = "visible";
