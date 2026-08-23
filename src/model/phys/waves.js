@@ -20,7 +20,7 @@ export class OneDimensionalPlaneWave extends MathPhysicsModelBehavior {
     }
 
     set lambda(lambdaValue) { this._lambda = lambdaValue; this._k = 2 * Math.PI / lambdaValue; }
-    set k(kValue) { this._k = kValue; this._lambda = kValue / 2 * Math.PI; }
+    set k(kValue) { this._k = kValue; this._lambda = 2 * Math.PI / this._k; }
     get lambda() { return this._lambda; }
     get k() { return this._k; }
 
