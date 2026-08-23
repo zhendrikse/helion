@@ -1,7 +1,7 @@
 import { MathUtils, PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh }  from "three";
 import vertexShader from "./black_hole_vertex_shader.glsl?raw";
 import fragmentShader from "./black_hole_fragment_shader.glsl?raw";
-import {Checkbox, Renderable3D, Simulation} from "../../../src/index.js";
+import {Checkbox, Renderable3D, Simulation, ThreeJsScene} from "../../../src/index.js";
 import {MathPhysicsModelBehavior} from "../../../src/index.js";
 
 export class BlackHoleModel extends MathPhysicsModelBehavior {
@@ -58,7 +58,11 @@ const simulation = Simulation
         },
         viewport: {
             aspectRatio: "16/9"
-        }
+        },
+        // scene: {
+        //     background: ThreeJsScene.Background.PLAIN,
+        //     backgroundColor: "black"
+        // }
     });
 
 // const scene = new Scene();

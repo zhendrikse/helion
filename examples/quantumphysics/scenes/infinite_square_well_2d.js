@@ -1,17 +1,14 @@
+import { Mesh, MeshPhongMaterial, CylinderGeometry} from "three";
 import {
-    Group, Mesh, MeshPhongMaterial, CylinderGeometry
-} from "three";
-import {Complex, Simulation, Vec3} from "../../../src/index.js";
+    Complex, DiscreteComplexField, Renderable3D, Simulation, Vec3, WaveFunctionEigenStateSolver
+} from "../../../src/index.js";
 
-/* physics parameters */
-const hbar = 1;
-const m = 1;
-
-const NX = [1, 2, 3, 5, 6, 7, 9, 10];
-const NY = [1, 2, 3, 5, 6, 7, 9, 10];
-
-class Lattice extends Group {
-    constructor(size = 20, spacing = 10, cylinderScale = 20) {
+class DiscreteComplexFieldCylinderView extends Renderable3D {
+    constructor({
+        size = 20,
+        spacing = 10,
+        cylinderScale = 20
+    } = {}) {
         super();
         this._x = [];
         this._y = [];
@@ -30,19 +27,29 @@ class Lattice extends Group {
         }
 
         this._cylinders = this._createCylinders(size, spacing);
+        this._complexNumber = new Complex();
     }
 
-    get spacing() { return this._spacing; }
-    get size() { return this._size; }
+    canBindTo(model) {
+        if (!model.valueAt)
+            throw new Error("Arrow can only bind to models with a complex value.");
+        return true;
+    }
 
-    updateCylinder(psi, i, j) {
-        const complexNumber = new Complex(psi.re, psi.im);
-        complexNumber.multiplyScalar(this._cylinderScale);
+    synchronizeWith(psi) {
+        for (let i = 0; i < this._size; i++)
+            for (let j = 0; j < this._size; j++)
+                this._updateCylinder(psi, i, j);
+    }
+
+    _updateCylinder(psi, i, j) {
+        psi.valueAt(i, j, this._complexNumber);
+        this._complexNumber.multiplyScalar(this._cylinderScale);
         const mesh = this._cylinders[i][j];
-        const height = complexNumber.re;
-        const mag = complexNumber.abs;
-        const radius = Math.max(0.05 * mag, Math.abs(complexNumber.im) / 6);
-        const phase = complexNumber.phase;
+        const height = this._complexNumber.re;
+        const mag = this._complexNumber.abs;
+        const radius = Math.max(0.05 * mag, Math.abs(this._complexNumber.im) / 6);
+        const phase = this._complexNumber.phase;
 
         mesh.scale.set(radius, Math.abs(height), radius);
         mesh.position.y = height / 2;
@@ -68,121 +75,15 @@ class Lattice extends Group {
     _createCylinder(i, j, spacing, geometry) {
         const material = new MeshPhongMaterial({ color: 0xff0000 });
         const mesh = new Mesh(geometry, material);
-
-        mesh.position.set(
-            this._x[i][j] - spacing / 2,
-            0,
-            this._y[i][j] - spacing / 2,
-        );
+        mesh.position.set(this._x[i][j] - spacing / 2, 0, this._y[i][j] - spacing / 2,);
         return mesh;
     }
 }
 
-class EigenStates {
-    constructor(lattice) {
-        this._eigenstates = {};
-        this._coefs = {}
-        this._omegas = {}
-
-        const size = lattice.size;
-        const NA2 = Math.floor(size / 2);
-        this._computeEigenstates(size);
-        this._computeCoefficients(this._computePsi0(size, NA2), NA2, lattice.spacing);
-    }
-
-    _computePsi0(size, NA2) {
-        const psi0 = [];
-        let norm0 = 0;
-
-        for (let i = 0; i < size; i++) {
-            psi0[i] = []
-
-            for (let j = 0; j < size; j++) {
-                const val = (i < NA2 && j < NA2) ? 1 : 0;
-                psi0[i][j] = val;
-                norm0 += val * val;
-            }
-        }
-
-        norm0 = Math.sqrt(norm0)
-        for (let i = 0; i < size; i++)
-            for (let j = 0; j < size; j++)
-                psi0[i][j] /= norm0;
-
-        return psi0;
-    }
-
-    _computeCoefficients(psi0, NA2, spacing) {
-        const omega0 = hbar * Math.PI * Math.PI / (2 * m * spacing * spacing);
-        for (let key in this._eigenstates) {
-            const [nx, ny] = key.split(",").map(Number)
-            const basis = this._eigenstates[key]
-
-            let c = 0
-            for (let i = 0; i < NA2; i++)
-                for (let j = 0; j < NA2; j++)
-                    c += psi0[i][j] * basis[i][j];
-
-            this._coefs[key] = c;
-            this._omegas[key] = omega0 * (nx * nx + ny * ny);
-        }
-    }
-
-    _computeEigenstate(nx, ny, lattice, size) {
-        const psi = [];
-        let norm = 0;
-        for (let i = 0; i < size; i++) {
-            psi[i] = [];
-
-            for (let j = 0; j < size; j++) {
-                const val =
-                    Math.sin(nx * Math.PI * lattice._x[i][j] / lattice.spacing) *
-                    Math.sin(ny * Math.PI * lattice._y[i][j] / lattice.spacing)
-
-                psi[i][j] = val
-                norm += val * val
-            }
-        }
-
-        norm = Math.sqrt(norm);
-        for (let i = 0; i < size; i++)
-            for (let j = 0; j < size; j++)
-                psi[i][j] /= norm;
-
-        return psi;
-    }
-
-    _computeEigenstates(size) {
-        for (let nx of NX)
-            for (let ny of NY)
-                this._eigenstates[nx + "," + ny] = this._computeEigenstate(nx, ny, lattice, size);
-    }
-}
-
-// scene.add(new DirectionalLight(0xffffff, 1));
-// scene.add(new AmbientLight(0x404040));
-const lattice = new Lattice();
-const eigenstates = new EigenStates(lattice);
-const size = lattice.size;
-
-function step(i, j, t) {
-    let psi = new Complex(0, 0);
-    for (let key in eigenstates._eigenstates) {
-        const basis = eigenstates._eigenstates[key][i][j]
-        const term = Complex.fromPhase(eigenstates._omegas[key] * t);
-        term.multiply(new Complex(eigenstates._coefs[key] * basis, 0));
-        psi.add(term);
-    }
-
-    lattice.updateCylinder(psi, i, j);
-}
-
-function update(clockTime) {
-    for (let i = 0; i < lattice.size; i++)
-        for (let j = 0; j < size; j++)
-            step(i, j, clockTime);
-}
-update(0);
+const waveFunctionView = new DiscreteComplexFieldCylinderView({ size: 20, spacing: 10 });
+const waveFunctionPsi = new DiscreteComplexField({ nx: 20, ny: 20 });
+const solver = new WaveFunctionEigenStateSolver();
+waveFunctionPsi.evolve(solver, 0.01);
 
 Simulation.with({
         htmlDivId: "infiniteSquareWell2D",
@@ -201,8 +102,8 @@ Simulation.with({
                 "<li>System evolves by summing the Fourier coefficients times the eigenstates</li></ul>"
         }
     })
+    .bind(waveFunctionPsi.alwaysWith(waveFunctionView))
     .withMouseClickEventListener()
     .runsEvery(0.01)
-    .addObject3D(lattice)
-    .onStep((clock, dt) => update(clock.simulatedTime));
+    .onStep((_, dt) => waveFunctionPsi.evolve(solver, dt));
 

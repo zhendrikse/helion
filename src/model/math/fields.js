@@ -92,8 +92,8 @@ export class DiscreteComplexField extends Field {
     constructor({
         nx = 128,
         ny = 128,
-        real = new Float32Array(nx * ny),
-        imag = new Float32Array(nx * ny)
+        real = new Float64Array(nx * ny),
+        imag = new Float64Array(nx * ny)
     } = {}) {
         super();
         this.real = real;
@@ -109,8 +109,8 @@ export class DiscreteComplexField extends Field {
     }
 
     reset() {
-        this.real = new Float32Array(this.nx * this.ny);
-        this.imag = new Float32Array(this.nx * this.ny)
+        this.real = new Float64Array(this.nx * this.ny);
+        this.imag = new Float64Array(this.nx * this.ny)
         return this;
     }
 
@@ -125,6 +125,6 @@ export class DiscreteComplexField extends Field {
     }
 
     sample(u, v, target) {
-        // bilinear interpolation (kan later consistent op index() bouwen)
+        // bilinear interpolation
     }
 }

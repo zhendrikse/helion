@@ -3,6 +3,8 @@ title: "Black hole ray tracer 🕳️"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
+import { Content as Common } from '../../../snippets/black_hole_background_info.md';
+
 <div class="badgeRow">
     <a href="https://en.wikipedia.org/wiki/JavaScript">
         <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
@@ -31,3 +33,5 @@ layout: ../../../layouts/DocsLayout.astro
 <p style="clear: both;"></p>
 <div id="blackHoleRayTraceContainer"></div>
 <script type="module"  src={import.meta.env.BASE_URL + "examples/black_hole_ray_tracer.js"}></script>
+
+<Common/>

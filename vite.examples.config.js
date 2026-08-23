@@ -10,6 +10,7 @@ export default defineConfig({
             input: {
                 antenna: path.resolve(__dirname, 'examples/electromagnetism/scenes/antenna.js'),
                 black_hole_ray_tracer: path.resolve(__dirname, 'examples/astrophysics/scenes/black_hole_ray_tracer.js'),
+                black_hole_space_time: path.resolve(__dirname, 'examples/relativity/scenes/black_hole_space_time.js'),
                 bouncing_ball_on_floor: path.resolve(__dirname, 'examples/kinematics/scenes/bouncing_ball_on_floor.js'),
                 bouncing_ball_on_spring: path.resolve(__dirname, 'examples/kinematics/scenes/bouncing_ball_on_spring.js'),
                 carbon_dioxide: path.resolve(__dirname, 'examples/molecularphysics/scenes/carbon_dioxide.js'),

@@ -44,7 +44,6 @@ export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { SunView } from "./view/3d/astro/sun.js";
 export { Saturn } from "./view/3d/astro/saturn.js";
 export { Planets, Sun } from "./model/phys/planets.js";
-export { WaveEquationSolver, SchrodingerSolver } from "./model/math/numerics/solvers/solvers.js";
 export { DropdownMenu, Checkbox, Button, Slider, RadioGroup } from "./core/controls.js";
 export { Simulation, Registry, MathPhysicsModelBehavior, Transformation } from "./core/helion.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
@@ -53,6 +52,10 @@ export { Renderable3D } from "./view/renderer.js";
 export { ComplexScalarFieldSurfaceRaster, PotentialField3DRaster } from "./view/3d/views.js"
 export { ContoursLayer, PrincipalDirectionsLayer } from "./view/3d/surfaces/layers.js";
 export { Matrix2D } from "./model/transformations/matrices.js";
+
+export {
+    WaveEquationSolver, SchrodingerSolver, WaveFunctionEigenStateSolver
+} from "./model/math/numerics/solvers/solvers.js";
 
 export {
     CylinderSegmentsView, BoxSegmentsView, LineSegmentsView, LineSegmentView
