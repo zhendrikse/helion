@@ -9,8 +9,8 @@ import {
 const planeWave = new OneDimensionalComplexPlaneWave({
     position: new Vec3(-100, 0, 0),
     amplitude: 10,
-    omega: -3 * Math.PI,
-    lambda: 10 * Math.PI
+    omega: 1.5 * Math.PI,
+    lambda: 15 * Math.PI
 });
 
 //
@@ -39,6 +39,15 @@ Simulation
         },
         viewport: {
             aspectRatio: "2/1"
+        },
+        infoPanel: {
+            text: "<strong>Complex plane wave Ψ</strong><br/>" +
+                "Each arrow represents the complex value of the wave function at a fixed position $x$.<br/>" +
+                "The arrow rotates in the complex plane as time evolves:<br/>" +
+                "- <b>z-direction</b>: $Re(\\psi)$<br/>" +
+                "- <b>y-direction</b>: $Im(\\psi)$<br/>" +
+                "- <b>color</b>: $\\text{phase}(\\psi)$<br/>" +
+                "The <b>arrow length is constant</b>, as $|\\psi|$ does not depend on $t$"
         }
     })
     // .synchronize(planeWave.alwaysWith(waveView2d))
@@ -53,12 +62,12 @@ Simulation
     .append(new Slider("Omega: ")
         .on(planeWave)
         .withProperty("omega")
-        .withValue(3.2)
-        .withRange(new Range(0, 10, .1)))
+        .withValue(1.5)
+        .withRange(new Range(0, 4, .01)))
     .append(new Slider("Wave number: ")
         .on(planeWave)
         .withProperty("k")
-        .withRange(new Range(-.1, .1, .01))
+        .withRange(new Range(-.2, .2, .01))
         .withValue(0.1))
     .start();
 

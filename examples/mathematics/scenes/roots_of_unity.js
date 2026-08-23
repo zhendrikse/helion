@@ -139,7 +139,8 @@ for (let i = 0; i < rootVectors.length; i++) {
     simulation.bind(rootVector.onceWith(new Arrow({
         color: 0xff44aa,
         size: 0.1,
-        colorMapper: ColorMappers.get(ColorMappers.Hue)
+        colorMapper: ColorMappers.get(ColorMappers.Hue),
+        round: true
     })))
 }
 
@@ -156,12 +157,12 @@ simulation
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffff88 })
     })))
     .bind(xAxis.onceWith(new Arrow({
-        color: 0xeeeeee,
+        color: 0xd0d0d0,
         size: 0.04,
         round: true
     })))
     .bind(yAxis.onceWith(new Arrow({
-        color: 0xeeeeee,
+        color: 0xd0d0d0,
         size: 0.04,
         round: true
     })))

@@ -29,7 +29,7 @@ const simulation = Simulation
     .with({
         htmlDivId: "matrixTransformationContainer",
         camera: {
-            position: new Vec3(0, 0, 5 * (size + 0.1)),
+            position: new Vec3(0, 0, 3 * (size + 0.1)),
             controls: false
         },
         headUpDisplay: {

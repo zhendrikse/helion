@@ -1,7 +1,7 @@
 import {
     Vector3, Color, Points, ShaderMaterial, AdditiveBlending, BufferAttribute,
     BufferGeometry, InstancedMesh, Matrix4, Quaternion, InstancedBufferAttribute,
-    MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry
+    MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry, MeshBasicMaterial
 } from "three";
 
 import {Arrow, Cylinder, Helix, Sphere} from "../primitives/primitives.js";
@@ -10,6 +10,7 @@ import { Renderable3D } from "../../renderer.js";
 import {MathPhysicsModelBehavior} from "../../../core/helion.js";
 import {Checkbox, CompoundControl, RadioGroup} from "../../../core/controls.js";
 import {BodyPair} from "../../../model/phys/bodies.js";
+import {ColorMappers} from "../../colormappers.js";
 
 //
 // Point cloud
@@ -285,8 +286,9 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
         const arrow = new Arrow({
             round: this._round,
             size: this._size,
-            colorMap: (axis) =>
-                new Color().setHSL(1.0 - Math.atan2(axis.z, axis.y) / (2 * Math.PI), 1.0, 0.5)
+            material: new MeshBasicMaterial(),
+            hueMap: axis => 1.0 - Math.atan2(axis.z, axis.y) / (2 * Math.PI),
+            colorMapper: ColorMappers.get(ColorMappers.Hue)
         });
 
         this._arrows.push(arrow);
