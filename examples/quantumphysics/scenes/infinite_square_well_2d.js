@@ -59,7 +59,7 @@ waveFunctionPsi.evolve(solver, 0.01);
 Simulation.with({
         htmlDivId: "infiniteSquareWell2D",
         camera: {
-            position: new Vec3(12, 8, 8).multiplyScalar(0.7)
+            position: new Vec3(12, 4, 2).multiplyScalar(0.8)
         },
         viewport: {
             aspectRatio: "19/12"
