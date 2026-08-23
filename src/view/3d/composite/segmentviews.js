@@ -4,11 +4,11 @@ import {
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
-import { LineSegmentsGeometry} from 'three/addons/lines/LineSegmentsGeometry.js';
-import {Renderable3D} from "../../renderer.js";
-import {Vec3} from "../../../model/math/math.js";
-import {LineSegment, Segments} from "../../../model/math/objects.js";
-import {ColorMappers} from "../../colormappers.js";
+import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
+import { Renderable3D } from "../../renderer.js";
+import { Vec3 } from "../../../model/math/math.js";
+import { LineSegment, Segments } from "../../../model/math/objects.js";
+import { ColorMappers } from "../../colormappers.js";
 
 class InstancedSegmentsView extends Renderable3D {
     constructor({
@@ -35,12 +35,7 @@ class InstancedSegmentsView extends Renderable3D {
     }
 
     initialize(segments) {
-        this._mesh = new InstancedMesh(
-            this.createGeometry(),
-            this._material,
-            segments.count
-        );
-
+        this._mesh = new InstancedMesh(this.createGeometry(), this._material, segments.count);
         this.add(this._mesh);
     }
 
