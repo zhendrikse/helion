@@ -163,8 +163,6 @@ class EigenStates {
 // scene.add(new AmbientLight(0x404040));
 const lattice = new Lattice();
 const eigenstates = new EigenStates(lattice);
-
-let t = 0;
 const size = lattice.size;
 
 function step(i, j, t) {
