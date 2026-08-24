@@ -39,18 +39,15 @@ const simulation = Simulation.with(
     {
         htmlDivId: "rubiksCubeContainer",
         infoPanel: {
-            text: "<strong>PyCube / Three.js</strong><br>\n" +
-                "    R L B U F D = turn<br>\n" +
-                "    Shift + key = opposite direction"
+            text: "<strong>Rubik's cube 🧊</strong><br>\n" +
+                "R L B U F D = turn forward<br>\n" +
+                "Shift + key = opposite direction"
         },
         camera: {
             position: new Vec3(9, 8, 11).multiplyScalar(.5),
             fieldOfView: 45
         },
-        headUpDisplay: false,
-        lighting: {
-            enable: true
-        }
+        headUpDisplay: false
     });
 
 const vec = (x, y, z) => new Vec3(x, y, z);
@@ -70,32 +67,23 @@ function rotateDiscrete(v, axis, direction) {
     return v.clone();
 }
 
-class Sticker {
-    constructor(cubie, color, normal) {
+class Sticker extends Block {
+    constructor(cubie, normal) {
+        super({ size: new Vec3(0.85, 0.85, 0.035) });
         this.cubie = cubie;
-        this.color = color;
         this.normal = normal.clone(); // Normal vector with respect to coordinate frame of cube
-
-        this.block = new Block({ size: new Vec3(0.85, 0.85, 0.035) });
-        simulation.bind(this.block.alwaysWith(new Box({
-            color,
-            material:  new MeshStandardMaterial({
-                emissive: color,
-                emissiveIntensity: 0.2,
-                roughness: 0.45
-        })})));
         this.update();
     }
 
     update() {
         const p = this.cubie.position;
-        this.block.position.set(
+        this.position.set(
             p.x + this.normal.x * STICKER_OFFSET,
             p.y + this.normal.y * STICKER_OFFSET,
             p.z + this.normal.z * STICKER_OFFSET
         );
 
-        this.block.orientation.copy(orientationForNormal(this.normal));
+        this.orientation.copy(orientationForNormal(this.normal));
     }
 }
 
@@ -135,26 +123,34 @@ class Cubie {
         this.stickers = [];
 
         if (z === Side.front)
-            this.addSticker(Colors.front, vec(0, 0, Side.front));
+            this.#addSticker(Colors.front, vec(0, 0, Side.front));
 
         if (z === Side.back)
-            this.addSticker(Colors.back, vec(0, 0, Side.back));
+            this.#addSticker(Colors.back, vec(0, 0, Side.back));
 
         if (x === Side.right)
-            this.addSticker(Colors.right, vec(Side.right, 0, 0));
+            this.#addSticker(Colors.right, vec(Side.right, 0, 0));
 
         if (x === Side.left)
-            this.addSticker(Colors.left, vec(Side.left, 0, 0));
+            this.#addSticker(Colors.left, vec(Side.left, 0, 0));
 
         if (y === Side.up)
-            this.addSticker(Colors.up, vec(0, Side.up, 0));
+            this.#addSticker(Colors.up, vec(0, Side.up, 0));
 
         if (y === Side.down)
-            this.addSticker(Colors.down, vec(0, Side.down, 0));
+            this.#addSticker(Colors.down, vec(0, Side.down, 0));
     }
 
-    addSticker(color, normal) {
-        this.stickers.push(new Sticker(this, color, normal));
+    #addSticker(color, normal) {
+        const sticker = new Sticker(this, normal);
+        this.stickers.push(sticker);
+        simulation.bind(sticker.alwaysWith(new Box({
+            color,
+            material:  new MeshStandardMaterial({
+                emissive: color,
+                emissiveIntensity: 0.2,
+                roughness: 0.45
+            })})));
     }
 
     updateStickers() {
@@ -265,13 +261,13 @@ class Cube {
                     const normal = rotateContinuous(startNormals[i][j], definition.axis, angle);
 
                     // During the animation we temporarily keep track of the normal
-                    sticker.block.position.set(
+                    sticker.position.set(
                         p.x + normal.x * STICKER_OFFSET,
                         p.y + normal.y * STICKER_OFFSET,
                         p.z + normal.z * STICKER_OFFSET
                     );
 
-                    sticker.block.orientation.copy(orientationForContinuousNormal(normal));
+                    sticker.orientation.copy(orientationForContinuousNormal(normal));
                 }
             }
 
