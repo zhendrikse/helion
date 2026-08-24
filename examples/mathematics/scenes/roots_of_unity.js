@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
-    Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow, Label,
-    VectorModel, ColorMappers, SegmentedCircle, LineSegmentView
+    Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Label,
+    VectorModel, ColorMappers, SegmentedCircle, LineSegmentView, Arrow2D
 } from "../../../src/index.js";
 
 const range = 12;
@@ -46,16 +46,14 @@ class RootsOfUnity extends Roots {
     update(n) {
         for (let k = 0; k < this._maxN; k++) {
             const line = this._rootLines[k];
+            line.from.set(0, 0, 0);
+            line.to.set(0, 0, 0);
 
-            if (k < n) {
-                const angle = 2 * Math.PI * k / n;
-                line.from.set(0, 0, 0);
-                line.to.set(this._radius * Math.cos(angle), this._radius * Math.sin(angle), 0);
-            } else {
-                // Hide unused root vectors.
-                line.from.set(0, 0, 0);
-                line.to.set(0, 0, 0);
-            }
+            if (k >= n)
+                return;
+
+            const angle = 2 * Math.PI * k / n;
+            line.to.set(this._radius * Math.cos(angle), this._radius * Math.sin(angle), 0);
         }
 
         return this;
@@ -107,10 +105,7 @@ for (let i = 0; i < range; i++)
 
 const rootVectorViews = [];
 for (let i = 0; i < rootVectors.length; i++)
-    rootVectorViews.push(new Arrow({
-        size: 0.1,
-        round: true
-    }));
+    rootVectorViews.push(new Arrow2D({ size: 0.13, lineWidth: 4, headStyle: Arrow2D.HeadStyle.Filled }));
 
 function updateRoots(simulation, n) {
     for (let k = 0; k < rootVectors.length; k++) {

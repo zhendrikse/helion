@@ -60,38 +60,38 @@ export class OneDimensionalComplexPlaneWave2D extends Renderable3D {
         this._context.stroke();
     }
 
-    _plotReal(centerY) {
+    _plotReal(psi, centerY) {
         this._context.strokeStyle = "#ffc000";
         this._context.beginPath();
         for (let x = 0; x < this._width; x++) {
-            const psi = this._complexPlaneWave.valueAt(x * 0.02);
-            const y = centerY - psi.re * this._scaleY;
+            const psiValue = psi.valueAt(x * 0.02);
+            const y = centerY - psiValue.re * this._scaleY;
             if (x === 0) this._context.moveTo(x, y);
             else this._context.lineTo(x, y);
         }
         this._context.stroke();
     }
 
-    _plotImag(centerY) {
+    _plotImag(psi, centerY) {
         this._context.strokeStyle = "#00d0ff";
         this._context.beginPath();
         for (let x = 0; x < this._width; x++) {
-            const psi = this._complexPlaneWave.valueAt(x * 0.02);
-            const y = centerY - psi.im * this._scaleY;
+            const psiValue = psi.valueAt(x * 0.02);
+            const y = centerY - psiValue.im * this._scaleY;
             if (x === 0) this._context.moveTo(x, y);
             else this._context.lineTo(x, y);
         }
         this._context.stroke();
     }
 
-    _plotRealImage(centerY) {
-        this._plotReal(centerY);
+    _plotRealImag(psi, centerY) {
+        this._plotReal(psi, centerY);
 
         if (this._showImaginary)
-            this._plotImag(centerY);
+            this._plotImag(psi, centerY);
     }
 
-    synchronizeWith(model) {
+    synchronizeWith(psi) {
         const centerY = this._height / 2;
 
         // Clear canvas
@@ -101,7 +101,7 @@ export class OneDimensionalComplexPlaneWave2D extends Renderable3D {
         this._plotAxis(centerY);
 
         if (this._mode === OneDimensionalComplexPlaneWave2D.Mode.REAL_IMAG)
-            this._plotRealImage(centerY);
+            this._plotRealImag(psi, centerY);
         else if (this._mode === OneDimensionalComplexPlaneWave2D.Mode.DENSITY_PHASE)
             this._plotDensityPhase();
     }
