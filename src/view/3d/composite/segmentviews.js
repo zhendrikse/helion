@@ -134,11 +134,16 @@ export class LineSegmentView extends Renderable3D {
             gapSize,
             resolution: new Vector2(window.innerWidth, window.innerHeight)
         });
+        this._3d = true;
         this._colorMapper = colorMapper;
         this._color = new Color();
         this._line = new LineSegments2(this._geometry, this._material);
         this.add(this._line);
         this.visible = visible;
+    }
+
+    initialize(model) {
+        this._3d = model.from.z && model.to.z;
     }
 
     canBindTo(model) {
@@ -149,8 +154,8 @@ export class LineSegmentView extends Renderable3D {
 
     synchronizeWith(segment) {
         this._geometry.setPositions([
-            segment.from.x, segment.from.y, segment.from.z,
-            segment.to.x, segment.to.y, segment.to.z
+            segment.from.x, segment.from.y, this._3d ? segment.from.z : 0,
+            segment.to.x, segment.to.y, this._3d ? segment.to.z : 0
         ]);
 
         this._colorMapper.map(segment.scalar, this._color);
@@ -187,6 +192,11 @@ export class LineSegmentsView extends LineSegmentView {
         super({lineWidth, dashed, dashSize, gapSize, visible, colorMapper});
     }
 
+    initialize(segments) {
+        for (const segment of segments)
+            this._3d &= segment.from.z && segment.to.z;
+    }
+
     canBindTo(segments) {
         if (!(segments instanceof Segments))
             throw new Error("An instanced segments view can only be bound to a Segments collection.");
@@ -199,8 +209,8 @@ export class LineSegmentsView extends LineSegmentView {
 
         for (const segment of segments) {
             positions.push(
-                segment.from.x, segment.from.y, segment.from.z,
-                segment.to.x, segment.to.y, segment.to.z
+                segment.from.x, segment.from.y, this._3d ? segment.from.z : 0,
+                segment.to.x, segment.to.y, this._3d ? segment.to.z : 0
             );
 
             this._colorMapper.map(segment.scalar, this._color);

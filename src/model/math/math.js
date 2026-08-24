@@ -88,7 +88,7 @@ export function meshgrid(x, y) {
 }
 
 export class Vec2 {
-    constructor(x=0, y=0) {
+    constructor(x=0, y=0, z=0) {
         this.x = x;
         this.y = y;
     }
@@ -97,9 +97,109 @@ export class Vec2 {
         return new Vec2(this.x, this.y);
     }
 
-    set(x, y) {
+    set(x,y,z) {
         this.x = x;
         this.y = y;
+        return this;
+    }
+
+    copy(v) {
+        this.x = v.x;
+        this.y = v.y;
+        return this;
+    }
+
+    add(v) {
+        this.x += v.x;
+        this.y += v.y;
+        return this;
+    }
+
+    negate() {
+        this.x = -this.x;
+        this.y = -this.y;
+        return this;
+    }
+
+    addScaledVector(v, scalar) {
+        this.x += v.x * scalar;
+        this.y += v.y * scalar;
+        return this;
+    }
+
+    sub(v) {
+        this.x -= v.x;
+        this.y -= v.y;
+        return this;
+    }
+
+    subVectors(a, b) {
+        this.x = a.x - b.x;
+        this.y = a.y - b.y;
+        return this;
+    }
+
+    divideScalar(s) {
+        this.x /= s;
+        this.y /= s;
+        return this;
+    }
+
+    multiplyScalar(s) {
+        this.x *= s;
+        this.y *= s;
+        return this;
+    }
+
+    lengthSq() {
+        return this.x * this.x + this.y * this.y;
+    }
+
+    length() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
+    dot(v) {
+        return this.x * v.x + this.y * v.y;
+    }
+
+    projectOnVector(v) {
+        const denominator = v.lengthSq();
+
+        if (denominator === 0) {
+            return this.set(0, 0, 0);
+        }
+
+        const scalar = this.dot(v) / denominator;
+
+        this.x = v.x * scalar;
+        this.y = v.y * scalar;
+
+        return this;
+    }
+
+    normalize() {
+        const inv = 1 / this.length();
+
+        this.x *= inv;
+        this.y *= inv;
+
+        return this;
+    }
+
+    random() {
+        this.x = Math.random();
+        this.y = Math.random();
+        return this;
+    }
+
+    distanceSquaredTo(position) {
+        return (position.x - this.x) * (position.x - this.x) +
+            (position.y - this.y) * (position.y - this.y);
+    }
+
+    distanceTo(position) {
+        return Math.sqrt(this.distanceSquaredTo(position));
     }
 }
 

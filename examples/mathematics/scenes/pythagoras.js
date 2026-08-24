@@ -1,5 +1,5 @@
 import {
-    Segments, LineSegment, Simulation, LineSegmentsView, Vec3, Slider, Range, LineSegmentView, Label, ColorMappers
+    Segments, LineSegment, Simulation, LineSegmentsView, Vec3, Slider, Range, LineSegmentView, Label, ColorMappers, Vec2
 } from "../../../src/index.js";
 
 class Pythagoras extends Segments {
@@ -9,9 +9,9 @@ class Pythagoras extends Segments {
         this._a = a;
         this._b = b;
 
-        this._A = new Vec3();
-        this._B = new Vec3();
-        this._C = new Vec3();
+        this._A = new Vec2();
+        this._B = new Vec2();
+        this._C = new Vec2();
 
         this._ab = new LineSegment(this._A, this._B);
         this._ac = new LineSegment(this._A, this._C);
@@ -23,9 +23,9 @@ class Pythagoras extends Segments {
     generate() {
         this.clear();
 
-        this._A.set(0, 0, 0);
-        this._B.set(this._a, 0, 0);
-        this._C.set(0, this._b, 0);
+        this._A.set(0, 0);
+        this._B.set(this._a, 0);
+        this._C.set(0, this._b);
 
         this.push(this._ab);
         this.push(this._ac);
@@ -39,7 +39,7 @@ class Pythagoras extends Segments {
     addSquare(p1, p2, color, direction = 1) {
         const side = p2.clone().sub(p1);
 
-        const normal = new Vec3(-side.y, side.x, 0)
+        const normal = new Vec2(-side.y, side.x)
             .normalize()
             .multiplyScalar(side.length() * direction);
 
@@ -93,19 +93,19 @@ Simulation
     .bind(pythagoras.bc.onceWith(new LineSegmentView({lineWidth: 3})))
     .bind(pythagoras.ab.onceWith(new Label({
         text: model => "a=" + pythagoras.a,
-        offset: model => new Vec3(0, -.5, 0),
+        offset: model => new Vec2(0, -.5),
         color: "#44aaff",
         fontSize: "30px"
     })))
     .bind(pythagoras.ac.onceWith(new Label({
         text: model => "b=" + pythagoras.b,
-        offset: model => new Vec3(-.90, 0, 0),
+        offset: model => new Vec2(-.90, 0),
         color: "#44dd88",
         fontSize: "30px"
     })))
     .bind(pythagoras.bc.onceWith(new Label({
         text: model => "c=" + pythagoras.c.toFixed(2),
-        offset: model => new Vec3(.75, .75, 0),
+        offset: model => new Vec2(.75, .75),
         color: "#ffaa44",
         fontSize: "30px"
     })))

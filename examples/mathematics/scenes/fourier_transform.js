@@ -1,7 +1,6 @@
-import { MeshBasicMaterial } from "three";
 import {
     FunctionGraph, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
-    Grid, Interval, Label, Arrow, ColorMappers, LinearCombination
+    Grid, Interval, Label, Arrow2D, ColorMappers, LinearCombination, Vec2
 } from "../../../src/index.js";
 
 const xMin = -2 * Math.PI;
@@ -112,8 +111,8 @@ const simulation = Simulation
 
 const size = .5 * interval.range;
 const grid = new Grid({size, stepSize: Math.PI / 3});
-const xAxis = new LineSegment(new Vec3(-2 * size, 0, 0), new Vec3(0.25, 0, 0));
-const yAxis = new LineSegment(new Vec3(0, -2 * size, 0), new Vec3(0, 0.25, 0));
+const xAxis = new LineSegment(new Vec2(-2.05 * size, 0), new Vec2(0.25, 0));
+const yAxis = new LineSegment(new Vec2(0, -2.05 * size), new Vec2(0, 0.25));
 
 const exactGraph = new FunctionGraph({
     func: functionToExpand,
@@ -136,29 +135,27 @@ simulation
         gapSize: .1,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffaa55 })
     })))
-    .bind(xAxis.onceWith(new Arrow({
-        size: .15,
-        material: new MeshBasicMaterial(),
+    .bind(xAxis.onceWith(new Arrow2D({
+        size: .25,
         color: 0xbbbbbb,
-        round: true
+        headStyle: Arrow2D.HeadStyle.Filled
     })))
-    .bind(yAxis.onceWith(new Arrow({
-        size: .15,
-        material: new MeshBasicMaterial(),
+    .bind(yAxis.onceWith(new Arrow2D({
+        size: .25,
         color: 0xbbbbbb,
-        round: true
+        headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(xAxis.onceWith(new Label({
         text: () => "X",
         fontSize: "20px",
         color: "#ffffff",
-        offset: () => new Vec3(2.2 * size, 0, 0)
+        offset: () => new Vec2(2.2 * size, 0)
     })))
     .bind(yAxis.onceWith(new Label({
         text: () => "Y",
         fontSize: "20px",
         color: "#ffffff",
-        offset: () => new Vec3(0, 2.2 * size, 0)
+        offset: () => new Vec2(0, 2.2 * size)
     })))
     .bind(exactGraph.onceWith(new LineSegmentsView({
         lineWidth: 3,

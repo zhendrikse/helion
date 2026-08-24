@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Label,
-    VectorModel, ColorMappers, SegmentedCircle, LineSegmentView, Arrow2D
+    VectorModel, ColorMappers, SegmentedCircle, LineSegmentView, Arrow2D, Vec2
 } from "../../../src/index.js";
 
 const range = 12;
@@ -22,7 +22,7 @@ class Roots extends Segments {
 
         // Create the maximum number of root vectors once.
         for (let k = 0; k < maxN; k++) {
-            const line = new LineSegment(new Vec3(), new Vec3());
+            const line = new LineSegment(new Vec2(), new Vec2());
             this._rootLines.push(line);
             this.push(line);
         }
@@ -46,8 +46,8 @@ class RootsOfUnity extends Roots {
     update(n) {
         for (let k = 0; k < this._maxN; k++) {
             const line = this._rootLines[k];
-            line.from.set(0, 0, 0);
-            line.to.set(0, 0, 0);
+            line.from.set(0, 0);
+            line.to.set(0, 0);
 
             if (k >= n)
                 return;
@@ -79,8 +79,8 @@ class RootPolygon extends Roots {
                 line.from.set(this._radius * Math.cos(angle1), this._radius * Math.sin(angle1), 0);
                 line.to.set(this._radius * Math.cos(angle2), this._radius * Math.sin(angle2), 0);
             } else {
-                line.from.set(0, 0, 0);
-                line.to.set(0, 0, 0);
+                line.from.set(0, 0);
+                line.to.set(0, 0);
             }
         }
 
@@ -95,13 +95,13 @@ const unitCircle = new SegmentedCircle( {
 
 const roots = new RootsOfUnity({ maxN: range, radius: unitCircleRadius });
 const polygon = new RootPolygon({ maxN: range, radius: unitCircleRadius });
-const xAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(1.25, 0, 0), 0xd0d0d0);
-const yAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(0, 1.25, 0), 0xd0d0d0);
+const xAxis = new LineSegment(new Vec2(0, 0), new Vec2(1.25, 0), 0xd0d0d0);
+const yAxis = new LineSegment(new Vec2(0,  0), new Vec2(0, 1.25), 0xd0d0d0);
 
 // Root vectors: the actual points z_k on the unit circle.
 const rootVectors = [];
 for (let i = 0; i < range; i++)
-    rootVectors.push(new VectorModel());
+    rootVectors.push(new VectorModel(new Vec2(), new Vec2()));
 
 const rootVectorViews = [];
 for (let i = 0; i < rootVectors.length; i++)
@@ -112,7 +112,7 @@ function updateRoots(simulation, n) {
         const vector = rootVectors[k];
 
         if (k >= n) {
-            vector.axis.set(0, 0, 0);
+            vector.axis.set(0, 0);
             continue;
         }
 
@@ -151,12 +151,12 @@ const simulation = Simulation
     .bind(yAxis.onceWith(new LineSegmentView({ lineWidth: 2 })))
     .bind(xAxis.onceWith(new Label({
         text: () => "Re(z)",
-        offset: () => new Vec3(0.55, 0.1, 0),
+        offset: () => new Vec2(0.55, 0.1),
         fontSize: "20px"
     })))
     .bind(xAxis.onceWith(new Label({
         text: () => "Im(z)",
-        offset: () => new Vec3(-.46, 1.2, 0),
+        offset: () => new Vec2(-.46, 1.2),
         fontSize: "20px"
     })))
     .append(new Slider("n")

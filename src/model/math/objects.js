@@ -1,5 +1,5 @@
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
-import {degToRad, Vec3} from "./math.js";
+import {degToRad, Vec2, Vec3} from "./math.js";
 import {Integrators} from "./numerics/integrators/integrators.js";
 
 /**
@@ -10,8 +10,10 @@ import {Integrators} from "./numerics/integrators/integrators.js";
  *     axis
  */
 export class VectorModel extends MathPhysicsModelBehavior {
-    constructor(position = new Vec3(), axis = new Vec3()) {
+    constructor(position, axis) {
         super();
+        if (!position || !axis)
+            throw new Error("Vector model requires both position and axis arguments (Vec2 or Vec3)");
         this.position = position;
         this.axis = axis;
     }
@@ -36,14 +38,14 @@ export class VectorModel extends MathPhysicsModelBehavior {
  */
 export class LineSegment extends MathPhysicsModelBehavior {
     /**
-     * @param fromVec3 coordinates of from-point.
-     * @param toVec3 coordinates of to-point.
+     * @param fromVec coordinates of from-point.
+     * @param toVec coordinates of to-point.
      * @param value a color can be passed on to this segment by using the hue scalar value for a color.
      */
-    constructor(fromVec3, toVec3, value=0) {
+    constructor(fromVec, toVec, value=0) {
         super();
-        this.from = fromVec3;
-        this.to = toVec3;
+        this.from = fromVec;
+        this.to = toVec;
         this.scalar = value;
     }
 
@@ -101,9 +103,9 @@ export class Grid extends Segments {
 
         let pos = -size;
         for (let i = -size / stepSize; i <= size / stepSize; i++) {
-            const verticalLine = new LineSegment(new Vec3(pos, -size, 0), new Vec3(pos, size, 0));
+            const verticalLine = new LineSegment(new Vec2(pos, -size), new Vec2(pos, size));
             this._gridLines.push(verticalLine);
-            const horizontalLine = new LineSegment(new Vec3(-size, pos, 0), new Vec3(size, pos,0));
+            const horizontalLine = new LineSegment(new Vec2(-size, pos), new Vec2(size, pos));
             this._gridLines.push(horizontalLine);
             pos += stepSize;
         }
@@ -133,8 +135,8 @@ export class SegmentedCircle extends Segments {
             const t2 = 2 * Math.PI * (i + 1) / segments;
 
             this._points.push({
-                from: new Vec3(radius * Math.cos(t1), radius * Math.sin(t1), 0),
-                to: new Vec3(radius * Math.cos(t2), radius * Math.sin(t2), 0)
+                from: new Vec2(radius * Math.cos(t1), radius * Math.sin(t1)),
+                to: new Vec2(radius * Math.cos(t2), radius * Math.sin(t2))
             });
         }
 
@@ -315,8 +317,8 @@ export class Turtle extends Segments {
     }
 
     goto(x, y) {
-        const from = new Vec3(this.x, this.y, 0);
-        const to = new Vec3(x, y, 0);
+        const from = new Vec2(this.x, this.y);
+        const to = new Vec2(x, y);
 
         if (this.penState === Turtle.PenState.DOWN)
             this.push(new LineSegment(from, to, this.currentColor));

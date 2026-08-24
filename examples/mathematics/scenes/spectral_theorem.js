@@ -1,6 +1,6 @@
 import {
     SegmentedCircle, LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow2D, Label, Matrix2D,
-    VectorModel, ColorMappers
+    VectorModel, ColorMappers, Vec2
 } from "../../../src/index.js";
 
 const size = 5;
@@ -42,8 +42,8 @@ transformedCircle.apply(transformation);
 // Eigenvectors.
 // The vectors themselves are normalized. Their length in the
 // visualization is determined by the corresponding eigenvalue.
-const eigenvector1 = new VectorModel();
-const eigenvector2 = new VectorModel();
+const eigenvector1 = new VectorModel(new Vec2(), new Vec2());
+const eigenvector2 = new VectorModel(new Vec2(), new Vec2());
 
 const simulation = Simulation
     .with({
@@ -72,8 +72,8 @@ function updateEigenVectors() {
             .multiplyScalar(eigenvectors[1].value);
     }
     else {
-        eigenvector1.axis.set(0, 0, 0);
-        eigenvector2.axis.set(0, 0, 0);
+        eigenvector1.axis.set(0, 0);
+        eigenvector2.axis.set(0, 0);
     }
 
     updateTitle(eigenvectors);

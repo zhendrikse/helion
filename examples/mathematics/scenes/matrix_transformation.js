@@ -1,6 +1,6 @@
 import {
     LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow2D,
-    Label, Matrix2D, VectorModel, Grid, RadioGroup, LineSegment, LineSegmentView, ColorMappers
+    Label, Matrix2D, VectorModel, Grid, RadioGroup, LineSegment, LineSegmentView, ColorMappers, Vec2
 } from "../../../src/index.js";
 
 const size = 5;
@@ -14,15 +14,15 @@ const originalGrid = new Grid({ size: size });
 const transformedGrid = new Grid({ size: size });
 transformedGrid.apply(transformation);
 
-const xAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(size, 0, 0));
-const yAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(0, size, 0));
+const xAxis = new LineSegment(new Vec2(0, 0), new Vec2(size, 0));
+const yAxis = new LineSegment(new Vec2(0, 0), new Vec2(0, size));
 
-const originalVector = new VectorModel(new Vec3(), new Vec3(2, 1, 0));
-const transformedVector = new VectorModel();
-const eigenvector1 = new VectorModel();
-const transformedEigenvector1 = new VectorModel();
-const eigenvector2 = new VectorModel();
-const transformedEigenvector2 = new VectorModel();
+const originalVector = new VectorModel(new Vec2(), new Vec2(2, 1));
+const transformedVector = new VectorModel(new Vec2(), new Vec2());
+const eigenvector1 = new VectorModel(new Vec2(), new Vec2());
+const transformedEigenvector1 = new VectorModel(new Vec2(), new Vec2());
+const eigenvector2 = new VectorModel(new Vec2(), new Vec2());
+const transformedEigenvector2 = new VectorModel(new Vec2(), new Vec2());
 
 const simulation = Simulation
     .with({
@@ -92,14 +92,14 @@ const onMatrixModified = (property, value) => {
 
 const labelEigenVector1 = new Label({
     text: () => "e₁",
-    offset: model => model.axis.clone().multiplyScalar(3.5).add(new Vec3(0, -0.25, 0)),
+    offset: model => model.axis.clone().add(new Vec2(0, -0.25)),
     fontSize: "25px",
     color: "#ff4444"
 });
 
 const labelEigenVector2 = new Label({
     text: () => "e₂",
-    offset: model => model.axis.clone().multiplyScalar(3.5).add(new Vec3(0, 0.25, 0)),
+    offset: model => model.axis.clone().add(new Vec2(0, 0.25)),
     fontSize: "25px",
     color: "#44dd88"
 });
@@ -120,14 +120,14 @@ const labelTransformedVector = new Label({
 
 const labelTransformedEigenVector1 = new Label({
     text: () => "Ae₁",
-    offset: model => model.axis.clone().multiplyScalar(3.25).add(new Vec3(0, -0.25, 0)),
+    offset: model => model.axis.clone().add(new Vec2(0, -0.25)),
     fontSize: "20px",
     color: "#ff0000"
 });
 
 const labelTransformedEigenVector2 = new Label({
     text: () => "Ae₂",
-    offset: model => model.axis.clone().multiplyScalar(3.25).add(new Vec3(0, 0.25, 0)),
+    offset: model => model.axis.clone().add(new Vec2(0, 0.25)),
     fontSize: "20px",
     color: "#00ff00"
 });

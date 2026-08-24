@@ -628,7 +628,7 @@ export class Label extends Renderable3D {
         this._label.center.set(0.5, 0.5);
         this._text = text;
         this._offset = offset;
-
+        this._position = new Vec3();
         this.add(this._label);
         this.visible = visible;
     }
@@ -639,8 +639,13 @@ export class Label extends Renderable3D {
         return true;
     }
 
+    initialize(model) {
+        this._position = model.position.clone();
+    }
+
     synchronizeWith(model) {
-        this._label.position.copy(model.position.clone().add(this._offset(model)));
+        this._position.copy(model.position.clone().add(this._offset(model)));
+        this._label.position.set(this._position.x, this._position.y, this._position.z ? this._position.z : 0);
         this._element.textContent = this._text(model);
     }
 

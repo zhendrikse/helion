@@ -1,7 +1,7 @@
 import { MeshBasicMaterial, Color } from "three";
 import {
     LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Grid, Interval, Label,
-    Arrow, ColorMappers, FunctionGraph, LinearCombination
+    Arrow2D, ColorMappers, FunctionGraph, LinearCombination, Vec2
 } from "../../../src/index.js";
 
 const xMin = -4;
@@ -77,8 +77,8 @@ function exp(x) {
 
 const size = .5 * (xMax - xMin);
 const grid = new Grid({ size, stepSize: .5 });
-const xAxis = new LineSegment(new Vec3(-2 * size, -size, 0), new Vec3(0.25, -size, 0), 0xffffff);
-const yAxis = new LineSegment(new Vec3(0, -2 * size, 0), new Vec3(0, 0.25, 0), 0xffffff);
+const xAxis = new LineSegment(new Vec2(-2 * size, -size), new Vec2(0.25, -size), 0xffffff);
+const yAxis = new LineSegment(new Vec2(0, -2 * size), new Vec2(0, 0.25), 0xffffff);
 
 const exactGraph = new FunctionGraph({
     func: exp,
@@ -103,28 +103,27 @@ simulation
         gapSize: .1,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0xffaa55})
     })))
-    .bind(xAxis.onceWith(new Arrow({
-        size: .075,
-        material: new MeshBasicMaterial(),
+    .bind(xAxis.onceWith(new Arrow2D({
+        size: .2,
         color: 0xbbbbbb,
-        round: true
+        headStyle: Arrow2D.HeadStyle.Filled
     } )))
-    .bind(yAxis.onceWith(new Arrow({
-        size: .075,
-        material: new MeshBasicMaterial(),
+    .bind(yAxis.onceWith(new Arrow2D({
+        size: .2,
         color: 0xbbbbbb,
-        round: true
+        headStyle: Arrow2D.HeadStyle.Filled
     } )))
     .bind(xAxis.onceWith(new Label({
         text: () => "X",
         fontSize: "20px",
-        color: "#ffffff",
-        offset: () => new Vec3(2.1 * size, 0, 0)
+        color: "#0xbbbbbb",
+        offset: () => new Vec2(2.1 * size, 0)
     })))
     .bind(yAxis.onceWith(new Label({
         text: () => "Y",
         fontSize: "20px",
-        offset: () => new Vec3(0, 2.1 * size, 0)
+        color: "#0xbbbbbb",
+        offset: () => new Vec2(0.1, 2.1 * size)
     })))
     .bind(exactGraph.onceWith(new LineSegmentsView({
         lineWidth: 3,
