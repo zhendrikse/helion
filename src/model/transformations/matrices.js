@@ -29,7 +29,7 @@ export class Matrix2D extends Transformation {
      *     { value: lambda2, vector: Vec3 }
      * ]
      */
-    eigenvectors() {
+    eigenvectors(scaleFactor = 1) {
         // Characteristic equation: λ² - (a+d)λ + (ad-bc) = 0
         const discriminant = this.trace * this.trace - 4 * this.determinant;
 
@@ -71,14 +71,14 @@ export class Matrix2D extends Transformation {
 
         const v1 = vectorFor(lambda1);
         if (v1)
-            result.push({ value: lambda1, vector: v1 });
+            result.push({ value: lambda1, vector: v1.multiplyScalar(scaleFactor) });
 
         // For a repeated eigenvalue we don't want to draw the same eigenvector twice.
         if (Math.abs(lambda1 - lambda2) > 1e-10) {
             const v2 = vectorFor(lambda2);
 
             if (v2)
-                result.push({ value: lambda2, vector: v2 });
+                result.push({ value: lambda2, vector: v2.multiplyScalar(scaleFactor) });
         }
 
         return result;

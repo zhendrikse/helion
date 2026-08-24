@@ -1,7 +1,5 @@
-import { MeshBasicMaterial } from "three";
-
 import {
-    SegmentedCircle, LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow, Label, Matrix2D,
+    SegmentedCircle, LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow2D, Label, Matrix2D,
     VectorModel, ColorMappers
 } from "../../../src/index.js";
 
@@ -61,7 +59,7 @@ const simulation = Simulation
     });
 
 function updateEigenVectors() {
-    const eigenvectors = transformation.eigenvectors();
+    const eigenvectors = transformation.eigenvectors(originalCircleRadius);
 
     // A real symmetric 2x2 matrix always has two real, orthogonal eigenvectors.
     if (eigenvectors.length === 2) {
@@ -175,18 +173,8 @@ simulation
         lineWidth: 2,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0x44aaff })
     })))
-    .bind(eigenvector1.onceWith(new Arrow({
-        color: 0xff4444,
-        size: 0.3,
-        material: new MeshBasicMaterial(),
-        magnitudeMap: magnitude => originalCircleRadius * magnitude
-    })))
-    .bind(eigenvector2.onceWith(new Arrow({
-        color: 0x44dd88,
-        size: 0.3,
-        material: new MeshBasicMaterial(),
-        magnitudeMap: magnitude => originalCircleRadius * magnitude
-    })))
+    .bind(eigenvector1.onceWith(new Arrow2D({ color: 0xff4444, size: 0.5 })))
+    .bind(eigenvector2.onceWith(new Arrow2D({ color: 0x44dd88, size: 0.5 })))
     .bind(eigenvector1.onceWith(labelEigenVector1))
     .bind(eigenvector2.onceWith(labelEigenVector2))
     .append(new Slider("a")

@@ -1,7 +1,6 @@
-import { MeshBasicMaterial } from "three";
 import {
-    LineSegmentsView, Simulation, Vec3, Slider, Range,
-    Arrow, Label, Matrix2D, VectorModel, Grid, RadioGroup, LineSegment, LineSegmentView, ColorMappers
+    LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow2D,
+    Label, Matrix2D, VectorModel, Grid, RadioGroup, LineSegment, LineSegmentView, ColorMappers
 } from "../../../src/index.js";
 
 const size = 5;
@@ -44,7 +43,7 @@ const simulation = Simulation
 function updateVectors() {
     transformedVector.copy(originalVector.clone().apply(transformation));
 
-    const eigenvectors = transformation.eigenvectors();
+    const eigenvectors = transformation.eigenvectors(3);
     if (eigenvectors.length === 0) // zero eigen vectors
         return;
 
@@ -170,39 +169,32 @@ simulation
         lineWidth: 1.25,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffffff })
     })))
-    .bind(originalVector.onceWith(new Arrow({
+    .bind(originalVector.onceWith(new Arrow2D({
         color: 0xff991c,
-        size: 0.4,
-        material: new MeshBasicMaterial()
+        size: 0.5,
+        headStyle: Arrow2D.HeadStyle.Filled
     })))
-    .bind(transformedVector.onceWith(new Arrow({
+    .bind(transformedVector.onceWith(new Arrow2D({
         color: 0xffff00,
-        size: 0.2,
-        material: new MeshBasicMaterial()
+        size: 0.3,
     })))
-    .bind(eigenvector1.onceWith(new Arrow({
+    .bind(eigenvector1.onceWith(new Arrow2D({
         color: 0xff4444,
-        size: 0.4,
-        material: new MeshBasicMaterial(),
-        magnitudeMap: magnitude => 3 * magnitude
+        size: 0.5,
+        headStyle: Arrow2D.HeadStyle.Filled
     })))
-    .bind(eigenvector2.onceWith(new Arrow({
+    .bind(eigenvector2.onceWith(new Arrow2D({
         color: 0x44dd88,
-        size: 0.4,
-        material: new MeshBasicMaterial(),
-        magnitudeMap: magnitude => 3 * magnitude
+        size: 0.3,
+        headStyle: Arrow2D.HeadStyle.Filled
     })))
-    .bind(transformedEigenvector1.onceWith(new Arrow({
+    .bind(transformedEigenvector1.onceWith(new Arrow2D({
         color: 0xff0000,
-        size: 0.2,
-        material: new MeshBasicMaterial(),
-        magnitudeMap: magnitude => 3 * magnitude
+        size: 0.3,
     })))
-    .bind(transformedEigenvector2.onceWith(new Arrow({
+    .bind(transformedEigenvector2.onceWith(new Arrow2D({
         color: 0x00ff00,
-        size: 0.2,
-        material: new MeshBasicMaterial(),
-        magnitudeMap: magnitude => 3 * magnitude
+        size: 0.3,
     })))
     .bind(originalVector.onceWith(labelOriginalVector))
     .bind(transformedVector.onceWith(labelTransformedVector))
