@@ -35,42 +35,13 @@ const GAP = 0.06;
 const STEP = SIZE + GAP;
 const STICKER_OFFSET = 0.515;
 
-const simulation = Simulation.with(
-    {
-        htmlDivId: "rubiksCubeContainer",
-        infoPanel: {
-            text: "<strong>Rubik's cube 🧊</strong><br>\n" +
-                "R L B U F D = turn forward<br>\n" +
-                "Shift + key = opposite direction"
-        },
-        camera: {
-            position: new Vec3(9, 8, 11).multiplyScalar(.5),
-            fieldOfView: 45
-        },
-        headUpDisplay: false
-    });
-
 const vec = (x, y, z) => new Vec3(x, y, z);
 
-function rotateDiscrete(v, axis, direction) {
-    const {x, y, z} = v;
-
-    if (axis === Axis.x)
-        return direction === Direction.forward ? vec(x, -z, y) : vec(x, z, -y);
-
-    if (axis === Axis.y)
-        return direction === Direction.forward ? vec(z, y, -x) : vec(-z, y, x);
-
-    if (axis === Axis.z)
-        return direction === Direction.forward ? vec(-y, x, z) : vec(y, -x, z);
-
-    return v.clone();
-}
-
 class Sticker extends Block {
-    constructor(cubie, normal) {
+    constructor(cubie, side, normal) {
         super({ size: new Vec3(0.85, 0.85, 0.035) });
         this.cubie = cubie;
+        this.side = side;
         this.normal = normal.clone(); // Normal vector with respect to coordinate frame of cube
         this.update();
     }
@@ -83,79 +54,65 @@ class Sticker extends Block {
             p.z + this.normal.z * STICKER_OFFSET
         );
 
-        this.orientation.copy(orientationForNormal(this.normal));
+        this.orientation.copy(this.#orientationForNormal());
+    }
+
+    #orientationForNormal() {
+        if (this.normal.z === Side.front)
+            return vec(0, 0, 0);
+
+        if (this.normal.z === Side.back)
+            return vec(0, Math.PI, 0);
+
+        if (this.normal.x === Side.right)
+            return vec(0, Math.PI / 2, 0);
+
+        if (this.normal.x === Side.left)
+            return vec(0, -Math.PI / 2, 0);
+
+        if (this.normal.y === Side.up)
+            return vec(-Math.PI / 2, 0, 0);
+
+        if (this.normal.y === Side.down)
+            return vec(Math.PI / 2, 0, 0);
+
+        return vec(0, 0, 0);
     }
 }
 
-function orientationForNormal(normalVector) {
-    if (normalVector.z === Side.front)
-        return vec(0, 0, 0);
-
-    if (normalVector.z === Side.back)
-        return vec(0, Math.PI, 0);
-
-    if (normalVector.x === Side.right)
-        return vec(0, Math.PI / 2, 0);
-
-    if (normalVector.x === Side.left)
-        return vec(0, -Math.PI / 2, 0);
-
-    if (normalVector.y === Side.up)
-        return vec(-Math.PI / 2, 0, 0);
-
-    if (normalVector.y === Side.down)
-        return vec(Math.PI / 2, 0, 0);
-
-    return vec(0, 0, 0);
-}
-
-class Cubie {
+class Cubie extends Block {
     constructor(x, y, z) {
-        this.grid = vec(x, y, z);
-        this.position = vec(x, y, z).multiplyScalar(STEP);
-        this.block = new Block({
-            position: this.position,
+        super({
+            position: vec(x, y, z).multiplyScalar(STEP),
             size: new Vec3(SIZE, SIZE, SIZE)
         });
-
-        const body = new Box({ color: 0x111111 });
-        simulation.bind(this.block.alwaysWith(body));
+        this.grid = vec(x, y, z);
         this.stickers = [];
 
         if (z === Side.front)
-            this.#addSticker(Colors.front, vec(0, 0, Side.front));
+            this.stickers.push(new Sticker(this, "front", vec(0, 0, Side.front)));
 
         if (z === Side.back)
-            this.#addSticker(Colors.back, vec(0, 0, Side.back));
+            this.stickers.push(new Sticker(this, "back", vec(0, 0, Side.back)));
 
         if (x === Side.right)
-            this.#addSticker(Colors.right, vec(Side.right, 0, 0));
+            this.stickers.push(new Sticker(this, "right", vec(Side.right, 0, 0)));
 
         if (x === Side.left)
-            this.#addSticker(Colors.left, vec(Side.left, 0, 0));
+            this.stickers.push(new Sticker(this, "left", vec(Side.left, 0, 0)));
 
         if (y === Side.up)
-            this.#addSticker(Colors.up, vec(0, Side.up, 0));
+            this.stickers.push(new Sticker(this, "up", vec(0, Side.up, 0)));
 
         if (y === Side.down)
-            this.#addSticker(Colors.down, vec(0, Side.down, 0));
+            this.stickers.push(new Sticker(this, "down", vec(0, Side.down, 0)));
     }
 
-    #addSticker(color, normal) {
-        const sticker = new Sticker(this, normal);
-        this.stickers.push(sticker);
-        simulation.bind(sticker.alwaysWith(new Box({
-            color,
-            material:  new MeshStandardMaterial({
-                emissive: color,
-                emissiveIntensity: 0.2,
-                roughness: 0.45
-            })})));
-    }
-
-    updateStickers() {
-        for (const sticker of this.stickers)
-            sticker.update();
+    /**
+     * @returns {ArrayIterator<Sticker>}
+     */
+    [Symbol.iterator]() {
+        return this.stickers[Symbol.iterator]();
     }
 }
 
@@ -215,6 +172,13 @@ class Cube {
         this.processQueue();
     }
 
+    /**
+     * @returns {ArrayIterator<Cubie>}
+     */
+    [Symbol.iterator]() {
+        return this.cubies[Symbol.iterator]();
+    }
+
     processQueue() {
         if (this.rotating)
             return;
@@ -224,6 +188,53 @@ class Cube {
 
         const move = this.queue.shift();
         this.rotateLayer(move.key, move.reverse);
+    }
+
+    #orientationForContinuousNormal(normalVector) {
+        // Voor de animatie is de exacte oriëntatie minder
+        // belangrijk dan de positie. We gebruiken hier
+        // dezelfde conventie als de stickers.
+
+        if (Math.abs(normalVector.z) > 0.99)
+            return vec(0, normalVector.z > 0 ? Math.PI : 0, 0);
+
+        if (Math.abs(normalVector.x) > 0.99)
+            return vec(0, normalVector.x > 0 ? Math.PI / 2 : -Math.PI / 2, 0);
+
+        if (Math.abs(normalVector.y) > 0.99)
+            return vec(normalVector.y > 0 ? -Math.PI / 2 : Math.PI / 2, 0, 0);
+
+        return vec(0, 0, 0);
+    }
+
+    #rotateContinuous(pos, axis, angle) {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        if (axis === Axis.x)
+            return vec(pos.x, cos * pos.y - sin * pos.z, sin * pos.y + cos * pos.z);
+
+        if (axis === Axis.y)
+            return vec(cos * pos.x + sin * pos.z, pos.y, -sin * pos.x + cos * pos.z);
+
+        if (axis === Axis.z)
+            return vec(cos * pos.x - sin * pos.y, sin * pos.x + cos * pos.y, pos.z);
+
+        return pos.clone();
+    }
+
+    #rotateDiscrete(v, axis, direction) {
+        const {x, y, z} = v;
+
+        if (axis === Axis.x)
+            return direction === Direction.forward ? vec(x, -z, y) : vec(x, z, -y);
+
+        if (axis === Axis.y)
+            return direction === Direction.forward ? vec(z, y, -x) : vec(-z, y, x);
+
+        if (axis === Axis.z)
+            return direction === Direction.forward ? vec(-y, x, z) : vec(y, -x, z);
+
+        return v.clone();
     }
 
     rotateLayer(key, reverse) {
@@ -252,13 +263,12 @@ class Cube {
             // Animatie van de positie
             for (let i = 0; i < selected.length; i++) {
                 const cubie = selected[i];
-                const p = rotateContinuous(startPositions[i], definition.axis, angle);
+                const p = this.#rotateContinuous(startPositions[i], definition.axis, angle);
                 cubie.position.copy(p);
-                cubie.block.position.copy(p);
 
                 for (let j = 0; j < cubie.stickers.length; j++) {
                     const sticker = cubie.stickers[j];
-                    const normal = rotateContinuous(startNormals[i][j], definition.axis, angle);
+                    const normal = this.#rotateContinuous(startNormals[i][j], definition.axis, angle);
 
                     // During the animation we temporarily keep track of the normal
                     sticker.position.set(
@@ -267,7 +277,7 @@ class Cube {
                         p.z + normal.z * STICKER_OFFSET
                     );
 
-                    sticker.orientation.copy(orientationForContinuousNormal(normal));
+                    sticker.orientation.copy(this.#orientationForContinuousNormal(normal));
                 }
             }
 
@@ -283,14 +293,12 @@ class Cube {
     finishRotation(selected, definition, direction) {
         for (const cubie of selected) {
             // Exact new grid position
-            cubie.grid = rotateGrid(cubie.grid, definition.axis, direction);
+            cubie.grid = this.#rotateDiscrete(cubie.grid, definition.axis, direction);
             cubie.position.set(cubie.grid.x * STEP, cubie.grid.y * STEP, cubie.grid.z * STEP);
-            cubie.block.position.copy(cubie.position);
-            cubie.updateStickers();
 
             // Exact rounding off of normal vectors
-            for (const sticker of cubie.stickers) {
-                sticker.normal = rotateGrid(sticker.normal, definition.axis, direction);
+            for (const sticker of cubie) {
+                sticker.normal = this.#rotateDiscrete(sticker.normal, definition.axis, direction);
                 sticker.update();
             }
         }
@@ -300,41 +308,40 @@ class Cube {
     }
 }
 
-const rotateGrid= (v, axis, direction) => rotateDiscrete(v, axis, direction);
-
-function rotateContinuous(pos, axis, angle) {
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    if (axis === Axis.x)
-        return vec(pos.x, cos * pos.y - sin * pos.z, sin * pos.y + cos * pos.z);
-
-    if (axis === Axis.y)
-        return vec(cos * pos.x + sin * pos.z, pos.y, -sin * pos.x + cos * pos.z);
-
-    if (axis === Axis.z)
-        return vec(cos * pos.x - sin * pos.y, sin * pos.x + cos * pos.y, pos.z);
-
-    return pos.clone();
-}
-
-function orientationForContinuousNormal(normalVector) {
-    // Voor de animatie is de exacte oriëntatie minder
-    // belangrijk dan de positie. We gebruiken hier
-    // dezelfde conventie als de stickers.
-
-    if (Math.abs(normalVector.z) > 0.99)
-        return vec(0, normalVector.z > 0 ? Math.PI : 0, 0);
-
-    if (Math.abs(normalVector.x) > 0.99)
-        return vec(0, normalVector.x > 0 ? Math.PI / 2 : -Math.PI / 2, 0);
-
-    if (Math.abs(normalVector.y) > 0.99)
-        return vec(normalVector.y > 0 ? -Math.PI / 2 : Math.PI / 2, 0, 0);
-
-    return vec(0, 0, 0);
-}
-
 const cube = new Cube();
+
+const simulation = Simulation.with(
+    {
+        htmlDivId: "rubiksCubeContainer",
+        infoPanel: {
+            text: "<strong>Rubik's cube 🧊</strong><br>\n" +
+                "R L B U F D = turn forward<br>\n" +
+                "Shift + key = opposite direction"
+        },
+        camera: {
+            position: new Vec3(9, 8, 11).multiplyScalar(.5),
+            fieldOfView: 45
+        },
+        headUpDisplay: false
+    });
+
+// Bind view to model
+for (const cubie of cube) {
+    simulation.bind(cubie.alwaysWith(new Box({ color: 0x111111 })));
+
+    for (const sticker of cubie)
+        simulation.bind(sticker.alwaysWith(
+            new Box({
+                color: Colors[sticker.side],
+                material:  new MeshStandardMaterial({
+                    emissive: Colors[sticker.side],
+                    emissiveIntensity: 0.2,
+                    roughness: 0.45
+                })
+            })
+        ));
+}
+
 const validKeys = new Set(["r", "l", "u", "d", "f", "b"]);
 window.addEventListener("keydown", event => {
     const key = event.key.toLowerCase();
