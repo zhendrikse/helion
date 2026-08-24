@@ -1,6 +1,12 @@
 import { MeshStandardMaterial } from 'three';
 import { Block, Box, Simulation, Vec3 } from "../../../src/index.js";
 
+const SIZE = 1;
+const GAP = 0.06;
+const STEP = SIZE + GAP;
+const STICKER_OFFSET = 0.515;
+
+const vec = (x, y, z) => new Vec3(x, y, z);
 const Direction = Object.freeze({
     forward: 1,
     backward: -1
@@ -30,19 +36,21 @@ const Side = Object.freeze({
     back:  -1
 });
 
-const SIZE = 1;
-const GAP = 0.06;
-const STEP = SIZE + GAP;
-const STICKER_OFFSET = 0.515;
-
-const vec = (x, y, z) => new Vec3(x, y, z);
+const SideNew = Object.freeze({
+    right:  { name: "right", normal: vec( 1,  0,  0) },
+    left:   { name: "left",  normal: vec(-1,  0,  0) },
+    up:     { name: "up",    normal: vec( 0,  1,  0) },
+    down:   { name: "down",  normal: vec( 0, -1,  0) },
+    front:  { name: "front", normal: vec( 0,  0,  1) },
+    back:   { name: "back",  normal: vec( 0,  0, -1) }
+});
 
 class Sticker extends Block {
-    constructor(cubie, side, normal) {
+    constructor(cubie, side) {
         super({ size: new Vec3(0.85, 0.85, 0.035) });
         this.cubie = cubie;
-        this.side = side;
-        this.normal = normal.clone(); // Normal vector with respect to coordinate frame of cube
+        this.side = side.name;
+        this.normal = side.normal.clone(); // Normal vector with respect to coordinate frame of cube
         this.update();
     }
 
@@ -90,22 +98,22 @@ class Cubie extends Block {
         this.stickers = [];
 
         if (z === Side.front)
-            this.stickers.push(new Sticker(this, "front", vec(0, 0, Side.front)));
+            this.stickers.push(new Sticker(this, SideNew.front));
 
         if (z === Side.back)
-            this.stickers.push(new Sticker(this, "back", vec(0, 0, Side.back)));
+            this.stickers.push(new Sticker(this, SideNew.back));
 
         if (x === Side.right)
-            this.stickers.push(new Sticker(this, "right", vec(Side.right, 0, 0)));
+            this.stickers.push(new Sticker(this, SideNew.right));
 
         if (x === Side.left)
-            this.stickers.push(new Sticker(this, "left", vec(Side.left, 0, 0)));
+            this.stickers.push(new Sticker(this, SideNew.left));
 
         if (y === Side.up)
-            this.stickers.push(new Sticker(this, "up", vec(0, Side.up, 0)));
+            this.stickers.push(new Sticker(this, SideNew.up));
 
         if (y === Side.down)
-            this.stickers.push(new Sticker(this, "down", vec(0, Side.down, 0)));
+            this.stickers.push(new Sticker(this, SideNew.down));
     }
 
     /**
@@ -238,10 +246,10 @@ class Cube {
     }
 
     rotateLayer(key, reverse) {
-        const definition = Cube.MovesGroup[key];
+        const move = Cube.MovesGroup[key];
         this.rotating = true;
-        const selected = this.cubies.filter(cubie => cubie.grid[definition.axis] === definition.layer);
-        let direction = definition.direction;
+        const selected = this.cubies.filter(cubie => cubie.grid[move.axis] === move.layer);
+        let direction = move.direction;
 
         if (reverse)
             direction *= -1;
@@ -263,12 +271,12 @@ class Cube {
             // Animatie van de positie
             for (let i = 0; i < selected.length; i++) {
                 const cubie = selected[i];
-                const p = this.#rotateContinuous(startPositions[i], definition.axis, angle);
+                const p = this.#rotateContinuous(startPositions[i], move.axis, angle);
                 cubie.position.copy(p);
 
                 for (let j = 0; j < cubie.stickers.length; j++) {
                     const sticker = cubie.stickers[j];
-                    const normal = this.#rotateContinuous(startNormals[i][j], definition.axis, angle);
+                    const normal = this.#rotateContinuous(startNormals[i][j], move.axis, angle);
 
                     // During the animation we temporarily keep track of the normal
                     sticker.position.set(
@@ -284,7 +292,7 @@ class Cube {
             if (progress < 1)
                 requestAnimationFrame(animate);
             else
-                this.finishRotation(selected, definition, direction);
+                this.finishRotation(selected, move, direction);
         };
 
         requestAnimationFrame(animate);
