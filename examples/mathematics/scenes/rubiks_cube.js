@@ -117,7 +117,7 @@ class Cubie extends Block {
 }
 
 class Cube {
-    static Moves = {
+    static MovesGroup = {
         r: {
             axis: Axis.x,
             layer: Side.right,
@@ -165,7 +165,7 @@ class Cube {
     move(key, reverse = false) {
         key = key.toLowerCase();
 
-        if (!Cube.Moves[key])
+        if (!Cube.MovesGroup[key])
             return;
 
         this.queue.push({key, reverse});
@@ -238,7 +238,7 @@ class Cube {
     }
 
     rotateLayer(key, reverse) {
-        const definition = Cube.Moves[key];
+        const definition = Cube.MovesGroup[key];
         this.rotating = true;
         const selected = this.cubies.filter(cubie => cubie.grid[definition.axis] === definition.layer);
         let direction = definition.direction;
