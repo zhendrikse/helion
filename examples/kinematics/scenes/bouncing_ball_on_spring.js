@@ -2,11 +2,7 @@ import {
     RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix,
     Slider, Range, UniformGravitationalForce, SpringForce, DragForce, Body, BodyPair, VectorView
 } from "../../../src/index.js";
-import {MathPhysicsModelBehavior} from "../../../src/core/helion.js";
 
-//
-// Physics model
-//
 const floor = new Floor({
     position: new Vec3(0, -1, 0),
     type: Floor.Type.PAVING,
