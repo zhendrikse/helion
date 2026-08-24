@@ -1,6 +1,7 @@
+import { Color } from "three";
 import {
     Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow, Label,
-    VectorModel, ColorMappers, SegmentedCircle
+    VectorModel, ColorMappers, SegmentedCircle, LineSegmentView
 } from "../../../src/index.js";
 
 const range = 12;
@@ -93,10 +94,40 @@ const unitCircle = new SegmentedCircle( {
     radius: unitCircleRadius,
     segments: circleSegments
 });
+
 const roots = new RootsOfUnity({ maxN: range, radius: unitCircleRadius });
 const polygon = new RootPolygon({ maxN: range, radius: unitCircleRadius });
-const xAxis = new VectorModel(new Vec3(0, 0, 0), new Vec3(1.25, 0, 0));
-const yAxis = new VectorModel(new Vec3(0, 0, 0), new Vec3(0, 1.25, 0));
+const xAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(1.25, 0, 0), 0xd0d0d0);
+const yAxis = new LineSegment(new Vec3(0, 0, 0), new Vec3(0, 1.25, 0), 0xd0d0d0);
+
+// Root vectors: the actual points z_k on the unit circle.
+const rootVectors = [];
+for (let i = 0; i < range; i++)
+    rootVectors.push(new VectorModel());
+
+const rootVectorViews = [];
+for (let i = 0; i < rootVectors.length; i++)
+    rootVectorViews.push(new Arrow({
+        size: 0.1,
+        round: true
+    }));
+
+function updateRoots(simulation, n) {
+    for (let k = 0; k < rootVectors.length; k++) {
+        const vector = rootVectors[k];
+
+        if (k >= n) {
+            vector.axis.set(0, 0, 0);
+            continue;
+        }
+
+        const angle = 2 * Math.PI * k / n;
+        vector.axis.set(unitCircleRadius * Math.cos(angle), unitCircleRadius * Math.sin(angle), 0);
+        rootVectorViews[k].color = new Color().setHSL(0.92 - 0.65 * (angle + Math.PI) / (2 * Math.PI), 1, .5);
+    }
+
+    simulation.setLatexTitle(`z^{${n}}=1\\Rightarrow z_k=\\exp(\\dfrac{2\\pi ik}{${n}}),\\ k=0,\\cdots, ${n-1}`);
+}
 
 const simulation = Simulation
     .with({
@@ -109,42 +140,7 @@ const simulation = Simulation
             position: new Vec3(0, 0, 3),
             controls: false
         },
-    });
-
-// Root vectors: the actual points z_k on the unit circle.
-const rootVectors = [];
-for (let i = 0; i < range; i++)
-    rootVectors.push(new VectorModel());
-
-function updateRoots(n) {
-    for (let k = 0; k < rootVectors.length; k++) {
-        const vector = rootVectors[k];
-
-        if (k >= n) {
-            vector.axis.set(0, 0, 0);
-            continue;
-        }
-
-        const angle = 2 * Math.PI * k / n;
-        vector.axis.set(unitCircleRadius * Math.cos(angle), unitCircleRadius * Math.sin(angle), 0);
-    }
-
-    simulation.setLatexTitle(`z^{${n}}=1\\Rightarrow z_k=\\exp(\\dfrac{2\\pi ik}{${n}}),\\ k=0,\\cdots, ${n-1}`);
-}
-
-updateRoots(3);
-
-for (let i = 0; i < rootVectors.length; i++) {
-    const rootVector = rootVectors[i];
-    simulation.bind(rootVector.onceWith(new Arrow({
-        color: 0xff44aa,
-        size: 0.1,
-        colorMapper: ColorMappers.get(ColorMappers.Hue),
-        round: true
-    })))
-}
-
-simulation
+    })
     .bind(unitCircle.onceWith(new LineSegmentsView({
         lineWidth: 3,
         dashed: true,
@@ -156,24 +152,16 @@ simulation
         lineWidth: 2,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffff88 })
     })))
-    .bind(xAxis.onceWith(new Arrow({
-        color: 0xd0d0d0,
-        size: 0.04,
-        round: true
-    })))
-    .bind(yAxis.onceWith(new Arrow({
-        color: 0xd0d0d0,
-        size: 0.04,
-        round: true
-    })))
+    .bind(xAxis.onceWith(new LineSegmentView({ lineWidth: 2 })))
+    .bind(yAxis.onceWith(new LineSegmentView({ lineWidth: 2 })))
     .bind(xAxis.onceWith(new Label({
-        text: () => "Re",
-        offset: () => new Vec3(1.25, .1, 0),
+        text: () => "Re(z)",
+        offset: () => new Vec3(0.55, 0.1, 0),
         fontSize: "20px"
     })))
     .bind(xAxis.onceWith(new Label({
-        text: () => "Im",
-        offset: () => new Vec3(.15, 1.25, 0),
+        text: () => "Im(z)",
+        offset: () => new Vec3(-.46, 1.2, 0),
         fontSize: "20px"
     })))
     .append(new Slider("n")
@@ -181,8 +169,12 @@ simulation
         .withValue(3)
         .onInput(event => {
             const n = Number(event.target.value);
-            updateRoots(n);
+            updateRoots(simulation, n);
             roots.update(n);
             polygon.update(n);
         })
     );
+
+updateRoots(simulation, 3);
+for (let i = 0; i < rootVectors.length; i++)
+    simulation.bind(rootVectors[i].alwaysWith(rootVectorViews[i]));

@@ -271,6 +271,7 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
         this._round = round;
         this._size = size;
         this._valueVector = new Vector(new Vector3());
+        this._color = new Color();
     }
 
     canBindTo(complexPlaneWave) {
@@ -286,9 +287,7 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
         const arrow = new Arrow({
             round: this._round,
             size: this._size,
-            material: new MeshBasicMaterial(),
-            hueMap: axis => 1.0 - Math.atan2(axis.z, axis.y) / (2 * Math.PI),
-            colorMapper: ColorMappers.get(ColorMappers.Hue)
+            material: new MeshBasicMaterial()
         });
 
         this._arrows.push(arrow);
@@ -302,6 +301,9 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
             this._valueVector.position.set(x, complexPlaneWave.position.y, complexPlaneWave.position.z);
             this._valueVector.axis.set(0, value.re, value.im);
             this._arrows[i].synchronizeWith(this._valueVector);
+
+            this._color.setHSL(1.0 - Math.atan2(value.im, value.re) / (2 * Math.PI), 1, 0.5);
+            this._arrows[i].color = this._color;
         }
     }
 }

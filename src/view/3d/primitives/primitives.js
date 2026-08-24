@@ -234,19 +234,13 @@ export class Arrow extends Renderable3D {
         visible = true,
         castShadow = false,
         magnitudeMap = magnitude => Math.max(magnitude, 0.1),
-        hueMap = axis => {
-            const angle = Math.atan2(axis.y, axis.x);
-            const t = (angle + Math.PI) / (2 * Math.PI);
-            return 0.92 - 0.65 * t;
-        },
-        colorMapper = ColorMappers.get(ColorMappers.Uniform, {color}),
         material = new MeshStandardMaterial({
-            roughness: 0.85,
-            metalness: 0.55,
-            emissive: new Color(0xcccccc),
+            roughness: 0.5,
+            metalness: 0.35,
+            emissive: new Color(0x888888),
             emissiveIntensity: 0.2,
             envMapIntensity: 1.2,
-            transparent: true
+            transparent: true,
         })} = {}) {
         super();
 
@@ -263,7 +257,7 @@ export class Arrow extends Renderable3D {
         this._material.opacity = opacity;
         this._shaft = new Mesh(shaftGeometry, this._material);
         this._head = new Mesh(headGeometry, this._material);
-        this._hueMap = hueMap;
+
         this._shaft.castShadow = castShadow;
         this._head.castShadow = castShadow;
 
@@ -277,8 +271,6 @@ export class Arrow extends Renderable3D {
         this._headRadius = 0.75 * size;
         this._headLength = size;
         this._magnitudeMap = magnitudeMap;
-        this._colorMapper = colorMapper;
-        this._color = new Color();
         this._tempAxis = new Vector3();
     }
 
@@ -292,9 +284,9 @@ export class Arrow extends Renderable3D {
         this.setVector(body.position, body.axis);
     }
 
-    setVector(position, axis) {
+    setVector(position, vector) {
         this.position.copy(position);
-        this._tempAxis.copy(axis);
+        this._tempAxis.copy(vector);
         const magnitude = this._tempAxis.length();
 
         if (magnitude < 1e-12) {
@@ -302,9 +294,6 @@ export class Arrow extends Renderable3D {
             this._head.scale.set(0, 0, 0);
             return;
         }
-
-        this._colorMapper.map(this._hueMap(axis), this._color);
-        this._material.color.copy(this._color);
 
         const arrowLength = this._magnitudeMap(magnitude);
         const shaftLength = Math.max(arrowLength - this._headLength, 0);
