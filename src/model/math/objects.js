@@ -44,6 +44,8 @@ export class LineSegment extends MathPhysicsModelBehavior {
      */
     constructor(fromVec, toVec, value=0) {
         super();
+        if (!fromVec || !toVec)
+            throw new Error("Vector model requires both fromVec and toVec arguments (Vec2 or Vec3)");
         this.from = fromVec;
         this.to = toVec;
         this.scalar = value;
@@ -241,7 +243,7 @@ export class FunctionGraph extends Segments {
         for (let i = 1; i <= this._samples; i++) {
             const x2 = this._interval.from + i * dx;
             const y2 = this._function(x2) + this._yOffset;
-            this.push(new LineSegment(new Vec3(x1, y1, 0), new Vec3(x2, y2, 0)));
+            this.push(new LineSegment(new Vec2(x1, y1), new Vec2(x2, y2)));
             x1 = x2;
             y1 = y2;
         }
