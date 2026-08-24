@@ -86,8 +86,9 @@ export class ParticleCloudView extends Renderable3D {
     get boundingBox() { return this._boundingBox; }
 
     controls() {
-        return new DropdownMenu().for(ParticleCloudView.Shapes).addEventListener("change",
-            event => this.shape = event.target.value
+        return new DropdownMenu()
+            .for(ParticleCloudView.Shapes)
+            .addEventListener("change", event => this.shape = event.target.value
         );
     }
 
@@ -132,8 +133,7 @@ export class PixelRasterView extends Renderable3D {
     }
 
     setPixel(x, y, r, g, b, a = 255) {
-        if (x < 0 || x >= this._width ||
-            y < 0 || y >= this._height)
+        if (x < 0 || x >= this._width || y < 0 || y >= this._height)
             return;
 
         const index = (y * this._width + x) * 4;
@@ -162,10 +162,7 @@ export class PixelRasterView extends Renderable3D {
             for (let y = 0; y < this._height; y++)
                 for (let x = 0; x < this._width; x++) {
                     const color = model.pixelAt(x, y);
-                    this.setPixel(
-                        x, y,
-                        color[0], color[1], color[2], color[3] ?? 255
-                    );
+                    this.setPixel(x, y, color[0], color[1], color[2], color[3] ?? 255);
                 }
 
         this._texture.needsUpdate = true;
