@@ -51,6 +51,7 @@ export default defineConfig({
                 real_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/real_surfaces.js'),
                 roots_of_unity: path.resolve(__dirname, 'examples/mathematics/scenes/roots_of_unity.js'),
                 rossler_attractor: path.resolve(__dirname, 'examples/mathematics/scenes/rossler_attractor.js'),
+                rubiks_cube: path.resolve(__dirname, 'examples/mathematics/scenes/rubiks_cube.js'),
                 rutherford_scattering: path.resolve(__dirname, 'examples/molecularphysics/scenes/rutherford_scattering.js'),
                 saturn: path.resolve(__dirname, 'examples/astrophysics/scenes/planets/saturn.js'),
                 slinky_drop: path.resolve(__dirname, 'examples/kinematics/scenes/slinky_drop.js'),
