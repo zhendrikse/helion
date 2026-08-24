@@ -408,17 +408,16 @@ export class Box extends Renderable3D {
         color = 0xff0000,
         opacity = 1,
         visible = true,
-        castShadow = false
+        castShadow = false,
+        material = new MeshStandardMaterial({
+            transparent: true,
+            depthTest: true
+        })
     } = {}) {
         super();
-        this._mesh = new Mesh(
-            new BoxGeometry(1, 1, 1),
-            new MeshStandardMaterial({
-                color: color,
-                transparent: true,
-                opacity: opacity,
-                depthTest: true
-            }));
+        material.opacity = opacity;
+        material.color = new Color().setHex(color);
+        this._mesh = new Mesh(new BoxGeometry(1, 1, 1), material);
         this.add(this._mesh);
         this._mesh.castShadow = castShadow;
         this.visible = visible;
