@@ -1,6 +1,5 @@
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
-import {Complex, Interval, Vec3, Vec2} from "./math.js";
-import {DifferentialGeometry} from "./numerics/diffgeometry.js";
+import {Interval, Vec3} from "./math.js";
 
 export class Domain {
     constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
