@@ -1,6 +1,4 @@
-import {
-    Euler, MeshStandardMaterial, Quaternion, Vector3
-} from 'three';
+import { Euler, MeshStandardMaterial, Quaternion, Vector3 } from 'three';
 import {Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation} from "../../../src/index.js";
 
 const SIZE = 1;
@@ -9,16 +7,9 @@ const STEP = SIZE + GAP;
 const STICKER_OFFSET = 0.515;
 
 const vec = (x, y, z) => new Vec3(x, y, z);
-const Direction = Object.freeze({
-    forward: 1,
-    backward: -1
-});
 
-const Axis = Object.freeze({
-    x: "x",
-    y: "y",
-    z: "z"
-})
+const Direction = Object.freeze({ forward: 1, backward: -1});
+const Axis = Object.freeze({ x: "x",  y: "y", z: "z" })
 
 const Colors = Object.freeze({
     right:  0xff0000,
@@ -36,15 +27,6 @@ const StickerData = Object.freeze({
     left:  {orientation: vec(0, -Math.PI / 2, 0), normal: vec(-1,  0,  0)},
     up:    {orientation: vec(-Math.PI / 2, 0, 0), normal: vec( 0,  1,  0)},
     down:  {orientation: vec(Math.PI / 2, 0, 0), normal: vec( 0, -1,  0)}
-});
-
-const FaceCoordinate = Object.freeze({
-    right:  1,
-    left:  -1,
-    up:     1,
-    down:  -1,
-    front:  1,
-    back:  -1
 });
 
 const Face = Object.freeze({
@@ -120,34 +102,22 @@ class Cubie extends Block {
         this._stickers = [];
 
         if (z === 1)
-            this._stickers.push(
-                new Sticker(this.position, Face.front, StickerData.front)
-            );
+            this._stickers.push(new Sticker(this.position, Face.front, StickerData.front));
 
         if (z === -1)
-            this._stickers.push(
-                new Sticker(this.position, Face.back, StickerData.back)
-            );
+            this._stickers.push(new Sticker(this.position, Face.back, StickerData.back));
 
         if (x === 1)
-            this._stickers.push(
-                new Sticker(this.position, Face.right, StickerData.right)
-            );
+            this._stickers.push(new Sticker(this.position, Face.right, StickerData.right));
 
         if (x === -1)
-            this._stickers.push(
-                new Sticker(this.position, Face.left, StickerData.left)
-            );
+            this._stickers.push(new Sticker(this.position, Face.left, StickerData.left));
 
         if (y === 1)
-            this._stickers.push(
-                new Sticker(this.position, Face.up, StickerData.up)
-            );
+            this._stickers.push(new Sticker(this.position, Face.up, StickerData.up));
 
         if (y === -1)
-            this._stickers.push(
-                new Sticker(this.position, Face.down, StickerData.down)
-            );
+            this._stickers.push(new Sticker(this.position, Face.down, StickerData.down));
     }
 
     isPartOfMove = (move) => this._grid[move.axis] === move.layer;
@@ -213,14 +183,11 @@ class Cube {
         this._duration = 500;
     }
 
-    cubiesInLayerFor(move) {
-        return this._cubies.filter(cubie => cubie.isPartOfMove(move));
-    }
+    cubiesInLayerFor = move => this._cubies.filter(cubie => cubie.isPartOfMove(move));
 
+    apply = move => move.applyTo(this);
 
-    apply(move) {
-        move.applyTo(this);
-    }
+    addToQueue = move => this._queue.push(move);
 
     /**
      * @returns {ArrayIterator<Cubie>}
@@ -229,19 +196,11 @@ class Cube {
         return this._cubies[Symbol.iterator]();
     }
 
-    addToQueue(move) {
-        this._queue.push(move);
-    }
-
     processQueue() {
-        if (this._rotating)
+        if (this._rotating || this._queue.length === 0)
             return;
 
-        if (this._queue.length === 0)
-            return;
-
-        const move = this._queue.shift();
-        this.rotateLayer(move);
+        this.rotateLayer(this._queue.shift());
     }
 
     #rotateContinuous(pos, axis, angle) {
@@ -264,7 +223,6 @@ class Cube {
             return;
 
         const rotation = this._rotation;
-
         if (rotation.start === null)
             rotation.start = timeStamp;
 
@@ -272,7 +230,6 @@ class Cube {
         const progress = Math.min(elapsed / rotation.duration, 1);
         const smooth = progress * progress * (3 - 2 * progress);
         const angle = rotation.direction * Math.PI / 2 * smooth;
-
         const { layer, move } = rotation;
 
         // Cubies
@@ -330,15 +287,13 @@ class Cube {
 
         this._rotation = null;
         this._rotating = false;
-
         this.processQueue();
     }
 }
 
 const cube = new Cube();
 
-const simulation = Simulation.with(
-    {
+const simulation = Simulation.with({
         htmlDivId: "rubiksCubeContainer",
         infoPanel: {
             text: "<strong>Rubik's cube 🧊</strong><br>\n" +
@@ -358,24 +313,14 @@ const simulation = Simulation.with(
             .togetherWith(new Button().withText("U").addEventListener("click", () => cube.apply(new Move("u")))
                 .togetherWith(new Button().withText("D").addEventListener("click", () => cube.apply(new Move("d")))
                     .togetherWith(new Button().withText("R").addEventListener("click", () => cube.apply(new Move("r")))
-                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.apply(new Move("l")))
-                        )
-                    )
-                )
-            )
-        )
+                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.apply(new Move("l"))))))))
     )
     .append(new Button("Backward: ").withText("F").addEventListener("click", () => cube.apply(new Move("f", true)))
         .togetherWith(new Button().withText("B").addEventListener("click", () => cube.apply(new Move("b", true)))
             .togetherWith(new Button().withText("U").addEventListener("click", () => cube.apply(new Move("u", true)))
                 .togetherWith(new Button().withText("D").addEventListener("click", () => cube.apply(new Move("d", true)))
                     .togetherWith(new Button().withText("R").addEventListener("click", () => cube.apply(new Move("r", true)))
-                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.apply(new Move("l", true)))
-                        )
-                    )
-                )
-            )
-        )
+                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.apply(new Move("l", true))))))))
     )
     .append(new Slider("Rotation speed")
         .on(cube)
@@ -388,7 +333,7 @@ const simulation = Simulation.with(
 for (const cubie of cube) {
     simulation.bind(cubie.alwaysWith(new Box({ color: 0x111111 })));
 
-    for (const sticker of cubie) {
+    for (const sticker of cubie)
         simulation.bind(sticker.alwaysWith(
             new Box({
                 color: Colors[sticker.side],
@@ -396,16 +341,12 @@ for (const cubie of cube) {
                     emissive: Colors[sticker.side],
                     emissiveIntensity: 0.2,
                     roughness: 0.45
-                })
-            })
-        ));
-    }
+            })})));
 }
 
 const validKeys = new Set(["r", "l", "u", "d", "f", "b"]);
 window.addEventListener("keydown", event => {
     const key = event.key.toLowerCase();
-
     if (!validKeys.has(key))
         return;
 
