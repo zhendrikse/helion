@@ -1,7 +1,7 @@
 import {
     Euler, MeshStandardMaterial, Quaternion, Vector3
 } from 'three';
-import {Block, Box, Simulation, Slider, Vec3, Range, Button} from "../../../src/index.js";
+import {Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation} from "../../../src/index.js";
 
 const SIZE = 1;
 const GAP = 0.06;
@@ -38,7 +38,7 @@ const StickerData = Object.freeze({
     down:  {orientation: vec(Math.PI / 2, 0, 0), normal: vec( 0, -1,  0)}
 });
 
-const Side = Object.freeze({
+const FaceCoordinate = Object.freeze({
     right:  1,
     left:  -1,
     up:     1,
@@ -47,25 +47,34 @@ const Side = Object.freeze({
     back:  -1
 });
 
+const Face = Object.freeze({
+    right:  "right",
+    left:   "left",
+    up:     "up",
+    down:   "down",
+    front:  "front",
+    back:   "back"
+});
+
 const sidesFrom = (x, y, z) => {
     const sides = [];
     if (z === 1)
-        sides.push("front");
+        sides.push(Face.front);
 
     if (z === -1)
-        sides.push("back");
+        sides.push(Face.back);
 
     if (x === 1)
-        sides.push("right");
+        sides.push(Face.right);
 
     if (x === -1)
-        sides.push("left");
+        sides.push(Face.left);
 
     if (y === 1)
-        sides.push("up");
+        sides.push(Face.up);
 
     if (y === -1)
-        sides.push("down");
+        sides.push(Face.down);
 
     return sides;
 }
@@ -129,7 +138,7 @@ class Cubie extends Block {
             position: vec(x, y, z).multiplyScalar(STEP),
             size: new Vec3(SIZE, SIZE, SIZE)
         });
-        this.grid = vec(x, y, z);
+        this._grid = vec(x, y, z);
         this._stickers = [];
         this._sides = sidesFrom(x, y, z);
         this._sides.forEach(side => this._stickers.push(new Sticker(this.position, side, StickerData[side])));
@@ -143,90 +152,86 @@ class Cubie extends Block {
     }
 
     update(axis, direction, startOrientation) {
-        this.grid = rotateDiscrete(this.grid, axis, direction);
-        this.position.set(this.grid.x * STEP, this.grid.y * STEP, this.grid.z * STEP);
+        this._grid = rotateDiscrete(this._grid, axis, direction);
+        this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
         this.orientation.copy(rotatedOrientation(startOrientation, axis, direction * Math.PI / 2));
         for (const sticker of this) {
             sticker.rotate(axis, direction);
             sticker.update(this.position);
         }
+        this._sides = sidesFrom(this._grid.x, this._grid.y, this._grid.z);
+    }
+}
+
+class Move extends Transformation {
+    static MovesGroup = {
+        r: { axis: Axis.x, direction: Direction.backward, side: Face.right },
+        l: { axis: Axis.x, direction: Direction.forward,  side: Face.left },
+        u: { axis: Axis.y, direction: Direction.backward, side: Face.up },
+        d: { axis: Axis.y, direction: Direction.forward,  side: Face.down },
+        f: { axis: Axis.z, direction: Direction.backward, side: Face.front },
+        b: { axis: Axis.z, direction: Direction.forward,  side: Face.back }
+    };
+
+    constructor(key, reverse=false) {
+        super();
+        this._key = key.toLowerCase();
+        this._direction = reverse ? -Move.MovesGroup[this._key].direction : Move.MovesGroup[this._key].direction;
+    }
+
+    get moveData() { return Move.MovesGroup[this._key]; }
+    get direction() { return this._direction; }
+
+    applyTo(cube) {
+        if (!Move.MovesGroup[this._key])
+            return;
+
+        cube.addToQueue(this);
+        cube.processQueue();
     }
 }
 
 class Cube {
-    static MovesGroup = {
-        r: {
-            axis: Axis.x,
-            layer: Side.right,
-            direction: Direction.backward
-        },
-        l: {
-            axis: Axis.x,
-            layer: Side.left,
-            direction: Direction.forward,
-        },
-        u: {
-            axis: Axis.y,
-            layer: Side.up,
-            direction: Direction.backward
-        },
-        d: {
-            axis: Axis.y,
-            layer: Side.down,
-            direction: Direction.forward
-        },
-        f: {
-            axis: Axis.z,
-            layer: Side.front,
-            direction: Direction.backward
-        },
-        b: {
-            axis: Axis.z,
-            layer: Side.back,
-            direction: Direction.forward
-        }
-    };
-
     constructor() {
-        this.cubies = [];
+        this._cubies = [];
 
-        for (let x = Side.left; x <= Side.right; x++)
-            for (let y = Side.down; y <= Side.up; y++)
-                for (let z = Side.back; z <= Side.front; z++)
-                    this.cubies.push(new Cubie(x, y, z));
+        for (let x = FaceCoordinate.left; x <= FaceCoordinate.right; x++)
+            for (let y = FaceCoordinate.down; y <= FaceCoordinate.up; y++)
+                for (let z = FaceCoordinate.back; z <= FaceCoordinate.front; z++)
+                    this._cubies.push(new Cubie(x, y, z));
 
-        this.rotating = false;
-        this.queue = [];
+        this._rotating = false;
+        this._queue = [];
         this._rotation = null;
         this._duration = 500;
     }
 
-    move(key, reverse = false) {
-        key = key.toLowerCase();
+    cubiesInLayerFor = (move) => this._cubies.filter(cubie => cubie._sides.includes(move.side));
 
-        if (!Cube.MovesGroup[key])
-            return;
-
-        this.queue.push({key, reverse});
-        this.processQueue();
+    apply(move) {
+        move.applyTo(this);
     }
 
     /**
      * @returns {ArrayIterator<Cubie>}
      */
     [Symbol.iterator]() {
-        return this.cubies[Symbol.iterator]();
+        return this._cubies[Symbol.iterator]();
+    }
+
+    addToQueue(move) {
+        this._queue.push(move);
     }
 
     processQueue() {
-        if (this.rotating)
+        if (this._rotating)
             return;
 
-        if (this.queue.length === 0)
+        if (this._queue.length === 0)
             return;
 
-        const move = this.queue.shift();
-        this.rotateLayer(move.key, move.reverse);
+        const move = this._queue.shift();
+        this.rotateLayer(move);
     }
 
     #rotateContinuous(pos, axis, angle) {
@@ -258,26 +263,26 @@ class Cube {
         const smooth = progress * progress * (3 - 2 * progress);
         const angle = rotation.direction * Math.PI / 2 * smooth;
 
-        const { layer, definition } = rotation;
+        const { layer, move } = rotation;
 
         // Cubies
         for (let row = 0; row < layer.length; row++) {
             const cubie = layer[row];
-            const position = this.#rotateContinuous(rotation.startPositions[row], definition.axis, angle);
+            const position = this.#rotateContinuous(rotation.startPositions[row], move.axis, angle);
             cubie.position.copy(position);
-            cubie.orientation.copy(rotatedOrientation(rotation.startOrientations[row], definition.axis, angle));
+            cubie.orientation.copy(rotatedOrientation(rotation.startOrientations[row], move.axis, angle));
 
             // Stickers
             let col = 0;
             for (const sticker of cubie) {
-                const normal = this.#rotateContinuous(rotation.startNormals[row][col], definition.axis, angle);
+                const normal = this.#rotateContinuous(rotation.startNormals[row][col], move.axis, angle);
                 sticker.position.set(
                     position.x + normal.x * STICKER_OFFSET,
                     position.y + normal.y * STICKER_OFFSET,
                     position.z + normal.z * STICKER_OFFSET
                 );
 
-                sticker.orientation.copy(rotatedOrientation(rotation.startStickerOrientations[row][col], definition.axis, angle));
+                sticker.orientation.copy(rotatedOrientation(rotation.startStickerOrientations[row][col], move.axis, angle));
                 col++;
             }
         }
@@ -286,19 +291,13 @@ class Cube {
             this.finishRotation();
     }
 
-    rotateLayer(key, reverse) {
-        const definition = Cube.MovesGroup[key];
-        this.rotating = true;
-        const layer = this.cubies.filter(cubie => cubie.grid[definition.axis] === definition.layer);
-
-        let direction = definition.direction;
-        if (reverse)
-            direction *= -1;
-
+    rotateLayer(move) {
+        const layer = this.cubiesInLayerFor(move.moveData);
+        this._rotating = true;
         this._rotation = {
             layer,
-            definition,
-            direction,
+            move: move.moveData,
+            direction: move.direction,
             startPositions: layer.map(cubie => cubie.position.clone()),
             startOrientations: layer.map(cubie => cubie.orientation.clone()),
             startNormals: layer.map(cubie => Array.from(cubie, sticker => sticker.normal.clone())),
@@ -312,15 +311,15 @@ class Cube {
 
     finishRotation() {
         const rotation = this._rotation;
-        const {layer, definition, direction} = rotation;
+        const {layer, move, direction} = rotation;
 
         for (let i = 0; i < layer.length; i++) {
             const cubie = layer[i];
-            cubie.update(definition.axis, direction, rotation.startOrientations[i]);
+            cubie.update(move.axis, direction, rotation.startOrientations[i]);
         }
 
         this._rotation = null;
-        this.rotating = false;
+        this._rotating = false;
 
         this.processQueue();
     }
@@ -344,24 +343,24 @@ const simulation = Simulation.with(
         parameterMenuCollapsed: false
     })
     .onFrame(timeStamp => cube.update(timeStamp))
-    .append(new Button("Forward: ").withText("F").addEventListener("click", () => cube.move("f"))
-        .togetherWith(new Button().withText("B").addEventListener("click", () => cube.move("b"))
-            .togetherWith(new Button().withText("U").addEventListener("click", () => cube.move("u"))
-                .togetherWith(new Button().withText("D").addEventListener("click", () => cube.move("d"))
-                    .togetherWith(new Button().withText("R").addEventListener("click", () => cube.move("r"))
-                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.move("l"))
+    .append(new Button("Forward: ").withText("F").addEventListener("click", () => cube.apply(new Move("f")))
+        .togetherWith(new Button().withText("B").addEventListener("click", () => cube.apply(new Move("b")))
+            .togetherWith(new Button().withText("U").addEventListener("click", () => cube.apply(new Move("u")))
+                .togetherWith(new Button().withText("D").addEventListener("click", () => cube.apply(new Move("d")))
+                    .togetherWith(new Button().withText("R").addEventListener("click", () => cube.apply(new Move("r")))
+                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.apply(new Move("l")))
                         )
                     )
                 )
             )
         )
     )
-    .append(new Button("Backward: ").withText("F").addEventListener("click", () => cube.move("f", true))
-        .togetherWith(new Button().withText("B").addEventListener("click", () => cube.move("b", true))
-            .togetherWith(new Button().withText("U").addEventListener("click", () => cube.move("u", true))
-                .togetherWith(new Button().withText("D").addEventListener("click", () => cube.move("d", true))
-                    .togetherWith(new Button().withText("R").addEventListener("click", () => cube.move("r", true))
-                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.move("l", true))
+    .append(new Button("Backward: ").withText("F").addEventListener("click", () => cube.apply(new Move("f", true)))
+        .togetherWith(new Button().withText("B").addEventListener("click", () => cube.apply(new Move("b", true)))
+            .togetherWith(new Button().withText("U").addEventListener("click", () => cube.apply(new Move("u", true)))
+                .togetherWith(new Button().withText("D").addEventListener("click", () => cube.apply(new Move("d", true)))
+                    .togetherWith(new Button().withText("R").addEventListener("click", () => cube.apply(new Move("r", true)))
+                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.apply(new Move("l", true)))
                         )
                     )
                 )
@@ -400,5 +399,5 @@ window.addEventListener("keydown", event => {
     if (!validKeys.has(key))
         return;
 
-    cube.move(key, event.shiftKey);
+    cube.apply(new Move(key, event.shiftKey));
 });
