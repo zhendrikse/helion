@@ -178,7 +178,7 @@ class Layer {
         this._startStickerOrientations = this._cubies.map(cubie => Array.from(cubie, sticker => sticker.orientation.clone()));
     }
 
-    finishRotation(move) {
+    commit(move) {
         this._cubies.forEach((cubie, index) => cubie.update(move, this._startOrientations[index]));
     }
 
@@ -197,17 +197,20 @@ class Layer {
         return pos.clone();
     }
 
-    update(move, angle) {
+    animate(progress, axis, direction) {
+        const smooth = progress * progress * (3 - 2 * progress);
+        const angle = direction * Math.PI / 2 * smooth;
+
         this._cubies.forEach((cubie, row) => {
-            cubie.position.copy(this.#rotateContinuous(this._startPositions[row], move.axis, angle));
-            cubie.orientation.copy(rotatedOrientation(this._startOrientations[row], move.axis, angle));
+            cubie.position.copy(this.#rotateContinuous(this._startPositions[row], axis, angle));
+            cubie.orientation.copy(rotatedOrientation(this._startOrientations[row], axis, angle));
 
             // Stickers
             let col = 0;
             for (const sticker of cubie) {
-                const normal = this.#rotateContinuous(this._startNormals[row][col], move.axis, angle);
+                const normal = this.#rotateContinuous(this._startNormals[row][col], axis, angle);
                 sticker.update(cubie.position, normal);
-                sticker.orientation.copy(rotatedOrientation(this._startStickerOrientations[row][col], move.axis, angle));
+                sticker.orientation.copy(rotatedOrientation(this._startStickerOrientations[row][col], axis, angle));
                 col++;
             }
         });
@@ -259,14 +262,10 @@ class Cube {
 
         const elapsed = timeStamp - rotation.start;
         const progress = Math.min(elapsed / this._duration, 1);
-        const smooth = progress * progress * (3 - 2 * progress);
-        const angle = rotation.move.direction * Math.PI / 2 * smooth;
-        const { layer, move } = rotation;
-
-        rotation.layer.update(move, angle);
+        rotation.layer.animate(progress, rotation.move.axis, rotation.move.direction);
 
         if (progress >= 1)
-            this.finishRotation(layer, move);
+            this.finishRotation(rotation.layer, rotation.move);
     }
 
     rotateLayer(move) {
@@ -278,7 +277,7 @@ class Cube {
     set duration(value) { this._duration = value; }
 
     finishRotation(layer, move) {
-        layer.finishRotation(move);
+        layer.commit(move);
         this._rotation = null;
         this._rotating = false;
         this.processQueue();
