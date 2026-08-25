@@ -176,6 +176,7 @@ class Layer {
         this._startOrientations = this._cubies.map(cubie => cubie.orientation.clone());
         this._startNormals = this._cubies.map(cubie => Array.from(cubie, sticker => sticker.normal.clone()));
         this._startStickerOrientations = this._cubies.map(cubie => Array.from(cubie, sticker => sticker.orientation.clone()));
+        Object.freeze(this);
     }
 
     commit(move) {
@@ -220,7 +221,6 @@ class Layer {
 class Cube {
     constructor() {
         this._cubies = [];
-
         for (let x = -1; x <= 1; x++)
             for (let y = -1; y <= 1; y++)
                 for (let z = -1; z <= 1; z++)
