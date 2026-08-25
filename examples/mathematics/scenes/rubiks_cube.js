@@ -1,5 +1,7 @@
-import { MeshStandardMaterial } from 'three';
-import { Block, Box, Simulation, Vec3 } from "../../../src/index.js";
+import {
+    Euler, MeshStandardMaterial, Quaternion, Vector3
+} from 'three';
+import { Block, Box, Simulation, Slider, Vec3, Range } from "../../../src/index.js";
 
 const SIZE = 1;
 const GAP = 0.06;
@@ -168,6 +170,8 @@ class Cube {
 
         this.rotating = false;
         this.queue = [];
+        this._rotation = null;
+        this._duration = 500;
     }
 
     move(key, reverse = false) {
@@ -198,21 +202,18 @@ class Cube {
         this.rotateLayer(move.key, move.reverse);
     }
 
-    #orientationForContinuousNormal(normalVector) {
-        // Voor de animatie is de exacte oriëntatie minder
-        // belangrijk dan de positie. We gebruiken hier
-        // dezelfde conventie als de stickers.
+    #rotatedOrientation(orientation, axis, angle) {
+        const startRotation = new Quaternion().setFromEuler(new Euler(orientation.x, orientation.y, orientation.z));
 
-        if (Math.abs(normalVector.z) > 0.99)
-            return vec(0, normalVector.z > 0 ? Math.PI : 0, 0);
+        const axisVector = axis === Axis.x ? new Vector3(1, 0, 0) :
+                axis === Axis.y ? new Vector3(0, 1, 0) : new Vector3(0, 0, 1);
 
-        if (Math.abs(normalVector.x) > 0.99)
-            return vec(0, normalVector.x > 0 ? Math.PI / 2 : -Math.PI / 2, 0);
+        const rotation = new Quaternion().setFromAxisAngle(axisVector, angle);
 
-        if (Math.abs(normalVector.y) > 0.99)
-            return vec(normalVector.y > 0 ? -Math.PI / 2 : Math.PI / 2, 0, 0);
-
-        return vec(0, 0, 0);
+        // World-space rotation vóór de bestaande orientation.
+        rotation.multiply(startRotation);
+        const result = new Euler().setFromQuaternion(rotation);
+        return vec(result.x, result.y, result.z);
     }
 
     #rotateContinuous(pos, axis, angle) {
@@ -245,74 +246,96 @@ class Cube {
         return v.clone();
     }
 
-    rotateLayer(key, reverse) {
-        this.rotating = true;
-        const move = Cube.MovesGroup[key];
-        const layer = this.cubies.filter(cubie => cubie.grid[move.axis] === move.layer);
-        let direction = move.direction;
+    update(timeStamp) {
+        if (!this._rotation)
+            return;
 
+        const rotation = this._rotation;
+
+        if (rotation.start === null)
+            rotation.start = timeStamp;
+
+        const elapsed = timeStamp - rotation.start;
+        const progress = Math.min(elapsed / rotation.duration, 1);
+        const smooth = progress * progress * (3 - 2 * progress);
+        const angle = rotation.direction * Math.PI / 2 * smooth;
+
+        const { selected, definition } = rotation;
+
+        // Cubies
+        for (let i = 0; i < selected.length; i++) {
+            const cubie = selected[i];
+            const position = this.#rotateContinuous(rotation.startPositions[i], definition.axis, angle);
+            cubie.position.copy(position);
+            cubie.orientation.copy(this.#rotatedOrientation(rotation.startOrientations[i], definition.axis, angle));
+
+            // Stickers
+            for (let j = 0; j < cubie.stickers.length; j++) {
+                const sticker = cubie.stickers[j];
+                const normal = this.#rotateContinuous(rotation.startNormals[i][j], definition.axis, angle);
+                sticker.position.set(
+                    position.x + normal.x * STICKER_OFFSET,
+                    position.y + normal.y * STICKER_OFFSET,
+                    position.z + normal.z * STICKER_OFFSET
+                );
+
+                sticker.orientation.copy(this.#rotatedOrientation(rotation.startStickerOrientations[i][j], definition.axis, angle));
+            }
+        }
+
+        if (progress >= 1)
+            this.finishRotation();
+    }
+
+    rotateLayer(key, reverse) {
+        const definition = Cube.MovesGroup[key];
+        this.rotating = true;
+        const selected = this.cubies.filter(cubie => cubie.grid[definition.axis] === definition.layer);
+
+        let direction = definition.direction;
         if (reverse)
             direction *= -1;
-        this.rotateIfNeeded(layer, move.axis, direction);
-    }
 
-    rotateIfNeeded(layer, axis, direction) {
-        const startPositions = layer.map(cubie => cubie.position.clone());
-        const startNormals = layer.map(cubie => cubie.stickers.map(sticker => sticker.normal.clone()));
-        const duration = 180;
-        const start = performance.now();
+        this._rotation = {
+            selected,
+            definition,
+            direction,
 
-        const animate = now => {
-            const elapsed = now - start;
-            const progress = Math.min(elapsed / duration, 1);
-
-            // Smoothstep
-            const smooth = progress * progress * (3 - 2 * progress);
-            const angle = direction * Math.PI / 2 * smooth;
-
-            // Animatie van de positie
-            for (let i = 0; i < layer.length; i++) {
-                const cubie = layer[i];
-                const p = this.#rotateContinuous(startPositions[i], axis, angle);
-                cubie.position.copy(p);
-
-                for (let j = 0; j < cubie.stickers.length; j++) {
-                    const sticker = cubie.stickers[j];
-                    const normal = this.#rotateContinuous(startNormals[i][j], axis, angle);
-
-                    // During the animation we temporarily keep track of the normal
-                    sticker.position.set(
-                        p.x + normal.x * STICKER_OFFSET,
-                        p.y + normal.y * STICKER_OFFSET,
-                        p.z + normal.z * STICKER_OFFSET
-                    );
-
-                    sticker.orientation.copy(this.#orientationForContinuousNormal(normal));
-                }
-            }
-
-            if (progress >= 1)
-                this.finishRotation(layer, axis, direction);
-            else
-                requestAnimationFrame(animate);
+            startPositions: selected.map(cubie => cubie.position.clone()),
+            startOrientations: selected.map(cubie => cubie.orientation.clone()),
+            startNormals: selected.map(cubie => cubie.stickers.map(sticker => sticker.normal.clone())),
+            startStickerOrientations: selected.map(cubie => cubie.stickers.map(sticker => sticker.orientation.clone())),
+            start: null,
+            duration: this._duration
         };
-        requestAnimationFrame(animate);
     }
 
-    finishRotation(layer, axis, direction) {
-        for (const cubie of layer) {
-            // Exact new grid position
-            cubie.grid = this.#rotateDiscrete(cubie.grid, axis, direction);
+    set duration(value) { this._duration = value; }
+
+    finishRotation() {
+        const rotation = this._rotation;
+        const {selected, definition, direction} = rotation;
+
+        for (let i = 0; i < selected.length; i++) {
+            const cubie = selected[i];
+
+            // Exact grid position
+            cubie.grid = this.#rotateDiscrete(cubie.grid, definition.axis, direction);
             cubie.position.set(cubie.grid.x * STEP, cubie.grid.y * STEP, cubie.grid.z * STEP);
 
-            // Exact rounding off of normal vectors
+            // Exact orientation
+            cubie.orientation.copy(this.#rotatedOrientation(rotation.startOrientations[i], definition.axis, direction * Math.PI / 2));
+
+            // Exact sticker state
             for (const sticker of cubie) {
-                sticker.normal = this.#rotateDiscrete(sticker.normal, axis, direction);
+                sticker.normal = this.#rotateDiscrete(sticker.normal, definition.axis, direction);
                 sticker.update();
             }
         }
 
+        this._rotation = null;
         this.rotating = false;
+
         this.processQueue();
     }
 }
@@ -332,7 +355,14 @@ const simulation = Simulation.with(
             fieldOfView: 45
         },
         headUpDisplay: false
-    });
+    })
+    .onFrame(timeStamp => cube.update(timeStamp))
+    .append(new Slider("Rotation speed")
+        .on(cube)
+        .withProperty("duration")
+        .withValue(500)
+        .withRange(new Range(10, 5000, 1))
+    );
 
 // Bind view to model
 for (const cubie of cube) {
