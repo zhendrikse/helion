@@ -141,28 +141,29 @@ class Cubie extends Block {
 }
 
 class Move extends Transformation {
-    static MovesGroup = {
+    static MovesGroup = Object.freeze({
         r: { axis: Axis.x, layer:  1, direction: Direction.backward },
         l: { axis: Axis.x, layer: -1, direction: Direction.forward  },
         u: { axis: Axis.y, layer:  1, direction: Direction.backward },
         d: { axis: Axis.y, layer: -1, direction: Direction.forward  },
         f: { axis: Axis.z, layer:  1, direction: Direction.backward },
         b: { axis: Axis.z, layer: -1, direction: Direction.forward  }
-    };
+    });
 
     constructor(key, reverse=false) {
         super();
-        this._key = key.toLowerCase();
-        this._direction = reverse ? -Move.MovesGroup[this._key].direction : Move.MovesGroup[this._key].direction;
+        const data = Move.MovesGroup[key.toLowerCase()];
+        if (!data)
+            throw new Error(`Unknown move: ${key}`);
+
+        this.key = key.toLowerCase();
+        this.axis = data.axis;
+        this.layer = data.layer;
+        this.direction = reverse ? -data.direction : data.direction;
+        Object.freeze(this);
     }
 
-    get moveData() { return Move.MovesGroup[this._key]; }
-    get direction() { return this._direction; }
-
     applyTo(cube) {
-        if (!Move.MovesGroup[this._key])
-            return;
-
         cube.addToQueue(this);
         cube.processQueue();
     }
@@ -178,10 +179,7 @@ class Layer {
     }
 
     finishRotation(move) {
-        this._cubies.forEach((cubie, index) => {
-            const effectiveMove = { ...move.moveData, direction: move.direction };
-            cubie.update(effectiveMove, this._startOrientations[index]);
-        });
+        this._cubies.forEach((cubie, index) => cubie.update(move, this._startOrientations[index]));
     }
 
     #rotateContinuous(pos, axis, angle) {
@@ -231,7 +229,7 @@ class Cube {
         this._duration = 500;
     }
 
-    cubiesInLayerFor = move => this._cubies.filter(cubie => cubie.isPartOfMove(move.moveData));
+    cubiesInLayerFor = move => this._cubies.filter(cubie => cubie.isPartOfMove(move));
 
     apply = move => move.applyTo(this);
 
@@ -265,7 +263,7 @@ class Cube {
         const angle = rotation.move.direction * Math.PI / 2 * smooth;
         const { layer, move } = rotation;
 
-        rotation.layer.update(move.moveData, angle);
+        rotation.layer.update(move, angle);
 
         if (progress >= 1)
             this.finishRotation(layer, move);
