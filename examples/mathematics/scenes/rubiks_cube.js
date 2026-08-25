@@ -1,7 +1,7 @@
 import {
     Euler, MeshStandardMaterial, Quaternion, Vector3
 } from 'three';
-import { Block, Box, Simulation, Slider, Vec3, Range } from "../../../src/index.js";
+import {Block, Box, Simulation, Slider, Vec3, Range, Button} from "../../../src/index.js";
 
 const SIZE = 1;
 const GAP = 0.06;
@@ -29,6 +29,15 @@ const Colors = Object.freeze({
     down:   0x33cc33
 });
 
+const StickerData = Object.freeze({
+    front: {orientation: vec(0, 0, 0), normal: vec( 0,  0,  1)},
+    back:  {orientation: vec(0, Math.PI, 0), normal: vec( 0,  0, -1)},
+    right: {orientation: vec(0, Math.PI / 2, 0), normal: vec( 1,  0,  0)},
+    left:  {orientation: vec(0, -Math.PI / 2, 0), normal: vec(-1,  0,  0)},
+    up:    {orientation: vec(-Math.PI / 2, 0, 0), normal: vec( 0,  1,  0)},
+    down:  {orientation: vec(Math.PI / 2, 0, 0), normal: vec( 0, -1,  0)}
+});
+
 const Side = Object.freeze({
     right:  1,
     left:  -1,
@@ -38,56 +47,49 @@ const Side = Object.freeze({
     back:  -1
 });
 
-const SideNew = Object.freeze({
-    right:  { name: "right", normal: vec( 1,  0,  0) },
-    left:   { name: "left",  normal: vec(-1,  0,  0) },
-    up:     { name: "up",    normal: vec( 0,  1,  0) },
-    down:   { name: "down",  normal: vec( 0, -1,  0) },
-    front:  { name: "front", normal: vec( 0,  0,  1) },
-    back:   { name: "back",  normal: vec( 0,  0, -1) }
-});
+const sidesFrom = (x, y, z) => {
+    const sides = [];
+    if (z === 1)
+        sides.push("front");
+
+    if (z === -1)
+        sides.push("back");
+
+    if (x === 1)
+        sides.push("right");
+
+    if (x === -1)
+        sides.push("left");
+
+    if (y === 1)
+        sides.push("up");
+
+    if (y === -1)
+        sides.push("down");
+
+    return sides;
+}
 
 class Sticker extends Block {
-    constructor(cubie, side) {
+    constructor(cubie, side, stickerData) {
         super({ size: new Vec3(0.85, 0.85, 0.035) });
-        this.cubie = cubie;
-        this.side = side.name;
-        this.normal = side.normal.clone(); // Normal vector with respect to coordinate frame of cube
+        this._cubie = cubie;
+        this._side = side;
+        this.normal= stickerData.normal.clone(); // Normal vector with respect to coordinate frame of cube
+        this.orientation = stickerData.orientation.clone();
         this.update();
     }
 
     update() {
-        const p = this.cubie.position;
+        const p = this._cubie.position;
         this.position.set(
             p.x + this.normal.x * STICKER_OFFSET,
             p.y + this.normal.y * STICKER_OFFSET,
             p.z + this.normal.z * STICKER_OFFSET
         );
-
-        this.orientation.copy(this.#orientationForNormal());
     }
 
-    #orientationForNormal() {
-        if (this.normal.z === Side.front)
-            return vec(0, 0, 0);
-
-        if (this.normal.z === Side.back)
-            return vec(0, Math.PI, 0);
-
-        if (this.normal.x === Side.right)
-            return vec(0, Math.PI / 2, 0);
-
-        if (this.normal.x === Side.left)
-            return vec(0, -Math.PI / 2, 0);
-
-        if (this.normal.y === Side.up)
-            return vec(-Math.PI / 2, 0, 0);
-
-        if (this.normal.y === Side.down)
-            return vec(Math.PI / 2, 0, 0);
-
-        return vec(0, 0, 0);
-    }
+    get side() { return this._side; }
 }
 
 class Cubie extends Block {
@@ -97,32 +99,16 @@ class Cubie extends Block {
             size: new Vec3(SIZE, SIZE, SIZE)
         });
         this.grid = vec(x, y, z);
-        this.stickers = [];
-
-        if (z === Side.front)
-            this.stickers.push(new Sticker(this, SideNew.front));
-
-        if (z === Side.back)
-            this.stickers.push(new Sticker(this, SideNew.back));
-
-        if (x === Side.right)
-            this.stickers.push(new Sticker(this, SideNew.right));
-
-        if (x === Side.left)
-            this.stickers.push(new Sticker(this, SideNew.left));
-
-        if (y === Side.up)
-            this.stickers.push(new Sticker(this, SideNew.up));
-
-        if (y === Side.down)
-            this.stickers.push(new Sticker(this, SideNew.down));
+        this._stickers = [];
+        this._sides = sidesFrom(x, y, z);
+        this._sides.forEach(side => this._stickers.push(new Sticker(this, side, StickerData[side])));
     }
 
     /**
      * @returns {ArrayIterator<Sticker>}
      */
     [Symbol.iterator]() {
-        return this.stickers[Symbol.iterator]();
+        return this._stickers[Symbol.iterator]();
     }
 }
 
@@ -263,23 +249,24 @@ class Cube {
         const { selected, definition } = rotation;
 
         // Cubies
-        for (let i = 0; i < selected.length; i++) {
-            const cubie = selected[i];
-            const position = this.#rotateContinuous(rotation.startPositions[i], definition.axis, angle);
+        for (let row = 0; row < selected.length; row++) {
+            const cubie = selected[row];
+            const position = this.#rotateContinuous(rotation.startPositions[row], definition.axis, angle);
             cubie.position.copy(position);
-            cubie.orientation.copy(this.#rotatedOrientation(rotation.startOrientations[i], definition.axis, angle));
+            cubie.orientation.copy(this.#rotatedOrientation(rotation.startOrientations[row], definition.axis, angle));
 
             // Stickers
-            for (let j = 0; j < cubie.stickers.length; j++) {
-                const sticker = cubie.stickers[j];
-                const normal = this.#rotateContinuous(rotation.startNormals[i][j], definition.axis, angle);
+            let col = 0;
+            for (const sticker of cubie) {
+                const normal = this.#rotateContinuous(rotation.startNormals[row][col], definition.axis, angle);
                 sticker.position.set(
                     position.x + normal.x * STICKER_OFFSET,
                     position.y + normal.y * STICKER_OFFSET,
                     position.z + normal.z * STICKER_OFFSET
                 );
 
-                sticker.orientation.copy(this.#rotatedOrientation(rotation.startStickerOrientations[i][j], definition.axis, angle));
+                sticker.orientation.copy(this.#rotatedOrientation(rotation.startStickerOrientations[row][col], definition.axis, angle));
+                col++;
             }
         }
 
@@ -303,8 +290,8 @@ class Cube {
 
             startPositions: selected.map(cubie => cubie.position.clone()),
             startOrientations: selected.map(cubie => cubie.orientation.clone()),
-            startNormals: selected.map(cubie => cubie.stickers.map(sticker => sticker.normal.clone())),
-            startStickerOrientations: selected.map(cubie => cubie.stickers.map(sticker => sticker.orientation.clone())),
+            startNormals: selected.map(cubie => Array.from(cubie, sticker => sticker.normal.clone())),
+            startStickerOrientations: selected.map(cubie => Array.from(cubie, sticker => sticker.orientation.clone())),
             start: null,
             duration: this._duration
         };
@@ -354,31 +341,57 @@ const simulation = Simulation.with(
             position: new Vec3(9, 8, 11).multiplyScalar(.5),
             fieldOfView: 45
         },
-        headUpDisplay: false
+        headUpDisplay: false,
+        parameterMenuCollapsed: false
     })
     .onFrame(timeStamp => cube.update(timeStamp))
+    .append(new Button("Forward: ").withText("F").addEventListener("click", () => cube.move("f"))
+        .togetherWith(new Button().withText("B").addEventListener("click", () => cube.move("b"))
+            .togetherWith(new Button().withText("U").addEventListener("click", () => cube.move("u"))
+                .togetherWith(new Button().withText("D").addEventListener("click", () => cube.move("d"))
+                    .togetherWith(new Button().withText("R").addEventListener("click", () => cube.move("r"))
+                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.move("l"))
+                        )
+                    )
+                )
+            )
+        )
+    )
+    .append(new Button("Backward: ").withText("F").addEventListener("click", () => cube.move("f", true))
+        .togetherWith(new Button().withText("B").addEventListener("click", () => cube.move("b", true))
+            .togetherWith(new Button().withText("U").addEventListener("click", () => cube.move("u", true))
+                .togetherWith(new Button().withText("D").addEventListener("click", () => cube.move("d", true))
+                    .togetherWith(new Button().withText("R").addEventListener("click", () => cube.move("r", true))
+                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.move("l", true))
+                        )
+                    )
+                )
+            )
+        )
+    )
     .append(new Slider("Rotation speed")
         .on(cube)
         .withProperty("duration")
         .withValue(500)
-        .withRange(new Range(10, 5000, 1))
+        .withRange(new Range(10, 1000, 1))
     );
 
 // Bind view to model
 for (const cubie of cube) {
     simulation.bind(cubie.alwaysWith(new Box({ color: 0x111111 })));
 
-    for (const sticker of cubie)
+    for (const sticker of cubie) {
         simulation.bind(sticker.alwaysWith(
             new Box({
                 color: Colors[sticker.side],
-                material:  new MeshStandardMaterial({
+                material: new MeshStandardMaterial({
                     emissive: Colors[sticker.side],
                     emissiveIntensity: 0.2,
                     roughness: 0.45
                 })
             })
         ));
+    }
 }
 
 const validKeys = new Set(["r", "l", "u", "d", "f", "b"]);
