@@ -246,17 +246,19 @@ class Cube {
     }
 
     rotateLayer(key, reverse) {
-        const move = Cube.MovesGroup[key];
         this.rotating = true;
-        const selected = this.cubies.filter(cubie => cubie.grid[move.axis] === move.layer);
+        const move = Cube.MovesGroup[key];
+        const layer = this.cubies.filter(cubie => cubie.grid[move.axis] === move.layer);
         let direction = move.direction;
 
         if (reverse)
             direction *= -1;
+        this.rotateIfNeeded(layer, move.axis, direction);
+    }
 
-        const startPositions = selected.map(cubie => cubie.position.clone());
-        const startNormals = selected.map(cubie => cubie.stickers.map(sticker => sticker.normal.clone()));
-
+    rotateIfNeeded(layer, axis, direction) {
+        const startPositions = layer.map(cubie => cubie.position.clone());
+        const startNormals = layer.map(cubie => cubie.stickers.map(sticker => sticker.normal.clone()));
         const duration = 180;
         const start = performance.now();
 
@@ -269,14 +271,14 @@ class Cube {
             const angle = direction * Math.PI / 2 * smooth;
 
             // Animatie van de positie
-            for (let i = 0; i < selected.length; i++) {
-                const cubie = selected[i];
-                const p = this.#rotateContinuous(startPositions[i], move.axis, angle);
+            for (let i = 0; i < layer.length; i++) {
+                const cubie = layer[i];
+                const p = this.#rotateContinuous(startPositions[i], axis, angle);
                 cubie.position.copy(p);
 
                 for (let j = 0; j < cubie.stickers.length; j++) {
                     const sticker = cubie.stickers[j];
-                    const normal = this.#rotateContinuous(startNormals[i][j], move.axis, angle);
+                    const normal = this.#rotateContinuous(startNormals[i][j], axis, angle);
 
                     // During the animation we temporarily keep track of the normal
                     sticker.position.set(
@@ -289,24 +291,23 @@ class Cube {
                 }
             }
 
-            if (progress < 1)
-                requestAnimationFrame(animate);
+            if (progress >= 1)
+                this.finishRotation(layer, axis, direction);
             else
-                this.finishRotation(selected, move, direction);
+                requestAnimationFrame(animate);
         };
-
         requestAnimationFrame(animate);
     }
 
-    finishRotation(selected, definition, direction) {
-        for (const cubie of selected) {
+    finishRotation(layer, axis, direction) {
+        for (const cubie of layer) {
             // Exact new grid position
-            cubie.grid = this.#rotateDiscrete(cubie.grid, definition.axis, direction);
+            cubie.grid = this.#rotateDiscrete(cubie.grid, axis, direction);
             cubie.position.set(cubie.grid.x * STEP, cubie.grid.y * STEP, cubie.grid.z * STEP);
 
             // Exact rounding off of normal vectors
             for (const sticker of cubie) {
-                sticker.normal = this.#rotateDiscrete(sticker.normal, definition.axis, direction);
+                sticker.normal = this.#rotateDiscrete(sticker.normal, axis, direction);
                 sticker.update();
             }
         }
