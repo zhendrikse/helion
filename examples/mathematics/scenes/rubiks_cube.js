@@ -56,29 +56,6 @@ const Face = Object.freeze({
     back:   "back"
 });
 
-const sidesFrom = (x, y, z) => {
-    const sides = [];
-    if (z === 1)
-        sides.push(Face.front);
-
-    if (z === -1)
-        sides.push(Face.back);
-
-    if (x === 1)
-        sides.push(Face.right);
-
-    if (x === -1)
-        sides.push(Face.left);
-
-    if (y === 1)
-        sides.push(Face.up);
-
-    if (y === -1)
-        sides.push(Face.down);
-
-    return sides;
-}
-
 function rotateDiscrete(vector, axis, direction) {
     const {x, y, z} = vector;
 
@@ -138,11 +115,42 @@ class Cubie extends Block {
             position: vec(x, y, z).multiplyScalar(STEP),
             size: new Vec3(SIZE, SIZE, SIZE)
         });
+
         this._grid = vec(x, y, z);
         this._stickers = [];
-        this._sides = sidesFrom(x, y, z);
-        this._sides.forEach(side => this._stickers.push(new Sticker(this.position, side, StickerData[side])));
+
+        if (z === 1)
+            this._stickers.push(
+                new Sticker(this.position, Face.front, StickerData.front)
+            );
+
+        if (z === -1)
+            this._stickers.push(
+                new Sticker(this.position, Face.back, StickerData.back)
+            );
+
+        if (x === 1)
+            this._stickers.push(
+                new Sticker(this.position, Face.right, StickerData.right)
+            );
+
+        if (x === -1)
+            this._stickers.push(
+                new Sticker(this.position, Face.left, StickerData.left)
+            );
+
+        if (y === 1)
+            this._stickers.push(
+                new Sticker(this.position, Face.up, StickerData.up)
+            );
+
+        if (y === -1)
+            this._stickers.push(
+                new Sticker(this.position, Face.down, StickerData.down)
+            );
     }
+
+    isPartOfMove = (move) => this._grid[move.axis] === move.layer;
 
     /**
      * @returns {ArrayIterator<Sticker>}
@@ -159,18 +167,17 @@ class Cubie extends Block {
             sticker.rotate(axis, direction);
             sticker.update(this.position);
         }
-        this._sides = sidesFrom(this._grid.x, this._grid.y, this._grid.z);
     }
 }
 
 class Move extends Transformation {
     static MovesGroup = {
-        r: { axis: Axis.x, direction: Direction.backward, side: Face.right },
-        l: { axis: Axis.x, direction: Direction.forward,  side: Face.left },
-        u: { axis: Axis.y, direction: Direction.backward, side: Face.up },
-        d: { axis: Axis.y, direction: Direction.forward,  side: Face.down },
-        f: { axis: Axis.z, direction: Direction.backward, side: Face.front },
-        b: { axis: Axis.z, direction: Direction.forward,  side: Face.back }
+        r: { axis: Axis.x, layer:  1, direction: Direction.backward },
+        l: { axis: Axis.x, layer: -1, direction: Direction.forward  },
+        u: { axis: Axis.y, layer:  1, direction: Direction.backward },
+        d: { axis: Axis.y, layer: -1, direction: Direction.forward  },
+        f: { axis: Axis.z, layer:  1, direction: Direction.backward },
+        b: { axis: Axis.z, layer: -1, direction: Direction.forward  }
     };
 
     constructor(key, reverse=false) {
@@ -195,9 +202,9 @@ class Cube {
     constructor() {
         this._cubies = [];
 
-        for (let x = FaceCoordinate.left; x <= FaceCoordinate.right; x++)
-            for (let y = FaceCoordinate.down; y <= FaceCoordinate.up; y++)
-                for (let z = FaceCoordinate.back; z <= FaceCoordinate.front; z++)
+        for (let x = -1; x <= 1; x++)
+            for (let y = -1; y <= 1; y++)
+                for (let z = -1; z <= 1; z++)
                     this._cubies.push(new Cubie(x, y, z));
 
         this._rotating = false;
@@ -206,7 +213,10 @@ class Cube {
         this._duration = 500;
     }
 
-    cubiesInLayerFor = (move) => this._cubies.filter(cubie => cubie._sides.includes(move.side));
+    cubiesInLayerFor(move) {
+        return this._cubies.filter(cubie => cubie.isPartOfMove(move));
+    }
+
 
     apply(move) {
         move.applyTo(this);
