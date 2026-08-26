@@ -59,6 +59,7 @@ class Sticker extends Block {
         this.normal= stickerData.normal.clone(); // Normal vector with respect to coordinate frame of cube
         this.orientation = stickerData.orientation.clone();
         this.update(position);
+        Object.freeze(this);
     }
 
     update(position, normal=this.normal) {
@@ -73,7 +74,6 @@ class Sticker extends Block {
         this.normal.rotate(move.axis, move.angle);
         this.update(cubePosition);
     }
-
 
     get side() { return this._side; }
 }
@@ -122,7 +122,7 @@ class Cubie extends Block {
         this._grid.set(Math.round(rotatedGrid.x), Math.round(rotatedGrid.y), Math.round(rotatedGrid.z));
 
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
-        this.orientation.copy(rotatedOrientation(this._startOrientation, move.axis, move.direction * Math.PI / 2));
+        this.orientation.copy(rotatedOrientation(this._startOrientation, move.axis, move.angle));
 
         this._stickers.forEach(sticker => sticker.commit(move, this.position));
     }
@@ -147,11 +147,10 @@ class Move extends Transformation {
         this.key = key.toLowerCase();
         this.axis = data.axis;
         this.layer = data.layer;
-        this.direction = reverse ? -data.direction : data.direction;
+        const direction = reverse ? -data.direction : data.direction;
+        this.angle = direction * Math.PI / 2;
         Object.freeze(this);
     }
-
-    get angle() { return this.direction * Math.PI / 2; }
 
     applyTo(cube) {
         cube.addToQueue(this);
@@ -163,42 +162,24 @@ class Layer {
     constructor(cubies) {
         this._cubies = cubies;
         this._startPositions = this._cubies.map(cubie => cubie.position.clone());
-        this._startNormals = this._cubies.map(cubie => Array.from(cubie, sticker => sticker.normal.clone()));
         this._startStickerOrientations = this._cubies.map(cubie => Array.from(cubie, sticker => sticker.orientation.clone()));
         Object.freeze(this);
     }
 
     commit = move => this._cubies.forEach(cubie => cubie.commit(move));
 
-    #rotateContinuous(pos, axis, angle) {
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        if (axis === Axis.x)
-            return vec(pos.x, cos * pos.y - sin * pos.z, sin * pos.y + cos * pos.z);
-
-        if (axis === Axis.y)
-            return vec(cos * pos.x + sin * pos.z, pos.y, -sin * pos.x + cos * pos.z);
-
-        if (axis === Axis.z)
-            return vec(cos * pos.x - sin * pos.y, sin * pos.x + cos * pos.y, pos.z);
-
-        return pos.clone();
-    }
-
-    animate(progress, axis, direction) {
-        const smooth = progress * progress * (3 - 2 * progress);
-        const angle = direction * Math.PI / 2 * smooth;
-
+    animate(progress, axis, angle) {
+        const smoothAngle = angle * progress * progress * (3 - 2 * progress);
         this._cubies.forEach((cubie, row) => {
-            cubie.position.copy(this.#rotateContinuous(this._startPositions[row], axis, angle));
-            cubie.orientation.copy(rotatedOrientation(cubie._startOrientation, axis, angle));
+            cubie.position.copy(this._startPositions[row].clone().rotate(axis, smoothAngle));
+            cubie.orientation.copy(rotatedOrientation(cubie._startOrientation, axis, smoothAngle));
 
             // Stickers
             let col = 0;
             for (const sticker of cubie) {
-                const normal = this.#rotateContinuous(this._startNormals[row][col], axis, angle);
+                const normal = sticker.normal.clone().rotate(axis, smoothAngle);
                 sticker.update(cubie.position, normal);
-                sticker.orientation.copy(rotatedOrientation(this._startStickerOrientations[row][col], axis, angle));
+                sticker.orientation.copy(rotatedOrientation(this._startStickerOrientations[row][col], axis, smoothAngle));
                 col++;
             }
         });
@@ -249,7 +230,7 @@ class Cube {
 
         const elapsed = timeStamp - rotation.start;
         const progress = Math.min(elapsed / this._duration, 1);
-        rotation.layer.animate(progress, rotation.move.axis, rotation.move.direction);
+        rotation.layer.animate(progress, rotation.move.axis, rotation.move.angle);
 
         if (progress >= 1)
             this.finishRotation(rotation.layer, rotation.move);

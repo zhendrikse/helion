@@ -214,6 +214,42 @@ export class Vec3 {
         return new Vec3(this.x, this.y, this.z);
     }
 
+    /**
+     * Rotates the body around a world-space axis.
+     *
+     * @param {"x"|"y"|"z"} axis
+     * @param {number} angle Angle in radians.
+     * @returns {this}
+     */
+    rotate(axis, angle) {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+
+        const { x, y, z } = this;
+
+        switch (axis) {
+            case "x":
+                this.y = cos * y - sin * z;
+                this.z = sin * y + cos * z;
+                break;
+
+            case "y":
+                this.x = cos * x + sin * z;
+                this.z = -sin * x + cos * z;
+                break;
+
+            case "z":
+                this.x = cos * x - sin * y;
+                this.y = sin * x + cos * y;
+                break;
+
+            default:
+                throw new Error(`Unknown rotation axis: ${axis}`);
+        }
+
+        return this;
+    }
+
     cross(v) {
         const x = this.y * v.z - this.z * v.y;
         const y = this.z * v.x - this.x * v.z;

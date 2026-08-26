@@ -115,6 +115,12 @@ export class Body extends MathPhysicsModelBehavior{
         this.orientation.copy(this._initialOrientation);
     }
 
+    /**
+     * Returns the electric field at a point, when charge unequal to zero.
+     *
+     * @param {Vec3} point
+     * @returns {Vec3} electric field as vector.
+     */
     fieldAt(point) {
         const rVec = point.clone().sub(this._state.position);
         const distanceSquared = rVec.dot(rVec);
@@ -124,13 +130,26 @@ export class Body extends MathPhysicsModelBehavior{
             rVec.normalize().multiplyScalar(this._state.charge / distanceSquared);
     }
 
+    /**
+     * Rotates the body around a world-space axis.
+     *
+     * @param {"x"|"y"|"z"} axis
+     * @param {number} angle Angle in radians.
+     * @returns {this}
+     */
+    rotate(axis, angle) {
+        this.orientation[axis] += angle;
+        return this;
+    }
+
     integrate(dt = 0.01, integrator = Integrators.symplecticEulerStep) {
         if (this.fixed)
-            return;
+            return this;
 
         this._state.acceleration.copy(this.force.multiplyScalar(1 / this.mass));
         this._force.set(0, 0, 0); // Force has been divided by mass => thus dirty => thus clean
         integrator(this._state, dt);
+        return this;
     }
 
     positionVectorTo(other) { return other.position.clone().sub(this.position); }
