@@ -38,21 +38,6 @@ const Face = Object.freeze({
     back:   "back"
 });
 
-function rotateDiscrete(vector, move) {
-    const {x, y, z} = vector;
-
-    if (move.axis === Axis.x)
-        return move.direction === Direction.forward ? vec(x, -z, y) : vec(x, z, -y);
-
-    if (move.axis === Axis.y)
-        return move.direction === Direction.forward ? vec(z, y, -x) : vec(-z, y, x);
-
-    if (move.axis === Axis.z)
-        return move.direction === Direction.forward ? vec(-y, x, z) : vec(y, -x, z);
-
-    return vector.clone();
-}
-
 function rotatedOrientation(orientation, axis, angle) {
     const startRotation = new Quaternion().setFromEuler(new Euler(orientation.x, orientation.y, orientation.z));
 
@@ -84,9 +69,11 @@ class Sticker extends Block {
         );
     }
 
-    rotate(move) {
-        this.normal = rotateDiscrete(this.normal, move);
+    commit(move, cubePosition) {
+        this.normal.rotate(move.axis, move.angle);
+        this.update(cubePosition);
     }
+
 
     get side() { return this._side; }
 }
@@ -100,6 +87,7 @@ class Cubie extends Block {
 
         this._grid = vec(x, y, z);
         this._stickers = [];
+        this._startOrientation = this.orientation.clone();
 
         if (z === 1)
             this._stickers.push(new Sticker(this.position, Face.front, StickerData.front));
@@ -129,14 +117,14 @@ class Cubie extends Block {
         return this._stickers[Symbol.iterator]();
     }
 
-    update(move, startOrientation) {
-        this._grid = rotateDiscrete(this._grid, move);
+    commit(move) {
+        const rotatedGrid = this._grid.clone().rotate(move.axis, move.angle);
+        this._grid.set(Math.round(rotatedGrid.x), Math.round(rotatedGrid.y), Math.round(rotatedGrid.z));
+
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
-        this.orientation.copy(rotatedOrientation(startOrientation, move.axis, move.direction * Math.PI / 2));
-        for (const sticker of this) {
-            sticker.rotate(move);
-            sticker.update(this.position);
-        }
+        this.orientation.copy(rotatedOrientation(this._startOrientation, move.axis, move.direction * Math.PI / 2));
+
+        this._stickers.forEach(sticker => sticker.commit(move, this.position));
     }
 }
 
@@ -163,6 +151,8 @@ class Move extends Transformation {
         Object.freeze(this);
     }
 
+    get angle() { return this.direction * Math.PI / 2; }
+
     applyTo(cube) {
         cube.addToQueue(this);
         cube.processQueue();
@@ -173,15 +163,12 @@ class Layer {
     constructor(cubies) {
         this._cubies = cubies;
         this._startPositions = this._cubies.map(cubie => cubie.position.clone());
-        this._startOrientations = this._cubies.map(cubie => cubie.orientation.clone());
         this._startNormals = this._cubies.map(cubie => Array.from(cubie, sticker => sticker.normal.clone()));
         this._startStickerOrientations = this._cubies.map(cubie => Array.from(cubie, sticker => sticker.orientation.clone()));
         Object.freeze(this);
     }
 
-    commit(move) {
-        this._cubies.forEach((cubie, index) => cubie.update(move, this._startOrientations[index]));
-    }
+    commit = move => this._cubies.forEach(cubie => cubie.commit(move));
 
     #rotateContinuous(pos, axis, angle) {
         const cos = Math.cos(angle);
@@ -204,7 +191,7 @@ class Layer {
 
         this._cubies.forEach((cubie, row) => {
             cubie.position.copy(this.#rotateContinuous(this._startPositions[row], axis, angle));
-            cubie.orientation.copy(rotatedOrientation(this._startOrientations[row], axis, angle));
+            cubie.orientation.copy(rotatedOrientation(cubie._startOrientation, axis, angle));
 
             // Stickers
             let col = 0;
