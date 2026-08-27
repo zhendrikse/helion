@@ -112,7 +112,6 @@ class Cubie extends Block {
         this._grid.set(Math.round(rotatedGrid.x), Math.round(rotatedGrid.y), Math.round(rotatedGrid.z));
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
         this.rotateWorld(move.axis, move.angle);
-        this.rotateStickers(move.axis, move.angle);
         for (const sticker of this._stickers) {
             sticker.offset.rotate(move.axis, move.angle);
             sticker.updateWorldPosition(this.position);
