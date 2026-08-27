@@ -1,4 +1,4 @@
-import { Euler, MeshStandardMaterial, Quaternion, Vector3 } from 'three';
+import { MeshStandardMaterial } from 'three';
 import {Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation} from "../../../src/index.js";
 
 const SIZE = 1;
@@ -41,7 +41,7 @@ const Face = Object.freeze({
 class Sticker extends Block {
     constructor(position, side, stickerData) {
         super({ size: new Vec3(0.85, 0.85, 0.035), orientation: stickerData.orientation.clone() });
-        this._side = side;
+        this.side = side;
         this.normal= stickerData.normal.clone(); // Normal vector with respect to coordinate frame of cube
         this.update(position);
         Object.freeze(this);
@@ -59,8 +59,6 @@ class Sticker extends Block {
         this.normal.rotate(move.axis, move.angle);
         this.update(cubePosition);
     }
-
-    get side() { return this._side; }
 }
 
 class Cubie extends Block {
@@ -72,7 +70,6 @@ class Cubie extends Block {
 
         this._grid = vec(x, y, z);
         this._stickers = [];
-        this._startOrientation = this.orientation.clone();
 
         if (z === 1)
             this._stickers.push(new Sticker(this.position, Face.front, StickerData.front));
@@ -147,6 +144,7 @@ class Layer {
     constructor(cubies) {
         this._cubies = cubies;
         this._startPositions = this._cubies.map(cubie => cubie.position.clone());
+        this._startOrientations = this._cubies.map(cubie => cubie.orientation.clone());
         this._startStickerOrientations = this._cubies.map(cubie => Array.from(cubie, sticker => sticker.orientation.clone()));
         Object.freeze(this);
     }
@@ -157,7 +155,7 @@ class Layer {
         const smoothAngle = angle * progress * progress * (3 - 2 * progress);
         this._cubies.forEach((cubie, row) => {
             cubie.position.copy(this._startPositions[row].clone().rotate(axis, smoothAngle));
-            cubie.orientation .copy(cubie._startOrientation);
+            cubie.orientation .copy(this._startOrientations[row]);
             cubie.rotateWorld(axis, smoothAngle);
 
             // Stickers
