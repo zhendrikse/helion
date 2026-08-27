@@ -47,7 +47,6 @@ class Sticker extends Block {
 
         this.side = side;
         this.offset = stickerData.offset.clone();
-        this.localOrientation = stickerData.orientation.clone();
         this.updateWorldPosition(position);
         Object.freeze(this);
     }
@@ -61,6 +60,10 @@ class Sticker extends Block {
 class StickerCollection {
     constructor() {
         this._stickers = [];
+    }
+
+    forEach(callback) {
+        this._stickers.forEach(callback);
     }
 
     /**
@@ -107,24 +110,21 @@ class Cubie extends Block {
     get stickers() { return this._stickers; }
 
     commit(move) {
-        const rotatedGrid = this._grid.clone().rotate(move.axis, move.angle);
-
-        this._grid.set(Math.round(rotatedGrid.x), Math.round(rotatedGrid.y), Math.round(rotatedGrid.z));
-        this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
+        this.rotateAroundCube(move);
         this.rotateWorld(move.axis, move.angle);
-        for (const sticker of this._stickers) {
-            sticker.offset.rotate(move.axis, move.angle);
-            sticker.updateWorldPosition(this.position);
-            sticker.localOrientation.copy(sticker.orientation);
-        }
+        this.rotateStickers(move.axis, move.angle);
+    }
+
+    rotateAroundCube(move) {
+        this._grid.rotate(move.axis, move.angle);
+        this._grid.set(Math.round(this._grid.x), Math.round(this._grid.y), Math.round(this._grid.z));
+        this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
     }
 
     rotateStickers(axis, angle) {
-        for (const sticker of this.stickers) {
-            const offset = sticker.offset.clone().rotate(axis, angle);
-            sticker.orientation.copy(sticker.localOrientation);
-            sticker.updateWorldPosition(this.position, offset);
-            sticker.rotateWorld(axis, angle);
+        for (const sticker of this._stickers) {
+            sticker.offset.rotate(axis, angle);
+            sticker.updateWorldPosition(this.position);
         }
     }
 }
@@ -164,6 +164,7 @@ class Rotation {
         this._cubies = cubies;
         this._startPositions = this._cubies.map(cubie => cubie.position.clone());
         this._startOrientations = this._cubies.map(cubie => cubie.orientation.clone());
+        this._startStickerOrientations = this._cubies.map(cubie => Array.from(cubie.stickers, sticker => sticker.orientation.clone()));
         Object.freeze(this);
     }
 
@@ -172,10 +173,17 @@ class Rotation {
     animate(progress, move) {
         const smoothAngle = move.angle * progress * progress * (3 - 2 * progress);
         this._cubies.forEach((cubie, row) => {
-            cubie.position.copy(this._startPositions[row].clone().rotate(move.axis, smoothAngle));
+            cubie.position.copy(this._startPositions[row])
             cubie.orientation.copy(this._startOrientations[row]);
+
+            cubie.position.rotate(move.axis, smoothAngle);
             cubie.rotateWorld(move.axis, smoothAngle);
-            cubie.rotateStickers(move.axis, smoothAngle);
+            cubie.stickers.forEach((sticker, index) => {
+                const offset = sticker.offset.clone().rotate(move.axis, smoothAngle);
+                sticker.orientation.copy(this._startStickerOrientations[row][index]);
+                sticker.rotateWorld(move.axis, smoothAngle);
+                sticker.updateWorldPosition(cubie.position, offset);
+            });
         });
     }
 }
