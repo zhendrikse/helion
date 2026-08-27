@@ -107,7 +107,7 @@ class Cubie extends Block {
 
     isPartOfMove = (move) => this._grid[move.axis] === move.layer;
 
-    get stickers() { return this._stickers._stickers; }
+    get stickers() { return this._stickers; }
 
     commit(move) {
         const rotatedGrid = this._grid.clone().rotate(move.axis, move.angle);
@@ -197,8 +197,6 @@ class Cube {
         this._rotationStartTime = 0;
     }
 
-    cubiesInRotationFor = move => this._cubies.filter(cubie => cubie.isPartOfMove(move));
-
     apply = move => move.applyTo(this);
 
     addToQueue = move => this._queue.push(move);
@@ -210,13 +208,15 @@ class Cube {
         return this._cubies[Symbol.iterator]();
     }
 
+    #cubiesFor = move => this._cubies.filter(cubie => cubie.isPartOfMove(move));
+
     processQueue() {
         if (this._currentMove || this._queue.length === 0) // We cannot process a new move when a move is ongoing
             return;
 
         const move = this._queue.shift();
         this._currentMove = move;
-        this._rotation = new Rotation(this.cubiesInRotationFor(move));
+        this._rotation = new Rotation(this.#cubiesFor(move));
     }
 
     update(timeStamp) {
