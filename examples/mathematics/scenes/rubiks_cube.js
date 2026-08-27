@@ -21,12 +21,12 @@ const Colors = Object.freeze({
 });
 
 const StickerData = Object.freeze({
-    front: {orientation: vec(0, 0, 0), normal: vec( 0,  0,  1)},
-    back:  {orientation: vec(0, Math.PI, 0), normal: vec( 0,  0, -1)},
-    right: {orientation: vec(0, Math.PI / 2, 0), normal: vec( 1,  0,  0)},
-    left:  {orientation: vec(0, -Math.PI / 2, 0), normal: vec(-1,  0,  0)},
-    up:    {orientation: vec(-Math.PI / 2, 0, 0), normal: vec( 0,  1,  0)},
-    down:  {orientation: vec(Math.PI / 2, 0, 0), normal: vec( 0, -1,  0)}
+    front: { orientation: vec(0, 0, 0),            offset: vec(0, 0, STICKER_OFFSET) },
+    back:  { orientation: vec(0, Math.PI, 0),         offset: vec(0, 0, -STICKER_OFFSET) },
+    right: { orientation: vec(0, Math.PI / 2, 0),  offset: vec(STICKER_OFFSET, 0, 0) },
+    left:  { orientation: vec(0, -Math.PI / 2, 0), offset: vec(-STICKER_OFFSET, 0, 0) },
+    up:    { orientation: vec(-Math.PI / 2, 0, 0), offset: vec(0, STICKER_OFFSET, 0) },
+    down:  { orientation: vec(Math.PI / 2, 0, 0),  offset: vec(0, -STICKER_OFFSET, 0) }
 });
 
 const Face = Object.freeze({
@@ -40,26 +40,27 @@ const Face = Object.freeze({
 
 class Sticker extends Block {
     constructor(position, side, stickerData) {
-        super({ size: new Vec3(0.85, 0.85, 0.035), orientation: stickerData.orientation.clone() });
+        super({
+            size: new Vec3(0.85, 0.85, 0.035),
+            orientation: stickerData.orientation.clone()
+        });
+
         this.side = side;
-        this.normal= stickerData.normal.clone(); // Normal vector with respect to coordinate frame of cube
+        this.offset = stickerData.offset.clone();
         this.update(position);
         Object.freeze(this);
     }
 
-    update(position, normal=this.normal) {
-        this.position.set(
-            position.x + normal.x * STICKER_OFFSET,
-            position.y + normal.y * STICKER_OFFSET,
-            position.z + normal.z * STICKER_OFFSET
-        );
+    update(position, offset=this.offset) {
+        this.position.set(position.x + offset.x, position.y + offset.y, position.z + offset.z);
     }
 
     commit(move, cubePosition) {
-        this.normal.rotate(move.axis, move.angle);
+        this.offset.rotate(move.axis, move.angle);
         this.update(cubePosition);
     }
 }
+
 
 class StickerCollection {
     constructor() {
@@ -164,16 +165,16 @@ class Rotation {
 
     animate(progress, move) {
         const smoothAngle = move.angle * progress * progress * (3 - 2 * progress);
+
         this._cubies.forEach((cubie, row) => {
             cubie.position.copy(this._startPositions[row].clone().rotate(move.axis, smoothAngle));
-            cubie.orientation .copy(this._startOrientations[row]);
+            cubie.orientation.copy(this._startOrientations[row]);
             cubie.rotateWorld(move.axis, smoothAngle);
 
-            // Stickers
             let col = 0;
             for (const sticker of cubie.stickers) {
-                const normal = sticker.normal.clone().rotate(move.axis, smoothAngle);
-                sticker.update(cubie.position, normal);
+                const offset = sticker.offset.clone().rotate(move.axis, smoothAngle);
+                sticker.update(cubie.position, offset);
                 sticker.orientation.copy(this._startStickerOrientations[row][col]);
                 sticker.rotateWorld(move.axis, smoothAngle);
                 col++;
