@@ -133,13 +133,73 @@ export class Body extends MathPhysicsModelBehavior{
     /**
      * Rotates the body around a world-space axis.
      *
-     * @param {"x"|"y"|"z"} axis
-     * @param {number} angle Angle in radians.
+     * @param {"x"|"y"|"z"} axis World-space rotation axis.
+     * @param {number} angle Rotation angle in radians.
      * @returns {this}
      */
-    rotate(axis, angle) {
-        this.orientation[axis] += angle;
-        return this;
+    rotateWorld(axis, angle) {
+        // Euler XYZ -> Quaternion
+        const c1 = Math.cos(this.orientation.x / 2);
+        const c2 = Math.cos(this.orientation.y / 2);
+        const c3 = Math.cos(this.orientation.z / 2);
+
+        const s1 = Math.sin(this.orientation.x / 2);
+        const s2 = Math.sin(this.orientation.y / 2);
+        const s3 = Math.sin(this.orientation.z / 2);
+
+        // These are exact de XYZ-formula van THREE.Quaternion.setFromEuler()
+        const start = {
+            x: s1 * c2 * c3 + c1 * s2 * s3,
+            y: c1 * s2 * c3 - s1 * c2 * s3,
+            z: c1 * c2 * s3 + s1 * s2 * c3,
+            w: c1 * c2 * c3 - s1 * s2 * s3
+        };
+
+        // Axis-angle -> Quaternion
+        const halfAngle = angle / 2;
+        const s = Math.sin(halfAngle);
+        const c = Math.cos(halfAngle);
+
+        let rotation;
+        if (axis === "x")
+            rotation = { x: s, y: 0, z: 0, w: c };
+        else if (axis === "y")
+            rotation = { x: 0, y: s, z: 0, w: c };
+        else
+            rotation = { x: 0, y: 0, z: s, w: c };
+
+        // rotation.multiply(start) = rotation * start
+        const q = {
+            x: rotation.x * start.w + rotation.w * start.x + rotation.y * start.z - rotation.z * start.y,
+            y: rotation.y * start.w + rotation.w * start.y + rotation.z * start.x - rotation.x * start.z,
+            z: rotation.z * start.w + rotation.w * start.z + rotation.x * start.y - rotation.y * start.x,
+            w: rotation.w * start.w - rotation.x * start.x - rotation.y * start.y - rotation.z * start.z
+        };
+
+        // Quaternion -> Euler XYZ
+        //
+        // This is exactly as Three.js: Quaternion -> rotation matrix -> Euler XYZ.
+        const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+        const m11 = 1 - 2 * (q.y * q.y + q.z * q.z);
+        const m12 = 2 * (q.x * q.y - q.z * q.w);
+        const m13 = 2 * (q.x * q.z + q.y * q.w);
+
+        const m22 = 1 - 2 * (q.x * q.x + q.z * q.z);
+        const m23 = 2 * (q.y * q.z - q.x * q.w);
+
+        const m32 = 2 * (q.y * q.z + q.x * q.w);
+        const m33 = 1 - 2 * (q.x * q.x + q.y * q.y);
+
+        this.orientation.y = Math.asin(clamp(m13, -1, 1));
+        if (Math.abs(m13) < 0.9999999) {
+            this.orientation.x = Math.atan2(-m23, m33);
+            this.orientation.z = Math.atan2(-m12, m11);
+        } else {
+            // Gimbal lock: exact the same choice as Three.js
+            this.orientation.x = Math.atan2(m32, m22);
+            this.orientation.z = 0;
+        }
     }
 
     integrate(dt = 0.01, integrator = Integrators.symplecticEulerStep) {
@@ -168,9 +228,10 @@ export class AxialSymmetricBody extends Body {
         radius = 1,
         mass = 1,
         charge = 0,
-        fixed = false
+        fixed = false,
+        orientation = new Vec3() // Euler angle in radians
     } = {})  {
-        super({ position, velocity, mass, charge, fixed });
+        super({ position, velocity, mass, charge, fixed, orientation });
         this.radius = radius;
         this.axis = axis.clone();
         this._initialAxis = axis.clone();
@@ -189,9 +250,10 @@ export class RadialSymmetricBody extends Body {
         mass = 1,
         radius = 1,
         charge = 0,
-        fixed = false
+        fixed = false,
+        orientation = new Vec3() // Euler angle in radians
     } = {}) {
-        super( {position, velocity, mass, charge, fixed })
+        super({position, velocity, mass, charge, fixed, orientation });
         this.radius = radius;
     }
 }
@@ -203,9 +265,10 @@ export class Block extends Body {
         size = new Vec3(1, 1, 1),
         mass = 1,
         charge = 0,
-        fixed = false
+        fixed = false,
+        orientation = new Vec3() // Euler angle in radians
     } = {}) {
-        super({position, velocity, mass, charge, fixed });
+        super({position, velocity, mass, charge, fixed, orientation });
         this.size = size;
     }
 }

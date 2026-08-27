@@ -38,26 +38,11 @@ const Face = Object.freeze({
     back:   "back"
 });
 
-function rotatedOrientation(orientation, axis, angle) {
-    const startRotation = new Quaternion().setFromEuler(new Euler(orientation.x, orientation.y, orientation.z));
-
-    const axisVector = axis === Axis.x ? new Vector3(1, 0, 0) :
-        axis === Axis.y ? new Vector3(0, 1, 0) : new Vector3(0, 0, 1);
-
-    const rotation = new Quaternion().setFromAxisAngle(axisVector, angle);
-
-    // World-space rotation vóór de bestaande orientation.
-    rotation.multiply(startRotation);
-    const result = new Euler().setFromQuaternion(rotation);
-    return vec(result.x, result.y, result.z);
-}
-
 class Sticker extends Block {
     constructor(position, side, stickerData) {
-        super({ size: new Vec3(0.85, 0.85, 0.035) });
+        super({ size: new Vec3(0.85, 0.85, 0.035), orientation: stickerData.orientation.clone() });
         this._side = side;
         this.normal= stickerData.normal.clone(); // Normal vector with respect to coordinate frame of cube
-        this.orientation = stickerData.orientation.clone();
         this.update(position);
         Object.freeze(this);
     }
@@ -122,7 +107,7 @@ class Cubie extends Block {
         this._grid.set(Math.round(rotatedGrid.x), Math.round(rotatedGrid.y), Math.round(rotatedGrid.z));
 
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
-        this.orientation.copy(rotatedOrientation(this._startOrientation, move.axis, move.angle));
+        this.rotateWorld(move.axis, move.angle);
 
         this._stickers.forEach(sticker => sticker.commit(move, this.position));
     }
@@ -172,14 +157,16 @@ class Layer {
         const smoothAngle = angle * progress * progress * (3 - 2 * progress);
         this._cubies.forEach((cubie, row) => {
             cubie.position.copy(this._startPositions[row].clone().rotate(axis, smoothAngle));
-            cubie.orientation.copy(rotatedOrientation(cubie._startOrientation, axis, smoothAngle));
+            cubie.orientation .copy(cubie._startOrientation);
+            cubie.rotateWorld(axis, smoothAngle);
 
             // Stickers
             let col = 0;
             for (const sticker of cubie) {
                 const normal = sticker.normal.clone().rotate(axis, smoothAngle);
                 sticker.update(cubie.position, normal);
-                sticker.orientation.copy(rotatedOrientation(this._startStickerOrientations[row][col], axis, smoothAngle));
+                sticker.orientation.copy(this._startStickerOrientations[row][col]);
+                sticker.rotateWorld(axis, smoothAngle);
                 col++;
             }
         });
