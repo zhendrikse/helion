@@ -51,8 +51,8 @@ class Sticker extends Block {
         Object.freeze(this);
     }
 
-    updateWorldPosition(position, offset=this.offset) {
-        this.position.set(position.x + offset.x, position.y + offset.y, position.z + offset.z);
+    updateWorldPosition(position) {
+        this.position.set(position.x + this.offset.x, position.y + this.offset.y, position.z + this.offset.z);
     }
 }
 
@@ -110,13 +110,13 @@ class Cubie extends Block {
     get stickers() { return this._stickers; }
 
     commit(move) {
-        this.rotateAroundCube(move);
+        this.rotateAroundCube(move.axis, move.angle);
         this.rotateWorld(move.axis, move.angle);
         this.rotateStickers(move.axis, move.angle);
     }
 
-    rotateAroundCube(move) {
-        this._grid.rotate(move.axis, move.angle);
+    rotateAroundCube(axis, angle) {
+        this._grid.rotate(axis, angle);
         this._grid.set(Math.round(this._grid.x), Math.round(this._grid.y), Math.round(this._grid.z));
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
     }
@@ -165,6 +165,7 @@ class Rotation {
         this._startPositions = this._cubies.map(cubie => cubie.position.clone());
         this._startOrientations = this._cubies.map(cubie => cubie.orientation.clone());
         this._startStickerOrientations = this._cubies.map(cubie => Array.from(cubie.stickers, sticker => sticker.orientation.clone()));
+        this._startStickerOffsets = this._cubies.map(cubie => Array.from(cubie.stickers, sticker => sticker.offset.clone()));
         Object.freeze(this);
     }
 
@@ -175,14 +176,15 @@ class Rotation {
         this._cubies.forEach((cubie, row) => {
             cubie.position.copy(this._startPositions[row])
             cubie.orientation.copy(this._startOrientations[row]);
-
             cubie.position.rotate(move.axis, smoothAngle);
             cubie.rotateWorld(move.axis, smoothAngle);
+
             cubie.stickers.forEach((sticker, index) => {
-                const offset = sticker.offset.clone().rotate(move.axis, smoothAngle);
                 sticker.orientation.copy(this._startStickerOrientations[row][index]);
+                sticker.offset.rotate(move.axis, smoothAngle);
                 sticker.rotateWorld(move.axis, smoothAngle);
-                sticker.updateWorldPosition(cubie.position, offset);
+                sticker.updateWorldPosition(cubie.position);
+                sticker.offset.copy(this._startStickerOffsets[row][index]);
             });
         });
     }
