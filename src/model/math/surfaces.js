@@ -15,7 +15,9 @@ export class Surface extends MathPhysicsModelBehavior {
     sampleSpacing(resolution) {
         return new Vec2(1, 1);
     }
+}
 
+export class DifferentiableSurface extends Surface {
     frameAt(u, v, target) {
         return this._differentialGeometry.differentialFrame(u, v, target);
     }
@@ -24,7 +26,7 @@ export class Surface extends MathPhysicsModelBehavior {
 /**
  * A 2D surface defined as (u, v) => (x, y, z)
  */
-export class ParametricSurface extends Surface {
+export class ParametricSurface extends DifferentiableSurface {
     constructor({
         domain = new Domain(),
         x = (u, v) => u,
@@ -73,39 +75,27 @@ export class MultivariateFunctionSurface extends ParametricSurface {
     set time(time) { this._time = time; }
 }
 
-export class ComplexFunctionSurface extends ParametricSurface {
+export class ComplexFunctionSurface extends Surface {
     constructor({
         domain = new Domain(),
-    } = {}) {
-        super({domain})
-    }
-}
-
-
-export class ComplexSurface extends Surface {
-    constructor({
-        domain = new Domain(),
-        z = (c) => new Complex(0, 0)
+        func = z => new Complex(0, 0)
     } = {}) {
         super();
         this._domain = domain;
-        this._x = (u, v) => u;
-        this._y = (u, v) => v;
-        this._z = z;
-
-        this._complexNumber = new Complex();
+        this._complexFunction = func;
     }
 
+    get func() { return this._complexFunction; }
+
     sample(u, v, target) {
-        target.re = this._domain.xRange.scaleUnitParameter(u);
-        target.im = this._domain.yRange.scaleUnitParameter(v);
-        this._complexNumber = this._z(target);
-        target.re = this._complexNumber.re;
-        target.im = this._complexNumber.im;
+        const re = this._domain.xRange.scaleUnitParameter(u);
+        const im = this._domain.yRange.scaleUnitParameter(v);
+        target.in.set(re, im);
+        target.out.copy(this._complexFunction(new Complex(re, im)));
     }
 }
 
-export class DiscreteFieldSurface extends Surface {
+export class DiscreteFieldSurface extends DifferentiableSurface {
     constructor(field) {
         super();
         this._field = field;

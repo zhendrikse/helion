@@ -449,6 +449,22 @@ export class Complex {
     get magnitude() { return Math.sqrt(this.absSquared); }
     get abs() { return Math.sqrt(this.absSquared); }
 
+    clone() {
+        return new Complex(this.re, this.im);
+    }
+
+    set(real, imag) {
+        this.re = real;
+        this.im = imag;
+        return this;
+    }
+
+    copy(complex) {
+        this.re = complex.re;
+        this.im = complex.im;
+        return this;
+    }
+
     multiply(complex) {
         const real = this.re * complex.re - this.im * complex.im;
         const imag = this.re * complex.im + this.im * complex.re
@@ -460,11 +476,61 @@ export class Complex {
     add(complex) {
         this.re += complex.re;
         this.im += complex.im;
+        return this;
+    }
+
+    subtract(complex) {
+        this.re -= complex.re;
+        this.im -= complex.im;
+        return this;
+    }
+
+    exp() {
+        const real = Math.exp(this.re) * Math.cos(this.im);
+        const imag = Math.exp(this.re) * Math.sin(this.im);
+        this.re = real;
+        this.im = imag;
+        return this;
+    }
+
+    log() {
+        const real = Math.log(this.abs);
+        const imag = Math.atan2(this.im, this.re);
+        this.re = real;
+        this.im = imag;
+        return this;
+    }
+
+    sin() {
+        const a = new Complex(-this.im, this.re).exp();
+        const b = new Complex(this.im, -this.re).exp();
+        this.re = (a.im - b.im) / 2;
+        this.im = (b.re - a.re) / 2;
+        return this;
+    }
+
+    divide = (z2) => {
+        const denominator = z2.re * z2.re + z2.im * z2.im;
+        const re = this.re * z2.re + this.im * z2.im;
+        const im = this.im * z2.re - this.re * z2.im;
+        this.re = re / denominator;
+        this.im = im / denominator;
+        return this;
+    }
+
+    sqrt() {
+        const r = this.abs;
+        const real = Math.sqrt((r + this.re) / 2);
+        const imag = Math.sign(this.im || 1) * Math.sqrt((r - this.re) / 2);
+        this.re = real;
+        this.im = imag;
+        return this;
     }
 
     multiplyScalar(scalar) {
         this.re *= scalar;
         this.im *= scalar;
+        return this;
     }
 }
 

@@ -9,7 +9,7 @@ export {
 } from "./model/math/math.js";
 
 export {
-    ParametricSurface, MultivariateFunctionSurface, Surface, DiscreteFieldSurface, ComplexSurface
+    ParametricSurface, MultivariateFunctionSurface, Surface, DiscreteFieldSurface, ComplexFunctionSurface
 } from "./model/math/surfaces.js"
 
 export {
@@ -33,9 +33,10 @@ export {
     SegmentedCircle
 } from "./model/math/objects.js"
 
-export { ThreeJsScene } from "./view/3d/scene.js"
-export { SphereSphereCollision } from "./model/transformations/interactions.js"
-export { Domain, DiscreteScalarField, DiscreteComplexField, VectorField } from "./model/math/fields.js"
+export { ComplexSurfaceView } from "./view/3d/surfaces/complex.js";
+export { ThreeJsScene } from "./view/3d/scene.js";
+export { SphereSphereCollision } from "./model/transformations/interactions.js";
+export { Domain, DiscreteScalarField, DiscreteComplexField, VectorField } from "./model/math/fields.js";
 export { BarrierWaveEquation } from "./model/math/equations.js";
 export { Shapes, ShapeConfiguration } from "./model/math/shapes.js";
 export { OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave } from "./model/phys/waves.js";

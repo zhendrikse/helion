@@ -169,6 +169,19 @@ export class ColorLayers extends Registry {
     }
 }
 
+/**
+ * SurfaceVisualization is a compositor/container for different
+ * visualizations of the same model:
+ *
+ *                  SurfaceVisualization
+ *                          │
+ *              ┌───────────┴───────────┐
+ *              │                       │
+ *         SurfaceLayer             GlyphLayer
+ *              │                       │
+ *            Mesh                InstancedMesh
+ *
+ */
 export class SurfaceVisualization extends Renderable3D {
     static Display = Object.freeze({
         Surface: "surface",
@@ -253,7 +266,9 @@ export class SurfaceVisualization extends Renderable3D {
     }
 
     canBindTo(model) {
-        return model.frameAt;
+        if (!model.frameAt)
+            throw new Error("Surface visualization needs with frameAt(), which is not supported by the current model.");
+        return true;
     }
 
     addOverlayLayer(layer) {
