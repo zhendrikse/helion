@@ -100,6 +100,30 @@ export class Body extends MathPhysicsModelBehavior{
         this.orientation = orientation;
         this._initialState = this._state.clone();
         this._initialOrientation = orientation.clone();
+        this._children = [];
+    }
+
+    rotate(axis, angle) {
+        this.position.rotate(axis, angle);
+        this.rotateWorld(axis, angle);
+        this.rotateChildren(axis, angle);
+    }
+
+    rotateChildren(axis, angle) {
+        for (const child of this._children)
+            child.rotate(axis, angle);
+    }
+
+    add(anotherBody) {
+        this._children.push(anotherBody);
+    }
+
+    forEach(callback) {
+        this._children.forEach(callback);
+    }
+
+    [Symbol.iterator]() {
+        return this._children[Symbol.iterator]();
     }
 
     get position() { return this._state.position; }

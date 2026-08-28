@@ -69,30 +69,29 @@ class Cubie extends Block {
         });
 
         this._grid = vec(x, y, z);
-        this._stickers = [];
 
         if (z === 1)
-            this._stickers.push(new Sticker(this.position, Face.front, StickerData.front));
+            this.add(new Sticker(this.position, Face.front, StickerData.front));
 
         if (z === -1)
-            this._stickers.push(new Sticker(this.position, Face.back, StickerData.back));
+            this.add(new Sticker(this.position, Face.back, StickerData.back));
 
         if (x === 1)
-            this._stickers.push(new Sticker(this.position, Face.right, StickerData.right));
+            this.add(new Sticker(this.position, Face.right, StickerData.right));
 
         if (x === -1)
-            this._stickers.push(new Sticker(this.position, Face.left, StickerData.left));
+            this.add(new Sticker(this.position, Face.left, StickerData.left));
 
         if (y === 1)
-            this._stickers.push(new Sticker(this.position, Face.up, StickerData.up));
+            this.add(new Sticker(this.position, Face.up, StickerData.up));
 
         if (y === -1)
-            this._stickers.push(new Sticker(this.position, Face.down, StickerData.down));
+            this.add(new Sticker(this.position, Face.down, StickerData.down));
     }
 
     isPartOfMove = (move) => this._grid[move.axis] === move.layer;
 
-    get stickers() { return this._stickers; }
+    get stickers() { return this._children; }
 
     commit(move) {
         this._grid.rotate(move.axis, move.angle);
@@ -101,17 +100,10 @@ class Cubie extends Block {
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
     }
 
-    rotateChildren(axis, angle) {
-        for (const child of this._stickers) {
-            child.rotate(axis, angle);
-            child.updateWorldPosition(this.position);
-        }
-    }
-
     rotate(axis, angle) {
-        this.position.rotate(axis, angle);
-        this.rotateWorld(axis, angle);
-        this.rotateChildren(axis, angle);
+        super.rotate(axis, angle);
+        this._children.forEach(child =>
+            child.updateWorldPosition(this.position));
     }
 }
 
@@ -281,16 +273,15 @@ const simulation = Simulation.with({
 // Bind view to model
 for (const cubie of cube) {
     simulation.bind(cubie.alwaysWith(new Box({ color: 0x111111 })));
-
-    for (const sticker of cubie.stickers)
-        simulation.bind(sticker.alwaysWith(
-            new Box({
-                color: Colors[sticker.side],
-                material: new MeshStandardMaterial({
-                    emissive: Colors[sticker.side],
-                    emissiveIntensity: 0.2,
-                    roughness: 0.45
-            })})));
+    cubie.stickers.forEach(sticker => simulation.bind(sticker.alwaysWith(
+        new Box({
+            color: Colors[sticker.side],
+            material: new MeshStandardMaterial({
+                emissive: Colors[sticker.side],
+                emissiveIntensity: 0.2,
+                roughness: 0.45
+        })})
+    )));
 }
 
 const validKeys = new Set(["r", "l", "u", "d", "f", "b"]);
