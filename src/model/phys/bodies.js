@@ -84,6 +84,21 @@ export class BodyPair extends MathPhysicsModelBehavior {
     get mass() { return this.body2.mass + this.body1.mass; }
 }
 
+class Configuration {
+    constructor({
+        position = new Vec3(),
+        orientation = new Vec3(),
+        childrenPositions = [],
+        childrenOrientations = []
+    }={}) {
+        this.position = position;
+        this.orientation = orientation;
+        this.childrenPositions = childrenPositions;
+        this.childrenOrientations = childrenOrientations;
+        Object.freeze(this);
+    }
+}
+
 export class Body extends MathPhysicsModelBehavior{
     constructor({
         position = new Vec3(),
@@ -104,6 +119,25 @@ export class Body extends MathPhysicsModelBehavior{
         this.localPosition = new Vec3();
     }
 
+    reorient(orientation) {
+        this.position.copy(orientation.position);
+        this.orientation.copy(orientation.orientation);
+        this._children.forEach((child, index) => {
+            child.position.copy(orientation.childrenPositions[index]);
+            child.orientation.copy(orientation.childrenOrientations[index]);
+            child.localPosition.copy(orientation.childrenPositions[index].clone().sub(this.position));
+        });
+    }
+
+    getConfiguration() {
+        return new Configuration({
+            position: this.position.clone(),
+            orientation: this.orientation.clone(),
+            childrenOrientations: Array.from(this, child => child.orientation.clone()),
+            childrenPositions: Array.from(this, child => child.position.clone()),
+        });
+    }
+
     rotate(axis, angle) {
         this.position.rotate(axis, angle);
         this.rotateWorld(axis, angle);
@@ -114,7 +148,12 @@ export class Body extends MathPhysicsModelBehavior{
 
     rotateChildren(axis, angle) {
         for (const child of this._children)
-            child.rotate(axis, angle);
+            child.rotateWithParent(axis, angle);
+    }
+
+    rotateWithParent(axis, angle) {
+        this.localPosition.rotate(axis, angle);
+        this.rotateWorld(axis, angle);
     }
 
     add(anotherBody) {

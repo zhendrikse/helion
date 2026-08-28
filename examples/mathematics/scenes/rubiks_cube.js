@@ -50,11 +50,6 @@ class Sticker extends Block {
         this.position.copy(position).add(this.localPosition);
         Object.freeze(this);
     }
-
-    rotate(axis, angle) {
-        this.localPosition.rotate(axis, angle);
-        this.rotateWorld(axis, angle);
-    }
 }
 
 class Cubie extends Block {
@@ -95,26 +90,6 @@ class Cubie extends Block {
         this.rotate(move.axis, move.angle);
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
     }
-
-    reorient(orientation) {
-        this.position.copy(orientation.position);
-        this.orientation.copy(orientation.orientation);
-        this._children.forEach((child, index) => {
-            child.position.copy(orientation.childrenPositions[index]);
-            child.orientation.copy(orientation.childrenOrientations[index]);
-            child.localPosition.copy(orientation.childrenLocalPositions[index]);
-        });
-    }
-
-    getConfiguration() {
-        return new Configuration({
-            position: this.position.clone(),
-            orientation: this.orientation.clone(),
-            childrenOrientations: Array.from(this, child => child.orientation.clone()),
-            childrenPositions: Array.from(this, child => child.position.clone()),
-            childrenLocalPositions: Array.from(this, child => child.localPosition.clone())
-        });
-    }
 }
 
 class Move extends Transformation {
@@ -144,23 +119,6 @@ class Move extends Transformation {
     applyTo(cube) {
         cube.addToQueue(this);
         cube.processQueue();
-    }
-}
-
-class Configuration {
-    constructor({
-        position = new Vec3(),
-        orientation = new Vec3(),
-        childrenPositions = [],
-        childrenOrientations = [],
-        childrenLocalPositions = []
-    }={}) {
-        this.position = position;
-        this.orientation = orientation;
-        this.childrenPositions = childrenPositions;
-        this.childrenOrientations = childrenOrientations;
-        this.childrenLocalPositions = childrenLocalPositions;
-        Object.freeze(this);
     }
 }
 
