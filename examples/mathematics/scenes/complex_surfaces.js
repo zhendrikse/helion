@@ -60,7 +60,7 @@ const surfaces = {
     "(z + 1) / (z - 1)": {
         "surface": new ComplexFunctionSurface({
             domain: new Domain([-3, 3], [-3, 3]),
-            func: z => z.clone().add(one).divide(z.clone().subtract(one))
+            func: z => z.clone().add(one).divide(z.clone().add(eps).subtract(one))
         }),
         "latex": "\\dfrac{z + 1}{z - 1}"
     },
