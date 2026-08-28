@@ -46,18 +46,14 @@ class Sticker extends Block {
         });
 
         this.side = side;
-        this.offset = stickerData.offset.clone();
-        this.updateWorldPosition(position);
+        this.offset.copy(stickerData.offset);
+        this.position.copy(position).add(this.offset);
         Object.freeze(this);
     }
 
     rotate(axis, angle) {
         this.offset.rotate(axis, angle);
         this.rotateWorld(axis, angle);
-    }
-
-    updateWorldPosition(position) {
-        this.position.set(position.x + this.offset.x, position.y + this.offset.y, position.z + this.offset.z);
     }
 }
 
@@ -98,12 +94,6 @@ class Cubie extends Block {
         this._grid.set(Math.round(this._grid.x), Math.round(this._grid.y), Math.round(this._grid.z));
         this.rotate(move.axis, move.angle);
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
-    }
-
-    rotate(axis, angle) {
-        super.rotate(axis, angle);
-        this._children.forEach(child =>
-            child.updateWorldPosition(this.position));
     }
 }
 

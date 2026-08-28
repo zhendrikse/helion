@@ -101,12 +101,15 @@ export class Body extends MathPhysicsModelBehavior{
         this._initialState = this._state.clone();
         this._initialOrientation = orientation.clone();
         this._children = [];
+        this.offset = new Vec3();
     }
 
     rotate(axis, angle) {
         this.position.rotate(axis, angle);
         this.rotateWorld(axis, angle);
         this.rotateChildren(axis, angle);
+        this._children.forEach(child =>
+            child.position.copy(this.position).add(child.offset));
     }
 
     rotateChildren(axis, angle) {
