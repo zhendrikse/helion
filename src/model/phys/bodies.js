@@ -283,7 +283,7 @@ export class Body extends MathPhysicsModelBehavior{
     distanceTo(other) { return this.position.distanceTo(other.position) }
 
     get kineticEnergy() { return 0.5 * this.mass * this.velocity.dot(this.velocity); }
-    get momentum() { return this.velocity.multiplyScalar(this.mass); }
+    get momentum() { return this.velocity.clone().multiplyScalar(this.mass); }
 }
 
 export class AxialSymmetricBody extends Body {
