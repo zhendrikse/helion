@@ -74,7 +74,7 @@ const surfacesRegistry = new Registry({
 class SurfaceController {
     constructor(simulation) {
         this._simulation = simulation;
-        this._currentSurface = surfacesRegistry.get("Ripple").surface;
+        this._currentSurface = surfacesRegistry.get("Monkey saddle").surface;
         this._animate = false;
     }
 
@@ -96,7 +96,7 @@ class SurfaceController {
     }
 }
 
-const normalizer = new FixedIntervalNormalizer(new Interval(0, surfaces["Ripple"].amplitude));
+const normalizer = new FixedIntervalNormalizer(new Interval(0, surfaces["Monkey saddle"].amplitude));
 const contoursLayer = new ContoursLayer({
     normalizer: normalizer
 });
