@@ -46,13 +46,13 @@ class Sticker extends Block {
         });
 
         this.side = side;
-        this.offset.copy(stickerData.offset);
-        this.position.copy(position).add(this.offset);
+        this.localPosition.copy(stickerData.offset);
+        this.position.copy(position).add(this.localPosition);
         Object.freeze(this);
     }
 
     rotate(axis, angle) {
-        this.offset.rotate(axis, angle);
+        this.localPosition.rotate(axis, angle);
         this.rotateWorld(axis, angle);
     }
 }
@@ -95,6 +95,26 @@ class Cubie extends Block {
         this.rotate(move.axis, move.angle);
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
     }
+
+    reorient(orientation) {
+        this.position.copy(orientation.position);
+        this.orientation.copy(orientation.orientation);
+        this._children.forEach((child, index) => {
+            child.position.copy(orientation.childrenPositions[index]);
+            child.orientation.copy(orientation.childrenOrientations[index]);
+            child.localPosition.copy(orientation.childrenLocalPositions[index]);
+        });
+    }
+
+    getConfiguration() {
+        return new Configuration({
+            position: this.position.clone(),
+            orientation: this.orientation.clone(),
+            childrenOrientations: Array.from(this, child => child.orientation.clone()),
+            childrenPositions: Array.from(this, child => child.position.clone()),
+            childrenLocalPositions: Array.from(this, child => child.localPosition.clone())
+        });
+    }
 }
 
 class Move extends Transformation {
@@ -127,34 +147,38 @@ class Move extends Transformation {
     }
 }
 
+class Configuration {
+    constructor({
+        position = new Vec3(),
+        orientation = new Vec3(),
+        childrenPositions = [],
+        childrenOrientations = [],
+        childrenLocalPositions = []
+    }={}) {
+        this.position = position;
+        this.orientation = orientation;
+        this.childrenPositions = childrenPositions;
+        this.childrenOrientations = childrenOrientations;
+        this.childrenLocalPositions = childrenLocalPositions;
+        Object.freeze(this);
+    }
+}
+
 class Rotation {
     constructor(cubies) {
         this._cubies = cubies;
-        this._startPositions = this._cubies.map(cubie => cubie.position.clone());
-        this._startOrientations = this._cubies.map(cubie => cubie.orientation.clone());
-        this._startStickerOrientations = this._cubies.map(cubie => Array.from(cubie.stickers, sticker => sticker.orientation.clone()));
-        this._startStickerOffsets = this._cubies.map(cubie => Array.from(cubie.stickers, sticker => sticker.offset.clone()));
+        this._snapshot = cubies.map(cubie => cubie.getConfiguration());
         Object.freeze(this);
     }
 
     commit = move => this._cubies.forEach(cubie => cubie.commit(move));
 
-    reset() {
-        this._cubies.forEach((cubie, row) => {
-            cubie.position.copy(this._startPositions[row])
-            cubie.orientation.copy(this._startOrientations[row]);
-
-            cubie.stickers.forEach((sticker, index) => {
-                sticker.orientation.copy(this._startStickerOrientations[row][index]);
-                sticker.offset.copy(this._startStickerOffsets[row][index]);
-            });
-        });
-    }
+    reset = () => this._cubies.forEach((cubie, index) => cubie.reorient(this._snapshot[index]));
 
     animate(progress, move) {
         this.reset();
         const smoothAngle = move.angle * progress * progress * (3 - 2 * progress);
-        this._cubies.forEach((cubie) => cubie.rotate(move.axis, smoothAngle));
+        this._cubies.forEach(cubie => cubie.rotate(move.axis, smoothAngle));
     }
 }
 
