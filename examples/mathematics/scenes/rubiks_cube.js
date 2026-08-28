@@ -61,26 +61,6 @@ class Sticker extends Block {
     }
 }
 
-
-class StickerCollection {
-    constructor() {
-        this._stickers = [];
-    }
-
-    forEach(callback) {
-        this._stickers.forEach(callback);
-    }
-
-    /**
-     * @returns {ArrayIterator<Sticker>}
-     */
-    [Symbol.iterator]() {
-        return this._stickers[Symbol.iterator]();
-    }
-
-    add(sticker) { this._stickers.push(sticker); }
-}
-
 class Cubie extends Block {
     constructor(x, y, z) {
         super({
@@ -89,25 +69,25 @@ class Cubie extends Block {
         });
 
         this._grid = vec(x, y, z);
-        this._stickers = new StickerCollection();
+        this._stickers = [];
 
         if (z === 1)
-            this._stickers.add(new Sticker(this.position, Face.front, StickerData.front));
+            this._stickers.push(new Sticker(this.position, Face.front, StickerData.front));
 
         if (z === -1)
-            this._stickers.add(new Sticker(this.position, Face.back, StickerData.back));
+            this._stickers.push(new Sticker(this.position, Face.back, StickerData.back));
 
         if (x === 1)
-            this._stickers.add(new Sticker(this.position, Face.right, StickerData.right));
+            this._stickers.push(new Sticker(this.position, Face.right, StickerData.right));
 
         if (x === -1)
-            this._stickers.add(new Sticker(this.position, Face.left, StickerData.left));
+            this._stickers.push(new Sticker(this.position, Face.left, StickerData.left));
 
         if (y === 1)
-            this._stickers.add(new Sticker(this.position, Face.up, StickerData.up));
+            this._stickers.push(new Sticker(this.position, Face.up, StickerData.up));
 
         if (y === -1)
-            this._stickers.add(new Sticker(this.position, Face.down, StickerData.down));
+            this._stickers.push(new Sticker(this.position, Face.down, StickerData.down));
     }
 
     isPartOfMove = (move) => this._grid[move.axis] === move.layer;
@@ -121,13 +101,17 @@ class Cubie extends Block {
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
     }
 
+    rotateChildren(axis, angle) {
+        for (const child of this._stickers) {
+            child.rotate(axis, angle);
+            child.updateWorldPosition(this.position);
+        }
+    }
+
     rotate(axis, angle) {
         this.position.rotate(axis, angle);
         this.rotateWorld(axis, angle);
-        for (const sticker of this._stickers) {
-            sticker.rotate(axis, angle);
-            sticker.updateWorldPosition(this.position);
-        }
+        this.rotateChildren(axis, angle);
     }
 }
 
