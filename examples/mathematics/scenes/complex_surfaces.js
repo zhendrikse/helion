@@ -1,6 +1,6 @@
 import {
     Simulation, DropdownMenu, Domain, Registry, Range, ContinuousComplexFieldView,
-    SurfaceResolution, ComplexFunctionSurface, Complex, Slider
+    SurfaceResolution, ComplexFunctionSurface, Complex, Slider, DiscreteComplexFieldSurfaceView2D
 } from "../../../src/index.js";
 
 const one = new Complex(1, 0);
@@ -97,8 +97,7 @@ class SurfaceController {
 
 const surfaceView = new ContinuousComplexFieldView({
         resolution: new SurfaceResolution(200, 200)
-    }
-);
+});
 
 const simulation = Simulation
     .with({

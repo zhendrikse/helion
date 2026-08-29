@@ -5,10 +5,10 @@ import {
 } from "three";
 
 import {Renderable2D, Renderable3D} from "../renderer.js";
-import { DropdownMenu} from "../../core/controls.js";
+import {CompoundControl, DropdownMenu, Slider} from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
 import { ColorMappers, ComplexColorMappers, WavelengthColorMapper} from "../colormappers.js";
-import {Complex} from "../../model/math/math.js";
+import {Complex, Range} from "../../model/math/math.js";
 import {SurfaceResolution} from "../3d/surfaces/visualization.js";
 
 export class ParticleCloudView extends Renderable3D {
@@ -349,6 +349,16 @@ export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
         if (!(field.valueAt && field.nx && field.ny))
             throw new Error("Complex discrete surface view needs valueAt() method");
         return true;
+    }
+
+    ui() {
+        return new CompoundControl()
+            .add(new DropdownMenu()
+                .for(new ComplexColorMappers())
+                .addEventListener("change", event =>
+                    this._colorMapper = ComplexColorMappers.get(event.target.value)
+                )
+            );
     }
 
     set brightness(brightness) { this._brightness = brightness; }
