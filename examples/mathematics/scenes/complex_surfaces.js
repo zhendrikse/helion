@@ -81,7 +81,7 @@ const surfacesRegistry = new Registry({
 class SurfaceController {
     constructor(simulation) {
         this._simulation = simulation;
-        this._currentSurface = surfacesRegistry.get("z * z * z + 2").surface;
+        this._currentSurface = surfacesRegistry.get("z * z + 2").surface;
     }
 
     changeSurface(surfaceId) {
@@ -130,4 +130,4 @@ simulation
         .withRange(new Range(1, 10, .1))
         .withValue(4.0))
 
-surfaceController.changeSurface("z * z * z + 2");
+surfaceController.changeSurface("z * z + 2");
