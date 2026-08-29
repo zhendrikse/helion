@@ -1,7 +1,7 @@
 import {
-    ComplexScalarFieldSurfaceRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
+    ComplexDiscreteSurfaceView, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
     SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, PotentialField3DRaster, DiscreteScalarField,
-    ShapeConfiguration, Softness, Potential, ComplexFieldRasterView, ScalarFieldIntensityPixelRaster,
+    ShapeConfiguration, Softness, Potential, ComplexFieldRasterView, ScalarFieldIntensityPixelRaster, SurfaceResolution,
 } from "../../../src/index.js";
 
 let xMax = 400,
@@ -25,7 +25,9 @@ function reset(shapeConfig, potentialStrength, softness) {
         .apply(new Softness({ softness }));
 }
 
-const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({ width, height });
+const waveFunctionSurface = new ComplexDiscreteSurfaceView({
+    resolution: new SurfaceResolution(width, height)
+});
 const potentialBarrier = new PotentialField3DRaster({ width, height });
 
 const waveFunctionSurface2d = new ComplexFieldRasterView({ width, height });

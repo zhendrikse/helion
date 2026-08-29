@@ -33,7 +33,7 @@ export {
     SegmentedCircle
 } from "./model/math/objects.js"
 
-export { ComplexSurfaceView } from "./view/3d/surfaces/complex.js";
+export { ComplexSurfaceView, ComplexDiscreteSurfaceView } from "./view/3d/surfaces/complex.js";
 export { ThreeJsScene } from "./view/3d/scene.js";
 export { SphereSphereCollision } from "./model/transformations/interactions.js";
 export { Domain, DiscreteScalarField, DiscreteComplexField, VectorField } from "./model/math/fields.js";
@@ -50,7 +50,7 @@ export { Simulation, Registry, MathPhysicsModelBehavior, Transformation } from "
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
 export { Renderable3D } from "./view/renderer.js";
-export { ComplexScalarFieldSurfaceRaster, PotentialField3DRaster } from "./view/3d/views.js"
+export { PotentialField3DRaster } from "./view/3d/views.js"
 export { ContoursLayer, PrincipalDirectionsLayer } from "./view/3d/surfaces/layers.js";
 export { Matrix2D } from "./model/transformations/matrices.js";
 export { Arrow2D } from "./view/2d/primitives.js";
