@@ -310,7 +310,40 @@ class ComplexDomainColorMapper extends ColorMapper {
     }
 }
 
-class ComplexHSVColorMapper extends ColorMapper {
+
+class ComplexHsvColorMapper extends ColorMapper {
+    constructor({s = 1, v = 1} = {}) {
+        super();
+        this._s = s;
+        this._v = v;
+    }
+
+    map(value, targetColor) {
+        const hue = value.phase % 1;
+
+        let r, g, b;
+        const i = Math.floor(hue * 6);
+        const f = hue * 6 - i;
+        const p = this._v * (1 - this._s);
+        const q = this._v * (1 - f * this._s);
+        const t = this._v * (1 - (1 - f) * this._s);
+
+        switch (i % 6) {
+            case 0: r = this._v; g = t; b = p; break;
+            case 1: r = q; g = this._v; b = p; break;
+            case 2: r = p; g = this._v; b = t; break;
+            case 3: r = p; g = q; b = this._v; break;
+            case 4: r = t; g = p; b = this._v; break;
+            case 5: r = this._v; g = p; b = q; break;
+        }
+
+        // Modulus is part of the complex-color mapping:
+        const brightness = Math.min(1, value.modulus);
+        targetColor.setRGB(r * 255 * brightness, g * 255 * brightness, b * 255 * brightness);
+    }
+}
+
+class ComplexHslColorMapper extends ColorMapper {
     map(value, targetColor) {
         const hue = value.phase + 0.5;
         const brightness = 0.25 + 0.75 * value.modulus;
@@ -351,13 +384,15 @@ export class ComplexColorMappers extends Registry {
     static Saturation = "Saturation";
     static BlackZero = "BlackZero";
     static Hsv = "Hsv";
+    static Hsl = "Hsl";
     static Domain = "Domain";
 
     constructor(label = "🎨 Color map") {
         super({
             label: label,
             entries: {
-                Hsv: options => new ComplexHSVColorMapper(),
+                Hsl: options => new ComplexHslColorMapper(),
+                Hsv: options => new ComplexHsvColorMapper(),
                 PhaseBands: options => new ComplexPhaseBandsColorMapper(),
                 Saturation: options => new ComplexSaturationColorMapper(),
                 BlackZero: options => new ComplexBlackZeroColorMapper(),

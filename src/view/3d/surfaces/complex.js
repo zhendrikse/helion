@@ -9,7 +9,7 @@ export class ComplexSurfaceView extends Renderable3D {
     constructor({
         resolution = new SurfaceResolution(100, 100),
         normalizer = new AdaptiveSymmetricNormalizer(),
-        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsv),
+        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl),
         maxHeight = 4,
         opacity = 1
     } = {}) {
