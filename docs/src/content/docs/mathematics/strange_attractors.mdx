@@ -31,14 +31,6 @@ layout: ../../../layouts/DocsLayout.astro
 🧠 Inspired by [Lorenz Attractor](https://prettymathpics.com/lorenz-attractor/) blog and code contained therein<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/LorentzAttractor) is available as well, see [lorenz_attractor.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/lorenz_attractor.py)<br/>
 
-$$
-\begin{cases}
-\dfrac{dx}{dt} = a (y - x) \\
-\dfrac{dy}{dt} = x (b - z) - y  \\
-\dfrac{dz}{dt} = xy - c z
-\end{cases}
-$$
-
 <div id="lorenzAttractorContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/lorenz_attractor.js"}></script>
 <p style="clear: both;"></p>
@@ -52,7 +44,6 @@ In 1963, the meteorologist was running a weather model when he stumbled upon som
 A tiny rounding error in his input led to wildly different outcomes &mdash; chaos emerging  
 from seemingly deterministic equations. This  discovery became the foundation of chaos theory and is beautifully captured 
 in the Lorenz equations, a set of three coupled non-linear differential equations:
-
 
 $$
 \begin{cases}
@@ -93,14 +84,6 @@ For further reading: the website of [Paul Bourke](https://paulbourke.net/fractal
 
 🧠 Inspired by [RoesslerAttractor.ipynb](https://nbviewer.org/url/sites.science.oregonstate.edu/~landaur/Books/Problems/Codes/JupyterNB/RoesslerAttractor.ipynb)<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/RoesslerAttractor) is available as well, see [rossler_attractor.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/rossler_attractor.py)<br/>
-
-$$
-\begin{cases}
-\dfrac{dx}{dt} = -y-z \\
-\dfrac{dy}{dt} = x + ay  \\
-\dfrac{dz}{dt} = b+z(x-c)
-\end{cases}
-$$
 
 <div id="rosslerAttractorContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/rossler_attractor.js"}></script>

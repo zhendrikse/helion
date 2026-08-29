@@ -44,6 +44,14 @@ const simulation = Simulation
         htmlDivId: "lorenzAttractorContainer",
         headUpDisplay: {
             enabled: false
+        },
+        infoPanel: {
+            text: "<strong>Lorenz attractor 🦋</strong><br/>" +
+                "$$\\begin{cases}" +
+                "\\dfrac{dx}{dt} = a (y - x) \\\\" +
+                "\\dfrac{dy}{dt} = x (b - z) - y  \\\\" +
+                "\\dfrac{dz}{dt} = xy - c z" +
+                "\\end{cases}$$"
         }
     })
     //.provideAxesAround(lorenzView)

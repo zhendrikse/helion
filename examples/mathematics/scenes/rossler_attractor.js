@@ -55,6 +55,14 @@ Simulation
         },
         headUpDisplay: {
             enabled: false
+        },
+        infoPanel: {
+            text: "<strong>Rössler attractor 🦋</strong>" +
+                "$$\\begin{cases}" +
+                "\\dfrac{dx}{dt} = -y-z \\\\" +
+                "\\dfrac{dy}{dt} = x + ay  \\\\" +
+                "\\dfrac{dz}{dt} = b+z(x-c)" +
+                "\\end{cases}$$"
         }
     })
     .bind(roessler.alwaysWith(view))
