@@ -1,5 +1,5 @@
 import {
-    Button, LineSegmentsView, Simulation, Vec3, Turtle, hsvToHexValue, ColorMappers
+    Button, LineSegmentsView, Simulation, Vec3, Turtle, hsvToHexValue, HexValueColorMapper
 } from "../../../src/index.js";
 
 function kochSnowflake(turtle, length, depth) {
@@ -190,7 +190,7 @@ function drawTSquare(turtle) {
 
 const turtle = new Turtle();
 const turtleView = new LineSegmentsView({
-    colorMapper: ColorMappers.get(ColorMappers.HexValueColorMapper)
+    colorMapper: new HexValueColorMapper()
 });
 
 drawDragonCurve(turtle);

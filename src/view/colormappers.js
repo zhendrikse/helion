@@ -409,8 +409,6 @@ export class ColorMappers extends Registry {
             label: label,
             entries: {
                 Gradient: options => new GradientColorMapper(),
-                HexValueColorMapper: options => new HexValueColorMapper(),
-                Hue: options => new HueColorMapper(),
                 Inferno: options => new InfernoColorMapper(),
                 RdYlBu: options => new RdYlBuColorMapper(),
                 Seismic: options => new SeismicColorMapper(),

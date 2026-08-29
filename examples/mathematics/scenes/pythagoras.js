@@ -1,5 +1,6 @@
 import {
-    Segments, LineSegment, Simulation, LineSegmentsView, Vec3, Slider, Range, LineSegmentView, Label, ColorMappers, Vec2
+    Segments, LineSegment, Simulation, LineSegmentsView, Vec3, Slider, Range, LineSegmentView,
+    Label, Vec2, HexValueColorMapper
 } from "../../../src/index.js";
 
 class Pythagoras extends Segments {
@@ -73,7 +74,7 @@ class Pythagoras extends Segments {
 const pythagoras = new Pythagoras(4, 3);
 const segmentsView = new LineSegmentsView({
     lineWidth: 3,
-    colorMapper: ColorMappers.get(ColorMappers.HexValueColorMapper)
+    colorMapper: new HexValueColorMapper()
 });
 
 Simulation
