@@ -318,41 +318,45 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     }
 }
 
-class HsvColorMapper extends ColorMapper {
+class ComplexHSVColorMapper extends ColorMapper {
     constructor({s = 1, v = 1} = {}) {
         super();
         this._s = s;
         this._v = v;
     }
 
-    map(h, targetColor) {
+    map(value, targetColor) {
+        const hue = value.phase % 1;
+
         let r, g, b;
-        let i = Math.floor(h * 6);
-        let f = h * 6 - i;
-        let p = this._v * (1 - this._s);
-        let q = this._v * (1 - f * this._s);
-        let t = this._v * (1 - (1 - f) * this._s);
+        const i = Math.floor(hue * 6);
+        const f = hue * 6 - i;
+        const p = this._v * (1 - this._s);
+        const q = this._v * (1 - f * this._s);
+        const t = this._v * (1 - (1 - f) * this._s);
 
         switch (i % 6) {
-            case 0: r = this._v, g = t, b = p; break;
-            case 1: r = q, g = this._v, b = p; break;
-            case 2: r = p, g = this._v, b = t; break;
-            case 3: r = p, g = q, b = this._v; break;
-            case 4: r = t, g = p, b = this._v; break;
-            case 5: r = this._v, g = p, b = q; break;
+            case 0: r = this._v; g = t; b = p; break;
+            case 1: r = q; g = this._v; b = p; break;
+            case 2: r = p; g = this._v; b = t; break;
+            case 3: r = p; g = q; b = this._v; break;
+            case 4: r = t; g = p; b = this._v; break;
+            case 5: r = this._v; g = p; b = q; break;
         }
 
-        targetColor.setRGB(r * 255, g * 255, b * 255);
+        // Modulus is part of the complex-color mapping:
+        const brightness = Math.min(1, value.modulus);
+        targetColor.setRGB(r * 255 * brightness, g * 255 * brightness, b * 255 * brightness);
     }
 }
 
-export class ComplexFieldRasterView extends Renderable3D {
+export class ComplexFieldRasterView extends Renderable2D {
     constructor({
         width = 512,
         height = 512,
         showPhaseColour = true,
         brightness = 1,
-        colorMapper = new HsvColorMapper()
+        colorMapper = new ComplexHSVColorMapper()
     } = {}) {
         super();
         this._brightness = brightness;
@@ -387,21 +391,19 @@ export class ComplexFieldRasterView extends Renderable3D {
 
     synchronizeWith(field) {
         let index = 0;
-        for (let x = 0; x < this._height; x++)
-            for (let y = 0; y < this._width; y++) {
-                field.valueAt(y, x, this._complexNumber);
-                const mag = this._complexNumber.magnitude;
-                const phase = this._complexNumber.phase;
-
-                let brightness = mag * this._brightness;
+        for (let y = 0; y < this._width; y++)
+            for (let x = 0; x < this._height; x++) {
+                field.valueAt(x, y, this._complexNumber);
+                const phase = this._complexNumber.phase + .5; // phase is in [-.5, .5]
+                const modulus = this._complexNumber.magnitude;
+                let brightness = modulus * this._brightness;
                 if (brightness > 1.0) brightness = 1.0;
 
                 if (this._phaseColor) {
-                    this._colorMapper.map(phase + Math.PI, this._rgb);
-                    const brightness = Math.min(1, mag * this._brightness);
-                    this._pixels[index++] = Math.round(this._rgb.r * brightness);
-                    this._pixels[index++] = Math.round(this._rgb.g * brightness);
-                    this._pixels[index++] = Math.round(this._rgb.b * brightness);
+                    this._colorMapper.map({phase, modulus}, this._rgb);
+                    this._pixels[index++] = Math.round(this._rgb.r);
+                    this._pixels[index++] = Math.round(this._rgb.g);
+                    this._pixels[index++] = Math.round(this._rgb.b );
                     this._pixels[index++] = Math.round(brightness * 255);
                 } else {
                     this._pixels[index++] = 255;
