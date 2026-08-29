@@ -87,7 +87,7 @@ export class Binding {
 
     synchronize() {
         const viewNeedsSynchronization = this.mode === Binding.Mode.ALWAYS || this.view?.dirty;
-        if (viewNeedsSynchronization)
+        if (viewNeedsSynchronization && this.view.visible)
             this.view.synchronizeWith(this.model);
     }
 
