@@ -1,12 +1,12 @@
 import {
-    DiscreteComplexField, Simulation, Vec3, ComplexScalarFieldRaster, FFTShift2D, FFT2D, ComplexShapeMask,
+    DiscreteComplexField, Simulation, Vec3, ComplexFieldRasterView, FFTShift2D, FFT2D, ComplexShapeMask,
     ShapeConfiguration, Shapes, ComplexSoftness, Slider, Range, Checkbox
 } from "../../../src/index.js";
 
 const resolution = 512;
 const field = new DiscreteComplexField({nx: resolution, ny: resolution});
 
-const intensityRaster = new ComplexScalarFieldRaster({
+const intensityRaster = new ComplexFieldRasterView({
     width: resolution,
     height: resolution,
     showPhaseColour: false,

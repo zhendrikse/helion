@@ -1,7 +1,7 @@
 import {
     ComplexScalarFieldSurfaceRaster, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
     SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, PotentialField3DRaster, DiscreteScalarField,
-    ShapeConfiguration, Softness, Potential, ComplexScalarFieldRaster, ScalarFieldIntensityPixelRaster,
+    ShapeConfiguration, Softness, Potential, ComplexFieldRasterView, ScalarFieldIntensityPixelRaster,
 } from "../../../src/index.js";
 
 let xMax = 400,
@@ -28,7 +28,7 @@ function reset(shapeConfig, potentialStrength, softness) {
 const waveFunctionSurface = new ComplexScalarFieldSurfaceRaster({ width, height });
 const potentialBarrier = new PotentialField3DRaster({ width, height });
 
-const waveFunctionSurface2d = new ComplexScalarFieldRaster({ width, height });
+const waveFunctionSurface2d = new ComplexFieldRasterView({ width, height });
 const potentialBarrier2d = new ScalarFieldIntensityPixelRaster({ width, height });
 waveFunctionSurface2d.visible = false;
 potentialBarrier2d.visible = false;
@@ -62,9 +62,11 @@ const simulation = Simulation
         .add("3D", event => setDimension(true))
         .checked(1))
     .append(new Checkbox("🌈 Show phase color ")
-        .on(waveFunctionSurface)
-        .withProperty("phaseColor")
         .checked(true)
+        .onChange(event => {
+            waveFunctionSurface2d.phaseColor = event.target.checked;
+            waveFunctionSurface.phaseColor = event.target.checked;
+        })
     )
     .append(new Slider("🏃 Packet energy ")
         .on(gaussianImpulse)
@@ -78,11 +80,6 @@ const simulation = Simulation
         .withValue(waveFunctionSurface.zScale)
         .on(waveFunctionSurface)
         .withProperty("zScale")
-    )
-    .append(new Checkbox("🌈 Show phase color ")
-        .on(waveFunctionSurface)
-        .withProperty("phaseColor")
-        .checked(true)
     )
     .append(shapeConfiguration.ui())
     .append(new Slider("💪🏻 Energy barrier")

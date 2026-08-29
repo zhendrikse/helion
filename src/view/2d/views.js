@@ -7,7 +7,8 @@ import {
 import {Renderable2D, Renderable3D} from "../renderer.js";
 import { DropdownMenu} from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
-import {ComplexColorMappers, WavelengthColorMapper} from "../colormappers.js";
+import {ColorMapper, ColorMappers, ComplexColorMappers, WavelengthColorMapper} from "../colormappers.js";
+import {Complex} from "../../model/math/math.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -317,27 +318,47 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     }
 }
 
-export class ComplexScalarFieldRaster extends Renderable2D {
+class HsvColorMapper extends ColorMapper {
+    constructor({s = 1, v = 1} = {}) {
+        super();
+        this._s = s;
+        this._v = v;
+    }
+
+    map(h, targetColor) {
+        let r, g, b;
+        let i = Math.floor(h * 6);
+        let f = h * 6 - i;
+        let p = this._v * (1 - this._s);
+        let q = this._v * (1 - f * this._s);
+        let t = this._v * (1 - (1 - f) * this._s);
+
+        switch (i % 6) {
+            case 0: r = this._v, g = t, b = p; break;
+            case 1: r = q, g = this._v, b = p; break;
+            case 2: r = p, g = this._v, b = t; break;
+            case 3: r = p, g = q, b = this._v; break;
+            case 4: r = t, g = p, b = this._v; break;
+            case 5: r = this._v, g = p, b = q; break;
+        }
+
+        targetColor.setRGB(r * 255, g * 255, b * 255);
+    }
+}
+
+export class ComplexFieldRasterView extends Renderable3D {
     constructor({
         width = 512,
         height = 512,
         showPhaseColour = true,
-        brightness = 1
+        brightness = 1,
+        colorMapper = new HsvColorMapper()
     } = {}) {
         super();
         this._brightness = brightness;
-        this._numColors = 256;
-
-        this._color = new Color();
-        this._colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsv);
-
-
-        this._hsvTable = new Array(this._numColors);
-        for (let i = 0; i < this._numColors; i++) {
-            const color = new Color();
-            color.setHSL(i / this._numColors, 1.0, 0.75);
-            this._hsvTable[i] = color;
-        }
+        this._colorMapper = colorMapper;
+        this._rgb = new Color();
+        this._complexNumber = new Complex();
 
         const pixels = new Uint8Array(width * height * 4);
         const texture = new DataTexture(pixels,  width, height, RGBAFormat);
@@ -356,7 +377,9 @@ export class ComplexScalarFieldRaster extends Renderable2D {
     }
 
     canBindTo(field) {
-        return field.sample && field.nx && field.ny;
+        if (!(field.valueAt && field.nx && field.ny))
+            throw new Error("Complex discrete surface view needs valueAt() method");
+        return true;
     }
 
     set brightness(brightness) { this._brightness = brightness; }
@@ -366,31 +389,20 @@ export class ComplexScalarFieldRaster extends Renderable2D {
         let index = 0;
         for (let x = 0; x < this._height; x++)
             for (let y = 0; y < this._width; y++) {
-                const i = x * field.nx + y;
-                const re = field.real[i];
-                const im = field.imag[i];
-                const mag = Math.sqrt(re * re + im * im);
-                const phase = Math.atan2(im, re);
+                field.valueAt(y, x, this._complexNumber);
+                const mag = this._complexNumber.magnitude;
+                const phase = this._complexNumber.phase;
 
                 let brightness = mag * this._brightness;
                 if (brightness > 1.0) brightness = 1.0;
 
                 if (this._phaseColor) {
-                    const value = {
-                        phase: phase,
-                        modulus: mag * 1e16
-                    };
-                    this._pixels[index++] = this._color.r ;
-                    this._pixels[index++] = this._color.g ;
-                    this._pixels[index++] = this._color.b ;
+                    this._colorMapper.map(phase + Math.PI, this._rgb);
+                    const brightness = Math.min(1, mag * this._brightness);
+                    this._pixels[index++] = Math.round(this._rgb.r * brightness);
+                    this._pixels[index++] = Math.round(this._rgb.g * brightness);
+                    this._pixels[index++] = Math.round(this._rgb.b * brightness);
                     this._pixels[index++] = Math.round(brightness * 255);
-                    this._colorMapper.map(value, this._color)
-                    // const phaseIndex = Math.floor(((phase + Math.PI) / (2 * Math.PI)) * this._numColors);
-                    // const rgb = this._hsvTable[Math.max(0, Math.min(this._numColors - 1, phaseIndex))];
-                    // this._pixels[index++] = Math.round(rgb.r * brightness);
-                    // this._pixels[index++] = Math.round(rgb.g * brightness);
-                    // this._pixels[index++] = Math.round(rgb.b * brightness);
-                    // this._pixels[index++] = Math.round(brightness * 255);
                 } else {
                     this._pixels[index++] = 255;
                     this._pixels[index++] = 255;
@@ -399,6 +411,6 @@ export class ComplexScalarFieldRaster extends Renderable2D {
                 }
             }
 
-            this._texture.needsUpdate = true;
+        this._texture.needsUpdate = true;
     }
 }

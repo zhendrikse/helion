@@ -19,7 +19,7 @@ export {
 } from "./model/transformations/operators.js";
 
 export {
-    ParticleCloudView, ScalarFieldIntensityPixelRaster, ComplexScalarFieldRaster,
+    ParticleCloudView, ScalarFieldIntensityPixelRaster, ComplexFieldRasterView,
     FieldEdgeIntensityPixelRaster
 } from "./view/2d/views.js";
 
