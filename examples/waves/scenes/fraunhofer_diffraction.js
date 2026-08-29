@@ -1,5 +1,5 @@
 import {
-    linspace, meshgrid, ScalarFieldIntensityPixelRaster, WavelengthColorMapper, Vec3,
+    linspace, meshgrid, DiscreteFieldSurfaceView, WavelengthColorMapper, Vec3,
     DiscreteScalarField, Simulation, Slider, Checkbox, Range, RadioGroup
 } from "../../../src/index.js";
 
@@ -126,9 +126,8 @@ fraunhoferSimulation.lambdaInNanos = initialLambda;
 //
 // View for 2D canvas
 //
-const intensityPixelRaster = new ScalarFieldIntensityPixelRaster({
-    width: resolution,
-    height: resolution,
+const intensityPixelRaster = new DiscreteFieldSurfaceView({
+    resolution,
     colorMapper: fraunhoferSimulation.colorMapper
 });
 

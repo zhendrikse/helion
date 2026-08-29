@@ -5,7 +5,7 @@ import { Complex, Range} from "../../../model/math/math.js";
 import { ComplexColorMappers} from "../../colormappers.js";
 import { CompoundControl, DropdownMenu, Slider } from "../../../core/controls.js";
 
-export class ComplexSurfaceView extends Renderable3D {
+export class ContinuousComplexFieldView extends Renderable3D {
     constructor({
         resolution = new SurfaceResolution(100, 100),
         normalizer = new AdaptiveSymmetricNormalizer(),
@@ -117,7 +117,7 @@ export class ComplexSurfaceView extends Renderable3D {
     }
 }
 
-export class ComplexDiscreteSurfaceView extends Renderable3D {
+export class DiscreteComplexFieldSurfaceView extends Renderable3D {
     static vertexShader = `
         attribute vec3 color;
         attribute float alpha;
@@ -164,8 +164,8 @@ export class ComplexDiscreteSurfaceView extends Renderable3D {
         const height = resolution.v;
         const geometry = new PlaneGeometry(width, height, width - 1, height - 1);
         const material = new ShaderMaterial({
-            vertexShader: ComplexDiscreteSurfaceView.vertexShader,
-            fragmentShader: ComplexDiscreteSurfaceView.fragmentShader,
+            vertexShader: DiscreteComplexFieldSurfaceView.vertexShader,
+            fragmentShader: DiscreteComplexFieldSurfaceView.fragmentShader,
             transparent: true,
             //side: DoubleSide,
             uniforms: {

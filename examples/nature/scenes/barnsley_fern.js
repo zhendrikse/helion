@@ -1,5 +1,5 @@
 import {
-    ColorMapper, DiscreteScalarField, ScalarFieldIntensityPixelRaster, Simulation, uniform, Vec3
+    ColorMapper, DiscreteScalarField, DiscreteFieldSurfaceView, Simulation, uniform, Vec3
 } from "../../../src/index.js";
 
 const img_x = 512
@@ -99,7 +99,7 @@ class FernColorMapper extends ColorMapper {
     }
 }
 
-const fernImage = new ScalarFieldIntensityPixelRaster({
+const fernImage = new DiscreteFieldSurfaceView({
     width: img_x,
     height: img_y,
     colorMapper: new FernColorMapper()

@@ -77,7 +77,7 @@ import {Renderable3D} from "../renderer.js";
 // }
 
 
-export class PotentialField3DRaster extends Renderable3D {
+export class DiscreteFieldBoxView extends Renderable3D {
     constructor({
         width = 200,
         height = 200,

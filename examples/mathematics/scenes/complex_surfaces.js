@@ -1,5 +1,5 @@
 import {
-    Simulation, DropdownMenu, Domain, Registry, Range, ComplexSurfaceView,
+    Simulation, DropdownMenu, Domain, Registry, Range, ContinuousComplexFieldView,
     SurfaceResolution, ComplexFunctionSurface, Complex, Slider
 } from "../../../src/index.js";
 
@@ -95,7 +95,7 @@ class SurfaceController {
     set animate(value) { this._animate = value; }
 }
 
-const surfaceView = new ComplexSurfaceView({
+const surfaceView = new ContinuousComplexFieldView({
         resolution: new SurfaceResolution(200, 200)
     }
 );

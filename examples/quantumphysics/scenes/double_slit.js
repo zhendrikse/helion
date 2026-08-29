@@ -1,7 +1,7 @@
 import {
     AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider, Sphere, Vec3,
-    DiscreteScalarField, WavelengthColorMapper, ScalarFieldIntensityPixelRaster, DoubleSlitOperator,
-    FieldEdgeIntensityPixelRaster
+    DiscreteScalarField, WavelengthColorMapper, DiscreteFieldSurfaceView, DoubleSlitOperator,
+    FieldEdgeIntensityPixelRaster, SurfaceResolution
 } from "../../../src/index.js";
 
 const resolution = 50;
@@ -50,9 +50,8 @@ const simulation = Simulation
         edgeHeight: .6 * xMax * resolution,
         colorMapper: wavelengthColorMapper
     })))
-    .bind(field.onceWith(new ScalarFieldIntensityPixelRaster({
-        width: field.nx,
-        height: field.ny,
+    .bind(field.onceWith(new DiscreteFieldSurfaceView({
+        resolution: new SurfaceResolution(field.nx, field.ny),
         colorMapper: wavelengthColorMapper
     })))
     .withMouseClickEventListener()

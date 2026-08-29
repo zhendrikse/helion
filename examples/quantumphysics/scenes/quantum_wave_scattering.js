@@ -1,7 +1,7 @@
 import {
-    ComplexDiscreteSurfaceView, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
-    SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, PotentialField3DRaster, DiscreteScalarField,
-    ShapeConfiguration, Softness, Potential, ComplexFieldRasterView, ScalarFieldIntensityPixelRaster, SurfaceResolution,
+    DiscreteComplexFieldSurfaceView, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
+    SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField,
+    ShapeConfiguration, Softness, Potential, DiscreteComplexFieldSurfaceView2D, DiscreteFieldSurfaceView, SurfaceResolution,
 } from "../../../src/index.js";
 
 let xMax = 400,
@@ -25,13 +25,17 @@ function reset(shapeConfig, potentialStrength, softness) {
         .apply(new Softness({ softness }));
 }
 
-const waveFunctionSurface = new ComplexDiscreteSurfaceView({
+const waveFunctionSurface = new DiscreteComplexFieldSurfaceView({
     resolution: new SurfaceResolution(width, height)
 });
-const potentialBarrier = new PotentialField3DRaster({ width, height });
+const potentialBarrier = new DiscreteFieldBoxView({ width, height });
 
-const waveFunctionSurface2d = new ComplexFieldRasterView({ width, height });
-const potentialBarrier2d = new ScalarFieldIntensityPixelRaster({ width, height });
+const waveFunctionSurface2d = new DiscreteComplexFieldSurfaceView2D({
+    resolution: new SurfaceResolution(width, height)
+});
+const potentialBarrier2d = new DiscreteFieldSurfaceView({
+    resolution: new SurfaceResolution(width, height)
+});
 waveFunctionSurface2d.visible = false;
 potentialBarrier2d.visible = false;
 

@@ -9,6 +9,7 @@ import { DropdownMenu} from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
 import { ColorMappers, ComplexColorMappers, WavelengthColorMapper} from "../colormappers.js";
 import {Complex} from "../../model/math/math.js";
+import {SurfaceResolution} from "../3d/surfaces/visualization.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -185,28 +186,25 @@ export class PixelRasterView extends Renderable3D {
     }
 }
 
-export class ScalarFieldIntensityPixelRaster extends Renderable3D {
+export class DiscreteFieldSurfaceView extends Renderable2D {
     constructor({
-        width = 512,
-        height = 512,
+        resolution = new SurfaceResolution(512, 512),
         colorMapper = new WavelengthColorMapper(525)
     } = {}) {
         super();
-        this._width = width;
-        this._height = height;
+        this._width = resolution.u;
+        this._height = resolution.v;
         this._colorMapper = colorMapper;
 
-        const pixels = new Uint8Array(width * height * 4);
-        const texture = new DataTexture(pixels,  width, height, RGBAFormat);
+        const pixels = new Uint8Array(this._width * this._height * 4);
+        const texture = new DataTexture(pixels, this._width, this._height, RGBAFormat);
         texture.needsUpdate = true;
         this._mesh = new Mesh(
-            new PlaneGeometry(width,height),
+            new PlaneGeometry(this._width, this._height),
             new MeshBasicMaterial({ map: texture, transparent: true, side: DoubleSide })
         );
         this.add(this._mesh);
 
-        this._width = width;
-        this._height = height;
         this._pixels = pixels;
         this._texture = texture;
         this._colorMapper = colorMapper;
@@ -318,31 +316,30 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     }
 }
 
-export class ComplexFieldRasterView extends Renderable2D {
+export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
     constructor({
-        width = 512,
-        height = 512,
+        resolution = new SurfaceResolution(512, 512),
         showPhaseColour = true,
         brightness = 1,
         colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl)
     } = {}) {
         super();
+        this._width = resolution.u;
+        this._height = resolution.v;
         this._brightness = brightness;
         this._colorMapper = colorMapper;
         this._rgb = new Color();
         this._complexNumber = new Complex();
 
-        const pixels = new Uint8Array(width * height * 4);
-        const texture = new DataTexture(pixels,  width, height, RGBAFormat);
+        const pixels = new Uint8Array(this._width * this._height * 4);
+        const texture = new DataTexture(pixels,  this._width, this._height, RGBAFormat);
         texture.needsUpdate = true;
         this._mesh = new Mesh(
-            new PlaneGeometry(width, height),
+            new PlaneGeometry(this._width, this._height),
             new MeshBasicMaterial({ map: texture, transparent: true })
         );
         this.add(this._mesh);
 
-        this._width = width;
-        this._height = height;
         this._pixels = pixels;
         this._texture = texture;
         this._phaseColor = showPhaseColour;

@@ -1,6 +1,6 @@
 import {
     DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
-    WaveEquationSolver, PotentialField3DRaster, FixedIntervalNormalizer,
+    WaveEquationSolver, DiscreteFieldBoxView, FixedIntervalNormalizer,
     SineImpulseOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization,
     SurfaceResolution, RadioGroup, Checkbox, ColorMappers
 } from "../../../src/index.js";
@@ -54,7 +54,7 @@ Simulation
         }
     })
     .bind(surface.alwaysWith(waterSurface))
-    .bind(obstacleField.onceWith(new PotentialField3DRaster({
+    .bind(obstacleField.onceWith(new DiscreteFieldBoxView({
         width: resolution,
         height: resolution,
         heightScale: 20,
