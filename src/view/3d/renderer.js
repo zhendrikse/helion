@@ -53,7 +53,7 @@ export class ThreeJsRenderer extends Renderer {
     }
 
     set autoRotate(autoRotate) { this._camera.autoRotate = autoRotate; }
-    set cameraPosition(position) { console.log(this._camera); this._camera.camera.position.copy(position); }
+    set cameraPosition(position) { this._camera.camera.position.copy(position); }
 
     attach(viewport) {
         this._renderer = new WebGLRenderer({
