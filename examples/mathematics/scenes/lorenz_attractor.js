@@ -1,5 +1,4 @@
-import {Color} from "three";
-import {StrangeAttractor, LineSegmentsView, Simulation, Vec3, ColorMappers} from "../../../src/index.js";
+import {StrangeAttractor, LineSegmentsView, Simulation, Vec3, HueColorMapper } from "../../../src/index.js";
 
 export class LorenzAttractor extends StrangeAttractor {
     constructor({
@@ -37,7 +36,7 @@ export class LorenzAttractor extends StrangeAttractor {
 const lorenz = new LorenzAttractor();
 const lorenzView = new LineSegmentsView({
     lineWidth: 1.25,
-    colorMapper: ColorMappers.get(ColorMappers.Hue)
+    colorMapper: new HueColorMapper()
 });
 
 const simulation = Simulation

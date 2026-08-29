@@ -1,5 +1,5 @@
 import {Color} from "three";
-import {LineSegmentsView, StrangeAttractor, Simulation, Vec3, ColorMappers} from "../../../src/index.js";
+import {LineSegmentsView, StrangeAttractor, Simulation, Vec3, HueColorMapper } from "../../../src/index.js";
 
 export class RoesslerAttractor extends StrangeAttractor {
     constructor({
@@ -44,7 +44,7 @@ const roessler = new RoesslerAttractor({
 
 const view = new LineSegmentsView({
     lineWidth: 1.25,
-    colorMapper: ColorMappers.get(ColorMappers.Hue)
+    colorMapper: new HueColorMapper()
 });
 view.rotation.x = -Math.PI / 2
 Simulation

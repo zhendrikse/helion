@@ -142,8 +142,8 @@ export class LineSegmentView extends Renderable3D {
         this.visible = visible;
     }
 
-    initialize(model) {
-        this._3d = model.from.z && model.to.z;
+    initialize(segment) {
+        this._3d = segment.from.z !== undefined && segment.to.z !== undefined;
     }
 
     canBindTo(model) {
@@ -193,9 +193,15 @@ export class LineSegmentsView extends LineSegmentView {
     }
 
     initialize(segments) {
+        this._3d = true;
+
         for (const segment of segments)
-            this._3d &= segment.from.z && segment.to.z;
+            if (segment.from.z === undefined || segment.to.z === undefined) {
+                this._3d = false;
+                break;
+            }
     }
+
 
     canBindTo(segments) {
         if (!(segments instanceof Segments))

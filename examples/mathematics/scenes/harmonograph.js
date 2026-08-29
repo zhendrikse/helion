@@ -1,7 +1,6 @@
-import { Color } from "three";
 import {
-    LineSegment, Segments, LineSegmentsView, normalDistribution, randomInt, Simulation, uniform, Vec3, ColorMapper,
-    ColorMappers
+    LineSegment, Segments, LineSegmentsView, normalDistribution, randomInt, Simulation, uniform, Vec3,
+    HueColorMapper
 } from "../../../src/index.js";
 
 function scale(length) {
@@ -100,7 +99,7 @@ const harmonograph = new Harmonograph();
 harmonograph.generate();
 const harmonographView = new LineSegmentsView({
     lineWidth: 1.25,
-    colorMapper: ColorMappers.get(ColorMappers.Hue)
+    colorMapper: new HueColorMapper()
 });
 
 Simulation

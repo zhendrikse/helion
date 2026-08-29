@@ -1,5 +1,6 @@
-import {Color, Vector3} from "three";
-import {Segments, LineSegmentsView, RadioGroup, Simulation, LineSegment, ColorMappers} from "../../../src/index.js";
+import {
+    Segments, LineSegmentsView, RadioGroup, Simulation, LineSegment, HueColorMapper, Vec3
+} from "../../../src/index.js";
 
 const LEVEL = 5;
 
@@ -82,18 +83,18 @@ function pyramid(vertices) {
 }
 
 const initialTetrahedron = [
-    new Vector3(0, 1, 0),
-    new Vector3(-1, -1, -1),
-    new Vector3(1, -1, -1),
-    new Vector3(0, -1, 1)
+    new Vec3(0, 1, 0),
+    new Vec3(-1, -1, -1),
+    new Vec3(1, -1, -1),
+    new Vec3(0, -1, 1)
 ];
 
 const initialPyramid = [
-    new Vector3(-1, -1, -1),
-    new Vector3(1, -1, -1),
-    new Vector3(1, -1, 1),
-    new Vector3(-1, -1, 1),
-    new Vector3(0, 1, 0)
+    new Vec3(-1, -1, -1),
+    new Vec3(1, -1, -1),
+    new Vec3(1, -1, 1),
+    new Vec3(-1, -1, 1),
+    new Vec3(0, 1, 0)
 ];
 
 const fractal = new Segments();
@@ -111,7 +112,7 @@ function buildTetrahedron() {
 
 const fractalView = new LineSegmentsView({
     lineWidth: 2,
-    colorMapper: ColorMappers.get(ColorMappers.Hue)
+    colorMapper: new HueColorMapper()
 });
 
 Simulation
