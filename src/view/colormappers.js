@@ -155,7 +155,7 @@ export function wavelengthToRGBNormalized(wavelength) {
 }
 
 /**
- * Maps a generic scalar field value to a color, the targetColor.
+ * Maps a value to a color, storing the result in targetColor.
  */
 export class ColorMapper {
     map(value, targetColor) {}
@@ -271,13 +271,13 @@ class GradientColorMapper extends ColorMapper {
     }
 }
 
-class HueColorMapper extends ColorMapper {
+export class HueColorMapper extends ColorMapper {
     map(value, targetColor) {
         targetColor.setHSL(value % 1, 1.0, 0.5);
     }
 }
 
-class HexValueColorMapper extends ColorMapper {
+export class HexValueColorMapper extends ColorMapper {
     map(hexValue, targetColor) {
         targetColor.setHex(hexValue);
     }
@@ -318,6 +318,74 @@ class TerrainColorMapper extends ColorMapper {
     }
 }
 
+//
+// C O M P L E X  C O L O R  M A P P E R S
+//
+class ComplexDomainColorMapper extends ColorMapper {
+    map(value, targetColor) {
+        const hue = value.phase + 0.5;
+        const lightness = 0.35 + 0.25 * Math.sqrt(value.modulus);
+        targetColor.setHSL(hue, 1, lightness);
+    }
+}
+
+class ComplexHSVColorMapper extends ColorMapper {
+    map(value, targetColor) {
+        const hue = value.phase + 0.5;
+        const brightness = 0.25 + 0.75 * value.modulus;
+        targetColor.setHSL(hue, 1, brightness * 0.5);
+    }
+}
+
+class ComplexBlackZeroColorMapper extends ColorMapper {
+    map(value, targetColor) {
+        const hue = value.phase + 0.5;
+        const t = Math.sqrt(value.modulus - .55);
+        targetColor.setHSL(hue, 1, 0.05 + 0.45 * t);
+    }
+}
+class ComplexSaturationColorMapper extends ColorMapper {
+    map(value, targetColor) {
+        const hue = value.phase + 0.5;
+        const saturation = value.modulus;
+        targetColor.setHSL(hue, saturation, 0.5);
+    }
+}
+
+class ComplexPhaseBandsColorMapper extends ColorMapper {
+    map(value, targetColor) {
+        const phase = value.phase;
+        const bands = 0.5 + 0.5 * Math.cos(2 * Math.PI * 6 * phase);
+        const lightness = 0.15 + 0.7 * bands;
+        targetColor.setHSL(0.58, 0.8, lightness);
+    }
+}
+
+export class ComplexColorMappers extends Registry {
+    static get(type, options = {}) {
+        return new ComplexColorMappers().get(type)(options);
+    }
+
+    static PhaseBands = "PhaseBands";
+    static Saturation = "Saturation";
+    static BlackZero = "BlackZero";
+    static Hsv = "Hsv";
+    static Domain = "Domain";
+
+    constructor(label = "🎨 Color map") {
+        super({
+            label: label,
+            entries: {
+                PhaseBands: options => new ComplexPhaseBandsColorMapper(),
+                Saturation: options => new ComplexSaturationColorMapper(),
+                BlackZero: options => new ComplexBlackZeroColorMapper(),
+                Hsv: options => new ComplexHSVColorMapper(),
+                Domain: options => new ComplexDomainColorMapper()
+            }
+        });
+    }
+}
+
 export class ColorMappers extends Registry {
     static get(type, options = {}) {
         return new ColorMappers().get(type)(options);
@@ -336,7 +404,7 @@ export class ColorMappers extends Registry {
     static Water = "Water";
     static WaterAlternative = "WaterAlternative";
 
-    constructor(label = "Color map ") {
+    constructor(label = "🎨 Color map") {
         super({
             label: label,
             entries: {

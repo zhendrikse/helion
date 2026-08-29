@@ -1,15 +1,22 @@
 import { Mesh, DoubleSide, MeshStandardMaterial, PlaneGeometry, Color, BufferAttribute } from 'three';
-import {Renderable3D} from "../../renderer.js";
-import {SurfaceResolution} from "./visualization.js";
-import {Complex, Interval} from "../../../model/math/math.js";
+import { Renderable3D } from "../../renderer.js";
+import { AdaptiveSymmetricNormalizer, SurfaceResolution } from "./visualization.js";
+import { Complex, Range} from "../../../model/math/math.js";
+import {ColorMappers, ComplexColorMappers} from "../../colormappers.js";
+import { CompoundControl, DropdownMenu, Slider } from "../../../core/controls.js";
 
 export class ComplexSurfaceView extends Renderable3D {
     constructor({
-                    resolution = new SurfaceResolution(100, 100),
-                    maxHeight = 4
-                } = {}) {
+        resolution = new SurfaceResolution(100, 100),
+        normalizer = new AdaptiveSymmetricNormalizer(),
+        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsv),
+        maxHeight = 4,
+        opacity = 1
+    } = {}) {
         super();
 
+        this._normalizer = normalizer;
+        this._colorMapper = colorMapper;
         this._resolution = resolution;
         this._sample = { in: new Complex(), out: new Complex() };
         this._color = new Color();
@@ -19,7 +26,11 @@ export class ComplexSurfaceView extends Renderable3D {
         geometry.setAttribute("color", new BufferAttribute(new Float32Array(vertexCount * 3), 3));
         this._mesh = new Mesh(geometry, new MeshStandardMaterial({
             side: DoubleSide,
-            vertexColors: true
+            roughness: .95,
+            emissive: true,
+            vertexColors: true,
+            transparent: true,
+            opacity: opacity
         }));
 
         this.add(this._mesh);
@@ -36,44 +47,46 @@ export class ComplexSurfaceView extends Renderable3D {
         return true;
     }
 
-    getRange(model) {
-        let mMin = Infinity, mMax = -Infinity;
+    setValueRange(model) {
+        this._normalizer.reset();
+
         for (let i = 0; i <= this._resolution.u; i++) {
             const u = i / this._resolution.u;
 
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
                 model.sample(u, v, this._sample);
-                const modulus = this._sample.out.abs;
-                if (modulus < mMin) mMin = modulus;
-                if (modulus > mMax) mMax = modulus;
+                const modulus = this._maxHeight * Math.tanh(this._sample.out.abs / this._maxHeight);
+                this._normalizer.include(modulus);
             }
         }
-        return new Interval(mMin, mMax);
     }
 
-    updateMeshAt(index, range) {
+    updateMeshAt(index) {
         // --- compress modulus to prevent poles from dominating the height ---
         const modulus = this._maxHeight * Math.tanh(this._sample.out.abs / this._maxHeight);
         this._positions.array[index * 3] = this._sample.in.re;
         this._positions.array[index * 3 + 1] = modulus;
         this._positions.array[index * 3 + 2] = this._sample.in.im;
 
-        const hue = this._sample.out.phase + 0.5;
-        const t = Math.sqrt(range.normalize(modulus)); // --- modulus → brightness ---
-        this._color.setHSL(hue, 1.0, 0.35 + 0.25 * t);
+        const value = {
+            phase: this._sample.out.phase,
+            modulus: this._normalizer.normalize(modulus)
+        };
+
+        this._colorMapper.map(value, this._color);
         this._colors.setXYZ(index, this._color.r, this._color.g, this._color.b);
     }
 
     synchronizeWith(model) {
-        const range = this.getRange(model);
+        this.setValueRange(model);
         let index = 0;
         for (let i = 0; i <= this._resolution.u; i++) {
             const u = i / this._resolution.u;
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
                 model.sample(u, v, this._sample);
-                this.updateMeshAt(index++, range);
+                this.updateMeshAt(index++);
             }
         }
 
@@ -81,6 +94,21 @@ export class ComplexSurfaceView extends Renderable3D {
         this._colors.needsUpdate = true;
         this._mesh.geometry.computeVertexNormals();
         this._mesh.geometry.computeBoundingBox();
+    }
+
+    ui() {
+        return new CompoundControl()
+            .add(new DropdownMenu()
+                .for(new ComplexColorMappers())
+                .addEventListener("change", event =>
+                    this._colorMapper = ComplexColorMappers.get(event.target.value)
+            ))
+            .add(new Slider("🪟 Opacity ")
+                .withRange(new Range(0, 1, 0.01))
+                .withValue(1)
+                .addEventListener("input", event =>
+                    this._mesh.material.opacity = Number(event.target.value)
+            ));
     }
 
     get boundingBox() {

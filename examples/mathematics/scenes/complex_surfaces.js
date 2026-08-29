@@ -124,6 +124,7 @@ simulation
     .append(new DropdownMenu()
         .for(surfacesRegistry)
         .addEventListener("change", event => surfaceController.changeSurface(event.target.value)))
+    .append(surfaceView.ui())
     .append(new Slider("Maximum height: ")
         .on(surfaceView)
         .withProperty("maxHeight")

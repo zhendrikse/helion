@@ -32,10 +32,15 @@ export class FixedIntervalNormalizer extends Normalizer {
     }
 }
 
+/**
+ * The range is "learned" during sampling, as opposed to a fixed
+ * range that is given when the normalizer is instantiated.
+ */
 export class AdaptiveSymmetricNormalizer extends Normalizer{
     constructor(smoothing = 0.05) {
         super();
         this._smoothing = smoothing;
+        this._maxAbs = 1;
         this.reset();
     }
 
