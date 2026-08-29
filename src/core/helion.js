@@ -231,7 +231,7 @@ export class Simulation {
 
     get width() { return this._viewport.width; }
     get height() { return this._viewport.height; }
-
+    set cameraPosition(position) { this._renderer.cameraPosition = position; }
     set autoRotate(autoRotate) { this._renderer.autoRotate = autoRotate; return this;}
 
     addObject3D(object3D) {
