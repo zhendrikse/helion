@@ -347,6 +347,7 @@ export class PrincipalDirectionsLayer extends Layer {
         this._scale = scale;
         this._showSecondDirection = showSecondDirection;
         this._colorMode = colorMode;
+        this._tempColor = new Color();
 
         this._material = material;
 
@@ -394,28 +395,28 @@ export class PrincipalDirectionsLayer extends Layer {
         pos[4] = p2.y;
         pos[5] = p2.z;
 
-        const color = this.#color(direction);
-        col[0] = color.r;
-        col[1] = color.g;
-        col[2] = color.b;
+        this.#color(direction);
+        col[0] = this._tempColor.r;
+        col[1] = this._tempColor.g;
+        col[2] = this._tempColor.b;
 
-        col[3] = color.r;
-        col[4] = color.g;
-        col[5] = color.b;
+        col[3] = this._tempColor.r;
+        col[4] = this._tempColor.g;
+        col[5] = this._tempColor.b;
 
         g.attributes.position.needsUpdate = true;
         g.attributes.color.needsUpdate = true;
     }
 
-    #color(dir) {
+    #color(direction) {
         if (this._colorMode === PrincipalDirectionsLayer.ColorMode.Curvature) {
             const k = Math.abs(this._frame.k1); // of k2
             const t = Math.min(k / 5, 1);
-            return new Color().setHSL(0.6 - 0.6 * t, 0.8, 0.5);
+            this._tempColor.setHSL(0.6 - 0.6 * t, 0.8, 0.5);
         }
 
         // direction-based coloring
-        return new Color().setRGB(Math.abs(dir.x), Math.abs(dir.y), Math.abs(dir.z));
+        this._tempColor.setRGB(Math.abs(direction.x), Math.abs(direction.y), Math.abs(direction.z));
     }
 
     synchronizeWith(model) {

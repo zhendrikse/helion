@@ -4,10 +4,10 @@ import {
     DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry, ConeGeometry, CylinderGeometry, CapsuleGeometry
 } from "three";
 
-import { Renderable3D } from "../renderer.js";
+import {Renderable2D, Renderable3D} from "../renderer.js";
 import { DropdownMenu} from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
-import { WavelengthColorMapper} from "../colormappers.js";
+import {ComplexColorMappers, WavelengthColorMapper} from "../colormappers.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -317,7 +317,7 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     }
 }
 
-export class ComplexScalarFieldRaster extends Renderable3D {
+export class ComplexScalarFieldRaster extends Renderable2D {
     constructor({
         width = 512,
         height = 512,
@@ -327,10 +327,15 @@ export class ComplexScalarFieldRaster extends Renderable3D {
         super();
         this._brightness = brightness;
         this._numColors = 256;
+
+        this._color = new Color();
+        this._colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsv);
+
+
         this._hsvTable = new Array(this._numColors);
         for (let i = 0; i < this._numColors; i++) {
             const color = new Color();
-            color.setHSL(i / this._numColors, 1.0, 0.5);
+            color.setHSL(i / this._numColors, 1.0, 0.75);
             this._hsvTable[i] = color;
         }
 
@@ -371,12 +376,21 @@ export class ComplexScalarFieldRaster extends Renderable3D {
                 if (brightness > 1.0) brightness = 1.0;
 
                 if (this._phaseColor) {
-                    const phaseIndex = Math.floor(((phase + Math.PI) / (2 * Math.PI)) * this._numColors);
-                    const rgb = this._hsvTable[Math.max(0, Math.min(this._numColors - 1, phaseIndex))];
-                    this._pixels[index++] = Math.round(rgb.r * brightness);
-                    this._pixels[index++] = Math.round(rgb.g * brightness);
-                    this._pixels[index++] = Math.round(rgb.b * brightness);
+                    const value = {
+                        phase: phase,
+                        modulus: mag * 1e16
+                    };
+                    this._pixels[index++] = this._color.r ;
+                    this._pixels[index++] = this._color.g ;
+                    this._pixels[index++] = this._color.b ;
                     this._pixels[index++] = Math.round(brightness * 255);
+                    this._colorMapper.map(value, this._color)
+                    // const phaseIndex = Math.floor(((phase + Math.PI) / (2 * Math.PI)) * this._numColors);
+                    // const rgb = this._hsvTable[Math.max(0, Math.min(this._numColors - 1, phaseIndex))];
+                    // this._pixels[index++] = Math.round(rgb.r * brightness);
+                    // this._pixels[index++] = Math.round(rgb.g * brightness);
+                    // this._pixels[index++] = Math.round(rgb.b * brightness);
+                    // this._pixels[index++] = Math.round(brightness * 255);
                 } else {
                     this._pixels[index++] = 255;
                     this._pixels[index++] = 255;
