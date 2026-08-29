@@ -1,6 +1,7 @@
 import {
-    Button, LineSegmentsView, Simulation, Vec3, Turtle, hsvToHexValue, HexValueColorMapper
+    Button, LineSegmentsView, Simulation, Vec3, Turtle, HexValueColorMapper
 } from "../../../src/index.js";
+import {Color} from "three";
 
 function kochSnowflake(turtle, length, depth) {
     if (depth === 0) {
@@ -143,9 +144,11 @@ function drawDragonCurve(turtle) {
     turtle.goto(x0 * scale + offsetX, y0 * scale + offsetY);
     turtle.penDown();
 
+    const color = new Color();
     for (let i = 1; i < points.length; i++) {
         const [x, y] = points[i];
-        turtle.color(hsvToHexValue(i / points.length, 1, 1));
+        color.setHSL(i / points.length, 1, .5);
+        turtle.color(color.getHex());
         turtle.goto(
             x * scale + offsetX,
             y * scale + offsetY
@@ -157,7 +160,9 @@ function tSquare(turtle, n, x, y, w) {
     if (n === 0)
         return;
 
-    turtle.color(hsvToHexValue(w * .25, 1, 1));
+    const color = new Color();
+    color.setHSL(w * .25, 1, .5);
+    turtle.color(color.getHex());
 
     turtle.goto(x, y);
     turtle.penDown();

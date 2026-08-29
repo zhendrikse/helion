@@ -27,7 +27,7 @@ import { Registry } from "../core/helion.js";
 //
 // Color mapping functions
 //
-export function hsvToRgbNormalized(h, s, v) {
+export function hsvToRgbNormalized(h, s, v, target) {
     let r, g, b;
     let i = Math.floor(h * 6);
     let f = h * 6 - i;
@@ -44,26 +44,7 @@ export function hsvToRgbNormalized(h, s, v) {
         case 5: r = v, g = p, b = q; break;
     }
 
-    return {
-        r: Math.round(r),
-        g: Math.round(g),
-        b: Math.round(b)
-    };
-}
-
-export function hsvToRgb(h, s, v) {
-    const { r, g, b} = hsvToRgbNormalized(h, s, v);
-
-    return {
-        r: Math.round(r * 255),
-        g: Math.round(g * 255),
-        b: Math.round(b * 255)
-    };
-}
-
-export function hsvToHexValue(h, s, v) {
-    const { r, g, b } = hsvToRgb(h, s, v);
-    return (r << 16) | (g << 8) | b;
+    target.set(Math.round(r), Math.round(g), Math.round(b));
 }
 
 export function wavelengthColor(lambdaInNanos, intensity, targetColor) {

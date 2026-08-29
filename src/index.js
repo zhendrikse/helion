@@ -78,6 +78,6 @@ export {
 
 export {
     wavelengthColor, wavelengthToRGBNormalized, ColorMapper, toColorString, ComplexColorMappers, HueColorMapper,
-    hsvToRgb, WavelengthColorMapper, hsvToRgbNormalized, ColorMappers, hsvToHexValue, HexValueColorMapper
+    WavelengthColorMapper, ColorMappers, HexValueColorMapper
 } from "./view/colormappers.js";
 

@@ -1,9 +1,11 @@
 import {
-    Mesh, PlaneGeometry, ShaderMaterial, BufferAttribute, BoxGeometry, MeshBasicMaterial, InstancedMesh, Object3D
+    Mesh, PlaneGeometry, ShaderMaterial, BufferAttribute, BoxGeometry, MeshBasicMaterial, InstancedMesh,
+    Object3D, Color
 } from "three";
 
-import {hsvToRgbNormalized, Renderable3D} from "../../../src/index.js";
 import { Complex } from "../../model/math/math.js";
+import {hsvToRgbNormalized} from "../colormappers.js";
+import {Renderable3D} from "../renderer.js";
 
 //
 // SHADER VERSION WHICH STANDS PERPENDICULAR TO THE PLANE
@@ -199,6 +201,8 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
 
         geometry.setAttribute("color", new BufferAttribute(this._colors, 3));
         geometry.setAttribute("alpha", new BufferAttribute(this._alphas, 1));
+
+        this._color = new Color();
     }
 
     set phaseColor(showPhaseColor) { this._showPhaseColor = showPhaseColor; }
@@ -223,17 +227,16 @@ export class ComplexScalarFieldSurfaceRaster extends Renderable3D {
 
                 // PHASE → color
                 const hue = this._showPhaseColor ? (phase + Math.PI) / pi2 : 0.1;
-                const rgb = hsvToRgbNormalized(hue, 0.55, 1.0);
+                hsvToRgbNormalized(hue, 0.55, 1.0, this._color);
 
                 const lighting = 0.6 + 0.4 * Math.cos(phase);
                 const intensity = Math.pow(mag, 0.35) * lighting;
-                this._colors[index]     = rgb.r * intensity;
-                this._colors[index + 1] = rgb.g * intensity;
-                this._colors[index + 2] = rgb.b * intensity;
+                this._colors[index]     = this._color.r * intensity;
+                this._colors[index + 1] = this._color.g * intensity;
+                this._colors[index + 2] = this._color.b * intensity;
 
                 // MAGNITUDE → alpha
                 this._alphas[i] = Math.tanh(3.0 * mag);
-
                 index += 3;
             }
         }

@@ -7,7 +7,7 @@ import {
 import { Renderable3D } from "../renderer.js";
 import { DropdownMenu} from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
-import { hsvToRgb, WavelengthColorMapper} from "../colormappers.js";
+import { WavelengthColorMapper} from "../colormappers.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -328,8 +328,11 @@ export class ComplexScalarFieldRaster extends Renderable3D {
         this._brightness = brightness;
         this._numColors = 256;
         this._hsvTable = new Array(this._numColors);
-        for (let i = 0; i < this._numColors; i++)
-            this._hsvTable[i] = hsvToRgb(i / this._numColors, 1.0, 1.0); // V=1, saturation=1
+        for (let i = 0; i < this._numColors; i++) {
+            const color = new Color();
+            color.setHSL(i / this._numColors, 1.0, 0.5);
+            this._hsvTable[i] = color;
+        }
 
         const pixels = new Uint8Array(width * height * 4);
         const texture = new DataTexture(pixels,  width, height, RGBAFormat);
