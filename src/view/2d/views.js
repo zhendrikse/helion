@@ -324,7 +324,7 @@ export class ComplexFieldRasterView extends Renderable2D {
         height = 512,
         showPhaseColour = true,
         brightness = 1,
-        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsv)
+        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl)
     } = {}) {
         super();
         this._brightness = brightness;
@@ -362,16 +362,16 @@ export class ComplexFieldRasterView extends Renderable2D {
         for (let y = 0; y < this._width; y++)
             for (let x = 0; x < this._height; x++) {
                 field.valueAt(x, y, this._complexNumber);
-                const phase = this._complexNumber.phase + .5; // phase is in [-.5, .5]
+                const phase = this._complexNumber.phase;
                 const modulus = this._complexNumber.magnitude;
                 let brightness = modulus * this._brightness;
                 if (brightness > 1.0) brightness = 1.0;
 
                 if (this._phaseColor) {
                     this._colorMapper.map({phase, modulus}, this._rgb);
-                    this._pixels[index++] = Math.round(this._rgb.r);
-                    this._pixels[index++] = Math.round(this._rgb.g);
-                    this._pixels[index++] = Math.round(this._rgb.b );
+                    this._pixels[index++] = Math.round(this._rgb.r * 255);
+                    this._pixels[index++] = Math.round(this._rgb.g * 255);
+                    this._pixels[index++] = Math.round(this._rgb.b * 255 );
                     this._pixels[index++] = Math.round(brightness * 255);
                 } else {
                     this._pixels[index++] = 255;

@@ -310,7 +310,11 @@ class ComplexDomainColorMapper extends ColorMapper {
     }
 }
 
-
+/**
+ * ComplexHsvColorMapper
+ *     phase   → hue
+ *     modulus → value
+ */
 class ComplexHsvColorMapper extends ColorMapper {
     constructor({s = 1, v = 1} = {}) {
         super();
@@ -319,7 +323,7 @@ class ComplexHsvColorMapper extends ColorMapper {
     }
 
     map(value, targetColor) {
-        const hue = value.phase % 1;
+        const hue = (value.phase+ .5) % 1;  // phase is in [-.5, .5]
 
         let r, g, b;
         const i = Math.floor(hue * 6);
@@ -339,10 +343,15 @@ class ComplexHsvColorMapper extends ColorMapper {
 
         // Modulus is part of the complex-color mapping:
         const brightness = Math.min(1, value.modulus);
-        targetColor.setRGB(r * 255 * brightness, g * 255 * brightness, b * 255 * brightness);
+        targetColor.setRGB(r * brightness, g * brightness, b * brightness);
     }
 }
 
+/**
+ * ComplexHslColorMapper
+ *     phase   → hue
+ *     modulus → lightness
+ */
 class ComplexHslColorMapper extends ColorMapper {
     map(value, targetColor) {
         const hue = value.phase + 0.5;
