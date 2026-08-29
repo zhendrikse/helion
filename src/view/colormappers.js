@@ -376,10 +376,10 @@ export class ComplexColorMappers extends Registry {
         super({
             label: label,
             entries: {
+                Hsv: options => new ComplexHSVColorMapper(),
                 PhaseBands: options => new ComplexPhaseBandsColorMapper(),
                 Saturation: options => new ComplexSaturationColorMapper(),
                 BlackZero: options => new ComplexBlackZeroColorMapper(),
-                Hsv: options => new ComplexHSVColorMapper(),
                 Domain: options => new ComplexDomainColorMapper()
             }
         });
