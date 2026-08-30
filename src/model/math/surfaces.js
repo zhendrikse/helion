@@ -23,7 +23,7 @@ export class DifferentiableSurface extends Surface {
     }
 }
 
-export class ComplexFunctionSurface extends DifferentiableSurface {
+export class ComplexFieldSurface extends DifferentiableSurface {
     constructor(complexFunction) {
         super();
         this._function = complexFunction;
@@ -34,7 +34,7 @@ export class ComplexFunctionSurface extends DifferentiableSurface {
     }
 }
 
-export class RealFunctionSurface extends DifferentiableSurface {
+export class ScalarFieldSurface extends DifferentiableSurface {
     constructor(multivariateFunction) {
         super();
         this._function = multivariateFunction;

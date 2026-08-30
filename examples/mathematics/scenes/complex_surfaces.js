@@ -1,6 +1,6 @@
 import {
     Simulation, DropdownMenu, Domain, Registry, Range, ContinuousComplexFieldView,
-    SurfaceResolution, ComplexFunction, Complex, Slider, ComplexFunctionSurface
+    SurfaceResolution, ComplexFunction, Complex, Slider, ComplexFieldSurface
 } from "../../../src/index.js";
 
 const one = new Complex(1, 0);
@@ -85,7 +85,7 @@ class SurfaceController {
 
     changeSurface(surfaceId) {
         const func = functionsRegistry.get(surfaceId).function;
-        const surface = new ComplexFunctionSurface(func);
+        const surface = new ComplexFieldSurface(func);
         this._simulation.bind(surface.onceWith(surfaceView));
         this._simulation.provideAxesAround(surfaceView);
         this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});

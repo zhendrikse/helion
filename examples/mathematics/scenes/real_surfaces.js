@@ -1,6 +1,6 @@
 import {
     Simulation, DropdownMenu, Checkbox, Interval, MultivariateFunction, Domain, Registry,
-    SurfaceVisualization, FixedIntervalNormalizer, SurfaceResolution, ContoursLayer, RealFunctionSurface
+    SurfaceVisualization, FixedIntervalNormalizer, SurfaceResolution, ContoursLayer, ScalarFieldSurface
 } from "../../../src/index.js";
 
 const pi = Math.PI;
@@ -75,13 +75,13 @@ class SurfaceController {
     constructor(simulation) {
         this._simulation = simulation;
         this._function = functionsRegistry.get("Monkey saddle").function;
-        this._currentSurface = new RealFunctionSurface(this._function);
+        this._currentSurface = new ScalarFieldSurface(this._function);
         this._animate = false;
     }
 
     changeSurface(surfaceId) {
         this._function = functionsRegistry.get(surfaceId).function;
-        this._currentSurface = new RealFunctionSurface(this._function);
+        this._currentSurface = new ScalarFieldSurface(this._function);
         const amplitude = functionsRegistry.get(surfaceId).amplitude;
         this._currentSurface.normalizer = new Interval(0, amplitude);
         this._simulation.bind(this._currentSurface.alwaysWith(surfaceView));

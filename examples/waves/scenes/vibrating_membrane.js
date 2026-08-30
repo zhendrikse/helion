@@ -1,7 +1,7 @@
 import {
     Domain, Simulation, Button, SurfaceVisualization,
     FixedIntervalNormalizer, Interval, ContoursLayer, RadioGroup, Checkbox, MultivariateFunction,
-    RealFunctionSurface
+    ScalarFieldSurface
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -35,7 +35,7 @@ class MembraneNormalizer extends FixedIntervalNormalizer {
 }
 
 const membraneFunction = new MembraneFunction();
-const membrane = new RealFunctionSurface(membraneFunction);
+const membrane = new ScalarFieldSurface(membraneFunction);
 const membraneNormalizer = new MembraneNormalizer(
     new Interval(-membraneFunction.amplitude, membraneFunction.amplitude)
 );
