@@ -1,5 +1,5 @@
 import {Domain} from "./fields.js";
-import {Complex, Vec2} from "./math.js";
+import {Vec2} from "./math.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
 
@@ -20,6 +20,28 @@ export class Surface extends MathPhysicsModelBehavior {
 export class DifferentiableSurface extends Surface {
     frameAt(u, v, target) {
         return this._differentialGeometry.differentialFrame(u, v, target);
+    }
+}
+
+export class ComplexFunctionSurface extends DifferentiableSurface {
+    constructor(complexFunction) {
+        super();
+        this._function = complexFunction;
+    }
+
+    sample(u, v, target) {
+        this._function.sample(u, v, target);
+    }
+}
+
+export class RealFunctionSurface extends DifferentiableSurface {
+    constructor(multivariateFunction) {
+        super();
+        this._function = multivariateFunction;
+    }
+
+    sample(u, v, target) {
+        this._function.sample(u, v, target);
     }
 }
 
@@ -51,47 +73,6 @@ export class ParametricSurface extends DifferentiableSurface {
         const uu = this._domain.xRange.scaleUnitParameter(u);
         const vv = this._domain.yRange.scaleUnitParameter(v);
         target.set(this._x(uu, vv), this._z(uu, vv), this._y(uu, vv));
-    }
-}
-
-/**
- * A 2D surface defined as f(x, y, t) = z
- */
-export class MultivariateFunctionSurface extends ParametricSurface {
-    constructor({
-        domain = new Domain(),
-        z = (x, y, t) => 0
-    } = {}) {
-        super({domain, z});
-        this._time = 0;
-    }
-
-    sample(u, v, target) {
-        const uu = this._domain.xRange.scaleUnitParameter(u);
-        const vv = this._domain.yRange.scaleUnitParameter(v);
-        target.set(this._x(uu, vv), this._z(uu, vv, this._time), this._y(uu, vv));
-    }
-
-    set time(time) { this._time = time; }
-}
-
-export class ComplexFunctionSurface extends Surface {
-    constructor({
-        domain = new Domain(),
-        func = z => new Complex(0, 0)
-    } = {}) {
-        super();
-        this._domain = domain;
-        this._complexFunction = func;
-    }
-
-    get func() { return this._complexFunction; }
-
-    sample(u, v, target) {
-        const re = this._domain.xRange.scaleUnitParameter(u);
-        const im = this._domain.yRange.scaleUnitParameter(v);
-        target.in.set(re, im);
-        target.out.copy(this._complexFunction(new Complex(re, im)));
     }
 }
 

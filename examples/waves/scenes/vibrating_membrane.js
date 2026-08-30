@@ -1,27 +1,27 @@
 import {
-    Domain, MultivariateFunctionSurface, Simulation, Button, SurfaceVisualization,
-    FixedIntervalNormalizer, Interval, ContoursLayer, RadioGroup, Checkbox
+    Domain, Simulation, Button, SurfaceVisualization,
+    FixedIntervalNormalizer, Interval, ContoursLayer, RadioGroup, Checkbox, MultivariateFunction,
+    RealFunctionSurface
 } from "../../../src/index.js";
 
 const PI = Math.PI;
 const cos = Math.cos;
 
-class Membrane extends MultivariateFunctionSurface {
+class MembraneFunction extends MultivariateFunction {
     constructor({
+        domain = new Domain([-PI / 2, PI / 2], [-PI / 2, PI / 2]),
         omega = 2 * Math.PI / 3,
         normalModeX = 1,
         normalModeY = 1,
-        amplitude = .5,
-        domain = new Domain([-PI / 2, PI / 2], [-PI / 2, PI / 2])
+        amplitude = .5
     } = {}) {
         super({ domain });
         this._amplitude = amplitude;
         this._normalModeX = normalModeX;
         this._normalModeY = normalModeY;
-        this._z = (x, y, t) => this._amplitude *
+        this._func = (x, y, t) => this._amplitude *
             cos(omega * t) * cos(x * this._normalModeX) * cos(y * this._normalModeY);
     }
-
     get amplitude() { return this._amplitude; }
     set normalModeX(normalModeX) { this._normalModeX = Number(normalModeX); }
     set normalModeY(normalModeY) { this._normalModeY = normalModeY; }
@@ -34,9 +34,10 @@ class MembraneNormalizer extends FixedIntervalNormalizer {
     }
 }
 
-const membrane = new Membrane();
+const membraneFunction = new MembraneFunction();
+const membrane = new RealFunctionSurface(membraneFunction);
 const membraneNormalizer = new MembraneNormalizer(
-    new Interval(-membrane.amplitude, membrane.amplitude)
+    new Interval(-membraneFunction.amplitude, membraneFunction.amplitude)
 );
 
 const contours = new ContoursLayer({
@@ -59,24 +60,24 @@ Simulation
     .bind(membrane.alwaysWith(surfaceView))
     .runsEvery(0.016)
     .onStep((clock, _) => {
-        membraneNormalizer.update(membrane.amplitude);
-        membrane.time = clock.simulatedTime;
+        membraneNormalizer.update(membraneFunction.amplitude);
+        membraneFunction.time = clock.simulatedTime;
     })
     .frameSceneOn(surfaceView, {
         padding: 0.65,
         translationY: -1.25
     })
-    .append(new Button("Mode-x: ").on(membrane).withProperty("normalModeX").withText(" 1 ")
-        .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 2 `)
-            .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 3 `)
-                .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 4 `)
-                    .togetherWith(new Button().on(membrane).withProperty("normalModeX").withText(` 5 `)))))
+    .append(new Button("Mode-x: ").on(membraneFunction).withProperty("normalModeX").withText(" 1 ")
+        .togetherWith(new Button().on(membraneFunction).withProperty("normalModeX").withText(` 2 `)
+            .togetherWith(new Button().on(membraneFunction).withProperty("normalModeX").withText(` 3 `)
+                .togetherWith(new Button().on(membraneFunction).withProperty("normalModeX").withText(` 4 `)
+                    .togetherWith(new Button().on(membraneFunction).withProperty("normalModeX").withText(` 5 `)))))
     )
-    .append(new Button("Mode-y: ").on(membrane).withProperty("normalModeY").withText(" 1 ")
-        .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 2 `)
-            .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 3 `)
-                .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 4 `)
-                    .togetherWith(new Button().on(membrane).withProperty("normalModeY").withText(` 5 `)))))
+    .append(new Button("Mode-y: ").on(membraneFunction).withProperty("normalModeY").withText(" 1 ")
+        .togetherWith(new Button().on(membraneFunction).withProperty("normalModeY").withText(` 2 `)
+            .togetherWith(new Button().on(membraneFunction).withProperty("normalModeY").withText(` 3 `)
+                .togetherWith(new Button().on(membraneFunction).withProperty("normalModeY").withText(` 4 `)
+                    .togetherWith(new Button().on(membraneFunction).withProperty("normalModeY").withText(` 5 `)))))
     )
     .append(surfaceView.ui())
     .append(new Checkbox("Contours ")

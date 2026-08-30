@@ -1,71 +1,71 @@
 import {
     Simulation, DropdownMenu, Domain, Registry, Range, ContinuousComplexFieldView,
-    SurfaceResolution, ComplexFunctionSurface, Complex, Slider, DiscreteComplexFieldSurfaceView2D
+    SurfaceResolution, ComplexFunction, Complex, Slider, ComplexFunctionSurface
 } from "../../../src/index.js";
 
 const one = new Complex(1, 0);
 const two = new Complex(2, 0);
 const eps = new Complex(0.01, 0);
 
-const surfaces = {
+const functions = {
     "z * z * z + 2": {
-        "surface": new ComplexFunctionSurface({
+        "function": new ComplexFunction({
             domain: new Domain([-2, 2], [-2, 2]),
             func: z => z.clone().multiply(z).multiply(z).add(two)
         }),
         "latex": "z^3+2"
     },
     "z * z + 2": {
-        "surface": new ComplexFunctionSurface({
+        "function": new ComplexFunction({
             domain: new Domain([-2, 2], [-2, 2]),
             func: z => z.multiply(z).add(two)
         }),
         "latex": "z^2+2"
     },
     "z * z_bar": {
-        "surface": new ComplexFunctionSurface({
+        "function": new ComplexFunction({
             domain: new Domain([-2, 2], [-2, 2]),
             func: z => z.multiply(new Complex(z.re, -z.im))
         }),
         "latex": "z\\bar{z}"
     },
     "exp(z * z)": {
-        "surface": new ComplexFunctionSurface({
+        "function": new ComplexFunction({
             domain: new Domain([-2, 2], [-2, 2]),
             func: z => z.multiply(z).exp()
         }),
         "latex": "e^{z^2}"
     },
     "log(z)": {
-        "surface": new ComplexFunctionSurface({
+        "function": new ComplexFunction({
             domain: new Domain([-Math.PI, Math.PI], [-Math.PI, Math.PI]),
             func: z => z.log()
         }),
         "latex": "\\log{z}"
     },
     "sin(z)": {
-        "surface": new ComplexFunctionSurface({
+        "function": new ComplexFunction({
             domain: new Domain([-Math.PI, Math.PI], [-Math.PI, Math.PI]),
             func: z => z.sin()
         }),
         "latex": "\\sin{z}"
     },
     "sqrt(z)": {
-        "surface": new ComplexFunctionSurface({
+        "function": new ComplexFunction({
             domain: new Domain([-2, 2], [-2, 2]),
             func: z =>  z.add(eps).sqrt()
         }),
         "latex": "\\sqrt{z}"
     },
     "(z + 1) / (z - 1)": {
-        "surface": new ComplexFunctionSurface({
+        "function": new ComplexFunction({
             domain: new Domain([-3, 3], [-3, 3]),
             func: z => z.clone().add(one).divide(z.clone().add(eps).subtract(one))
         }),
         "latex": "\\dfrac{z + 1}{z - 1}"
     },
     "z + 1 / z": {
-        "surface": new ComplexFunctionSurface({
+        "function": new ComplexFunction({
             domain: new Domain([-3, 3], [-3, 3]),
             func: z => z.clone().add(one.divide(z.clone().add(eps)))
         }),
@@ -73,23 +73,24 @@ const surfaces = {
     }
 };
 
-const surfacesRegistry = new Registry({
+const functionsRegistry = new Registry({
     label: "f(z) = ",
-    entries: surfaces
+    entries: functions
 });
 
 class SurfaceController {
     constructor(simulation) {
         this._simulation = simulation;
-        this._currentSurface = surfacesRegistry.get("z * z + 2").surface;
+        this._currentSurface = functionsRegistry.get("z * z + 2").function;
     }
 
     changeSurface(surfaceId) {
-        this._currentSurface = surfacesRegistry.get(surfaceId).surface;
+        const func = functionsRegistry.get(surfaceId).function;
+        this._currentSurface = new ComplexFunctionSurface(func);
         this._simulation.bind(this._currentSurface.onceWith(surfaceView));
         this._simulation.provideAxesAround(surfaceView);
         this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
-        this._simulation.setLatexTitle("\\Large{f(z) = " + surfacesRegistry.get(surfaceId).latex + "}");
+        this._simulation.setLatexTitle("\\Large{f(z) = " + functionsRegistry.get(surfaceId).latex + "}");
     }
 
     set animate(value) { this._animate = value; }
@@ -121,7 +122,7 @@ const simulation = Simulation
 const surfaceController = new SurfaceController(simulation);
 simulation
     .append(new DropdownMenu()
-        .for(surfacesRegistry)
+        .for(functionsRegistry)
         .addEventListener("change", event => surfaceController.changeSurface(event.target.value)))
     .append(surfaceView.ui())
     .append(new Slider("Maximum height: ")

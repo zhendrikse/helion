@@ -1,5 +1,6 @@
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
-import {Interval, Vec3} from "./math.js";
+import {Complex, Interval, Vec3} from "./math.js";
+import {DifferentiableSurface} from "./surfaces.js";
 
 export class Domain {
     constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
@@ -10,6 +11,49 @@ export class Domain {
 
 export class Field extends MathPhysicsModelBehavior {
     sample(u, v, target) {}
+}
+
+export class MultivariateFunction extends Field {
+    constructor({
+        domain = new Domain(),
+        func = (x, y, t) => 0
+    } = {}) {
+        super();
+        this._domain = domain;
+        this._time = 0;
+        this._func = func;
+    }
+
+    get func() { return this._func; }
+    get domain() { return this._domain; }
+
+    sample(u, v, target) {
+        const uu = this._domain.xRange.scaleUnitParameter(u);
+        const vv = this._domain.yRange.scaleUnitParameter(v);
+        target.set(uu, this._func(uu, vv, this._time), vv);
+    }
+
+    set time(time) { this._time = time; }
+}
+
+export class ComplexFunction extends Field {
+    constructor({
+        domain = new Domain(),
+        func = z => new Complex(0, 0)
+    } = {}) {
+        super();
+        this._domain = domain;
+        this._complexFunction = func;
+    }
+
+    get func() { return this._complexFunction; }
+
+    sample(u, v, target) {
+        const re = this._domain.xRange.scaleUnitParameter(u);
+        const im = this._domain.yRange.scaleUnitParameter(v);
+        target.in.set(re, im);
+        target.out.copy(this._complexFunction(new Complex(re, im)));
+    }
 }
 
 export class VectorField extends Field {

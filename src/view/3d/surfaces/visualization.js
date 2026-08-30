@@ -272,7 +272,7 @@ export class SurfaceVisualization extends Renderable3D {
 
     canBindTo(model) {
         if (!model.frameAt)
-            throw new Error("Surface visualization needs with frameAt(), which is not supported by the current model.");
+            throw new Error("Surface visualization needs frameAt(), which is not supported by the current model.");
         return true;
     }
 
