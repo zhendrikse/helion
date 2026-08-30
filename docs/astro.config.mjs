@@ -38,6 +38,11 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
+					label: 'Games',
+					items: [{ autogenerate: { directory: 'games' } }],
+				},
+				{
+					collapsed: true,
 					label: 'Kinematics',
 					items: [{ autogenerate: { directory: 'kinematics' } }],
 				},
