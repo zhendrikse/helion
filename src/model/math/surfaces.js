@@ -41,7 +41,9 @@ export class RealFunctionSurface extends DifferentiableSurface {
     }
 
     sample(u, v, target) {
-        this._function.sample(u, v, target);
+        const x = this._function.domain.xRange.scaleUnitParameter(u);
+        const y = this._function.domain.yRange.scaleUnitParameter(v);
+        target.set(x, this._function.sample(u, v), y);
     }
 }
 

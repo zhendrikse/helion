@@ -81,13 +81,12 @@ const functionsRegistry = new Registry({
 class SurfaceController {
     constructor(simulation) {
         this._simulation = simulation;
-        this._currentSurface = functionsRegistry.get("z * z + 2").function;
     }
 
     changeSurface(surfaceId) {
         const func = functionsRegistry.get(surfaceId).function;
-        this._currentSurface = new ComplexFunctionSurface(func);
-        this._simulation.bind(this._currentSurface.onceWith(surfaceView));
+        const surface = new ComplexFunctionSurface(func);
+        this._simulation.bind(surface.onceWith(surfaceView));
         this._simulation.provideAxesAround(surfaceView);
         this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
         this._simulation.setLatexTitle("\\Large{f(z) = " + functionsRegistry.get(surfaceId).latex + "}");

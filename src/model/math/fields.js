@@ -9,34 +9,70 @@ export class Domain {
     }
 }
 
+/**
+ * TODO !!
+ *
+ * Field
+ * ├── ScalarField → number
+ * │   ├── MultivariateFunction
+ * │   ├── DiscreteScalarField
+ * │   └── NormalizedScalarField
+ * │
+ * ├── ComplexField → Complex
+ * │   ├── ComplexFunction
+ * │   └── DiscreteComplexField
+ * │
+ * └── VectorField → Vec3
+ *
+ * ScalarField  (composition) ──────► Surface
+ * ComplexField (composition) ──────► ComplexSurface
+ * VectorField  (composition) ──────► VectorVisualization
+ */
 export class Field extends MathPhysicsModelBehavior {
     sample(u, v, target) {}
 }
 
-export class MultivariateFunction extends Field {
+export class ScalarField extends Field {
+    sample(u, v) {
+        return 0;
+    }
+}
+
+export class ComplexField extends Field {
+    sample(u, v, target) {
+        target.set(new Complex(), new Complex()); // Real, imag
+        return target;
+    }
+}
+
+export class VectorField extends Field {
+    sample(positionVector, target) {
+        target.set(0, 0, 0);
+        return target;
+    }
+}
+
+export class MultivariateFunction extends ScalarField {
     constructor({
         domain = new Domain(),
         func = (x, y, t) => 0
     } = {}) {
         super();
-        this._domain = domain;
+        this.domain = domain;
         this._time = 0;
         this._func = func;
     }
 
-    get func() { return this._func; }
-    get domain() { return this._domain; }
-
-    sample(u, v, target) {
-        const uu = this._domain.xRange.scaleUnitParameter(u);
-        const vv = this._domain.yRange.scaleUnitParameter(v);
-        target.set(uu, this._func(uu, vv, this._time), vv);
+    sample(u, v) {
+        const x = this.domain.xRange.scaleUnitParameter(u);
+        const y = this.domain.yRange.scaleUnitParameter(v);
+        return this._func(x, y, this._time);
     }
 
     set time(time) { this._time = time; }
 }
 
-export class ComplexFunction extends Field {
+export class ComplexFunction extends ComplexField {
     constructor({
         domain = new Domain(),
         func = z => new Complex(0, 0)
@@ -44,46 +80,22 @@ export class ComplexFunction extends Field {
         super();
         this._domain = domain;
         this._complexFunction = func;
+        this._tempComplexNumber = new Complex();
     }
-
-    get func() { return this._complexFunction; }
 
     sample(u, v, target) {
         const re = this._domain.xRange.scaleUnitParameter(u);
         const im = this._domain.yRange.scaleUnitParameter(v);
-        target.in.set(re, im);
-        target.out.copy(this._complexFunction(new Complex(re, im)));
-    }
-}
-
-export class VectorField extends Field {
-    sample(positionVector, target) {}
-}
-
-/**
- * This is the “adapter” between the physics and rendering.
- */
-export class NormalizedScalarField extends Field {
-    constructor(scalarField, normalizer) {
-        super();
-        this._scalarField = scalarField;
-        this._normalizer = normalizer;
-        this._target = new Vec3();
-    }
-
-    reset() { this._normalizer.reset?.(); }
-
-    sample(u, v, target) {
-        this._scalarField.sample(u, v, this._target);
-        this._normalizer.observe?.(this._target.z);
-        target.set(u, v, this._normalizer.normalize(this._target.z));
+        this._tempComplexNumber.set(re, im);
+        target.in.copy(this._tempComplexNumber);
+        target.out.copy(this._complexFunction(this._tempComplexNumber));
     }
 }
 
 /**
  * Discrete scalar field, i.e. a scalar field on a grid.
  */
-export class DiscreteScalarField extends Field {
+export class DiscreteScalarField extends ScalarField {
     constructor({
         nx = 100,
         ny = 100
@@ -123,7 +135,7 @@ export class DiscreteScalarField extends Field {
         return this;
     }
 
-    sample(u, v, target) {
+    sample(u, v) {
         // bilinear interpolation (kan later consistent op index() bouwen)
     }
 }
