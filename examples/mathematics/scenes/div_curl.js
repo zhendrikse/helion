@@ -1,4 +1,13 @@
-import {Arrow, RadialSymmetricBody, Simulation, Sphere, Vec3, VectorField, VectorModel} from "../../../src/index.js";
+import {
+    Arrow, Checkbox,
+    Label,
+    RadialSymmetricBody,
+    Simulation,
+    Sphere,
+    Vec3,
+    VectorField,
+    VectorModel
+} from "../../../src/index.js";
 
 class DemoVectorField extends VectorField {
     constructor(sourcePosition, sinkPosition, curlPosition=null) {
@@ -115,13 +124,32 @@ const source = new RadialSymmetricBody({
     position: new Vec3(-1, 0.5, 0),
     radius: 0.25,
 });
+const sourceLabel = new Label({
+    text: () => "Source",
+    fontSize: "30px",
+    visible: false,
+    color: "#aaaaaa"
+});
 const sink = new RadialSymmetricBody({
     position:  new Vec3(-1, -0.5, 0),
     radius: 0.25,
 });
+const sinkLabel = new Label({
+    text: () => "Sink",
+    fontSize: "30px",
+    visible: false,
+    color: "#aaaaaa"
+});
 const curl = new RadialSymmetricBody({
     position:  new Vec3(1, 0.5, 0),
     radius: 0.25
+});
+const curlLabel = new Label({
+    text: () => "Zero divergence",
+    offset: () => new Vec3(0, -1.25, 0),
+    fontSize: "30px",
+    visible: false,
+    color: "#aaaaaa"
 });
 
 let vectorField = new OriginalDemoVectorField(source.position, sink.position, curl.position);
@@ -161,7 +189,10 @@ const simulation = Simulation.with({
     .bind(source.onceWith(new Sphere({color: "red", opacity: 0.7 })))
     .bind(sink.onceWith(new Sphere({color: "green", opacity: 0.7 })))
     .bind(curl.onceWith(new Sphere({color: "cyan", opacity: 0.7 })))
-    .runsEvery(0.01)
+    .bind(source.onceWith(sourceLabel))
+    .bind(sink.onceWith(sinkLabel))
+    .bind(curl.onceWith(curlLabel))
+    .runsEvery(0.02)
     .advancesBy(0.0025)
     .onReset(() => {
         vectorField = (resetCounter++ % 2 === 0) ?
@@ -185,7 +216,14 @@ const simulation = Simulation.with({
             for (const arrow of arrowViews)
                 arrow.opacity = opacity;
         }
-    });
+    })
+    .append(new Checkbox("Labels")
+        .checked(false)
+        .onChange(event => {
+            sourceLabel.visible = event.target.checked;
+            sinkLabel.visible = event.target.checked;
+            curlLabel.visible = event.target.checked;
+        }));
 
 for (const particle of particles)
     simulation.bind(particle.alwaysWith(new Sphere({ color: "orange"})));
