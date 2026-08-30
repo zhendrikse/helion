@@ -64,7 +64,7 @@ export {
 } from "./view/3d/composite/segmentviews.js"
 
 export {
-    Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail, VisibleWhen, VectorView, Label
+    Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail, VectorView, Label
 } from "./view/3d/primitives/primitives.js";
 
 export {

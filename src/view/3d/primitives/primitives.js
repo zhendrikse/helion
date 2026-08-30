@@ -8,28 +8,6 @@ import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import {Vec3} from "../../../model/math/math.js";
 import {ColorMappers} from "../../colormappers.js";
 
-export class VisibleWhen extends Renderable3D {
-    constructor(view, predicate) {
-        super();
-
-        this._view = view;
-        this._predicate = predicate;
-
-        this.add(view);
-    }
-
-    canBindTo(model) {
-        return this._view.canBindTo(model);
-    }
-
-    synchronizeWith(model) {
-        this.visible = this._predicate(model);
-
-        if (this.visible)
-            this._view.synchronizeWith(model);
-    }
-}
-
 //
 // T R A I L
 //

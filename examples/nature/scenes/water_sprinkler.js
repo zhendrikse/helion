@@ -1,5 +1,5 @@
 import {
-    Vec3, Simulation, Sphere, Box, RadioGroup, RadialSymmetricBody, Block, VisibleWhen, Slider, Range
+    Vec3, Simulation, Sphere, Box, RadioGroup, RadialSymmetricBody, Block, Slider, Range
 } from "../../../src/index.js";
 
 const LENGTH = 0.1;
@@ -85,9 +85,7 @@ class Sprinkler extends Block {
         length = LENGTH,
         dropletPoolSize = 100
     } = {}) {
-        super({
-            size: new Vec3(length, 0.05 * length, 0.05 * length),
-        });
+        super({ size: new Vec3(length, 0.05 * length, 0.05 * length) });
 
         this._length = length;
         this._omega = Math.PI;
@@ -232,12 +230,8 @@ const simulation = Simulation
         .withValue(.3)
     );
 
-
-// The pool is allocated once and all views remain bound. During
-// the simulation droplets simply become active/inactive.
 for (const droplet of sprinkler)
-    simulation.bind(droplet.alwaysWith(new VisibleWhen(
-        new Sphere({ color: 0x00ffff }),
-        droplet => droplet.active
-    )));
+    simulation.bind(droplet.alwaysWith(
+        new Sphere({ color: 0x00ffff })
+    ));
 
