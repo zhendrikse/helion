@@ -14,7 +14,7 @@ export class VectorModel extends MathPhysicsModelBehavior {
         super();
         if (!position || !axis)
             throw new Error("Vector model requires both position and axis arguments (Vec2 or Vec3)");
-        this.position = position;
+        this.position = position.clone();
         this.axis = axis;
     }
 

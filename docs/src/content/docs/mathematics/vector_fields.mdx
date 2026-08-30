@@ -1,0 +1,54 @@
+---
+title: "Vector fields 🏹"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div className="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+## Divergence &amp; curl 🌀
+<div class="header_line"><br/></div>
+
+### What are you looking at?
+<div class="header_line"><br/></div>
+
+This is a dynamic particle and vector field simulation where points interact with 
+sources, sinks, and swirling currents. Every particle moves according to the 
+invisible forces around it, tracing the flow of this small, colorful universe. 
+
+🎯 Intuitive understanding of the divergence and curl<br/>
+🧠 [Original idea](https://www.glowscript.org/#/user/wlane/folder/Physicsin3D/program/water-flow-curl) by [Let&apos;s code physics](https://www.youtube.com/@LetsCodePhysics)<br/>
+👉 Click on canvas to activate another vector field!<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/DivCurlDemo) is available as well, see [div_curl_demo.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/div_curl_demo.py)<br/>
+
+
+### Demo
+<div class="header_line"><br/></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/div_curl.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=div_curl.js"/>
+    </a>
+</div>
+
+<div id="divCurlDemoContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/div_curl.js"}></script>
+
+
+### Scalar vis-à-vis vector quantities
+<div class="header_line"><br/></div>
+
+<figure style="text-align: center; margin: 0 auto;">
+    <img alt="Scalar versus Vector Quantities" src={import.meta.env.BASE_URL + "/images/mathematics/scalar_versus_vector_quantities.jpg"}/>
+    <figcaption>This visual originates from
+        <a href="https://www.facebook.com/HouseOfPhysics/">House of Physics</a>.</figcaption>
+</figure>
+
+
+
