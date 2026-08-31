@@ -1,649 +1,252 @@
 ---
 title: "🏛️ Architecture"
+description: "How Helion is structured: state, operators, solvers, and the separation between model and view."
 ---
 
-## Central concepts
-<div class="header_line"></div>
+Helion is a browser-native framework for interactive math and physics. Its API is designed to express scientific intent directly, with a clear separation between mathematical/physical models and their visual representation.
 
-In physics and mathematics, we are always searching for the most fundamental abstractions:
+```
+Operator ──► State ──► View
+  apply()        synchronize()
+              ▲
+              │ evolve()
+              │
+            Solver (uses Equation)
+```
+
+## Doctrine
+
+In mathematics and physics, change is often expressed as
 
 $$
 \text{state} \xrightarrow{\text{operator}} \text{state}
+\qquad\text{and}\qquad
+\frac{d}{dt}\text{state} = \mathcal{L}(\text{state})
 $$
 
-A state can may change in time. This change in time can be thought of 
-as applying an operator to that state:
+Everything can be seen as states and operators. Software adds other constraints — intent, performance, memory, maintainability — so the most elegant mathematical abstraction is not always the best programming abstraction.
 
-$$
-\frac{d}{dt} \text{state} = \mathcal{L}(\text{state})
-$$
+Helion follows one rule:
 
-Eventually, everything may thus be conceptualized as states and operators.
+> **Unify concepts, not syntax.**
 
-However, software adds additional dimensions that are unknown to math and physics:
+Different kinds of state share the same grammar, but keep their own semantics and types.
 
-* **code should express intent** (Kent Beck's rules of simple design)
-* **performance** (fields are refreshed dozens of times per second)
-* **memory management** (fields with thousands pixels/vertices) 
-* **maintenance**
+## Core grammar: State / apply / evolve / bind
+<div class="header_line"></div>
 
-As a consequence, the mathematical most elegant abstraction 
-is not always tantamount to the best programming abstraction. So 
-Helion is built with the following doctrine in mind:
-
-> Unify concepts, but not necessarily the syntax
-
-## Realisation in Helion
+| Concept | Question | Example |
+|---------|----------|---------|
+| `State` | What is the current state? | `DiscreteScalarField`, `DiscreteComplexField`, `RadialSymmetricBody` |
+| `apply()` | How is the state transformed instantly? | `field.apply(new GaussianImpulse(...))` |
+| `evolve()` | How does the state evolve in time? | `field.evolve(solver, dt)` |
+| `bind()` | How is the state represented? | `simulation.bind(field.alwaysWith(view))` |
 
 ```js
-field.apply(operator);
-field.evolve(solver, dt);
-field.bind(view);
-```
-
-```text
-apply      → transformatie
-evolve     → dynamica
-synchronize → visualisatie
-```
-
-
-Ja, dat vind ik eigenlijk een veel sterkere unificatie dan `field.apply(solver)`.
-
-Als ik naar de voorbeelden kijk die je hebt laten zien, dan zie ik twee fundamenteel verschillende soorten transformaties:
-
-### Instantane operatoren
-
-```js
-field.apply(new GaussianImpulse(...));
+// Instantaneous transformation: x ↦ O(x), no time
 field.apply(new FFT2D());
-field.apply(new Blur(...));
-```
+field.apply(new GaussianImpulse({ amplitude: 1 }));
 
-Dit zijn directe transformaties:
-
-$$
-x \mapsto O(x)
-$$
-
-Geen tijd, geen geschiedenis.
-
----
-
-### Evolutie-operatoren
-
-```js
+// Time evolution: x(t) ↦ x(t + Δt), explicit time step
 field.evolve(solver, dt);
-body.evolve(integrator, dt);
+
+// Visualization: declarative binding, then synchronized each frame
+simulation.bind(field.alwaysWith(view));
 ```
 
-Dit zijn tijdstappen:
-
-$$
-x(t) \mapsto x(t+\Delta t)
-$$
-
-Daar zit expliciet tijd in.
-
----
-
-Vanuit de theoretische natuurkunde is dat onderscheid ook heel natuurlijk.
-
-Een FFT is geen tijdsevolutie.
-
-Een impuls is geen tijdsevolutie.
-
-Een symplectische Euler-stap is wél een tijdsevolutie.
-
-Een Schrödinger-solver is wél een tijdsevolutie.
-
----
-
-Daardoor krijg je een mooie grammatica:
+`apply` and `evolve` are deliberately distinct. An FFT is not a time step; a Schrödinger step is. Forcing both under `apply` hides that difference. Keeping `evolve` makes the physics readable:
 
 ```js
-state.apply(operator);
-state.evolve(solver, dt);
+psi.apply(new GaussianImpulseComplex2D({ ... }))
+   .evolve(new SchrodingerSolver(equation), dt);
 ```
 
-waarbij:
-
-| Concept    | Betekenis                                 |
-| ---------- |-------------------------------------------|
-| `apply()`  | algebraïsche / geometrische transformatie |
-| `evolve()` | System dynamics                           |
-
----
-
-Voor een veld:
+State owns itself. The solver does not own the field:
 
 ```js
-psi
-    .apply(new GaussianImpulse(...))
-    .evolve(new SchrodingerSolver(eq), dt);
+const solver = new SchrodingerSolver(equation);
+solver.step(psi, dt);   // imperative form
+psi.evolve(solver, dt); // preferred: state stays owner
 ```
 
----
+This also allows one solver to evolve multiple fields.
 
-Voor een lichaam:
+## State, Operator, Equation, Solver
+<div class="header_line"></div>
 
-```js
-body
-    .apply(force)
-    .evolve(new SymplecticEulerIntegrator(), dt);
-```
-
-of misschien:
-
-```js
-body.evolve(
-    new SymplecticEulerIntegrator(forceField),
-    dt
-);
-```
-
-afhankelijk van hoe je krachten modelleert.
-
----
-
-Het mooie is dat de semantiek dan overeind blijft.
-
-Ik zou persoonlijk wat huiverig zijn voor:
-
-```js
-body.apply(new SymplecticEulerIntegrator(), dt);
-```
-
-want een integrator is geen operator op een toestand.
-
-Een integrator is een procedure die een toestand door de tijd verplaatst.
-
-`evolve()` drukt dat veel beter uit.
-
----
-
-Nog iets interessants: hiermee krijg je bijna letterlijk de structuur uit de dynamische systeemtheorie.
-
-Je hebt een toestand (x).
-
-Je hebt operatoren (O):
-
-$$
-x \leftarrow O(x)
-$$
-
-en je hebt een evolutie-operator (E_{\Delta t}):
-
-$$
-x(t+\Delta t) = E_{\Delta t}(x(t))
-$$
-
-Dat vertaalt zich direct naar:
-
-```js
-state.apply(operator);
-state.evolve(solver, dt);
-```
-
-Dat is een heel compacte en mathematisch herkenbare API.
-
----
-
-Sterker nog, als je later meerdere soorten toestand krijgt:
+**State** — the thing that changes. All states extend `MathPhysicsModelBehavior` and share `apply()` / `alwaysWith()` / `onceWith()`.
 
 ```js
 DiscreteScalarField
 DiscreteComplexField
-RadialSymmetricBody
-ParticleSystem
-Mesh
+RadialSymmetricBody, Block, Lattice
 ```
 
-dan kun je ze allemaal dezelfde "taal" laten spreken:
+**Operator** — an instantaneous algebraic or geometric transformation `x ↦ O(x)`.
 
 ```js
-state.apply(operator);
-state.evolve(solver, dt);
-state.alwaysWith(view);
+GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator
+DoubleSlitOperator, ShapeMask, Potential, Softness
+FFT2D, FFTShift2D, LaplaceOperator
 ```
 
-Dat vind ik eerlijk gezegd een van de elegantste richtingen voor Helion die ik tot nu toe in je voorbeelden heb gezien. Het behoudt de semantische verschillen tussen operatoren en tijdintegratie, maar geeft ze wel een uniforme vorm. Dat is meestal een beter resultaat dan proberen alles onder één enkele methode (`apply`) te forceren.
-
-
-### State
+Declarative composition is the norm:
 
 ```js
-DiscreteScalarField
-DiscreteComplexField
-RadialSymmetricBody
+potential.reset()
+  .apply(new DoubleSlit({ size: 40, energy: 0.1 }))
+  .apply(new Softness(4));
 ```
 
-Dit zijn toestanden.
-
----
-
-### Operator
+**Equation** — a physical law, not a numerical scheme.
 
 ```js
-FFT2D
-FFTShift2D
-GaussianImpulse
-DoubleSlit
-Blur
+BarrierWaveEquation   // and other equations in src/model/math/equations.js
 ```
 
-Dit zijn transformaties.
-
----
-
-### Equation
-
-```js
-WaveEquation
-SchrodingerEquation
-HeatEquation
-```
-
-Dit zijn wetten.
-
----
-
-### Solver
+**Solver** — a numerical procedure that realizes a discrete evolution operator `x(t+Δt) = U(Δt) x(t)`.
 
 ```js
 WaveEquationSolver
 SchrodingerSolver
 ```
 
-Dit zijn numerieke procedures.
+Conceptually a solver *is* an operator (the time-evolution operator), but Helion keeps the syntax separate because the time step `dt` belongs to `evolve`, not `apply`.
 
----
+Not everything is a `Field`. A `RadialSymmetricBody` has mass, momentum, and collisions; a `DiscreteComplexField` does not. The unification is
 
-Vanuit theoretische natuurkunde zou je kunnen zeggen:
-
-> een solver is ook een operator
-
-en dat is eigenlijk waar.
-
-Een solver realiseert immers een discrete tijdsevolutie-operator:
-
-$$
-\psi(t+\Delta t) = U(\Delta t)\psi(t)
-$$
-
-or
-
-$$
-\phi_{n+1} = S_{\Delta t}(\phi_n)
-$$
-
-Dus conceptueel is een solver inderdaad een operator.
-
----
-
-Waar ik denk dat jouw huidige ontwerp wringt is niet dat de solver geen operator is.
-
-Het wringt omdat de solver momenteel eigenaar is van de toestand:
-
-```js
-const solver =
-    new WaveEquationSolver(field, equation);
 ```
-
-Terwijl overal elders in Helion de toestand eigenaar blijft van zichzelf:
-
-```js
-field.apply(operator);
-```
-
-of
-
-```js
-body.apply(force);
-```
-
----
-
-Ik denk daarom dat deze richting heel natuurlijk zou zijn:
-
-```js
-const solver =
-    new WaveEquationSolver(equation);
-
-solver.step(field, dt);
-```
-
-of zelfs:
-
-```js
-field.evolve(solver, dt);
-```
-
-waarbij de solver geen veld bewaart.
-
----
-
-Het mooie daarvan is dat je dan ook meerdere velden met dezelfde solver kunt evolueren:
-
-```js
-const solver =
-    new SchrodingerSolver(equation);
-
-solver.step(psi1, dt);
-solver.step(psi2, dt);
-solver.step(psi3, dt);
-```
-
-Dat is conceptueel vaak zuiverder.
-
----
-
-Wat ik níet zou doen is teruggaan naar je oorspronkelijke idee:
-
-> alles is een Field
-
-Dat zie ik veel mensen proberen.
-
-Bijvoorbeeld:
-
-```js
-Body extends Field
-Particle extends Field
-Surface extends Field
-Mesh extends Field
-```
-
-Dat levert meestal een prachtige theorie op en een onhandige codebase.
-
-Je verliest dan precies wat jij noemt: semantiek.
-
-Een `RadialSymmetricBody` is geen veld. Een lichaam heeft massa, impuls, traagheid, botsingen, enzovoort.
-
-Een `DiscreteComplexField` is geen lichaam.
-
-Dat ze beide toestanden zijn betekent niet dat ze hetzelfde type moeten zijn.
-
----
-
-Wat ik uit jouw huidige ontwerp haal is eigenlijk iets subtielers:
-
-Niet:
-
-```text
-Everything is a Field
-```
-
-maar:
-
-```text
 Everything is State
-```
-
-en
-
-```text
 State is transformed by Operators
 ```
 
-Dat is een veel krachtigere unificatie.
+— not `Everything is a Field`.
 
-Dan mogen er best meerdere soorten toestand bestaan:
+## Fields, Surfaces and Views
+<div class="header_line"></div>
 
-* velden
-* lichamen
-* geometrieën
-* grafen
-* meshes
+**Field** — a mathematical object with `sample(u, v, target)` (continuous) or `valueAt(i, j, target)` (discrete). The `target` is written into (duck typing): a number, a `Complex`, or a `Vec3`.
 
-zolang ze allemaal dezelfde operationele grammatica delen:
+- `Field` — abstract `sample(u, v, target)`
+- `DiscreteScalarField` — grid `Float32Array`, `valueAt(x,y)`, `sample` via bilinear interpolation
+- `DiscreteComplexField` — two `Float32Array`s, `valueAt(i,j,target: Complex)`
+- `VectorField` — `sample(positionVector, target)`
+
+**Surface** — a representation of a field, still a mathematical object. Base `Surface` exposes `frameAt(u, v, target)` via `DifferentialGeometry` (positions, normals, curvatures `k1/k2`, principal directions `d1/d2`).
+
+- `ParametricSurface` — `(u,v) → (x,y,z)` over a `Domain`
+- `MultivariateFunctionSurface` — `z(x, y, t)` with animatable `time`
+- `ComplexSurface` — `sample` writes `Complex`
+- `DiscreteFieldSurface` — adapter that wraps a `DiscreteScalarField` and implements `frameAt` with `valueAt` + central-difference `_normalAt`, so a raster field can be rendered as a continuous surface
+
+This adapter is the unification layer. The 3D view does not need to know whether the surface is analytic or discrete:
 
 ```js
-state.apply(operator);
+SurfaceVisualization.canBindTo = model => typeof model.frameAt === "function"
 ```
 
-en
+For complex discrete fields the same pattern is planned as `DiscreteComplexFieldSurface` (height = `|z|` or `Re(z)`, phase as color).
+
+**View** — rendering only. Checked via `canBindTo`:
+
+- `SurfaceVisualization` + `SurfaceResolution` + `FixedIntervalNormalizer` + layers (`HeightLayer`, `ColorLayer`, `ContoursLayer`, `PrincipalDirectionsLayer`) — for anything with `frameAt`
+- `ComplexScalarFieldSurfaceRaster` / `PotentialField3DRaster` — legacy discrete rasters that bind via `valueAt`
+- `ScalarFieldIntensityPixelRaster`, `ComplexScalarFieldRaster` — 2D canvas rasters
+
+Sampling always goes through the surface:
+
+```
+View.synchronizeWith()
+  → Surface.frameAt(u, v, frame)
+    → DifferentialGeometry or discrete _normalAt
+  → Layer builds Three.js geometry
+```
+
+## Simulation and Binding
+<div class="header_line"></div>
+
+`Simulation` is a builder that owns the render loop and the DOM plumbing (`Viewport` → `ThreeJsRenderer`). Typical setup:
 
 ```js
-state.alwaysWith(view);
+Simulation.with({
+  htmlDivId: "container",
+  cameraPosition: new Vec3(3, 3, 3),
+  scale: 1,
+  headUpDisplay: true
+})
+  .runsEvery(0.016)                          // wall-clock scheduling
+  .onStep((clock, dt) => {                   // called at fixed dt
+    field.evolve(solver, dt);
+  })
+  .bind(field.alwaysWith(surfaceView))       // continuous sync
+  .bind(potential.onceWith(barrierView))     // one-shot sync (static)
+  .append(slider)                            // controls → details element
+  .provideAxesAround(surfaceView)
+  .frameSceneOn(surfaceView)
+  .start();
 ```
 
-Dat lijkt mij een betere balans tussen de elegantie van de theoretische natuurkunde en de praktische eisen van softwareontwerp. Dat is ook precies de richting waarin je Fourier-refactor je nu lijkt te duwen.
-
-
-### Declarative coding
-
-
-```js
-field                             // E.g. a discrete scalar field
-    .reset()                      // Start with a blank slate
-    .apply(new GaussianImpluse()) // Apply a Gaussian impulse
-    .apply(new FFT2D())           // Apply a Fourier transform
-    .apply(new FFTShift2D());     // Shift the result
-```
-
-
-### Fields and operators
-
-```js
-DiscreteScalarField
-DiscreteComplexField
-```
-
-```js
-CirclePotential
-SquarePotential
-LinePotential
-StepPotential
-SingleSlit
-DoubleSlit
-Grating
-Blur
-FFT2D
-FFTShift2D
-GaussianImpulseComplex2D
-```
-
-This takes care of a declarative simulation
-
-```js
-potential
-    .reset()
-    .apply(new DoubleSlit({
-        size: 40,
-        energy: 0.1
-    }))
-    .apply(new Blur(4));
-```
-
-# Views
-
-Ik zou daarom tijdens deze refactoring proberen één ontwerpprincipe heel consequent vast te houden:
-
-Een model wordt precies één keer aan een visualisatie gekoppeld. Daarna mag de visualisatie intern alles veranderen zonder dat de binding of de simulator daarvan iets merkt.
-
-Dat principe maakt niet alleen de huidige surface-weergaven netjes, maar vormt ook een sterke basis voor de probabilistische orbitalen, vectorvelden, volumerendering en andere visualisaties die je later wilt toevoegen.
-
-
-
-
-## Design
-
-Wat je nu hebt lijkt sterk op een kleine ECS/MVC-hybride, en dat schaalt veel beter dan losse imperative canvas-code.
+Key loop (`Simulation.animate`):
 
 ```
-                ┌──────────────────────────────┐
-                │     Mathematical Layer       │
-                │                              │
-                │  ScalarField                │
-                │  VectorField               │
-                │  ParametricSurface         │
-                │  DifferentialGeometry     │
-                └────────────┬──────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │     Discretization Layer     │
-                │                              │
-                │  Range                      │
-                │  SurfaceResolution          │
-                │  Sampling (u,v grids)       │
-                └────────────┬────────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │       View Layer             │
-                │                              │
-                │  PlaneSurfaceView           │
-                │  IsoparametricContoursView  │
-                │  ArrowField                │
-                │  PointCloudView            │
-                │  ScalarFieldSurface        │
-                └────────────┬───────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │      Rendering Layer         │
-                │                              │
-                │  ThreeJsRenderer            │
-                │  InstancedMesh             │
-                │  Materials / Shaders       │
-                └────────────┬───────────────┘
-                             │
-                             ▼
-                ┌──────────────────────────────┐
-                │     Simulation Layer         │
-                │                              │
-                │  Simulation loop            │
-                │  EventController           │
-                │  Time evolution            │
-                └────────────────────────────┘
+requestAnimationFrame
+  → SimulationClock accumulates wall time (realTimeStep vs simulationTimeStep)
+  → _updatePhysics(): while (accumulator >= realTimeStep) stepFunction(clock, dt)
+  → Binding.synchronize(): view.synchronizeWith(model) if ALWAYS or dirty
+  → ThreeJsRenderer.render()
 ```
 
-MVC:
+- `runsEvery(dt)` — wall-clock interval. `advancesBy(dt)` / `atSpeed(scale)` — simulated time per step.
+- `onStep(fn)` — fixed-step mode (deterministic). `maxOutCpu(fn)` — adaptive mode that tunes `iterationsPerFrame` to hit a target frame rate.
+- `alwaysWith(view)` — synchronized every frame. `onceWith(view)` — synchronized once at `initialize` (for static geometry).
+- `Viewport` builds `container → canvasWrapper → canvas + HUD + CSS2D labels + controls`.
+- `SimulationClock` separates `realTimeStep`, `simulationTimeStep`, `accumulator`, and `timeScale`.
 
-```
-Simulation
-    updates solver
-Solver
-    updates field
-SurfaceView
-    samples field
-```
+Design principle:
 
-```
-numerics/
-├── solvers/
-│   ├── JacobiSolver
-│   ├── GaussSeidelSolver
-│   ├── MultigridSolver
-│   └── FiniteDifferenceWaveSolver
-│
-├── operators/
-│   ├── Laplacian2D
-│   ├── Gradient2D
-│   └── Divergence2D
-│
-├── boundaryconditions/
-│   ├── Dirichlet
-│   ├── Neumann
-│   └── Periodic
-```
+> A model is bound to a view exactly once. Afterwards the view may change internally without the binding or the simulation knowing.
 
-```
-SurfaceView
-    ↓
-Surface.sample()
-    ↓
-ScalarField.scalarValueAt()
-```
-
-```javascript
-const field = new ScalarGridField(...);
-
-const solver = new WaveEquationSolver({
-    field,
-    boundaryCondition: BoundaryCondition.Dirichlet
-});
-
-simulation.onClockTick((_, dt) => solver.step(dt));
-```
-
-
-
-# Introduction
+## Layers and directory map
 <div class="header_line"></div>
 
-In jouw architectuur (zoals je die nu gebruikt)
-
-Je hebt 3 lagen:
-
-1. Physics layer
-   Dipole, Particle, VectorField
-
-→ puur fysica in meters (of SI units)
-
-2. Simulation layer
-   Simulation
-
-→ tijd, substeps, integratie
-
-❗ hoort NIETS te weten over visual scale
-
-3. Render layer
-   ThreeJsRenderer._world
-   ArrowField2
-   Sphere
-   etc.
-
-→ mapping physics → visuals
-
-# Getting started
-<div class="header_line"></div>
-
-
-
-#### 📊 My first simulation
-<div class="header_line"></div>
-
-TODO
-
-
-# The physics layer
-<div class="header_line"></div>
-
-# The simulation layer
-<div class="header_line"></div>
-
-# The rendering layer
-<div class="header_line"></div>
-
-## Surfaces
-
 ```
-Surface
-↓
-ScalarField (ruwe waarde)
-↓
-NormalizedScalarField (altijd [0,1])
-↓
-ColorMapper (blind voor fysica)
-↓
-View (alleen rendering)
+src/
+  core/helion.js              Simulation, Binding, Viewport, SimulationClock, Registry
+  core/controls.js            Slider, DropdownMenu, Checkbox, RadioGroup, Button
+  model/math/math.js          Vec2, Vec3, Complex, Interval, Range, Domain
+  model/math/fields.js        Field, DiscreteScalarField, DiscreteComplexField
+  model/math/surfaces.js      Surface, ParametricSurface, ComplexSurface, DiscreteFieldSurface
+  model/math/numerics/        DifferentialGeometry, solvers, integrators
+  model/phys/bodies.js        Body, RadialSymmetricBody, Block, Lattice, BodyPair
+  model/phys/forces.js        Force, GravitationalForce, CoulombForce, SpringForce
+  model/transformations/      Operators (FFT2D, GaussianImpulse, DoubleSlit, …)
+  view/3d/surfaces/           SurfaceVisualization, layers, normalizers
+  view/3d/renderer.js         ThreeJsRenderer
+  view/3d/primitives/         Sphere, Box, Arrow, Trail, VectorView, …
+  view/3d/composite/          PointCloudView, LatticeView, …
+  view/2d/views.js            2D rasters
 ```
 
-```javascript
-/**
-* Scalar field on a surface.
-* │
-* ├── MeanCurvatureField
-* ├── GaussianCurvatureField
-* ├── PrincipalCurvatureField
-* ├── GeodesicDistanceField
-* ├── UserDefinedField
-  */
-  export class SurfaceScalarField 
+Conceptually:
 
 ```
+Mathematical layer   Field, Surface, DifferentialGeometry
+        ↓
+Discretization       Domain, SurfaceResolution, sampling grids
+        ↓
+View layer           SurfaceVisualization, layers, color mappers
+        ↓
+Rendering            ThreeJsRenderer, materials, shaders
+        ↓
+Simulation           Simulation, Binding, clock, controls
+```
 
-# User interaction
-<div class="header_line"></div>
+The physics/simulation layers know nothing about visual scale; the render layer maps physics units to world units via `Simulation.with({ scale })`.
+
+## Further reading
+
+- Getting Started — first simulation with bodies (`guides/getting_started`)
+- `src/index.js` — public exports (the reference surface)
+- `examples/mathematics/scenes/real_surfaces.js` — continuous surface + `SurfaceVisualization`
+- `examples/quantumphysics/scenes/quantum_wave_scattering.js` — discrete complex field + `SchrodingerSolver`
+- `README.md` — project overview and positioning
