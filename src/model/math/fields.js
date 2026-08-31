@@ -143,7 +143,7 @@ export class DiscreteScalarField extends ScalarField {
 /**
  * Discrete complex scalar field, i.e. a complex scalar field on a grid.
  */
-export class DiscreteComplexField extends Field {
+export class DiscreteComplexField extends ScalarField {
     constructor({
         nx = 128,
         ny = 128,

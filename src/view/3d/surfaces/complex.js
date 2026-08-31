@@ -222,6 +222,8 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
     }
 
     canBindTo(field) {
-        return field.valueAt && field.nx && field.ny;
+        if (!(field.valueAt || field.nx || field.ny))
+            throw new Error("Surface view needs frameAt() method to obtain data");
+        return true;
     }
 }

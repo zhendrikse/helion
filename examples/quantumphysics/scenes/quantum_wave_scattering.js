@@ -3,6 +3,7 @@ import {
     SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField,
     ShapeConfiguration, Softness, Potential, DiscreteComplexFieldSurfaceView2D, DiscreteFieldSurfaceView, SurfaceResolution,
 } from "../../../src/index.js";
+import {DiscreteComplexFieldSurface} from "../../../src/model/math/surfaces.js";
 
 let xMax = 400,
     width = xMax,
@@ -11,6 +12,7 @@ const dt = 0.24;		// anything less than 0.25 seems to be stable
 
 const potential = new DiscreteScalarField({ nx: xMax, ny: xMax });
 const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
+const psiSurface = new DiscreteComplexFieldSurface(psi);
 const solver = new SchrodingerSolver(potential);
 const gaussianImpulse = new GaussianImpulseComplex2D();
 

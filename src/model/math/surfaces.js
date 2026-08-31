@@ -7,6 +7,9 @@ import {MathPhysicsModelBehavior} from "../../core/helion.js";
  * Mathematical definition of a surface.
  */
 export class Surface extends MathPhysicsModelBehavior {
+}
+
+export class DifferentiableSurface extends Surface {
     constructor() {
         super();
         this._differentialGeometry = new DifferentialGeometry(this);
@@ -15,22 +18,24 @@ export class Surface extends MathPhysicsModelBehavior {
     sampleSpacing(resolution) {
         return new Vec2(1, 1);
     }
-}
 
-export class DifferentiableSurface extends Surface {
     frameAt(u, v, target) {
         return this._differentialGeometry.differentialFrame(u, v, target);
     }
 }
 
-export class ComplexFieldSurface extends DifferentiableSurface {
-    constructor(complexFunction) {
+export class ComplexFieldSurface extends Surface {
+    constructor(complexField) {
         super();
-        this._function = complexFunction;
+        this._field = complexField;
+    }
+
+    frameAt(u, v, target) {
+        this.sample(u, v, target);
     }
 
     sample(u, v, target) {
-        this._function.sample(u, v, target);
+        this._field.sample(u, v, target);
     }
 }
 
@@ -111,5 +116,11 @@ export class DiscreteFieldSurface extends DifferentiableSurface {
 
     reset() {
         this._field.reset();
+    }
+}
+
+export class DiscreteComplexFieldSurface extends ComplexFieldSurface {
+    frameAt(i, j, target) {
+        this._field.valueAt(i, j, target);
     }
 }
