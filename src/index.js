@@ -9,7 +9,7 @@ export {
 } from "./model/math/math.js";
 
 export {
-    ParametricSurface, Surface, DiscreteFieldSurface, ScalarFieldSurface, ComplexFieldSurface
+    ParametricSurface, Surface, DiscreteFieldSurface, ScalarFieldSurface
 } from "./model/math/surfaces.js"
 
 export {

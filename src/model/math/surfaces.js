@@ -24,17 +24,6 @@ export class DifferentiableSurface extends Surface {
     }
 }
 
-export class ComplexFieldSurface extends Surface {
-    constructor(complexField) {
-        super();
-        this._field = complexField;
-    }
-
-    sample(u, v, target) {
-        this._field.sample(u, v, target);
-    }
-}
-
 export class ScalarFieldSurface extends DifferentiableSurface {
     constructor(multivariateFunction) {
         super();

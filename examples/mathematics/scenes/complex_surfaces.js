@@ -1,6 +1,6 @@
 import {
     Simulation, DropdownMenu, Domain, Registry, Range, ComplexSurfaceView3D,
-    SurfaceResolution, ComplexFunction, Complex, Slider, ComplexFieldSurface, ComplexSurfaceView2D, RadioGroup, Vec3
+    SurfaceResolution, ComplexFunction, Complex, Slider, ComplexSurfaceView2D, RadioGroup, Vec3
 } from "../../../src/index.js";
 
 const one = new Complex(1, 0);
@@ -88,13 +88,13 @@ class SurfaceController {
     changeSurface(surfaceId) {
         this._currentSurfaceId = surfaceId;
         const func = functionsRegistry.get(surfaceId).function;
-        const surface = new ComplexFieldSurface(func);
-        this._simulation.bind(surface.onceWith(surfaceView));
         if (this._dimension3d) {
+            this._simulation.bind(func.onceWith(surfaceView));
             this._simulation.provideAxesAround(surfaceView);
             this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
         } else {
-            this._simulation.bind(surface.onceWith(surfaceView2D));
+            this._simulation.bind(func.onceWith(surfaceView2D));
+            this._simulation.frameSceneOn(surfaceView2D, {padding: 0.5, translationY: 0, viewDirection: new Vec3(0, 0, 1)});
         }
         this._simulation.setLatexTitle("\\Large{f(z) = " + functionsRegistry.get(surfaceId).latex + "}");
     }
@@ -137,10 +137,6 @@ function setDimension(dimension3d = true) {
     if (!dimension3d) simulation.removeAxes();
     // re-bind current function so the now-visible view gets initialized
     surfaceController.changeSurface(surfaceController.currentSurfaceId);
-    if (dimension3d)
-        simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5, viewDirection: new Vec3(1, 1, 1)});
-    else
-        simulation.frameSceneOn(surfaceView2D, {padding: 0.5, translationY: 0, viewDirection: new Vec3(0, 0, 1)});
 }
 
 const surfaceController = new SurfaceController(simulation);
