@@ -247,10 +247,10 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
 
         const xOffset = width / 2;
         const yOffset = height / 2;
-        for (let y = 0; y <= height; y++) {
+        for (let y = 0; y < height; y++) {
             const z = y - yOffset;
 
-            for (let x = 0; x <= width; x++) {
+            for (let x = 0; x < width; x++) {
                 const i = y * height + x;
                 const colorIndex = i * 3;
 
