@@ -1,5 +1,6 @@
 import {
-    Complex, Cylinder, DiscreteComplexField, Renderable3D, Simulation, Vec3, WaveFunctionEigenStateSolver
+    Complex,
+    ComplexFunctionSample, Cylinder, DiscreteComplexField, Renderable3D, Simulation, Vec3, WaveFunctionEigenStateSolver
 } from "../../../src/index.js";
 
 class DiscreteComplexFieldCylinderView extends Renderable3D {
@@ -11,7 +12,7 @@ class DiscreteComplexFieldCylinderView extends Renderable3D {
         this._spacing = spacing;
         this._cylinderScale = cylinderScale;
         this._cylinders = [];
-        this._complexNumber = new Complex();
+        this._sample = new ComplexFunctionSample();
     }
 
     canBindTo(model) {
@@ -27,12 +28,13 @@ class DiscreteComplexFieldCylinderView extends Renderable3D {
     }
 
     _updateCylinder(psi, i, j) {
-        psi.valueAt(i, j, this._complexNumber);
-        this._complexNumber.multiplyScalar(this._cylinderScale);
-        const height = this._complexNumber.re;
-        const mag = this._complexNumber.abs;
-        const radius = Math.max(0.05 * mag, Math.abs(this._complexNumber.im) / 6);
-        const hue = this._complexNumber.phase;
+        psi.valueAt(i, j, this._sample);
+        const output = this._sample.output;
+        output.multiplyScalar(this._cylinderScale);
+        const height = output.re;
+        const mag = output.abs;
+        const radius = Math.max(0.05 * mag, Math.abs(output.im) / 6);
+        const hue = output.phase;
 
         const cylinder = this._cylinders[psi.index(i, j)];
         const x = this._spacing * i / (psi.nx - 1);
