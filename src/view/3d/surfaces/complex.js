@@ -160,6 +160,7 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         this._colorMapper = colorMapper;
         this._rgb = new Color();
         this._sample = new ComplexFunctionSample();
+        this._colorData = { phase: 0, modulus: 0 }
 
         const width = resolution.u;
         const height = resolution.v;
@@ -189,41 +190,56 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
     set zScale(value) { this._zScale = value; }
     get zScale() { return this._zScale; }
 
-    synchronizeWith(field) {
+    synchronizeWith(complexSurface) {
+        const u = this._resolution.u;
+        const v = this._resolution.v;
+        const zScale = this._zScale;
+        const showPhaseColor = this._showPhaseColor;
+
         const pos = this._positions;
-        let index = 0;
+        const colors = this._colors;
+        const alphas = this._alphas;
+        const sample = this._sample;
+        const colorMapper = this._colorMapper;
+        const rgb = this._rgb;
 
-        for (let y = 0; y < field.ny; y++) {
-            for (let x = 0; x < field.nx; x++) {
-                field.frameAt(x, y, this._sample);
-                const modulus = this._sample.magnitude;
-                const phase = this._sample.phase;
+        const xOffset = u / 2;
+        const yOffset = v / 2;
+        for (let y = 0; y < v; y++) {
+            const z = y - yOffset;
 
-                // HEIGHT (surface deformation)
-                const height = Math.log(1 + 20 * modulus);
-                const i = field.index(x, y);
-                pos.setXYZ(i, x - this._resolution.u/2, height *  this._zScale, y - this._resolution.v/2);
+            for (let x = 0; x < u; x++) {
+                const i = y * u + x;
+                const colorIndex = i * 3;
+
+                complexSurface.frameAt(x, y, sample);
+                const modulus = sample.magnitude;
+                const phase = sample.phase;
+                const height = Math.log1p(20 * modulus);
+
+                pos.setXYZ(i, x - xOffset, height * zScale, z);
 
                 const lighting = 0.6 + 0.4 * Math.cos(phase);
                 const intensity = Math.pow(modulus, 0.45) * lighting;
-                this._colorMapper.map({phase: this._showPhaseColor ? phase : 0.65, modulus}, this._rgb);
-                this._colors[index]     = this._rgb.r * intensity;
-                this._colors[index + 1] = this._rgb.g * intensity;
-                this._colors[index + 2] = this._rgb.b * intensity;
-
-                // MAGNITUDE → alpha
-                this._alphas[i] = Math.tanh(3.0 * modulus);
-                index += 3;
+                this._colorData.phase = showPhaseColor ? phase : 0.65;
+                this._colorData.modulus = modulus;
+                colorMapper.map(this._colorData, rgb);
+                colors[colorIndex]     = rgb.r * intensity;
+                colors[colorIndex + 1] = rgb.g * intensity;
+                colors[colorIndex + 2] = rgb.b * intensity;
+                alphas[i] = Math.tanh(3.0 * modulus);
             }
         }
 
-        this._positions.needsUpdate = true;
+        pos.needsUpdate = true;
         this._mesh.geometry.attributes.color.needsUpdate = true;
         this._mesh.geometry.attributes.alpha.needsUpdate = true;
     }
 
-    canBindTo(field) {
-        if (!(field.valueAt || field.nx || field.ny))
+
+    canBindTo(complexSurface) {
+        console.log(complexSurface)
+        if (!complexSurface.frameAt)
             throw new Error("Surface view needs frameAt() method to obtain data");
         return true;
     }
