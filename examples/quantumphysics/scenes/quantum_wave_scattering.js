@@ -1,5 +1,5 @@
 import {
-    WaveFunctionView, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
+    WaveFunctionSurface3D, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
     SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField,
     ShapeConfiguration, Softness, Potential, ComplexSurfaceView2D, DiscreteFieldSurfaceView, SurfaceResolution,
 } from "../../../src/index.js";
@@ -25,7 +25,7 @@ function reset(shapeConfig, potentialStrength, softness) {
         .apply(new Softness({ softness }));
 }
 
-const waveFunctionSurface = new WaveFunctionView();
+const waveFunctionSurface = new WaveFunctionSurface3D();
 const potentialBarrier = new DiscreteFieldBoxView({ width, height });
 
 const waveFunctionSurface2d = new ComplexSurfaceView2D();

@@ -6,7 +6,78 @@ import { ComplexColorMappers} from "../../colormappers.js";
 import { CompoundControl, DropdownMenu, Slider } from "../../../core/controls.js";
 import {ComplexFunctionSample} from "../../../model/math/fields.js";
 
-export class ComplexSurfaceView3D extends Renderable3D {
+/**
+ * Base for all complex-field surface views.
+ * Holds the shared contract: model.sample(u,v, ComplexFunctionSample{input,output})
+ * and common mesh lifecycle. Subclasses provide height mapping, material and
+ * resolution semantics. Discrete subclasses may override canBindTo/synchronizeWith
+ * to use the fast valueAt() path when available (performance).
+ */
+export class ComplexFieldViewable extends Renderable3D {
+    constructor(defaultResolution = new SurfaceResolution(200, 200)) {
+        super();
+        this._fieldIsDiscrete = false;
+        this._sample = new ComplexFunctionSample();
+        this._mesh = null;
+        this._positions = null;
+        this._colors = null;
+        this._resolution = defaultResolution;
+    }
+
+    resolution(field) {
+        return {
+            width: this._fieldIsDiscrete ? field.nx : this._resolution.u,
+            height: this._fieldIsDiscrete ? field.ny : this._resolution.v,
+        }
+    }
+
+    dispose() {
+        if (!this._mesh) return;
+        this.remove(this._mesh);
+        this._mesh.geometry.dispose();
+        this._mesh.material.dispose();
+        this._mesh = null;
+        this._positions = null;
+        this._colors = null;
+        // subclasses with alpha buffer clear it as well
+        if (this._alphas) this._alphas = null;
+    }
+
+    canBindTo(field) {
+        this._fieldIsDiscrete = field.nx !== undefined && field.ny !== undefined;
+
+        if (this._fieldIsDiscrete) {
+            if (!field.valueAt)
+                throw new Error("Surface view needs valueAt() on discrete field");
+        } else {
+            if (!field.sample)
+                throw new Error("Surface view needs sample() on continuous field");
+        }
+
+        return true;
+    }
+
+    ui() {
+        return new CompoundControl()
+            .add(new DropdownMenu()
+                .for(new ComplexColorMappers())
+                .addEventListener("change", event => this._colorMapper = ComplexColorMappers.get(event.target.value))
+            )
+            .add(new Slider("🪟 Opacity ")
+                .withRange(new Range(0, 1, 0.01))
+                .withValue(1)
+                .addEventListener("input", event => this._mesh.material.opacity = Number(event.target.value))
+            );
+    }
+
+    get boundingBox() {
+        if (!this._mesh) return new Box3();
+        this._mesh.geometry.computeBoundingBox();
+        return this._mesh.geometry.boundingBox;
+    }
+}
+
+export class ComplexSurfaceView3D extends ComplexFieldViewable {
     constructor({
         normalizer = new AdaptiveSymmetricNormalizer(),
         colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl),
@@ -14,30 +85,21 @@ export class ComplexSurfaceView3D extends Renderable3D {
         opacity = 1,
         defaultResolution = new SurfaceResolution(200, 200),
     } = {}) {
-        super();
+        super(defaultResolution);
 
         this._maxHeight = maxHeight;
         this._opacity = opacity;
         this._normalizer = normalizer;
         this._colorMapper = colorMapper;
-        this._defaultResolution = defaultResolution;
-        this._sample = new ComplexFunctionSample();
         this._color = new Color();
-
-        this._mesh = null;      // To be determined in initialize()
-        this._positions = null; // To be determined in initialize()
-        this._colors = null;    // To be determined in initialize()
     }
 
-    _getResolution(surface) {
-        return surface.sampleResolution ?? this._defaultResolution;
-    }
 
-    initialize(complexSurface) {
+    initialize(field) {
         this.dispose();
-        const { u, v } = this._getResolution(complexSurface);
-        const geometry = new PlaneGeometry(1, 1, u, v);
-        const vertexCount = (u + 1) * (v + 1);
+        const { width, height } = this.resolution(field);
+        const geometry = new PlaneGeometry(1, 1, width, height);
+        const vertexCount = (width + 1) * (height + 1);
         geometry.setAttribute("color", new BufferAttribute(new Float32Array(vertexCount * 3), 3));
         this._mesh = new Mesh(geometry, new MeshStandardMaterial({
             side: DoubleSide,
@@ -53,41 +115,22 @@ export class ComplexSurfaceView3D extends Renderable3D {
         this._colors = this._mesh.geometry.attributes.color
     }
 
-    dispose() {
-        if (!this._mesh)
-            return;
-
-        this.remove(this._mesh);
-
-        this._mesh.geometry.dispose();
-        this._mesh.material.dispose();
-
-        this._mesh = null;
-        this._positions = null;
-        this._colors = null;
-    }
-
     set maxHeight(value) { this._maxHeight = value; }
 
-    canBindTo(complexSurface) {
-        if (!complexSurface.sample)
-            throw new Error("Surface visualization needs sample(), which is not supported by the current model.");
-        return true;
-    }
-
-    setValueRange(complexSurface) {
+    setValueRange(field) {
         this._normalizer.reset();
-        const { u, v } = this._getResolution(complexSurface);
+        const { width, height } = this.resolution(field);
 
-        for (let i = 0; i <= u; i++) {
-            const uu = i / u;
+        for (let i = 0; i <= width; i++)
+            for (let j = 0; j <= height; j++) {
+                if (this._fieldIsDiscrete)
+                    field.valueAt(i, j, this._sample);
+                else
+                    field.sample(i / width, j / height, this._sample);
 
-            for (let j = 0; j <= v; j++) {
-                complexSurface.sample(uu, j / v, this._sample);
                 const modulus = this._maxHeight * Math.tanh(this._sample.abs / this._maxHeight);
                 this._normalizer.include(modulus);
             }
-        }
     }
 
     updateMeshAt(index) {
@@ -106,16 +149,19 @@ export class ComplexSurfaceView3D extends Renderable3D {
         this._colors.setXYZ(index, this._color.r, this._color.g, this._color.b);
     }
 
-    synchronizeWith(complexSurface) {
-        this.setValueRange(complexSurface);
+    synchronizeWith(field) {
+        this.setValueRange(field);
         let index = 0;
-        const { u, v } = this._getResolution(complexSurface);
+        const { width, height } = this.resolution(field);
 
-        for (let i = 0; i <= u; i++) {
-            const uu = i / u;
+        for (let i = 0; i <= width; i++) {
+            const uu = i / width;
 
-            for (let j = 0; j <= v; j++) {
-                complexSurface.sample(uu, j / v, this._sample);
+            for (let j = 0; j <= height; j++) {
+                if (this._fieldIsDiscrete)
+                    field.valueAt(i, j, this._sample);
+                else
+                    field.sample(uu, j / height, this._sample);
                 this.updateMeshAt(index++);
             }
         }
@@ -126,28 +172,9 @@ export class ComplexSurfaceView3D extends Renderable3D {
         this._mesh.geometry.computeBoundingBox();
     }
 
-    ui() {
-        return new CompoundControl()
-            .add(new DropdownMenu()
-                .for(new ComplexColorMappers())
-                .addEventListener("change", event =>
-                    this._colorMapper = ComplexColorMappers.get(event.target.value)
-            ))
-            .add(new Slider("🪟 Opacity ")
-                .withRange(new Range(0, 1, 0.01))
-                .withValue(1)
-                .addEventListener("input", event =>
-                    this._mesh.material.opacity = Number(event.target.value)
-            ));
-    }
-
-    get boundingBox() {
-        this._mesh.geometry.computeBoundingBox();
-        return this._mesh.geometry.boundingBox;
-    }
 }
 
-export class WaveFunctionView extends Renderable3D {
+export class WaveFunctionSurface3D extends ComplexFieldViewable {
     static vertexShader = `
         attribute vec3 color;
         attribute float alpha;
@@ -179,42 +206,34 @@ export class WaveFunctionView extends Renderable3D {
         showPhaseColor = true,
         brightness = 1,
         colorMapper = ComplexColorMappers.get(ComplexColorMappers.Domain),
-        defaultResolution = new SurfaceResolution(400, 400)
+        defaultResolution = new SurfaceResolution(200, 200)
     } = {}) {
-        super();
+        super(defaultResolution);
         this._showPhaseColor = showPhaseColor;
         this._brightness = brightness;
         this._zScale = zScale;
         this._colorMapper = colorMapper;
         this._rgb = new Color();
-        this._sample = new ComplexFunctionSample();
+        // _sample already created by base
         this._colorData = { phase: 0, modulus: 0 }
         this._fieldIsDiscrete = false;
-        this._resolution = defaultResolution;
 
-        this._mesh = null;      // To be determined at initialize()
-        this._positions = null; // To be determined at initialize()
-        this._colors = null;    // To be determined at initialize()
-        this._alphas = null;    // To be determined at initialize()
+        this._alphas = null; // managed alongside base _mesh/_positions/_colors
     }
 
     set phaseColor(showPhaseColor) { this._showPhaseColor = showPhaseColor; }
     set zScale(value) { this._zScale = value; }
     get zScale() { return this._zScale; }
 
-    resolution(field) {
-        return {
-            width: this._fieldIsDiscrete ? field.nx : this._resolution.u,
-            height: this._fieldIsDiscrete ? field.ny : this._resolution.v,
-        }
-    }
-
     initialize(field) {
+        // ensure canBindTo has set _fieldIsDiscrete
+        if (this._fieldIsDiscrete === undefined) this.canBindTo(field);
+        this.dispose();
         const { width, height } = this.resolution(field);
         const geometry = new PlaneGeometry(1, 1, width, height);
         const material = new ShaderMaterial({
-            vertexShader: WaveFunctionView.vertexShader,
-            fragmentShader: WaveFunctionView.fragmentShader,
+            vertexShader: WaveFunctionSurface3D.vertexShader,
+            fragmentShader: WaveFunctionSurface3D.fragmentShader,
             transparent: true,
             side: DoubleSide,
             uniforms: {
@@ -233,63 +252,55 @@ export class WaveFunctionView extends Renderable3D {
         geometry.setAttribute("alpha", new BufferAttribute(this._alphas, 1));
     }
 
-    synchronizeWith(field) {
-        const { width, height } = this.resolution(field);
-        const zScale = this._zScale;
-        const showPhaseColor = this._showPhaseColor;
+    dispose() {
+        super.dispose();
+        // _alphas already nulled by base; ensure geometry attribute is not leaked
+        this._alphas = null;
+    }
 
-        const pos = this._positions;
-        const colors = this._colors;
-        const alphas = this._alphas;
+    setValueRange(field) {
+        // Wave function uses fixed log/alpha mapping — no normalizer pass needed.
+        // Kept for symmetry with ComplexSurfaceView3D so synchronizeWith has same shape.
+    }
+
+    updateMeshAt(index, x, y) {
         const sample = this._sample;
-        const rgb = this._rgb;
-        const isDiscrete = this._fieldIsDiscrete;
+        const modulus = sample.magnitude;
+        const displayHeight = Math.log1p(20 * modulus);
 
+        this._positions.setXYZ(index, x, displayHeight * this._zScale, y);
+
+        this._colorData.phase = this._showPhaseColor ? sample.phase : 0.65;
+        this._colorData.modulus = modulus;
+        this._colorMapper.map(this._colorData, this._rgb);
+
+        const lighting = 0.6 + 0.4 * Math.cos(sample.phase);
+        const intensity = Math.sqrt(modulus) * lighting;
+
+        this._mesh.geometry.attributes.color.setXYZ(index, this._rgb.r * intensity, this._rgb.g * intensity, this._rgb.b * intensity);
+        this._alphas[index] = Math.tanh(4.0 * modulus);
+    }
+
+    synchronizeWith(field) {
+        this.setValueRange(field);
+        const { width, height } = this.resolution(field);
         const xOffset = width / 2;
         const yOffset = height / 2;
+        let index = 0;
         for (let y = 0; y < height; y++) {
             const z = y - yOffset;
-
             for (let x = 0; x < width; x++) {
-                const i = y * height + x;
-                const colorIndex = i * 3;
-
-                if (isDiscrete)
-                    field.valueAt(x, y, sample);
+                if (this._fieldIsDiscrete)
+                    field.valueAt(x, y, this._sample);
                 else
-                    field.sample(x / width, y / height, sample);
-                const modulus = sample.magnitude;
-                const displayHeight = Math.log1p(20 * modulus);
+                    field.sample(x / width, y / height, this._sample);
 
-                pos.setXYZ(i, x - xOffset, displayHeight * zScale, z);
-
-                this._colorData.phase = showPhaseColor ? sample.phase : 0.65;
-                this._colorData.modulus = modulus;
-                this._colorMapper.map(this._colorData, rgb);
-                const lighting = 0.6 + 0.4 * Math.cos(sample.phase);
-                const intensity = Math.sqrt(modulus) * lighting;
-                colors[colorIndex]     = rgb.r * intensity;
-                colors[colorIndex + 1] = rgb.g * intensity;
-                colors[colorIndex + 2] = rgb.b * intensity;
-                alphas[i] = Math.tanh(4.0 * modulus);
+                this.updateMeshAt(index++, x - xOffset, z);
             }
         }
 
-        pos.needsUpdate = true;
+        this._positions.needsUpdate = true;
         this._mesh.geometry.attributes.color.needsUpdate = true;
         this._mesh.geometry.attributes.alpha.needsUpdate = true;
-    }
-
-    canBindTo(field) {
-        this._fieldIsDiscrete = field.nx !== undefined && field.ny !== undefined;
-
-        if (this._fieldIsDiscrete)
-            if (!field.valueAt)
-                throw new Error("Surface view needs fieldAt() method on discrete field to obtain data");
-            else
-            if (!field.sample)
-                throw new Error("Surface view needs sample() method on continuous field to obtain data");
-
-        return true;
     }
 }
