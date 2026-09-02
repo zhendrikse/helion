@@ -151,11 +151,10 @@ export class Simulation {
         STOPPED: "Stopped",
     })
 
-    static viewportFromHtmlDiv = (htmlDiv, parameterMenuCollapsed, aspectRatio) => {
-        let canvasWrapper;
-        if (htmlDiv)
-            canvasWrapper = document.getElementById(htmlDiv);
-        else {
+    static viewportFromHtmlDiv = (htmlDivId, parameterMenuCollapsed, aspectRatio) => {
+        let canvasWrapper = document.getElementById(htmlDivId);
+        if (!canvasWrapper) {
+            console.warn(`No HTML div with ID = \"${htmlDivId}\" found: creating Helion div automatically!`);
             canvasWrapper = document.createElement("div");
             canvasWrapper.id = generateUUID();
             document.body.appendChild(canvasWrapper);
