@@ -10,6 +10,7 @@ import { Registry } from "../../core/helion.js";
 import { ColorMappers, ComplexColorMappers, WavelengthColorMapper} from "../colormappers.js";
 import {Complex, Range} from "../../model/math/math.js";
 import {SurfaceResolution} from "../3d/surfaces/visualization.js";
+import {ComplexFunctionSample} from "../../model/math/fields.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -329,7 +330,7 @@ export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
         this._brightness = brightness;
         this._colorMapper = colorMapper;
         this._rgb = new Color();
-        this._complexNumber = new Complex();
+        this._sample = new ComplexFunctionSample();
 
         const pixels = new Uint8Array(this._width * this._height * 4);
         const texture = new DataTexture(pixels,  this._width, this._height, RGBAFormat);
@@ -368,9 +369,9 @@ export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
         let index = 0;
         for (let y = 0; y < this._width; y++)
             for (let x = 0; x < this._height; x++) {
-                field.valueAt(x, y, this._complexNumber);
-                const phase = this._complexNumber.phase;
-                const modulus = this._complexNumber.magnitude;
+                field.valueAt(x, y, this._sample);
+                const phase = this._sample.phase;
+                const modulus = this._sample.magnitude;
                 let brightness = modulus * this._brightness;
                 if (brightness > 1.0) brightness = 1.0;
 

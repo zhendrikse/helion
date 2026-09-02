@@ -120,7 +120,7 @@ export class DiscreteFieldSurface extends DifferentiableSurface {
 }
 
 export class DiscreteComplexFieldSurface extends ComplexFieldSurface {
-    frameAt(i, j, target) {
-        this._field.valueAt(i, j, target);
+    frameAt(i, j, complexFunctionSample) {
+        this._field.valueAt(i, j, complexFunctionSample);
     }
 }

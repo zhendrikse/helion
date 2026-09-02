@@ -72,6 +72,18 @@ export class MultivariateFunction extends ScalarField {
     set time(time) { this._time = time; }
 }
 
+export class ComplexFunctionSample {
+    constructor() {
+        this.input = new Complex();
+        this.output = new Complex();
+    }
+
+    get phase() { return Math.atan2(this.output.im, this.output.re) / (2* Math.PI); }
+    get absSquared() { return this.output.re * this.output.re + this.output.im * this.output.im; }
+    get magnitude() { return Math.sqrt(this.absSquared); }
+    get abs() { return Math.sqrt(this.absSquared); }
+}
+
 export class ComplexFunction extends ComplexField {
     constructor({
         domain = new Domain(),
@@ -80,15 +92,14 @@ export class ComplexFunction extends ComplexField {
         super();
         this._domain = domain;
         this._complexFunction = func;
-        this._tempComplexNumber = new Complex();
     }
 
-    sample(u, v, target) {
+    sample(u, v, complexFunctionSample) {
         const re = this._domain.xRange.scaleUnitParameter(u);
         const im = this._domain.yRange.scaleUnitParameter(v);
-        this._tempComplexNumber.set(re, im);
-        target.in.copy(this._tempComplexNumber);
-        target.out.copy(this._complexFunction(this._tempComplexNumber));
+        complexFunctionSample.input.set(re, im);
+        complexFunctionSample.output.copy(this._complexFunction(complexFunctionSample.input));
+        complexFunctionSample.input.set(re, im); // in case the complex function accidentally modified the input
     }
 }
 
@@ -174,12 +185,15 @@ export class DiscreteComplexField extends ScalarField {
         return this;
     }
 
-    valueAt(i, j, target) {
-        target.re = this.real[this.index(i, j)];
-        target.im = this.imag[this.index(i, j)];
+    valueAt(i, j, complexFunctionSample) {
+        const index = this.index(i, j);
+        complexFunctionSample.input.re = i;
+        complexFunctionSample.input.im = j;
+        complexFunctionSample.output.re = this.real[index];
+        complexFunctionSample.output.im = this.imag[index];
     }
 
-    sample(u, v, target) {
+    sample(u, v, complexFunctionSample) {
         // bilinear interpolation
         const x = u * (this._nx - 1);
         const y = v * (this._ny - 1);
@@ -203,9 +217,7 @@ export class DiscreteComplexField extends ScalarField {
         const i0 = this.imag[i00] * (1 - tx) + this.imag[i10] * tx;
         const i1 = this.imag[i01] * (1 - tx) + this.imag[i11] * tx;
 
-        target.re = r0 * (1 - ty) + r1 * ty;
-        target.im = i0 * (1 - ty) + i1 * ty;
-
-        return target;
+        complexFunctionSample.re = r0 * (1 - ty) + r1 * ty;
+        complexFunctionSample.im = i0 * (1 - ty) + i1 * ty;
     }
 }

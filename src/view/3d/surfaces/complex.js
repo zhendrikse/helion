@@ -4,6 +4,7 @@ import { AdaptiveSymmetricNormalizer, SurfaceResolution } from "./visualization.
 import { Complex, Range} from "../../../model/math/math.js";
 import { ComplexColorMappers} from "../../colormappers.js";
 import { CompoundControl, DropdownMenu, Slider } from "../../../core/controls.js";
+import {ComplexFunctionSample} from "../../../model/math/fields.js";
 
 export class ContinuousComplexFieldView extends Renderable3D {
     constructor({
@@ -18,7 +19,7 @@ export class ContinuousComplexFieldView extends Renderable3D {
         this._normalizer = normalizer;
         this._colorMapper = colorMapper;
         this._resolution = resolution;
-        this._sample = { in: new Complex(), out: new Complex() };
+        this._sample = new ComplexFunctionSample();
         this._color = new Color();
 
         const geometry = new PlaneGeometry(1, 1, resolution.u, resolution.v);
@@ -56,7 +57,7 @@ export class ContinuousComplexFieldView extends Renderable3D {
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
                 model.sample(u, v, this._sample);
-                const modulus = this._maxHeight * Math.tanh(this._sample.out.abs / this._maxHeight);
+                const modulus = this._maxHeight * Math.tanh(this._sample.abs / this._maxHeight);
                 this._normalizer.include(modulus);
             }
         }
@@ -64,13 +65,13 @@ export class ContinuousComplexFieldView extends Renderable3D {
 
     updateMeshAt(index) {
         // --- compress modulus to prevent poles from dominating the height ---
-        const modulus = this._maxHeight * Math.tanh(this._sample.out.abs / this._maxHeight);
-        this._positions.array[index * 3] = this._sample.in.re;
+        const modulus = this._maxHeight * Math.tanh(this._sample.output.abs / this._maxHeight);
+        this._positions.array[index * 3] = this._sample.input.re;
         this._positions.array[index * 3 + 1] = modulus;
-        this._positions.array[index * 3 + 2] = this._sample.in.im;
+        this._positions.array[index * 3 + 2] = this._sample.input.im;
 
         const value = {
-            phase: this._sample.out.phase,
+            phase: this._sample.output.phase,
             modulus: this._normalizer.normalize(modulus)
         };
 
@@ -158,7 +159,7 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         this._zScale = zScale;
         this._colorMapper = colorMapper;
         this._rgb = new Color();
-        this._complexNumber = new Complex();
+        this._sample = new ComplexFunctionSample();
 
         const width = resolution.u;
         const height = resolution.v;
@@ -194,9 +195,9 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
 
         for (let y = 0; y < field.ny; y++) {
             for (let x = 0; x < field.nx; x++) {
-                field.valueAt(x, y, this._complexNumber);
-                const modulus = this._complexNumber.magnitude;
-                const phase = this._complexNumber.phase;
+                field.valueAt(x, y, this._sample);
+                const modulus = this._sample.magnitude;
+                const phase = this._sample.phase;
 
                 // HEIGHT (surface deformation)
                 const height = Math.log(1 + 20 * modulus);
