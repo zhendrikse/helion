@@ -38,7 +38,7 @@ export {
     ComplexFunctionSample
 } from "./model/math/fields.js";
 
-export { ComplexSurfaceView3D, DiscreteComplexFieldSurfaceView } from "./view/3d/surfaces/complex.js";
+export { ComplexSurfaceView3D, WaveFunctionView } from "./view/3d/surfaces/complex.js";
 export { ThreeJsScene } from "./view/3d/scene.js";
 export { SphereSphereCollision } from "./model/transformations/interactions.js";
 export { BarrierWaveEquation } from "./model/math/equations.js";

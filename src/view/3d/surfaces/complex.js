@@ -147,7 +147,7 @@ export class ComplexSurfaceView3D extends Renderable3D {
     }
 }
 
-export class DiscreteComplexFieldSurfaceView extends Renderable3D {
+export class WaveFunctionView extends Renderable3D {
     static vertexShader = `
         attribute vec3 color;
         attribute float alpha;
@@ -213,8 +213,8 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         const { width, height } = this.resolution(field);
         const geometry = new PlaneGeometry(1, 1, width, height);
         const material = new ShaderMaterial({
-            vertexShader: DiscreteComplexFieldSurfaceView.vertexShader,
-            fragmentShader: DiscreteComplexFieldSurfaceView.fragmentShader,
+            vertexShader: WaveFunctionView.vertexShader,
+            fragmentShader: WaveFunctionView.fragmentShader,
             transparent: true,
             side: DoubleSide,
             uniforms: {
