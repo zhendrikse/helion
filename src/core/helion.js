@@ -325,7 +325,7 @@ export class Simulation {
         padding = 1.2,
         translationY = 0,
         minDistance = 2,
-        viewDirection = new Vector3(1, 1, 1)
+        viewDirection = new Vec3(1, 1, 1)
     } = {}) {
         if (!anObject.boundingBox)
             throw new Error('Trying to provide axes for an object that does not have a boundingBox property');
