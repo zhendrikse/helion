@@ -327,10 +327,11 @@ export class ComplexSurfaceView2D extends Renderable2D {
         super();
         this._brightness = brightness;
         this._colorMapper = colorMapper;
-        this._defaultResolution = defaultResolution;
+        this._resolution = defaultResolution;
         this._rgb = new Color();
         this._sample = new ComplexFunctionSample();
         this._colorData = { phase: 0, modulus: 0 }
+        this._fieldIsDiscrete = false;
 
         this._mesh = null;    // To be determined in initialize()
         this._pixels = null;  // To be determined in initialize()
@@ -338,17 +339,20 @@ export class ComplexSurfaceView2D extends Renderable2D {
         this._phaseColor = showPhaseColour;
     }
 
-    _getResolution(surface) {
-        return surface.nativeResolution ?? this._defaultResolution;
+    resolution(field) {
+        return {
+            width: this._fieldIsDiscrete ? field.nx : this._resolution.u,
+            height: this._fieldIsDiscrete ? field.ny : this._resolution.v,
+        }
     }
 
-    initialize(complexSurface) {
-        const { u, v } = this._getResolution(complexSurface);
-        const pixels = new Uint8Array((u + 1) * (v + 1) * 4);
-        const texture = new DataTexture(pixels, u + 1, v + 1, RGBAFormat);
+    initialize(field) {
+        const { width, height } = this.resolution(field);
+        const pixels = new Uint8Array((width + 1) * (height + 1) * 4);
+        const texture = new DataTexture(pixels, width + 1, height + 1, RGBAFormat);
         texture.needsUpdate = true;
         this._mesh = new Mesh(
-            new PlaneGeometry(u, v),
+            new PlaneGeometry(width, height),
             new MeshBasicMaterial({ map: texture, transparent: true })
         );
         this.add(this._mesh);
@@ -357,9 +361,16 @@ export class ComplexSurfaceView2D extends Renderable2D {
         this._texture = texture;
     }
 
-    canBindTo(complexSurface) {
-        if (!complexSurface.sample)
-            throw new Error("Complex discrete surface view needs sample() method");
+    canBindTo(field) {
+        this._fieldIsDiscrete = field.nx !== undefined && field.ny !== undefined;
+
+        if (this._fieldIsDiscrete)
+            if (!field.valueAt)
+                throw new Error("Surface view needs fieldAt() method on discrete field to obtain data");
+            else
+            if (!field.sample)
+                throw new Error("Surface view needs sample() method on continuous field to obtain data");
+
         return true;
     }
 
@@ -376,14 +387,19 @@ export class ComplexSurfaceView2D extends Renderable2D {
     set brightness(brightness) { this._brightness = brightness; }
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
-    synchronizeWith(complexSurface) {
-        const { u, v } = this._getResolution(complexSurface);
+    synchronizeWith(field) {
+        const { width, height } = this.resolution(field);
+        const sample = this._sample;
         let index = 0;
-        for (let y = 0; y <= u; y++)
-            for (let x = 0; x <= v; x++) {
-                complexSurface.sample(x / u, y / v, this._sample);
-                const phase = this._sample.phase;
-                const modulus = this._sample.magnitude;
+
+        for (let y = 0; y <= width; y++)
+            for (let x = 0; x <= height; x++) {
+                if (this._fieldIsDiscrete)
+                    field.valueAt(x, y, sample);
+                else
+                    field.sample(x / width, y / height, sample);
+                const phase = sample.phase;
+                const modulus = sample.magnitude;
                 let brightness = modulus * this._brightness;
                 if (brightness > 1.0) brightness = 1.0;
 

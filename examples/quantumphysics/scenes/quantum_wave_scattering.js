@@ -3,7 +3,6 @@ import {
     SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField,
     ShapeConfiguration, Softness, Potential, ComplexSurfaceView2D, DiscreteFieldSurfaceView, SurfaceResolution,
 } from "../../../src/index.js";
-import {DiscreteComplexFieldSurface} from "../../../src/model/math/surfaces.js";
 
 let xMax = 400,
     width = xMax,
@@ -12,7 +11,6 @@ const dt = 0.24;		// anything less than 0.25 seems to be stable
 
 const potential = new DiscreteScalarField({ nx: xMax, ny: xMax });
 const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
-const psiSurface = new DiscreteComplexFieldSurface(psi);
 const solver = new SchrodingerSolver(potential);
 const gaussianImpulse = new GaussianImpulseComplex2D();
 
@@ -55,8 +53,8 @@ const simulation = Simulation
         }
     })
     .appendStartStopResetUI()
-    .bind(psiSurface.alwaysWith(waveFunctionSurface))
-    .bind(psiSurface.alwaysWith(waveFunctionSurface2d))
+    .bind(psi.alwaysWith(waveFunctionSurface))
+    .bind(psi.alwaysWith(waveFunctionSurface2d))
     .bind(potential.onceWith(potentialBarrier))
     .bind(potential.onceWith(potentialBarrier2d))
     .onReset(() => reset(shapeConfiguration, potentialStrength, softness))

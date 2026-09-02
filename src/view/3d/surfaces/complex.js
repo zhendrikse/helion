@@ -178,7 +178,8 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         zScale = 20,
         showPhaseColor = true,
         brightness = 1,
-        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Domain)
+        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Domain),
+        defaultResolution = new SurfaceResolution(400, 400)
     } = {}) {
         super();
         this._showPhaseColor = showPhaseColor;
@@ -188,6 +189,8 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         this._rgb = new Color();
         this._sample = new ComplexFunctionSample();
         this._colorData = { phase: 0, modulus: 0 }
+        this._fieldIsDiscrete = false;
+        this._resolution = defaultResolution;
 
         this._mesh = null;      // To be determined at initialize()
         this._positions = null; // To be determined at initialize()
@@ -199,9 +202,15 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
     set zScale(value) { this._zScale = value; }
     get zScale() { return this._zScale; }
 
-    initialize(complexSurface) {
-        const width = complexSurface.nativeResolution.u;
-        const height = complexSurface.nativeResolution.v;
+    resolution(field) {
+        return {
+            width: this._fieldIsDiscrete ? field.nx : this._resolution.u,
+            height: this._fieldIsDiscrete ? field.ny : this._resolution.v,
+        }
+    }
+
+    initialize(field) {
+        const { width, height } = this.resolution(field);
         const geometry = new PlaneGeometry(1, 1, width, height);
         const material = new ShaderMaterial({
             vertexShader: DiscreteComplexFieldSurfaceView.vertexShader,
@@ -224,9 +233,8 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         geometry.setAttribute("alpha", new BufferAttribute(this._alphas, 1));
     }
 
-    synchronizeWith(complexSurface) {
-        const resolutionU = complexSurface.nativeResolution.u;
-        const resolutionV = complexSurface.nativeResolution.v;
+    synchronizeWith(field) {
+        const { width, height } = this.resolution(field);
         const zScale = this._zScale;
         const showPhaseColor = this._showPhaseColor;
 
@@ -235,21 +243,25 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         const alphas = this._alphas;
         const sample = this._sample;
         const rgb = this._rgb;
+        const isDiscrete = this._fieldIsDiscrete;
 
-        const xOffset = resolutionU / 2;
-        const yOffset = resolutionV / 2;
-        for (let y = 0; y <= resolutionV; y++) {
+        const xOffset = width / 2;
+        const yOffset = height / 2;
+        for (let y = 0; y <= height; y++) {
             const z = y - yOffset;
 
-            for (let x = 0; x <= resolutionU; x++) {
-                const i = y * resolutionU + x;
+            for (let x = 0; x <= width; x++) {
+                const i = y * height + x;
                 const colorIndex = i * 3;
 
-                complexSurface.sample(x / resolutionU, y / resolutionV, sample);
+                if (isDiscrete)
+                    field.valueAt(x, y, sample);
+                else
+                    field.sample(x / width, y / height, sample);
                 const modulus = sample.magnitude;
-                const height = Math.log1p(20 * modulus);
+                const displayHeight = Math.log1p(20 * modulus);
 
-                pos.setXYZ(i, x - xOffset, height * zScale, z);
+                pos.setXYZ(i, x - xOffset, displayHeight * zScale, z);
 
                 this._colorData.phase = showPhaseColor ? sample.phase : 0.65;
                 this._colorData.modulus = modulus;
@@ -268,10 +280,16 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         this._mesh.geometry.attributes.alpha.needsUpdate = true;
     }
 
+    canBindTo(field) {
+        this._fieldIsDiscrete = field.nx !== undefined && field.ny !== undefined;
 
-    canBindTo(complexSurface) {
-        if (!complexSurface.sample)
-            throw new Error("Surface view needs sample() method to obtain data");
+        if (this._fieldIsDiscrete)
+            if (!field.valueAt)
+                throw new Error("Surface view needs fieldAt() method on discrete field to obtain data");
+            else
+            if (!field.sample)
+                throw new Error("Surface view needs sample() method on continuous field to obtain data");
+
         return true;
     }
 }
