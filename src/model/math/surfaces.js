@@ -2,7 +2,6 @@ import {Domain} from "./fields.js";
 import {Vec2} from "./math.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
-import {SurfaceResolution} from "../../view/3d/surfaces/visualization.js";
 
 /**
  * Mathematical definition of a surface.
