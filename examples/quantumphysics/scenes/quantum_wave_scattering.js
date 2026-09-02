@@ -59,8 +59,8 @@ const simulation = Simulation
         }
     })
     .appendStartStopResetUI()
-    .bind(psi.alwaysWith(waveFunctionSurface))
-    .bind(psi.alwaysWith(waveFunctionSurface2d))
+    .bind(psiSurface.alwaysWith(waveFunctionSurface))
+    .bind(psiSurface.alwaysWith(waveFunctionSurface2d))
     .bind(potential.onceWith(potentialBarrier))
     .bind(potential.onceWith(potentialBarrier2d))
     .onReset(() => reset(shapeConfiguration, potentialStrength, softness))

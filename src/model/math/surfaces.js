@@ -123,4 +123,8 @@ export class DiscreteComplexFieldSurface extends ComplexFieldSurface {
     frameAt(i, j, complexFunctionSample) {
         this._field.valueAt(i, j, complexFunctionSample);
     }
+
+    get nx() { return this._field.nx; }
+    get ny() { return this._field.ny; }
+    index(i, j) { return this._field.index(i, j); }
 }

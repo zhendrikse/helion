@@ -42,9 +42,9 @@ export class ContinuousComplexFieldView extends Renderable3D {
 
     set maxHeight(value) { this._maxHeight = value; }
 
-    canBindTo(model) {
-        if (!model.sample)
-            throw new Error("Surface visualization needs sample(), which is not supported by the current model.");
+    canBindTo(complexSurface) {
+        if (!complexSurface.frameAt)
+            throw new Error("Surface visualization needs frameAt(), which is not supported by the current model.");
         return true;
     }
 
@@ -56,7 +56,7 @@ export class ContinuousComplexFieldView extends Renderable3D {
 
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
-                model.sample(u, v, this._sample);
+                model.frameAt(u, v, this._sample);
                 const modulus = this._maxHeight * Math.tanh(this._sample.abs / this._maxHeight);
                 this._normalizer.include(modulus);
             }
@@ -79,14 +79,14 @@ export class ContinuousComplexFieldView extends Renderable3D {
         this._colors.setXYZ(index, this._color.r, this._color.g, this._color.b);
     }
 
-    synchronizeWith(model) {
-        this.setValueRange(model);
+    synchronizeWith(complexSurface) {
+        this.setValueRange(complexSurface);
         let index = 0;
         for (let i = 0; i <= this._resolution.u; i++) {
             const u = i / this._resolution.u;
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
-                model.sample(u, v, this._sample);
+                complexSurface.sample(u, v, this._sample);
                 this.updateMeshAt(index++);
             }
         }
@@ -195,7 +195,7 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
 
         for (let y = 0; y < field.ny; y++) {
             for (let x = 0; x < field.nx; x++) {
-                field.valueAt(x, y, this._sample);
+                field.frameAt(x, y, this._sample);
                 const modulus = this._sample.magnitude;
                 const phase = this._sample.phase;
 

@@ -346,8 +346,8 @@ export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
         this._phaseColor = showPhaseColour;
     }
 
-    canBindTo(field) {
-        if (!(field.valueAt && field.nx && field.ny))
+    canBindTo(complexSurface) {
+        if (!(complexSurface.frameAt && complexSurface.nx && complexSurface.ny))
             throw new Error("Complex discrete surface view needs valueAt() method");
         return true;
     }
@@ -365,11 +365,11 @@ export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
     set brightness(brightness) { this._brightness = brightness; }
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
-    synchronizeWith(field) {
+    synchronizeWith(complexSurface) {
         let index = 0;
         for (let y = 0; y < this._width; y++)
             for (let x = 0; x < this._height; x++) {
-                field.valueAt(x, y, this._sample);
+                complexSurface.frameAt(x, y, this._sample);
                 const phase = this._sample.phase;
                 const modulus = this._sample.magnitude;
                 let brightness = modulus * this._brightness;
