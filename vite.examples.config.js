@@ -71,6 +71,7 @@ export default defineConfig({
                 three_body: path.resolve(__dirname, 'examples/kinematics/scenes/three_body.js'),
                 travelling_wave: path.resolve(__dirname, 'examples/waves/scenes/travelling_wave.js'),
                 two_dim_infinite_square_well: path.resolve(__dirname, 'examples/quantumphysics/scenes/two_dim_infinite_square_well.js'),
+                vector_fields: path.resolve(__dirname, 'examples/mathematics/scenes/vector_fields.js'),
                 vibrating_membrane: path.resolve(__dirname, 'examples/waves/scenes/vibrating_membrane.js'),
                 water_molecule: path.resolve(__dirname, 'examples/molecularphysics/scenes/water_molecule.js'),
                 water_sprinkler: path.resolve(__dirname, 'examples/nature/scenes/water_sprinkler.js'),
