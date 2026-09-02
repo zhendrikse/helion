@@ -7,6 +7,9 @@ import {MathPhysicsModelBehavior} from "../../core/helion.js";
  * Mathematical definition of a surface.
  */
 export class Surface extends MathPhysicsModelBehavior {
+    get sampleResolution() {
+        return null;  // Null means ==> I do not have a natural sampling resolution (e.g. continuous field)
+    }
 }
 
 export class DifferentiableSurface extends Surface {

@@ -65,13 +65,13 @@ export class ContinuousComplexFieldView extends Renderable3D {
 
     updateMeshAt(index) {
         // --- compress modulus to prevent poles from dominating the height ---
-        const modulus = this._maxHeight * Math.tanh(this._sample.output.abs / this._maxHeight);
+        const modulus = this._maxHeight * Math.tanh(this._sample.abs / this._maxHeight);
         this._positions.array[index * 3] = this._sample.input.re;
         this._positions.array[index * 3 + 1] = modulus;
         this._positions.array[index * 3 + 2] = this._sample.input.im;
 
         const value = {
-            phase: this._sample.output.phase,
+            phase: this._sample.phase,
             modulus: this._normalizer.normalize(modulus)
         };
 
@@ -191,8 +191,8 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
     get zScale() { return this._zScale; }
 
     synchronizeWith(complexSurface) {
-        const u = this._resolution.u;
-        const v = this._resolution.v;
+        const resolutionU = this._resolution.u;
+        const resolutionV = this._resolution.v;
         const zScale = this._zScale;
         const showPhaseColor = this._showPhaseColor;
 
@@ -200,30 +200,28 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         const colors = this._colors;
         const alphas = this._alphas;
         const sample = this._sample;
-        const colorMapper = this._colorMapper;
         const rgb = this._rgb;
 
-        const xOffset = u / 2;
-        const yOffset = v / 2;
-        for (let y = 0; y < v; y++) {
+        const xOffset = resolutionU / 2;
+        const yOffset = resolutionV / 2;
+        for (let y = 0; y < resolutionV; y++) {
             const z = y - yOffset;
 
-            for (let x = 0; x < u; x++) {
-                const i = y * u + x;
+            for (let x = 0; x < resolutionU; x++) {
+                const i = y * resolutionU + x;
                 const colorIndex = i * 3;
 
                 complexSurface.frameAt(x, y, sample);
                 const modulus = sample.magnitude;
-                const phase = sample.phase;
                 const height = Math.log1p(20 * modulus);
 
                 pos.setXYZ(i, x - xOffset, height * zScale, z);
 
-                const lighting = 0.6 + 0.4 * Math.cos(phase);
+                const lighting = 0.6 + 0.4 * Math.cos(sample.phase);
                 const intensity = Math.pow(modulus, 0.45) * lighting;
-                this._colorData.phase = showPhaseColor ? phase : 0.65;
+                this._colorData.phase = showPhaseColor ? sample.phase : 0.65;
                 this._colorData.modulus = modulus;
-                colorMapper.map(this._colorData, rgb);
+                this._colorMapper.map(this._colorData, rgb);
                 colors[colorIndex]     = rgb.r * intensity;
                 colors[colorIndex + 1] = rgb.g * intensity;
                 colors[colorIndex + 2] = rgb.b * intensity;

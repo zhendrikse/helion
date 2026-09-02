@@ -154,7 +154,7 @@ export class DiscreteScalarField extends ScalarField {
 /**
  * Discrete complex scalar field, i.e. a complex scalar field on a grid.
  */
-export class DiscreteComplexField extends ScalarField {
+export class DiscreteComplexField extends ComplexField {
     constructor({
         nx = 128,
         ny = 128,
@@ -195,14 +195,14 @@ export class DiscreteComplexField extends ScalarField {
 
     sample(u, v, complexFunctionSample) {
         // bilinear interpolation
-        const x = u * (this._nx - 1);
-        const y = v * (this._ny - 1);
+        const x = u * (this.nx - 1);
+        const y = v * (this.ny - 1);
 
         const x0 = Math.floor(x);
         const y0 = Math.floor(y);
 
-        const x1 = Math.min(x0 + 1, this._nx - 1);
-        const y1 = Math.min(y0 + 1, this._ny - 1);
+        const x1 = Math.min(x0 + 1, this.nx - 1);
+        const y1 = Math.min(y0 + 1, this.ny - 1);
 
         const tx = x - x0;
         const ty = y - y0;
@@ -217,7 +217,10 @@ export class DiscreteComplexField extends ScalarField {
         const i0 = this.imag[i00] * (1 - tx) + this.imag[i10] * tx;
         const i1 = this.imag[i01] * (1 - tx) + this.imag[i11] * tx;
 
-        complexFunctionSample.re = r0 * (1 - ty) + r1 * ty;
-        complexFunctionSample.im = i0 * (1 - ty) + i1 * ty;
+        complexFunctionSample.input.re = x;
+        complexFunctionSample.input.im = y;
+
+        complexFunctionSample.output.re = r0 * (1 - ty) + r1 * ty;
+        complexFunctionSample.output.im = i0 * (1 - ty) + i1 * ty;
     }
 }
