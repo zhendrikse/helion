@@ -125,42 +125,191 @@ State is transformed by Operators
 ## Fields, Surfaces and Views
 <div class="header_line"></div>
 
-**Field** — a mathematical object with `sample(u, v, target)` (continuous) or `valueAt(i, j, target)` (discrete). The `target` is written into (duck typing): a number, a `Complex`, or a `Vec3`.
+The Field/Surface/View architecture is designed around a simple distinction:
 
-- `Field` — abstract `sample(u, v, target)`
-- `DiscreteScalarField` — grid `Float32Array`, `valueAt(x,y)`, `sample` via bilinear interpolation
-- `DiscreteComplexField` — two `Float32Array`s, `valueAt(i,j,target: Complex)`
-- `VectorField` — `sample(positionVector, target)`
+> **A Field describes values. A Surface describes geometry. A View describes how those values and that geometry are rendered.**
 
-**Surface** — a representation of a field, still a mathematical object. Base `Surface` exposes `frameAt(u, v, target)` via `DifferentialGeometry` (positions, normals, curvatures `k1/k2`, principal directions `d1/d2`).
+A Surface is useful, but it is not a mandatory intermediary between a Field and a View.
 
-- `ParametricSurface` — `(u,v) → (x,y,z)` over a `Domain`
-- `MultivariateFunctionSurface` — `z(x, y, t)` with animatable `time`
-- `ComplexSurface` — `sample` writes `Complex`
-- `DiscreteFieldSurface` — adapter that wraps a `DiscreteScalarField` and implements `frameAt` with `valueAt` + central-difference `_normalAt`, so a raster field can be rendered as a continuous surface
+### Field
 
-This adapter is the unification layer. The 3D view does not need to know whether the surface is analytic or discrete:
+A **Field** is a mathematical object that answers the question:
+
+> What is the value of this field at a given parameter or grid location?
+
+Continuous fields provide a parameter-space operation such as:
 
 ```js
-SurfaceVisualization.canBindTo = model => typeof model.frameAt === "function"
+field.sample(u, v, target);
 ```
 
-For complex discrete fields the same pattern is planned as `DiscreteComplexFieldSurface` (height = `|z|` or `Re(z)`, phase as color).
+Discrete fields additionally expose their native grid:
 
-**View** — rendering only. Checked via `canBindTo`:
-
-- `SurfaceVisualization` + `SurfaceResolution` + `FixedIntervalNormalizer` + layers (`HeightLayer`, `ColorLayer`, `ContoursLayer`, `PrincipalDirectionsLayer`) — for anything with `frameAt`
-- `ComplexScalarFieldSurfaceRaster` / `PotentialField3DRaster` — legacy discrete rasters that bind via `valueAt`
-- `ScalarFieldIntensityPixelRaster`, `ComplexScalarFieldRaster` — 2D canvas rasters
-
-Sampling always goes through the surface:
-
+```js
+field.valueAt(i, j, target);
+field.nx;
+field.ny;
 ```
-View.synchronizeWith()
-  → Surface.frameAt(u, v, frame)
-    → DifferentialGeometry or discrete _normalAt
-  → Layer builds Three.js geometry
+
+The distinction between continuous and discrete fields should remain an implementation detail of the data-access layer, rather than something that every View has to understand.
+
+The intended common abstraction is a field sampling/grid capability, for example:
+
+```js
+field.sampleGrid(resolution, target);
 ```
+
+or an equivalent iterator over samples. The important contract is that the Field chooses the most appropriate representation:
+
+- A continuous field samples its mathematical function at the requested resolution.
+- A discrete field uses its **native grid directly** when that grid is suitable.
+- A discrete field must not be needlessly resampled merely because a View asks for a raster.
+
+This is particularly important for large numerical simulations: the existing grid is already the data representation, so interpolating it into another grid only to render it wastes CPU and memory.
+
+Current examples include:
+
+- `Field` — common field abstraction
+- `ScalarField` — real-valued field
+- `ComplexField` — complex-valued field
+- `VectorField` — vector-valued field
+- `MultivariateFunction` — continuous scalar field over a `Domain`
+- `ComplexFunction` — continuous complex field over a `Domain`
+- `DiscreteScalarField` — scalar values stored on a native grid
+- `DiscreteComplexField` — complex values stored on native real/imaginary grids
+
+### Surface
+
+A **Surface** is a geometrical embedding or sampling layer. It answers questions that a Field alone does not answer:
+
+> Where does this value live in 3D space, and what is the local geometry there?
+
+A genuine Surface can provide information such as:
+
+```js
+surface.frameAt(u, v, frame);
+```
+
+where the frame may contain position, normal, curvature, and principal directions through `DifferentialGeometry`.
+
+Examples include:
+
+- `ParametricSurface` — `(u, v) → (x, y, z)` over a `Domain`
+- `ScalarFieldSurface` — embeds a scalar field as a height surface
+- `DiscreteFieldSurface` — derives positions and normals from a native scalar grid
+
+The important architectural point is that a Surface is **not simply a wrapper around a Field**. A class whose only purpose is to delegate `sample()` to a Field does not add meaningful geometry and should not be required merely to make the Field visualizable.
+
+Thus a `ComplexFieldSurface`-style adapter should not be the normal route for visualizing a complex field. Complex fields should be directly bindable to Views, while a genuine Surface can still be supplied when a particular geometric embedding is desired.
+
+### Two paths to visualization
+
+The public API should support both of these paths:
+
+```text
+                         Field
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+        direct visualization      optional geometry
+              │                         │
+              ▼                         ▼
+        FieldView2D/3D               Surface
+                                        │
+                                   frameAt(u,v)
+                                        │
+                                        ▼
+                                   FieldView3D
+```
+
+For ordinary field visualization, the user should be able to write:
+
+```js
+field.alwaysWith(new FieldView2D());
+field.alwaysWith(new FieldView3D());
+```
+
+without first constructing a Surface.
+
+When geometric information is meaningful, a Surface remains available as an explicit layer:
+
+```js
+const surface = new ParametricSurface({ ... });
+
+surface.alwaysWith(new FieldView3D({ field }));
+```
+
+The exact API may evolve, but the architectural rule remains: **a Field does not need to become a Surface in order to be rendered.**
+
+### View
+
+A **View** is responsible for rendering, not for deciding whether its model is continuous or discrete.
+
+The target public API should converge on two general-purpose field Views:
+
+- `FieldView2D` — 2D visualization of scalar, complex, and other supported field values
+- `FieldView3D` — 3D visualization, optionally using Surface geometry
+
+The View should ask the model for the representation it needs rather than branching on concrete field types:
+
+```js
+view.canBindTo(model);
+view.initialize(model);
+view.synchronizeWith(model);
+```
+
+Continuous versus discrete data should therefore be handled by the Field's data-access strategy, not by a proliferation of View classes.
+
+This replaces the need for separate public Views such as:
+
+```text
+DiscreteFieldSurfaceView
+DiscreteComplexFieldSurfaceView2D
+ContinuousComplexFieldView
+DiscreteComplexFieldSurfaceView
+...
+```
+
+where those distinctions exist primarily because the source representation differs.
+
+### Native grids versus sampling
+
+There are two fundamentally different rendering cases:
+
+```text
+Continuous field
+    │
+    └── sample at View resolution
+             │
+             ▼
+        rendering grid
+
+Discrete field
+    │
+    └── native grid
+             │
+             ▼
+        rendering grid
+```
+
+A discrete field should normally render its existing grid directly. A continuous field has no native raster, so the View or Field sampling layer must create one at an appropriate resolution.
+
+This principle applies equally to real-valued and complex-valued fields. It should not be special-cased for complex fields.
+
+### Architectural boundary
+
+The resulting responsibilities are:
+
+| Layer | Responsibility |
+|-------|----------------|
+| **Field** | Values, domain, resolution, and efficient access to continuous or native-grid data |
+| **Surface** | Optional geometric embedding, position, normals, and differential geometry |
+| **View** | Rendering values and, when present, geometry |
+| **Renderer** | Three.js/WebGL mechanics and scene rendering |
+
+The key rule is:
+
+> **A Field is directly visualizable. A Surface is optional geometry, not a mandatory adapter.**
 
 ## Simulation and Binding
 <div class="header_line"></div>
@@ -214,8 +363,8 @@ src/
   core/helion.js              Simulation, Binding, Viewport, SimulationClock, Registry
   core/controls.js            Slider, DropdownMenu, Checkbox, RadioGroup, Button
   model/math/math.js          Vec2, Vec3, Complex, Interval, Range, Domain
-  model/math/fields.js        Field, DiscreteScalarField, DiscreteComplexField
-  model/math/surfaces.js      Surface, ParametricSurface, ComplexSurface, DiscreteFieldSurface
+  model/math/fields.js        Field, ScalarField, ComplexField, DiscreteScalarField, DiscreteComplexField
+  model/math/surfaces.js      Surface, ParametricSurface, ScalarFieldSurface, DiscreteFieldSurface
   model/math/numerics/        DifferentialGeometry, solvers, integrators
   model/phys/bodies.js        Body, RadialSymmetricBody, Block, Lattice, BodyPair
   model/phys/forces.js        Force, GravitationalForce, CoulombForce, SpringForce
@@ -224,7 +373,7 @@ src/
   view/3d/renderer.js         ThreeJsRenderer
   view/3d/primitives/         Sphere, Box, Arrow, Trail, VectorView, …
   view/3d/composite/          PointCloudView, LatticeView, …
-  view/2d/views.js            2D rasters
+  view/2d/views.js             2D field views and raster views
 ```
 
 Conceptually:
@@ -232,9 +381,11 @@ Conceptually:
 ```
 Mathematical layer   Field, Surface, DifferentialGeometry
         ↓
-Discretization       Domain, SurfaceResolution, sampling grids
+Data representation  Continuous sampling or native discrete grids
         ↓
-View layer           SurfaceVisualization, layers, color mappers
+Geometry (optional)  Surface embedding, frames, normals, curvature
+        ↓
+View layer           FieldView2D, FieldView3D, layers, color mappers
         ↓
 Rendering            ThreeJsRenderer, materials, shaders
         ↓
@@ -242,6 +393,28 @@ Simulation           Simulation, Binding, clock, controls
 ```
 
 The physics/simulation layers know nothing about visual scale; the render layer maps physics units to world units via `Simulation.with({ scale })`.
+
+## Migration direction
+<div class="header_line"></div>
+
+The architecture is intended to evolve without breaking existing examples in one step.
+
+1. Introduce the common Field data-access capability for rendering continuous samples and native discrete grids.
+2. Make the new 2D and 3D field Views bind directly to Fields.
+3. Keep Surface for genuine geometric use cases such as parametric geometry, height surfaces, normals, and differential geometry.
+4. Update real-valued and complex-valued examples to use direct Field → View binding where no geometric Surface is required.
+5. Preserve existing Surface/View classes temporarily as compatibility adapters or aliases while examples migrate.
+6. Remove redundant specialized Views and thin Field→Surface adapters once the public API no longer depends on them.
+
+The goal is not to eliminate abstractions, but to place each abstraction where it provides real value:
+
+```text
+Field       = what value exists?
+Surface     = where is it, and what is its geometry?
+View        = how should it be rendered?
+```
+
+This keeps the mathematical model natural, preserves native-grid performance, and prevents the rendering API from being shaped by implementation details of the underlying data representation.
 
 ## Further reading
 
