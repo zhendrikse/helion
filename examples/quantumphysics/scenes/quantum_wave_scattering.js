@@ -107,5 +107,5 @@ function setDimension(dimension3d = true) {
     potentialBarrier2d.visible = !dimension3d;
     simulation.cameraPosition = dimension3d ?
         new Vec3(-1, .7, .75).multiplyScalar(.75 * xMax) :
-        new Vec3(0, 0, xMax)
+        new Vec3(0, 0, xMax * 2)
 }
