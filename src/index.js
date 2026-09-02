@@ -19,7 +19,7 @@ export {
 } from "./model/transformations/operators.js";
 
 export {
-    ParticleCloudView, DiscreteFieldSurfaceView, DiscreteComplexFieldSurfaceView2D,
+    ParticleCloudView, DiscreteFieldSurfaceView, ComplexSurfaceView2D,
     FieldEdgeIntensityPixelRaster
 } from "./view/2d/views.js";
 
@@ -38,7 +38,7 @@ export {
     ComplexFunctionSample
 } from "./model/math/fields.js";
 
-export { ContinuousComplexFieldView, DiscreteComplexFieldSurfaceView } from "./view/3d/surfaces/complex.js";
+export { ComplexSurfaceView3D, DiscreteComplexFieldSurfaceView } from "./view/3d/surfaces/complex.js";
 export { ThreeJsScene } from "./view/3d/scene.js";
 export { SphereSphereCollision } from "./model/transformations/interactions.js";
 export { BarrierWaveEquation } from "./model/math/equations.js";

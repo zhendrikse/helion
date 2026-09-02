@@ -8,7 +8,7 @@ import {SurfaceResolution} from "../../view/3d/surfaces/visualization.js";
  * Mathematical definition of a surface.
  */
 export class Surface extends MathPhysicsModelBehavior {
-    get sampleResolution() {
+    get nativeResolution() {
         return null;  // Null means ==> I do not have a natural sampling resolution (e.g. continuous field)
     }
 }
@@ -40,7 +40,7 @@ export class ComplexFieldSurface extends Surface {
 }
 
 export class DiscreteComplexFieldSurface extends ComplexFieldSurface {
-    get sampleResolution() {
+    get nativeResolution() {
         return new SurfaceResolution(this._field.nx, this._field.ny);
     }
 

@@ -1,7 +1,7 @@
 import {
     DiscreteComplexFieldSurfaceView, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
     SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField,
-    ShapeConfiguration, Softness, Potential, DiscreteComplexFieldSurfaceView2D, DiscreteFieldSurfaceView, SurfaceResolution,
+    ShapeConfiguration, Softness, Potential, ComplexSurfaceView2D, DiscreteFieldSurfaceView, SurfaceResolution,
 } from "../../../src/index.js";
 import {DiscreteComplexFieldSurface} from "../../../src/model/math/surfaces.js";
 
@@ -30,7 +30,7 @@ function reset(shapeConfig, potentialStrength, softness) {
 const waveFunctionSurface = new DiscreteComplexFieldSurfaceView();
 const potentialBarrier = new DiscreteFieldBoxView({ width, height });
 
-const waveFunctionSurface2d = new DiscreteComplexFieldSurfaceView2D();
+const waveFunctionSurface2d = new ComplexSurfaceView2D();
 const potentialBarrier2d = new DiscreteFieldSurfaceView({
     resolution: new SurfaceResolution(width, height)
 });

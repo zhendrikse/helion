@@ -317,34 +317,38 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     }
 }
 
-export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
+export class ComplexSurfaceView2D extends Renderable2D {
     constructor({
         showPhaseColour = true,
         brightness = 1,
-        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl)
+        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl),
+        defaultResolution = new SurfaceResolution(200, 200),
     } = {}) {
         super();
         this._brightness = brightness;
         this._colorMapper = colorMapper;
+        this._defaultResolution = defaultResolution;
         this._rgb = new Color();
         this._sample = new ComplexFunctionSample();
         this._colorData = { phase: 0, modulus: 0 }
 
-        this._mesh = null;
-        this._pixels = null;
-        this._texture = null;
+        this._mesh = null;    // To be determined in initialize()
+        this._pixels = null;  // To be determined in initialize()
+        this._texture = null; // To be determined in initialize()
         this._phaseColor = showPhaseColour;
     }
 
-    initialize(complexSurface) {
-        const width = complexSurface.sampleResolution.u;
-        const height = complexSurface.sampleResolution.v;
+    _getResolution(surface) {
+        return surface.nativeResolution ?? this._defaultResolution;
+    }
 
-        const pixels = new Uint8Array(width * height * 4);
-        const texture = new DataTexture(pixels,  width, height, RGBAFormat);
+    initialize(complexSurface) {
+        const { u, v } = this._getResolution(complexSurface);
+        const pixels = new Uint8Array((u + 1) * (v + 1) * 4);
+        const texture = new DataTexture(pixels, u + 1, v + 1, RGBAFormat);
         texture.needsUpdate = true;
         this._mesh = new Mesh(
-            new PlaneGeometry(width, height),
+            new PlaneGeometry(u, v),
             new MeshBasicMaterial({ map: texture, transparent: true })
         );
         this.add(this._mesh);
@@ -373,12 +377,11 @@ export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
     synchronizeWith(complexSurface) {
-        const width = complexSurface.sampleResolution.u;
-        const height = complexSurface.sampleResolution.v;
+        const { u, v } = this._getResolution(complexSurface);
         let index = 0;
-        for (let y = 0; y < width; y++)
-            for (let x = 0; x < height; x++) {
-                complexSurface.sample(x / width, y / height, this._sample);
+        for (let y = 0; y <= u; y++)
+            for (let x = 0; x <= v; x++) {
+                complexSurface.sample(x / u, y / v, this._sample);
                 const phase = this._sample.phase;
                 const modulus = this._sample.magnitude;
                 let brightness = modulus * this._brightness;

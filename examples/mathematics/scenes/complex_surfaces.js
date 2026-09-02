@@ -1,6 +1,6 @@
 import {
-    Simulation, DropdownMenu, Domain, Registry, Range, ContinuousComplexFieldView,
-    SurfaceResolution, ComplexFunction, Complex, Slider, ComplexFieldSurface
+    Simulation, DropdownMenu, Domain, Registry, Range, ComplexSurfaceView3D,
+    SurfaceResolution, ComplexFunction, Complex, Slider, ComplexFieldSurface, ComplexSurfaceView2D, RadioGroup, Vec3
 } from "../../../src/index.js";
 
 const one = new Complex(1, 0);
@@ -8,19 +8,19 @@ const two = new Complex(2, 0);
 const eps = new Complex(0.01, 0);
 
 const functions = {
-    "z * z * z + 2": {
-        "function": new ComplexFunction({
-            domain: new Domain([-2, 2], [-2, 2]),
-            func: z => z.clone().multiply(z).multiply(z).add(two)
-        }),
-        "latex": "z^3+2"
-    },
     "z * z + 2": {
         "function": new ComplexFunction({
             domain: new Domain([-2, 2], [-2, 2]),
             func: z => z.multiply(z).add(two)
         }),
         "latex": "z^2+2"
+    },
+    "z * z * z + 2": {
+        "function": new ComplexFunction({
+            domain: new Domain([-2, 2], [-2, 2]),
+            func: z => z.clone().multiply(z).multiply(z).add(two)
+        }),
+        "latex": "z^3+2"
     },
     "z * z_bar": {
         "function": new ComplexFunction({
@@ -81,22 +81,31 @@ const functionsRegistry = new Registry({
 class SurfaceController {
     constructor(simulation) {
         this._simulation = simulation;
+        this._dimension3d = true;
     }
 
     changeSurface(surfaceId) {
         const func = functionsRegistry.get(surfaceId).function;
         const surface = new ComplexFieldSurface(func);
         this._simulation.bind(surface.onceWith(surfaceView));
-        this._simulation.provideAxesAround(surfaceView);
-        this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
+        if (this._dimension3d) {
+            this._simulation.provideAxesAround(surfaceView);
+            this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
+        }
         this._simulation.setLatexTitle("\\Large{f(z) = " + functionsRegistry.get(surfaceId).latex + "}");
     }
+
+    set dimension3d(value) { this._dimension3d = value; }
 
     set animate(value) { this._animate = value; }
 }
 
-const surfaceView = new ContinuousComplexFieldView({
-        resolution: new SurfaceResolution(200, 200)
+const surfaceView = new ComplexSurfaceView3D({
+    defaultResolution: new SurfaceResolution(400, 400)
+});
+
+const surfaceView2D = new ComplexSurfaceView2D({
+    defaultResolution: new SurfaceResolution(400, 400)
 });
 
 const simulation = Simulation
@@ -118,11 +127,26 @@ const simulation = Simulation
         parameterMenuCollapsed: false
     });
 
+
+function setDimension(dimension3d = true) {
+    waveFunctionSurface.visible = dimension3d;
+    potentialBarrier.visible = dimension3d;
+    waveFunctionSurface2d.visible = !dimension3d;
+    potentialBarrier2d.visible = !dimension3d;
+    simulation.cameraPosition = dimension3d ?
+        new Vec3(-1, .7, .75).multiplyScalar(.75 * xMax) :
+        new Vec3(0, 0, xMax)
+}
+
 const surfaceController = new SurfaceController(simulation);
 simulation
     .append(new DropdownMenu()
         .for(functionsRegistry)
         .addEventListener("change", event => surfaceController.changeSurface(event.target.value)))
+    .append(new RadioGroup()
+        .add("2D", event => setDimension(false))
+        .add("3D", event => setDimension(true))
+        .checked(1))
     .append(surfaceView.ui())
     .append(new Slider("Maximum height: ")
         .on(surfaceView)

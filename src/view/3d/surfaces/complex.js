@@ -6,24 +6,38 @@ import { ComplexColorMappers} from "../../colormappers.js";
 import { CompoundControl, DropdownMenu, Slider } from "../../../core/controls.js";
 import {ComplexFunctionSample} from "../../../model/math/fields.js";
 
-export class ContinuousComplexFieldView extends Renderable3D {
+export class ComplexSurfaceView3D extends Renderable3D {
     constructor({
-        resolution = new SurfaceResolution(100, 100),
         normalizer = new AdaptiveSymmetricNormalizer(),
         colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl),
         maxHeight = 4,
-        opacity = 1
+        opacity = 1,
+        defaultResolution = new SurfaceResolution(200, 200),
     } = {}) {
         super();
 
+        this._maxHeight = maxHeight;
+        this._opacity = opacity;
         this._normalizer = normalizer;
         this._colorMapper = colorMapper;
-        this._resolution = resolution;
+        this._defaultResolution = defaultResolution;
         this._sample = new ComplexFunctionSample();
         this._color = new Color();
 
-        const geometry = new PlaneGeometry(1, 1, resolution.u, resolution.v);
-        const vertexCount = (resolution.u + 1) * (resolution.v + 1);
+        this._mesh = null;      // To be determined in initialize()
+        this._positions = null; // To be determined in initialize()
+        this._colors = null;    // To be determined in initialize()
+    }
+
+    _getResolution(surface) {
+        return surface.sampleResolution ?? this._defaultResolution;
+    }
+
+    initialize(complexSurface) {
+        this.dispose();
+        const { u, v } = this._getResolution(complexSurface);
+        const geometry = new PlaneGeometry(1, 1, u, v);
+        const vertexCount = (u + 1) * (v + 1);
         geometry.setAttribute("color", new BufferAttribute(new Float32Array(vertexCount * 3), 3));
         this._mesh = new Mesh(geometry, new MeshStandardMaterial({
             side: DoubleSide,
@@ -31,13 +45,26 @@ export class ContinuousComplexFieldView extends Renderable3D {
             emissive: true,
             vertexColors: true,
             transparent: true,
-            opacity: opacity
+            opacity: this._opacity
         }));
 
         this.add(this._mesh);
-        this._maxHeight = maxHeight;
         this._positions = geometry.attributes.position;
         this._colors = this._mesh.geometry.attributes.color
+    }
+
+    dispose() {
+        if (!this._mesh)
+            return;
+
+        this.remove(this._mesh);
+
+        this._mesh.geometry.dispose();
+        this._mesh.material.dispose();
+
+        this._mesh = null;
+        this._positions = null;
+        this._colors = null;
     }
 
     set maxHeight(value) { this._maxHeight = value; }
@@ -48,15 +75,15 @@ export class ContinuousComplexFieldView extends Renderable3D {
         return true;
     }
 
-    setValueRange(model) {
+    setValueRange(complexSurface) {
         this._normalizer.reset();
+        const { u, v } = this._getResolution(complexSurface);
 
-        for (let i = 0; i <= this._resolution.u; i++) {
-            const u = i / this._resolution.u;
+        for (let i = 0; i <= u; i++) {
+            const uu = i / u;
 
-            for (let j = 0; j <= this._resolution.v; j++) {
-                const v = j / this._resolution.v;
-                model.sample(u, v, this._sample);
+            for (let j = 0; j <= v; j++) {
+                complexSurface.sample(uu, j / v, this._sample);
                 const modulus = this._maxHeight * Math.tanh(this._sample.abs / this._maxHeight);
                 this._normalizer.include(modulus);
             }
@@ -82,11 +109,13 @@ export class ContinuousComplexFieldView extends Renderable3D {
     synchronizeWith(complexSurface) {
         this.setValueRange(complexSurface);
         let index = 0;
-        for (let i = 0; i <= this._resolution.u; i++) {
-            const u = i / this._resolution.u;
-            for (let j = 0; j <= this._resolution.v; j++) {
-                const v = j / this._resolution.v;
-                complexSurface.sample(u, v, this._sample);
+        const { u, v } = this._getResolution(complexSurface);
+
+        for (let i = 0; i <= u; i++) {
+            const uu = i / u;
+
+            for (let j = 0; j <= v; j++) {
+                complexSurface.sample(uu, j / v, this._sample);
                 this.updateMeshAt(index++);
             }
         }
@@ -171,9 +200,9 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
     get zScale() { return this._zScale; }
 
     initialize(complexSurface) {
-        const width = complexSurface.sampleResolution.u;
-        const height = complexSurface.sampleResolution.v;
-        const geometry = new PlaneGeometry(1, 1, width - 1, height - 1);
+        const width = complexSurface.nativeResolution.u;
+        const height = complexSurface.nativeResolution.v;
+        const geometry = new PlaneGeometry(1, 1, width, height);
         const material = new ShaderMaterial({
             vertexShader: DiscreteComplexFieldSurfaceView.vertexShader,
             fragmentShader: DiscreteComplexFieldSurfaceView.fragmentShader,
@@ -196,8 +225,8 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
     }
 
     synchronizeWith(complexSurface) {
-        const resolutionU = complexSurface.sampleResolution.u;
-        const resolutionV = complexSurface.sampleResolution.v;
+        const resolutionU = complexSurface.nativeResolution.u;
+        const resolutionV = complexSurface.nativeResolution.v;
         const zScale = this._zScale;
         const showPhaseColor = this._showPhaseColor;
 

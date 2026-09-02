@@ -1,5 +1,5 @@
 import {
-    DiscreteComplexField, Simulation, Vec3, DiscreteComplexFieldSurfaceView2D, FFTShift2D, FFT2D, ComplexShapeMask,
+    DiscreteComplexField, Simulation, Vec3, ComplexSurfaceView2D, FFTShift2D, FFT2D, ComplexShapeMask,
     ShapeConfiguration, Shapes, ComplexSoftness, Slider, Range, Checkbox
 } from "../../../src/index.js";
 import {DiscreteComplexFieldSurface} from "../../../src/model/math/surfaces.js";
@@ -7,7 +7,7 @@ import {DiscreteComplexFieldSurface} from "../../../src/model/math/surfaces.js";
 const resolution = 512;
 const field = new DiscreteComplexField({nx: resolution, ny: resolution});
 const surface = new DiscreteComplexFieldSurface(field);
-const intensityRaster = new DiscreteComplexFieldSurfaceView2D({
+const intensityRaster = new ComplexSurfaceView2D({
     width: resolution,
     height: resolution,
     showPhaseColour: false,
