@@ -331,6 +331,7 @@ export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
         this._colorMapper = colorMapper;
         this._rgb = new Color();
         this._sample = new ComplexFunctionSample();
+        this._colorData = { phase: 0, modulus: 0 }
 
         const pixels = new Uint8Array(this._width * this._height * 4);
         const texture = new DataTexture(pixels,  this._width, this._height, RGBAFormat);
@@ -347,8 +348,8 @@ export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
     }
 
     canBindTo(complexSurface) {
-        if (!(complexSurface.frameAt && complexSurface.nx && complexSurface.ny))
-            throw new Error("Complex discrete surface view needs valueAt() method");
+        if (!complexSurface.frameAt)
+            throw new Error("Complex discrete surface view needs frameAt() method");
         return true;
     }
 
@@ -376,7 +377,9 @@ export class DiscreteComplexFieldSurfaceView2D extends Renderable2D {
                 if (brightness > 1.0) brightness = 1.0;
 
                 if (this._phaseColor) {
-                    this._colorMapper.map({phase, modulus}, this._rgb);
+                    this._colorData.phase = phase;
+                    this._colorData.modulus = modulus;
+                    this._colorMapper.map(this._colorData, this._rgb);
                     this._pixels[index++] = Math.round(this._rgb.r * 255);
                     this._pixels[index++] = Math.round(this._rgb.g * 255);
                     this._pixels[index++] = Math.round(this._rgb.b * 255 );
