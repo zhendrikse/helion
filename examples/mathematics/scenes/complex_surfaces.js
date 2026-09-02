@@ -82,22 +82,25 @@ class SurfaceController {
     constructor(simulation) {
         this._simulation = simulation;
         this._dimension3d = true;
+        this._currentSurfaceId = "";
     }
 
     changeSurface(surfaceId) {
+        this._currentSurfaceId = surfaceId;
         const func = functionsRegistry.get(surfaceId).function;
         const surface = new ComplexFieldSurface(func);
         this._simulation.bind(surface.onceWith(surfaceView));
         if (this._dimension3d) {
             this._simulation.provideAxesAround(surfaceView);
             this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
+        } else {
+            this._simulation.bind(surface.onceWith(surfaceView2D));
         }
         this._simulation.setLatexTitle("\\Large{f(z) = " + functionsRegistry.get(surfaceId).latex + "}");
     }
 
     set dimension3d(value) { this._dimension3d = value; }
-
-    set animate(value) { this._animate = value; }
+    get currentSurfaceId() { return this._currentSurfaceId; }
 }
 
 const surfaceView = new ComplexSurfaceView3D({
@@ -127,15 +130,17 @@ const simulation = Simulation
         parameterMenuCollapsed: false
     });
 
-
 function setDimension(dimension3d = true) {
-    waveFunctionSurface.visible = dimension3d;
-    potentialBarrier.visible = dimension3d;
-    waveFunctionSurface2d.visible = !dimension3d;
-    potentialBarrier2d.visible = !dimension3d;
-    simulation.cameraPosition = dimension3d ?
-        new Vec3(-1, .7, .75).multiplyScalar(.75 * xMax) :
-        new Vec3(0, 0, xMax)
+    surfaceController.dimension3d = dimension3d;
+    surfaceView.visible = dimension3d;
+    surfaceView2D.visible = !dimension3d;
+    if (!dimension3d) simulation.removeAxes();
+    // re-bind current function so the now-visible view gets initialized
+    surfaceController.changeSurface(surfaceController.currentSurfaceId);
+    if (dimension3d)
+        simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5, viewDirection: new Vec3(1, 1, 1)});
+    else
+        simulation.frameSceneOn(surfaceView2D, {padding: 0.5, translationY: 0, viewDirection: new Vec3(0, 0, 1)});
 }
 
 const surfaceController = new SurfaceController(simulation);

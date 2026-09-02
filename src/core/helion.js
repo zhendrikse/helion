@@ -231,10 +231,16 @@ export class Simulation {
     get width() { return this._viewport.width; }
     get height() { return this._viewport.height; }
     set cameraPosition(position) { this._renderer.cameraPosition = position; }
-    set autoRotate(autoRotate) { this._renderer.autoRotate = autoRotate; return this;}
+    set autoRotate(autoRotate) { this._renderer.autoRotate = autoRotate; return this; }
+    set axesVisible(visible) { this._renderer.axesVisible = visible; return this; }
 
     addObject3D(object3D) {
         this._renderer.add(object3D);
+        return this;
+    }
+
+    removeAxes() {
+        this._renderer.removeAxes();
         return this;
     }
 
