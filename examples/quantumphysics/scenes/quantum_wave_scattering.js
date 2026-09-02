@@ -27,14 +27,10 @@ function reset(shapeConfig, potentialStrength, softness) {
         .apply(new Softness({ softness }));
 }
 
-const waveFunctionSurface = new DiscreteComplexFieldSurfaceView({
-    resolution: new SurfaceResolution(width, height)
-});
+const waveFunctionSurface = new DiscreteComplexFieldSurfaceView();
 const potentialBarrier = new DiscreteFieldBoxView({ width, height });
 
-const waveFunctionSurface2d = new DiscreteComplexFieldSurfaceView2D({
-    resolution: new SurfaceResolution(width, height)
-});
+const waveFunctionSurface2d = new DiscreteComplexFieldSurfaceView2D();
 const potentialBarrier2d = new DiscreteFieldSurfaceView({
     resolution: new SurfaceResolution(width, height)
 });

@@ -2,6 +2,7 @@ import {Domain} from "./fields.js";
 import {Vec2} from "./math.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
+import {SurfaceResolution} from "../../view/3d/surfaces/visualization.js";
 
 /**
  * Mathematical definition of a surface.
@@ -33,12 +34,22 @@ export class ComplexFieldSurface extends Surface {
         this._field = complexField;
     }
 
-    frameAt(u, v, target) {
-        this.sample(u, v, target);
-    }
-
     sample(u, v, target) {
         this._field.sample(u, v, target);
+    }
+}
+
+export class DiscreteComplexFieldSurface extends ComplexFieldSurface {
+    get sampleResolution() {
+        return new SurfaceResolution(this._field.nx, this._field.ny);
+    }
+
+
+    sample(u, v, target) {
+        const x = Math.round(u * (this._field.nx - 1));
+        const y = Math.round(v * (this._field.ny - 1));
+
+        this._field.valueAt(x, y, target);
     }
 }
 
@@ -122,12 +133,3 @@ export class DiscreteFieldSurface extends DifferentiableSurface {
     }
 }
 
-export class DiscreteComplexFieldSurface extends ComplexFieldSurface {
-    frameAt(i, j, complexFunctionSample) {
-        this._field.valueAt(i, j, complexFunctionSample);
-    }
-
-    get nx() { return this._field.nx; }
-    get ny() { return this._field.ny; }
-    index(i, j) { return this._field.index(i, j); }
-}

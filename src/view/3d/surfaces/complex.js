@@ -43,8 +43,8 @@ export class ContinuousComplexFieldView extends Renderable3D {
     set maxHeight(value) { this._maxHeight = value; }
 
     canBindTo(complexSurface) {
-        if (!complexSurface.frameAt)
-            throw new Error("Surface visualization needs frameAt(), which is not supported by the current model.");
+        if (!complexSurface.sample)
+            throw new Error("Surface visualization needs sample(), which is not supported by the current model.");
         return true;
     }
 
@@ -56,7 +56,7 @@ export class ContinuousComplexFieldView extends Renderable3D {
 
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
-                model.frameAt(u, v, this._sample);
+                model.sample(u, v, this._sample);
                 const modulus = this._maxHeight * Math.tanh(this._sample.abs / this._maxHeight);
                 this._normalizer.include(modulus);
             }
@@ -146,7 +146,6 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         }
         `;
     constructor({
-        resolution = new SurfaceResolution(200, 200),
         zScale = 20,
         showPhaseColor = true,
         brightness = 1,
@@ -154,7 +153,6 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
     } = {}) {
         super();
         this._showPhaseColor = showPhaseColor;
-        this._resolution = resolution;
         this._brightness = brightness;
         this._zScale = zScale;
         this._colorMapper = colorMapper;
@@ -162,14 +160,25 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         this._sample = new ComplexFunctionSample();
         this._colorData = { phase: 0, modulus: 0 }
 
-        const width = resolution.u;
-        const height = resolution.v;
-        const geometry = new PlaneGeometry(width, height, width - 1, height - 1);
+        this._mesh = null;      // To be determined at initialize()
+        this._positions = null; // To be determined at initialize()
+        this._colors = null;    // To be determined at initialize()
+        this._alphas = null;    // To be determined at initialize()
+    }
+
+    set phaseColor(showPhaseColor) { this._showPhaseColor = showPhaseColor; }
+    set zScale(value) { this._zScale = value; }
+    get zScale() { return this._zScale; }
+
+    initialize(complexSurface) {
+        const width = complexSurface.sampleResolution.u;
+        const height = complexSurface.sampleResolution.v;
+        const geometry = new PlaneGeometry(1, 1, width - 1, height - 1);
         const material = new ShaderMaterial({
             vertexShader: DiscreteComplexFieldSurfaceView.vertexShader,
             fragmentShader: DiscreteComplexFieldSurfaceView.fragmentShader,
             transparent: true,
-            //side: DoubleSide,
+            side: DoubleSide,
             uniforms: {
                 uBrightness: { value: this._brightness }
             }
@@ -186,13 +195,9 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
         geometry.setAttribute("alpha", new BufferAttribute(this._alphas, 1));
     }
 
-    set phaseColor(showPhaseColor) { this._showPhaseColor = showPhaseColor; }
-    set zScale(value) { this._zScale = value; }
-    get zScale() { return this._zScale; }
-
     synchronizeWith(complexSurface) {
-        const resolutionU = this._resolution.u;
-        const resolutionV = this._resolution.v;
+        const resolutionU = complexSurface.sampleResolution.u;
+        const resolutionV = complexSurface.sampleResolution.v;
         const zScale = this._zScale;
         const showPhaseColor = this._showPhaseColor;
 
@@ -204,28 +209,28 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
 
         const xOffset = resolutionU / 2;
         const yOffset = resolutionV / 2;
-        for (let y = 0; y < resolutionV; y++) {
+        for (let y = 0; y <= resolutionV; y++) {
             const z = y - yOffset;
 
-            for (let x = 0; x < resolutionU; x++) {
+            for (let x = 0; x <= resolutionU; x++) {
                 const i = y * resolutionU + x;
                 const colorIndex = i * 3;
 
-                complexSurface.frameAt(x, y, sample);
+                complexSurface.sample(x / resolutionU, y / resolutionV, sample);
                 const modulus = sample.magnitude;
                 const height = Math.log1p(20 * modulus);
 
                 pos.setXYZ(i, x - xOffset, height * zScale, z);
 
-                const lighting = 0.6 + 0.4 * Math.cos(sample.phase);
-                const intensity = Math.pow(modulus, 0.45) * lighting;
                 this._colorData.phase = showPhaseColor ? sample.phase : 0.65;
                 this._colorData.modulus = modulus;
                 this._colorMapper.map(this._colorData, rgb);
+                const lighting = 0.6 + 0.4 * Math.cos(sample.phase);
+                const intensity = Math.sqrt(modulus) * lighting;
                 colors[colorIndex]     = rgb.r * intensity;
                 colors[colorIndex + 1] = rgb.g * intensity;
                 colors[colorIndex + 2] = rgb.b * intensity;
-                alphas[i] = Math.tanh(3.0 * modulus);
+                alphas[i] = Math.tanh(4.0 * modulus);
             }
         }
 
@@ -236,9 +241,8 @@ export class DiscreteComplexFieldSurfaceView extends Renderable3D {
 
 
     canBindTo(complexSurface) {
-        console.log(complexSurface)
-        if (!complexSurface.frameAt)
-            throw new Error("Surface view needs frameAt() method to obtain data");
+        if (!complexSurface.sample)
+            throw new Error("Surface view needs sample() method to obtain data");
         return true;
     }
 }
