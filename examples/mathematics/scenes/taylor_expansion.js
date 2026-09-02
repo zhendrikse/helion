@@ -97,7 +97,7 @@ const approximationGraph = new FunctionGraph({
 simulation
     .setLatexTitle("e^x = 1 + \\cdots")
     .bind(grid.onceWith(new LineSegmentsView({
-        lineWidth: 2,
+        lineWidth: 1,
         dashed: true,
         dashSize: .05,
         gapSize: .1,

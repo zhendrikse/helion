@@ -129,7 +129,7 @@ const approximationGraph = new FunctionGraph({
 simulation
     .setLatexTitle(fourierLatex(0))
     .bind(grid.onceWith(new LineSegmentsView({
-        lineWidth: 2,
+        lineWidth: 1,
         dashed: true,
         dashSize: .05,
         gapSize: .1,
