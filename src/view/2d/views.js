@@ -7,8 +7,7 @@ import {
 import {Renderable2D, Renderable3D} from "../renderer.js";
 import {CompoundControl, DropdownMenu, Slider} from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
-import { ColorMappers, ComplexColorMappers, WavelengthColorMapper} from "../colormappers.js";
-import {Complex, Range} from "../../model/math/math.js";
+import { ComplexColorMappers, WavelengthColorMapper} from "../colormappers.js";
 import {SurfaceResolution} from "../3d/surfaces/visualization.js";
 import {ComplexFunctionSample} from "../../model/math/fields.js";
 
@@ -437,13 +436,12 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
                     this._pixels[index++] = Math.round(this._rgb.r * intensity * 255);
                     this._pixels[index++] = Math.round(this._rgb.g * intensity * 255);
                     this._pixels[index++] = Math.round(this._rgb.b * intensity * 255);
-                    this._pixels[index++] = 255;
                 } else {
                     this._pixels[index++] = 255;
                     this._pixels[index++] = 255;
                     this._pixels[index++] = 0;
-                    this._pixels[index++] = 255;
                 }
+                this._pixels[index++] = 255 * intensity;
             }
         }
 

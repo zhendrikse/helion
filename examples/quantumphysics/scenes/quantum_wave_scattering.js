@@ -44,10 +44,6 @@ reset(shapeConfiguration, potentialStrength, softness);
 const simulation = Simulation
     .with({
         htmlDivId: "quantumScattering",
-        camera: {
-            position: new Vec3(-1, .7, .75).multiplyScalar(1.25 * xMax),
-            fieldOfView: 30
-        },
         viewport: {
             aspectRatio: "19/12"
         }
@@ -107,7 +103,9 @@ function setDimension(dimension3d = true) {
     potentialBarrier2d.visible = !dimension3d;
     simulation.orthographic = !dimension3d;
     if (dimension3d)
-        simulation.frameSceneOn(waveFunctionSurface, {padding: 1.2, translationY: 0, viewDirection: new Vec3(-1, .7, .75)});
+        simulation.frameSceneOn(waveFunctionSurface, {padding: .6, translationY: 0, viewDirection: new Vec3(-1, .7, .75)});
     else
-        simulation.frameSceneOn(waveFunctionSurface2d, {padding: 1.1, translationY: 0, viewDirection: new Vec3(0, 0, 1)});
+        simulation.frameSceneOn(waveFunctionSurface2d, {padding: 1.0, translationY: 0, viewDirection: new Vec3(0, 0, 1)});
 }
+
+setDimension();
