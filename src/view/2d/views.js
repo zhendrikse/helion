@@ -408,9 +408,7 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
         return new CompoundControl()
             .add(new DropdownMenu()
                 .for(new ComplexColorMappers())
-                .addEventListener("change", event =>
-                    this._colorMapper = ComplexColorMappers.get(event.target.value)
-                )
+                .addEventListener("change", event => this._colorMapper = ComplexColorMappers.get(event.target.value))
             );
     }
 
@@ -454,6 +452,3 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
     }
 }
 
-// Aliases for backwards compat / symmetry with 3D
-export const DiscreteComplexFieldSurfaceView2D = ComplexSurfaceView2D;
-export const WaveFunctionSurface2D = ComplexSurfaceView2D;
