@@ -412,20 +412,20 @@ export class Range {
 }
 
 export class Interval {
-    constructor(from = -Infinity, to = Infinity) {
+    constructor(from = 0, to = 0) {
         this.from = from;
         this.to = to;
     }
 
     shrinkTo(value) {
-        if (this.from < value) this.from = value;
-        if (this.to > value) this.to = value;
+        if (value < this.from) this.from = value;
+        if (value > this.to)   this.to = value;
     }
 
     normalize = (value) => this.to === this.from ? 0 : (value - this.from) / this.range;
 
     get range() {
-        return (this.from === Infinity || this.to === Infinity) ? Infinity : this.to - this.from;
+        return this.to - this.from;
     }
 
     /**

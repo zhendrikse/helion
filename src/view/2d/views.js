@@ -10,6 +10,7 @@ import { Registry } from "../../core/helion.js";
 import { ComplexColorMappers, WavelengthColorMapper} from "../colormappers.js";
 import {SurfaceResolution} from "../3d/surfaces/visualization.js";
 import {ComplexFunctionSample} from "../../model/math/fields.js";
+import {Interval} from "../../model/math/math.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -219,26 +220,20 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
         return discreteScalarField.valueAt;
     }
 
-    _maxMagnitude(scalarField) {
-        let max = -Infinity;
-
+    _maxMagnitude(scalarField, interval) {
         for (let i = 0; i < scalarField.nx; i++)
-            for (let j = 0; j < scalarField.ny; j++) {
-                const value = scalarField.valueAt(i, j);
-                if (value > max)
-                    max = value;
-            }
-
-        return max;
+            for (let j = 0; j < scalarField.ny; j++)
+                interval.shrinkTo(scalarField.valueAt(i, j));
     }
 
     synchronizeWith(scalarField) {
-        const max =  this._maxMagnitude(scalarField);
+        const interval = new Interval();
+        this._maxMagnitude(scalarField, interval);
         let index = 0;
 
         for(let j = 0; j < this._height; j++)
             for(let i = 0; i < this._width; i++) {
-                const value = scalarField.valueAt(i, j) / max;
+                const value = interval.normalize(scalarField.valueAt(i, j));
                 this._colorMapper?.map(value, this._rgb);
                 this._pixels[index++] = this._rgb.r;
                 this._pixels[index++] = this._rgb.g;
@@ -291,26 +286,20 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
         return field.valueAt;
     }
 
-    _maxMagnitude(scalarField) {
-        let max = -Infinity;
-
+    _maxMagnitude(scalarField, interval) {
         for (let i = 0; i < scalarField.nx; i++)
-            for (let j = 0; j < scalarField.ny; j++) {
-                const value = scalarField.valueAt(i, j);
-                if (value > max)
-                    max = value;
-            }
-
-        return max;
+            for (let j = 0; j < scalarField.ny; j++)
+                interval.shrinkTo(scalarField.valueAt(i, j));
     }
 
     synchronizeWith(scalarField) {
+        const interval = new Interval();
+        this._maxMagnitude(scalarField, interval);
+
         const j = this._ny - 1;
         let index = 0;
-        const max =  this._maxMagnitude(scalarField);
-
         for (let i = 0; i < this._nx; i++) {
-            const value = scalarField.valueAt(i, j) / max;
+            const value = interval.normalize(scalarField.valueAt(i, j));
             this._colorMapper?.map(value, this._rgb);
             this._pixels[index++] = this._rgb.r;
             this._pixels[index++] = this._rgb.g;
