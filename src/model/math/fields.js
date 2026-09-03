@@ -162,10 +162,6 @@ export class DiscreteScalarField extends ScalarField {
         return interval;
     }
 
-    get data() {
-        return this._data;
-    }
-
     evolve(solver, dt) {
         solver.step(this, dt);
         return this;
