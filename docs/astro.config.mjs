@@ -1,16 +1,18 @@
-// astro.config.mjs
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
 
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
 	base: '/helion/', // URL prefix for GitHub pages
+	site: 'https://www.hendrikse.name/helion/',
 	outDir: "../dist",
 	publicDir: "public",
 	integrations: [
+		sitemap(),
 		starlight({
 			title: '☀️ Helion',
 			social: [
