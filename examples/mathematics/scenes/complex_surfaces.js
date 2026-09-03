@@ -103,13 +103,8 @@ class SurfaceController {
     get currentSurfaceId() { return this._currentSurfaceId; }
 }
 
-const surfaceView = new ComplexSurfaceView3D({
-    defaultResolution: new SurfaceResolution(400, 400)
-});
-
-const surfaceView2D = new ComplexSurfaceView2D({
-    defaultResolution: new SurfaceResolution(400, 400)
-});
+const surfaceView = new ComplexSurfaceView3D();
+const surfaceView2D = new ComplexSurfaceView2D();
 
 const simulation = Simulation
     .with({

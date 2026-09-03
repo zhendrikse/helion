@@ -14,7 +14,7 @@ import {ComplexFunctionSample} from "../../../model/math/fields.js";
  * to use the fast valueAt() path when available (performance).
  */
 export class ComplexFieldViewable extends Renderable3D {
-    constructor(defaultResolution = new SurfaceResolution(200, 200)) {
+    constructor(defaultResolution = new SurfaceResolution(400, 400)) {
         super();
         this._fieldIsDiscrete = false;
         this._sample = new ComplexFunctionSample();
@@ -83,7 +83,7 @@ export class ComplexSurfaceView3D extends ComplexFieldViewable {
         colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl),
         maxHeight = 4,
         opacity = 1,
-        defaultResolution = new SurfaceResolution(200, 200),
+        defaultResolution = new SurfaceResolution(400, 400),
     } = {}) {
         super(defaultResolution);
 
@@ -206,7 +206,7 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
         showPhaseColor = true,
         brightness = 1,
         colorMapper = ComplexColorMappers.get(ComplexColorMappers.Domain),
-        defaultResolution = new SurfaceResolution(200, 200)
+        defaultResolution = new SurfaceResolution(400, 400)
     } = {}) {
         super(defaultResolution);
         this._showPhaseColor = showPhaseColor;
