@@ -13,42 +13,34 @@ const modulation = (t) => (1 - sin(pi * (t - 0.5)));
 
 const functions = {
     "Monkey saddle": {
-        "amplitude": 0.3,
         "function": new MultivariateFunction({
             domain: new Domain([-1, 1], [-1, 1]),
-            func: (x, y, t) => functions["Monkey saddle"].amplitude *
-                (x * x * x - 3 * y * y * x) * modulation(t)
+            func: (x, y, t) => .3 * (x * x * x - 3 * y * y * x) * modulation(t)
         }),
         "latex": "x^3 - 3xy^2"
     },
     "Ripple": {
-        "amplitude": 1,
         "function": new MultivariateFunction({
             domain: new Domain([-pi, pi], [-pi, pi]),
-            func: (x, y, t) => functions["Ripple"].amplitude * sin(1.25 * rSquared(x, y) - pi * t)
+            func: (x, y, t) => sin(1.25 * rSquared(x, y) - pi * t)
         }),
         "latex": "\\sin(x^2 + y^2)"
     },
     "Peak": {
-        "amplitude": 7.5,
         "function": new MultivariateFunction({
-            domain: new Domain([-2 * pi, 2 * pi], [-2 * pi, 2 * pi]),
-            func: (x, y, t) => functions["Peak"].amplitude *
-                exp(-rSquared(x, y) / 4) * modulation(t)
+            domain: new Domain([-2, 2], [-2, 2]),
+            func: (x, y, t) => 2 * exp(-rSquared(x, y)) * modulation(t)
         }),
         "latex": "\\exp(-x^2 - y^2)"
     },
     "Ricker": {
-        "amplitude": 2,
         "function": new MultivariateFunction({
             domain: new Domain([-2, 2], [-2, 2]),
-            func: (x, y, t) => functions["Ricker"].amplitude *
-                (1 - rSquared(x, y)) * exp(-1 * rSquared(x, y)) * modulation(t)
+            func: (x, y, t) => 2 * (1 - rSquared(x, y)) * exp(-1 * rSquared(x, y)) * modulation(t)
         }),
         "latex": "(1 - (x^2 + y^2)\\exp(-(x^2 + y^2))"
     },
     "Polynomial": {
-        "amplitude": .1,
         "function": new MultivariateFunction({
             domain: new Domain([-.55, .55], [-.55, .55]),
             func: (x, y, t) => (x * x * x - y * y * y) * modulation(t)
@@ -56,11 +48,9 @@ const functions = {
         "latex": "x^3 - y^3"
     },
     "Wavelet": {
-        "amplitude": .15,
         "function": new MultivariateFunction({
             domain: new Domain([-.3, .3], [-.3, .3]),
-            func: (x, y, t) => functions["Wavelet"].amplitude + functions["Wavelet"].amplitude *
-                (sin(4 * sqrt(x * x + y * y) / sqrt(x * x + y * y + .01) - pi * t))
+            func: (x, y, t) => .25 * (sin(4 * sqrt(x * x + y * y) / sqrt(x * x + y * y + .01) - pi * t))
         }),
         "latex": "\\dfrac{\\sin(\\sqrt{x^2 + y^2})}{\\sqrt{x^2 + y^2}}"
     }
@@ -82,11 +72,9 @@ class SurfaceController {
     changeSurface(surfaceId) {
         this._function = functionsRegistry.get(surfaceId).function;
         this._currentSurface = new ScalarFieldSurface(this._function);
-        const amplitude = functionsRegistry.get(surfaceId).amplitude;
-        this._currentSurface.normalizer = new Interval(0, amplitude);
         this._simulation.bind(this._currentSurface.alwaysWith(surfaceView));
         this._simulation.provideAxesAround(surfaceView);
-        this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5 * amplitude});
+        this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -1 });
         this._simulation.setLatexTitle("\\Large{f(x,y) = " + functionsRegistry.get(surfaceId).latex + "}");
     }
 
@@ -98,12 +86,9 @@ class SurfaceController {
     }
 }
 
-const normalizer = new FixedIntervalNormalizer(new Interval(0, functions["Monkey saddle"].amplitude));
 const contoursLayer = new ContoursLayer({
-    normalizer: normalizer
 });
 const surfaceView = new SurfaceVisualization({
-    normalizer: normalizer,
     resolution: new SurfaceResolution(200, 200)
 }
 ).addOverlayLayer(contoursLayer);

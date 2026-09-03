@@ -1,12 +1,5 @@
 import {
-    Arrow, Checkbox,
-    Label,
-    RadialSymmetricBody,
-    Simulation,
-    Sphere,
-    Vec3,
-    VectorField,
-    VectorModel
+    Arrow, Checkbox, Label, RadialSymmetricBody, Simulation, Sphere, Vec3, VectorField, VectorModel
 } from "../../../src/index.js";
 
 class DemoVectorField extends VectorField {
@@ -170,8 +163,8 @@ let resetCounter = 0;
 const simulation = Simulation.with({
         htmlDivId: "divCurlDemoContainer",
         camera: {
+            orthographic: true,
             position: new Vec3(0, 0, 4.5),
-            controls: false
         },
         infoPanel: {
             text: "<strong>Divergence:</strong><br/>" +

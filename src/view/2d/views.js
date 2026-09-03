@@ -317,15 +317,16 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     }
 }
 
+
 export class ComplexSurfaceView2D extends Renderable2D {
     constructor({
         showPhaseColour = true,
-        brightness = 1,
+        brightnessFunction = modulus => modulus > 1.0 ? 1.0 : modulus,
         colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl),
-        defaultResolution = new SurfaceResolution(200, 200),
+        defaultResolution = new SurfaceResolution(400, 400),
     } = {}) {
         super();
-        this._brightness = brightness;
+        this._brightnessFunction = brightnessFunction;
         this._colorMapper = colorMapper;
         this._resolution = defaultResolution;
         this._rgb = new Color();
@@ -384,7 +385,6 @@ export class ComplexSurfaceView2D extends Renderable2D {
             );
     }
 
-    set brightness(brightness) { this._brightness = brightness; }
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
     synchronizeWith(field) {
@@ -410,12 +410,12 @@ export class ComplexSurfaceView2D extends Renderable2D {
                     this._pixels[index++] = Math.round(this._rgb.r * 255);
                     this._pixels[index++] = Math.round(this._rgb.g * 255);
                     this._pixels[index++] = Math.round(this._rgb.b * 255 );
-                    this._pixels[index++] = Math.round(brightness * 255);
+                    this._pixels[index++] = Math.round(this._brightnessFunction(modulus) * 255);
                 } else {
                     this._pixels[index++] = 255;
                     this._pixels[index++] = 255;
                     this._pixels[index++] = 0;
-                    this._pixels[index++] = Math.log(1 + brightness) * 255;
+                    this._pixels[index++] = Math.log(1 + this._brightnessFunction(modulus)) * 255;
                 }
             }
 

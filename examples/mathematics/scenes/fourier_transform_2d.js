@@ -1,15 +1,13 @@
 import {
     DiscreteComplexField, Simulation, Vec3, ComplexSurfaceView2D, FFTShift2D, FFT2D, ComplexShapeMask,
-    ShapeConfiguration, Shapes, ComplexSoftness, Slider, Range, Checkbox
+    ShapeConfiguration, Shapes, ComplexSoftness, Slider, Range, Checkbox, SurfaceResolution
 } from "../../../src/index.js";
 
 const resolution = 512;
 const field = new DiscreteComplexField({nx: resolution, ny: resolution});
 const intensityRaster = new ComplexSurfaceView2D({
-    width: resolution,
-    height: resolution,
     showPhaseColour: false,
-    brightness: 5e-3
+    brightnessFunction: modulus => modulus * 5e-3
 });
 
 function reset(shapeConfiguration, softness) {
