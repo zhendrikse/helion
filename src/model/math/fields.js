@@ -82,15 +82,6 @@ export class RealFunction extends ScalarField {
         this._func = func;
     }
 
-    evaluate(x) {
-        return this._func(x);
-    }
-
-    setFunction(func) {
-        this._func = func;
-        return this;
-    }
-
     sample(u, target = new Vec2()) {
         const x = this.domain.scaleUnitParameter(u);
         target.set(x, this._func(x));
