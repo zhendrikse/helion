@@ -154,7 +154,6 @@ export class WavelengthColorMapper extends ColorMapper {
             return wavelengthColor(this._lambdaInNanos, intensity, targetColor);
 
         targetColor.setRGB(255, 255, 255);
-        return 255 * Math.sqrt(intensity);
     }
 
     set showSpectralColor(value) { this._showSpectralColor = value; }

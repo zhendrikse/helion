@@ -189,12 +189,14 @@ export class PixelRasterView extends Renderable3D {
 export class DiscreteFieldSurfaceView extends Renderable2D {
     constructor({
         resolution = new SurfaceResolution(512, 512),
-        colorMapper = new WavelengthColorMapper(525)
+        colorMapper = new WavelengthColorMapper(525),
+        brightnessFunction = intensity => 255 * Math.sqrt(intensity)
     } = {}) {
         super();
         this._width = resolution.u;
         this._height = resolution.v;
         this._colorMapper = colorMapper;
+        this._brightnessFunction = brightnessFunction;
 
         const pixels = new Uint8Array(this._width * this._height * 4);
         const texture = new DataTexture(pixels, this._width, this._height, RGBAFormat);
@@ -208,7 +210,7 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
         this._pixels = pixels;
         this._texture = texture;
         this._colorMapper = colorMapper;
-        this._colour = new Color();
+        this._rgb = new Color();
     }
 
     set context(context) { this._context = context; }
@@ -236,14 +238,16 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
 
         for(let j = 0; j < this._height; j++)
             for(let i = 0; i < this._width; i++) {
-                const intensity = this._colorMapper?.map(scalarField.valueAt(i, j) / max, this._colour);
-                this._pixels[index++] = this._colour.r;
-                this._pixels[index++] = this._colour.g;
-                this._pixels[index++] = this._colour.b;
-                this._pixels[index++] = intensity;
+                const value = scalarField.valueAt(i, j) / max;
+                this._colorMapper?.map(value, this._rgb);
+                this._pixels[index++] = this._rgb.r;
+                this._pixels[index++] = this._rgb.g;
+                this._pixels[index++] = this._rgb.b;
+                this._pixels[index++] = this._brightnessFunction(value);
             }
 
         this._texture.needsUpdate = true;
+        this._mesh.material.map.needsUpdate = true;
     }
 }
 
@@ -256,10 +260,11 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
         nx = 100,
         ny = 100,
         edgeHeight = 100,
-        colorMapper = new WavelengthColorMapper(525)
+        colorMapper = new WavelengthColorMapper(525),
+        brightnessFunction = intensity => 255 * Math.sqrt(intensity)
     } = {}) {
         super();
-
+        this._brightnessFunction = brightnessFunction;
         this._nx = nx;
         this._ny = ny;
         this._colorMapper = colorMapper;
@@ -279,7 +284,7 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
         this._mesh.rotation.x = Math.PI * 0.5; // Put edge straight up
         this._mesh.position.y = ny * 0.5;
         this.add(this._mesh);
-        this._color = new Color();
+        this._rgb = new Color();
     }
 
     canBindTo(field) {
@@ -305,11 +310,12 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
         const max =  this._maxMagnitude(scalarField);
 
         for (let i = 0; i < this._nx; i++) {
-            const brightness = this._colorMapper.map(scalarField.valueAt(i, j) / max, this._color);
-            this._pixels[index++] = this._color.r;
-            this._pixels[index++] = this._color.g;
-            this._pixels[index++] = this._color.b;
-            this._pixels[index++] = brightness;
+            const value = scalarField.valueAt(i, j) / max;
+            this._colorMapper?.map(value, this._rgb);
+            this._pixels[index++] = this._rgb.r;
+            this._pixels[index++] = this._rgb.g;
+            this._pixels[index++] = this._rgb.b;
+            this._pixels[index++] = this._brightnessFunction(value);
         }
 
         this._texture.needsUpdate = true;
