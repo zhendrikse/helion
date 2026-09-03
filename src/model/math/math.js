@@ -417,23 +417,34 @@ export class Interval {
         this.to = to;
     }
 
-    shrinkTo(value) {
+    /**
+     * Resize the interval to include the value given.
+     *
+     * @param value modify the interval to include this value, if it isn't already included.
+     */
+    include(value) {
         if (value < this.from) this.from = value;
         if (value > this.to)   this.to = value;
     }
 
-    normalize = (value) => this.to === this.from ? 0 : (value - this.from) / this.range;
+    /**
+     * Normalize a value with respect to this interval, i.e. treat the range as 1.
+     *
+     * @param value The value in the interval to be normalized.
+     * @returns {number|number} The normalized value.
+     */
+    normalize = value => this.to === this.from ? 0 : (value - this.from) / this.range;
 
-    get range() {
-        return this.to - this.from;
-    }
+    get range() { return this.to - this.from; }
+    get min() { return this.from; }
+    get max() { return this.to; }
 
     /**
      * Scale a unit parameter [0, 1] up to this interval
      * @param unitParameter the parameter that runs from [0, 1]
      * @returns {number} the scaled parameter
      */
-    scaleUnitParameter = (unitParameter) => this.range * (unitParameter + this.from / this.range);
+    scaleUnitParameter = unitParameter => this.range * unitParameter + this.from;
 }
 
 export class Complex {

@@ -14,7 +14,7 @@ export class SurfaceResolution {
 }
 
 class Normalizer {
-    include(value) {}
+    adaptTo(range) {}
 
     normalize(value) {}
 
@@ -36,20 +36,23 @@ export class FixedIntervalNormalizer extends Normalizer {
  * The range is "learned" during sampling, as opposed to a fixed
  * range that is given when the normalizer is instantiated.
  */
-export class AdaptiveSymmetricNormalizer extends Normalizer{
+export class AdaptiveSymmetricNormalizer extends Normalizer {
     constructor(smoothing = 0.05) {
         super();
         this._smoothing = smoothing;
         this._maxAbs = 1;
-        this.reset();
     }
 
-    include(value) {
-        if (!Number.isFinite(value))
+    adaptTo(range) {
+        if (!Number.isFinite(range.min) || !Number.isFinite(range.max))
             return;
 
-        const abs = Math.abs(value);
-        this._maxAbs = Math.max(this._maxAbs * (1 - this._smoothing) + abs * this._smoothing, abs);
+        const maxAbs = Math.max(Math.abs(range.min), Math.abs(range.max));
+
+        this._maxAbs = Math.max(
+            this._maxAbs * (1 - this._smoothing) + maxAbs * this._smoothing,
+            maxAbs
+        );
     }
 
     normalize(value) {
@@ -64,6 +67,43 @@ export class AdaptiveSymmetricNormalizer extends Normalizer{
 
     reset() {
         this._maxAbs = 1;
+    }
+}
+
+export class AdaptiveNormalizer extends Normalizer {
+    constructor(smoothing = 0.05) {
+        super();
+        this._smoothing = smoothing;
+        this._min = 0;
+        this._max = 1;
+    }
+
+    adaptTo(range) {
+        if (!Number.isFinite(range.min) || !Number.isFinite(range.max))
+            return;
+
+        this._min =
+            this._min * (1 - this._smoothing) +
+            range.min * this._smoothing;
+
+        this._max =
+            this._max * (1 - this._smoothing) +
+            range.max * this._smoothing;
+    }
+
+    normalize(value) {
+        if (!Number.isFinite(value))
+            return 0.5;
+
+        const range = Math.max(this._max - this._min, 1e-9);
+        const clamped = Math.max(this._min, Math.min(this._max, value));
+
+        return (clamped - this._min) / range;
+    }
+
+    reset() {
+        this._min = 0;
+        this._max = 1;
     }
 }
 

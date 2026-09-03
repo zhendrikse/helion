@@ -217,13 +217,13 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
     set context(context) { this._context = context; }
 
     canBindTo(discreteScalarField) {
-        if (discreteScalarField.valueAt === undefined || discreteScalarField.range === undefined)
-            throw new Error("This view needs valueAt() and range() methods to display surface");
+        if (discreteScalarField.valueAt === undefined || discreteScalarField.rangeAt === undefined)
+            throw new Error("This view needs valueAt() and rangeAt() methods to display surface");
         return true;
     }
 
     synchronizeWith(scalarField) {
-        const interval = scalarField.range;
+        const interval = scalarField.rangeAt();
         let index = 0;
 
         for(let j = 0; j < this._height; j++)
@@ -278,13 +278,13 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     }
 
     canBindTo(discreteScalarField) {
-        if (discreteScalarField.valueAt === undefined || discreteScalarField.range === undefined)
-            throw new Error("This view needs valueAt() and range() methods to display surface");
+        if (discreteScalarField.valueAt === undefined || discreteScalarField.rangeAt === undefined)
+            throw new Error("This view needs valueAt() and rangeAt() methods to display surface");
         return true;
     }
 
     synchronizeWith(scalarField) {
-        const interval = scalarField.range;
+        const interval = scalarField.rangeAt();
         const j = this._ny - 1;
         let index = 0;
 

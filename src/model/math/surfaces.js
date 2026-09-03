@@ -1,5 +1,5 @@
 import {Domain} from "./fields.js";
-import {Vec2} from "./math.js";
+import {Interval, Vec2} from "./math.js";
 import {DifferentialGeometry} from "./numerics/diffgeometry.js";
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
 
@@ -22,12 +22,20 @@ export class DifferentiableSurface extends Surface {
     frameAt(u, v, target) {
         return this._differentialGeometry.differentialFrame(u, v, target);
     }
+
+    rangeAt(resolution) {
+        return new Interval();
+    }
 }
 
 export class ScalarFieldSurface extends DifferentiableSurface {
     constructor(multivariateFunction) {
         super();
         this._function = multivariateFunction;
+    }
+
+    rangeAt(resolution) {
+        return this._function.rangeAt(resolution);
     }
 
     sample(u, v, target) {
@@ -54,6 +62,17 @@ export class ParametricSurface extends DifferentiableSurface {
         this._z = z;
     }
 
+    rangeAt(surfaceResolution) {
+        const interval = new Interval();
+        for (let i = 0; i < surfaceResolution.u; i++)
+            for (let j = 0; j < surfaceResolution.v; j++)
+                interval.include(this._z(
+                    this._domain.xRange.scaleUnitParameter(i / surfaceResolution.u),
+                    this._domain.yRange.scaleUnitParameter(j / surfaceResolution.v)
+                ));
+        return interval;
+    }
+
     sampleSpacing(resolution) {
         const dx = this._domain.xRange.range / resolution.u;
         const dy = this._domain.yRange.range / resolution.v;
@@ -72,6 +91,10 @@ export class DiscreteFieldSurface extends DifferentiableSurface {
     constructor(field) {
         super();
         this._field = field;
+    }
+
+    rangeAt(resolution) {
+        return this._field.rangeAt(resolution);
     }
 
     frameAt(u, v, target) {

@@ -1,7 +1,6 @@
 import {
     Domain, Simulation, Button, SurfaceVisualization,
-    FixedIntervalNormalizer, Interval, ContoursLayer, RadioGroup, Checkbox, MultivariateFunction,
-    ScalarFieldSurface
+    ContoursLayer, RadioGroup, Checkbox, MultivariateFunction, ScalarFieldSurface
 } from "../../../src/index.js";
 
 const PI = Math.PI;
@@ -27,25 +26,11 @@ class MembraneFunction extends MultivariateFunction {
     set normalModeY(normalModeY) { this._normalModeY = normalModeY; }
 }
 
-class MembraneNormalizer extends FixedIntervalNormalizer {
-    update(amplitude) {
-        this._interval.from = -amplitude;
-        this._interval.to = amplitude;
-    }
-}
-
 const membraneFunction = new MembraneFunction();
 const membrane = new ScalarFieldSurface(membraneFunction);
-const membraneNormalizer = new MembraneNormalizer(
-    new Interval(-membraneFunction.amplitude, membraneFunction.amplitude)
-);
 
-const contours = new ContoursLayer({
-    normalizer: membraneNormalizer
-});
-const surfaceView = new SurfaceVisualization({
-    normalizer: membraneNormalizer
-}).addOverlayLayer(contours);
+const contours = new ContoursLayer();
+const surfaceView = new SurfaceVisualization().addOverlayLayer(contours);
 
 Simulation
     .with({
@@ -59,10 +44,7 @@ Simulation
     })
     .bind(membrane.alwaysWith(surfaceView))
     .runsEvery(0.016)
-    .onStep((clock, _) => {
-        membraneNormalizer.update(membraneFunction.amplitude);
-        membraneFunction.time = clock.simulatedTime;
-    })
+    .onStep((clock, _) => membraneFunction.time = clock.simulatedTime)
     .frameSceneOn(surfaceView, {
         padding: 0.65,
         translationY: -1.25

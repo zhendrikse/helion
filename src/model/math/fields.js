@@ -36,6 +36,10 @@ export class ScalarField extends Field {
     sample(u, v) {
         return 0;
     }
+
+    rangeAt(resolution) {
+        return new Interval();
+    }
 }
 
 export class ComplexField extends Field {
@@ -63,6 +67,18 @@ export class MultivariateFunction extends ScalarField {
         this._func = func;
     }
 
+    rangeAt(surfaceResolution, time = 0) {
+        const interval = new Interval();
+        for (let i = 0; i < surfaceResolution.u; i++)
+            for (let j = 0; j < surfaceResolution.v; j++)
+                interval.include(this._func(
+                    this.domain.xRange.scaleUnitParameter(i / surfaceResolution.u),
+                    this.domain.yRange.scaleUnitParameter(j / surfaceResolution.v),
+                    time
+                ));
+        return interval;
+    }
+
     sample(u, v) {
         const x = this.domain.xRange.scaleUnitParameter(u);
         const y = this.domain.yRange.scaleUnitParameter(v);
@@ -82,10 +98,16 @@ export class RealFunction extends ScalarField {
         this._func = func;
     }
 
+    rangeAt(surfaceResolution) {
+        const interval = new Interval();
+        for (let i = 0; i < surfaceResolution; i++)
+            interval.include(this._func(this.domain.scaleUnitParameter(i)));
+        return interval;
+    }
+
     sample(u, target = new Vec2()) {
         const x = this.domain.scaleUnitParameter(u);
         target.set(x, this._func(x));
-        return target;
     }
 }
 
@@ -136,6 +158,7 @@ export class DiscreteScalarField extends ScalarField {
 
     get nx() { return this._nx; }
     get ny() { return this._ny; }
+    get data() { return this._data; }
 
     index(x, y) {
         return y * this._nx + x;
@@ -154,11 +177,11 @@ export class DiscreteScalarField extends ScalarField {
         return this;
     }
 
-    get range() {
+    rangeAt(surfaceResolution) {
         const interval = new Interval();
         for (let i = 0; i < this.nx; i++)
             for (let j = 0; j < this.ny; j++)
-                interval.shrinkTo(this.valueAt(i, j));
+                interval.include(this.valueAt(i, j));
         return interval;
     }
 

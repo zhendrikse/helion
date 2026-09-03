@@ -79,14 +79,7 @@ export class Layer extends Renderable3D {
     }
 
     updateNormalizerWith(model) {
-        for (let i = 0; i <= this._resolution.u; i++) {
-            const u = i / this._resolution.u;
-            for (let j = 0; j <= this._resolution.v; j++) {
-                const v = j / this._resolution.v;
-                model.frameAt(u, v, this._frame);
-                this._normalizer.include(this._colorLayer.value(this._frame));
-            }
-        }
+        this._normalizer.adaptTo(model.rangeAt(this._resolution));
     }
 }
 

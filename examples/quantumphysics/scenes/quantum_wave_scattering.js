@@ -46,6 +46,9 @@ const simulation = Simulation
         htmlDivId: "quantumScattering",
         viewport: {
             aspectRatio: "19/12"
+        },
+        headUpDisplay: {
+            enabled: false
         }
     })
     .appendStartStopResetUI()

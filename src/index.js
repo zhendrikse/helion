@@ -72,7 +72,8 @@ export {
 } from "./view/3d/primitives/primitives.js";
 
 export {
-    SurfaceVisualization, ColorLayers, FixedIntervalNormalizer, SurfaceResolution
+    SurfaceVisualization, ColorLayers, FixedIntervalNormalizer, SurfaceResolution,
+    AdaptiveNormalizer, AdaptiveSymmetricNormalizer
 } from "./view/3d/surfaces/visualization.js";
 
 export {
