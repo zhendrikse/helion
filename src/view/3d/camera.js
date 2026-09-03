@@ -29,7 +29,7 @@ export class ThreeJsCamera {
 
     _createCamera(viewport, position, fieldOfView, orthographic) {
         const aspect = viewport.width / viewport.height;
-        const frustum = 4;
+        const frustum = position.z;
         const camera = orthographic ?
             new OrthographicCamera(
                 -frustum * aspect / 2, frustum * aspect / 2,

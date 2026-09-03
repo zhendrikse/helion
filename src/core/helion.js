@@ -173,7 +173,8 @@ export class Simulation {
             target: new Vec3(0, 0, 0),
             fieldOfView: 50,
             controls: true,
-            autoRotate: false
+            autoRotate: false,
+            orthographic: false
         },
         scene = {
             background: ThreeJsScene.Background.TRANSPARENT,

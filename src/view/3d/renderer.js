@@ -74,16 +74,6 @@ export class ThreeJsRenderer extends Renderer {
 
         this.resize();
         window.addEventListener("resize", () => this.resize());
-        // console.log({
-        //     wrapper: viewport.canvasWrapper.getBoundingClientRect(),
-        //     canvas: viewport.canvas.getBoundingClientRect(),
-        //     labels: this._labelRenderer.domElement.getBoundingClientRect()
-        // });
-        // console.log(
-        //     getComputedStyle(this._labelRenderer.domElement).top,
-        //     getComputedStyle(this._labelRenderer.domElement).left,
-        //     getComputedStyle(this._labelRenderer.domElement).transform
-        // );
     }
 
     #createLabelRenderer(viewport) {
