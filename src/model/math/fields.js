@@ -1,5 +1,5 @@
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
-import {Complex, Interval, Vec3} from "./math.js";
+import {Complex, Interval, Vec2, Vec3} from "./math.js";
 import {DifferentiableSurface} from "./surfaces.js";
 
 export class Domain {
@@ -70,6 +70,32 @@ export class MultivariateFunction extends ScalarField {
     }
 
     set time(time) { this._time = time; }
+}
+
+export class RealFunction extends ScalarField {
+    constructor({
+        domain = new Interval(-1, 1),
+        func = x => 0
+    } = {}) {
+        super();
+        this.domain = domain;
+        this._func = func;
+    }
+
+    evaluate(x) {
+        return this._func(x);
+    }
+
+    setFunction(func) {
+        this._func = func;
+        return this;
+    }
+
+    sample(u, target = new Vec2()) {
+        const x = this.domain.scaleUnitParameter(u);
+        target.set(x, this._func(x));
+        return target;
+    }
 }
 
 export class ComplexFunctionSample {

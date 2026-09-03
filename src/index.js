@@ -35,7 +35,7 @@ export {
 
 export {
     Domain, DiscreteScalarField, DiscreteComplexField, VectorField, ComplexFunction, MultivariateFunction,
-    ComplexFunctionSample
+    ComplexFunctionSample, RealFunction
 } from "./model/math/fields.js";
 
 export { ComplexSurfaceView3D, WaveFunctionSurface3D } from "./view/3d/surfaces/complex.js";
@@ -64,7 +64,7 @@ export {
 } from "./model/math/numerics/solvers/solvers.js";
 
 export {
-    CylinderSegmentsView, BoxSegmentsView, LineSegmentsView, LineSegmentView
+    CylinderSegmentsView, BoxSegmentsView, LineSegmentsView, LineSegmentView, CurveView
 } from "./view/3d/composite/segmentviews.js"
 
 export {

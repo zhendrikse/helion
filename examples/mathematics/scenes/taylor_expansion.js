@@ -1,7 +1,7 @@
 import { MeshBasicMaterial, Color } from "three";
 import {
     LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Grid, Interval, Label,
-    Arrow2D, ColorMappers, FunctionGraph, LinearCombination, Vec2
+    Arrow2D, ColorMappers, RealFunction, CurveView, LinearCombination, Vec2
 } from "../../../src/index.js";
 
 const xMin = -4;
@@ -71,27 +71,19 @@ const simulation = Simulation
         }
     });
 
-function exp(x) {
-    return Math.exp(x);
-}
-
 const size = .5 * (xMax - xMin);
 const grid = new Grid({ size, stepSize: .5 });
 const xAxis = new LineSegment(new Vec2(-2 * size, -size), new Vec2(0.25, -size), 0xffffff);
 const yAxis = new LineSegment(new Vec2(0, -2 * size), new Vec2(0, 0.25), 0xffffff);
 
-const exactGraph = new FunctionGraph({
-    func: exp,
-    interval: new Interval(xMin, xMax),
-    samples,
-    yOffset: -size
+const exactFunction = new RealFunction({
+    domain: new Interval(xMin, xMax),
+    func: x => Math.exp(x) - size
 });
 
-const approximationGraph = new FunctionGraph({
-    func: x => taylorExpansion.evaluate(x, 1),
-    interval: new Interval(xMin, xMax),
-    samples,
-    yOffset: -size
+const approximatedFunction = new RealFunction({
+    domain: new Interval(xMin, xMax),
+    func: x => taylorExpansion.evaluate(x, 1) - size
 });
 
 simulation
@@ -125,11 +117,13 @@ simulation
         color: "#0xbbbbbb",
         offset: () => new Vec2(0.1, 2.1 * size)
     })))
-    .bind(exactGraph.onceWith(new LineSegmentsView({
+    .bind(exactFunction.onceWith(new CurveView({
+        resolution: samples,
         lineWidth: 3,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0x00ff00})
     })))
-    .bind(approximationGraph.onceWith(new LineSegmentsView({
+    .bind(approximatedFunction.onceWith(new CurveView({
+        resolution: samples,
         lineWidth: 2,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0xff0000})
     })))
@@ -138,7 +132,7 @@ simulation
         .withValue(1)
         .onInput(event => {
             const terms = Number(event.target.value);
-            approximationGraph.setFunction(x => taylorExpansion.evaluate(x, terms));
+            approximatedFunction.setFunction(x => taylorExpansion.evaluate(x, terms) - size);
             simulation.setLatexTitle("e^x = " + taylorLatex(terms));
         })
     );

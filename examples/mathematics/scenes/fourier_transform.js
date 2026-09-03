@@ -1,5 +1,5 @@
 import {
-    FunctionGraph, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
+    RealFunction, CurveView, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
     Grid, Interval, Label, Arrow2D, ColorMappers, LinearCombination, Vec2
 } from "../../../src/index.js";
 
@@ -48,20 +48,10 @@ const constantCoefficient = (func) => integrate(
     ) / (2 * halfPeriod);
 
 // Example function: f(x) = 2 cos(x) + 0.7 sin(x) + 3 cos(2x) - 1.2 sin(3x)
-// This function was chosen because its Fourier coordinates are easy to recognize
 function functionToExpand(x) {
     return 2 * Math.cos(x / 2) + 0.7 * Math.sin(x / 2) + 3 * Math.cos(x) - 1.2 * Math.sin(3 * x / 2);
 }
 
-/**
- * Construct the Fourier basis. The first basis vector is the constant function 1:
- *     1,
- *     cos(x/2),sin(x/2),
- *     cos(x),sin(x),
- *     cos(3x/2),sin(3x/2), etc.
- *
- * The corresponding first coefficient is a_0 / 2.
- */
 const maximumFrequency = 3;
 const basis = [x => 1];
 const coefficients = [constantCoefficient(functionToExpand)];
@@ -75,14 +65,6 @@ for (let n = 1; n <= maximumFrequency; n++) {
 
 const fourierExpansion = new LinearCombination({basis, coefficients});
 
-/**
- * Number of terms in the linear combination for a given frequency.
- *
- * Frequency 0: a_0 / 2
- * Frequency 1: a_0 / 2 + a_1 cos(x) + b_1 sin(x)
- * Frequency 2: a_0 / 2 + ... + a_2 cos(2x) + b_2 sin(2x)
- * etc.
- */
 function numberOfTermsForFrequency(frequency) {
     return 1 + 2 * frequency;
 }
@@ -114,16 +96,14 @@ const grid = new Grid({size, stepSize: Math.PI / 3});
 const xAxis = new LineSegment(new Vec2(-2.05 * size, 0), new Vec2(0.25, 0));
 const yAxis = new LineSegment(new Vec2(0, -2.05 * size), new Vec2(0, 0.25));
 
-const exactGraph = new FunctionGraph({
-    func: functionToExpand,
-    interval,
-    samples
+const exactFunction = new RealFunction({
+    domain: interval,
+    func: functionToExpand
 });
 
-const approximationGraph = new FunctionGraph({
-    func: x => fourierExpansion.evaluate(x, numberOfTermsForFrequency(0)),
-    interval,
-    samples
+const approximatedFunction = new RealFunction({
+    domain: interval,
+    func: x => fourierExpansion.evaluate(x, numberOfTermsForFrequency(0))
 });
 
 simulation
@@ -157,11 +137,13 @@ simulation
         color: "#ffffff",
         offset: () => new Vec2(0, 2.2 * size)
     })))
-    .bind(exactGraph.onceWith(new LineSegmentsView({
+    .bind(exactFunction.onceWith(new CurveView({
+        resolution: samples,
         lineWidth: 3,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0x00ff00 })
     })))
-    .bind(approximationGraph.onceWith(new LineSegmentsView({
+    .bind(approximatedFunction.onceWith(new CurveView({
+        resolution: samples,
         lineWidth: 2,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xff0000 })
     })))
@@ -171,7 +153,7 @@ simulation
         .onInput(event => {
             const frequency = Number(event.target.value);
             const terms = numberOfTermsForFrequency(frequency);
-            approximationGraph.setFunction(x => fourierExpansion.evaluate(x, terms));
+            approximatedFunction.setFunction(x => fourierExpansion.evaluate(x, terms));
             simulation.setLatexTitle(fourierLatex(frequency));
         })
     );

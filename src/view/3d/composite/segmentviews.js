@@ -6,7 +6,7 @@ import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 import { Renderable3D } from "../../renderer.js";
-import { Vec3 } from "../../../model/math/math.js";
+import { Interval, Vec2, Vec3 } from "../../../model/math/math.js";
 import { LineSegment, Segments } from "../../../model/math/objects.js";
 import { ColorMappers } from "../../colormappers.js";
 
@@ -202,7 +202,6 @@ export class LineSegmentsView extends LineSegmentView {
             }
     }
 
-
     canBindTo(segments) {
         if (!(segments instanceof Segments))
             throw new Error("An instanced segments view can only be bound to a Segments collection.");
@@ -224,6 +223,55 @@ export class LineSegmentsView extends LineSegmentView {
                 this._color.r, this._color.g, this._color.b,
                 this._color.r, this._color.g, this._color.b
             );
+        }
+
+        this._geometry.setPositions(positions);
+        this._geometry.setColors(colors);
+
+        if (this._material.dashed)
+            this._line.computeLineDistances();
+    }
+}
+
+export class CurveView extends LineSegmentsView {
+    constructor({
+        resolution = 200,
+        lineWidth = 2,
+        colorMapper = ColorMappers.get(ColorMappers.Uniform, {color: 0xffff00}),
+        visible = true
+    } = {}) {
+        super({ lineWidth, visible, colorMapper });
+        this._resolution = resolution;
+        this._tmpA = new Vec2();
+        this._tmpB = new Vec2();
+    }
+
+    canBindTo(model) {
+        // RealFunction: has Interval domain and sample(u, target)
+        if (!(model.domain instanceof Interval) || typeof model.sample !== 'function')
+            throw new Error("A curve view can only be bound to a model with an Interval domain and a sample() method."); 
+
+        return true;
+    }
+
+    initialize(model) {
+        this._3d = false;
+    }
+
+    synchronizeWith(model) {
+        const positions = [];
+        const colors = [];
+        const resolution = this._resolution;
+
+        for (let i = 0; i < resolution; i++) {
+            const from = model.sample(i / resolution, this._tmpA);
+            const to = model.sample((i + 1) / resolution, this._tmpB);
+            positions.push(from.x, from.y, 0, to.x, to.y, 0);
+
+            // Use midpoint y for coloring; keep alpha via colorMapper if needed
+            const mid = (from.y + to.y) * 0.5;
+            this._colorMapper.map(mid, this._color);
+            colors.push(this._color.r, this._color.g, this._color.b, this._color.r, this._color.g, this._color.b);
         }
 
         this._geometry.setPositions(positions);
