@@ -317,62 +317,91 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     }
 }
 
-
-export class ComplexSurfaceView2D extends Renderable2D {
-    constructor({
-        showPhaseColour = true,
-        brightnessFunction = modulus => modulus > 1.0 ? 1.0 : modulus,
-        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl),
-        defaultResolution = new SurfaceResolution(400, 400),
-    } = {}) {
+/**
+ * Base for 2D complex-field views (DataTexture).
+ * Mirrors ComplexFieldViewable (3D) for 2D: same sample/valueAt contract,
+ * same resolution() and canBindTo() with valueAt fast-path for discrete grids.
+ */
+export class ComplexFieldViewable2D extends Renderable2D {
+    constructor(defaultResolution = new SurfaceResolution(200, 200)) {
         super();
-        this._brightnessFunction = brightnessFunction;
-        this._colorMapper = colorMapper;
-        this._resolution = defaultResolution;
-        this._rgb = new Color();
-        this._sample = new ComplexFunctionSample();
-        this._colorData = { phase: 0, modulus: 0 }
         this._fieldIsDiscrete = false;
-
-        this._mesh = null;    // To be determined in initialize()
-        this._pixels = null;  // To be determined in initialize()
-        this._texture = null; // To be determined in initialize()
-        this._phaseColor = showPhaseColour;
+        this._sample = new ComplexFunctionSample();
+        this._resolution = defaultResolution;
+        this._mesh = null;
+        this._pixels = null;
+        this._texture = null;
     }
 
     resolution(field) {
         return {
             width: this._fieldIsDiscrete ? field.nx : this._resolution.u,
             height: this._fieldIsDiscrete ? field.ny : this._resolution.v,
+        };
+    }
+
+    canBindTo(field) {
+        this._fieldIsDiscrete = field.nx !== undefined && field.ny !== undefined;
+        if (this._fieldIsDiscrete) {
+            if (!field.valueAt)
+                throw new Error("2D complex view needs valueAt() on discrete field");
+        } else {
+            if (!field.sample)
+                throw new Error("2D complex view needs sample() on continuous field");
         }
+        return true;
+    }
+
+    dispose() {
+        if (!this._mesh) return;
+        this.remove(this._mesh);
+        this._mesh.geometry.dispose();
+        this._mesh.material.dispose();
+        if (this._texture) this._texture.dispose();
+        this._mesh = null;
+        this._pixels = null;
+        this._texture = null;
+    }
+
+    get boundingBox() {
+        if (!this._mesh) return new Box3();
+        this._mesh.geometry.computeBoundingBox();
+        return this._mesh.geometry.boundingBox;
+    }
+}
+
+export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
+    constructor({
+        showPhaseColour = true,
+        brightnessFunction = modulus => modulus > 1.0 ? 1.0 : modulus,
+        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl),
+        defaultResolution = new SurfaceResolution(400, 400),
+    } = {}) {
+        super(defaultResolution);
+        this._brightnessFunction = brightnessFunction;
+        this._colorMapper = colorMapper;
+        this._rgb = new Color();
+        this._colorData = { phase: 0, modulus: 0 };
+        this._phaseColor = showPhaseColour;
     }
 
     initialize(field) {
+        this.dispose();
         const { width, height } = this.resolution(field);
         const pixels = new Uint8Array((width + 1) * (height + 1) * 4);
         const texture = new DataTexture(pixels, width + 1, height + 1, RGBAFormat);
         texture.needsUpdate = true;
+        // World size: discrete keeps 1 world unit per texel, continuous uses 4x4 domain
+        const worldWidth = this._fieldIsDiscrete ? width : 4;
+        const worldHeight = this._fieldIsDiscrete ? height : 4;
         this._mesh = new Mesh(
-            new PlaneGeometry(width, height),
-            new MeshBasicMaterial({ map: texture, transparent: true })
+            new PlaneGeometry(worldWidth, worldHeight),
+            new MeshBasicMaterial({ map: texture, transparent: true, side: DoubleSide })
         );
         this.add(this._mesh);
 
         this._pixels = pixels;
         this._texture = texture;
-    }
-
-    canBindTo(field) {
-        this._fieldIsDiscrete = field.nx !== undefined && field.ny !== undefined;
-
-        if (this._fieldIsDiscrete)
-            if (!field.valueAt)
-                throw new Error("Surface view needs fieldAt() method on discrete field to obtain data");
-            else
-            if (!field.sample)
-                throw new Error("Surface view needs sample() method on continuous field to obtain data");
-
-        return true;
     }
 
     ui() {
@@ -392,33 +421,39 @@ export class ComplexSurfaceView2D extends Renderable2D {
         const sample = this._sample;
         let index = 0;
 
-        for (let y = 0; y <= width; y++)
-            for (let x = 0; x <= height; x++) {
+        for (let y = 0; y <= height; y++) {
+            for (let x = 0; x <= width; x++) {
                 if (this._fieldIsDiscrete)
                     field.valueAt(x, y, sample);
                 else
                     field.sample(x / width, y / height, sample);
-                const phase = sample.phase;
+
                 const modulus = sample.magnitude;
-                let brightness = modulus * this._brightness;
-                if (brightness > 1.0) brightness = 1.0;
+                const intensity = this._brightnessFunction(modulus);
 
                 if (this._phaseColor) {
-                    this._colorData.phase = phase;
+                    this._colorData.phase = sample.phase;
                     this._colorData.modulus = modulus;
                     this._colorMapper.map(this._colorData, this._rgb);
-                    this._pixels[index++] = Math.round(this._rgb.r * 255);
-                    this._pixels[index++] = Math.round(this._rgb.g * 255);
-                    this._pixels[index++] = Math.round(this._rgb.b * 255 );
-                    this._pixels[index++] = Math.round(this._brightnessFunction(modulus) * 255);
+                    // Modulate RGB with intensity, keep alpha opaque (no shine-through)
+                    this._pixels[index++] = Math.round(this._rgb.r * intensity * 255);
+                    this._pixels[index++] = Math.round(this._rgb.g * intensity * 255);
+                    this._pixels[index++] = Math.round(this._rgb.b * intensity * 255);
+                    this._pixels[index++] = 255;
                 } else {
                     this._pixels[index++] = 255;
                     this._pixels[index++] = 255;
                     this._pixels[index++] = 0;
-                    this._pixels[index++] = Math.log(1 + this._brightnessFunction(modulus)) * 255;
+                    this._pixels[index++] = 255;
                 }
             }
+        }
 
         this._texture.needsUpdate = true;
+        this._mesh.material.map.needsUpdate = true;
     }
 }
+
+// Aliases for backwards compat / symmetry with 3D
+export const DiscreteComplexFieldSurfaceView2D = ComplexSurfaceView2D;
+export const WaveFunctionSurface2D = ComplexSurfaceView2D;
