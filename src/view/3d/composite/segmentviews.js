@@ -242,8 +242,8 @@ export class CurveView extends LineSegmentsView {
     } = {}) {
         super({ lineWidth, visible, colorMapper });
         this._resolution = resolution;
-        this._tmpA = new Vec2();
-        this._tmpB = new Vec2();
+        this._from = new Vec2();
+        this._to = new Vec2();
     }
 
     canBindTo(model) {
@@ -264,12 +264,12 @@ export class CurveView extends LineSegmentsView {
         const resolution = this._resolution;
 
         for (let i = 0; i < resolution; i++) {
-            const from = model.sample(i / resolution, this._tmpA);
-            const to = model.sample((i + 1) / resolution, this._tmpB);
-            positions.push(from.x, from.y, 0, to.x, to.y, 0);
+            model.sample(i / resolution, this._from);
+            model.sample((i + 1) / resolution, this._to);
+            positions.push(this._from.x, this._from.y, 0, this._to.x, this._to.y, 0);
 
             // Use midpoint y for coloring; keep alpha via colorMapper if needed
-            const mid = (from.y + to.y) * 0.5;
+            const mid = (this._from.y + this._to.y) * 0.5;
             this._colorMapper.map(mid, this._color);
             colors.push(this._color.r, this._color.g, this._color.b, this._color.r, this._color.g, this._color.b);
         }
