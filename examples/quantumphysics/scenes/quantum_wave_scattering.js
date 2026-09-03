@@ -105,7 +105,9 @@ function setDimension(dimension3d = true) {
     potentialBarrier.visible = dimension3d;
     waveFunctionSurface2d.visible = !dimension3d;
     potentialBarrier2d.visible = !dimension3d;
-    simulation.cameraPosition = dimension3d ?
-        new Vec3(-1, .7, .75).multiplyScalar(.75 * xMax) :
-        new Vec3(0, 0, xMax * 2)
+    simulation.orthographic = !dimension3d;
+    if (dimension3d)
+        simulation.frameSceneOn(waveFunctionSurface, {padding: 1.2, translationY: 0, viewDirection: new Vec3(-1, .7, .75)});
+    else
+        simulation.frameSceneOn(waveFunctionSurface2d, {padding: 1.1, translationY: 0, viewDirection: new Vec3(0, 0, 1)});
 }

@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Vector3 } from "three";
+import { PerspectiveCamera, OrthographicCamera, Vector3 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Vec3 } from "../../model/math/math.js";
 
@@ -7,11 +7,14 @@ export class ThreeJsCamera {
         position = new Vec3(3, 3, 3),
         target = new Vec3(0, 0, 0),
         fieldOfView = 50,
+        orthographic = false,
         controls = true,
         autoRotate = false
     } = {}) {
-        this._camera = new PerspectiveCamera(fieldOfView, viewport.width / viewport.height, 0.1, 1e6);
-        this._camera.position.copy(position);
+        this._viewport = viewport;
+        this._orthographic = orthographic;
+        this._fieldOfView = fieldOfView;
+        this._camera = this._createCamera(viewport, position, fieldOfView, orthographic);
         this._controls = null;
         this._autoRotate = autoRotate;
         this._autoRotateTheta = Math.PI / 2;
@@ -20,11 +23,67 @@ export class ThreeJsCamera {
         if (controls) {
             this._controls = new OrbitControls(this._camera, viewport.canvas);
             this._controls.target.copy(target);
+            this._applyControlLimits();
         }
     }
 
+    _createCamera(viewport, position, fieldOfView, orthographic) {
+        const aspect = viewport.width / viewport.height;
+        let camera;
+        if (orthographic) {
+            const frustum = 4;
+            camera = new OrthographicCamera(
+                -frustum * aspect / 2, frustum * aspect / 2,
+                frustum / 2, -frustum / 2,
+                0.1, 1e6
+            );
+        } else {
+            camera = new PerspectiveCamera(fieldOfView, aspect, 0.1, 1e6);
+        }
+        camera.position.copy(position);
+        return camera;
+    }
+
+    _applyControlLimits() {
+        if (!this._controls) return;
+        if (this._orthographic) {
+            this._controls.enableRotate = false;
+            this._controls.enablePan = false;
+            this._controls.enableZoom = true;
+        } else {
+            this._controls.enableRotate = true;
+            this._controls.enablePan = true;
+            this._controls.enableZoom = true;
+        }
+    }
+
+    set orthographic(orthographic) {
+        if (this._orthographic === orthographic) return;
+        this._orthographic = orthographic;
+        const pos = this._camera.position.clone();
+        const target = this._controls ? this._controls.target.clone() : new Vector3(0, 0, 0);
+        if (this._controls) {
+            this._controls.dispose();
+            this._controls = null;
+        }
+        this._camera = this._createCamera(this._viewport, pos, this._fieldOfView, orthographic);
+        this._controls = new OrbitControls(this._camera, this._viewport.canvas);
+        this._controls.target.copy(target);
+        this._applyControlLimits();
+        this._camera.updateProjectionMatrix();
+    }
+
     onResize(width, height) {
-        this._camera.aspect = width / height;
+        if (this._camera.isOrthographicCamera) {
+            const frustum = this._camera.top * 2;
+            const aspect = width / height;
+            this._camera.left = -frustum * aspect / 2;
+            this._camera.right = frustum * aspect / 2;
+            this._camera.top = frustum / 2;
+            this._camera.bottom = -frustum / 2;
+        } else {
+            this._camera.aspect = width / height;
+        }
         this._camera.updateProjectionMatrix();
     }
 
@@ -57,18 +116,33 @@ export class ThreeJsCamera {
         const boundingBox = anObject.boundingBox;
         const { center, size } = this.#calculateCenter(boundingBox);
 
-        // distance so that bounding box is always in view
         const maxDim = Math.max(size.x, size.y, size.z);
-        const verticalFieldOfView = Math.PI  * this._camera.fov / 180;
-        let distance = maxDim / Math.tan(verticalFieldOfView / 2);
-        distance = Math.max(distance * options.padding, options.minDistance);
-
         const direction = options.viewDirection.clone().normalize();
-        this._camera.position
-            .set(center.x, center.y + options.translationY, center.z)
-            .addScaledVector(new Vector3(direction.x, direction.y, direction.z), distance);
-        this._camera.near = distance / 100;
-        this._camera.far = distance * 10;
+
+        if (this._camera.isOrthographicCamera) {
+            const aspect = this._viewport.width / this._viewport.height;
+            const frustum = maxDim * options.padding;
+            this._camera.left = -frustum * aspect / 2;
+            this._camera.right = frustum * aspect / 2;
+            this._camera.top = frustum / 2;
+            this._camera.bottom = -frustum / 2;
+            this._camera.near = 0.1;
+            this._camera.far = frustum * 20;
+            this._camera.position
+                .set(center.x, center.y + options.translationY, center.z)
+                .addScaledVector(new Vector3(0, 0, 1), frustum * 2);
+            this._camera.lookAt(center);
+        } else {
+            const verticalFieldOfView = Math.PI  * this._camera.fov / 180;
+            let distance = maxDim / Math.tan(verticalFieldOfView / 2);
+            distance = Math.max(distance * options.padding, options.minDistance);
+
+            this._camera.position
+                .set(center.x, center.y + options.translationY, center.z)
+                .addScaledVector(new Vector3(direction.x, direction.y, direction.z), distance);
+            this._camera.near = distance / 100;
+            this._camera.far = distance * 10;
+        }
         this._camera.updateProjectionMatrix();
 
         this._controls?.target.copy(center);

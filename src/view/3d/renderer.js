@@ -52,9 +52,10 @@ export class ThreeJsRenderer extends Renderer {
         this._controls = null;
     }
 
-    set autoRotate(autoRotate)   { this._camera.autoRotate = autoRotate; }
-    set cameraPosition(position) { this._camera.camera.position.copy(position); }
-    set axesVisible(visible)     { if (this._axes) this._axes.visible = visible; }
+    set autoRotate(autoRotate)     { this._camera.autoRotate = autoRotate; }
+    set cameraPosition(position)   { this._camera.camera.position.copy(position); }
+    set axesVisible(visible)       { if (this._axes) this._axes.visible = visible; }
+    set orthographic(orthographic) { this._camera.orthographic = orthographic; }
 
     attach(viewport) {
         this._renderer = new WebGLRenderer({

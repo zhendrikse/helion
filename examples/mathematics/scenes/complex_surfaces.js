@@ -94,7 +94,7 @@ class SurfaceController {
             this._simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
         } else {
             this._simulation.bind(func.onceWith(surfaceView2D));
-            this._simulation.frameSceneOn(surfaceView2D, {padding: 0.5, translationY: 0, viewDirection: new Vec3(0, 0, 1)});
+            this._simulation.frameSceneOn(surfaceView2D);
         }
         this._simulation.setLatexTitle("\\Large{f(z) = " + functionsRegistry.get(surfaceId).latex + "}");
     }
@@ -135,6 +135,7 @@ function setDimension(dimension3d = true) {
     surfaceView.visible = dimension3d;
     surfaceView2D.visible = !dimension3d;
     if (!dimension3d) simulation.removeAxes();
+    simulation.orthographic = !dimension3d;
     // re-bind current function so the now-visible view gets initialized
     surfaceController.changeSurface(surfaceController.currentSurfaceId);
 }
