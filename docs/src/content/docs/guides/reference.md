@@ -34,6 +34,7 @@ Factory: `Simulation.with(options)` → `Simulation` instance. All methods are c
 | `cameraPosition` | `Vec3` | `(3,3,3)` | Initial camera |
 | `controlsTarget` | `Vec3` | `(0,0,0)` | OrbitControls target |
 | `fieldOfView` | `number` | `50` | Perspective FOV |
+| `orthographic` | `boolean` | `false` | `camera:{orthographic:true}` or `simulation.setOrthographic(bool)` — orthographic disables rotate/pan, only zoom |
 | `shadowsEnabled` | `boolean` | `false` | Three.js shadows |
 | `headUpDisplay` | `boolean` | `false` | HUD overlay |
 | `parameterMenuCollapsed` | `boolean` | `true` | Controls collapsed |
@@ -54,8 +55,10 @@ Simulation.with({ htmlDivId: "container", scale: 1e-9, headUpDisplay: true })
   .bind(model.alwaysWith(view))             // continuous sync
   .bind(model.onceWith(view))               // one-shot sync
   .append(new Slider("k").withRange(...))   // controls
-  .provideAxesAround(view)                  // axes + AxesUI
-  .frameSceneOn(view, { padding: 1.2 })
+   .provideAxesAround(view)                  // axes + AxesUI
+   .frameSceneOn(view, { padding: 1.2 })
+   .setOrthographic(true)                      // switch to orthographic top-down for 2D
+   .removeAxes() / setAxesVisible(false)       // hide axes for 2D
   .setupGraphWith({ dataDefinition, title })
   .plot([t, value])
   .withMouseClickEventListener()             // click → start/pause/reset
@@ -141,6 +144,16 @@ field.sample(u,v,target);         // bilinear (stub, uses index())
 field.nx; field.ny; field.size; field.real; field.imag; // Float32Array
 field.index(x,y); field.valueAt(i,j,target); // writes Complex
 field.reset(); field.evolve(solver, dt);
+```
+
+### `RealFunction({ domain=new Interval(-1,1), func=x=>0 })`
+
+```js
+const f = new RealFunction({ domain:new Interval(-3,3), func:x=>Math.sin(x)/x });
+f.domain; // Interval
+f.evaluate(x); // number
+f.sample(u, target=new Vec2()); // u∈[0,1] → Vec2(x,y)
+f.setFunction(newFunc); // for Taylor/Fourier demos
 ```
 
 ### `VectorField` / `NormalizedScalarField`
@@ -373,6 +386,20 @@ new PotentialField3DRaster({ width=200, height=200, heightScale=100, color, opac
  // canBindTo: field.valueAt && field.nx && field.ny
 ```
 
+### Complex field views (2D/3D)
+
+```js
+import { ComplexFunction, ComplexSurfaceView2D, ComplexSurfaceView3D, WaveFunctionSurface3D } from "helion";
+// 3D: ComplexFieldViewable base → ComplexSurfaceView3D (tanh height) / WaveFunctionSurface3D (log height, shader + alpha)
+// 2D: ComplexFieldViewable2D base → ComplexSurfaceView2D (DataTexture, world 4x4 or nx*ny)
+const view3D = new ComplexSurfaceView3D({ defaultResolution:new SurfaceResolution(400,400), maxHeight:4 });
+const view2D = new ComplexSurfaceView2D({ defaultResolution:new SurfaceResolution(400,400), brightnessFunction:m=>Math.exp(-0.5*m) });
+view3D.colorMapper = view2D.colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl); // shared control
+```
+
+- Both share `sample(u,v, ComplexFunctionSample{input,output})` / `valueAt` contract and `resolution()` logic; `valueAt` is used for discrete grids (performance) without interpolation.
+- 2D uses `brightnessFunction` to modulate RGB (kept opaque) to avoid old-frame shine-through.
+
 ### 2D rasters
 
 ```js
@@ -381,6 +408,19 @@ new ComplexScalarFieldRaster({ width=512, height=512, showPhaseColour, brightnes
 new FieldEdgeIntensityPixelRaster({ nx=100, ny=100, edgeHeight=100 })
 new ParticleCloudView({ particleCount=5000, type="Sphere" })
 ```
+
+### 1D — CurveView (LineSegmentsView subclass)
+
+```js
+import { RealFunction, Interval, CurveView } from "helion";
+const f = new RealFunction({ domain:new Interval(-3,3), func:x=>Math.sin(x) });
+const curve = new CurveView({ resolution:200, lineWidth:3, colorMapper:ColorMappers.get(ColorMappers.Uniform) });
+simulation.bind(f.alwaysWith(curve)).frameSceneOn(curve);
+// update function later: f.setFunction(x=>Math.cos(x));
+```
+
+- `RealFunction` is sampled via `sample(u, Vec2)`; `CurveView` handles `valueAt` fast-path vs `sample` like the 2D/3D complex views.
+- Used in `examples/mathematics/scenes/taylor_expansion.js` and `fourier_transform.js` (migrated from `FunctionGraph`).
 
 ### Color mappers
 

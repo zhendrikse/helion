@@ -37,7 +37,7 @@ Different kinds of state share the same grammar, but keep their own semantics an
 
 | Concept | Question | Example |
 |---------|----------|---------|
-| `State` | What is the current state? | `DiscreteScalarField`, `DiscreteComplexField`, `RadialSymmetricBody` |
+| `State` | What is the current state? | `DiscreteScalarField`, `DiscreteComplexField`, `RealFunction`, `RadialSymmetricBody` |
 | `apply()` | How is the state transformed instantly? | `field.apply(new GaussianImpulse(...))` |
 | `evolve()` | How does the state evolve in time? | `field.evolve(solver, dt)` |
 | `bind()` | How is the state represented? | `simulation.bind(field.alwaysWith(view))` |
@@ -173,6 +173,7 @@ Current examples include:
 - `ScalarField` — real-valued field
 - `ComplexField` — complex-valued field
 - `VectorField` — vector-valued field
+- `RealFunction` — continuous 1D real function over an `Interval` (`new RealFunction({domain, func})`)
 - `MultivariateFunction` — continuous scalar field over a `Domain`
 - `ComplexFunction` — continuous complex field over a `Domain`
 - `DiscreteScalarField` — scalar values stored on a native grid
@@ -363,17 +364,20 @@ src/
   core/helion.js              Simulation, Binding, Viewport, SimulationClock, Registry
   core/controls.js            Slider, DropdownMenu, Checkbox, RadioGroup, Button
   model/math/math.js          Vec2, Vec3, Complex, Interval, Range, Domain
-  model/math/fields.js        Field, ScalarField, ComplexField, DiscreteScalarField, DiscreteComplexField
+  model/math/fields.js        Field, ScalarField, RealFunction, ComplexField, DiscreteScalarField, DiscreteComplexField
   model/math/surfaces.js      Surface, ParametricSurface, ScalarFieldSurface, DiscreteFieldSurface
   model/math/numerics/        DifferentialGeometry, solvers, integrators
   model/phys/bodies.js        Body, RadialSymmetricBody, Block, Lattice, BodyPair
   model/phys/forces.js        Force, GravitationalForce, CoulombForce, SpringForce
   model/transformations/      Operators (FFT2D, GaussianImpulse, DoubleSlit, …)
+  view/3d/surfaces/complex.js ComplexFieldViewable, ComplexSurfaceView3D, WaveFunctionSurface3D
   view/3d/surfaces/           SurfaceVisualization, layers, normalizers
-  view/3d/renderer.js         ThreeJsRenderer
+  view/3d/composite/segmentviews.js CurveView, LineSegmentsView
+  view/3d/renderer.js         ThreeJsRenderer (perspective/orthographic, axes)
+  view/3d/camera.js           ThreeJsCamera (perspective/orthographic, OrbitControls)
   view/3d/primitives/         Sphere, Box, Arrow, Trail, VectorView, …
   view/3d/composite/          PointCloudView, LatticeView, …
-  view/2d/views.js             2D field views and raster views
+  view/2d/views.js             ComplexFieldViewable2D, ComplexSurfaceView2D, 2D rasters
 ```
 
 Conceptually:
@@ -393,6 +397,10 @@ Simulation           Simulation, Binding, clock, controls
 ```
 
 The physics/simulation layers know nothing about visual scale; the render layer maps physics units to world units via `Simulation.with({ scale })`.
+
+For 2D plots an orthographic camera is available: `Simulation.with({ camera:{ orthographic:true } })` or `simulation.setOrthographic(true)` — orthographic disables rotate/pan (only zoom), useful for `ComplexSurfaceView2D` and `CurveView` top-down views. Axes around 3D surfaces can be toggled via `simulation.removeAxes()` / `setAxesVisible()`.
+
+1D functions use `RealFunction` + `CurveView` (resolution = segments) analogously to `MultivariateFunction` + `SurfaceVisualization` for 2D, e.g. `new RealFunction({domain:new Interval(-3,3), func:x=>Math.sin(x)})` bound with `new CurveView({resolution:200})`.
 
 ## Migration direction
 <div class="header_line"></div>
