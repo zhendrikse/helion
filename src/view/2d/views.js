@@ -416,32 +416,34 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
     synchronizeWith(field) {
         const { width, height } = this.resolution(field);
         const sample = this._sample;
-        let index = 0;
+        const brightness = this._brightnessFunction;
+        const sampleFunction = this._fieldIsDiscrete
+            ? field.valueAt.bind(field)
+            : field.sample.bind(field);
 
+        let index = 0;
         for (let y = 0; y <= height; y++) {
             for (let x = 0; x <= width; x++) {
                 if (this._fieldIsDiscrete)
-                    field.valueAt(x, y, sample);
+                    sampleFunction(x, y, sample);
                 else
-                    field.sample(x / width, y / height, sample);
+                    sampleFunction(x / width, y / height, sample);
 
-                const modulus = sample.magnitude;
-                const intensity = this._brightnessFunction(modulus);
-
+                const intensity = 255 * brightness(sample.magnitude);
                 if (this._phaseColor) {
                     this._colorData.phase = sample.phase;
-                    this._colorData.modulus = modulus;
+                    this._colorData.modulus = sample.magnitude;
                     this._colorMapper.map(this._colorData, this._rgb);
                     // Modulate RGB with intensity, keep alpha opaque (no shine-through)
-                    this._pixels[index++] = Math.round(this._rgb.r * intensity * 255);
-                    this._pixels[index++] = Math.round(this._rgb.g * intensity * 255);
-                    this._pixels[index++] = Math.round(this._rgb.b * intensity * 255);
+                    this._pixels[index++] = Math.round(this._rgb.r * intensity);
+                    this._pixels[index++] = Math.round(this._rgb.g * intensity);
+                    this._pixels[index++] = Math.round(this._rgb.b * intensity);
                 } else {
                     this._pixels[index++] = 255;
                     this._pixels[index++] = 255;
                     this._pixels[index++] = 0;
                 }
-                this._pixels[index++] = 255 * intensity;
+                this._pixels[index++] = intensity;
             }
         }
 
