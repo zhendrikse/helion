@@ -154,6 +154,14 @@ export class DiscreteScalarField extends ScalarField {
         return this;
     }
 
+    get range() {
+        const interval = new Interval();
+        for (let i = 0; i < this.nx; i++)
+            for (let j = 0; j < this.ny; j++)
+                interval.shrinkTo(this.valueAt(i, j));
+        return interval;
+    }
+
     get data() {
         return this._data;
     }

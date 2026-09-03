@@ -217,18 +217,13 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
     set context(context) { this._context = context; }
 
     canBindTo(discreteScalarField) {
-        return discreteScalarField.valueAt;
-    }
-
-    _maxMagnitude(scalarField, interval) {
-        for (let i = 0; i < scalarField.nx; i++)
-            for (let j = 0; j < scalarField.ny; j++)
-                interval.shrinkTo(scalarField.valueAt(i, j));
+        if (discreteScalarField.valueAt === undefined || discreteScalarField.range === undefined)
+            throw new Error("This view needs valueAt() and range() methods to display surface");
+        return true;
     }
 
     synchronizeWith(scalarField) {
-        const interval = new Interval();
-        this._maxMagnitude(scalarField, interval);
+        const interval = scalarField.range;
         let index = 0;
 
         for(let j = 0; j < this._height; j++)
@@ -282,22 +277,17 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
         this._rgb = new Color();
     }
 
-    canBindTo(field) {
-        return field.valueAt;
-    }
-
-    _maxMagnitude(scalarField, interval) {
-        for (let i = 0; i < scalarField.nx; i++)
-            for (let j = 0; j < scalarField.ny; j++)
-                interval.shrinkTo(scalarField.valueAt(i, j));
+    canBindTo(discreteScalarField) {
+        if (discreteScalarField.valueAt === undefined || discreteScalarField.range === undefined)
+            throw new Error("This view needs valueAt() and range() methods to display surface");
+        return true;
     }
 
     synchronizeWith(scalarField) {
-        const interval = new Interval();
-        this._maxMagnitude(scalarField, interval);
-
+        const interval = scalarField.range;
         const j = this._ny - 1;
         let index = 0;
+
         for (let i = 0; i < this._nx; i++) {
             const value = interval.normalize(scalarField.valueAt(i, j));
             this._colorMapper?.map(value, this._rgb);
