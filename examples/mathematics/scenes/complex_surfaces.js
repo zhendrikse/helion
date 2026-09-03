@@ -105,7 +105,7 @@ class SurfaceController {
 
 const surfaceView = new ComplexSurfaceView3D();
 const surfaceView2D = new ComplexSurfaceView2D({
-    brightnessFunction: modulus => Math.exp(-.375 * modulus)
+    brightnessFunction: modulus => Math.exp(-.5 * modulus)
 });
 
 const simulation = Simulation
