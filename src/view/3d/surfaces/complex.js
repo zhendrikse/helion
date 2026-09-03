@@ -79,6 +79,12 @@ export class ComplexFieldViewable extends Renderable3D {
     }
 }
 
+/**
+ * 3D surface view of a complex function, with height given by the modulus and color given by the phase.
+ * The modulus is compressed using a hyperbolic tangent to prevent poles and large values from dominating the visualization.
+ * 
+ * Note: The displayed height is therefore not the exact modulus for large values.
+ */
 export class ComplexSurfaceView3D extends ComplexFieldViewable {
     constructor({
         normalizer = new AdaptiveSymmetricNormalizer(),
@@ -98,7 +104,6 @@ export class ComplexSurfaceView3D extends ComplexFieldViewable {
 
     get colorMapper() { return this._colorMapper; }
     set colorMapper(mapper) { this._colorMapper = mapper; }
-
 
     initialize(field) {
         this.dispose();
