@@ -164,7 +164,7 @@ const simulation = Simulation.with({
         htmlDivId: "divCurlDemoContainer",
         camera: {
             orthographic: true,
-            position: new Vec3(0, 0, 4.5),
+            position: new Vec3(0, 0, 5),
         },
         infoPanel: {
             text: "<strong>Divergence:</strong><br/>" +
