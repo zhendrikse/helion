@@ -1,7 +1,6 @@
 import { PerspectiveCamera, OrthographicCamera, Vector3 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Vec3 } from "../../model/math/math.js";
-import { or } from "three/tsl";
 
 export class ThreeJsCamera {
     constructor(viewport, {
@@ -32,12 +31,13 @@ export class ThreeJsCamera {
         const aspect = viewport.width / viewport.height;
         const frustum = 4;
         const camera = orthographic ?
-            new PerspectiveCamera(fieldOfView, aspect, 0.1, 1e6) :
             new OrthographicCamera(
                 -frustum * aspect / 2, frustum * aspect / 2,
                 frustum / 2, -frustum / 2,
                 0.1, 1e6
-            );
+            ) :
+            new PerspectiveCamera(fieldOfView, aspect, 0.1, 1e6);
+
         camera.position.copy(orthographic ? new Vector3(0, 0, position.z) : position);
         return camera;
     }
