@@ -1,6 +1,5 @@
 import {
-    DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface,
-    WaveEquationSolver, DiscreteFieldBoxView, FixedIntervalNormalizer,
+    DiscreteScalarField, Simulation, Vec3, DiscreteFieldSurface, WaveEquationSolver, DiscreteFieldBoxView,
     SineImpulseOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization,
     SurfaceResolution, RadioGroup, Checkbox, ColorMappers
 } from "../../../src/index.js";
@@ -9,7 +8,6 @@ const resolution = 256;
 const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(resolution, resolution),
     colorMapper: new ColorMappers().get(ColorMappers.WaterAlternative)(),
-    normalizer: new FixedIntervalNormalizer(new Interval(-2, 2)),
     opacity: 0.9
 })
 waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
@@ -51,6 +49,9 @@ Simulation
             position: new Vec3(2, 1, 2.1).multiplyScalar(resolution * .75),
             aspectRatio: "19/12",
             fieldOfView: 20
+        },
+        headUpDisplay: {
+            enabled: false
         }
     })
     .bind(surface.alwaysWith(waterSurface))
