@@ -373,7 +373,7 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
     constructor({
         showPhaseColour = true,
         brightnessFunction = modulus => modulus > 1.0 ? 1.0 : modulus,
-        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl),
+        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsv),
         defaultResolution = new SurfaceResolution(400, 400),
     } = {}) {
         super(defaultResolution);
@@ -383,6 +383,8 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
         this._colorData = { phase: 0, modulus: 0 };
         this._phaseColor = showPhaseColour;
     }
+
+    set colorMapper(mapper) { this._colorMapper = mapper; }
 
     initialize(field) {
         this.dispose();

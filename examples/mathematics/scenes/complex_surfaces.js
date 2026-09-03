@@ -1,6 +1,6 @@
 import {
     Simulation, DropdownMenu, Domain, Registry, Range, ComplexSurfaceView3D,
-    SurfaceResolution, ComplexFunction, Complex, Slider, ComplexSurfaceView2D, RadioGroup, Vec3
+    SurfaceResolution, ComplexFunction, Complex, Slider, ComplexSurfaceView2D, RadioGroup, Vec3, ComplexColorMappers
 } from "../../../src/index.js";
 
 const one = new Complex(1, 0);
@@ -138,6 +138,15 @@ function setDimension(dimension3d = true) {
 }
 
 const surfaceController = new SurfaceController(simulation);
+// Shared color mapper control — updates both 2D and 3D views (was only 3D via surfaceView.ui())
+const sharedColorControl = new DropdownMenu()
+    .for(new ComplexColorMappers())
+    .addEventListener("change", event => {
+        const mapper = ComplexColorMappers.get(event.target.value);
+        surfaceView.colorMapper = mapper;
+        surfaceView2D.colorMapper = mapper;
+    });
+
 simulation
     .append(new DropdownMenu()
         .for(functionsRegistry)
@@ -146,7 +155,11 @@ simulation
         .add("2D", event => setDimension(false))
         .add("3D", event => setDimension(true))
         .checked(1))
-    .append(surfaceView.ui())
+    .append(sharedColorControl)
+    .append(new Slider("🪟 Opacity ")
+        .withRange(new Range(0, 1, 0.01))
+        .withValue(1)
+        .addEventListener("input", event => surfaceView._mesh.material.opacity = Number(event.target.value)))
     .append(new Slider("Maximum height: ")
         .on(surfaceView)
         .withProperty("maxHeight")

@@ -57,11 +57,13 @@ export class ComplexFieldViewable extends Renderable3D {
         return true;
     }
 
+    set colorMapper(mapper) { this._colorMapper = mapper; }
+
     ui() {
         return new CompoundControl()
             .add(new DropdownMenu()
                 .for(new ComplexColorMappers())
-                .addEventListener("change", event => this._colorMapper = ComplexColorMappers.get(event.target.value))
+                .addEventListener("change", event => this.colorMapper = ComplexColorMappers.get(event.target.value))
             )
             .add(new Slider("🪟 Opacity ")
                 .withRange(new Range(0, 1, 0.01))
@@ -80,7 +82,7 @@ export class ComplexFieldViewable extends Renderable3D {
 export class ComplexSurfaceView3D extends ComplexFieldViewable {
     constructor({
         normalizer = new AdaptiveSymmetricNormalizer(),
-        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsl),
+        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsv),
         maxHeight = 4,
         opacity = 1,
         defaultResolution = new SurfaceResolution(400, 400),
@@ -93,6 +95,9 @@ export class ComplexSurfaceView3D extends ComplexFieldViewable {
         this._colorMapper = colorMapper;
         this._color = new Color();
     }
+
+    get colorMapper() { return this._colorMapper; }
+    set colorMapper(mapper) { this._colorMapper = mapper; }
 
 
     initialize(field) {

@@ -400,8 +400,8 @@ export class ComplexColorMappers extends Registry {
         super({
             label: label,
             entries: {
-                Hsl: options => new ComplexHslColorMapper(),
                 Hsv: options => new ComplexHsvColorMapper(),
+                Hsl: options => new ComplexHslColorMapper(),
                 PhaseBands: options => new ComplexPhaseBandsColorMapper(),
                 Saturation: options => new ComplexSaturationColorMapper(),
                 BlackZero: options => new ComplexBlackZeroColorMapper(),
