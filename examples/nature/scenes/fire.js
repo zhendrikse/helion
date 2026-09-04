@@ -11,10 +11,10 @@ export class FireColorMapper extends ColorMapper {
         this._p3 = new Color(0xffff80); // yellowish
     }
 
+    // intensity from DiscreteScalarField (0..1, clamped), as in VPython fire.py
+    // VPython palette: p1(0,0,0) -> p2(80,0,0) -> p3(255,255,128) over 256 steps
+    // Here we map intensity 0..1 directly via lerp
     map(intensity, targetColor) {
-        // intensity from DiscreteScalarField (0..1, clamped), as in VPython fire.py
-        // VPython palette: p1(0,0,0) -> p2(80,0,0) -> p3(255,255,128) over 256 steps
-        // Here we map intensity 0..1 directly via lerp
         const t = Math.max(0, Math.min(1, intensity));
         // Use same piecewise as palette: 0..0.5 -> p1->p2, 0.5..1 -> p2->p3
         if (t < 0.5) 
@@ -43,6 +43,7 @@ export class FireSolver {
             field.setValueAt(col, row, below + Math.random() * 0.9);
             return;
         } 
+
         const intensity = 4.1 + 0.3 * (Math.abs(col - field.nx / 2) / (field.nx / 2));
         const a = (col > 0 && row > 0) ? old[(col - 1) + (row - 1) * field.nx] : 0;
         const b = (row > 0) ? old[col + (row - 1) * field.nx] : 0;
@@ -62,8 +63,10 @@ class Fire extends DiscreteScalarField {
     valueAt(x, y) {
         if (x < 0 || x >= this.nx || y < 0 || y >= this.ny) 
             return 0;
-        // Bottom 3 rows are fuel, not flame — keep black like VPython `*(r>2)`
-        if (y <= 2) return 0;
+        
+        if (y <= 2) // Bottom 3 rows are fuel, not flame — keep black like VPython `*(r>2)`
+            return 0;
+            
         return super.valueAt(x, y);
     }
 }
@@ -72,7 +75,7 @@ const NX = 200;
 const NY = 140;
 const cellSize = 2;
 
-const fire = new Fire({ nx: NX, ny: NY });
+const field = new Fire({ nx: NX, ny: NY });
 const solver = new FireSolver();
 const view = new TiledPlane({
     cellSize: cellSize,
@@ -81,7 +84,7 @@ const view = new TiledPlane({
 });
 
 // Seed bottom row like VPython init()
-for (let c = 0; c < NX; c++) fire.setValueAt(c, 0, Math.random());
+for (let c = 0; c < NX; c++) field.setValueAt(c, 0, Math.random());
 
 Simulation
     .with({
@@ -102,12 +105,12 @@ Simulation
             "$$\n4.1+\\dfrac{0.3*\\|x-center\\|}{center}.\n$$"
         }
     })
-    .bind(fire.alwaysWith(view))
+    .bind(field.alwaysWith(view))
     .runsEvery(1 / 60)
-    .onStep( () => fire.evolve(solver))
+    .onStep( () => field.evolve(solver))
     .onReset(() => {
-        fire.data.fill(0);
+        field.data.fill(0);
         for (let c = 0; c < NX; c++) 
-            fire.setValueAt(c, 0, Math.random());
+            field.setValueAt(c, 0, Math.random());
     })
     .start();
