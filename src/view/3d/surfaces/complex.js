@@ -1,7 +1,7 @@
 import { Mesh, DoubleSide, MeshStandardMaterial, PlaneGeometry, Color, BufferAttribute, ShaderMaterial } from 'three';
 import { Renderable3D } from "../../renderer.js";
 import { AdaptiveSymmetricNormalizer, SurfaceResolution } from "./visualization.js";
-import { Complex, Range} from "../../../model/math/math.js";
+import { Interval, Range} from "../../../model/math/math.js";
 import { ComplexColorMappers} from "../../colormappers.js";
 import { CompoundControl, DropdownMenu, Slider } from "../../../core/controls.js";
 import {ComplexFunctionSample} from "../../../model/math/fields.js";
@@ -130,7 +130,7 @@ export class ComplexSurfaceView3D extends ComplexFieldViewable {
     setValueRange(field) {
         this._normalizer.reset();
         const { width, height } = this.resolution(field);
-
+        const interval = new Interval();
         for (let i = 0; i <= width; i++)
             for (let j = 0; j <= height; j++) {
                 if (this._fieldIsDiscrete)
@@ -139,8 +139,9 @@ export class ComplexSurfaceView3D extends ComplexFieldViewable {
                     field.sample(i / width, j / height, this._sample);
 
                 const modulus = this._maxHeight * Math.tanh(this._sample.abs / this._maxHeight);
-                this._normalizer.include(modulus);
+                interval.include(modulus);
             }
+        this._normalizer.adaptTo(interval);
     }
 
     updateMeshAt(index) {
