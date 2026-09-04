@@ -28,6 +28,7 @@ export default defineConfig({
                 earth: path.resolve(__dirname, 'examples/astrophysics/scenes/planets/earth.js'),
                 electromagnetic_wave_quiver: path.resolve(__dirname, 'examples/electromagnetism/scenes/electromagnetic_wave_quiver.js'),
                 energy_equipartition: path.resolve(__dirname, 'examples/thermodynamics/scenes/energy_equipartition.js'),
+                fire: path.resolve(__dirname, 'examples/nature/scenes/fire.js'),
                 floating_block: path.resolve(__dirname, 'examples/kinematics/scenes/floating_block.js'),
                 flocking_birds: path.resolve(__dirname, 'examples/nature/scenes/flocking_birds.js'),
                 fractal_terrain: path.resolve(__dirname, 'examples/nature/scenes/fractal_terrain.js'),
