@@ -1,85 +1,87 @@
+import { Color} from "three";
 import {
-    Simulation, Vec3, MathPhysicsModelBehavior, TiledPlane, HexValueColorMapper
+    Simulation, Vec3, DiscreteScalarField, TiledPlane, ColorMapper
 } from "../../../src/index.js";
-import { Color } from "three";
 
-class Fire extends MathPhysicsModelBehavior {
-    constructor(nx = 200, ny = 140) {
+export class FireColorMapper extends ColorMapper {
+    constructor() {
         super();
-        this.nx = nx;
-        this.ny = ny;
-        this._cells = Array.from({ length: nx }, () => Array(ny).fill(0));
-        this._palette = this._createPalette();
-        this.reset();
+        this._p1 = new Color(0x000000);
+        this._p2 = new Color(0x500000); // dark red
+        this._p3 = new Color(0xffff80); // yellowish
     }
 
-    _createPalette() {
-        // p1 black -> p2 dark red -> p3 yellowish, as in VPython fire.py
-        const p1 = new Vec3(0, 0, 0);
-        const p2 = new Vec3(80, 0, 0);
-        const p3 = new Vec3(255, 255, 128);
-        const palette = [];
-        for (let i = 0; i < 256; i++) {
-            const t = i < 128 ? i / 128 : (i - 128) / 128;
-            const from = i < 128 ? p1 : p2;
-            const to = i < 128 ? p2 : p3;
-            const col = from.clone().lerp(to, t).divideScalar(255);
-            palette.push(new Color(col.x, col.y, col.z).getHex());
-        }
-        return palette;
+    map(intensity, targetColor) {
+        // intensity from DiscreteScalarField (0..1, clamped), as in VPython fire.py
+        // VPython palette: p1(0,0,0) -> p2(80,0,0) -> p3(255,255,128) over 256 steps
+        // Here we map intensity 0..1 directly via lerp
+        const t = Math.max(0, Math.min(1, intensity));
+        // Use same piecewise as palette: 0..0.5 -> p1->p2, 0.5..1 -> p2->p3
+        if (t < 0.5) 
+            targetColor.copy(this._p1).lerp(this._p2, t * 2);
+        else
+            targetColor.copy(this._p2).lerp(this._p3, (t - 0.5) * 2);
+    }
+}
+
+export class FireSolver {
+    // Fire diffusion as in VPython fire.py / Beltoforion
+    // Works on DiscreteScalarField Float32Array (intensity 0..1)
+    step(field) {
+        // double buffer like VPython old[][] copy
+        const old = new Float32Array(field.data);
+
+        for (let row = 0; row < field.ny; row++)
+            for (let col = 0; col < field.nx; col++) 
+                this._doStep(field, row, col, old);
     }
 
-    reset() {
-        for (let c = 0; c < this.nx; c++)
-            for (let r = 0; r < this.ny; r++)
-                this._cells[c][r] = 0;
+    _doStep(field, row, col, old) {
+        const idx = col + row * field.nx;
+        if (row === 0 && col > 5 && col < field.nx - 5) {
+            const below = old[col + 1 * field.nx] ?? 0;
+            field.setValueAt(col, row, below + Math.random() * 0.9);
+            return;
+        } 
+        const intensity = 4.1 + 0.3 * (Math.abs(col - field.nx / 2) / (field.nx / 2));
+        const a = (col > 0 && row > 0) ? old[(col - 1) + (row - 1) * field.nx] : 0;
+        const b = (row > 0) ? old[col + (row - 1) * field.nx] : 0;
+        const c = (col + 1 < field.nx && row > 0) ? old[(col + 1) + (row - 1) * field.nx] : 0;
+        const d = (row > 1) ? old[col + (row - 2) * field.nx] : 0;
+        field.setValueAt(col, row, (a + b + c + d) / intensity);
+    }
 
-        for (let c = 0; c < this.nx; c++)
-            this._cells[c][0] = Math.random();
+    reset() {}
+}
+
+class Fire extends DiscreteScalarField {
+    constructor({ nx = 200, ny = 140 } = {}) {
+        super({ nx, ny });
     }
 
     valueAt(x, y) {
         if (x < 0 || x >= this.nx || y < 0 || y >= this.ny) 
-            return 0x000000;
-        // Mimic VPython: val = min(int(255*cells[c][r-1]),255) * (r>2)
-        // TiledPlane will show cell (x,y) with color of cells[x][y], so we offset r-1 here
-        const v = this._cells[x][Math.max(0, y - 1)] ?? 0;
-        const val = Math.min(Math.floor(255 * v), 255) * (y > 2 ? 1 : 0);
-        return this._palette[val] ?? 0x000000;
-    }
-
-    update() {
-        // Double buffer like VPython old[][] copy
-        const old = this._cells.map(col => [...col]);
-        const nx = this.nx;
-        const ny = this.ny;
-        for (let row = 0; row < ny; row++) 
-            for (let column = 0; column < nx; column++) {
-                if (row === 0 && column > 5 && column < nx - 5) {
-                    // bottom row fuel + random flicker
-                    this._cells[column][row] = (old[column][1] ?? 0) + Math.random() * 0.9;
-                    continue;
-                } 
-                const intensity = 4.1 + 0.3 * (Math.abs(column - nx / 2) / (nx / 2));
-                const a = old[column - 1]?.[row - 1] ?? 0;
-                const b = old[column]?.[row - 1] ?? 0;
-                const c1 = old[column + 1]?.[row - 1] ?? 0;
-                const d = old[column]?.[row - 2] ?? 0;
-                this._cells[column][row] = (a + b + c1 + d) / intensity;
-            }
+            return 0;
+        // Bottom 3 rows are fuel, not flame — keep black like VPython `*(r>2)`
+        if (y <= 2) return 0;
+        return super.valueAt(x, y);
     }
 }
-
 
 const NX = 200;
 const NY = 140;
 const cellSize = 2;
-const fire = new Fire(NX, NY);
+
+const fire = new Fire({ nx: NX, ny: NY });
+const solver = new FireSolver();
 const view = new TiledPlane({
     cellSize: cellSize,
-    colorMapper: new HexValueColorMapper(),
+    colorMapper: new FireColorMapper(),
     opacity: 1
 });
+
+// Seed bottom row like VPython init()
+for (let c = 0; c < NX; c++) fire.setValueAt(c, 0, Math.random());
 
 Simulation
     .with({
@@ -102,6 +104,10 @@ Simulation
     })
     .bind(fire.alwaysWith(view))
     .runsEvery(1 / 60)
-    .onStep(() => fire.update())
-    .onReset(() => fire.reset())
+    .onStep( () => fire.evolve(solver))
+    .onReset(() => {
+        fire.data.fill(0);
+        for (let c = 0; c < NX; c++) 
+            fire.setValueAt(c, 0, Math.random());
+    })
     .start();
