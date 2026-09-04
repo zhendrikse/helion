@@ -31,6 +31,8 @@ export class ThreeJsScene {
         this.#initBackground(cameraPosition, background, backgroundColor);
     }
 
+    get skydome() { return this._skydome; }
+
     #initBackground(cameraPosition, background, backgroundColor) {
         switch (background) {
             case ThreeJsScene.Background.PLAIN:
