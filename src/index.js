@@ -20,7 +20,7 @@ export {
 
 export {
     ParticleCloudView, DiscreteFieldSurfaceView, ComplexSurfaceView2D,
-    FieldEdgeIntensityPixelRaster
+    FieldEdgeIntensityPixelRaster, TiledPlane
 } from "./view/2d/views.js";
 
 export {

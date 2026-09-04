@@ -5,12 +5,11 @@ import {
 } from "three";
 
 import {Renderable2D, Renderable3D} from "../renderer.js";
-import {CompoundControl, DropdownMenu, Slider} from "../../core/controls.js";
+import {CompoundControl, DropdownMenu } from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
-import { ComplexColorMappers, WavelengthColorMapper} from "../colormappers.js";
+import {ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from "../colormappers.js";
 import {SurfaceResolution} from "../3d/surfaces/visualization.js";
 import {ComplexFunctionSample} from "../../model/math/fields.js";
-import {Interval} from "../../model/math/math.js";
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -439,3 +438,70 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
     }
 }
 
+export class TiledPlane extends Renderable2D {
+    constructor({
+        colorMapper = new HexValueColorMapper(),
+        opacity = 1,
+        cellSize = 1,
+    } = {}) {
+        super();
+
+        this._colorMapper = colorMapper;
+        this._opacity = opacity;
+        this._mesh = null;
+        this._colorArray = null;
+        this._rgb = new Color();
+        this._cellSize = cellSize;
+        this._dummy = new Object3D();
+    }
+
+    initialize(model) {
+        const count = model.nx * model.ny;
+        this._colorArray = new Float32Array(count * 3);
+
+        const geometry = new PlaneGeometry(this._cellSize, this._cellSize);
+        const material = new MeshBasicMaterial({
+            side: DoubleSide,
+            transparent: true,
+            opacity: this._opacity
+        });
+        this._mesh = new InstancedMesh(geometry, material, count);
+        this._mesh.instanceColor = new InstancedBufferAttribute(this._colorArray, 3);
+        this._mesh.instanceColor.setUsage(DynamicDrawUsage);
+        this.add(this._mesh);
+    }
+
+    canBindTo(model) {
+        if (model.valueAt === undefined || model.nx === undefined || model.ny === undefined)
+            throw new Error('TiledPlane cannot binding to model without valueAt() method and nx and ny properties');
+        return true;
+    }
+
+    _updateColor(index, colorValue) {
+        const idx = index * 3;
+        this._colorMapper.map(colorValue, this._rgb);
+        this._colorArray[idx    ] = this._rgb.r;
+        this._colorArray[idx + 1] = this._rgb.g;
+        this._colorArray[idx + 2] = this._rgb.b;
+    }
+
+    synchronizeWith(model) {
+        const width = .5 * model.nx * this._cellSize;
+        const height = .5 * model.ny * this._cellSize;
+        let index = 0;
+        for (let i = 0; i < model.nx; i++)
+            for (let j = 0; j < model.ny; j++) {
+                this._dummy.position.set(
+                    (i + 0.5) * this._cellSize - width,
+                    (j + 0.5) * this._cellSize - height,
+                    0
+                );
+                this._dummy.updateMatrix();
+                this._mesh.setMatrixAt(index, this._dummy.matrix);
+                this._updateColor(index++, model.valueAt(i, j));
+            }
+
+        this._mesh.instanceMatrix.needsUpdate = true;
+        this._mesh.instanceColor.needsUpdate = true;
+    }
+}

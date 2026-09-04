@@ -36,6 +36,7 @@ export default defineConfig({
                 fourier_transform_2d: path.resolve(__dirname, 'examples/mathematics/scenes/fourier_transform_2d.js'),
                 faradays_law: path.resolve(__dirname, 'examples/electromagnetism/scenes/faradays_law.js'),
                 fraunhofer_diffraction: path.resolve(__dirname, 'examples/waves/scenes/fraunhofer_diffraction.js'),
+                game_of_life: path.resolve(__dirname, 'examples/games/scenes/game_of_life.js'),
                 harmonograph: path.resolve(__dirname, 'examples/mathematics/scenes/harmonograph.js'),
                 lorenz_attractor: path.resolve(__dirname, 'examples/mathematics/scenes/lorenz_attractor.js'),
                 matrix_transformation: path.resolve(__dirname, 'examples/mathematics/scenes/matrix_transformation.js'),
