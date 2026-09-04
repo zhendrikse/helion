@@ -3,9 +3,6 @@ import {
 } from "../../../src/index.js";
 
 const functionToIntegrate = (theta, phi) => theta * theta * (phi - Math.PI) * (phi - Math.PI);
-const integralValueDiv = document.createElement("div");
-const updateIntegral = (value) =>
-    integralValueDiv.textContent = "Integral evaluates to: " + Number(value).toFixed(2);
 
 class SegmentedSphere extends Segments {
     constructor(radius = 1, da = 0.05) {
@@ -85,31 +82,32 @@ const simulation = Simulation
         .withProperty("thetaMin")
         .withRange(new Range(0, 180, 1))
         .withValue(sphere.thetaMin)
-        .addEventListener("input", () => updateIntegral(sphere.integrate(functionToIntegrate)))
+        .onInput(() => updateIntegral(sphere.integrate(functionToIntegrate)))
     )
     .append(new Slider("θ_max")
         .on(sphere)
         .withProperty("thetaMax")
         .withRange(new Range(0, 180, 1))
         .withValue(sphere.thetaMax)
-        .addEventListener("input", () => updateIntegral(sphere.integrate(functionToIntegrate)))
+        .onInput(() => updateIntegral(sphere.integrate(functionToIntegrate)))
     )
     .append(new Slider("φ_min")
         .on(sphere)
         .withProperty("phiMin")
         .withRange(new Range(0, 360, 1))
         .withValue(sphere.phiMin)
-        .addEventListener("input", () => updateIntegral(sphere.integrate(functionToIntegrate)))
+        .onInput(() => updateIntegral(sphere.integrate(functionToIntegrate)))
     )
     .append(new Slider("φ_max")
         .on(sphere)
         .withProperty("phiMax")
         .withRange(new Range(0, 360, 1))
         .withValue(sphere.phiMax)
-        .addEventListener("input", () => updateIntegral(sphere.integrate(functionToIntegrate)))
+        .onInput(() => updateIntegral(sphere.integrate(functionToIntegrate)))
     )
     .provideAxesAround(sphereView);
 
+const updateIntegral = value =>
+    simulation.setLatexTitle("\\Large\\iint\\theta^2 (\\phi - \\pi)^2 d\\phi d\\theta=" + Number(value).toFixed(2));
 
-simulation._viewport.controlsDiv.append(integralValueDiv);
 updateIntegral(sphere.integrate(functionToIntegrate));
