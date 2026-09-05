@@ -1,5 +1,8 @@
 import {
-    MathPhysicsModelBehavior, Simulation, Slider, Vec3, Range, TiledPlane
+    MathPhysicsModelBehavior, Simulation, Slider, Vec3, Range, TiledPlane,
+    FixedIntervalNormalizer, Interval,
+    ColorMappers,
+    ColorMapper
 } from "../../../src/index.js";
 
 class Game {
@@ -129,11 +132,21 @@ class GameOfLife extends MathPhysicsModelBehavior {
     }
 
     valueAt(x, y) {
-        return this._game.cell_at(x, y).is_alive() ? 0x00ff00 : 0x1a1a1a;
+        return this._game.cell_at(x, y).is_alive() ? 1 : 0;
+    }
+
+    rangeAt(resolution) {
+        return new Interval(0, 1);
     }
 
     nextGeneration() {
         this._game.next_generation();
+    }
+}
+
+class CellColorMapper extends ColorMapper {
+    map(value, toTargetColor) {
+        toTargetColor.setRGB(0.01, value ===1 ? .75 : 0.01, 0.01);
     }
 }
 
@@ -147,6 +160,7 @@ const simulation = Simulation.with({
     })
     .withMouseClickEventListener()
     .bind(gameOfLife.alwaysWith(new TiledPlane({
+        colorMapper: new CellColorMapper(),
         cellSize
     })))
     .runsEvery(.5)

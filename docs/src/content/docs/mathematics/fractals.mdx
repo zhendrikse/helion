@@ -44,11 +44,11 @@ layout: ../../../layouts/DocsLayout.astro
 The chaos game is an iterative procedure $s_i\rightarrow s_{i+1}$ that can be written
 as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation)
 
-$$\begin{equation}
+$$
 s_{i+1}=T_js_i+r_j
-\end{equation}$$
+$$
 
-where the set of pairs {$(T_j, r_j) | j=1,2,\dots$} with matrices $T_j$ and $r_j$
+where the set of pairs $\{(T_j, r_j) | j=1,2,\dots\}$ with matrices $T_j$ and $r_j$
 characterize the chosen ruleset and $j$ denotes a (per iteration) randomly chosen index.
 The famous [Barnsley fern](https://www.hendrikse.name/science/nature/fern.html) is generated in a similar way.
 
@@ -63,7 +63,7 @@ fixed corners of a triangle.
 
 <figure style="margin: 0 auto; text-align: center;">
   <a href="https://en.wikipedia.org/wiki/Chaos_game#/media/File:Sierpinski_Chaos.gif">
-    <img alt="Sierpinksy chaos" src="images/Sierpinski_Chaos.gif" style="width: 50%;"/>
+    <img alt="Sierpinksy chaos" src={import.meta.env.BASE_URL + "images/mathematics/Sierpinski_Chaos.gif"} style="width: 50%;"/>
   </a>
   <figcaption>
     Source <a href="https://en.wikipedia.org/wiki/Chaos_game#/media/File:Sierpinski_Chaos.gif">Wikipedia</a>
@@ -77,7 +77,7 @@ see the figure below.
 
 <figure style="margin: 0 auto; text-align: center;">
   <a href="https://math.bu.edu/DYSYS/chaos-game/node3.html">
-    <img alt="Sierpinksy chaos" src="images/sierpinski.gif"/>
+    <img alt="Sierpinksy chaos" src={import.meta.env.BASE_URL + "images/mathematics/sierpinski.gif"}/>
   </a>
   <figcaption>
     Source <a href="https://math.bu.edu/DYSYS/chaos-game/node3.html">BU Math</a>
@@ -89,7 +89,7 @@ Eventually after a couple of iterations, the point will enter a small triangle t
 given the finite resolution of the screen and the pixels it contains, it will disappear.
 
 In a certain sense, the fractal itself is a kind of
-[strange attractor](https://www.hendrikse.name/science/mathematics/index.html#strange_attractors)!
+[strange attractor](https://www.hendrikse.name/helion/mathematics/strange_attractors/)!
 
 ### References
 <div style="border-top: 1px solid #999999"><br/></div>

@@ -8,7 +8,7 @@ import {Renderable2D, Renderable3D} from "../renderer.js";
 import {CompoundControl, DropdownMenu } from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
 import {ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from "../colormappers.js";
-import {SurfaceResolution} from "../3d/surfaces/visualization.js";
+import {AdaptiveSymmetricNormalizer, SurfaceResolution} from "../3d/surfaces/visualization.js";
 import {ComplexFunctionSample} from "../../model/math/fields.js";
 
 export class ParticleCloudView extends Renderable3D {
@@ -446,11 +446,12 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
 export class TiledPlane extends Renderable2D {
     constructor({
         colorMapper = new HexValueColorMapper(),
+        normalizer = new AdaptiveSymmetricNormalizer(),
         opacity = 1,
         cellSize = 1,
     } = {}) {
         super();
-
+        this._normalizer = normalizer;
         this._colorMapper = colorMapper;
         this._opacity = opacity;
         this._mesh = null;
@@ -477,8 +478,8 @@ export class TiledPlane extends Renderable2D {
     }
 
     canBindTo(model) {
-        if (model.valueAt === undefined || model.nx === undefined || model.ny === undefined)
-            throw new Error('TiledPlane cannot binding to model without valueAt() method and nx and ny properties');
+        if (model.valueAt === undefined || model.rangeAt === undefined || model.nx === undefined || model.ny === undefined)
+            throw new Error('TiledPlane cannot binding to model without valueAt() and rangeAt() methods and nx and ny properties');
         return true;
     }
 
@@ -493,6 +494,7 @@ export class TiledPlane extends Renderable2D {
     synchronizeWith(model) {
         const width = .5 * model.nx * this._cellSize;
         const height = .5 * model.ny * this._cellSize;
+        this._normalizer.adaptTo(model.rangeAt())
         let index = 0;
         for (let i = 0; i < model.nx; i++)
             for (let j = 0; j < model.ny; j++) {

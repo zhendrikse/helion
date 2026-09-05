@@ -1,6 +1,6 @@
 import { Color} from "three";
 import {
-    Simulation, Vec3, DiscreteScalarField, TiledPlane, ColorMapper
+    Simulation, Vec3, DiscreteScalarField, TiledPlane, ColorMapper, Interval, FixedIntervalNormalizer
 } from "../../../src/index.js";
 
 export class FireColorMapper extends ColorMapper {
@@ -79,6 +79,7 @@ const field = new Fire({ nx: NX, ny: NY });
 const solver = new FireSolver();
 const view = new TiledPlane({
     cellSize: cellSize,
+    normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
     colorMapper: new FireColorMapper(),
     opacity: 1
 });
