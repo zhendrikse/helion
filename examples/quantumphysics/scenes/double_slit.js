@@ -1,7 +1,7 @@
 import {
     AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider, Sphere, Vec3,
     DiscreteScalarField, WavelengthColorMapper, DiscreteFieldSurfaceView, DoubleSlitOperator,
-    FieldEdgeIntensityPixelRaster, SurfaceResolution
+    FieldEdgeIntensityPixelRaster
 } from "../../../src/index.js";
 
 const resolution = 50;
@@ -35,25 +35,16 @@ const particles = [];
 const simulation = Simulation
     .with({
         htmlDivId: "doubleSlitContainer",
-        camera: {
-            position: new Vec3(0, -9, 7).multiplyScalar(resolution),
-        },
-        viewport: {
-            aspectRatio: "2/1"
-        }
+        camera: { position: new Vec3(0, -9, 7).multiplyScalar(resolution) },
+        viewport: { aspectRatio: "2/1" }
     })
     .bind(slit1.onceWith(new Cylinder({ color: 0xffffff })))
     .bind(slit2.onceWith(new Cylinder({ color: 0xffffff })))
     .bind(field.onceWith(new FieldEdgeIntensityPixelRaster({
-        nx: field.nx,
-        ny: field.ny,
         edgeHeight: .6 * xMax * resolution,
         colorMapper: wavelengthColorMapper
     })))
-    .bind(field.onceWith(new DiscreteFieldSurfaceView({
-        resolution: new SurfaceResolution(field.nx, field.ny),
-        colorMapper: wavelengthColorMapper
-    })))
+    .bind(field.onceWith(new DiscreteFieldSurfaceView({ colorMapper: wavelengthColorMapper })))
     .withMouseClickEventListener()
     .onReset(() => particles.length = 0)
     .onStep((_) => {

@@ -188,29 +188,29 @@ export class PixelRasterView extends Renderable3D {
 
 export class DiscreteFieldSurfaceView extends Renderable2D {
     constructor({
-        resolution = new SurfaceResolution(512, 512),
         colorMapper = new WavelengthColorMapper(525),
-        brightnessFunction = intensity => 255 * Math.sqrt(intensity)
+        opacityFunction = fieldValue => Math.sqrt(fieldValue)
     } = {}) {
         super();
-        this._width = resolution.u;
-        this._height = resolution.v;
         this._colorMapper = colorMapper;
-        this._brightnessFunction = brightnessFunction;
+        this._opacityFunction = opacityFunction;
+        this._mesh = null;
+        this._pixels = null;
+        this._texture = null;
+        this._rgb = new Color();
+    }
 
-        const pixels = new Uint8Array(this._width * this._height * 4);
-        const texture = new DataTexture(pixels, this._width, this._height, RGBAFormat);
-        texture.needsUpdate = true;
+    initialize(scalarField) {
+        const width = scalarField.nx;
+        const height = scalarField.ny;
+        this._pixels = new Uint8Array(width * height * 4);
+        this._texture = new DataTexture(this._pixels, width, height, RGBAFormat);
+        this._texture.needsUpdate = true;
         this._mesh = new Mesh(
-            new PlaneGeometry(this._width, this._height),
-            new MeshBasicMaterial({ map: texture, transparent: true, side: DoubleSide })
+            new PlaneGeometry(width, height),
+            new MeshBasicMaterial({ map: this._texture, transparent: true, side: DoubleSide })
         );
         this.add(this._mesh);
-
-        this._pixels = pixels;
-        this._texture = texture;
-        this._colorMapper = colorMapper;
-        this._rgb = new Color();
     }
 
     set context(context) { this._context = context; }
@@ -222,17 +222,19 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
     }
 
     synchronizeWith(scalarField) {
+        const width = scalarField.nx;
+        const height = scalarField.ny;
         const interval = scalarField.rangeAt();
         let index = 0;
 
-        for(let j = 0; j < this._height; j++)
-            for(let i = 0; i < this._width; i++) {
+        for(let j = 0; j < height; j++)
+            for(let i = 0; i < width; i++) {
                 const value = interval.normalize(scalarField.valueAt(i, j));
                 this._colorMapper?.map(value, this._rgb);
-                this._pixels[index++] = this._rgb.r;
-                this._pixels[index++] = this._rgb.g;
-                this._pixels[index++] = this._rgb.b;
-                this._pixels[index++] = this._brightnessFunction(value);
+                this._pixels[index++] = 255 * this._rgb.r;
+                this._pixels[index++] = 255 * this._rgb.g;
+                this._pixels[index++] = 255 * this._rgb.b;
+                this._pixels[index++] = 255 * this._opacityFunction(value);
             }
 
         this._texture.needsUpdate = true;
@@ -246,23 +248,27 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
  */
 export class FieldEdgeIntensityPixelRaster extends Renderable3D {
     constructor({
-        nx = 100,
-        ny = 100,
         edgeHeight = 100,
         colorMapper = new WavelengthColorMapper(525),
-        brightnessFunction = intensity => 255 * Math.sqrt(intensity)
+        opacityFunction = intensity => Math.sqrt(intensity)
     } = {}) {
         super();
-        this._brightnessFunction = brightnessFunction;
-        this._nx = nx;
-        this._ny = ny;
+        this._opacityFunction = opacityFunction;
+        this._texture = null;
+        this._pixels = null;
+        this._mesh = null;
         this._colorMapper = colorMapper;
-        this._pixels = new Uint8Array(nx * 4);
-        this._texture = new DataTexture(this._pixels, nx, 1, RGBAFormat);
+        this._edgeHeight = edgeHeight;
+        this._rgb = new Color();
+    }
+
+    initialize(scalarField) {
+        this._pixels = new Uint8Array(scalarField.nx * 4);
+        this._texture = new DataTexture(this._pixels, scalarField.nx, 1, RGBAFormat);
         this._texture.needsUpdate = true;
 
         this._mesh = new Mesh(
-            new PlaneGeometry(nx, edgeHeight),
+            new PlaneGeometry(scalarField.nx, this._edgeHeight),
             new MeshBasicMaterial({
                 map: this._texture,
                 transparent: true,
@@ -271,9 +277,8 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
         );
 
         this._mesh.rotation.x = Math.PI * 0.5; // Put edge straight up
-        this._mesh.position.y = ny * 0.5;
-        this.add(this._mesh);
-        this._rgb = new Color();
+        this._mesh.position.y = scalarField.ny * 0.5;
+        this.add(this._mesh);    
     }
 
     canBindTo(discreteScalarField) {
@@ -284,16 +289,16 @@ export class FieldEdgeIntensityPixelRaster extends Renderable3D {
 
     synchronizeWith(scalarField) {
         const interval = scalarField.rangeAt();
-        const j = this._ny - 1;
+        const j = scalarField.ny - 1;
         let index = 0;
 
-        for (let i = 0; i < this._nx; i++) {
+        for (let i = 0; i < scalarField.nx; i++) {
             const value = interval.normalize(scalarField.valueAt(i, j));
             this._colorMapper?.map(value, this._rgb);
-            this._pixels[index++] = this._rgb.r;
-            this._pixels[index++] = this._rgb.g;
-            this._pixels[index++] = this._rgb.b;
-            this._pixels[index++] = this._brightnessFunction(value);
+            this._pixels[index++] = 255 * this._rgb.r;
+            this._pixels[index++] = 255 * this._rgb.g;
+            this._pixels[index++] = 255 * this._rgb.b;
+            this._pixels[index++] = 255 * this._opacityFunction(value);
         }
 
         this._texture.needsUpdate = true;

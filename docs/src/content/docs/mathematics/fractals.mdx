@@ -1,5 +1,5 @@
 ---
-title: "𖣂 Fractals"
+title: "❄️ Fractals"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
@@ -12,7 +12,7 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-### Fractals &amp; turtle graphics 🐢
+## Fractals &amp; turtle graphics 🐢
 <div class="header_line"></div>
 
 <div class="badgeRow">
@@ -28,38 +28,74 @@ layout: ../../../layouts/DocsLayout.astro
 <div id="fractalsContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/fractals.js"}></script>
 
-## 3D fractals
-<div class="header_line"></div>
+## Chaos game fractals 🎮
+<div class="header_line"><br/></div>
 
-### Menger sponge
-<div class="header_line"></div>
+🎯 Improved understanding of the [chaos game](https://en.wikipedia.org/wiki/Chaos_game)<br/>
+🧠 Inspired by [nnakul/chaos-game](https://github.com/nnakul/chaos-game/tree/master) by [Nikhil Nakul](https://github.com/nnakul/)<br/>
+🐍 A [VPython version](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/ChaosGame) is available as well, see [chaos_game.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/chaos_game.py)
 
-<div class="badgeRow">
-    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/menger_sponge.js">
-        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=menger_sponge.js"/>
-    </a>
-</div>
+<div id="chaosFractalsContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/chaos_fractals.js"}></script>
 
-🧠 Inspired by [MengerSponge.py](https://github.com/jeffvun/fractals/blob/main/MengerSponge.py)<br/>
-🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/MengerSponge) is available as well, see [menger_sponge.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/menger_sponge.py)<br/>
+### About the chaos game
+<div class="header_line"><br/></div>
 
-<div id="mengerSpongeContainer"></div>
-<script type="module" src={import.meta.env.BASE_URL + "examples/menger_sponge.js"}></script>
+The chaos game is an iterative procedure $s_i\rightarrow s_{i+1}$ that can be written
+as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation)
 
+$$\begin{equation}
+s_{i+1}=T_js_i+r_j
+\end{equation}$$
 
-### Sierpiński pyramid
-<div class="header_line"></div>
+where the set of pairs {$(T_j, r_j) | j=1,2,\dots$} with matrices $T_j$ and $r_j$
+characterize the chosen ruleset and $j$ denotes a (per iteration) randomly chosen index.
+The famous [Barnsley fern](https://www.hendrikse.name/science/nature/fern.html) is generated in a similar way.
 
-<div class="badgeRow">
-    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/sierpinski.js">
-        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=sierpinski.js"/>
-    </a>
-</div>
+### Why do fractals arise from the chaos game
+<div style="border-top: 1px solid #999999"><br/></div>
 
-🧠 Inspired by [a student assignment](https://isoptera.lcsc.edu/~seth/cs111/project5.pdf) by [S. Seth Long](https://isoptera.lcsc.edu/~seth/)<br/>
-🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/Sierpinsky) is available as well, see [sierpinski.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/sierpinski.py)<br/>
+The chaos game is an iterative process of placing dots on a canvas
+using certain fixed locations (vertices) that are chosen randomly. For example,
+in the animation below,
+the position of each new dot is halfway between the current position and one of the three
+fixed corners of a triangle.
 
-<div id="sierpinskiContainer"></div>
-<script type="module" src={import.meta.env.BASE_URL + "examples/sierpinski.js"}></script>
+<figure style="margin: 0 auto; text-align: center;">
+  <a href="https://en.wikipedia.org/wiki/Chaos_game#/media/File:Sierpinski_Chaos.gif">
+    <img alt="Sierpinksy chaos" src="images/Sierpinski_Chaos.gif" style="width: 50%;"/>
+  </a>
+  <figcaption>
+    Source <a href="https://en.wikipedia.org/wiki/Chaos_game#/media/File:Sierpinski_Chaos.gif">Wikipedia</a>
+  </figcaption>
+</figure>
 
+<p style="clear: both;"></p>
+
+Let's assume we start with a point that is located in one of the areas that will eventually be empty,
+see the figure below.
+
+<figure style="margin: 0 auto; text-align: center;">
+  <a href="https://math.bu.edu/DYSYS/chaos-game/node3.html">
+    <img alt="Sierpinksy chaos" src="images/sierpinski.gif"/>
+  </a>
+  <figcaption>
+    Source <a href="https://math.bu.edu/DYSYS/chaos-game/node3.html">BU Math</a>
+  </figcaption>
+</figure>
+
+After one iteration, the point will jump to either one of the three smaller empty triangles.
+Eventually after a couple of iterations, the point will enter a small triangle that is so small that,
+given the finite resolution of the screen and the pixels it contains, it will disappear.
+
+In a certain sense, the fractal itself is a kind of
+[strange attractor](https://www.hendrikse.name/science/mathematics/index.html#strange_attractors)!
+
+### References
+<div style="border-top: 1px solid #999999"><br/></div>
+
+- Chaos game [Wikipedia page](https://en.wikipedia.org/wiki/Chaos_game)
+- [Chaos Game &mdash; Numberphile](https://www.youtube.com/watch?v=kbKtFN71Lfs)
+- [A 1.58-Dimensional Object &mdash; Numberphile](https://www.youtube.com/watch?v=FnRhnZbDprE)
+- [Fractal Dimensions (extra footage) - Numberphile](https://www.youtube.com/watch?v=Yz06NW6DwsE)
 

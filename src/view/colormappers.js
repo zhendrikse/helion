@@ -47,12 +47,8 @@ export function hsvToRgbNormalized(h, s, v, target) {
     target.set(Math.round(r), Math.round(g), Math.round(b));
 }
 
-export function wavelengthColor(lambdaInNanos, intensity, targetColor) {
-    const base = wavelengthToRGBNormalized(lambdaInNanos);
-
-    // intensity → brightness modulation only
-    targetColor.setRGB(base.r * 255, base.g * 255, base.b * 255);
-    return Math.sqrt(intensity) * 255;
+export function wavelengthColor(lambdaInNanos, targetColor) {
+    wavelengthToRGBNormalized(lambdaInNanos, targetColor);
 }
 
 /** Utility function to convert a number to a two-digit hex string (from stackoverflow): */
@@ -91,7 +87,7 @@ export function toColorString(hue) {
     return "#" + numberToTwoDigitHexString(r) + numberToTwoDigitHexString(g) + numberToTwoDigitHexString(b);
 }
 
-export function wavelengthToRGBNormalized(wavelength) {
+export function wavelengthToRGBNormalized(wavelength, targetColor) {
     let R = 0, G = 0, B = 0;
 
     if (wavelength >= 380 && wavelength < 440) {
@@ -127,12 +123,11 @@ export function wavelengthToRGBNormalized(wavelength) {
         factor = 0.3 + 0.7 * (700 - wavelength) / (700 - 645);
 
     const gamma = 0.8;
-
-    return {
-        r: Math.pow(R * factor, gamma),
-        g: Math.pow(G * factor, gamma),
-        b: Math.pow(B * factor, gamma)
-    };
+    targetColor.setRGB(
+        Math.pow(R * factor, gamma),
+        Math.pow(G * factor, gamma),
+        Math.pow(B * factor, gamma)
+    );
 }
 
 /**
@@ -151,9 +146,9 @@ export class WavelengthColorMapper extends ColorMapper {
 
     map(intensity, targetColor) {
         if (this._showSpectralColor)
-            return wavelengthColor(this._lambdaInNanos, intensity, targetColor);
-
-        targetColor.setRGB(255, 255, 255);
+            wavelengthColor(this._lambdaInNanos, targetColor);
+        else
+            targetColor.setRGB(1, 1, 0);
     }
 
     set showSpectralColor(value) { this._showSpectralColor = value; }

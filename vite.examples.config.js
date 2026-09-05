@@ -15,6 +15,7 @@ export default defineConfig({
                 bouncing_ball_on_spring: path.resolve(__dirname, 'examples/kinematics/scenes/bouncing_ball_on_spring.js'),
                 carbon_dioxide: path.resolve(__dirname, 'examples/molecularphysics/scenes/carbon_dioxide.js'),
                 chain_drop: path.resolve(__dirname, 'examples/kinematics/scenes/chain_drop.js'),
+                chaos_fractals: path.resolve(__dirname, 'examples/mathematics/scenes/chaos_fractals.js'),
                 charged_ring: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_ring.js'),
                 charged_rod: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_rod.js'),
                 charged_sheet: path.resolve(__dirname, 'examples/electromagnetism/scenes/charged_sheet.js'),
