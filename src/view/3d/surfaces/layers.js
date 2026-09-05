@@ -1,10 +1,3 @@
-/**
- * Surface drawing:
- *     SurfaceView -> Surface.sample() -> ScalarField.scalarValueAt()
- *
- * Coloring:    ↓
- *     ColorMapper -> NormalizedScalarField -> Normalizer.normalize() -> SurfaceScalarField.scalarValueAt()
- */
 import {
     Box3, BoxGeometry, BufferAttribute, BufferGeometry, CapsuleGeometry, Color, ConeGeometry, CylinderGeometry,
     DoubleSide, DynamicDrawUsage, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Line,
@@ -16,7 +9,7 @@ import {AdaptiveSymmetricNormalizer, HeightLayer, SurfaceResolution} from "./vis
 import {ColorMappers} from "../../colormappers.js";
 import {Registry} from "../../../core/helion.js";
 import {Checkbox, DropdownMenu} from "../../../core/controls.js";
-import {Vec3} from "../../../model/math/math.js";
+import {Interval, Vec3} from "../../../model/math/math.js";
 
 export class Layer extends Renderable3D {
     static UP = new Vector3(0, 1, 0);
@@ -41,7 +34,7 @@ export class Layer extends Renderable3D {
         this._color = new Color();
         this._frame = new DifferentialFrame();
 
-        this._dirty = true;                 // When surface definition has changed, this flag is raised
+        this._dirty = true;
     }
 
     get dirty() { return this._dirty; }
@@ -53,6 +46,11 @@ export class Layer extends Renderable3D {
 
     set colorLayer(colorLayer) {
         this._colorLayer = colorLayer;
+        this._dirty = true;
+    }
+
+    set normalizer(normalizer) {
+        this._normalizer = normalizer;
         this._dirty = true;
     }
 
@@ -78,8 +76,21 @@ export class Layer extends Renderable3D {
         this.removeFromParent?.();
     }
 
+    rangeAt(model) {
+        const range = new Interval();
+        for (let i = 0; i <= this._resolution.u; i++) {
+            const u = i / this._resolution.u;
+            for (let j = 0; j <= this._resolution.v; j++) {
+                const v = j / this._resolution.v;
+                model.frameAt(u, v, this._frame);
+                range.include(this._colorLayer.value(this._frame));
+            }
+        }
+        return range;
+    }
+
     updateNormalizerWith(model) {
-        this._normalizer.adaptTo(model.rangeAt(this._resolution));
+        this._normalizer.adaptTo(this.rangeAt(model));
     }
 }
 
@@ -91,11 +102,9 @@ class MeshLayer extends Layer {
         normalizer = new AdaptiveSymmetricNormalizer(),
     } = {}) {
         super({resolution, colorLayer, colorMapper, normalizer});
-        this._normalizer = normalizer;
-
         this._count = (resolution.u + 1) * (resolution.v + 1);
         this._colorArray = new Float32Array(this._count * 3);
-        this._dirty = true;                 // When surface definition has changed, this flag is raised
+        this._dirty = true;
     }
 
     updateColor(index) {
@@ -151,7 +160,6 @@ export class SurfaceLayer extends MeshLayer {
     } = {}) {
         super({ resolution, colorLayer, colorMapper, normalizer });
 
-        // Surface
         const geometry = new PlaneGeometry(1, 1, resolution.u, resolution.v);
         this._mesh = new Mesh(geometry, material);
         this._mesh.material.vertexColors = true;
@@ -408,12 +416,10 @@ export class PrincipalDirectionsLayer extends Layer {
             this._tempColor.setHSL(0.6 - 0.6 * t, 0.8, 0.5);
         }
 
-        // direction-based coloring
         this._tempColor.setRGB(Math.abs(direction.x), Math.abs(direction.y), Math.abs(direction.z));
     }
 
     synchronizeWith(model) {
-        this.updateNormalizerWith(model);
         super.synchronizeWith(model);
 
         let idx = 0;
@@ -425,10 +431,7 @@ export class PrincipalDirectionsLayer extends Layer {
                 model.frameAt(u, v, this._frame);
                 if (!this._frame) continue;
 
-                // d1 direction
                 this.#updateLine(this._uVectors[idx].line, this._frame.d1);
-
-                // d2 direction
                 if (this._showSecondDirection)
                     this.#updateLine(this._vVectors[idx].line, this._frame.d2);
 
@@ -459,7 +462,7 @@ export class PrincipalDirectionsLayer extends Layer {
     #makeLine() {
         const geometry = new BufferGeometry();
 
-        const positions = new Float32Array(2 * 3); // segment line
+        const positions = new Float32Array(2 * 3);
         geometry.setAttribute("position", new BufferAttribute(positions, 3));
 
         const colors = new Float32Array(2 * 3);
@@ -469,22 +472,6 @@ export class PrincipalDirectionsLayer extends Layer {
     }
 }
 
-// TODO
-// Layer
-// │
-// ├── MeshLayer
-// │
-// ├── LineLayer
-// │     ├── ContoursLayer
-// │     │
-// │     └── VectorLayer
-// │            ├── NormalsLayer
-// │            └── PrincipalDirectionsLayer
-// │
-// └── (later)
-//       TubeLayer
-//       RibbonLayer
-//       StreamLineLayer
 export class NormalsLayer extends Layer {
     constructor({
         resolution = new SurfaceResolution(30, 30),
@@ -583,7 +570,7 @@ export class ContoursLayer extends Layer {
             depthWrite: true,
             depthTest: true
         }),
-        contourSegments = 100 // per line
+        contourSegments = 100
     } = {}) {
         super({ resolution, colorLayer, colorMapper, normalizer });
 
@@ -649,14 +636,12 @@ export class ContoursLayer extends Layer {
         super.initialize(model);
         this.disposeGeometry();
 
-        // u = constant
         for (let i = 0; i <= this._resolution.u; i++) {
             const line = this.#createLine();
             this.add(line);
             this._uLines.push({ line: line, u: i / this._resolution.u });
         }
 
-        // v = constant
         for (let i = 0; i <= this._resolution.v; i++) {
             const line = this.#createLine();
             this.add(line);
@@ -673,14 +658,14 @@ export class ContoursLayer extends Layer {
         const colors = geometry.attributes.color.array;
         for (let j = 0; j <= this._contourSegments; j++) {
             const k = 3 * j;
-            sampleFn(j / this._contourSegments); // This call updates this._frame
-            positions[k    ] = this._frame.position.x;
+            sampleFn(j / this._contourSegments);
+            positions[k] = this._frame.position.x;
             positions[k + 1] = this._frame.position.y;
             positions[k + 2] = this._frame.position.z;
 
             const normalized = this._normalizer.normalize(this._colorLayer.value(this._frame));
             this._colorMapper.map(normalized, this._color);
-            colors[k    ] = this._color.r;
+            colors[k] = this._color.r;
             colors[k + 1] = this._color.g;
             colors[k + 2] = this._color.b;
         }
@@ -691,8 +676,8 @@ export class ContoursLayer extends Layer {
     }
 
     synchronizeWith(model) {
-        this.updateNormalizerWith(model);
         super.synchronizeWith(model);
+
         for (const entry of this._uLines)
             this.#updateLine(entry, (v) => model.frameAt(entry.u, v, this._frame));
 
@@ -700,4 +685,3 @@ export class ContoursLayer extends Layer {
             this.#updateLine(entry, (u) => model.frameAt(u, entry.v, this._frame));
     }
 }
-
