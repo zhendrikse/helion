@@ -15,9 +15,7 @@ export class SurfaceResolution {
 
 class Normalizer {
     adaptTo(range) {}
-
     normalize(value) {}
-
     reset() {}
 }
 
@@ -26,45 +24,31 @@ export class FixedIntervalNormalizer extends Normalizer {
         super();
         this._interval = interval;
     }
-
     normalize(value) {
         return this._interval.normalize(value);
     }
 }
 
-/**
- * The range is "learned" during sampling, as opposed to a fixed
- * range that is given when the normalizer is instantiated.
- */
 export class AdaptiveSymmetricNormalizer extends Normalizer {
     constructor(smoothing = 0.05) {
         super();
         this._smoothing = smoothing;
         this._maxAbs = 1;
     }
-
     adaptTo(range) {
-        if (!Number.isFinite(range.min) || !Number.isFinite(range.max))
-            return;
-
+        if (!Number.isFinite(range.min) || !Number.isFinite(range.max)) return;
         const maxAbs = Math.max(Math.abs(range.min), Math.abs(range.max));
-
         this._maxAbs = Math.max(
             this._maxAbs * (1 - this._smoothing) + maxAbs * this._smoothing,
             maxAbs
         );
     }
-
     normalize(value) {
-        if (!Number.isFinite(value))
-            return 0.5;
-
+        if (!Number.isFinite(value)) return 0.5;
         const range = Math.max(this._maxAbs, 1e-9);
         const clamped = Math.max(-range, Math.min(range, value));
-
         return 0.5 + 0.5 * clamped / range;
     }
-
     reset() {
         this._maxAbs = 1;
     }
@@ -77,30 +61,17 @@ export class AdaptiveNormalizer extends Normalizer {
         this._min = 0;
         this._max = 1;
     }
-
     adaptTo(range) {
-        if (!Number.isFinite(range.min) || !Number.isFinite(range.max))
-            return;
-
-        this._min =
-            this._min * (1 - this._smoothing) +
-            range.min * this._smoothing;
-
-        this._max =
-            this._max * (1 - this._smoothing) +
-            range.max * this._smoothing;
+        if (!Number.isFinite(range.min) || !Number.isFinite(range.max)) return;
+        this._min = this._min * (1 - this._smoothing) + range.min * this._smoothing;
+        this._max = this._max * (1 - this._smoothing) + range.max * this._smoothing;
     }
-
     normalize(value) {
-        if (!Number.isFinite(value))
-            return 0.5;
-
+        if (!Number.isFinite(value)) return 0.5;
         const range = Math.max(this._max - this._min, 1e-9);
         const clamped = Math.max(this._min, Math.min(this._max, value));
-
         return (clamped - this._min) / range;
     }
-
     reset() {
         this._min = 0;
         this._max = 1;
@@ -115,13 +86,16 @@ class ColorLayer {
     preferredColorMapper() {
         return new ColorMappers().get(ColorMappers.Height)();
     }
+
+    preferredNormalizer() {
+        return new AdaptiveSymmetricNormalizer();
+    }
 }
 
 export class HeightLayer extends ColorLayer {
     value(frame) {
         return frame.position.y;
     }
-
     preferredColorMapper() {
         return new ColorMappers().get(ColorMappers.Gradient)();
     }
@@ -131,7 +105,6 @@ export class GaussianCurvatureLayer extends ColorLayer {
     value(frame) {
         return frame.k1 * frame.k2;
     }
-
     preferredColorMapper() {
         return new ColorMappers().get(ColorMappers.Seismic)();
     }
@@ -141,7 +114,6 @@ export class MeanCurvatureLayer extends ColorLayer {
     value(frame) {
         return .5 * (frame.k1 + frame.k2);
     }
-
     preferredColorMapper() {
         return new ColorMappers().get(ColorMappers.Scientific)();
     }
@@ -150,14 +122,14 @@ export class MeanCurvatureLayer extends ColorLayer {
 export class ShapeIndexLayer extends ColorLayer {
     value(frame) {
         const denominator = frame.k1 - frame.k2;
-        if (Math.abs(denominator) < 1e-12)
-            return 0;
-
+        if (Math.abs(denominator) < 1e-12) return 0;
         return (2 / Math.PI) * Math.atan((frame.k1 + frame.k2) / denominator);
     }
-
     preferredColorMapper() {
         return new ColorMappers().get(ColorMappers.RdYlBu)();
+    }
+    preferredNormalizer() {
+        return new FixedIntervalNormalizer(new Range(-1, 1));
     }
 }
 
@@ -165,9 +137,11 @@ export class CurvednessLayer extends ColorLayer {
     preferredColorMapper() {
         return new ColorMappers().get(ColorMappers.RdYlBu)();
     }
-
     value(frame) {
         return Math.sqrt(0.5 * (frame.k1 * frame.k1 + frame.k2 * frame.k2));
+    }
+    preferredNormalizer() {
+        return new AdaptiveNormalizer();
     }
 }
 
@@ -175,7 +149,6 @@ export class PrincipalCurvature1Layer extends ColorLayer {
     preferredColorMapper() {
         return new ColorMappers().get(ColorMappers.Viridis)();
     }
-
     value(frame) {
         return frame.k1;
     }
@@ -185,7 +158,6 @@ export class PrincipalCurvature2Layer extends ColorLayer {
     preferredColorMapper() {
         return new ColorMappers().get(ColorMappers.Inferno)();
     }
-
     value(frame) {
         return frame.k2;
     }
@@ -200,7 +172,7 @@ export class ColorLayers extends Registry {
 
     constructor(label = "Color ") {
         super({
-            label: label,
+            label,
             entries: {
                 Height: () => new HeightLayer(),
                 PrincipalCurvature1: () => new PrincipalCurvature1Layer(),
@@ -214,19 +186,6 @@ export class ColorLayers extends Registry {
     }
 }
 
-/**
- * SurfaceVisualization is a compositor/container for different
- * visualizations of the same model:
- *
- *                  SurfaceVisualization
- *                          │
- *              ┌───────────┴───────────┐
- *              │                       │
- *         SurfaceLayer             GlyphLayer
- *              │                       │
- *            Mesh                InstancedMesh
- *
- */
 export class SurfaceVisualization extends Renderable3D {
     static Display = Object.freeze({
         Surface: "surface",
@@ -240,42 +199,31 @@ export class SurfaceVisualization extends Renderable3D {
         glyphScale = 0.8,
         colorLayer = new HeightLayer(),
         colorMapper = colorLayer.preferredColorMapper(),
-        normalizer = new AdaptiveSymmetricNormalizer(),
+        normalizer = colorLayer.preferredNormalizer(),
         opacity = 1,
         display = SurfaceVisualization.Display.Surface
     } = {}) {
         super();
-
         this._options = {
-            resolution: resolution,
-            glyphType: glyphType,
-            glyphScale: glyphScale,
-            colorLayer: colorLayer,
-            colorMapper: colorMapper,
-            normalizer: normalizer,
-            opacity: opacity
-        }
-
-        this._surfaceLayer = new SurfaceLayer({ ...this._options });
-        this._glyphLayer = new GlyphLayer({ ...this._options });
-
+            resolution,
+            glyphType,
+            glyphScale,
+            colorLayer,
+            colorMapper,
+            normalizer,
+            opacity
+        };
+        this._surfaceLayer = new SurfaceLayer({...this._options});
+        this._glyphLayer = new GlyphLayer({...this._options});
         this._overlayLayers = [];
         this._model = null;
-        this._meshLayer = null; // meshLayer can be null, e.g. when we want to show contours only
+        this._meshLayer = null;
         this.display(display);
     }
 
-    get glyphLayer() {
-        return this._glyphLayer;
-    }
-
-    get surfaceLayer() {
-        return this._surfaceLayer;
-    }
-
-    get meshLayer() {
-        return this._meshLayer;
-    }
+    get glyphLayer() { return this._glyphLayer; }
+    get surfaceLayer() { return this._surfaceLayer; }
+    get meshLayer() { return this._meshLayer; }
 
     display(type) {
         switch (type) {
@@ -289,21 +237,14 @@ export class SurfaceVisualization extends Renderable3D {
                 this._display(null);
                 break;
         }
-
         return this;
     }
 
     _display(layer) {
-        if (this._meshLayer)
-            this.remove(this._meshLayer);
-
+        if (this._meshLayer) this.remove(this._meshLayer);
         this._meshLayer = layer;
-
-        if (!layer)
-            return;
-
+        if (!layer) return;
         this.add(layer);
-
         if (this._model) {
             layer.initialize(this._model);
             layer.synchronizeWith(this._model);
@@ -319,18 +260,14 @@ export class SurfaceVisualization extends Renderable3D {
     addOverlayLayer(layer) {
         this._overlayLayers.push(layer);
         this.add(layer);
-
-        if (this._model)
-            layer.initialize(this._model);
-
+        if (this._model) layer.initialize(this._model);
         return this;
     }
 
     initialize(model) {
         this._model = model;
         this._meshLayer?.initialize(model);
-        for (const layer of this._overlayLayers)
-            layer.initialize(model);
+        for (const layer of this._overlayLayers) layer.initialize(model);
     }
 
     ui() {
@@ -359,37 +296,37 @@ export class SurfaceVisualization extends Renderable3D {
             .for(colorLayers)
             .addEventListener("change", event => {
                 const colorLayer = colorLayers.get(event.target.value)();
+                const colorMapper = colorLayer.preferredColorMapper();
+                const normalizer = colorLayer.preferredNormalizer();
                 this._surfaceLayer.colorLayer = colorLayer;
-                this._surfaceLayer.colorMapper = colorLayer.preferredColorMapper();
+                this._surfaceLayer.colorMapper = colorMapper;
+                this._surfaceLayer.normalizer = normalizer;
                 this._glyphLayer.colorLayer = colorLayer;
-                this._glyphLayer.colorMapper = colorLayer.preferredColorMapper();
+                this._glyphLayer.colorMapper = colorMapper;
+                this._glyphLayer.normalizer = normalizer;
                 for (const layer of this._overlayLayers) {
                     layer.colorLayer = colorLayer;
                     layer.colorMapper = colorLayer.preferredColorMapper();
+                    layer.normalizer = colorLayer.preferredNormalizer();
                 }
             });
     }
 
     synchronizeWith(model) {
         this._meshLayer?.synchronizeWith(model);
-        for (const layer of this._overlayLayers)
-            layer.synchronizeWith(model);
+        for (const layer of this._overlayLayers) layer.synchronizeWith(model);
     }
 
     reset() {
         this._meshLayer?.reset();
-        for (const layer of this._overlayLayers)
-            layer.reset?.();
+        for (const layer of this._overlayLayers) layer.reset?.();
     }
 
     get boundingBox() {
         const box = new Box3();
-        if (this._meshLayer)
-            box.union(this._meshLayer.boundingBox);
-
+        if (this._meshLayer) box.union(this._meshLayer.boundingBox);
         for (const layer of this._overlayLayers)
             box.union(layer.boundingBox ?? new Box3());
-
         return box;
     }
 }
