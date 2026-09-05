@@ -1,14 +1,16 @@
 import {
-    Simulation, Vec3, DiscreteScalarField, TiledPlane, Interval, Range, Slider
+    Simulation, Vec3, DiscreteScalarField, TiledPlane, FixedIntervalNormalizer, Interval, Range, Slider
 } from "../../../src/index.js";
 import { Arrow2D } from "../../../src/view/2d/primitives.js";
-import { BoxGeometry, Color, Mesh, MeshBasicMaterial } from "three";
+import { Renderable2D } from "../../../src/view/renderer.js";
+import { BoxGeometry, Mesh, MeshBasicMaterial } from "three";
 
 const N = 201;
 const h = 1e-2 / (N - 1);
 const L = 4e-3;
 const d = 1e-3;
 const V0 = 200;
+const CELL_SIZE = 0.3;
 
 // Match the original Web VPython potential colors:
 // -100 V -> bright red, 0 V -> bright yellow, +100 V -> bright green.
@@ -25,7 +27,6 @@ class PotentialColorMapper {
     }
 }
 
-// Discrete potential field with fixed capacitor plates.
 class CapacitorField extends DiscreteScalarField {
     constructor(nx = N, ny = N) {
         super({nx, ny});
@@ -62,34 +63,25 @@ class CapacitorField extends DiscreteScalarField {
 }
 
 const field = new CapacitorField(N, N);
-
 const view = new TiledPlane({
-    cellSize: 0.3,
+    cellSize: CELL_SIZE,
     colorMapper: new PotentialColorMapper(),
-    normalizer: new (class extends Object {
-        normalize(value) {
-            return new Interval(-V0 / 2, V0 / 2).normalize(value);
-        }
-    })(),
+    normalizer: new FixedIntervalNormalizer(new Interval(-V0 / 2, V0 / 2)),
     opacity: 1
 });
 
-// Field arrows. Arrow2D is deliberately kept as the generic visual primitive;
-// this small model only supplies the position and vector required by it.
-class FieldArrowModel {
-    constructor(position, axis) {
-        this.position = position;
-        this.axis = axis;
-    }
-}
-
-class ElectricFieldArrows extends Mesh {
+// Visualizes E = -grad(V) with the generic Arrow2D primitive.
+class ElectricFieldArrows extends Renderable2D {
     constructor({color = 0x111111, stride = 8, scale = 0.004} = {}) {
         super();
         this._color = color;
         this._stride = stride;
         this._scale = scale;
         this._arrows = [];
+    }
+
+    canBindTo(model) {
+        return model.valueAt !== undefined && model.nx !== undefined && model.ny !== undefined;
     }
 
     initialize(model) {
@@ -113,29 +105,35 @@ class ElectricFieldArrows extends Mesh {
     }
 
     synchronizeWith(model) {
-        const nx = model.nx;
         for (const {arrow, x, y} of this._arrows) {
-            const xm = model.valueAt(x - 1, y);
-            const xp = model.valueAt(x + 1, y);
-            const ym = model.valueAt(x, y - 1);
-            const yp = model.valueAt(x, y + 1);
-
-            // E = -grad(V) / h. Convert the physical field to the visual
-            // coordinate system used by TiledPlane.
-            const ex = -(xp - xm) / (2 * h);
-            const ey = -(yp - ym) / (2 * h);
+            const ex = -(model.valueAt(x + 1, y) - model.valueAt(x - 1, y)) / (2 * h);
+            const ey = -(model.valueAt(x, y + 1) - model.valueAt(x, y - 1)) / (2 * h);
 
             const position = {
-                x: (x + 0.5) * view._cellSize - 0.5 * nx * view._cellSize,
-                y: (y + 0.5) * view._cellSize - 0.5 * model.ny * view._cellSize
+                x: (x + 0.5) * CELL_SIZE - 0.5 * model.nx * CELL_SIZE,
+                y: (y + 0.5) * CELL_SIZE - 0.5 * model.ny * CELL_SIZE
             };
-            const axis = {x: ex * this._scale, y: ey * this._scale};
-            arrow.setVector(position, axis);
+            arrow.setVector(position, {x: ex * this._scale, y: ey * this._scale});
         }
     }
 }
 
-// Simple Jacobi solver for Laplace's equation.
+class CapacitorPlates extends Renderable2D {
+    constructor() {
+        super();
+        const width = 2 * (L / h) * CELL_SIZE;
+        const geometry = new BoxGeometry(width, 0.12, 0.08);
+        this._negative = new Mesh(geometry, new MeshBasicMaterial({color: 0xff2020}));
+        this._positive = new Mesh(geometry.clone(), new MeshBasicMaterial({color: 0x40ff40}));
+        this.add(this._negative, this._positive);
+    }
+
+    initialize() {
+        this._negative.position.set(0, -0.5 * d / h * CELL_SIZE, 0.05);
+        this._positive.position.set(0, 0.5 * d / h * CELL_SIZE, 0.05);
+    }
+}
+
 function solveLaplace(field, iterations = 50) {
     const nx = field.nx, ny = field.ny;
     const old = new Float32Array(field.data);
@@ -144,28 +142,23 @@ function solveLaplace(field, iterations = 50) {
         for (let y = 1; y < ny - 1; y++)
             for (let x = 1; x < nx - 1; x++) {
                 if (field.isFixed(x, y)) continue;
-                const v = 0.25 * (
-                    old[(y - 1) * nx + x] +
-                    old[(y + 1) * nx + x] +
-                    old[y * nx + (x - 1)] +
-                    old[y * nx + (x + 1)]
-                );
-                field.setValueAt(x, y, v);
+                field.setValueAt(x, y, 0.25 * (
+                    old[(y - 1) * nx + x] + old[(y + 1) * nx + x] +
+                    old[y * nx + (x - 1)] + old[y * nx + (x + 1)]
+                ));
             }
     }
 }
 
 const arrows = new ElectricFieldArrows({stride: 8, scale: 0.004});
-const plates = new Mesh(
-    new BoxGeometry(2 * (L / h) * 0.3, 0.12, 0.08),
-    new MeshBasicMaterial({color: 0xffff00})
-);
+const plates = new CapacitorPlates();
 
 let solvedIterations = 0;
 function solveSome() {
     if (solvedIterations < 5000) {
         solveLaplace(field, 100);
         solvedIterations += 100;
+        arrows.synchronizeWith(field);
     }
 }
 
