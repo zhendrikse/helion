@@ -10,8 +10,8 @@ import { Renderable3D } from "../../renderer.js";
 import {MathPhysicsModelBehavior} from "../../../core/helion.js";
 import {Checkbox, CompoundControl, RadioGroup} from "../../../core/controls.js";
 import {BodyPair} from "../../../model/phys/bodies.js";
-import {ColorMappers} from "../../colormappers.js";
-
+import { Range } from "../../../model/math/math.js";
+import { VectorField } from "../../../model/math/fields.js";
 //
 // Point cloud
 //
@@ -372,6 +372,24 @@ const headGeometryRound = new ConeGeometry(1, 1, 16);
 const headGeometrySquare = new ConeGeometry(1, 1, 4);
 
 export class ArrowField extends Renderable3D {
+    /**
+     * @typedef {Object} ArrowFieldOptions
+     * @property {Range} [xRange]
+     * @property {Range} [yRange]
+     * @property {Range} [zRange]
+     * @property {number} [scaleFactor]
+     * @property {boolean} [round]
+     * @property {(value: number) => number} [magnitudeMap]
+     * @property { (dir: Vec3, mag: number) => Color} [colorMap]
+     * @property {number} [cellSize]
+     * @property {number} [shaftWidth]
+     * @property {number} [headWidth]
+     * @property {number} [headLength]
+     */
+
+    /**
+     * @param {ArrowFieldOptions} [options]
+     */
     constructor({
         xRange,
         yRange,
@@ -427,8 +445,13 @@ export class ArrowField extends Renderable3D {
         this._target = new Vector3();
     }
 
+    /**
+     * @param {VectorField} vectorField 
+     */
     canBindTo(vectorField) {
-        return vectorField.sample;
+        if (vectorField.sample === undefined)
+            throw new Error("ArrowField needs sample() method to work out positions and directions");
+        return true;
     }
 
     #computeSizes(length) {
@@ -446,6 +469,9 @@ export class ArrowField extends Renderable3D {
         this._shaftMesh.instanceColor.setXYZ(index, c.r, c.g, c.b);
     }
 
+    /**
+     * @param {VectorField} vectorField 
+     */
     synchronizeWith(vectorField) {
         const count = this._positions.length;
 
