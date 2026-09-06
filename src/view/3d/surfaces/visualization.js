@@ -10,7 +10,7 @@ export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) { this.u = uSegments; this.v = vSegments; }
 }
 
-class Normalizer {
+export class Normalizer {
     adaptTo(range) {}
     normalize(value) {}
     reset() {}

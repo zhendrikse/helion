@@ -134,6 +134,10 @@ export function wavelengthToRGBNormalized(wavelength, targetColor) {
  * Maps a value to a color, storing the result in targetColor.
  */
 export class ColorMapper {
+    /**
+     * @param {number} value 
+     * @param {Color} targetColor 
+     */
     map(value, targetColor) {}
 }
 

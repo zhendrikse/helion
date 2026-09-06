@@ -1,6 +1,6 @@
 import {
     Simulation, Vec3, DiscreteScalarField, TiledPlane, Interval, Range, Slider, FixedIntervalNormalizer,
-    DirichletBoundaryCondition, JacobiSolver
+    DirichletBoundaryCondition, JacobiSolver, ColorMapper
 } from "../../../src/index.js";
 
 const N = 201;
@@ -13,7 +13,7 @@ const plateHalfLen = Math.floor((L / h) / 2);
 const plateHalfGap = Math.floor((d / h) / 2);
 
 // Color mapping for potential: -V0/2 (red) -> 0 (yellow) -> +V0/2 (green)
-class PotentialColorMapper {
+class PotentialColorMapper extends ColorMapper {
     map(value, target) {
         if (value < 0.5)
             target.setRGB(1, 2 * value, 0);
@@ -45,7 +45,8 @@ const view = new TiledPlane({
     cellSize: 0.3,
     colorMapper: new PotentialColorMapper(),
     normalizer: new FixedIntervalNormalizer(potentialRangeInterval),
-    opacity: 1
+    opacity: 1,
+    opacityFunction: value => 2 * Math.abs(value - 0.5)
 });
 
 let solvedIterations = 0;
@@ -55,8 +56,8 @@ let stepSize = 25;
 const simulation = Simulation
     .with({
         htmlDivId: "nonIdealCapacitorContainer",
-        camera: { position: new Vec3(0, 0, 35), orthographic: true },
-        viewport: { aspectRatio: 1 },
+        camera: { orthographic: true },
+        viewport: { aspectRatio: "1/1"  },
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: "<strong>🔋 Non-ideal capacitor</strong><br/>Laplace solver for potential, plates ±100V. Bottom/top plates at ±V0/2. Colors: red (-), green (+)."
@@ -72,11 +73,12 @@ const simulation = Simulation
         simulation.setTextTitle(`Iterations: ${solvedIterations}`);
     })
     .append(new Slider("Iterations")
-        .withRange(new Range(0, 10000, 100))
+        .withRange(new Range(0, 15000, 100))
         .withValue(iterationLimit)
-        .addEventListener("change", e => {
+        .onChange(event => {
             solvedIterations = 0;
-            iterationLimit = Number(e.target.value);
+            iterationLimit = Number(event.target.value);
+            field.reset();
         }))
     .frameSceneOn(view, { padding: 1.15, viewDirection: new Vec3(0, 0, 1) })
     .start();

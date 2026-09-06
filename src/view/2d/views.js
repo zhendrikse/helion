@@ -7,9 +7,10 @@ import {
 import {Renderable2D, Renderable3D} from "../renderer.js";
 import {CompoundControl, DropdownMenu } from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
-import {ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from "../colormappers.js";
+import {ColorMapper, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from "../colormappers.js";
 import {AdaptiveSymmetricNormalizer, SurfaceResolution} from "../3d/surfaces/visualization.js";
-import {ComplexFunctionSample} from "../../model/math/fields.js";
+import {ComplexFunctionSample, DiscreteScalarField} from "../../model/math/fields.js";
+import { Normalizer} from "../3d/surfaces/visualization.js"
 
 export class ParticleCloudView extends Renderable3D {
     static material = new MeshStandardMaterial({
@@ -444,74 +445,162 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
 }
 
 export class TiledPlane extends Renderable2D {
+    /**
+     * @typedef {Object} TiledPlaneOptions
+     * @property {ColorMapper} [colorMapper]
+     * @property {Normalizer} [normalizer]
+     * @property {number} [opacity]
+     * @property {(value: number) => number} [opacityFunction]
+     * @property {number} [cellSize]
+     */
+
+    /**
+     * @param {TiledPlaneOptions} [options]
+     */
     constructor({
         colorMapper = new HexValueColorMapper(),
         normalizer = new AdaptiveSymmetricNormalizer(),
         opacity = 1,
+        opacityFunction = () => 1,
         cellSize = 1,
     } = {}) {
         super();
+
         this._normalizer = normalizer;
         this._colorMapper = colorMapper;
         this._opacity = opacity;
+        this._opacityFunction = opacityFunction;
+
         this._mesh = null;
         this._colorArray = null;
+        this._opacityArray = null;
+
         this._rgb = new Color();
         this._cellSize = cellSize;
         this._dummy = new Object3D();
     }
 
-    initialize(model) {
-        const count = model.nx * model.ny;
+    /**
+     * @param {DiscreteScalarField} scalarField 
+     */
+    initialize(scalarField) {
+        const count = scalarField.nx * scalarField.ny;
         this._colorArray = new Float32Array(count * 3);
-
+        this._opacityArray = new Float32Array(count);
         const geometry = new PlaneGeometry(this._cellSize, this._cellSize);
+
+        /*
+         * Opacity is an instance property rather than a property of
+         * the material. The shader reads instanceOpacity for every tile.
+         */
+        geometry.setAttribute("instanceOpacity", new InstancedBufferAttribute(this._opacityArray, 1));
+
         const material = new MeshBasicMaterial({
             side: DoubleSide,
             transparent: true,
             opacity: this._opacity
         });
+
+        material.onBeforeCompile = shader => {
+            shader.vertexShader = shader.vertexShader
+                .replace(
+                    "#include <common>",
+                    `#include <common>
+                    attribute float instanceOpacity;
+                    varying float vInstanceOpacity;`
+                )
+                .replace(
+                    "#include <color_vertex>",
+                    `#include <color_vertex>
+                    vInstanceOpacity = instanceOpacity;`
+                );
+
+            shader.fragmentShader = shader.fragmentShader
+                .replace(
+                    "#include <common>",
+                    `#include <common>
+                    varying float vInstanceOpacity;`
+                )
+                .replace(
+                    "vec4 diffuseColor = vec4( diffuse, opacity );",
+                    "vec4 diffuseColor = vec4( diffuse, opacity * vInstanceOpacity );"
+                );
+        };
+
         this._mesh = new InstancedMesh(geometry, material, count);
         this._mesh.instanceColor = new InstancedBufferAttribute(this._colorArray, 3);
         this._mesh.instanceColor.setUsage(DynamicDrawUsage);
+        this._opacityAttribute = geometry.getAttribute("instanceOpacity");
+        this._opacityAttribute.setUsage(DynamicDrawUsage);
+
         this.add(this._mesh);
     }
 
-    canBindTo(model) {
-        if (model.valueAt === undefined || model.rangeAt === undefined || model.nx === undefined || model.ny === undefined)
-            throw new Error('TiledPlane cannot binding to model without valueAt() and rangeAt() methods and nx and ny properties');
+    /**
+     * @param {DiscreteScalarField} scalarField 
+     * @returns true if binding can be made
+     */
+    canBindTo(scalarField) {
+        if (scalarField.valueAt === undefined ||
+            scalarField.rangeAt === undefined ||
+            scalarField.nx === undefined ||
+            scalarField.ny === undefined )
+            throw new Error(
+                "TiledPlane cannot bind to model without valueAt() " +
+                "and rangeAt() methods and nx and ny properties" );
+
         return true;
     }
 
     _updateColor(index, value) {
-        const idx = index * 3;
-        const normalized = this._normalizer.normalize(value);
+        const colorIndex = index * 3;
 
+        /*
+         * The normalizer remains the single place where model values
+         * are converted to [0,1].
+         */
+        const normalized = this._normalizer.normalize(value);
         this._colorMapper.map(normalized, this._rgb);
 
-        this._colorArray[idx]     = this._rgb.r;
-        this._colorArray[idx + 1] = this._rgb.g;
-        this._colorArray[idx + 2] = this._rgb.b;
+        this._colorArray[colorIndex] = this._rgb.r;
+        this._colorArray[colorIndex + 1] = this._rgb.g;
+        this._colorArray[colorIndex + 2] = this._rgb.b;
+
+        /*
+         * opacityFunction deliberately receives the normalized value.
+         * This keeps opacity independent of the physical value range.
+         */
+        const opacity = this._opacityFunction(normalized);
+        this._opacityArray[index] = Math.max(0, Math.min(1, opacity));
     }
 
-    synchronizeWith(model) {
-        const width = .5 * model.nx * this._cellSize;
-        const height = .5 * model.ny * this._cellSize;
-        this._normalizer.adaptTo(model.rangeAt())
+    /**
+     * @param {DiscreteScalarField} scalarField 
+     */
+    synchronizeWith(scalarField) {
+        const width = 0.5 * scalarField.nx * this._cellSize;
+        const height = 0.5 * scalarField.ny * this._cellSize;
+
+        this._normalizer.adaptTo(scalarField.rangeAt());
+
         let index = 0;
-        for (let i = 0; i < model.nx; i++)
-            for (let j = 0; j < model.ny; j++) {
+        for (let i = 0; i < scalarField.nx; i++)
+            for (let j = 0; j < scalarField.ny; j++) {
                 this._dummy.position.set(
                     (i + 0.5) * this._cellSize - width,
                     (j + 0.5) * this._cellSize - height,
                     0
                 );
+
                 this._dummy.updateMatrix();
                 this._mesh.setMatrixAt(index, this._dummy.matrix);
-                this._updateColor(index++, model.valueAt(i, j));
+                this._updateColor(index, scalarField.valueAt(i, j));
+
+                index++;
             }
 
         this._mesh.instanceMatrix.needsUpdate = true;
         this._mesh.instanceColor.needsUpdate = true;
+        this._opacityAttribute.needsUpdate = true;
     }
 }

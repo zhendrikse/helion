@@ -1,7 +1,6 @@
 import { DiscreteComplexField, DiscreteScalarField, Field } from "../../fields.js";
 import {Complex} from "../../math.js";
 import {LaplaceOperator} from "../../../transformations/operators.js";
-import { subgroupShuffleXor } from "three/tsl";
 
 /**
  * A solver shoud be applied to a discrete scalar field.
@@ -120,7 +119,11 @@ export class WaveEquationSolver extends Solver {
         this._nextIm?.fill(0);
     }
 
-    // Bump the imaginary part of psi back by one time step
+    /**
+     * Bump the imaginary part of psi back by one time step.
+     * @param {DiscreteComplexField} psi 
+     * @param {number} dt 
+     */
     initialize(psi, dt) {
         const re = psi.real;
         const im = psi.imag;
