@@ -1,6 +1,5 @@
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
 import {Complex, Interval, Vec2, Vec3} from "./math.js";
-import {DifferentiableSurface} from "./surfaces.js";
 
 export class Domain {
     constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
@@ -10,8 +9,6 @@ export class Domain {
 }
 
 /**
- * TODO !!
- *
  * Field
  * ├── ScalarField → number
  * │   ├── MultivariateFunction
@@ -43,8 +40,15 @@ export class ScalarField extends Field {
 }
 
 export class ComplexField extends Field {
+    /**
+     * 
+     * @param {number} u normalized coordinate one.
+     * @param {number} v normalized coordinate two.
+     * @param {ComplexFunctionSample} target. 
+     * @returns the target.
+     */
     sample(u, v, target) {
-        target.set(new Complex(), new Complex()); // Real, imag
+        target.set(new ComplexFunctionSample());
         return target;
     }
 }

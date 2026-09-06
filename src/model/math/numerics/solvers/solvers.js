@@ -1,6 +1,21 @@
+import { DiscreteComplexField, DiscreteScalarField, Field } from "../../fields.js";
 import {Complex} from "../../math.js";
 
-export class WaveEquationSolver {
+/**
+ * A solver shoud be applied to a discrete scalar field.
+ */
+export class Solver {
+    /**
+     * Apply solver to field.
+     * 
+     * @abstract
+     * @param {Field} field
+     * @param {number} increment 
+     */
+    step(field, increment) {}
+}
+
+export class WaveEquationSolver extends Solver {
     constructor(equation) {
         this._equation = equation;
         this._previous = null;
@@ -12,6 +27,10 @@ export class WaveEquationSolver {
         this._next?.fill(0);
     }
 
+    /**
+     * @param {DiscreteScalarField} field
+     * @param {number} dt 
+     */
     step(field, dt) {
         const nx = field.nx;
         const ny = field.ny;
@@ -43,7 +62,7 @@ export class WaveEquationSolver {
  * one time step behind the corresponding real parts.  This is admittedly confusing.
  * Also note that these are 1D arrays, with index i = y*xMax + x, for efficiency.
  */
- export class SchrodingerSolver {
+ export class SchrodingerSolver extends Solver {
     constructor(potential) {
         this._potential = potential;
 
@@ -70,8 +89,13 @@ export class WaveEquationSolver {
             }
     }
 
-    // Integrate the TDSE for a double time step (centered-difference time integration):
-    // (Remember that psi.im is one time step earlier than psi.re; same for psiNext.im and psiNext.re.)
+    /**
+     * Integrate the TDSE for a double time step (centered-difference time integration).
+     * (Remember that psi.im is one time step earlier than psi.re; same for psiNext.im and psiNext.re.)
+     * 
+     * @param {DiscreteComplexField} field
+     * @param {number} dt
+     */
     step(psi, dt) {
         const w = psi.nx;
         const re = psi.real;
@@ -100,7 +124,7 @@ export class WaveEquationSolver {
     }
 }
 
-export class WaveFunctionEigenStateSolver {
+export class WaveFunctionEigenStateSolver extends Solver {
     static hbar = 1;
     static mass = 1;
 
@@ -201,6 +225,10 @@ export class WaveFunctionEigenStateSolver {
                 this._eigenstates[nx + "," + ny] = this._computeEigenstate(nx, ny, spacing);
     }
 
+    /**
+     * @param {DiscreteComplexField} psi 
+     * @param {number} dt 
+     */
     step(psi, dt) {
         this._time += dt;
         for (let i = 0; i < psi.nx; i++)

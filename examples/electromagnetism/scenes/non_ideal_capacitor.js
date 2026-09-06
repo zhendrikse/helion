@@ -1,199 +1,139 @@
 import {
-    Simulation, Vec3, DiscreteScalarField, TiledPlane, FixedIntervalNormalizer, Interval, Range, Slider
+    Simulation, Vec3, DiscreteScalarField, TiledPlane, Interval, Range, Slider, FixedIntervalNormalizer,
+    Transformation
 } from "../../../src/index.js";
-import { Arrow2D } from "../../../src/view/2d/primitives.js";
-import { Renderable2D } from "../../../src/view/renderer.js";
-import { BoxGeometry, Mesh, MeshBasicMaterial } from "three";
+import { Solver } from "../../../src/model/math/numerics/solvers/solvers.js";
 
 const N = 201;
 const h = 1e-2 / (N - 1);
 const L = 4e-3;
 const d = 1e-3;
 const V0 = 200;
-const CELL_SIZE = 0.3;
+const potentialRangeInterval = new Interval(-V0 / 2, V0 / 2);
+const plateHalfLen = Math.floor((L / h) / 2);
+const plateHalfGap = Math.floor((d / h) / 2);
 
-// Match the original Web VPython potential colors:
-// -100 V -> bright red, 0 V -> bright yellow, +100 V -> bright green.
+// Color mapping for potential: -V0/2 (blue) -> 0 (white) -> +V0/2 (red)
 class PotentialColorMapper {
+    // normalized is value/max via Interval, where 0 = -100, 1 = +100
+    // Map -1..1 to blue->white->red
     map(value, target) {
-        const v = Math.max(0, Math.min(1, value));
-        if (v < 0.5) {
-            const t = 2 * v;
-            target.setRGB(1, t, 0);
-        } else {
-            const t = 2 * (v - 0.5);
-            target.setRGB(1 - t, 1, 0);
-        }
+        if (value < 0.5)
+            target.setRGB(1, 2 * value, 0);
+        else
+            target.setRGB(1 - 2 * (value - 0.5), 1, 0);
     }
 }
 
-class CapacitorField extends DiscreteScalarField {
-    constructor(nx = N, ny = N) {
-        super({nx, ny});
-        this._plateMask = Array.from({length: nx}, () => Array(ny).fill(false));
-        this._initPlates();
-    }
-
-    _initPlates() {
-        const nx = this.nx, ny = this.ny;
-        const plateHalfLen = Math.floor((L / h) / 2);
-        const cx = Math.floor(nx / 2);
-        const cy = Math.floor(ny / 2);
-        const plateHalfGap = Math.floor((d / h) / 2);
+class CapacitorPotential extends Transformation {
+    /**
+     * @param {DiscreteScalarField} field 
+     */
+    applyTo(field) {
+        const cx = Math.floor(field.nx / 2);
+        const cy = Math.floor(field.ny / 2);
         const yBottom = cy - plateHalfGap;
         const yTop = cy + plateHalfGap;
 
         for (let x = cx - plateHalfLen; x < cx + plateHalfLen; x++) {
-            if (x < 0 || x >= nx) continue;
-            this.setValueAt(x, yBottom, -V0 / 2);
-            this.setValueAt(x, yTop, V0 / 2);
+            field.setValueAt(x, yBottom, -V0 / 2);
+            field.setValueAt(x, yTop, V0 / 2);
+        }
+    }
+}
+
+class CapacitorBoundaryCondition extends Transformation {
+    /**
+     * @param {DiscreteScalarField} field 
+     */
+    constructor(field) {
+        super();
+        this._plateMask = Array.from({ length: field.nx }, () => Array(field.ny).fill(false));
+        const cx = Math.floor(field.nx / 2);
+        const cy = Math.floor(field.ny / 2);
+        const yBottom = cy - plateHalfGap;
+        const yTop = cy + plateHalfGap;
+
+        for (let x = cx - plateHalfLen; x < cx + plateHalfLen; x++) {
             this._plateMask[x][yBottom] = true;
             this._plateMask[x][yTop] = true;
         }
     }
 
     isFixed(x, y) {
-        if (x < 0 || x >= this.nx || y < 0 || y >= this.ny) return false;
         return this._plateMask[x][y];
-    }
-
-    rangeAt() {
-        return new Interval(-V0 / 2, V0 / 2);
     }
 }
 
-const field = new CapacitorField(N, N);
+// Simple Jacobi solver for Laplace's equation
+class JacobiSolver extends Solver {
+    constructor(boundaryCondition) {
+        super();
+        this._boundaryCondition = boundaryCondition;
+    }
+
+    /**
+     * @param {DiscreteScalarField} field
+     * @param {number} increment 
+     */
+    step(field, increment) {
+        const nx = field.nx, ny = field.ny;
+        const old = new Float32Array(field.data);
+        const boundaryCondition = this._boundaryCondition;
+        for (let iter = 0; iter < increment; iter++) {
+            old.set(field.data); // copy old
+            for (let y = 1; y < ny - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    if (boundaryCondition.isFixed(x, y)) continue;
+                    const v = 0.25 * (old[(y - 1) * nx + x] + old[(y + 1) * nx + x] + old[y * nx + (x - 1)] + old[y * nx + (x + 1)]);
+                    field.setValueAt(x, y, v);
+                }
+        }
+    }
+}
+
+const field = new DiscreteScalarField({nx: N, ny: N});
+field.apply(new CapacitorPotential());
+const boundaryCondition = new CapacitorBoundaryCondition(field);
+const solver = new JacobiSolver(boundaryCondition);
 const view = new TiledPlane({
-    cellSize: CELL_SIZE,
+    cellSize: 0.3,
     colorMapper: new PotentialColorMapper(),
-    normalizer: new FixedIntervalNormalizer(new Interval(-V0 / 2, V0 / 2)),
+    normalizer: new FixedIntervalNormalizer(potentialRangeInterval),
     opacity: 1
 });
 
-// Visualizes E = -grad(V) with the generic Arrow2D primitive.
-class ElectricFieldArrows extends Renderable2D {
-    constructor({color = 0x111111, stride = 8, scale = 0.004} = {}) {
-        super();
-        this._color = color;
-        this._stride = stride;
-        this._scale = scale;
-        this._arrows = [];
-    }
-
-    canBindTo(model) {
-        return model.valueAt !== undefined && model.nx !== undefined && model.ny !== undefined;
-    }
-
-    initialize(model) {
-        this.clear();
-        this._arrows = [];
-
-        for (let y = 1; y < model.ny - 1; y += this._stride) {
-            for (let x = 1; x < model.nx - 1; x += this._stride) {
-                const arrow = new Arrow2D({
-                    color: this._color,
-                    size: 0.07,
-                    headLength: 0.07,
-                    headWidth: 0.045,
-                    lineWidth: 1.5,
-                    headStyle: Arrow2D.HeadStyle.Open
-                });
-                this.add(arrow);
-                this._arrows.push({arrow, x, y});
-            }
-        }
-    }
-
-    synchronizeWith(model) {
-        for (const {arrow, x, y} of this._arrows) {
-            const ex = -(model.valueAt(x + 1, y) - model.valueAt(x - 1, y)) / (2 * h);
-            const ey = -(model.valueAt(x, y + 1) - model.valueAt(x, y - 1)) / (2 * h);
-
-            const position = {
-                x: (x + 0.5) * CELL_SIZE - 0.5 * model.nx * CELL_SIZE,
-                y: (y + 0.5) * CELL_SIZE - 0.5 * model.ny * CELL_SIZE
-            };
-            arrow.setVector(position, {x: ex * this._scale, y: ey * this._scale});
-        }
-    }
-}
-
-class CapacitorPlates extends Renderable2D {
-    constructor() {
-        super();
-        const width = 2 * (L / h) * CELL_SIZE;
-        const geometry = new BoxGeometry(width, 0.12, 0.08);
-        this._negative = new Mesh(geometry, new MeshBasicMaterial({color: 0xff2020}));
-        this._positive = new Mesh(geometry.clone(), new MeshBasicMaterial({color: 0x40ff40}));
-        this.add(this._negative, this._positive);
-    }
-
-    initialize() {
-        this._negative.position.set(0, -0.5 * d / h * CELL_SIZE, 0.05);
-        this._positive.position.set(0, 0.5 * d / h * CELL_SIZE, 0.05);
-    }
-}
-
-function solveLaplace(field, iterations = 50) {
-    const nx = field.nx, ny = field.ny;
-    const old = new Float32Array(field.data);
-    for (let iter = 0; iter < iterations; iter++) {
-        old.set(field.data);
-        for (let y = 1; y < ny - 1; y++)
-            for (let x = 1; x < nx - 1; x++) {
-                if (field.isFixed(x, y)) continue;
-                field.setValueAt(x, y, 0.25 * (
-                    old[(y - 1) * nx + x] + old[(y + 1) * nx + x] +
-                    old[y * nx + (x - 1)] + old[y * nx + (x + 1)]
-                ));
-            }
-    }
-}
-
-const arrows = new ElectricFieldArrows({stride: 8, scale: 0.004});
-const plates = new CapacitorPlates();
-
 let solvedIterations = 0;
-function solveSome() {
-    if (solvedIterations < 5000) {
-        solveLaplace(field, 100);
-        solvedIterations += 100;
-        arrows.synchronizeWith(field);
-    }
+let iterationLimit = 5000;
+let stepSize = 25;
+function solverStep() {
+    if (solvedIterations >= iterationLimit)
+        return;
+
+    field.evolve(solver, stepSize);
+    solvedIterations += stepSize;
+    simulation.setTextTitle(`Iterations: ${solvedIterations}`)
 }
 
 const simulation = Simulation
     .with({
         htmlDivId: "nonIdealCapacitorContainer",
-        camera: {position: new Vec3(0, 0, 35), orthographic: true},
-        viewport: {aspectRatio: 1},
-        headUpDisplay: {enabled: false},
+        camera: { position: new Vec3(0, 0, 35), orthographic: true },
+        viewport: { aspectRatio: 1 },
+        headUpDisplay: { enabled: false },
         infoPanel: {
-            text: "<strong>🔋 Non-ideal capacitor</strong><br/>Laplace solver for potential, plates ±100V. Colors: red (-), yellow (0), green (+)."
+            text: "<strong>🔋 Non-ideal capacitor</strong><br/>Laplace solver for potential, plates ±100V. Bottom/top plates at ±V0/2. Colors: green (-), red (+)."
         }
     })
     .bind(field.alwaysWith(view))
-    .append(arrows)
-    .append(plates)
-    .onStep(() => solveSome())
+    .onStep(() => solverStep())
     .append(new Slider("Iterations")
-        .withRange(new Range(0, 5000, 100))
-        .withValue(0)
-        .addEventListener("input", e => {
-            const target = Number(e.target.value);
-            while (solvedIterations < target) solveSome();
-            while (solvedIterations > target) {
-                field.data.fill(0);
-                field._plateMask = Array.from({length: field.nx}, () => Array(field.ny).fill(false));
-                field._initPlates();
-                solvedIterations = 0;
-                while (solvedIterations < target) solveSome();
-            }
-            arrows.synchronizeWith(field);
+        .withRange(new Range(0, 10000, 100))
+        .withValue(iterationLimit)
+        .addEventListener("change", e => {
+            solvedIterations = 0;
+            iterationLimit = Number(e.target.value);
         }))
+    .frameSceneOn(view, { padding: 1.15, viewDirection: new Vec3(0, 0, 1) })
     .start();
 
-simulation.frameSceneOn(view, {padding: 1.1, viewDirection: new Vec3(0, 0, 1)});
-solveLaplace(field, 500);
-solvedIterations = 500;
-arrows.synchronizeWith(field);

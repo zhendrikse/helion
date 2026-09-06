@@ -483,10 +483,13 @@ export class TiledPlane extends Renderable2D {
         return true;
     }
 
-    _updateColor(index, colorValue) {
+    _updateColor(index, value) {
         const idx = index * 3;
-        this._colorMapper.map(colorValue, this._rgb);
-        this._colorArray[idx    ] = this._rgb.r;
+        const normalized = this._normalizer.normalize(value);
+
+        this._colorMapper.map(normalized, this._rgb);
+
+        this._colorArray[idx]     = this._rgb.r;
         this._colorArray[idx + 1] = this._rgb.g;
         this._colorArray[idx + 2] = this._rgb.b;
     }
