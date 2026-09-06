@@ -52,7 +52,7 @@ $$
 👉 Field vectors are rendered on a logarithmic scale<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/Solenoid) is available as well, see [solenoid.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/solenoid.py)<br/>
 
-## Live experiment
+### Live experiment
 <div class="header_line"></div>
 
 <div class="badgeRow">
@@ -64,6 +64,103 @@ $$
 <div id="solenoidContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/solenoid.js"}></script>
 <p style="clear: both;"></p>
+
+
+## Non-ideal capacitor 🔋
+<div class="header_line"><br/></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/electromagnetism/scenes/non_ideal_capacitor.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=non_ideal_capacitor.js"/>
+    </a>
+</div>
+
+🎯 Electric field of a non-ideal capacitor<br/>
+🧠 Inspired by [this video](https://www.youtube.com/watch?v=Jq4dVuD9JV0) by Jordan Huang<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/Capacitor) is available as well, see [non_ideal_capacitor.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/non_ideal_capacitor.py)<br/>
+
+<div id="nonIdealCapacitorContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/non_ideal_capacitor.js"}></script>
+<p style="clear: both;"></p>
+
+### Electric potential difference $\Delta V$
+<div class="header_line"><br/></div>
+
+### Theoretical background
+<div class="header_line"><br/></div>
+
+The capacity for a capacitor consisting of two parallel plates is given by $C = \epsilon_0A/d$,
+where $A$ is the surface area and $d$ the distance between the plates, and $\epsilon_0$ the permittivity
+of the spacer material. 
+
+Since $d \ll A$, we expect the fields 
+to be approximately constant with $\rho$ until we get close to the edge of the plates. 
+Therefore, we assume $\partial V/\partial\rho$ is negligible and can be taken to be zero. 
+As the surrounding area does not contain any additional charges, we can consider this
+to be a so-called <em>source-free</em> region, and Laplace’s Equation applies:
+
+$$
+\nabla^2V=0
+$$
+
+> A reasonable question to ask at this point would be, what about the potential field close to the edge 
+of the plates, or, for that matter, beyond the plates? The field in this region is referred to as a 
+fringing field. For the fringing field, $\partial V/\partial \rho$ is no longer negligible and must 
+be taken into account. 
+>
+> In addition, it is necessary to modify the boundary conditions to account for the outside 
+surfaces of the plates (that is, the sides of the plates that face away from the dielectric) 
+and to account for the effect of the boundary between the spacer material and free space. 
+These issues make the problem much more difficult. 
+When an accurate calculation of a fringing field is necessary, it is common to resort 
+to a numerical solution of Laplace’s Equation. Fortunately, accurate calculation of 
+fringing fields is usually not required in practical engineering applications. &mdash; 
+[www.circuitbread.com](https://www.circuitbread.com/textbooks/electromagnetics-i/electrostatics/potential-field-within-a-parallel-plate-capacitor)
+
+When we assume the plates to lie in the $xy$-plane, the  fields will be symmetric along the $z$-direction, 
+hence $\partial/V\partial z$ will be zero.
+
+This simplifies our Laplace equation to
+
+$$
+\dfrac{\partial^2V}{\partial x^2} + \dfrac{\partial^2V}{\partial y^2} = 0
+$$
+
+Once we know the potential $V$, we can also calculate the electric field:
+
+$$
+\vec{E} = -\nabla\cdot V = -\left( \dfrac{\partial}{\partial x}\hat{x} + \dfrac{\partial}{\partial y}\hat{y} + \dfrac{\partial}{\partial z}\hat{z} \right)V
+$$
+
+So our task is to numerically solve the second order differential equation for the potential $V$:
+
+- $V(x + h, y) \approx V(x, y) + h\dfrac{\partial V}{\partial x} + \dfrac{h^2}{2}\dfrac{\partial^2 V}{\partial x^2}$
+
+- $V(x, y + h) \approx V(x, y) + h\dfrac{\partial V}{\partial y} + \dfrac{h^2}{2}\dfrac{\partial^2 V}{\partial y^2}$
+
+- $V(x - h, y) \approx V(x, y) - h\dfrac{\partial V}{\partial x} + \dfrac{h^2}{2}\dfrac{\partial^2 V}{\partial x^2}$
+
+- $V(x, y - h) \approx V(x, y) - h\dfrac{\partial V}{\partial y} + \dfrac{h^2}{2}\dfrac{\partial^2 V}{\partial y^2}$
+
+$$
+V(x, y) = \dfrac{1}{4} \bigg( V(x + h, y) + V(x, y+ h) + V(x - h, y) + V(x, y - h) \bigg)
+$$
+
+This translates to the following JavaScript code:
+
+```javascript
+export class LaplaceOperator {
+    static at(field, i, j) {
+        return (
+            field.valueAt(i + 1, j) +
+            field.valueAt(i - 1, j) +
+            field.valueAt(i, j + 1) +
+            field.valueAt(i, j - 1) -
+            4 * field.valueAt(i, j)
+        );
+    }
+}
+```
 
 ## Infographics
 <div class="header_line"></div>
@@ -81,4 +178,10 @@ $$
     </figure>
 </div>
 
+### Capacitor fields
+
+<figure style="margin: 0 auto; text-align: center;">
+  <img alt="Electric potential difference" src={import.meta.env.BASE_URL + "images/electromagnetism/electric_potential_difference.jpg"} />
+  <figcaption>This excellent visual guide originates from <a href="https://www.facebook.com/HouseOfPhysics/">House of Physics</a>.</figcaption>
+</figure>
 

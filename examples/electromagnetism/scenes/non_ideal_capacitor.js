@@ -28,11 +28,8 @@ class CapacitorBoundaryCondition extends DirichletBoundaryCondition {
         const cy = Math.floor(N / 2);
         const yBottom = cy - plateHalfGap;
         const yTop = cy + plateHalfGap;
-
         const isPlate = (x, y) =>
-            x >= cx - plateHalfLen &&
-            x < cx + plateHalfLen &&
-            (y === yBottom || y === yTop);
+            x >= cx - plateHalfLen && x < cx + plateHalfLen && (y === yBottom || y === yTop);
 
         super({
             isFixed: isPlate,
@@ -54,14 +51,6 @@ const view = new TiledPlane({
 let solvedIterations = 0;
 let iterationLimit = 5000;
 let stepSize = 25;
-function solverStep() {
-    if (solvedIterations >= iterationLimit)
-        return;
-
-    field.evolve(solver, stepSize);
-    solvedIterations += stepSize;
-    simulation.setTextTitle(`Iterations: ${solvedIterations}`)
-}
 
 const simulation = Simulation
     .with({
@@ -74,7 +63,14 @@ const simulation = Simulation
         }
     })
     .bind(field.alwaysWith(view))
-    .onStep(() => solverStep())
+    .onStep(() => {
+        if (solvedIterations >= iterationLimit)
+            return;
+
+        field.evolve(solver, stepSize);
+        solvedIterations += stepSize;
+        simulation.setTextTitle(`Iterations: ${solvedIterations}`);
+    })
     .append(new Slider("Iterations")
         .withRange(new Range(0, 10000, 100))
         .withValue(iterationLimit)

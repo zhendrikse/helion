@@ -1,6 +1,7 @@
 import { DiscreteComplexField, DiscreteScalarField, Field } from "../../fields.js";
 import {Complex} from "../../math.js";
-import {LaplaceOperator} from "../../transformations/operators.js";
+import {LaplaceOperator} from "../../../transformations/operators.js";
+import { subgroupShuffleXor } from "three/tsl";
 
 /**
  * A solver shoud be applied to a discrete scalar field.
@@ -34,9 +35,9 @@ export class JacobiSolver extends Solver {
      * points are updated from the previous iteration.
      *
      * @param {DiscreteScalarField} field
-     * @param {number} increment
+     * @param {number} increments
      */
-    step(field, increment) {
+    step(field, increments) {
         const nx = field.nx;
         const ny = field.ny;
         this._next = this._next === null || this._next.length !== nx * ny
@@ -45,14 +46,12 @@ export class JacobiSolver extends Solver {
 
         const next = this._next;
 
-        for (let iteration = 0; iteration < increment; iteration++) {
+        for (let iteration = 0; iteration < increments; iteration++) {
             for (let y = 1; y < ny - 1; y++)
-                for (let x = 1; x < nx - 1; x++) {
-                    if (this._boundaryCondition.isFixed(x, y))
-                        next[field.index(x, y)] = this._boundaryCondition.valueAt(x, y);
-                    else
+                for (let x = 1; x < nx - 1; x++) 
+                    this._boundaryCondition.isFixed(x, y) ?
+                        next[field.index(x, y)] = this._boundaryCondition.valueAt(x, y) :
                         next[field.index(x, y)] = field.valueAt(x, y) + 0.25 * LaplaceOperator.at(field, x, y);
-                }
 
             field.data.set(next);
         }
@@ -61,6 +60,7 @@ export class JacobiSolver extends Solver {
 
 export class WaveEquationSolver extends Solver {
     constructor(equation) {
+        super();
         this._equation = equation;
         this._previous = null;
         this._next = null;
@@ -108,6 +108,7 @@ export class WaveEquationSolver extends Solver {
  */
  export class SchrodingerSolver extends Solver {
     constructor(potential) {
+        super();
         this._potential = potential;
 
         this._nextRe = null;
@@ -176,7 +177,7 @@ export class WaveFunctionEigenStateSolver extends Solver {
         size = 20,
         spacing = 10
     } = {}) {
-
+        super();
         this._eigenstates = {};
         this._coefs = {}
         this._omegas = {}

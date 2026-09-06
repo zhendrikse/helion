@@ -41,6 +41,7 @@ export default defineConfig({
                 game_of_life: path.resolve(__dirname, 'examples/games/scenes/game_of_life.js'),
                 harmonograph: path.resolve(__dirname, 'examples/mathematics/scenes/harmonograph.js'),
                 lorenz_attractor: path.resolve(__dirname, 'examples/mathematics/scenes/lorenz_attractor.js'),
+                non_ideal_capacitor: path.resolve(__dirname, 'examples/electromagnetism/scenes/non_ideal_capacitor.js'),
                 matrix_transformation: path.resolve(__dirname, 'examples/mathematics/scenes/matrix_transformation.js'),
                 menger_sponge: path.resolve(__dirname, 'examples/mathematics/scenes/menger_sponge.js'),
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),
