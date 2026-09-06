@@ -60,8 +60,10 @@ export { Matrix2D } from "./model/transformations/matrices.js";
 export { Arrow2D } from "./view/2d/primitives.js";
 
 export {
-    WaveEquationSolver, SchrodingerSolver, WaveFunctionEigenStateSolver
+    WaveEquationSolver, JacobiSolver, SchrodingerSolver, WaveFunctionEigenStateSolver
 } from "./model/math/numerics/solvers/solvers.js";
+
+export { DirichletBoundaryCondition } from "./model/math/numerics/boundaryconditions/dirichlet.js";
 
 export {
     CylinderSegmentsView, BoxSegmentsView, LineSegmentsView, LineSegmentView, CurveView
@@ -85,4 +87,3 @@ export {
     wavelengthColor, wavelengthToRGBNormalized, ColorMapper, toColorString, ComplexColorMappers, HueColorMapper,
     WavelengthColorMapper, ColorMappers, HexValueColorMapper
 } from "./view/colormappers.js";
-
