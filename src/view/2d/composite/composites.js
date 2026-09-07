@@ -99,6 +99,7 @@ export class ArrowField2D extends Renderable2D {
         this._end = new Vector3();
         this._headCenter = new Vector3();
         this._perpendicular = new Vector3();
+        this._position = new Vector3();
     }
 
     /** @param {VectorField} vectorField */
@@ -111,8 +112,9 @@ export class ArrowField2D extends Renderable2D {
 
     /** @param {VectorField} vectorField */
     synchronizeWith(vectorField) {
+        const position = this._position;
         for (let i = 0; i < this._positions.length; i++) {
-            const position = this._positions[i];
+            position.set(this._positions[i].x, this._positions[i].y, 0);
             vectorField.sample(position, this._target);
 
             const x = this._target.x;

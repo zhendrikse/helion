@@ -92,8 +92,8 @@ const arrows = new ArrowField2D({
     yRange: new Range((2 + .5) * cellSize - height, (N - 2 + .5) * cellSize - height, arrowSpacing),
     scaleFactor: 0.2,
     size: 0.25,
-    headLength: 0.25,
-    headWidth: 0.25,
+    headLength: 0.15,
+    headWidth: 0.15,
     colorMap: (dir, mag) => 0x333333,
     headStyle: "filled", 
     visible: false
