@@ -2,7 +2,8 @@ import {
     Simulation, Vec3, DiscreteScalarField, TiledPlane, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
     JacobiSolver, ColorMapper, Checkbox, ElectricField, Vec2,
-    Arrow2D
+    Arrow2D,
+    Button
 } from "../../../src/index.js";
 
 const N = 201;
@@ -22,6 +23,26 @@ class PotentialColorMapper extends ColorMapper {
             target.setRGB(1, 2 * value, 0);
         else
             target.setRGB(1 - 2 * (value - 0.5), 1, 0);
+    }
+}
+
+class DipoleBoundaryCondition extends DirichletBoundaryCondition {
+    constructor(separation = d/2) {
+        const cx = Math.floor(N / 2);
+        const cy = Math.floor(N / 2);
+
+        const separationInCells = Math.round(separation / h);
+        const positive = [cx + separationInCells, cy];
+        const negative = [cx - separationInCells, cy];
+
+        super({
+            isFixed: (x, y) =>
+                (Math.abs(x - positive[0]) <= 1 && Math.abs(y - positive[1]) <= 1) ||
+                (Math.abs(x - negative[0]) <= 1 && Math.abs(y - negative[1]) <= 1),
+
+            valueAt: (x, y) =>
+                Math.abs(x - positive[0]) <=1 && Math.abs(y - positive[1]) <=1 ? +V0 / 2 : -V0 / 2
+        });
     }
 }
 
@@ -79,14 +100,22 @@ let solvedIterations = 0;
 let iterationLimit = 5000;
 let stepSize = 25;
 
+const reset = () => {
+    solvedIterations = 0;
+    field.reset(); 
+}
 const simulation = Simulation
     .with({
         htmlDivId: "potentialFieldContainer",
         camera: { orthographic: true },
         viewport: { aspectRatio: "1/1"  },
         headUpDisplay: { enabled: false },
+        parameterMenuCollapsed: false,
         infoPanel: {
-            text: "<strong>🔋 Non-ideal capacitor</strong><br/>Laplace solver for potential, plates ±100V. Bottom/top plates at $±V_0/2$. Colors: red (-), green (+)."
+            text: "<strong>🔋 Non-ideal capacitor</strong><br/>" +
+            "Laplace solver for potential, plates ±100V.<br/>" + 
+            "Bottom/top plates at $\\pm\\frac{V_0}{2}$.<br/>"+ 
+            "Colors: <span style=\"color: #ff0000\">red (-)</span>, <span style=\"color: #00ff00\">green (+)</span>."
         }
     })
     .bind(field.alwaysWith(view))
@@ -103,13 +132,24 @@ const simulation = Simulation
         .withRange(new Range(0, 15000, 100))
         .withValue(iterationLimit)
         .onChange(event => {
-            solvedIterations = 0;
             iterationLimit = Number(event.target.value);
-            field.reset();
+            reset();
         }))
     .append(new Checkbox("Electric field arrows ")
         .on(arrows)
         .withProperty("visible")
+    )
+    .append(new Button()
+        .withText("🔋 Capacitor")
+        .addEventListener("click", () => {
+            solver.boundaryCondition = new CapacitorBoundaryCondition();
+            reset(); 
+        }).togetherWith(new Button()
+        .withText("⚡ Dipole")
+        .addEventListener("click", () => { 
+            solver.boundaryCondition = new DipoleBoundaryCondition();
+            reset(); 
+        }))
     )
     .frameSceneOn(view, { padding: 1.15, viewDirection: new Vec3(0, 0, 1) })
     .start();

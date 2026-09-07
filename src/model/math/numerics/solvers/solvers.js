@@ -23,6 +23,8 @@ export class JacobiSolver extends Solver {
         this._next = null;
     }
 
+    set boundaryCondition(value) { this._boundaryCondition = value; }
+
     reset() {
         this._next?.fill(0);
     }
