@@ -1,7 +1,7 @@
 import {
     Simulation, Vec3, DiscreteScalarField, TiledPlane, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
-    JacobiSolver, ColorMapper, Checkbox, ElectricField
+    JacobiSolver, ColorMapper, Checkbox, ElectricField, Vec2
 } from "../../../src/index.js";
 
 const N = 201;
@@ -46,9 +46,10 @@ const solver = new JacobiSolver(boundaryCondition);
 
 const width = 0.5 * N * cellSize;
 const height = 0.5 * N * cellSize;
-const electricField = new ElectricField(field, {
+const electricField = new ElectricField({
+    potentialField: field,
     gridSpacing: cellSize,
-    gridOrigin: { x: 0.5 * cellSize - width, y: 0.5 * cellSize - height },
+    gridOrigin: new Vec2(0.5 * cellSize - width, 0.5 * cellSize - height),
     derivativeSpacing: h
 });
 

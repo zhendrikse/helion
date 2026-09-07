@@ -1,5 +1,7 @@
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
+import { SurfaceResolution } from "../../view/3d/surfaces/visualization.js";
 import {Complex, Interval, Vec2, Vec3} from "./math.js";
+import { Solver } from "./numerics/solvers/solvers.js";
 
 export class Domain {
     constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
@@ -30,10 +32,15 @@ export class Field extends MathPhysicsModelBehavior {
 }
 
 export class ScalarField extends Field {
+    /**
+     * @param {number} u normalized coordinate one.
+     * @param {number} v normalized coordinate two.
+     */
     sample(u, v) {
         return 0;
     }
 
+    /** @param {SurfaceResolution} resolution */
     rangeAt(resolution) {
         return new Interval();
     }
@@ -41,105 +48,34 @@ export class ScalarField extends Field {
 
 export class ComplexField extends Field {
     /**
-     * 
      * @param {number} u normalized coordinate one.
      * @param {number} v normalized coordinate two.
-     * @param {ComplexFunctionSample} target. 
-     * @returns the target.
+     * @param {ComplexFunctionSample} target
      */
     sample(u, v, target) {
-        target.set(new ComplexFunctionSample());
-        return target;
     }
 }
 
 export class VectorField extends Field {
+    /**
+     * @param {Vec2 | Vec3} positionVector 
+     * @param {Vec2 | Vec3} target 
+     */
     sample(positionVector, target) {
         target.set(0, 0, 0);
         return target;
     }
 }
 
-/**
- * Electric field derived from a scalar potential field.
- *
- * For a discrete potential field, valueAt(i, j) computes the electric field
- * directly from the native grid values using a central difference. sample()
- * maps a spatial position to the corresponding grid cell and then delegates
- * to valueAt(), avoiding interpolation of the potential.
- *
- * For a continuous potential field, sample() computes the gradient using a
- * central finite difference of the potential's sample() method.
- */
-export class ElectricField extends VectorField {
-    constructor(potentialField, {
-        gridSpacing = 1,
-        gridOrigin = new Vec2(0, 0),
-        derivativeSpacing = gridSpacing
-    } = {}) {
-        super();
-
-        this._potentialField = potentialField;
-        this._gridSpacing = gridSpacing;
-        this._gridOrigin = new Vec2(gridOrigin.x, gridOrigin.y);
-        this._derivativeSpacing = derivativeSpacing;
-
-        this._target = new Vec2();
-    }
-
-    /**
-     * Sample the electric field at a spatial position.
-     *
-     * Discrete potential fields are evaluated at the native grid point;
-     * continuous potential fields use a central finite difference.
-     */
-    sample(position, target = this._target) {
-        if (typeof this._potentialField.valueAt === "function") {
-            const i = Math.round((position.x - this._gridOrigin.x) / this._gridSpacing);
-            const j = Math.round((position.y - this._gridOrigin.y) / this._gridSpacing);
-            return this.valueAt(i, j, target);
-        }
-
-        const h = this._derivativeSpacing;
-        const vx1 = this._potentialField.sample(position.x + h, position.y);
-        const vx0 = this._potentialField.sample(position.x - h, position.y);
-        const vy1 = this._potentialField.sample(position.x, position.y + h);
-        const vy0 = this._potentialField.sample(position.x, position.y - h);
-
-        return target.set(
-            -(vx1 - vx0) / (2 * h),
-            -(vy1 - vy0) / (2 * h)
-        );
-    }
-
-    /**
-     * Evaluate the electric field at an exact native grid position.
-     *
-     * @param {number} i grid x-index
-     * @param {number} j grid y-index
-     * @param {Vec2} target output vector
-     */
-    valueAt(i, j, target = this._target) {
-        const field = this._potentialField;
-
-        if (typeof field.valueAt !== "function")
-            throw new Error("ElectricField.valueAt() requires a discrete potential field.");
-
-        if (i <= 0 || i >= field.nx - 1 ||
-            j <= 0 || j >= field.ny - 1)
-            return target.set(0, 0);
-
-        const h = this._derivativeSpacing;
-        const dVdx =
-            (field.valueAt(i + 1, j) - field.valueAt(i - 1, j)) / (2 * h);
-        const dVdy =
-            (field.valueAt(i, j + 1) - field.valueAt(i, j - 1)) / (2 * h);
-
-        return target.set(-dVdx, -dVdy);
-    }
-}
 
 export class MultivariateFunction extends ScalarField {
+    /**
+     * @typedef {Object} MultivariateFunctionOptions
+     * @property {(x: number, y: number, t: number) => number} [func]
+     * @property {Domain} [domain]
+     */
+
+    /** @param {MultivariateFunctionOptions} [options] */
     constructor({
         domain = new Domain(),
         func = (x, y, t) => 0
@@ -150,6 +86,11 @@ export class MultivariateFunction extends ScalarField {
         this._func = func;
     }
 
+    /**
+     * @param {SurfaceResolution} surfaceResolution 
+     * @param {number} time 
+     * @returns {Interval}
+     */
     rangeAt(surfaceResolution, time = 0) {
         const interval = new Interval();
         for (let i = 0; i < surfaceResolution.u; i++)
@@ -162,16 +103,25 @@ export class MultivariateFunction extends ScalarField {
         return interval;
     }
 
+    /** @param {number} u @param {number} v */
     sample(u, v) {
         const x = this.domain.xRange.scaleUnitParameter(u);
         const y = this.domain.yRange.scaleUnitParameter(v);
         return this._func(x, y, this._time);
     }
 
+    /** @param {number} time */
     set time(time) { this._time = time; }
 }
 
 export class RealFunction extends ScalarField {
+    /**
+     * @typedef {Object} RealFunctionOptions
+     * @property {(x: number) => number} [func]
+     * @property {Interval} [domain]
+     */
+
+    /** @param {RealFunctionOptions} [options] */
     constructor({
         domain = new Interval(-1, 1),
         func = x => 0
@@ -181,6 +131,7 @@ export class RealFunction extends ScalarField {
         this._func = func;
     }
 
+    /** @param {number} surfaceResolution */
     rangeAt(surfaceResolution) {
         const interval = new Interval();
         for (let i = 0; i < surfaceResolution; i++)
@@ -207,6 +158,13 @@ export class ComplexFunctionSample {
 }
 
 export class ComplexFunction extends ComplexField {
+    /**
+     * @typedef {Object} ComplexFunctionOptions
+     * @property {(x: Complex) => Complex} [func]
+     * @property {Domain} [domain]
+     */
+
+    /** @param {ComplexFunctionOptions} [options] */
     constructor({
         domain = new Domain(),
         func = z => new Complex(0, 0)
@@ -216,6 +174,11 @@ export class ComplexFunction extends ComplexField {
         this._complexFunction = func;
     }
 
+    /**
+     * @param {number} u normalized coordinate one.
+     * @param {number} v normalized coordinate two.
+     * @param {ComplexFunctionSample} complexFunctionSample
+     */
     sample(u, v, complexFunctionSample) {
         const re = this._domain.xRange.scaleUnitParameter(u);
         const im = this._domain.yRange.scaleUnitParameter(v);
@@ -243,14 +206,17 @@ export class DiscreteScalarField extends ScalarField {
     get ny() { return this._ny; }
     get data() { return this._data; }
 
+    /** @param {number} x  @param {number} y */
     index(x, y) {
         return y * this._nx + x;
     }
 
+    /** @param {number} x  @param {number} y */
     valueAt(x, y) {
         return this._data[this.index(x, y)];
     }
 
+    /** @param {number} x  @param {number} y  @param {number} value */
     setValueAt(x, y, value) {
         this._data[this.index(x, y)] = value;
     }
@@ -260,7 +226,7 @@ export class DiscreteScalarField extends ScalarField {
         return this;
     }
 
-    rangeAt(surfaceResolution) {
+    rangeAt() {
         const interval = new Interval();
         for (let i = 0; i < this.nx; i++)
             for (let j = 0; j < this.ny; j++)
@@ -268,6 +234,7 @@ export class DiscreteScalarField extends ScalarField {
         return interval;
     }
 
+    /** @param {Solver} solver  @param {number} dt */
     evolve(solver, dt) {
         solver.step(this, dt);
         return this;
@@ -297,6 +264,7 @@ export class DiscreteComplexField extends ComplexField {
 
     get size() { return this.nx; }
 
+    /** @param {number} x  @param {number} y */
     index(x, y) {
         return y * this.nx + x;
     }
@@ -307,11 +275,17 @@ export class DiscreteComplexField extends ComplexField {
         return this;
     }
 
+    /** @param {Solver} solver  @param {number} dt */
     evolve(solver, dt) {
         solver.step(this, dt);
         return this;
     }
 
+    /**
+     * @param {number} i normalized coordinate one.
+     * @param {number} j normalized coordinate two.
+     * @param {ComplexFunctionSample} complexFunctionSample
+     */
     valueAt(i, j, complexFunctionSample) {
         const index = this.index(i, j);
         complexFunctionSample.input.re = i;
@@ -320,6 +294,11 @@ export class DiscreteComplexField extends ComplexField {
         complexFunctionSample.output.im = this.imag[index];
     }
 
+    /**
+     * @param {number} u normalized coordinate one.
+     * @param {number} v normalized coordinate two.
+     * @param {ComplexFunctionSample} complexFunctionSample
+     */
     sample(u, v, complexFunctionSample) {
         // bilinear interpolation
         const x = u * (this.nx - 1);

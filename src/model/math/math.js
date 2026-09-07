@@ -512,7 +512,7 @@ export class Complex {
      * @param {number} re 
      * @param {number} im 
      */
-    constructor(re, im) {
+    constructor(re = 0, im = 0) {
         this.re = re;
         this.im = im;
     }

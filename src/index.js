@@ -34,10 +34,11 @@ export {
 } from "./model/math/objects.js"
 
 export {
-    Domain, DiscreteScalarField, DiscreteComplexField, VectorField, ElectricField, ComplexFunction, MultivariateFunction,
+    Domain, DiscreteScalarField, DiscreteComplexField, VectorField, ComplexFunction, MultivariateFunction,
     ComplexFunctionSample, RealFunction
 } from "./model/math/fields.js";
 
+export { ElectricField } from "./model/phys/fields.js"
 export { ComplexSurfaceView3D, WaveFunctionSurface3D } from "./view/3d/surfaces/complex.js";
 export { ThreeJsScene } from "./view/3d/scene.js";
 export { SphereSphereCollision } from "./model/transformations/interactions.js";
