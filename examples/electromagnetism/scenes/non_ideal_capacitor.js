@@ -1,6 +1,7 @@
 import {
-    Simulation, Vec3, DiscreteScalarField, TiledPlane, Interval, Range, Slider, FixedIntervalNormalizer,
-    DirichletBoundaryCondition, JacobiSolver, ColorMapper
+    Simulation, Vec3, Vec2, DiscreteScalarField, VectorField, TiledPlane, ArrowField2D,
+    Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
+    JacobiSolver, ColorMapper
 } from "../../../src/index.js";
 
 const N = 201;
@@ -11,6 +12,7 @@ const V0 = 200;
 const potentialRangeInterval = new Interval(-V0 / 2, V0 / 2);
 const plateHalfLen = Math.floor((L / h) / 2);
 const plateHalfGap = Math.floor((d / h) / 2);
+const cellSize = 0.3;
 
 // Color mapping for potential: -V0/2 (red) -> 0 (yellow) -> +V0/2 (green)
 class PotentialColorMapper extends ColorMapper {
@@ -38,15 +40,73 @@ class CapacitorBoundaryCondition extends DirichletBoundaryCondition {
     }
 }
 
+class ElectricField extends VectorField {
+    constructor(potentialField) {
+        super();
+        this._potentialField = potentialField;
+        this._target = new Vec2();
+    }
+
+    sample(position, target = this._target) {
+        const width = 0.5 * this._potentialField.nx * cellSize;
+        const height = 0.5 * this._potentialField.ny * cellSize;
+
+        const i = Math.round((position.x + width) / cellSize - 0.5);
+        const j = Math.round((position.y + height) / cellSize - 0.5);
+
+        if (i <= 0 || i >= this._potentialField.nx - 1 ||
+            j <= 0 || j >= this._potentialField.ny - 1) {
+            return target.set(0, 0);
+        }
+
+        const dVdx =
+            (this._potentialField.valueAt(i + 1, j) -
+             this._potentialField.valueAt(i - 1, j)) / (2 * h);
+
+        const dVdy =
+            (this._potentialField.valueAt(i, j + 1) -
+             this._potentialField.valueAt(i, j - 1)) / (2 * h);
+
+        return target.set(-dVdx, -dVdy);
+    }
+}
+
 const field = new DiscreteScalarField({nx: N, ny: N});
 const boundaryCondition = new CapacitorBoundaryCondition();
 const solver = new JacobiSolver(boundaryCondition);
+const electricField = new ElectricField(field);
+
 const view = new TiledPlane({
-    cellSize: 0.3,
+    cellSize,
     colorMapper: new PotentialColorMapper(),
     normalizer: new FixedIntervalNormalizer(potentialRangeInterval),
     opacity: 1,
     opacityFunction: value => 2 * Math.abs(value - 0.5)
+});
+
+const arrowPositions = [];
+const arrowSpacing = 5;
+const width = 0.5 * N * cellSize;
+const height = 0.5 * N * cellSize;
+
+for (let i = 2; i < N - 2; i += arrowSpacing)
+    for (let j = 2; j < N - 2; j += arrowSpacing)
+        arrowPositions.push(new Vec2(
+            (i + 0.5) * cellSize - width,
+            (j + 0.5) * cellSize - height
+        ));
+
+const arrows = new ArrowField2D({
+    xRange: arrowPositions,
+    yRange: [],
+    scaleFactor: 0.2,
+    magnitudeMap: magnitude => Math.log(1 + magnitude),
+    colorMap: () => 0xffffff,
+    size: 0.08,
+    headLength: 0.08,
+    headWidth: 0.05,
+    lineWidth: 2,
+    headStyle: "filled"
 });
 
 let solvedIterations = 0;
@@ -64,6 +124,7 @@ const simulation = Simulation
         }
     })
     .bind(field.alwaysWith(view))
+    .bind(electricField.alwaysWith(arrows))
     .onStep(() => {
         if (solvedIterations >= iterationLimit)
             return;
