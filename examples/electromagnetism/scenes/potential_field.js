@@ -112,10 +112,10 @@ const simulation = Simulation
         headUpDisplay: { enabled: false },
         parameterMenuCollapsed: false,
         infoPanel: {
-            text: "<strong>🔋 Non-ideal capacitor</strong><br/>" +
-            "Laplace solver for potential, plates ±100V.<br/>" + 
-            "Bottom/top plates at $\\pm\\frac{V_0}{2}$.<br/>"+ 
-            "Colors: <span style=\"color: #ff0000\">red (-)</span>, <span style=\"color: #00ff00\">green (+)</span>."
+            text: "<strong>💪 Potential fields</strong><br/>" +
+            "Laplace solver for potentials, charges ±100V.<br/>" + 
+            "Colors: <span style=\"color: #ff0000\">red (-)</span>, <span style=\"color: #00ff00\">green (+)</span>.<br/>" +
+            "Electric field arrows $$\\overrightarrow{E}=-\\overrightarrow{\\nabla}V$$"
         }
     })
     .bind(field.alwaysWith(view))
