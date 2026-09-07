@@ -1,7 +1,14 @@
+/** @param {number} angle */
 export function degToRad(angle) {
     return angle * Math.PI / 180;
 }
 
+/**
+ * @param {number} radius 
+ * @param {number} theta 
+ * @param {number} phi 
+ * @returns 
+ */
 export function toCartesian(radius, theta, phi) {
     return new Vec3(
         radius * Math.sin(theta) * Math.cos(phi),
@@ -30,8 +37,8 @@ export function generateUUID() {
 /**
  * Pick a number from a normal distribution using Box-Muller transform.
  *
- * @param mu Average.
- * @param sigma Standard deviation
+ * @param {number} mu Average.
+ * @param {number} sigma Standard deviation
  * @returns A normally distributed number.
  */
 export function normalDistribution(mu, sigma) {
@@ -42,6 +49,8 @@ export function normalDistribution(mu, sigma) {
 
 /**
  * Returns a random number between min (inclusive) and max (exclusive)
+ * @param {number} min
+ * @param {number} max
  */
 export function uniform(min, max) {
     return Math.random() * (max - min) + min;
@@ -53,6 +62,8 @@ export function uniform(min, max) {
  * if min isn't an integer) and no greater than max (or the next integer
  * lower than max if max isn't an integer).
  * Using Math.round() will give you a non-uniform distribution!
+ * @param {number} min
+ * @param {number} max
  */
 export function randomInt(min, max) {
     min = Math.ceil(min);
@@ -60,6 +71,7 @@ export function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+/** @param {number n} */
 export function factorial(n) {
     let result = 1;
     for (let i=2; i<=n; i++)
@@ -67,6 +79,12 @@ export function factorial(n) {
     return result;
 }
 
+/**
+ * @param {number} start 
+ * @param {number} stop 
+ * @param {number} num 
+ * @returns 
+ */
 export function linspace(start, stop, num) {
     const linSpace = [];
     const step = (stop - start) / (num - 1);
@@ -97,18 +115,21 @@ export class Vec2 {
         return new Vec2(this.x, this.y);
     }
 
-    set(x,y,z) {
+    /** @param{number} x @param{number} y */
+    set(x,y) {
         this.x = x;
         this.y = y;
         return this;
     }
 
+    /** @param {Vec2} v */
     copy(v) {
         this.x = v.x;
         this.y = v.y;
         return this;
     }
 
+    /** @param {Vec2} v */
     add(v) {
         this.x += v.x;
         this.y += v.y;
@@ -121,30 +142,35 @@ export class Vec2 {
         return this;
     }
 
+    /** @param {Vec2} v  @param {number} scalar */
     addScaledVector(v, scalar) {
         this.x += v.x * scalar;
         this.y += v.y * scalar;
         return this;
     }
 
+    /** @param {Vec2} v */
     sub(v) {
         this.x -= v.x;
         this.y -= v.y;
         return this;
     }
 
+    /** @param {Vec2} a  @param {Vec2}  b */
     subVectors(a, b) {
         this.x = a.x - b.x;
         this.y = a.y - b.y;
         return this;
     }
 
+    /** @param {number} s */
     divideScalar(s) {
         this.x /= s;
         this.y /= s;
         return this;
     }
 
+    /** @param {number} s */
     multiplyScalar(s) {
         this.x *= s;
         this.y *= s;
@@ -159,10 +185,12 @@ export class Vec2 {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
+    /** @param {Vec2} v */
     dot(v) {
         return this.x * v.x + this.y * v.y;
     }
 
+    /** @param {Vec2} v */
     projectOnVector(v) {
         const denominator = v.lengthSq();
 
@@ -193,11 +221,13 @@ export class Vec2 {
         return this;
     }
 
+    /** @param {Vec2} position */
     distanceSquaredTo(position) {
         return (position.x - this.x) * (position.x - this.x) +
             (position.y - this.y) * (position.y - this.y);
     }
 
+    /** @param {Vec2} position */
     distanceTo(position) {
         return Math.sqrt(this.distanceSquaredTo(position));
     }
@@ -250,6 +280,7 @@ export class Vec3 {
         return this;
     }
     
+    /** @param {Vec3} v @param {number} alpha */
     lerp(v, alpha) {
         this.x += (v.x - this.x) * alpha;
         this.y += (v.y - this.y) * alpha;
@@ -258,6 +289,7 @@ export class Vec3 {
         return this;
     }
 
+    /** @param {Vec3} v */
     cross(v) {
         const x = this.y * v.z - this.z * v.y;
         const y = this.z * v.x - this.x * v.z;
@@ -270,6 +302,7 @@ export class Vec3 {
         return this;
     }
 
+    /** @param{number} x @param{number} y @param{number} z */
     set(x,y,z) {
         this.x = x;
         this.y = y;
@@ -277,6 +310,7 @@ export class Vec3 {
         return this;
     }
 
+    /** @param {Vec3} v */
     copy(v) {
         this.x = v.x;
         this.y = v.y;
@@ -284,6 +318,7 @@ export class Vec3 {
         return this;
     }
 
+    /** @param {Vec3} v */
     add(v) {
         this.x += v.x;
         this.y += v.y;
@@ -298,6 +333,7 @@ export class Vec3 {
         return this;
     }
 
+    /** @param {Vec3} v  @param {number} scalar*/
     addScaledVector(v, scalar) {
         this.x += v.x * scalar;
         this.y += v.y * scalar;
@@ -305,6 +341,7 @@ export class Vec3 {
         return this;
     }
 
+    /** @param {Vec3} v */
     sub(v) {
         this.x -= v.x;
         this.y -= v.y;
@@ -312,6 +349,7 @@ export class Vec3 {
         return this;
     }
 
+    /** @param {Vec3} a  @param {Vec3} b*/
     subVectors(a, b) {
         this.x = a.x - b.x;
         this.y = a.y - b.y;
@@ -319,6 +357,7 @@ export class Vec3 {
         return this;
     }
 
+    /** @param {number} s */
     divideScalar(s) {
         this.x /= s;
         this.y /= s;
@@ -326,6 +365,7 @@ export class Vec3 {
         return this;
     }
 
+    /** @param {number} s */
     multiplyScalar(s) {
         this.x *= s;
         this.y *= s;
@@ -341,10 +381,12 @@ export class Vec3 {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
     }
 
+    /** @param {Vec3} v */
     dot(v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
     }
 
+    /** @param {Vec3} v */
     projectOnVector(v) {
         const denominator = v.lengthSq();
 
@@ -378,18 +420,25 @@ export class Vec3 {
         return this;
     }
 
+    /** @param {Vec3} position */
     distanceSquaredTo(position) {
         return (position.x - this.x) * (position.x - this.x) +
             (position.y - this.y) * (position.y - this.y) +
             (position.z - this.z) * (position.z - this.z);
     }
 
+    /** @param {Vec3} position */
     distanceTo(position) {
         return Math.sqrt(this.distanceSquaredTo(position));
     }
 }
 
 export class Range {
+    /**
+     * @param {number} from 
+     * @param {number} to 
+     * @param {number} stepSize 
+     */
     constructor(from, to, stepSize) {
         this.from = from;
         this.to = to;
@@ -428,7 +477,7 @@ export class Interval {
     /**
      * Resize the interval to include the value given.
      *
-     * @param value modify the interval to include this value, if it isn't already included.
+     * @param {number} value modify the interval to include this value, if it isn't already included.
      */
     include(value) {
         if (value < this.from) this.from = value;
@@ -438,7 +487,7 @@ export class Interval {
     /**
      * Normalize a value with respect to this interval, i.e. treat the range as 1.
      *
-     * @param value The value in the interval to be normalized.
+     * @param {number} value The value in the interval to be normalized.
      * @returns {number|number} The normalized value.
      */
     normalize = value => this.to === this.from ? 0 : (value - this.from) / this.range;
@@ -449,15 +498,20 @@ export class Interval {
 
     /**
      * Scale a unit parameter [0, 1] up to this interval
-     * @param unitParameter the parameter that runs from [0, 1]
+     * @param {number} unitParameter the parameter that runs from [0, 1]
      * @returns {number} the scaled parameter
      */
     scaleUnitParameter = unitParameter => this.range * unitParameter + this.from;
 }
 
 export class Complex {
+    /** @param {number} theta */
     static fromPhase = (theta) => new Complex(Math.cos(theta), Math.sin(theta));
 
+    /**
+     * @param {number} re 
+     * @param {number} im 
+     */
     constructor(re, im) {
         this.re = re;
         this.im = im;
@@ -472,18 +526,24 @@ export class Complex {
         return new Complex(this.re, this.im);
     }
 
+    /**
+     * @param {number} real 
+     * @param {number} imag 
+     */
     set(real, imag) {
         this.re = real;
         this.im = imag;
         return this;
     }
 
+    /** @param {Complex} complex */
     copy(complex) {
         this.re = complex.re;
         this.im = complex.im;
         return this;
     }
 
+    /** @param {Complex} complex */
     multiply(complex) {
         const real = this.re * complex.re - this.im * complex.im;
         const imag = this.re * complex.im + this.im * complex.re
@@ -492,12 +552,14 @@ export class Complex {
         return this;
     }
 
+    /** @param {Complex} complex */
     add(complex) {
         this.re += complex.re;
         this.im += complex.im;
         return this;
     }
 
+    /** @param {Complex} complex */
     subtract(complex) {
         this.re -= complex.re;
         this.im -= complex.im;
@@ -528,6 +590,7 @@ export class Complex {
         return this;
     }
 
+    /** @param {Complex} z2 */
     divide = (z2) => {
         const denominator = z2.re * z2.re + z2.im * z2.im;
         const re = this.re * z2.re + this.im * z2.im;
@@ -546,6 +609,7 @@ export class Complex {
         return this;
     }
 
+    /** @param {number} scalar */
     multiplyScalar(scalar) {
         this.re *= scalar;
         this.im *= scalar;

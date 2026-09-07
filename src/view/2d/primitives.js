@@ -10,7 +10,19 @@ export class Arrow2D extends Renderable3D {
         Open: "open",
         Filled: "filled"
     });
+    /**
+     * @typedef {Object} Arrow2DOptions
+     * @property {number} [color]
+     * @property {number} [size]
+     * @property {number} [lineWidth]
+     * @property {number} [headWidth]
+     * @property {number} [headLength]
+     * @property {string} [headStyle]
+     */
 
+    /**
+     * @param {Arrow2DOptions} [options]
+     */
     constructor({
         color = 0xff0000,
         size = 0.1,
@@ -60,6 +72,10 @@ export class Arrow2D extends Renderable3D {
         this.setVector(model.position, model.axis);
     }
 
+    /**
+     * @param {Vec2} position 
+     * @param {Vec2} vector 
+     */
     setVector(position, vector) {
         const x = vector.x;
         const y = vector.y;
@@ -127,6 +143,7 @@ export class Arrow2D extends Renderable3D {
         line.geometry.computeBoundingSphere();
     }
 
+    /** @param {Color} color */
     set color(color) {
         this._material.color.set(color);
         this._headMaterial.color.set(color);
@@ -139,100 +156,6 @@ export class Arrow2D extends Renderable3D {
         this._material.dispose();
         this._headMaterial.dispose();
 
-        this.clear();
-    }
-}
-
-export class ArrowField2D extends Renderable3D {
-    constructor({
-        xRange,
-        yRange,
-        scaleFactor = 1,
-        magnitudeMap = m => Math.log(1 + m),
-        colorMap = (dir, mag) => 0xff0000,
-        size = 0.1,
-        headLength = size,
-        headWidth = size * 0.6,
-        lineWidth = 2,
-        headStyle = Arrow2D.HeadStyle.Open
-    } = {}) {
-        super();
-
-        this._scaleFactor = scaleFactor;
-        this._magnitudeMap = magnitudeMap;
-        this._colorMap = colorMap;
-
-        this._arrows = [];
-        this._positions = [];
-
-        for (const x of xRange)
-            for (const y of yRange) {
-                const position = new Vec2(x, y);
-                const arrow = new Arrow2D({
-                    size,
-                    headLength,
-                    headWidth,
-                    lineWidth,
-                    headStyle
-                });
-
-                this._positions.push(position);
-                this._arrows.push(arrow);
-                this.add(arrow);
-            }
-
-        this._target = new Vec2();
-        this._scaledTarget = new Vec2();
-    }
-
-    canBindTo(vectorField) {
-        if (typeof vectorField?.sample !== "function")
-            throw new Error("ArrowField2D can only bind to a VectorField with sample().");
-
-        return true;
-    }
-
-    synchronizeWith(vectorField) {
-        for (let i = 0; i < this._arrows.length; i++) {
-            const position = this._positions[i];
-            const arrow = this._arrows[i];
-
-            vectorField.sample(position, this._target);
-
-            const magnitude = Math.hypot(
-                this._target.x,
-                this._target.y
-            );
-
-            if (magnitude < 1e-12) {
-                arrow.visible = false;
-                continue;
-            }
-
-            arrow.visible = true;
-
-            const visualMagnitude =
-                this._magnitudeMap(magnitude) * this._scaleFactor;
-
-            this._scaledTarget
-                .copy(this._target)
-                .normalize()
-                .multiplyScalar(visualMagnitude);
-
-            arrow.setVector(position, this._scaledTarget);
-            arrow.color = this._colorMap(
-                this._target.clone().normalize(),
-                magnitude
-            );
-        }
-    }
-
-    dispose() {
-        for (const arrow of this._arrows)
-            arrow.dispose();
-
-        this._arrows.length = 0;
-        this._positions.length = 0;
         this.clear();
     }
 }

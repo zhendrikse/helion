@@ -104,7 +104,7 @@ const arrows = new ArrowField2D({
     size: 0.08,
     headLength: 0.08,
     headWidth: 0.05,
-    lineWidth: 2,
+    lineWidth: 1,
     headStyle: "filled"
 });
 
@@ -123,11 +123,14 @@ const simulation = Simulation
         }
     })
     .bind(field.alwaysWith(view))
-    .bind(electricField.alwaysWith(arrows))
+    .bind(electricField.onceWith(arrows))
     .onStep(() => {
-        if (solvedIterations >= iterationLimit)
+        if (solvedIterations >= iterationLimit) {
+            arrows.visible = true;
             return;
+        }
 
+        arrows.visible = false;
         field.evolve(solver, stepSize);
         solvedIterations += stepSize;
         simulation.setTextTitle(`Iterations: ${solvedIterations}`);
