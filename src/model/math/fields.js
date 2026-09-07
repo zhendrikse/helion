@@ -60,6 +60,82 @@ export class VectorField extends Field {
     }
 }
 
+/**
+ * Electric field derived from a scalar potential field.
+ *
+ * For a discrete potential field, valueAt(i, j) computes the electric field
+ * directly from the native grid values using a central difference. sample()
+ * maps a spatial position to the corresponding grid cell and then delegates
+ * to valueAt(), avoiding interpolation of the potential.
+ *
+ * For a continuous potential field, sample() computes the gradient using a
+ * central finite difference of the potential's sample() method.
+ */
+export class ElectricField extends VectorField {
+    constructor(potentialField, {
+        gridSpacing = 1,
+        gridOrigin = new Vec2(0, 0),
+        derivativeStep = gridSpacing
+    } = {}) {
+        super();
+
+        this._potentialField = potentialField;
+        this._gridSpacing = gridSpacing;
+        this._gridOrigin = gridOrigin.clone();
+        this._derivativeStep = derivativeStep;
+
+        this._target = new Vec2();
+    }
+
+    /**
+     * Sample the electric field at a spatial position.
+     *
+     * Discrete potential fields are evaluated at the native grid point;
+     * continuous potential fields use a central finite difference.
+     */
+    sample(position, target = this._target) {
+        if (typeof this._potentialField.valueAt === "function") {
+            const i = Math.round((position.x - this._gridOrigin.x) / this._gridSpacing);
+            const j = Math.round((position.y - this._gridOrigin.y) / this._gridSpacing);
+            return this.valueAt(i, j, target);
+        }
+
+        const h = this._derivativeStep;
+        const vx1 = this._potentialField.sample(position.x + h, position.y);
+        const vx0 = this._potentialField.sample(position.x - h, position.y);
+        const vy1 = this._potentialField.sample(position.x, position.y + h);
+        const vy0 = this._potentialField.sample(position.x, position.y - h);
+
+        return target.set(
+            -(vx1 - vx0) / (2 * h),
+            -(vy1 - vy0) / (2 * h)
+        );
+    }
+
+    /**
+     * Evaluate the electric field at an exact native grid position.
+     *
+     * @param {number} i grid x-index
+     * @param {number} j grid y-index
+     * @param {Vec2} target output vector
+     */
+    valueAt(i, j, target = this._target) {
+        const field = this._potentialField;
+
+        if (i <= 0 || i >= field.nx - 1 ||
+            j <= 0 || j >= field.ny - 1)
+            return target.set(0, 0);
+
+        const dx = this._gridSpacing;
+        const dVdx =
+            (field.valueAt(i + 1, j) - field.valueAt(i - 1, j)) / (2 * dx);
+        const dVdy =
+            (field.valueAt(i, j + 1) - field.valueAt(i, j - 1)) / (2 * dx);
+
+        return target.set(-dVdx, -dVdy);
+    }
+}
+
 export class MultivariateFunction extends ScalarField {
     constructor({
         domain = new Domain(),
