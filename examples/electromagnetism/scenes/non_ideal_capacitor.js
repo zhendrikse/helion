@@ -55,9 +55,8 @@ class ElectricField extends VectorField {
         const j = Math.round((position.y + height) / cellSize - 0.5);
 
         if (i <= 0 || i >= this._potentialField.nx - 1 ||
-            j <= 0 || j >= this._potentialField.ny - 1) {
+            j <= 0 || j >= this._potentialField.ny - 1)
             return target.set(0, 0);
-        }
 
         const dVdx =
             (this._potentialField.valueAt(i + 1, j) -
@@ -84,21 +83,21 @@ const view = new TiledPlane({
     opacityFunction: value => 2 * Math.abs(value - 0.5)
 });
 
-const arrowPositions = [];
 const arrowSpacing = 5;
 const width = 0.5 * N * cellSize;
 const height = 0.5 * N * cellSize;
+const xPositions = [];
+const yPositions = [];
 
 for (let i = 2; i < N - 2; i += arrowSpacing)
-    for (let j = 2; j < N - 2; j += arrowSpacing)
-        arrowPositions.push(new Vec2(
-            (i + 0.5) * cellSize - width,
-            (j + 0.5) * cellSize - height
-        ));
+    xPositions.push((i + 0.5) * cellSize - width);
+
+for (let j = 2; j < N - 2; j += arrowSpacing)
+    yPositions.push((j + 0.5) * cellSize - height);
 
 const arrows = new ArrowField2D({
-    xRange: arrowPositions,
-    yRange: [],
+    xRange: xPositions,
+    yRange: yPositions,
     scaleFactor: 0.2,
     magnitudeMap: magnitude => Math.log(1 + magnitude),
     colorMap: () => 0xffffff,
