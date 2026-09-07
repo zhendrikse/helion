@@ -1,7 +1,8 @@
 import {
     Simulation, Vec3, DiscreteScalarField, TiledPlane, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
-    JacobiSolver, ColorMapper, Checkbox, ElectricField, Vec2
+    JacobiSolver, ColorMapper, Checkbox, ElectricField, Vec2,
+    Arrow2D
 } from "../../../src/index.js";
 
 const N = 201;
@@ -70,7 +71,7 @@ const arrows = new ArrowField2D({
     headLength: 0.15,
     headWidth: 0.15,
     colorMap: (dir, mag) => 0x333333,
-    headStyle: "filled",
+    headStyle: Arrow2D.HeadStyle.Filled,
     visible: false
 });
 
@@ -80,12 +81,12 @@ let stepSize = 25;
 
 const simulation = Simulation
     .with({
-        htmlDivId: "nonIdealCapacitorContainer",
+        htmlDivId: "potentialFieldContainer",
         camera: { orthographic: true },
         viewport: { aspectRatio: "1/1"  },
         headUpDisplay: { enabled: false },
         infoPanel: {
-            text: "<strong>🔋 Non-ideal capacitor</strong><br/>Laplace solver for potential, plates ±100V. Bottom/top plates at ±V0/2. Colors: red (-), green (+)."
+            text: "<strong>🔋 Non-ideal capacitor</strong><br/>Laplace solver for potential, plates ±100V. Bottom/top plates at $±V_0/2$. Colors: red (-), green (+)."
         }
     })
     .bind(field.alwaysWith(view))
