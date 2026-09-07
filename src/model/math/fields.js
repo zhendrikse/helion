@@ -75,14 +75,14 @@ export class ElectricField extends VectorField {
     constructor(potentialField, {
         gridSpacing = 1,
         gridOrigin = new Vec2(0, 0),
-        derivativeStep = gridSpacing
+        derivativeSpacing = gridSpacing
     } = {}) {
         super();
 
         this._potentialField = potentialField;
         this._gridSpacing = gridSpacing;
-        this._gridOrigin = gridOrigin.clone();
-        this._derivativeStep = derivativeStep;
+        this._gridOrigin = new Vec2(gridOrigin.x, gridOrigin.y);
+        this._derivativeSpacing = derivativeSpacing;
 
         this._target = new Vec2();
     }
@@ -100,7 +100,7 @@ export class ElectricField extends VectorField {
             return this.valueAt(i, j, target);
         }
 
-        const h = this._derivativeStep;
+        const h = this._derivativeSpacing;
         const vx1 = this._potentialField.sample(position.x + h, position.y);
         const vx0 = this._potentialField.sample(position.x - h, position.y);
         const vy1 = this._potentialField.sample(position.x, position.y + h);
@@ -122,15 +122,18 @@ export class ElectricField extends VectorField {
     valueAt(i, j, target = this._target) {
         const field = this._potentialField;
 
+        if (typeof field.valueAt !== "function")
+            throw new Error("ElectricField.valueAt() requires a discrete potential field.");
+
         if (i <= 0 || i >= field.nx - 1 ||
             j <= 0 || j >= field.ny - 1)
             return target.set(0, 0);
 
-        const dx = this._gridSpacing;
+        const h = this._derivativeSpacing;
         const dVdx =
-            (field.valueAt(i + 1, j) - field.valueAt(i - 1, j)) / (2 * dx);
+            (field.valueAt(i + 1, j) - field.valueAt(i - 1, j)) / (2 * h);
         const dVdy =
-            (field.valueAt(i, j + 1) - field.valueAt(i, j - 1)) / (2 * dx);
+            (field.valueAt(i, j + 1) - field.valueAt(i, j - 1)) / (2 * h);
 
         return target.set(-dVdx, -dVdy);
     }
