@@ -1,7 +1,7 @@
 import {
-    Simulation, Vec3, Vec2, DiscreteScalarField, VectorField, TiledPlane, ArrowField2D,
+    Simulation, Vec3, DiscreteScalarField, VectorField, TiledPlane, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
-    JacobiSolver, ColorMapper, Checkbox
+    JacobiSolver, ColorMapper, Checkbox, ElectricField
 } from "../../../src/index.js";
 
 const N = 201;
@@ -40,41 +40,17 @@ class CapacitorBoundaryCondition extends DirichletBoundaryCondition {
     }
 }
 
-class ElectricField extends VectorField {
-    /** @param {DiscreteScalarField} potentialField */
-    constructor(potentialField) {
-        super();
-        this._potentialField = potentialField;
-        this._target = new Vec2();
-    }
-
-    sample(position = new Vec2(), target = this._target) {
-        const width = 0.5 * this._potentialField.nx * cellSize;
-        const height = 0.5 * this._potentialField.ny * cellSize;
-
-        const i = Math.round((position.x + width) / cellSize - 0.5);
-        const j = Math.round((position.y + height) / cellSize - 0.5);
-
-        if (i <= 0 || i >= this._potentialField.nx - 1 ||
-            j <= 0 || j >= this._potentialField.ny - 1)
-            return target.set(0, 0);
-
-        const dVdx =
-            (this._potentialField.valueAt(i + 1, j) -
-             this._potentialField.valueAt(i - 1, j)) / (2 * h);
-
-        const dVdy =
-            (this._potentialField.valueAt(i, j + 1) -
-             this._potentialField.valueAt(i, j - 1)) / (2 * h);
-
-        return target.set(-dVdx, -dVdy);
-    }
-}
-
 const field = new DiscreteScalarField({nx: N, ny: N});
 const boundaryCondition = new CapacitorBoundaryCondition();
 const solver = new JacobiSolver(boundaryCondition);
-const electricField = new ElectricField(field);
+
+const width = 0.5 * N * cellSize;
+const height = 0.5 * N * cellSize;
+const electricField = new ElectricField(field, {
+    gridSpacing: cellSize,
+    gridOrigin: { x: 0.5 * cellSize - width, y: 0.5 * cellSize - height },
+    derivativeStep: h
+});
 
 const view = new TiledPlane({
     cellSize,
@@ -85,8 +61,6 @@ const view = new TiledPlane({
 });
 
 const arrowSpacing = 1.5;
-const width = 0.5 * N * cellSize;
-const height = 0.5 * N * cellSize;
 const arrows = new ArrowField2D({
     xRange: new Range((2 + .5) * cellSize - width, (N - 2 + .5) * cellSize - width, arrowSpacing),
     yRange: new Range((2 + .5) * cellSize - height, (N - 2 + .5) * cellSize - height, arrowSpacing),
@@ -95,7 +69,7 @@ const arrows = new ArrowField2D({
     headLength: 0.15,
     headWidth: 0.15,
     colorMap: (dir, mag) => 0x333333,
-    headStyle: "filled", 
+    headStyle: "filled",
     visible: false
 });
 
