@@ -23,9 +23,9 @@ export class ArrowField2D extends Renderable3D {
      * @property {Iterable<number>} [yRange]
      * @property {number} [scaleFactor]
      * @property {(value: number) => number} [magnitudeMap]
-     * @property {(dir: Vec3, mag: number) => number} [colorMap]
+     * @property {(dir: Vec3, mag: number) => number|Color} [colorMap]
      * @property {number} [size]
-     * @property {number} [lineWidth]
+     * @property {number} [shaftWidth]
      * @property {number} [headWidth]
      * @property {number} [headLength]
      * @property {string} [headStyle]
@@ -41,9 +41,9 @@ export class ArrowField2D extends Renderable3D {
         magnitudeMap = m => Math.log(1 + m),
         colorMap = (dir, mag) => 0xff0000,
         size = 0.1,
+        shaftWidth = size * 0.35,
         headLength = size,
         headWidth = size * 0.6,
-        lineWidth = 2,
         headStyle = Arrow2D.HeadStyle.Open
     } = {}) {
         super();
@@ -56,6 +56,7 @@ export class ArrowField2D extends Renderable3D {
         this._colorMap = colorMap;
         this._headStyle = headStyle;
 
+        this._shaftWidth = shaftWidth;
         this._headLength = headLength;
         this._headWidth = headWidth;
 
@@ -66,9 +67,6 @@ export class ArrowField2D extends Renderable3D {
 
         const count = this._positions.length;
 
-        // ArrowField2D deliberately uses instancing, just like ArrowField3D:
-        // every arrow is represented by matrix/color data rather than by a
-        // collection of individual Three.js objects and geometries.
         const shaftGeometry = new BoxGeometry(1, 1, 1);
         const shaftMaterial = new MeshBasicMaterial({
             side: DoubleSide,
@@ -124,12 +122,15 @@ export class ArrowField2D extends Renderable3D {
         this._matrix = new Matrix4();
         this._q = new Quaternion();
         this._dir = new Vector3();
+        this._segmentDir = new Vector3();
         this._shape = new Vector3();
         this._target = new Vec2();
-
-        // Keep lineWidth in the API for consistency with Arrow2D. For an
-        // instanced field, shaft width is expressed in world units instead.
-        this._shaftWidth = Math.max(size * 0.35, lineWidth * 0.001);
+        this._shaftCenter = new Vector3();
+        this._tip = new Vector3();
+        this._base = new Vector3();
+        this._end = new Vector3();
+        this._headCenter = new Vector3();
+        this._perpendicular = new Vector3();
     }
 
     /** @param {VectorField} vectorField */
@@ -172,7 +173,7 @@ export class ArrowField2D extends Renderable3D {
             );
             const shaftLength = Math.max(visualMagnitude - headLength, 0);
 
-            const shaftCenter = new Vector3(
+            this._shaftCenter.set(
                 position.x + this._dir.x * shaftLength * 0.5,
                 position.y + this._dir.y * shaftLength * 0.5,
                 0
@@ -180,35 +181,34 @@ export class ArrowField2D extends Renderable3D {
 
             this._q.setFromUnitVectors(UP, this._dir);
             this._shape.set(this._shaftWidth, shaftLength, this._shaftWidth);
-            this._matrix.compose(shaftCenter, this._q, this._shape);
+            this._matrix.compose(this._shaftCenter, this._q, this._shape);
             this._shaftMesh.setMatrixAt(i, this._matrix);
 
-            const tip = new Vector3(
+            this._tip.set(
                 position.x + this._dir.x * visualMagnitude,
                 position.y + this._dir.y * visualMagnitude,
                 0
             );
 
             if (this._headMesh) {
-                const headCenter = new Vector3(
-                    tip.x - this._dir.x * headLength * 0.5,
-                    tip.y - this._dir.y * headLength * 0.5,
+                this._headCenter.set(
+                    this._tip.x - this._dir.x * headLength * 0.5,
+                    this._tip.y - this._dir.y * headLength * 0.5,
                     0
                 );
 
-                this._q.setFromUnitVectors(UP, this._dir);
                 this._shape.set(
                     this._headWidth,
                     headLength,
                     this._headWidth
                 );
-                this._matrix.compose(headCenter, this._q, this._shape);
+                this._matrix.compose(this._headCenter, this._q, this._shape);
                 this._headMesh.setMatrixAt(i, this._matrix);
             } else {
                 this._setHeadSegment(
                     this._headLeftMesh,
                     i,
-                    tip,
+                    this._tip,
                     this._dir,
                     headLength,
                     1
@@ -216,7 +216,7 @@ export class ArrowField2D extends Renderable3D {
                 this._setHeadSegment(
                     this._headRightMesh,
                     i,
-                    tip,
+                    this._tip,
                     this._dir,
                     headLength,
                     -1
@@ -227,12 +227,7 @@ export class ArrowField2D extends Renderable3D {
                 new Vec3(this._dir.x, this._dir.y, 0),
                 magnitude
             );
-            this._shaftMesh.instanceColor.setXYZ(
-                i,
-                color.r ?? ((color >> 16) & 0xff) / 255,
-                color.g ?? (((color >> 8) & 0xff) / 255),
-                color.b ?? ((color & 0xff) / 255)
-            );
+            this._setInstanceColor(i, color);
         }
 
         this._shaftMesh.instanceMatrix.needsUpdate = true;
@@ -246,38 +241,61 @@ export class ArrowField2D extends Renderable3D {
         }
     }
 
+    _setInstanceColor(index, color) {
+        if (typeof color === "number") {
+            // Accept the same hexadecimal color representation as Arrow2D,
+            // e.g. 0xffffff, rather than interpreting 255 as a red-channel value.
+            this._shaftMesh.instanceColor.setXYZ(
+                index,
+                ((color >> 16) & 0xff) / 255,
+                ((color >> 8) & 0xff) / 255,
+                (color & 0xff) / 255
+            );
+            return;
+        }
+
+        this._shaftMesh.instanceColor.setXYZ(
+            index,
+            color.r,
+            color.g,
+            color.b
+        );
+    }
+
     _setHeadSegment(mesh, index, tip, direction, length, side) {
-        const perpendicular = new Vector3(-direction.y, direction.x, 0);
-        const base = new Vector3(
+        this._perpendicular.set(-direction.y, direction.x, 0);
+
+        this._base.set(
             tip.x - direction.x * length,
             tip.y - direction.y * length,
             0
         );
-        const end = new Vector3(
-            base.x + perpendicular.x * this._headWidth * 0.5 * side,
-            base.y + perpendicular.y * this._headWidth * 0.5 * side,
+
+        this._end.set(
+            this._base.x + this._perpendicular.x * this._headWidth * 0.5 * side,
+            this._base.y + this._perpendicular.y * this._headWidth * 0.5 * side,
             0
         );
-        const start = tip;
-        const center = new Vector3(
-            (start.x + end.x) * 0.5,
-            (start.y + end.y) * 0.5,
-            0
-        );
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
+
+        const dx = this._end.x - tip.x;
+        const dy = this._end.y - tip.y;
         const segmentLength = Math.hypot(dx, dy);
 
-        this._q.setFromUnitVectors(
-            UP,
-            new Vector3(dx / segmentLength, dy / segmentLength, 0)
-        );
+        this._segmentDir.set(dx / segmentLength, dy / segmentLength, 0);
+        this._q.setFromUnitVectors(UP, this._segmentDir);
         this._shape.set(
             Math.max(this._shaftWidth, 0.001),
             segmentLength,
             Math.max(this._shaftWidth, 0.001)
         );
-        this._matrix.compose(center, this._q, this._shape);
+
+        this._headCenter.set(
+            (tip.x + this._end.x) * 0.5,
+            (tip.y + this._end.y) * 0.5,
+            0
+        );
+
+        this._matrix.compose(this._headCenter, this._q, this._shape);
         mesh.setMatrixAt(index, this._matrix);
     }
 
