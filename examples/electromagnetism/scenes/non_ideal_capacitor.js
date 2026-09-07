@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, DiscreteScalarField, VectorField, TiledPlane, ArrowField2D,
+    Simulation, Vec3, DiscreteScalarField, TiledPlane, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
     JacobiSolver, ColorMapper, Checkbox, ElectricField
 } from "../../../src/index.js";
@@ -49,7 +49,7 @@ const height = 0.5 * N * cellSize;
 const electricField = new ElectricField(field, {
     gridSpacing: cellSize,
     gridOrigin: { x: 0.5 * cellSize - width, y: 0.5 * cellSize - height },
-    derivativeStep: h
+    derivativeSpacing: h
 });
 
 const view = new TiledPlane({
