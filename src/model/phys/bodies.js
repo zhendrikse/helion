@@ -1,9 +1,21 @@
-import { Vec3} from "../math/math.js";
+import { Vec3, Vec2 } from "../math/math.js";
 import { Integrators } from "../math/numerics/integrators/integrators.js";
 import { MathPhysicsModelBehavior } from "../../core/helion.js";
 import {SpringForce} from "./forces.js";
 
 export class PhysicsState {
+        /**
+     * @typedef {Object} PhysicsStateOptions
+     * @property {Vec3 | Vec2} [position]
+     * @property {Vec3 | Vec2} [velocity]
+     * @property {Vec3 | Vec2} [acceleration]
+     * @property {number} [mass]
+     * @property {number} [charge]
+     */
+
+    /**
+     * @param {PhysicsStateOptions} [options]
+     */
     constructor({
         position = new Vec3(),
         velocity = new Vec3(),
@@ -30,6 +42,7 @@ export class PhysicsState {
 }
 
 class AccelerationVector extends MathPhysicsModelBehavior {
+    /** @param {Body} parent */
     constructor(parent) {
         super();
         this._parent = parent;
@@ -45,6 +58,7 @@ class AccelerationVector extends MathPhysicsModelBehavior {
 }
 
 class VelocityVector extends MathPhysicsModelBehavior {
+    /** @param {Body} parent */
     constructor(parent) {
         super();
         this._parent = parent;
@@ -63,6 +77,10 @@ class VelocityVector extends MathPhysicsModelBehavior {
 // Bodies to do physics with
 //
 export class BodyPair extends MathPhysicsModelBehavior {
+    /**
+     * @param {Body} body1 
+     * @param {Body} body2 
+     */
     constructor(body1, body2) {
         super();
         this.body1 = body1;
@@ -100,6 +118,19 @@ class Configuration {
 }
 
 export class Body extends MathPhysicsModelBehavior{
+    /**
+     * @typedef {Object} BodyOptions
+     * @property {Vec3 | Vec2} [position]
+     * @property {Vec3 | Vec2} [velocity]
+     * @property {Vec3 | Vec2} [orientation]
+     * @property {number} [mass]
+     * @property {boolean} [fixed]
+     * @property {number} [charge]
+     */
+
+    /**
+     * @param {BodyOptions} [options]
+     */
     constructor({
         position = new Vec3(),
         velocity = new Vec3(),
@@ -115,17 +146,19 @@ export class Body extends MathPhysicsModelBehavior{
         this.orientation = orientation;
         this._initialState = this._state.clone();
         this._initialOrientation = orientation.clone();
+        /** @type Body[] */
         this._children = [];
         this.localPosition = new Vec3();
     }
 
-    reorient(orientation) {
-        this.position.copy(orientation.position);
-        this.orientation.copy(orientation.orientation);
+    /** @param {Configuration} configuration */
+    reorient(configuration) {
+        this.position.copy(configuration.position);
+        this.orientation.copy(configuration.orientation);
         this._children.forEach((child, index) => {
-            child.position.copy(orientation.childrenPositions[index]);
-            child.orientation.copy(orientation.childrenOrientations[index]);
-            child.localPosition.copy(orientation.childrenPositions[index].clone().sub(this.position));
+            child.position.copy(configuration.childrenPositions[index]);
+            child.orientation.copy(configuration.childrenOrientations[index]);
+            child.localPosition.copy(configuration.childrenPositions[index].clone().sub(this.position));
         });
     }
 
@@ -138,6 +171,7 @@ export class Body extends MathPhysicsModelBehavior{
         });
     }
 
+    /** @param {"x"|"y"|"z"}  axis @param {number} angle */
     rotate(axis, angle) {
         this.position.rotate(axis, angle);
         this.rotateWorld(axis, angle);
@@ -146,16 +180,19 @@ export class Body extends MathPhysicsModelBehavior{
             child.position.copy(this.position).add(child.localPosition));
     }
 
+    /** @param {"x"|"y"|"z"}  axis @param {number} angle */
     rotateChildren(axis, angle) {
         for (const child of this._children)
             child.rotateWithParent(axis, angle);
     }
 
+    /** @param {"x"|"y"|"z"}  axis @param {number} angle */
     rotateWithParent(axis, angle) {
         this.localPosition.rotate(axis, angle);
         this.rotateWorld(axis, angle);
     }
 
+    /** @param {Body} anotherBody */
     add(anotherBody) {
         this._children.push(anotherBody);
     }
@@ -184,8 +221,8 @@ export class Body extends MathPhysicsModelBehavior{
     /**
      * Returns the electric field at a point, when charge unequal to zero.
      *
-     * @param {Vec3} point
-     * @returns {Vec3} electric field as vector.
+     * @param {Vec3 | Vec2} point
+     * @returns {Vec3 | Vec2 } electric field as vector.
      */
     fieldAt(point) {
         const rVec = point.clone().sub(this._state.position);
@@ -201,7 +238,6 @@ export class Body extends MathPhysicsModelBehavior{
      *
      * @param {"x"|"y"|"z"} axis World-space rotation axis.
      * @param {number} angle Rotation angle in radians.
-     * @returns {this}
      */
     rotateWorld(axis, angle) {
         // Euler XYZ -> Quaternion
@@ -278,8 +314,11 @@ export class Body extends MathPhysicsModelBehavior{
         return this;
     }
 
+    /** @param {Body} other */
     positionVectorTo(other) { return other.position.clone().sub(this.position); }
+    /** @param {Body} other */
     distanceToSquared(other) { return this.position.distanceSquaredTo(other.position); }
+    /** @param {Body} other */
     distanceTo(other) { return this.position.distanceTo(other.position) }
 
     get kineticEnergy() { return 0.5 * this.mass * this.velocity.dot(this.velocity); }

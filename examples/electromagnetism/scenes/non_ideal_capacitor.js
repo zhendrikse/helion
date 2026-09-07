@@ -1,7 +1,7 @@
 import {
     Simulation, Vec3, Vec2, DiscreteScalarField, VectorField, TiledPlane, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
-    JacobiSolver, ColorMapper
+    JacobiSolver, ColorMapper, Checkbox
 } from "../../../src/index.js";
 
 const N = 201;
@@ -41,13 +41,14 @@ class CapacitorBoundaryCondition extends DirichletBoundaryCondition {
 }
 
 class ElectricField extends VectorField {
+    /** @param {DiscreteScalarField} potentialField */
     constructor(potentialField) {
         super();
         this._potentialField = potentialField;
         this._target = new Vec2();
     }
 
-    sample(position, target = this._target) {
+    sample(position = new Vec2(), target = this._target) {
         const width = 0.5 * this._potentialField.nx * cellSize;
         const height = 0.5 * this._potentialField.ny * cellSize;
 
@@ -83,29 +84,17 @@ const view = new TiledPlane({
     opacityFunction: value => 2 * Math.abs(value - 0.5)
 });
 
-const arrowSpacing = 5;
-const width = 0.5 * N * cellSize;
-const height = 0.5 * N * cellSize;
-const xPositions = [];
-const yPositions = [];
-
-for (let i = 2; i < N - 2; i += arrowSpacing)
-    xPositions.push((i + 0.5) * cellSize - width);
-
-for (let j = 2; j < N - 2; j += arrowSpacing)
-    yPositions.push((j + 0.5) * cellSize - height);
-
+const arrowSpacing = 1.5;
 const arrows = new ArrowField2D({
-    xRange: xPositions,
-    yRange: yPositions,
+    xRange: new Range(-N/2 + 2, N/2 - 2, arrowSpacing),
+    yRange: new Range(-N/2 + 2, N/2 - 2, arrowSpacing),
     scaleFactor: 0.2,
-    magnitudeMap: magnitude => Math.log(1 + magnitude),
-    colorMap: () => 0xffffff,
-    size: 0.08,
-    headLength: 0.08,
-    headWidth: 0.05,
-    lineWidth: 1,
-    headStyle: "filled"
+    size: 0.25,
+    headLength: 0.25,
+    headWidth: 0.25,
+    colorMap: (dir, mag) => 0x333333,
+    headStyle: "filled", 
+    visible: false
 });
 
 let solvedIterations = 0;
@@ -123,14 +112,11 @@ const simulation = Simulation
         }
     })
     .bind(field.alwaysWith(view))
-    .bind(electricField.onceWith(arrows))
+    .bind(electricField.alwaysWith(arrows))
     .onStep(() => {
-        if (solvedIterations >= iterationLimit) {
-            arrows.visible = true;
+        if (solvedIterations >= iterationLimit)
             return;
-        }
 
-        arrows.visible = false;
         field.evolve(solver, stepSize);
         solvedIterations += stepSize;
         simulation.setTextTitle(`Iterations: ${solvedIterations}`);
@@ -143,5 +129,9 @@ const simulation = Simulation
             iterationLimit = Number(event.target.value);
             field.reset();
         }))
+    .append(new Checkbox("Electric field arrows ")
+        .on(arrows)
+        .withProperty("visible")
+    )
     .frameSceneOn(view, { padding: 1.15, viewDirection: new Vec3(0, 0, 1) })
     .start();

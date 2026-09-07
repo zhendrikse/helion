@@ -1,6 +1,8 @@
 import { generateUUID } from "../model/math/math.js";
+import { Simulation } from "../core/helion.js"
 
 class HtmlControl {
+    /** @param {string} labelText */
     constructor(labelText) {
         this._buttonRow = this._createButtonRow();
         this._inputControl = null; // To be set by each concrete control / subclass
@@ -20,6 +22,7 @@ class HtmlControl {
         this._span = null;
     }
 
+    /** @param {boolean} booleanValue */
     set disabled(booleanValue) {
         this._inputControl.disabled = booleanValue;
     }
@@ -42,6 +45,11 @@ class HtmlControl {
         return buttonRow;
     }
 
+    /**
+     * @param {string} eventType 
+     * @param {(event: Event) => void} callback 
+     * @returns 
+     */
     addEventListener(eventType, callback) {
         const isString = typeof eventType === "string" || eventType instanceof String;
         if (!isString)
@@ -54,10 +62,12 @@ class HtmlControl {
         return this;
     }
 
+    /** @param {(event: Event) => void} callback */
     onChange(callback) {
         return this.addEventListener("change", callback);
     }
 
+    /** @param {(event: Event) => void} callback */
     onInput(callback) {
         return this.addEventListener("input", callback);
     }
@@ -74,6 +84,7 @@ class HtmlControl {
 
     get hasChildControl() { return this._childControl !== null;}
 
+    /** @param {HTMLDivElement} controlsDiv */
     append(controlsDiv) {
         this._appendToButtonRow(this, this._buttonRow);
         controlsDiv.appendChild(this._buttonRow);
@@ -86,11 +97,13 @@ class HtmlControl {
             this._setSimulationOn(control._childControl, simulation);
     }
 
+    /** @param {Simulation} simulation */
     to(simulation) {
         this._setSimulationOn(this, simulation);
         return this;
     }
-
+    
+    /** @param {HtmlControl} otherControl */
     togetherWith(otherControl) {
         this._childControl = otherControl;
         return this;

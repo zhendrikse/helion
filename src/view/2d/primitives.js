@@ -3,7 +3,8 @@ import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { LineSegments2 } from "three/addons/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
 import { Vec2 } from "../../model/math/math.js";
-import { Float32BufferAttribute, DoubleSide, MeshBasicMaterial, BufferGeometry, Mesh } from "three";
+import { Body } from "../../model/phys/bodies.js"
+import { Float32BufferAttribute, DoubleSide, MeshBasicMaterial, BufferGeometry, Mesh, Color } from "three";
 
 export class Arrow2D extends Renderable3D {
     static HeadStyle = Object.freeze({
@@ -61,6 +62,7 @@ export class Arrow2D extends Renderable3D {
         return new LineSegments2(geometry, this._material);
     }
 
+    /** @param {Body} model */
     canBindTo(model) {
         if (!model.position || !model.axis)
             throw new Error("Arrow2D can only bind to models with a position and an axis.");
@@ -68,6 +70,7 @@ export class Arrow2D extends Renderable3D {
         return true;
     }
 
+    /** @param {Body} model */
     synchronizeWith(model) {
         this.setVector(model.position, model.axis);
     }
