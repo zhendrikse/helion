@@ -1,4 +1,4 @@
-import { VectorField, ScalarField } from "../math/fields.js";
+import { VectorField, ScalarField, DiscreteScalarField } from "../math/fields.js";
 import { Vec2, Vec3 } from "../math/math.js";
 
 /**
@@ -14,15 +14,12 @@ import { Vec2, Vec3 } from "../math/math.js";
  */
 export class ElectricField extends VectorField {
     /**
-     * @typedef {Object} ElectricFieldOptions
-     * @property {ScalarField} [potentialField]
-     * @property {number} [gridSpacing]
-     * @property {number} [derivativeSpacing]
-     * @property {Vec2} [gridOrigin]
-     */
-
-    /**
-     * @param {ElectricFieldOptions} options
+     * @param {{
+     * potentialField?: DiscreteScalarField
+     * gridSpacing?: number,
+     * gridOrigin?: Vec2,
+     * derivativeSpacing?: number
+     * }} options
      */
     constructor({
         potentialField,
@@ -79,12 +76,12 @@ export class ElectricField extends VectorField {
 
         if (i <= 0 || i >= field.nx - 1 ||
             j <= 0 || j >= field.ny - 1) 
-            return target.set(0, 0);
+            return target.set(0, 0, 0);
 
         const h = this._derivativeSpacing;
         const dVdx = (field.valueAt(i + 1, j) - field.valueAt(i - 1, j)) / (2 * h);
         const dVdy = (field.valueAt(i, j + 1) - field.valueAt(i, j - 1)) / (2 * h);
 
-        return target.set(-dVdx, -dVdy);
+        return target.set(-dVdx, -dVdy, 0);
     }
 }
