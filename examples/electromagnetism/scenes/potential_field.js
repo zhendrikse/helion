@@ -1,7 +1,7 @@
 import {
     Simulation, Vec3, DiscreteScalarField, TiledPlane, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
-    JacobiSolver, ColorMapper, Checkbox, ElectricField, Vec2, Arrow2D, Button
+    JacobiSolver, ColorMapper, Checkbox, Arrow2D, Button, ElectricField
 } from "../../../src/index.js";
 
 const N = 201;
@@ -60,15 +60,12 @@ class CapacitorBoundaryCondition extends DirichletBoundaryCondition {
     }
 }
 
-const field = new DiscreteScalarField({nx: N, ny: N});
+const potential = new DiscreteScalarField({nx: N, ny: N});
 const boundaryCondition = new CapacitorBoundaryCondition();
 const solver = new JacobiSolver(boundaryCondition);
-
-const width = 0.5 * N * cellSize;
-const height = 0.5 * N * cellSize;
 const electricField = new ElectricField({
-    potentialField: field,
-    gridSpacing: cellSize,
+    potential, 
+    gridSpacing: cellSize, 
     derivativeSpacing: h
 });
 
@@ -81,6 +78,8 @@ const view = new TiledPlane({
 });
 
 const arrowSpacing = 1.5;
+const width = 0.5 * N * cellSize;
+const height = 0.5 * N * cellSize;
 const arrows = new ArrowField2D({
     xRange: new Range((2 + .5) * cellSize - width, (N - 2 + .5) * cellSize - width, arrowSpacing),
     yRange: new Range((2 + .5) * cellSize - height, (N - 2 + .5) * cellSize - height, arrowSpacing),
@@ -99,7 +98,7 @@ let stepSize = 25;
 
 const reset = () => {
     solvedIterations = 0;
-    field.reset(); 
+    potential.reset(); 
 }
 const simulation = Simulation
     .with({
@@ -115,13 +114,13 @@ const simulation = Simulation
             "Electric field arrows $$\\overrightarrow{E}=-\\overrightarrow{\\nabla}V$$"
         }
     })
-    .bind(field.alwaysWith(view))
+    .bind(potential.alwaysWith(view))
     .bind(electricField.alwaysWith(arrows))
     .onStep(() => {
         if (solvedIterations >= iterationLimit)
             return;
 
-        field.evolve(solver, stepSize);
+        potential.evolve(solver, stepSize);
         solvedIterations += stepSize;
         simulation.setTextTitle(`Iterations: ${solvedIterations}`);
     })
@@ -150,3 +149,4 @@ const simulation = Simulation
     )
     .frameSceneOn(view, { padding: 1.15, viewDirection: new Vec3(0, 0, 1) })
     .start();
+    

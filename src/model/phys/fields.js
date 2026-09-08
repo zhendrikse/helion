@@ -16,19 +16,19 @@ import { ScalarFieldCalculus } from "../math/numerics/discretecalc.js"
 export class ElectricField extends VectorField {
     /**
      * @param {{
-     * potentialField?: DiscreteScalarField
+     * potential?: DiscreteScalarField
      * gridSpacing?: number,
      * derivativeSpacing?: number
      * }} options
      */
     constructor({
-        potentialField,
+        potential,
         gridSpacing = 1,
         derivativeSpacing = gridSpacing
     } = {}) {
         super();
 
-        if (potentialField == null)
+        if (potential == null)
             throw new Error("Cannot calculate electric field without potential.");
 
         if (gridSpacing <= 0)
@@ -36,23 +36,21 @@ export class ElectricField extends VectorField {
 
         if (derivativeSpacing <= 0)
             throw new Error("derivativeSpacing must be > 0.");
-
-        this._potentialField = potentialField;
+        this._potentialField = potential;
+        this._target = new Vec2();
         this._gridSpacing = gridSpacing;
-        this._derivativeSpacing = derivativeSpacing;
-        this._scalarFieldCalculus = new ScalarFieldCalculus(potentialField);
-        this._target = new Vec3();
+        this._scalarFieldCalculus = new ScalarFieldCalculus(potential);
+        this._h = derivativeSpacing;
     }
 
-    /**
-     * Sample the electric field at a normalized position.
-     *
-     * @param {Vec2 | Vec3} position
-     * @param {Vec2 | Vec3} target
-     * @returns {Vec2 | Vec3}
-     */
-    sample(position, target = this._target) {
-        return this.valueAt(position.x, position.y, target);
+    sample(position = new Vec2(), target = this._target) {
+        const width = 0.5 * this._potentialField.nx * this._gridSpacing;
+        const height = 0.5 * this._potentialField.ny * this._gridSpacing;
+
+        const i = Math.round((position.x + width) / this._gridSpacing - 0.5);
+        const j = Math.round((position.y + height) / this._gridSpacing - 0.5);
+        this.valueAt(i, j, target);
+        return target;
     }
 
     /**
@@ -64,7 +62,7 @@ export class ElectricField extends VectorField {
      * @returns {Vec2 | Vec3}
      */
     valueAt(i, j, target = this._target) {
-        this._scalarFieldCalculus.gradient(i, j, this._derivativeSpacing, target);
+        this._scalarFieldCalculus.gradient(i, j, this._h, target);
         target.negate();
         return target;
     }
