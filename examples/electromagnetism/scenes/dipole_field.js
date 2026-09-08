@@ -21,6 +21,7 @@ class Dipole {
         });
     }
 
+    /** @param {Vec3} position */
     fieldAt(position, out = new Vec3()) {
         out.copy(this.positive.fieldAt(position)
             .add(this.negative.fieldAt(position)));
@@ -28,6 +29,7 @@ class Dipole {
 }
 
 class DipoleField extends VectorField {
+    /** @param {Dipole} dipole */
     constructor(dipole) {
         super();
 
@@ -40,6 +42,7 @@ class DipoleField extends VectorField {
         target.multiplyScalar(this._fieldStrength);
     }
 
+    /** @param {number} value */
     set fieldStrength(value) {
         this._fieldStrength = Math.pow(10, value * 2 - 2);
     }

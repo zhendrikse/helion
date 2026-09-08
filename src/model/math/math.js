@@ -313,11 +313,7 @@ export class Vec2 extends Vec3 {
 }
 
 export class Range {
-    /**
-     * @param {number} from 
-     * @param {number} to 
-     * @param {number} stepSize 
-     */
+    /** @param {number} from  @param {number} to @param {number} stepSize */
     constructor(from, to, stepSize) {
         this.from = from;
         this.to = to;
@@ -325,13 +321,7 @@ export class Range {
         this._interval = new Interval(from, to);
     }
 
-    /**
-     * Use:
-     *   for (const x of range)
-     *     console.log(x);
-     *
-     * @returns {Generator<number, void, number>}
-     */
+    /** @returns {Generator<number, void, number>} */
     *[Symbol.iterator]() {
         if (!isFinite(this.from) || !isFinite(this.to))
             throw new Error("Cannot iterate over an infinite interval.");

@@ -373,22 +373,19 @@ const headGeometrySquare = new ConeGeometry(1, 1, 4);
 
 export class ArrowField extends Renderable3D {
     /**
-     * @typedef {Object} ArrowFieldOptions
-     * @property {Range} [xRange]
-     * @property {Range} [yRange]
-     * @property {Range} [zRange]
-     * @property {number} [scaleFactor]
-     * @property {boolean} [round]
-     * @property {(value: number) => number} [magnitudeMap]
-     * @property { (dir: Vec3, mag: number) => Color} [colorMap]
-     * @property {number} [cellSize]
-     * @property {number} [shaftWidth]
-     * @property {number} [headWidth]
-     * @property {number} [headLength]
-     */
-
-    /**
-     * @param {ArrowFieldOptions} [options]
+     * @param {{
+     * xRange?: Range,
+     * yRange?: Range,
+     * zRange?: Range,
+     * scaleFactor?: number,
+     * round?: boolean,
+     * magnitudeMap?: (value: number) => number,
+     * colorMap?: (dir: Vec3, mag: number) => number | Color,
+     * shaftWidth?: number,
+     * headLength?: number,
+     * headWidth?: number,
+     * visible?: boolean
+     * }} options
      */
     constructor({
         xRange,
@@ -396,13 +393,21 @@ export class ArrowField extends Renderable3D {
         zRange,
         scaleFactor = 1,
         round = false,
-        magnitudeMap = m => Math.log(1 + m),
+        magnitudeMap = mag => Math.log(1 + mag),
         colorMap = (dir, mag) => new Color().setHSL(Math.min(Math.log(1 + mag) / 5, 1), 0.7, 0.5),
         shaftWidth = 0.08,
         headWidth = 2.0,
         headLength = 4.0,
+        visible = true
     } = {}) {
         super();
+        this.visible = visible;
+        
+        if (xRange == null || yRange == null || zRange == null)
+            throw new Error("Cannot instantiate ArrowField without x-, y-, and z-ranges");
+        this._xRange = xRange;
+        this._yRange = yRange;
+        this._zRange = zRange;
 
         this._scaleFactor = scaleFactor;
         this._matrixMagnitudeMap = magnitudeMap;
@@ -412,14 +417,7 @@ export class ArrowField extends Renderable3D {
         this._headWidth = headWidth;
         this._headLength = headLength;
 
-        // ---- build positions
-        this._positions = [];
-        for (const x of xRange)
-            for (const y of yRange)
-                for (const z of zRange)
-                    this._positions.push(new Vector3(x, y, z));
-
-        const count = this._positions.length;
+        const count = xRange.count * yRange.count * zRange.count;
         const shaftGeometry = round ? shaftGeometryRound : shaftGeometrySquare;
         const headGeometry = round ? headGeometryRound : headGeometrySquare;
         const materialShaft = new MeshStandardMaterial();
@@ -473,16 +471,17 @@ export class ArrowField extends Renderable3D {
      * @param {VectorField} vectorField 
      */
     synchronizeWith(vectorField) {
-        const count = this._positions.length;
-
-        for (let i = 0; i < count; i++) {
-            const pos = this._positions[i];
+        let index = 0;
+        for (const x of /** @type {Iterable<number>} */ (this._xRange))
+            for (const y of /** @type {Iterable<number>} */ (this._yRange))
+                for (const z of /** @type {Iterable<number>} */ (this._zRange)) {
+            const pos = new Vec3(x, y, z);
             vectorField.sample(pos, this._target);
             const mag = this._target.length();
 
             if (mag < 1e-9) {
-                this._shaftMesh.setMatrixAt(i, new Matrix4().makeScale(0,0,0));
-                this._headMesh.setMatrixAt(i, new Matrix4().makeScale(0,0,0));
+                this._shaftMesh.setMatrixAt(index, new Matrix4().makeScale(0,0,0));
+                this._headMesh.setMatrixAt(index, new Matrix4().makeScale(0,0,0));
                 continue;
             }
 
@@ -497,15 +496,16 @@ export class ArrowField extends Renderable3D {
             this._shaftOffset.set(0, shaftLength * 0.5, 0).applyQuaternion(this._q).add(pos);
             this._shape.set(shaftRadius, shaftLength, shaftRadius);
             this._matrix.compose(this._shaftOffset, this._q, this._shape);
-            this._shaftMesh.setMatrixAt(i, this._matrix);
+            this._shaftMesh.setMatrixAt(index, this._matrix);
 
             // Head
             this._headOffset.set(0, shaftLength + headLength * 0.5, 0).applyQuaternion(this._q).add(pos);
             this._shape.set(shaftRadius * this._headWidth, headLength, shaftRadius * this._headWidth);
             this._matrix.compose(this._headOffset, this._q, this._shape);
-            this._headMesh.setMatrixAt(i, this._matrix);
+            this._headMesh.setMatrixAt(index, this._matrix);
 
-            this.#setColor(i, this._dir, mag);
+            this.#setColor(index, this._dir, mag);
+            index++;
         }
 
         this._shaftMesh.instanceMatrix.needsUpdate = true;
