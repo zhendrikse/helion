@@ -20,7 +20,7 @@ export class ArrowField2D extends Renderable2D {
      * @property {number} [size]
      * @property {boolean} [visible]
      * @property {number} [shaftWidth]
-     * @property {number} [headWidth] days of the trip were a bit of a whirlwind.
+     * @property {number} [headWidth]
      * @property {number} [headLength]
      * @property {string} [headStyle]
      */
@@ -55,9 +55,16 @@ export class ArrowField2D extends Renderable2D {
         this._headLength = headLength;
         this._headWidth = headWidth;
 
+        const xPositions = [...xRange];
+        const yPositions = [...yRange];
+        this._xMin = xPositions[0];
+        this._xMax = xPositions[xPositions.length - 1];
+        this._yMin = yPositions[0];
+        this._yMax = yPositions[yPositions.length - 1];
+
         this._positions = [];
-        for (const x of xRange)
-            for (const y of yRange)
+        for (const x of xPositions)
+            for (const y of yPositions)
                 this._positions.push(new Vec2(x, y));
 
         const count = this._positions.length;
@@ -92,7 +99,7 @@ export class ArrowField2D extends Renderable2D {
         this._dir = new Vector3();
         this._segmentDir = new Vector3();
         this._shape = new Vector3();
-        this._target = new Vec2();
+        this._target = new Vec3();
         this._shaftCenter = new Vector3();
         this._tip = new Vector3();
         this._base = new Vector3();
@@ -111,9 +118,14 @@ export class ArrowField2D extends Renderable2D {
 
     /** @param {VectorField} vectorField */
     synchronizeWith(vectorField) {
+        const xRange = this._xMax - this._xMin;
+        const yRange = this._yMax - this._yMin;
+
         for (let i = 0; i < this._positions.length; i++) {
             const position = this._positions[i];
-            vectorField.sample(position, this._target);
+            const u = (position.x - this._xMin) / xRange;
+            const v = (position.y - this._yMin) / yRange;
+            vectorField.sample(u, v, this._target);
 
             const x = this._target.x;
             const y = this._target.y;
