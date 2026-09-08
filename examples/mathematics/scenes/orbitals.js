@@ -3,7 +3,7 @@ import {
     SurfaceResolution, SurfaceVisualization
 } from "../../../src/index.js";
 
-const orbitalSurface = (name, radialFunction) => new ParametricSurface({
+const orbitalSurface = radialFunction => new ParametricSurface({
     domain: new Domain([-Math.PI, Math.PI], [0, Math.PI]),
     x: (u, v) => radialFunction(u, v) * Math.sin(u) * Math.cos(v),
     y: (u, v) => radialFunction(u, v) * Math.cos(u),
@@ -11,19 +11,19 @@ const orbitalSurface = (name, radialFunction) => new ParametricSurface({
 });
 
 const orbitals = {
-    "1s": orbitalSurface("1s", () => 1),
-    "2pₓ": orbitalSurface("2pₓ", (u, v) => Math.abs(Math.sin(u) * Math.cos(v))),
-    "2pᵧ": orbitalSurface("2pᵧ", u => Math.abs(Math.cos(u))),
-    "2p_z": orbitalSurface("2p_z", (u, v) => Math.abs(Math.sin(u) * Math.sin(v))),
-    "3d_z²": orbitalSurface("3d_z²", u => Math.abs(3 * Math.cos(u) ** 2 - 1)),
-    "3d_xz": orbitalSurface("3d_xz", (u, v) => Math.abs(Math.sin(u) * Math.cos(u) * Math.cos(v))),
-    "3d_yz": orbitalSurface("3d_yz", (u, v) => Math.abs(Math.sin(u) * Math.cos(u) * Math.sin(v))),
-    "3d_x²₋z²": orbitalSurface("3d_x²₋z²", (u, v) => Math.abs(Math.sin(u) ** 2 * Math.cos(2 * v))),
-    "3d_xy": orbitalSurface("3d_xy", (u, v) => Math.abs(Math.sin(u) ** 2 * Math.sin(2 * v))),
-    "4f_z³": orbitalSurface("4f_z³", u => Math.abs(5 * Math.cos(u) ** 3 - 3 * Math.cos(u))),
-    "4f_xyz": orbitalSurface("4f_xyz", (u, v) => 2 * Math.abs(Math.sin(u) ** 2 * Math.cos(u) * Math.sin(2 * v))),
-    "4f_x(x²−3z²)": orbitalSurface("4f_x(x²−3z²)", (u, v) => Math.abs(Math.sin(u) ** 3 * Math.cos(3 * v))),
-    "4f_z(x²−z²)": orbitalSurface("4f_z(x²−z²)", (u, v) => Math.abs(Math.sin(u) ** 3 * Math.sin(3 * v)))
+    "1s": orbitalSurface(() => 1),
+    "2pₓ": orbitalSurface((u, v) => Math.abs(Math.sin(u) * Math.cos(v))),
+    "2pᵧ": orbitalSurface(u => Math.abs(Math.cos(u))),
+    "2p_z": orbitalSurface((u, v) => Math.abs(Math.sin(u) * Math.sin(v))),
+    "3d_z²": orbitalSurface(u => Math.abs(3 * Math.cos(u) ** 2 - 1)),
+    "3d_xz": orbitalSurface((u, v) => Math.abs(Math.sin(u) * Math.cos(u) * Math.cos(v))),
+    "3d_yz": orbitalSurface((u, v) => Math.abs(Math.sin(u) * Math.cos(u) * Math.sin(v))),
+    "3d_x²₋z²": orbitalSurface((u, v) => Math.abs(Math.sin(u) ** 2 * Math.cos(2 * v))),
+    "3d_xy": orbitalSurface((u, v) => Math.abs(Math.sin(u) ** 2 * Math.sin(2 * v))),
+    "4f_z³": orbitalSurface(u => Math.abs(5 * Math.cos(u) ** 3 - 3 * Math.cos(u))),
+    "4f_xyz": orbitalSurface((u, v) => 2 * Math.abs(Math.sin(u) ** 2 * Math.cos(u) * Math.sin(2 * v))),
+    "4f_x(x²−3z²)": orbitalSurface((u, v) => Math.abs(Math.sin(u) ** 3 * Math.cos(3 * v))),
+    "4f_z(x²−z²)": orbitalSurface((u, v) => Math.abs(Math.sin(u) ** 3 * Math.sin(3 * v)))
 };
 
 const orbitalRegistry = new Registry({
