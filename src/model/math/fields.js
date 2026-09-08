@@ -57,7 +57,7 @@ export class ComplexField extends Field {
     }
 }
 
-export class VectorField extends Field {
+export class VectorField extends MathPhysicsModelBehavior {
     /**
      * @param {Vec2 | Vec3} positionVector 
      * @param {Vec2 | Vec3} target 

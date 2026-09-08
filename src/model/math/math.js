@@ -175,8 +175,8 @@ export class Vec3 {
         return this;
     }
 
-    /** @param{number} x @param{number} y @param{number} z */
-    set(x,y,z) {
+    /** @param{number} x @param{number} y */
+    set(x,y,z=0) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -318,7 +318,6 @@ export class Range {
         this.from = from;
         this.to = to;
         this.stepSize = stepSize || 0.1;
-        this._interval = new Interval(from, to);
     }
 
     /** @returns {Generator<number, void, number>} */
@@ -331,11 +330,6 @@ export class Range {
         const n = Math.floor((this.to - this.from) / this.stepSize);
         for (let i = 0; i <= n; i++)
             yield this.from + i * this.stepSize;
-    }
-
-    /** @param {number} value */
-    normalize(value) {
-        return this._interval.normalize(value);
     }
 
     get count() {

@@ -69,7 +69,6 @@ const height = 0.5 * N * cellSize;
 const electricField = new ElectricField({
     potentialField: field,
     gridSpacing: cellSize,
-    gridOrigin: new Vec2(0.5 * cellSize - width, 0.5 * cellSize - height),
     derivativeSpacing: h
 });
 

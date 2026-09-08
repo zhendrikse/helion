@@ -1,6 +1,7 @@
 import {
     BoxGeometry, ConeGeometry, DoubleSide, InstancedBufferAttribute, InstancedMesh,
-    Matrix4, MeshBasicMaterial, Quaternion, Vector3, Color
+    Matrix4, MeshBasicMaterial, Quaternion, Vector3, Color,
+    TimestampQuery
 } from "three";
 import { Range, Vec2, Vec3 } from "../../../model/math/math.js";
 import { Arrow2D } from "../primitives.js";
@@ -88,6 +89,7 @@ export class ArrowField2D extends Renderable2D {
         this._dir = new Vector3();
         this._segmentDir = new Vector3();
         this._shape = new Vector3();
+        this._position = new Vec2();
         this._target = new Vec3();
         this._shaftCenter = new Vector3();
         this._tip = new Vector3();
@@ -168,9 +170,8 @@ export class ArrowField2D extends Renderable2D {
         let index = 0;
         for (const x of /** @type {Iterable<number>} */ (this._xRange))
             for (const y of /** @type {Iterable<number>} */ (this._yRange)) {
-                const u = this._xRange.normalize(x);
-                const v = this._yRange.normalize(y);
-                vectorField.sample(u, v, this._target);
+                this._position.set(x, y);
+                vectorField.sample(this._position, this._target);
                 this._updateVectorAt(index++, x, y);
         }
 
