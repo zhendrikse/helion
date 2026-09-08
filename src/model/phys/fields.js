@@ -18,14 +18,12 @@ export class ElectricField extends VectorField {
      * @param {{
      * potentialField?: DiscreteScalarField
      * gridSpacing?: number,
-     * gridOrigin?: Vec2,
      * derivativeSpacing?: number
      * }} options
      */
     constructor({
         potentialField,
         gridSpacing = 1,
-        gridOrigin = new Vec2(0, 0),
         derivativeSpacing = gridSpacing
     } = {}) {
         super();
@@ -41,7 +39,6 @@ export class ElectricField extends VectorField {
 
         this._potentialField = potentialField;
         this._gridSpacing = gridSpacing;
-        this._gridOrigin = gridOrigin.clone();
         this._derivativeSpacing = derivativeSpacing;
         this._scalarFieldCalculus = new ScalarFieldCalculus(potentialField);
         this._target = new Vec3();

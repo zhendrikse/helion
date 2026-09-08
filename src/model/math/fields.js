@@ -28,6 +28,7 @@ export class Domain {
  * VectorField  (composition) ──────► VectorVisualization
  */
 export class Field extends MathPhysicsModelBehavior {
+    /** @param {number} u  @param {number} v  @param {any} target */
     sample(u, v, target) {}
 }
 
