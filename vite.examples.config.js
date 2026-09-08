@@ -45,6 +45,7 @@ export default defineConfig({
                 menger_sponge: path.resolve(__dirname, 'examples/mathematics/scenes/menger_sponge.js'),
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),
                 n_body_oscillator: path.resolve(__dirname, 'examples/waves/scenes/n_body_oscillator.js'),
+                orbitals: path.resolve(__dirname, 'examples/quantumphysics/scenes/orbitals.js'),
                 parametric_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/parametric_surfaces.js'),
                 pendulum_wave: path.resolve(__dirname, 'examples/waves/scenes/pendulum_wave.js'),
                 plane_wave: path.resolve(__dirname, 'examples/quantumphysics/scenes/plane_wave.js'),
