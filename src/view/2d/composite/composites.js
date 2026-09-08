@@ -2,7 +2,7 @@ import {
     BoxGeometry, ConeGeometry, DoubleSide, InstancedBufferAttribute, InstancedMesh,
     Matrix4, MeshBasicMaterial, Quaternion, Vector3, Color
 } from "three";
-import { Vec2, Vec3 } from "../../../model/math/math.js";
+import { Range, Vec2, Vec3 } from "../../../model/math/math.js";
 import { Arrow2D } from "../primitives.js";
 import { Renderable2D } from "../../renderer.js";
 import { VectorField } from "../../../model/math/fields.js";
@@ -10,23 +10,21 @@ import { VectorField } from "../../../model/math/fields.js";
 const UP = new Vector3(0, 1, 0);
 
 export class ArrowField2D extends Renderable2D {
-    /**
-     * @typedef {Object} ArrowFieldOptions2D
-     * @property {Iterable<number>} [xRange]
-     * @property {Iterable<number>} [yRange]
-     * @property {number} [scaleFactor]
-     * @property {(value: number) => number} [magnitudeMap]
-     * @property {(dir: Vec3, mag: number) => number|Color} [colorMap]
-     * @property {number} [size]
-     * @property {boolean} [visible]
-     * @property {number} [shaftWidth]
-     * @property {number} [headWidth]
-     * @property {number} [headLength]
-     * @property {string} [headStyle]
-     */
 
     /**
-     * @param {ArrowFieldOptions2D} [options]
+     * @param {{
+     * xRange?: Range,
+     * yRange?: Range,
+     * scaleFactor?: number,
+     * magnitudeMap?: (value: number) => number,
+     * colorMap?: (dir: Vec3, mag: number) => number | Color,
+     * size?: number,
+     * visible?: boolean,
+     * shaftWidth?: number,
+     * headLength?: number,
+     * headWidth?: number,
+     * headStyle?: string
+     * }} options
      */
     constructor({
         xRange,
@@ -55,19 +53,10 @@ export class ArrowField2D extends Renderable2D {
         this._headLength = headLength;
         this._headWidth = headWidth;
 
-        const xPositions = [...xRange];
-        const yPositions = [...yRange];
-        this._xMin = xPositions[0];
-        this._xMax = xPositions[xPositions.length - 1];
-        this._yMin = yPositions[0];
-        this._yMax = yPositions[yPositions.length - 1];
+        this._xRange = xRange;
+        this._yRange = yRange;
 
-        this._positions = [];
-        for (const x of xPositions)
-            for (const y of yPositions)
-                this._positions.push(new Vec2(x, y));
-
-        const count = this._positions.length;
+        const count = xRange.count * yRange.count;
         const shaftGeometry = new BoxGeometry(1, 1, 1);
         const shaftMaterial = new MeshBasicMaterial({ side: DoubleSide });
         this._shaftMesh = new InstancedMesh(shaftGeometry, shaftMaterial, count);
@@ -116,71 +105,73 @@ export class ArrowField2D extends Renderable2D {
         return true;
     }
 
+    /** @param {number} index  @param {number} positionX @param {number} positionY */
+    _updateVectorAt(index, positionX, positionY) {
+        const x = this._target.x;
+        const y = this._target.y;
+        const magnitude = Math.hypot(x, y);
+
+        if (magnitude < 1e-12) {
+            this._hideInstance(this._shaftMesh, index);
+            if (this._headMesh)
+                this._hideInstance(this._headMesh, index);
+            else {
+                this._hideInstance(this._headLeftMesh, index);
+                this._hideInstance(this._headRightMesh, index);
+            }
+            return;
+        }
+
+        this._dir.set(x / magnitude, y / magnitude, 0);
+        const visualMagnitude = this._magnitudeMap(magnitude) * this._scaleFactor;
+        const headLength = Math.min(this._headLength, visualMagnitude * 0.4);
+        const shaftLength = Math.max(visualMagnitude - headLength, 0);
+
+        this._shaftCenter.set(
+            positionX + this._dir.x * shaftLength * 0.5,
+            positionY + this._dir.y * shaftLength * 0.5,
+            0
+        );
+
+        this._q.setFromUnitVectors(UP, this._dir);
+        this._shape.set(this._shaftWidth, shaftLength, this._shaftWidth);
+        this._matrix.compose(this._shaftCenter, this._q, this._shape);
+        this._shaftMesh.setMatrixAt(index, this._matrix);
+
+        this._tip.set(
+            positionX + this._dir.x * visualMagnitude,
+            positionY + this._dir.y * visualMagnitude,
+            0
+        );
+
+        if (this._headMesh) {
+            this._headCenter.set(
+                this._tip.x - this._dir.x * headLength * 0.5,
+                this._tip.y - this._dir.y * headLength * 0.5,
+                0
+            );
+
+            this._shape.set(this._headWidth,headLength, this._headWidth);
+            this._matrix.compose(this._headCenter, this._q, this._shape);
+            this._headMesh.setMatrixAt(index, this._matrix);
+        } else {
+            this._setHeadSegment(this._headLeftMesh, index, this._tip, this._dir, headLength, 1);
+            this._setHeadSegment(this._headRightMesh, index, this._tip, this._dir, headLength, -1);
+        }
+
+        const color = this._colorMap(new Vec3(this._dir.x, this._dir.y, 0), magnitude);
+        this._setInstanceColor(index, color);
+    }
+
     /** @param {VectorField} vectorField */
     synchronizeWith(vectorField) {
-        const xRange = this._xMax - this._xMin;
-        const yRange = this._yMax - this._yMin;
-
-        for (let i = 0; i < this._positions.length; i++) {
-            const position = this._positions[i];
-            const u = (position.x - this._xMin) / xRange;
-            const v = (position.y - this._yMin) / yRange;
-            vectorField.sample(u, v, this._target);
-
-            const x = this._target.x;
-            const y = this._target.y;
-            const magnitude = Math.hypot(x, y);
-
-            if (magnitude < 1e-12) {
-                this._hideInstance(this._shaftMesh, i);
-                if (this._headMesh)
-                    this._hideInstance(this._headMesh, i);
-                else {
-                    this._hideInstance(this._headLeftMesh, i);
-                    this._hideInstance(this._headRightMesh, i);
-                }
-                continue;
-            }
-
-            this._dir.set(x / magnitude, y / magnitude, 0);
-            const visualMagnitude = this._magnitudeMap(magnitude) * this._scaleFactor;
-            const headLength = Math.min(this._headLength, visualMagnitude * 0.4);
-            const shaftLength = Math.max(visualMagnitude - headLength, 0);
-
-            this._shaftCenter.set(
-                position.x + this._dir.x * shaftLength * 0.5,
-                position.y + this._dir.y * shaftLength * 0.5,
-                0
-            );
-
-            this._q.setFromUnitVectors(UP, this._dir);
-            this._shape.set(this._shaftWidth, shaftLength, this._shaftWidth);
-            this._matrix.compose(this._shaftCenter, this._q, this._shape);
-            this._shaftMesh.setMatrixAt(i, this._matrix);
-
-            this._tip.set(
-                position.x + this._dir.x * visualMagnitude,
-                position.y + this._dir.y * visualMagnitude,
-                0
-            );
-
-            if (this._headMesh) {
-                this._headCenter.set(
-                    this._tip.x - this._dir.x * headLength * 0.5,
-                    this._tip.y - this._dir.y * headLength * 0.5,
-                    0
-                );
-
-                this._shape.set(this._headWidth,headLength, this._headWidth);
-                this._matrix.compose(this._headCenter, this._q, this._shape);
-                this._headMesh.setMatrixAt(i, this._matrix);
-            } else {
-                this._setHeadSegment(this._headLeftMesh, i, this._tip, this._dir, headLength, 1);
-                this._setHeadSegment(this._headRightMesh, i, this._tip, this._dir, headLength, -1);
-            }
-
-            const color = this._colorMap(new Vec3(this._dir.x, this._dir.y, 0), magnitude);
-            this._setInstanceColor(i, color);
+        let index = 0;
+        for (const x of /** @type {Iterable<number>} */ (this._xRange))
+            for (const y of /** @type {Iterable<number>} */ (this._yRange)) {
+                const u = this._xRange.normalize(x);
+                const v = this._yRange.normalize(y);
+                vectorField.sample(u, v, this._target);
+                this._updateVectorAt(index++, x, y);
         }
 
         this._shaftMesh.instanceMatrix.needsUpdate = true;
