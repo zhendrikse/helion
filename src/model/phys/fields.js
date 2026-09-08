@@ -48,18 +48,16 @@ export class ElectricField extends VectorField {
     }
 
     /**
-     * Sample the electric field at a spatial position.
+     * Sample the electric field at a normalized position.
      *
-     * The position is expressed in the same coordinate system as
-     * gridOrigin and gridSpacing.
-     *
-     * @param {Vec2 | Vec3} position
+     * @param {number} u normalized coordinate one.
+     * @param {number} v normalized coordinate two.
      * @param {Vec2 | Vec3} target
      * @returns {Vec2 | Vec3}
      */
-    sample(position, target = this._target) {
-        const x = Math.round((position.x - this._gridOrigin.x) / this._gridSpacing);
-        const y = Math.round((position.y - this._gridOrigin.y) / this._gridSpacing);
+    sample(u, v, target = this._target) {
+        const x = Math.round(u * (this._potentialField.nx - 1));
+        const y = Math.round(v * (this._potentialField.ny - 1));
 
         return this.valueAt(x, y, target);
     }
