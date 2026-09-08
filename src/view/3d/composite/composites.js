@@ -4,14 +4,17 @@ import {
     MeshStandardMaterial, CylinderGeometry, BoxGeometry, ConeGeometry, MeshBasicMaterial
 } from "three";
 
-import {Arrow, Cylinder, Helix, Sphere} from "../primitives/primitives.js";
-import {Vec3} from "../../../model/math/math.js";
+import { Arrow, Cylinder, Helix, Sphere } from "../primitives/primitives.js";
+import { Vec3 } from "../../../model/math/math.js";
 import { Renderable3D } from "../../renderer.js";
-import {MathPhysicsModelBehavior} from "../../../core/helion.js";
-import {Checkbox, CompoundControl, RadioGroup} from "../../../core/controls.js";
-import {BodyPair} from "../../../model/phys/bodies.js";
+import { MathPhysicsModelBehavior } from "../../../core/helion.js";
+import { Checkbox, CompoundControl, RadioGroup } from "../../../core/controls.js";
+import { BodyPair, Lattice } from "../../../model/phys/bodies.js";
 import { Range } from "../../../model/math/math.js";
 import { VectorField } from "../../../model/math/fields.js";
+import { OneDimensionalComplexPlaneWave, OneDimensionalPlaneWave } from "../../../model/phys/waves.js";
+import { VectorModel } from "../../../model/math/objects.js";
+import { PointCloud } from "../../../model/phys/clouds.js";
 //
 // Point cloud
 //
@@ -133,10 +136,12 @@ export class PointCloudView extends Points {
         this._radiusAttribute = null;
     }
 
+    /** @param {PointCloud} pointCloud */
     canBindTo(pointCloud) {
         return pointCloud.positionAt && pointCloud.colorAt && pointCloud.sizeAt;
     }
 
+    /** @param {PointCloud} pointCloud */
     initialize(pointCloud) {
         const N = pointCloud.length;
         this._positionAttribute = new BufferAttribute(new Float32Array(3 * N), 3);
@@ -157,6 +162,7 @@ export class PointCloudView extends Points {
         this.geometry.setAttribute('size', this._radiusAttribute);
     }
 
+    /** @param {PointCloud} pointCloud */
     synchronizeWith(pointCloud) {
         for (let i = 0; i < pointCloud.length; i++) {
             const p = pointCloud.positionAt(i);
@@ -170,14 +176,6 @@ export class PointCloudView extends Points {
 //
 // Plane waves
 //
-class Vector extends MathPhysicsModelBehavior {
-    constructor(position, axis = new Vec3())  {
-        super();
-        this.position = position.clone();
-        this.axis = axis.clone();
-    }
-}
-
 export class ElectromagneticWave extends Renderable3D {
     constructor({
         electricFieldColor = new Color("orange"),
@@ -187,9 +185,13 @@ export class ElectromagneticWave extends Renderable3D {
         scalingFunction = (position, lambda) => .5, // default: fixed scaling with increasing distance
     } = {}) {
         super();
+        /** @type {Arrow[]} */
         this._electricFieldArrows = [];
+        /** @type {Arrow[]} */
         this._magneticFieldArrows = [];
+        /** @type {VectorModel[]} */
         this._electricFieldVectors = [];
+        /** @type {VectorModel[]} */
         this._magneticFieldVectors = [];
 
         this._numArrows = numArrows;
@@ -205,10 +207,14 @@ export class ElectromagneticWave extends Renderable3D {
         this._i_hat = new Vector3(1, 0, 0);
     }
 
+    /** @param {OneDimensionalPlaneWave} planeWave */
     canBindTo(planeWave) {
-        return planeWave.valueAt;
+        if (planeWave.valueAt === undefined) 
+            throw new Error("This view requires valueAt() method to be implemented");
+        return true;
     }
 
+    /** @param {number} index @param {OneDimensionalPlaneWave} wave */
     _updateFieldVectorsAt(index, wave) {
         const fieldVector = this._electricFieldVectors[index];
 
@@ -224,6 +230,7 @@ export class ElectromagneticWave extends Renderable3D {
         this._magneticFieldVectors[index].axis.copy(this._tempAxis.copy(fieldVector.axis).cross(this._i_hat));
     }
 
+    /** @param {OneDimensionalPlaneWave} wave */
     synchronizeWith(wave) {
         for (let index = 0; index < this._numArrows; index++)
             this._updateFieldVectorsAt(index, wave);
@@ -233,6 +240,7 @@ export class ElectromagneticWave extends Renderable3D {
             this._magneticFieldArrows[index].synchronizeWith(this._magneticFieldVectors[index]);
     }
 
+    /** @param {OneDimensionalPlaneWave} planeWave */
     initialize(planeWave) {
         const ds = planeWave.lambda / 10.0;
         const dr1 = planeWave.position.clone().normalize().multiplyScalar(ds);
@@ -248,8 +256,8 @@ export class ElectromagneticWave extends Renderable3D {
                 size: this._arrowSize,
                 round: true
             });
-            this._electricFieldVectors.push(new Vector(position));
-            this._magneticFieldVectors.push(new Vector(position));
+            this._electricFieldVectors.push(new VectorModel(position, new Vec3()));
+            this._magneticFieldVectors.push(new VectorModel(position, new Vec3()));
             this._magneticFieldArrows.push(magneticFieldArrow);
             this._electricFieldArrows.push(electricFieldArrow);
             this.add(electricFieldArrow, magneticFieldArrow);
@@ -266,18 +274,23 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
         round = true
     } = {}) {
         super();
+        /** @type {Arrow[]} */
         this._arrows = [];
         this._numArrows = numArrows;
         this._round = round;
         this._size = size;
-        this._valueVector = new Vector(new Vector3());
+        this._valueVector = new VectorModel(new Vector3());
         this._color = new Color();
     }
 
+    /** @param {OneDimensionalComplexPlaneWave} complexPlaneWave */
     canBindTo(complexPlaneWave) {
-        return complexPlaneWave.valueAt;
+        if (complexPlaneWave.valueAt === undefined)
+            throw new Error("This view needs valueAt() method to be present");
+        return true;
     }
 
+    /** @param {OneDimensionalComplexPlaneWave} complexPlaneWave */
     initialize(complexPlaneWave) {
         for (let i = 0; i < this._numArrows; i++)
             this._createArrow();
@@ -294,6 +307,7 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
         this.add(arrow);
     }
 
+    /** @param {OneDimensionalComplexPlaneWave} complexPlaneWave */
     synchronizeWith(complexPlaneWave) {
         for (let i = 0; i < this._numArrows; i++) {
             const x = complexPlaneWave.position.x + i * 2;
@@ -309,11 +323,22 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
 }
 
 export class SwitchableBondView extends Renderable3D {
+    /** @type {{ Spring: string, Cylinder: string }} */
     static Type = Object.freeze({
         Spring: "Spring",
         Cylinder: "Cylinder"
     });
-
+    /**
+     * @param {{
+     * color?: number,
+     * coils?: number,
+     * tubularSegments?: number,
+     * thickness?: number,
+     * castShadow?: boolean,
+     * radiusFunction?: (pair: BodyPair) => number,
+     * bondType?: string
+     * }} options
+     */
     constructor({
         color = 0xffff00,
         coils = 25,
@@ -332,7 +357,7 @@ export class SwitchableBondView extends Renderable3D {
         });
         this.add(this._cylinder, this._spring);
 
-        this._bondType = null; // predefine for optimal JavaScript
+        this._bondType = ""; // predefine for optimal JavaScript
         this.bondType = bondType;
     }
 
@@ -344,15 +369,20 @@ export class SwitchableBondView extends Renderable3D {
 
     get bondType() { return this._bondType; }
 
-    canBindTo(body) {
-        return body.position && body.axis;
+    /** @param {BodyPair} bodyPair */
+    canBindTo(bodyPair) {
+        if (bodyPair.position == null || bodyPair.axis == null)
+            throw new Error("This view requires position and axis properties to work.");
+        return true;
     }
 
+    /** @param {BodyPair} bodyPair */
     initialize(bodyPair) {
         this._spring.initialize(bodyPair);
         this._cylinder.initialize(bodyPair);
     }
 
+    /** @param {BodyPair} bodyPair */
     synchronizeWith(bodyPair) {
         if (this._bondType === SwitchableBondView.Type.Cylinder)
             this._cylinder.synchronizeWith(bodyPair);
@@ -402,7 +432,7 @@ export class ArrowField extends Renderable3D {
     } = {}) {
         super();
         this.visible = visible;
-        
+
         if (xRange == null || yRange == null || zRange == null)
             throw new Error("Cannot instantiate ArrowField without x-, y-, and z-ranges");
         this._xRange = xRange;
@@ -440,18 +470,18 @@ export class ArrowField extends Renderable3D {
 
         this._shaftOffset = new Vector3();
         this._headOffset = new Vector3();
-        this._target = new Vector3();
+        this._target = new Vec3();
+        this._position = new Vec3();
     }
 
-    /**
-     * @param {VectorField} vectorField 
-     */
+    /**  @param {VectorField} vectorField */
     canBindTo(vectorField) {
         if (vectorField.sample === undefined)
             throw new Error("ArrowField needs sample() method to work out positions and directions");
         return true;
     }
 
+    /** @param {number} length */
     #computeSizes(length) {
         const shaftRadius = length * this._shaftWidth;
         const headLength = shaftRadius * this._headLength;
@@ -467,6 +497,38 @@ export class ArrowField extends Renderable3D {
         this._shaftMesh.instanceColor.setXYZ(index, c.r, c.g, c.b);
     }
 
+    /** @param {number} index @param {Vec3} pos */
+    _updateVectorAt(index, pos) {
+        const mag = this._target.length();
+
+        if (mag < 1e-9) {
+            this._shaftMesh.setMatrixAt(index, new Matrix4().makeScale(0, 0, 0));
+            this._headMesh.setMatrixAt(index, new Matrix4().makeScale(0, 0, 0));
+            return;
+        }
+
+        // Direction
+        this._dir.copy(this._target).normalize();
+        this._q.setFromUnitVectors(UP, this._dir);
+
+        const visualMag = this._matrixMagnitudeMap(mag) * this._scaleFactor;
+        const { shaftRadius, shaftLength, headLength } = this.#computeSizes(visualMag);
+
+        // Shaft
+        this._shaftOffset.set(0, shaftLength * 0.5, 0).applyQuaternion(this._q).add(pos);
+        this._shape.set(shaftRadius, shaftLength, shaftRadius);
+        this._matrix.compose(this._shaftOffset, this._q, this._shape);
+        this._shaftMesh.setMatrixAt(index, this._matrix);
+
+        // Head
+        this._headOffset.set(0, shaftLength + headLength * 0.5, 0).applyQuaternion(this._q).add(pos);
+        this._shape.set(shaftRadius * this._headWidth, headLength, shaftRadius * this._headWidth);
+        this._matrix.compose(this._headOffset, this._q, this._shape);
+        this._headMesh.setMatrixAt(index, this._matrix);
+
+        this.#setColor(index, this._dir, mag);
+    }
+
     /**
      * @param {VectorField} vectorField 
      */
@@ -475,38 +537,11 @@ export class ArrowField extends Renderable3D {
         for (const x of /** @type {Iterable<number>} */ (this._xRange))
             for (const y of /** @type {Iterable<number>} */ (this._yRange))
                 for (const z of /** @type {Iterable<number>} */ (this._zRange)) {
-            const pos = new Vec3(x, y, z);
-            vectorField.sample(pos, this._target);
-            const mag = this._target.length();
-
-            if (mag < 1e-9) {
-                this._shaftMesh.setMatrixAt(index, new Matrix4().makeScale(0,0,0));
-                this._headMesh.setMatrixAt(index, new Matrix4().makeScale(0,0,0));
-                continue;
-            }
-
-            // Direction
-            this._dir.copy(this._target).normalize();
-            this._q.setFromUnitVectors(UP, this._dir);
-
-            const visualMag = this._matrixMagnitudeMap(mag) * this._scaleFactor;
-            const { shaftRadius, shaftLength, headLength } = this.#computeSizes(visualMag);
-
-            // Shaft
-            this._shaftOffset.set(0, shaftLength * 0.5, 0).applyQuaternion(this._q).add(pos);
-            this._shape.set(shaftRadius, shaftLength, shaftRadius);
-            this._matrix.compose(this._shaftOffset, this._q, this._shape);
-            this._shaftMesh.setMatrixAt(index, this._matrix);
-
-            // Head
-            this._headOffset.set(0, shaftLength + headLength * 0.5, 0).applyQuaternion(this._q).add(pos);
-            this._shape.set(shaftRadius * this._headWidth, headLength, shaftRadius * this._headWidth);
-            this._matrix.compose(this._headOffset, this._q, this._shape);
-            this._headMesh.setMatrixAt(index, this._matrix);
-
-            this.#setColor(index, this._dir, mag);
-            index++;
-        }
+                    const pos = this._position;
+                    pos.set(x, y, z);
+                    vectorField.sample(pos, this._target);
+                    this._updateVectorAt(index++, pos);
+                }
 
         this._shaftMesh.instanceMatrix.needsUpdate = true;
         this._headMesh.instanceMatrix.needsUpdate = true;
@@ -544,35 +579,42 @@ export class DiatomicMolecule extends Renderable3D {
         this.add(this._atom1, this._atom2, this._bond);
     }
 
+    /** @param {BodyPair} bodyPair */
     initialize(bodyPair) {
         this._atom1.initialize(bodyPair.body1);
         this._atom2.initialize(bodyPair.body2);
         this._bond.initialize(bodyPair);
     }
 
-    canBindTo(model) {
-        return model instanceof BodyPair;
+    /** @param {BodyPair} bodyPair */
+    canBindTo(bodyPair) {
+        return bodyPair instanceof BodyPair;
     }
 
+    /** @param {BodyPair} bodyPair */
     synchronizeWith(bodyPair) {
         this._atom1.synchronizeWith(bodyPair.body1);
         this._atom2.synchronizeWith(bodyPair.body2);
         this._bond.synchronizeWith(bodyPair);
     }
 
+    /** @param {string} type */
     set bondType(type) {
         this._bond.bondType = type;
     }
 }
 
 export class LatticeView extends Renderable3D {
+    /** @param {{bodyViewFactory: () => Renderable3D, bondViewFactory: () => SwitchableBondView}} options */
     constructor({ bodyViewFactory, bondViewFactory }) {
         super();
 
         this._bodyViewFactory = bodyViewFactory;
         this._bondViewFactory = bondViewFactory;
 
+        /** @type {Renderable3D[]} */
         this._bodyViews = [];
+        /** @type {SwitchableBondView[]} */
         this._bondViews = [];
     }
 
@@ -588,11 +630,13 @@ export class LatticeView extends Renderable3D {
         });
     }
 
+    /** @param {string} type */
     set bondType(type) {
         for (const bondView of this._bondViews)
             bondView.bondType = type;
     }
 
+    /** @param {boolean} booleanValue */
     set nodesVisible(booleanValue) {
         this._bodyViews.forEach(sphere => sphere.visible = booleanValue);
     }
@@ -610,10 +654,14 @@ export class LatticeView extends Renderable3D {
             );
     }
 
-    canBindTo(model) {
-        return model.bodyAt && model.bondAt;
+    /** @param {Lattice} lattice */
+    canBindTo(lattice) {
+        if (lattice.bodyAt === undefined || lattice.bondAt === undefined)
+            throw new Error("Lattice view nees bodyAt() and bondAt() methods to be present");
+        return true;
     }
 
+    /** @param {Lattice} lattice */
     initialize(lattice) {
         for (let i = 0; i < lattice.bodyCount; i++) {
             const view = this._bodyViewFactory();
@@ -630,6 +678,7 @@ export class LatticeView extends Renderable3D {
         }
     }
 
+    /** @param {Lattice} lattice */
     synchronizeWith(lattice) {
         for (let i = 0; i < lattice.bodyCount; i++)
             this._bodyViews[i].synchronizeWith(lattice.bodyAt(i));

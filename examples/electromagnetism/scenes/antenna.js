@@ -11,6 +11,7 @@ const range = [];
 for (let theta = 0; theta < 2 * Math.PI; theta += Math.PI / 3)
     range.push(new Vec3(Math.cos(theta), 0, Math.sin(theta)).multiplyScalar(lambda));
 
+/** @type {OneDimensionalPlaneWave[]} */
 const planeWaves = [];
 for (let position of range)
     planeWaves.push(new OneDimensionalPlaneWave({
