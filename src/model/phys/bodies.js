@@ -1,20 +1,17 @@
 import { Vec3, Vec2 } from "../math/math.js";
 import { Integrators } from "../math/numerics/integrators/integrators.js";
-import { MathPhysicsModelBehavior } from "../../core/helion.js";
-import {SpringForce} from "./forces.js";
+import { MathPhysicsModelBehavior, Transformation } from "../../core/helion.js";
+import { SpringForce} from "./forces.js";
 
 export class PhysicsState {
-        /**
-     * @typedef {Object} PhysicsStateOptions
-     * @property {Vec3 | Vec2} [position]
-     * @property {Vec3 | Vec2} [velocity]
-     * @property {Vec3 | Vec2} [acceleration]
-     * @property {number} [mass]
-     * @property {number} [charge]
-     */
-
     /**
-     * @param {PhysicsStateOptions} [options]
+     * @param {{
+     *  position?: Vec3 | Vec2,
+     *  velocity?: Vec3 | Vec2,
+     *  acceleration?: Vec3 | Vec2,
+     *  mass?: number,
+     *  charge?: number
+}} options
      */
     constructor({
         position = new Vec3(),
@@ -103,6 +100,14 @@ export class BodyPair extends MathPhysicsModelBehavior {
 }
 
 class Configuration {
+    /**
+     * @param {{
+     *     position?: Vec3,
+     *     orientation?: Vec3,
+     *     childrenPositions?: Vec2[] | Vec3[],
+     *     childrenOrientations?: Vec2[] | Vec3[]
+     }} options
+     */
     constructor({
         position = new Vec3(),
         orientation = new Vec3(),
@@ -197,6 +202,9 @@ export class Body extends MathPhysicsModelBehavior{
         this._children.push(anotherBody);
     }
 
+    /**
+     * @param {(value: Body, index: number, array: Body[]) => void} callback
+     */
     forEach(callback) {
         this._children.forEach(callback);
     }
@@ -281,7 +289,10 @@ export class Body extends MathPhysicsModelBehavior{
         // Quaternion -> Euler XYZ
         //
         // This is exactly as Three.js: Quaternion -> rotation matrix -> Euler XYZ.
-        const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+        const clamp = (
+            /** @type {number} */ value, /** @type {number} */ min, /** @type {number} */ 
+            max) => Math.max(min, Math.min(max, value)
+        );
 
         const m11 = 1 - 2 * (q.y * q.y + q.z * q.z);
         const m12 = 2 * (q.x * q.y - q.z * q.w);
@@ -379,6 +390,14 @@ export class Block extends Body {
 }
 
 export class Lattice extends MathPhysicsModelBehavior {
+    /**
+     * @param {{
+     * k?: number,
+     * damping?: number,
+     * bodySize?: number,
+     * bondRadius?: number
+     * }} options 
+     */
     constructor({
         k = 100,
         damping = 0,
@@ -390,8 +409,11 @@ export class Lattice extends MathPhysicsModelBehavior {
         this._damping = damping;
         this._bodySize = bodySize;
         this._bondRadius = bondRadius;
+        /** @type {Body[]} */
         this._bodies = [];
+        /** @type {BodyPair[]} */
         this._bonds = [];
+        /** @type {SpringForce[]} */
         this._bondForces = [];
     }
 
@@ -406,31 +428,48 @@ export class Lattice extends MathPhysicsModelBehavior {
             coupling.damping = damping;
     }
 
+    /** @param {number} index */
     fixateBodyAt(index) {
         this._bodies[index].fixed = true;
         return this;
     }
 
+    /** @param {Body} body */
     addBody(body) {
         this._bodies.push(body);
         return this;
     }
 
+    /**
+     * 
+     * @param {Body} body1 
+     * @param {Body} body2 
+     * @param {{
+     * k?: number,
+     * damping?: number,
+     * restLength?: number,
+     * }} options 
+     */
     connect(body1, body2, {k, restLength, damping}) {
         this._bonds.push(body1.and(body2));
         this._bondForces.push(new SpringForce({k, restLength, damping}));
     }
 
+    /** @param {number} value */
     set bondForce(value) { this._bondForces.forEach(bond => bond.k = value); }
 
+    /** @param {number} value */
     set omega(value) { this._omega = value; }
 
     get bodyCount() { return this._bodies.length }
     get bondCount() { return this._bonds.length }
 
+    /** @param {number} index */
     bodyAt(index) { return this._bodies[index]; }
+    /** @param {number} index */
     bondAt(index) { return this._bonds[index]; }
 
+    /** @param {Transformation} transformation */
     applyToBodies(transformation) {
         for (const body of this._bodies)
             transformation.applyTo(body);
@@ -438,6 +477,7 @@ export class Lattice extends MathPhysicsModelBehavior {
         return this;
     }
 
+    /** @param {number} dt */
     integrate(dt) {
         for (let i = 0; i < this.bondCount; i++)
             this._bonds[i].apply(this._bondForces[i]);
@@ -458,6 +498,14 @@ export class Lattice extends MathPhysicsModelBehavior {
 }
 
 export class ChainTopology {
+    /**
+     * @param {{
+     * count?: number, 
+     * length?: number,
+     * bondRestLength?: number,
+     * totalMass?: number
+     * }} options 
+     */
     constructor({
         count = 100,
         length = 20,
@@ -470,6 +518,7 @@ export class ChainTopology {
         this._bondRestLength = bondRestLength;
     }
 
+    /** @param {Lattice} lattice */
     applyTo(lattice) {
         const dx = this._length / (this._count - 1);
 
@@ -505,6 +554,7 @@ export class CubicLatticeTopology {
         this._totalMass = totalMass;
     }
 
+    /** @param {Lattice} lattice  */
     applyTo(lattice) {
         const count = this._nx * this._ny * this._nz;
         const mass = this._totalMass / count;
@@ -552,10 +602,12 @@ export class CubicLatticeTopology {
                 }
     }
 
+    /** @param {number} i @param {number} j @param {number} k */
     index(i, j, k) {
         return i + this._nx * (j + this._ny * k);
     }
 
+    /** @param {Lattice} lattice */
     bondConfig(lattice) {
         return {
             k: lattice.k,

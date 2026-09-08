@@ -128,6 +128,13 @@ export class GravitationalForce extends PairForce {
  * Hooke's law F = -k u between a pair of bodies.
  */
 export class SpringForce extends PairForce {
+    /**
+     * @param {{
+     * k?: number,
+     * damping?: number,
+     * restLength?: number,
+     * }} options 
+     */
     constructor({
         k = 200,
         restLength,

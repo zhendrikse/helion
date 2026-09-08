@@ -93,6 +93,7 @@ export function linspace(start, stop, num) {
     return linSpace;
 }
 
+/** @param {number[]} x @param {number[]} y */
 export function meshgrid(x, y) {
     const X = [];
     const Y = [];
@@ -103,134 +104,6 @@ export function meshgrid(x, y) {
     }
 
     return [X, Y];
-}
-
-export class Vec2 {
-    constructor(x=0, y=0, z=0) {
-        this.x = x;
-        this.y = y;
-    }
-
-    clone() {
-        return new Vec2(this.x, this.y);
-    }
-
-    /** @param{number} x @param{number} y */
-    set(x,y) {
-        this.x = x;
-        this.y = y;
-        return this;
-    }
-
-    /** @param {Vec2} v */
-    copy(v) {
-        this.x = v.x;
-        this.y = v.y;
-        return this;
-    }
-
-    /** @param {Vec2} v */
-    add(v) {
-        this.x += v.x;
-        this.y += v.y;
-        return this;
-    }
-
-    negate() {
-        this.x = -this.x;
-        this.y = -this.y;
-        return this;
-    }
-
-    /** @param {Vec2} v  @param {number} scalar */
-    addScaledVector(v, scalar) {
-        this.x += v.x * scalar;
-        this.y += v.y * scalar;
-        return this;
-    }
-
-    /** @param {Vec2} v */
-    sub(v) {
-        this.x -= v.x;
-        this.y -= v.y;
-        return this;
-    }
-
-    /** @param {Vec2} a  @param {Vec2}  b */
-    subVectors(a, b) {
-        this.x = a.x - b.x;
-        this.y = a.y - b.y;
-        return this;
-    }
-
-    /** @param {number} s */
-    divideScalar(s) {
-        this.x /= s;
-        this.y /= s;
-        return this;
-    }
-
-    /** @param {number} s */
-    multiplyScalar(s) {
-        this.x *= s;
-        this.y *= s;
-        return this;
-    }
-
-    lengthSq() {
-        return this.x * this.x + this.y * this.y;
-    }
-
-    length() {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
-    }
-
-    /** @param {Vec2} v */
-    dot(v) {
-        return this.x * v.x + this.y * v.y;
-    }
-
-    /** @param {Vec2} v */
-    projectOnVector(v) {
-        const denominator = v.lengthSq();
-
-        if (denominator === 0) {
-            return this.set(0, 0, 0);
-        }
-
-        const scalar = this.dot(v) / denominator;
-
-        this.x = v.x * scalar;
-        this.y = v.y * scalar;
-
-        return this;
-    }
-
-    normalize() {
-        const inv = 1 / this.length();
-
-        this.x *= inv;
-        this.y *= inv;
-
-        return this;
-    }
-
-    random() {
-        this.x = Math.random();
-        this.y = Math.random();
-        return this;
-    }
-
-    /** @param {Vec2} position */
-    distanceSquaredTo(position) {
-        return (position.x - this.x) * (position.x - this.x) +
-            (position.y - this.y) * (position.y - this.y);
-    }
-
-    /** @param {Vec2} position */
-    distanceTo(position) {
-        return Math.sqrt(this.distanceSquaredTo(position));
-    }
 }
 
 export class Vec3 {
@@ -280,7 +153,7 @@ export class Vec3 {
         return this;
     }
     
-    /** @param {Vec3} v @param {number} alpha */
+    /** @param {Vec2 | Vec3} v @param {number} alpha */
     lerp(v, alpha) {
         this.x += (v.x - this.x) * alpha;
         this.y += (v.y - this.y) * alpha;
@@ -310,7 +183,7 @@ export class Vec3 {
         return this;
     }
 
-    /** @param {Vec3} v */
+    /** @param {Vec2 | Vec3} v */
     copy(v) {
         this.x = v.x;
         this.y = v.y;
@@ -318,7 +191,7 @@ export class Vec3 {
         return this;
     }
 
-    /** @param {Vec3} v */
+    /** @param {Vec2 | Vec3} v */
     add(v) {
         this.x += v.x;
         this.y += v.y;
@@ -333,7 +206,7 @@ export class Vec3 {
         return this;
     }
 
-    /** @param {Vec3} v  @param {number} scalar*/
+    /** @param {Vec2 | Vec3} v  @param {number} scalar*/
     addScaledVector(v, scalar) {
         this.x += v.x * scalar;
         this.y += v.y * scalar;
@@ -341,7 +214,7 @@ export class Vec3 {
         return this;
     }
 
-    /** @param {Vec3} v */
+    /** @param {Vec2 | Vec3} v */
     sub(v) {
         this.x -= v.x;
         this.y -= v.y;
@@ -349,7 +222,7 @@ export class Vec3 {
         return this;
     }
 
-    /** @param {Vec3} a  @param {Vec3} b*/
+    /** @param {Vec2 | Vec3} a  @param {Vec3} b*/
     subVectors(a, b) {
         this.x = a.x - b.x;
         this.y = a.y - b.y;
@@ -357,19 +230,19 @@ export class Vec3 {
         return this;
     }
 
-    /** @param {number} s */
-    divideScalar(s) {
-        this.x /= s;
-        this.y /= s;
-        this.z /= s;
+    /** @param {number} scalar */
+    divideScalar(scalar) {
+        this.x /= scalar;
+        this.y /= scalar;
+        this.z /= scalar;
         return this;
     }
 
-    /** @param {number} s */
-    multiplyScalar(s) {
-        this.x *= s;
-        this.y *= s;
-        this.z *= s;
+    /** @param {number} scalar */
+    multiplyScalar(scalar) {
+        this.x *= scalar;
+        this.y *= scalar;
+        this.z *= scalar;
         return this;
     }
 
@@ -381,12 +254,12 @@ export class Vec3 {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
     }
 
-    /** @param {Vec3} v */
+    /** @param {Vec2 | Vec3} v */
     dot(v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
     }
 
-    /** @param {Vec3} v */
+    /** @param {Vec2 | Vec3} v */
     projectOnVector(v) {
         const denominator = v.lengthSq();
 
@@ -420,16 +293,22 @@ export class Vec3 {
         return this;
     }
 
-    /** @param {Vec3} position */
+    /** @param {Vec2 | Vec3} position */
     distanceSquaredTo(position) {
         return (position.x - this.x) * (position.x - this.x) +
             (position.y - this.y) * (position.y - this.y) +
             (position.z - this.z) * (position.z - this.z);
     }
 
-    /** @param {Vec3} position */
+    /** @param {Vec2 | Vec3} position */
     distanceTo(position) {
         return Math.sqrt(this.distanceSquaredTo(position));
+    }
+}
+
+export class Vec2 extends Vec3 {
+    constructor(x=1, y=0) {
+        super(x, y, 0);
     }
 }
 
@@ -450,7 +329,7 @@ export class Range {
      *   for (const x of range)
      *     console.log(x);
      *
-     * @returns {Generator<*, void, *>}
+     * @returns {Generator<number, void, number>}
      */
     *[Symbol.iterator]() {
         if (!isFinite(this.from) || !isFinite(this.to))

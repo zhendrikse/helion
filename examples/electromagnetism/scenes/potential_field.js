@@ -1,9 +1,7 @@
 import {
     Simulation, Vec3, DiscreteScalarField, TiledPlane, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
-    JacobiSolver, ColorMapper, Checkbox, ElectricField, Vec2,
-    Arrow2D,
-    Button
+    JacobiSolver, ColorMapper, Checkbox, ElectricField, Vec2, Arrow2D, Button
 } from "../../../src/index.js";
 
 const N = 201;
