@@ -87,8 +87,8 @@ const arrows = new ArrowField2D({
     yRange: new Range((2 + .5) * cellSize - height, (N - 2 + .5) * cellSize - height, arrowSpacing),
     scaleFactor: 0.2,
     size: 0.25,
-    headLength: 0.15,
-    headWidth: 0.15,
+    headLength: 0.5,
+    headWidth: 0.4,
     colorMap: (dir, mag) => 0x333333,
     headStyle: Arrow2D.HeadStyle.Filled,
     visible: false

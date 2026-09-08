@@ -1,7 +1,8 @@
 import {Domain} from "./fields.js";
-import {Interval, Vec2} from "./math.js";
-import {DifferentialGeometry} from "./numerics/diffgeometry.js";
+import {Interval, Vec2, Vec3} from "./math.js";
+import {DifferentialFrame, DifferentialGeometry} from "./numerics/diffgeometry.js";
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
+import { SurfaceResolution } from "../../view/3d/surfaces/visualization.js";
 
 /**
  * Mathematical definition of a surface.
@@ -15,14 +16,17 @@ export class DifferentiableSurface extends Surface {
         this._differentialGeometry = new DifferentialGeometry(this);
     }
 
+    /** @param {SurfaceResolution} resolution */
     sampleSpacing(resolution) {
         return new Vec2(1, 1);
     }
 
+    /** @param {number} u @param {number} v @param {DifferentialFrame} target */
     frameAt(u, v, target) {
         return this._differentialGeometry.differentialFrame(u, v, target);
     }
 
+    /** @param {SurfaceResolution} resolution */
     rangeAt(resolution) {
         return new Interval();
     }
@@ -34,10 +38,12 @@ export class ScalarFieldSurface extends DifferentiableSurface {
         this._function = multivariateFunction;
     }
 
+    /** @param {SurfaceResolution} resolution */
     rangeAt(resolution) {
         return this._function.rangeAt(resolution);
     }
 
+    /** @param {number} u @param {number} v @param {Vec3} target */
     sample(u, v, target) {
         const x = this._function.domain.xRange.scaleUnitParameter(u);
         const y = this._function.domain.yRange.scaleUnitParameter(v);
@@ -51,9 +57,9 @@ export class ScalarFieldSurface extends DifferentiableSurface {
 export class ParametricSurface extends DifferentiableSurface {
     constructor({
         domain = new Domain(),
-        x = (u, v) => u,
-        y = (u, v) => v,
-        z = (u, v) => 0
+        x = (/** @type {number} */ u, /** @type {number} */ v) => u,
+        y = (/** @type {number} */ u, /** @type {number} */ v) => v,
+        z = (/** @type {number} */ u, /** @type {number} */ v) => 0,
     } = {}) {
         super();
         this._domain = domain;
@@ -62,6 +68,7 @@ export class ParametricSurface extends DifferentiableSurface {
         this._z = z;
     }
 
+    /** @param {SurfaceResolution} surfaceResolution */
     rangeAt(surfaceResolution) {
         const interval = new Interval();
         for (let i = 0; i < surfaceResolution.u; i++)
@@ -73,13 +80,15 @@ export class ParametricSurface extends DifferentiableSurface {
         return interval;
     }
 
-    sampleSpacing(resolution) {
-        const dx = this._domain.xRange.range / resolution.u;
-        const dy = this._domain.yRange.range / resolution.v;
+    /** @param {SurfaceResolution} surfaceResolution */
+    sampleSpacing(surfaceResolution) {
+        const dx = this._domain.xRange.range / surfaceResolution.u;
+        const dy = this._domain.yRange.range / surfaceResolution.v;
 
         return new Vec2(dx, dy);
     }
 
+    /** @param {number} u @param {number} v @param {Vec3} target */
     sample(u, v, target) {
         const uu = this._domain.xRange.scaleUnitParameter(u);
         const vv = this._domain.yRange.scaleUnitParameter(v);
@@ -93,10 +102,12 @@ export class DiscreteFieldSurface extends DifferentiableSurface {
         this._field = field;
     }
 
+    /** @param {SurfaceResolution} resolution */
     rangeAt(resolution) {
         return this._field.rangeAt(resolution);
     }
 
+    /** @param {number} u @param {number} v @param {DifferentialFrame} target */
     frameAt(u, v, target) {
         const i = u * (this._field.nx - 1);
         const j = v * (this._field.ny - 1);
@@ -110,6 +121,7 @@ export class DiscreteFieldSurface extends DifferentiableSurface {
         this._normalAt(ii, jj, target.normal);
     }
 
+    /** @param {number} i @param {number} j @param {Vec3} target */
     _normalAt(i, j, target) {
         const hL = this._field.valueAt(i - 1, j);
         const hR = this._field.valueAt(i + 1, j);

@@ -1,5 +1,6 @@
-import { VectorField, ScalarField, DiscreteScalarField } from "../math/fields.js";
+import { VectorField, DiscreteScalarField } from "../math/fields.js";
 import { Vec2, Vec3 } from "../math/math.js";
+import { ScalarFieldCalculus } from "../math/numerics/discretecalc.js"
 
 /**
  * Electric field derived from a scalar potential field.
@@ -42,7 +43,7 @@ export class ElectricField extends VectorField {
         this._gridSpacing = gridSpacing;
         this._gridOrigin = gridOrigin.clone();
         this._derivativeSpacing = derivativeSpacing;
-
+        this._scalarFieldCalculus = new ScalarFieldCalculus(potentialField);
         this._target = new Vec3();
     }
 
@@ -72,16 +73,8 @@ export class ElectricField extends VectorField {
      * @returns {Vec2 | Vec3}
      */
     valueAt(i, j, target = this._target) {
-        const field = this._potentialField;
-
-        if (i <= 0 || i >= field.nx - 1 ||
-            j <= 0 || j >= field.ny - 1) 
-            return target.set(0, 0, 0);
-
-        const h = this._derivativeSpacing;
-        const dVdx = (field.valueAt(i + 1, j) - field.valueAt(i - 1, j)) / (2 * h);
-        const dVdy = (field.valueAt(i, j + 1) - field.valueAt(i, j - 1)) / (2 * h);
-
-        return target.set(-dVdx, -dVdy, 0);
+        this._scalarFieldCalculus.gradient(i, j, this._derivativeSpacing, target);
+        target.negate();
+        return target;
     }
 }
