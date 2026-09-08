@@ -201,7 +201,7 @@ export class DiscreteScalarField extends ScalarField {
         super();
         this._nx = nx;
         this._ny = ny;
-        this._data = new Float32Array(nx * ny);
+        this._data = new Float64Array(nx * ny);
     }
 
     get nx() { return this._nx; }
@@ -240,10 +240,6 @@ export class DiscreteScalarField extends ScalarField {
     evolve(solver, dt) {
         solver.step(this, dt);
         return this;
-    }
-
-    sample(u, v) {
-        // bilinear interpolation (kan later consistent op index() bouwen)
     }
 }
 

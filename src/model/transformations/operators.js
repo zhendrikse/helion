@@ -1,9 +1,9 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { Range, Vec3} from "../math/math.js";
 import {CompoundControl, Slider} from "../../core/controls.js";
-import {Shapes, ShapesFactory} from "../math/shapes.js";
+import {ShapeConfiguration, Shapes, ShapesFactory} from "../math/shapes.js";
 import {Transformation} from "../../core/helion.js";
-import { DiscreteScalarField } from '../math/fields.js';
+import { DiscreteComplexField, DiscreteScalarField } from '../math/fields.js';
 
 export class DiamondSquareOperator extends Transformation {
     constructor({
@@ -15,6 +15,7 @@ export class DiamondSquareOperator extends Transformation {
         this._amplitude = amplitude;
     }
 
+    /** @param {DiscreteScalarField} field  @param {number} step  @param {number} scale  @param {number} size*/
     #diamondStep(field, step, size, scale) {
         const half = step >> 1;
         for (let x = half; x < size; x += step)
@@ -30,6 +31,7 @@ export class DiamondSquareOperator extends Transformation {
             }
     }
 
+    /** @param {DiscreteScalarField} field  @param {number} step  @param {number} scale  @param {number} size*/
     #squareStep(field, step, size, scale) {
         const half = step >> 1;
         for (let x = 0; x <= size; x += half)
@@ -62,6 +64,7 @@ export class DiamondSquareOperator extends Transformation {
 
     }
 
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         const size = field.nx - 1;
 
@@ -82,6 +85,7 @@ export class DiamondSquareOperator extends Transformation {
         }
     }
 
+    /** @param {number} scale */
     #random(scale) { return (Math.random() * 2 - 1) * scale; }
 }
 
@@ -90,19 +94,22 @@ export class GaussianImpulse extends Transformation {
         centerX = 100,
         centerY = 100,
         amplitude = 1,
-        sigma = 3
+        sigma = 3,
+        width = 5
     } = {}) {
         super();
         this._centerX = centerX;
         this._centerY = centerY;
         this._sigma = sigma;
         this._amplitude = amplitude;
+        this._width = width;
     }
 
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         const sigma2 = this._sigma * this._sigma;
-        for (let i = this._centerX - 5; i <= this._centerX + 5; i++)
-            for (let j = this._centerY - 5; j <= this._centerY + 5; j++) {
+        for (let i = this._centerX - this._width; i <= this._centerX + this._width; i++)
+            for (let j = this._centerY - this._width; j <= this._centerY + this._width; j++) {
                 if (i < 0 || j < 0 || i >= field.nx || j >= field.ny)
                     continue;
 
@@ -124,8 +131,10 @@ export class GaussianImpulseComplex2D extends Transformation {
         this._wavePacketEnergy = wavePacketEnergy;
     }
 
+    /** @param {number} wavePacketEnergy */
     set wavePacketEnergy(wavePacketEnergy) { this._wavePacketEnergy = wavePacketEnergy; }
 
+    /** @param {DiscreteComplexField} field */
     applyTo(field) {
         const packetWidth2 = this._packetWidth * this._packetWidth;
         const centerX = Math.floor(field.nx * 0.22);
@@ -162,6 +171,7 @@ export class PerlinNoiseOperator extends Transformation {
         this._noise = new ImprovedNoise();
     }
 
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         for (let x = 0; x < field.nx; x++)
             for (let y = 0; y < field.ny; y++) {
@@ -195,6 +205,7 @@ export class DoubleSlitOperator extends Transformation {
         this._positionSlit2 = positionSlit2;
     }
 
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         const pos = new Vec3();
         for (let i = 0; i < field.nx; i++)
@@ -212,6 +223,7 @@ export class DoubleSlitOperator extends Transformation {
             }
     }
 
+    /** @param {number} wavelength */
     set wavelength(wavelength) { this._wavelength = wavelength; }
 }
 
@@ -222,6 +234,7 @@ export class Potential extends Transformation {
         this._reflectionStrength = reflectionStrength;
     }
 
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++)
@@ -231,11 +244,13 @@ export class Potential extends Transformation {
 }
 
 export class ShapeMask extends Transformation {
+    /** @param {ShapeConfiguration} shapeConfiguration */
     constructor(shapeConfiguration) {
         super();
         this._shapeConfiguration = shapeConfiguration;
     }
 
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++)
@@ -245,11 +260,13 @@ export class ShapeMask extends Transformation {
 }
 
 export class ComplexShapeMask extends Transformation {
+    /** @param {ShapeConfiguration} shapeConfiguration */
     constructor(shapeConfiguration) {
         super();
         this._shapeConfiguration = shapeConfiguration;
     }
 
+    /** @param {DiscreteComplexField} field */
     applyTo(field) {
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++)
@@ -266,6 +283,7 @@ export class Softness extends Transformation {
         this._softness = softness;
     }
 
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         for (let s = 0; s < this._softness; s++) {
             const oldV = field._data.slice();
@@ -286,6 +304,7 @@ export class ComplexSoftness extends Transformation {
         this._softness = softness;
     }
 
+    /** @param {DiscreteComplexField} field */
     applyTo(field) {
         for (let s = 0; s < this._softness; s++) {
             const oldV = field.real.slice();
@@ -309,6 +328,7 @@ export class SineImpulseOperator {
         this._periods = periods;
     }
 
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         for (let x = 0; x < this._waveLength * this._periods; x++)
             for (let y = 0; y < field.ny; y++)
@@ -324,23 +344,20 @@ export class SineImpulseOperator {
             .add(new Slider("〰️ Wavelength")
                 .withRange(wavelengthInPixelsRange)
                 .withValue(this._waveLength)
-                .addEventListener("input", event => {
-                    this._waveLength = Number(event.target.value);
-                })
+                // @ts-ignore
+                .onInput(event => this._waveLength = Number(event.target.value))
             )
             .add(new Slider("〽️ Amplitude")
                 .withRange(amplitudeRange)
                 .withValue(this._amplitude)
-                .addEventListener("input", event => {
-                    this._amplitude = Number(event.target.value);
-                })
+                // @ts-ignore
+                .onInput(event => this._amplitude = Number(event.target.value))
             )
             .add(new Slider("🕓 Period")
                 .withRange(periodRange)
                 .withValue(this._periods)
-                .addEventListener("input", event => {
-                    this._periods = Number(event.target.value);
-                })
+                // @ts-ignore
+                .onInput(event => this._periods = Number(event.target.value))
             )
     }
 }
@@ -350,6 +367,7 @@ export class SineImpulseOperator {
 // ESM-versie van fft.js suitable for browser
 //
 class FFT {
+    /** @param {number} size */
     constructor(size) {
         this._size = size | 0;
         if (this._size <= 1) throw new Error("Size must be > 1");
@@ -374,6 +392,12 @@ class FFT {
         }
     }
 
+    /**
+     * @param {Float64Array} outRe 
+     * @param {Float64Array} outIm 
+     * @param {Float64Array} inRe 
+     * @param {Float64Array} inIm 
+     */
     transform(outRe, outIm, inRe, inIm) {
         const n = this._size;
         for (let i = 0; i < n; i++) {
@@ -403,6 +427,12 @@ class FFT {
         }
     }
 
+    /**
+     * @param {Float64Array} outRe 
+     * @param {Float64Array} outIm 
+     * @param {Float64Array} inRe 
+     * @param {Float64Array} inIm 
+     */
     inverseTransform(outRe, outIm, inRe, inIm) {
         const n = this._size;
         // conjugate
@@ -418,12 +448,13 @@ class FFT {
 }
 
 export class FFTShift2D extends Transformation {
+    /** @param {DiscreteComplexField} field */
     applyTo(field) {
         const N = field.size;
         const half = N >> 1;
 
-        const real = new Float32Array(N * N);
-        const imag = new Float32Array(N * N);
+        const real = new Float64Array(N * N);
+        const imag = new Float64Array(N * N);
 
         for (let j = 0; j < N; j++)
             for (let i = 0; i < N; i++) {
@@ -439,6 +470,7 @@ export class FFTShift2D extends Transformation {
 }
 
 export class FFT2D extends Transformation {
+    /** @param {DiscreteComplexField} field */
     applyTo(field) {
         const N = field.size;
         const fft = new FFT(N);
@@ -448,8 +480,8 @@ export class FFT2D extends Transformation {
             const offset = row * N;
             const inRe = field.real.slice(offset, offset + N);
             const inIm = field.imag.slice(offset, offset + N);
-            const outRe = new Float32Array(N);
-            const outIm = new Float32Array(N);
+            const outRe = new Float64Array(N);
+            const outIm = new Float64Array(N);
 
             fft.transform(outRe, outIm, inRe, inIm);
 
@@ -459,16 +491,16 @@ export class FFT2D extends Transformation {
 
         // columns
         for (let j = 0; j < N; j++) {
-            const colRe = new Array(N);
-            const colIm = new Array(N);
+            const colRe = new Float64Array(N);
+            const colIm = new Float64Array(N);
 
             for (let i = 0; i < N; i++) {
                 colRe[i] = field.real[i * N + j];
                 colIm[i] = field.imag[i * N + j];
             }
 
-            const outRe = new Array(N);
-            const outIm = new Array(N);
+            const outRe = new Float64Array(N);
+            const outIm = new Float64Array(N);
 
             fft.transform(outRe, outIm, colRe, colIm);
 

@@ -45,7 +45,7 @@ const simulation = Simulation
     .append(new Slider("🧲 Field strength: ")
         .withValue(10)
         .withRange(new Range(1, 20, .1))
-        .addEventListener("input", event => {
+        .onInput(event => {
             for (let wave of planeWaves)
                 wave.amplitude = event.target.value;
         })

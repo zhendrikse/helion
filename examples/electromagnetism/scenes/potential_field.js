@@ -130,6 +130,7 @@ const simulation = Simulation
         .withRange(new Range(0, 15000, 100))
         .withValue(iterationLimit)
         .onChange(event => {
+            // @ts-ignore
             iterationLimit = Number(event.target.value);
             reset();
         }))
