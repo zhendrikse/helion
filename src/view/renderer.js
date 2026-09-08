@@ -1,4 +1,5 @@
 import { Object3D, Box3 } from "three";
+import { MathPhysicsModelBehavior } from "../core/helion";
 
 /**
  * Base class for all view objects that are to be coupled with a model and rendered in the scene. 
@@ -14,8 +15,11 @@ import { Object3D, Box3 } from "three";
  * @method dispose() - Disposes of the object and releases any resources it holds.  
  */
 export class Renderable extends Object3D {
-    canBindTo(model) {}
+    /** @param {MathPhysicsModelBehavior} model */
+    canBindTo(model) { return false; }
+    /** @param {MathPhysicsModelBehavior} model */
     initialize(model) {}
+    /** @param {MathPhysicsModelBehavior} model */
     synchronizeWith(model) {}
     reset() {}
     dispose() {}

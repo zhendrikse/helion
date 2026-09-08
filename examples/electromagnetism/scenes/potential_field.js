@@ -1,3 +1,4 @@
+import { Color } from "three/src/Three.Core.js";
 import {
     Simulation, Vec3, DiscreteScalarField, TiledPlane, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
@@ -16,6 +17,7 @@ const cellSize = 0.3;
 
 // Color mapping for potential: -V0/2 (red) -> 0 (yellow) -> +V0/2 (green)
 class PotentialColorMapper extends ColorMapper {
+    /** @param {number} value  @param {Color} target */
     map(value, target) {
         if (value < 0.5)
             target.setRGB(1, 2 * value, 0);
@@ -50,7 +52,7 @@ class CapacitorBoundaryCondition extends DirichletBoundaryCondition {
         const cy = Math.floor(N / 2);
         const yBottom = cy - plateHalfGap;
         const yTop = cy + plateHalfGap;
-        const isPlate = (x, y) =>
+        const isPlate = (/** @type {number} */ x, /** @type {number} */ y) =>
             x >= cx - plateHalfLen && x < cx + plateHalfLen && (y === yBottom || y === yTop);
 
         super({

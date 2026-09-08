@@ -1,6 +1,6 @@
 import { Hud } from "./hud.js";
 import { ThreeJsRenderer} from "../view/3d/renderer.js";
-import { Vector3 } from "three";
+import { Object3D, Vector3 } from "three";
 import { Axes } from "../view/3d/composite/backgrounds.js";
 import { generateUUID, Vec3 } from "../model/math/math.js";
 import { BodyPair } from "../model/phys/bodies.js";
@@ -9,6 +9,7 @@ import { AxesUI, Button } from "./controls.js";
 import { renderMath } from "../view/mathrenderer.js";
 import { Viewport } from "./viewport.js";
 import { ThreeJsScene } from "../view/3d/scene.js";
+import { Renderable } from "../view/renderer.js";
 
 export class Registry {
     constructor({
@@ -31,13 +32,14 @@ export class Registry {
 }
 
 export class Transformation {
+    /** @param {MathPhysicsModelBehavior} body */
     applyTo(body) {}
 }
 
 export class MathPhysicsModelBehavior {
     /**
      * Keeps the model and view synchronized at all times!
-     * @param view view to synchronize the model with.
+     * @param {Renderable} view view to synchronize the model with.
      * @returns {Binding} a new binding between the model and view.
      */
     alwaysWith(view) {
@@ -47,18 +49,20 @@ export class MathPhysicsModelBehavior {
     /**
      * Synchronize model only once with the view. Important: the
      * model is also synchronized with the view at every user interaction!!
-     * @param view view to synchronize the model with.
+     * @param {Renderable} view view to synchronize the model with.
      * @returns {Binding} a new binding between the model and view.
      */
     onceWith(view) {
         return new Binding(this, view, Binding.Mode.ONCE);
     }
 
+    /** @param {Transformation} transformation */
     apply(transformation) {
         transformation.applyTo(this);
         return this;
     }
 
+    /** @param {Body} otherBody */
     and(otherBody) { 
         return new BodyPair(this, otherBody) 
     };
@@ -75,6 +79,7 @@ export class Binding {
         ONCE: "once"
     });
 
+    /** @param {MathPhysicsModelBehavior} model @param {Renderable} view @param {string} mode */
     constructor(model, view, mode = Binding.Mode.ALWAYS) {
         this.model = model;
         this.view = view;
@@ -96,7 +101,7 @@ export class Binding {
             throw new Error("Helion cannot bind this view to this model");
 
         this.view.initialize(this.model);
-        this.view.synchronizeWith(this.model, 0); // The first (and for sync-once-objects last) sync happens here!
+        this.view.synchronizeWith(this.model); // The first (and for sync-once-objects last) sync happens here!
     }
 
     reset() {
@@ -163,36 +168,64 @@ export class Simulation {
         return new Viewport(canvasWrapper, parameterMenuCollapsed, aspectRatio);
     }
 
-    static with({
-        htmlDivId,
-        viewport = {
-            aspectRatio: "1 / 1"
-        },
-        camera = {
-            position: new Vec3(3, 3, 3),
-            target: new Vec3(0, 0, 0),
-            fieldOfView: 50,
-            controls: true,
-            autoRotate: false,
-            orthographic: false
-        },
-        scene = {
-            background: ThreeJsScene.Background.TRANSPARENT,
-            backgroundColor: 0x0088ff,
-            scale: 1
-        },
-        lighting = {
-            enabled: true,
-            shadows: false
-        },
-        headUpDisplay = {
-            enabled: true
-        },
-        infoPanel = {
-            text: ""
-        },
-        parameterMenuCollapsed = true
-    } = {}) {
+    static with(
+        /**
+         * @param {{
+         *   htmlDivId?: string,
+         *   viewport?: { aspectRatio?: string },
+         *   camera?: {
+         *     position?: Vec3,
+         *     target?: Vec3,
+         *     fieldOfView?: number,
+         *     controls?: boolean,
+         *     autoRotate?: boolean,
+         *     orthographic?: boolean
+         *   },
+         *   scene?: {
+         *     background?: number,
+         *     backgroundColor?: number,
+         *     scale?: number
+         *   },
+         *   lighting?: {
+         *     enabled?: boolean,
+         *     shadows?: boolean
+         *   },
+         *   headUpDisplay?: { enabled?: boolean },
+         *   infoPanel?: { text?: string },
+         *   parameterMenuCollapsed?: boolean
+         * }} [options]
+         */
+        {
+            // @ts-ignore htmlDivId is part of the documented options object.
+            htmlDivId,
+            viewport = {
+                aspectRatio: "1 / 1"
+            },
+            camera = {
+                position: new Vec3(3, 3, 3),
+                target: new Vec3(0, 0, 0),
+                fieldOfView: 50,
+                controls: true,
+                autoRotate: false,
+                orthographic: false
+            },
+            scene = {
+                background: ThreeJsScene.Background.TRANSPARENT,
+                backgroundColor: 0x0088ff,
+                scale: 1
+            },
+            lighting = {
+                enabled: true,
+                shadows: false
+            },
+            headUpDisplay = {
+                enabled: true
+            },
+            infoPanel = {
+                text: ""
+            },
+            parameterMenuCollapsed = true
+        } = {}) {
         const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, parameterMenuCollapsed, viewport.aspectRatio);
         const renderer = new ThreeJsRenderer({ camera, viewport, lighting, scene });
         renderer.attach(viewPort);
@@ -202,10 +235,12 @@ export class Simulation {
     constructor(viewport, renderer, headUpDisplay, infoPanel) {
         this._viewport = viewport;
         this._renderer = renderer;
+        /** @type {Binding[]} */
         this._bindings = [];
         this._plot = null;                   // No plot by default
         this._hud = null;                    // No head-up display by default
         this._onReset = () => {};            // Callback function for client when a reset happens
+        /** @type {string} */
         this._status = Simulation.Status.STOPPED;
         this._axesUI = null;
 
@@ -231,11 +266,16 @@ export class Simulation {
 
     get width() { return this._viewport.width; }
     get height() { return this._viewport.height; }
-    set cameraPosition(position)   { this._renderer.cameraPosition = position;   return this; }
-    set autoRotate(autoRotate)     { this._renderer.autoRotate = autoRotate;     return this; }
-    set axesVisible(visible)       { this._renderer.axesVisible = visible;       return this; }
-    set orthographic(orthographic) { this._renderer.orthographic = orthographic; return this; }
+    /** @param {Vec3} position */
+    set cameraPosition(position)   { this._renderer.cameraPosition = position;   }
+    /** @param {boolean} autoRotate */
+    set autoRotate(autoRotate)     { this._renderer.autoRotate = autoRotate;     }
+    /** @param {boolean} visible */
+    set axesVisible(visible)       { this._renderer.axesVisible = visible;       }
+    /** @param {boolean} orthographic */
+    set orthographic(orthographic) { this._renderer.orthographic = orthographic; }
     
+    /** @param {Object3D} object3D */
     addObject3D(object3D) {
         this._renderer.add(object3D);
         return this;
@@ -246,11 +286,13 @@ export class Simulation {
         return this;
     }
 
+    /** @param {string} latex */
     setLatexTitle(latex) {
         renderMath(this._viewport.titleDiv, latex);
         return this;
     }
 
+    /** @param {string} text */
     setTextTitle(text) {
         this._viewport.titleDiv.textContent = text;
         return this;
@@ -268,7 +310,7 @@ export class Simulation {
      * This controls the scheduling interval, not the amount of
      * simulated time advanced by each step.
      *
-     * @param dt Real-world time interval between simulation steps.
+     * @param {number} dt Real-world time interval between simulation steps.
      */
     runsEvery(dt) {
         this._clock.realTimeStep = dt;
@@ -281,13 +323,14 @@ export class Simulation {
      *
      * This is independent of the real-world scheduling interval.
      *
-     * @param dt Simulated time increment per step.
+     * @param {number} dt Simulated time increment per step.
      */
     advancesBy(dt) {
         this._clock.simulationTimeStep = dt;
         return this;
     }
 
+    /** @param {Binding} binding */
     bind(binding) {
         // See if this view is already attached to some binding
         const existingIndex = this._bindings.findIndex(
@@ -322,13 +365,14 @@ export class Simulation {
     /**
      * Influences how much simulation time passes per second.
      *
-     * @param timeScale For example, if timescale equals two, simulation time passes two times more quickly.
+     * @param {number} timeScale For example, if timescale equals two, simulation time passes two times more quickly.
      */
     atSpeed(timeScale) {
         this._timeScale = timeScale;
         return this;
     }
 
+    /** @param {Renderable} anObject */
     frameSceneOn(anObject, {
         padding = 1.2,
         translationY = 0,
@@ -341,6 +385,7 @@ export class Simulation {
         return this;
     }
 
+    /** @param {Renderable} anObject */
     provideAxesAround(anObject, {
         layoutType = Axes.Type.MATLAB,
         divisions = 10,
@@ -373,7 +418,7 @@ export class Simulation {
     /**
      * Determines the amount of (integration) steps per clock tick.
      *
-     * @param substeps the number of steps for each clock tick dt.
+     * @param {number} substeps the number of steps for each clock tick dt.
      */
     substeps(substeps) {
         this._stepsPerClockTick = substeps;

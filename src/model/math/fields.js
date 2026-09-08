@@ -115,7 +115,7 @@ export class MultivariateFunction extends ScalarField {
     set time(time) { this._time = time; }
 }
 
-export class RealFunction extends ScalarField {
+export class RealFunction extends MathPhysicsModelBehavior {
     /**
      * @typedef {Object} RealFunctionOptions
      * @property {(x: number) => number} [func]
@@ -132,14 +132,15 @@ export class RealFunction extends ScalarField {
         this._func = func;
     }
 
-    /** @param {number} surfaceResolution */
-    rangeAt(surfaceResolution) {
+    /** @param {number} intervalResolution */
+    rangeAt(intervalResolution) {
         const interval = new Interval();
-        for (let i = 0; i < surfaceResolution; i++)
+        for (let i = 0; i < intervalResolution; i++)
             interval.include(this._func(this.domain.scaleUnitParameter(i)));
         return interval;
     }
 
+    /** @param {number} u */
     sample(u, target = new Vec2()) {
         const x = this.domain.scaleUnitParameter(u);
         target.set(x, this._func(x));
