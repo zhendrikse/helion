@@ -27,7 +27,7 @@ class PotentialColorMapper extends ColorMapper {
 }
 
 class DipoleBoundaryCondition extends DirichletBoundaryCondition {
-    constructor(separation = d/2) {
+    constructor(separation = d) {
         const cx = Math.floor(N / 2);
         const cy = Math.floor(N / 2);
 
@@ -37,11 +37,11 @@ class DipoleBoundaryCondition extends DirichletBoundaryCondition {
 
         super({
             isFixed: (x, y) =>
-                (Math.abs(x - positive[0]) <= 1 && Math.abs(y - positive[1]) <= 1) ||
-                (Math.abs(x - negative[0]) <= 1 && Math.abs(y - negative[1]) <= 1),
+                ((x - positive[0]) * (x - positive[0]) + (y - positive[1]) * (y - positive[1]) <= 16) ||
+                ((x - negative[0]) * (x - negative[0]) + (y - negative[1]) * (y - negative[1]) <= 16),
 
             valueAt: (x, y) =>
-                Math.abs(x - positive[0]) <=1 && Math.abs(y - positive[1]) <=1 ? +V0 / 2 : -V0 / 2
+                ((x - positive[0]) * (x - positive[0]) + (y - positive[1]) * (y - positive[1]) <= 16) ? +V0 / 2 : -V0 / 2
         });
     }
 }
