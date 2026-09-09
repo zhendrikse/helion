@@ -1,6 +1,6 @@
 import {
     Simulation, DropdownMenu, Domain, ParametricSurface, Registry,
-    SurfaceResolution, SurfaceVisualization, Interval, FixedIntervalNormalizer, AdaptiveSymmetricNormalizer,
+    SurfaceResolution, SurfaceVisualization, AdaptiveSymmetricNormalizer,
     DifferentialFrame
 } from "../../../src/index.js";
 import { ColorMappers } from "../../../src/view/colormappers.js";
@@ -38,8 +38,9 @@ class PhaseLayer {
         const p = frame.position;
         const r = Math.hypot(p.x, p.y, p.z);
         if (r < 1e-12) return 0;
-        const theta = Math.acos(Math.max(-1, Math.min(1, p.y / r))); // y up
-        const phi = Math.atan2(p.z, p.x);
+
+        const theta=domain.xRange.scaleUnitParameter(frame.u);
+        const phi=domain.yRange.scaleUnitParameter(frame.v);
         return this.Y(theta, phi);
     }
     preferredColorMapper() { return new ColorMappers().get(ColorMappers.RdYlBu)(); }
@@ -91,7 +92,7 @@ const orbitals = {
     },
     "4f_{x(5z²-r²)}": { 
         Y: (t,p) => Math.sin(t) * (5 * Math.cos(t) ** 2 - 1) * Math.cos(p), 
-        atex: "4f_{x(5z^2-r^2)}" 
+        latex: "4f_{x(5z^2-r^2)}" 
     },
     "4f_{y(5z²-r²)}": { 
         Y: (t,p) => Math.sin(t) * (5 * Math.cos(t) ** 2 - 1) * Math.sin(p), 
@@ -127,10 +128,10 @@ const surfaceView = new SurfaceVisualization({
 const simulation = Simulation.with({
     htmlDivId: "orbitalsContainer",
     infoPanel: {
-        text: "<strong>🍐 Atomic orbitals</strong><br/>You are looking at polar plots $r(θ,φ)=|Y_l^m(θ,φ)|$ of the real spherical harmonics " + 
-        "(angular part of $ψ_{n,l,m}=R_{n,l}(r)·Y_{l,m}(θ,φ))$. $|Y|$ shapes (two lobes for p), " + 
-        "sign via color gives phase (±) — crucial for binding. $R_{n,l}(r)$ and nodes (bv. 2s) " +
-        "have been omitted (only angular form); scale $∝n²a₀$ ignored."
+        text: "<strong>⚛️ Atomic orbitals</strong><br/>Polar plots $r=|Y_l^m(θ,φ)|$ of real spherical harmonics. " + 
+            "Shape from $|Y|$ (e.g. two lobes for $p$), color (RdYlBu) = sign → phase ±. " + 
+            "Full $ψ_{n,l,m}=R_{n,l}(r)Y_{l,m}$: radial part $R$ and nodes (e.g. $2s$) omitted, " + 
+            "scale $∝n^2a_0$ not to scale."
     },
     headUpDisplay: { enabled: false },
     camera: { fieldOfView: 20 },
