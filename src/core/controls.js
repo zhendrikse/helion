@@ -4,7 +4,7 @@ import { Axes } from "../view/3d/composite/backgrounds.js";
 
 export class HtmlControl {
     /** @param {string} labelText */
-    constructor(labelText = generateUUID()) {
+    constructor(labelText) {
         this._buttonRow = this._createButtonRow();
         this._inputControl = null; // To be set by each concrete control / subclass
         this._targetObject = null; // To be set by each concrete control / subclass
