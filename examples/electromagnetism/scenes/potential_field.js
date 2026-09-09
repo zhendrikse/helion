@@ -85,7 +85,10 @@ const height = 0.5 * N * cellSize;
 const arrows = new ArrowField2D({
     xRange: new Range((2 + .5) * cellSize - width, (N - 2 + .5) * cellSize - width, arrowSpacing),
     yRange: new Range((2 + .5) * cellSize - height, (N - 2 + .5) * cellSize - height, arrowSpacing),
-    scaleFactor: 0.2,
+    // lengte nu lineair met |E| — schaal 0.008 is gekozen zodat capacitorveld (~V0/d) ≈1.2 units lang is
+    // en dipool-pieken tot ~2.5 units (geklemd), i.p.v. log-compressie
+    scaleFactor: 1,
+    magnitudeMap: m => Math.min(m * 1e-4, 2.5),
     size: 0.25,
     headLength: 0.5,
     headWidth: 0.4,

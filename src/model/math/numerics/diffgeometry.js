@@ -116,8 +116,8 @@ export class DifferentialGeometry {
             .multiplyScalar(inv4e2);
 
         const N = this._N
-            .copy(Xv)
-            .cross(Xu)
+            .copy(Xu)
+            .cross(Xv)
             .normalize();
 
         const E = Xu.dot(Xu);

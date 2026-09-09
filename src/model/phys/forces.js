@@ -1,5 +1,7 @@
 import { Vec3 } from "../math/math.js";
 import { Transformation} from "../../core/helion.js";
+import { VectorField } from "../math/fields.js";
+import { Body, BodyPair } from "../phys/bodies.js"
 
 export const G = 6.67e-11;   // Gravitational constant
 export const EC = 1.602E-19; // Coulomb charge
@@ -14,8 +16,10 @@ export class Force extends Transformation {
 
     get asVector() { return this._forceVector; }
 
+    /** @param {Body | BodyPair} body */
     _calculateForceOn(body) {}
 
+    /** @param {Body} body */
     applyTo(body) {
         this._calculateForceOn(body);
         body.force.add(this._forceVector);
@@ -23,12 +27,14 @@ export class Force extends Transformation {
 }
 
 export class FieldForce extends Force {
+    /** @param {VectorField} field */
     constructor(field) {
         super();
         this._field = field;
         this._fieldVector = new Vec3();
     }
 
+    /** @param {Body} body */
     applyTo(body) {
         this._field.sample(body.position, this._fieldVector);
         super.applyTo(body);
@@ -36,6 +42,7 @@ export class FieldForce extends Force {
 }
 
 export class PairForce extends Force {
+    /** @param {BodyPair} bodyPair */
     applyTo(bodyPair) {
         this._calculateForceOn(bodyPair);
         bodyPair.body1.force.sub(this._forceVector);
@@ -47,14 +54,17 @@ export class PairForce extends Force {
  * Calculates the Coulomb force F = q x E induced by an electric field.
  */
 export class CoulombForce extends FieldForce{
+    /** @param {VectorField} electricField */
     static in(electricField) {
         return new CoulombForce(electricField);
     }
 
+    /** @param {VectorField} electricField */
     constructor(electricField) {
         super(electricField);
     }
 
+    /** @param {Body} body */
     _calculateForceOn(body) {
         this._forceVector.copy(this._fieldVector.multiplyScalar(body.charge));
     }
@@ -64,16 +74,21 @@ export class CoulombForce extends FieldForce{
  * Calculates the Lorentz force F = q v x B induced by a magnetic field.
  */
 export class LorentzForce extends FieldForce {
+    /** @param {VectorField} magneticField */
     static in(magneticField) {
         return new LorentzForce(magneticField);
     }
 
+    /** @param {VectorField} magneticField */
     constructor(magneticField) {
         super(magneticField);
+        this._velocity = new Vec3();
     }
 
+    /** @param {Body} body */
     _calculateForceOn(body) {
-        this._forceVector.copy(this._fieldVector.cross(body.velocity).multiplyScalar(body.charge));
+        this._velocity.copy(body.velocity);
+        this._forceVector.copy(this._velocity.cross(this._fieldVector).multiplyScalar(body.charge));
     }
 }
 
@@ -86,6 +101,7 @@ export class DragForce extends Force {
         this.dragCoefficient = dragCoefficient;
     }
 
+    /** @param {Body} body */
     _calculateForceOn(body) {
         this._forceVector.set(0, this.dragCoefficient * body.velocity.y, 0);
     }
@@ -99,6 +115,7 @@ export class UniformGravitationalForce extends Force {
         super();
     }
 
+    /** @param {Body} body */
     _calculateForceOn(body) {
         this._forceVector.set(0, -body.mass * g, 0);
     }
@@ -116,6 +133,7 @@ export class GravitationalForce extends PairForce {
         super();
     }
 
+    /** @param {BodyPair} twoBodies */
     _calculateForceOn(twoBodies) {
         const radius = twoBodies.axis;
         const rSquared = radius.dot(radius);
@@ -146,6 +164,7 @@ export class SpringForce extends PairForce {
         this.damping = damping;
     }
 
+    /** @param {BodyPair} bodyPair */
     _calculateForceOn(bodyPair) {
         const left = bodyPair.body1;
         const right = bodyPair.body2
@@ -179,6 +198,7 @@ export class CoulombPairForce extends PairForce {
         this._r = new Vec3();
     }
 
+    /** @param {BodyPair} pair */
     _calculateForceOn(pair) {
         this._r.copy(pair.axis);
         const r2 = this._r.lengthSq();
