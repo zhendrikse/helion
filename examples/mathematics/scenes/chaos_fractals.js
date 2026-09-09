@@ -94,8 +94,117 @@ class BarnsleyFern extends Transformation {
             x = nx; y = ny;
             const px = Math.trunc(w * (x + 3) / 6);
             const py = Math.trunc(h * y / 10);
+            if (px < 0 || px >= w || py < 0 || py >= h) continue;
             const currentCount = field.valueAt(px, py);
             field.setValueAt(px, py, currentCount + 1);
+        }
+    }
+}
+
+class CantorDust extends Transformation {
+    applyTo(field) {
+        const scale = field.nx / 2;
+        const jumps = [[-1, -1], [-1, 1], [1, 1], [1, -1]];
+        let x = 0, y = 0.3;
+        for (let i = 0; i < ITERATIONS_PER_FRAME; i++) {
+            const idx = Math.trunc(Math.random() * 4);
+            x = 0.45 * (x + jumps[idx][0] * scale);
+            y = 0.45 * (y + jumps[idx][1] * scale);
+            const px = Math.trunc(x + scale);
+            const py = Math.trunc(y + scale);
+            if (px < 0 || px >= field.nx || py < 0 || py >= field.ny) continue;
+            field.setValueAt(px, py, field.valueAt(px, py) + 1);
+        }
+    }
+}
+
+class Fractal1 extends Transformation {
+    // chaos game on square, never pick same vertex twice consecutively
+    applyTo(field) {
+        const scale = field.nx / 2;
+        const jumps = [[-1, -1], [-1, 1], [1, 1], [1, -1]];
+        let x = 0, y = 0.3;
+        let cur = Math.trunc(Math.random() * 4);
+        for (let i = 0; i < ITERATIONS_PER_FRAME; i++) {
+            x = 0.5 * (x + jumps[cur][0] * scale);
+            y = 0.5 * (y + jumps[cur][1] * scale);
+            const px = Math.trunc(x + scale);
+            const py = Math.trunc(y + scale);
+            if (px >= 0 && px < field.nx && py >= 0 && py < field.ny)
+                field.setValueAt(px, py, field.valueAt(px, py) + 1);
+            const sample = [0, 1, 2, 3];
+            sample.splice(cur, 1);
+            cur = sample[Math.trunc(Math.random() * 3)];
+        }
+    }
+}
+
+class Fractal2 extends Transformation {
+    // pentagon chaos game, 5 vertices on unit pentagon
+    applyTo(field) {
+        const w = 1;
+        const theta = 2 * Math.PI / 5;
+        const p1 = [w / 2, 0];
+        const p2 = [w * 0.5 * (1 + Math.sin(theta)), w * 0.5 * (1 - Math.cos(theta))];
+        const p3 = [w * 0.5 * (1 + Math.sin(theta / 2)), w * 0.5 * (1 + Math.cos(theta / 2))];
+        const p4 = [w * 0.5 * (1 - Math.sin(theta / 2)), w * 0.5 * (1 + Math.cos(theta / 2))];
+        const p5 = [w * 0.5 * (1 - Math.sin(theta)), w * 0.5 * (1 - Math.cos(theta))];
+        const jumps = [p1, p2, p3, p4, p5];
+        const scale = field.nx;
+        let x = 0, y = 0.3;
+        let cur = Math.trunc(Math.random() * 5);
+        for (let i = 0; i < ITERATIONS_PER_FRAME; i++) {
+            x = 0.5 * (x + jumps[cur][0] * scale);
+            y = 0.5 * (y + jumps[cur][1] * scale);
+            const px = Math.trunc(x + scale * 0.01);
+            const py = Math.trunc(y + scale * 0.01);
+            if (px >= 0 && px < field.nx && py >= 0 && py < field.ny)
+                field.setValueAt(px, py, field.valueAt(px, py) + 1);
+            const sample = [0, 1, 2, 3, 4];
+            sample.splice(cur, 1);
+            cur = sample[Math.trunc(Math.random() * 4)];
+        }
+    }
+}
+
+class SierpinskiCarpet extends Transformation {
+    applyTo(field) {
+        const scale = field.nx / 2;
+        const jumps = [[-1, -1], [-1, 1], [1, 1], [1, -1], [-1, 0], [1, 0], [0, -1], [0, 1]];
+        // last 4 are edge centers: [-1,0] etc. from original [[a1,b1+b2]...]
+        let x = 0, y = 0.3;
+        for (let i = 0; i < ITERATIONS_PER_FRAME; i++) {
+            const idx = Math.trunc(Math.random() * 8);
+            x = (x + 2 * jumps[idx][0] * scale) / 3;
+            y = (y + 2 * jumps[idx][1] * scale) / 3;
+            const px = Math.trunc(x + scale);
+            const py = Math.trunc(y + scale);
+            if (px < 0 || px >= field.nx || py < 0 || py >= field.ny) continue;
+            field.setValueAt(px, py, field.valueAt(px, py) + 1);
+        }
+    }
+}
+
+class TSquare extends Transformation {
+    // T-square: square, no opposite vertex twice
+    applyTo(field) {
+        const scale = field.nx / 2;
+        const jumps = [[-1, -1], [-1, 1], [1, 1], [1, -1]];
+        let x = 0, y = 0.3;
+        let cur = Math.trunc(Math.random() * 4);
+        for (let i = 0; i < ITERATIONS_PER_FRAME; i++) {
+            x = 0.5 * (x + jumps[cur][0] * scale);
+            y = 0.5 * (y + jumps[cur][1] * scale);
+            const px = Math.trunc(x + scale);
+            const py = Math.trunc(y + scale);
+            if (px >= 0 && px < field.nx && py >= 0 && py < field.ny)
+                field.setValueAt(px, py, field.valueAt(px, py) + 1);
+            const sample = [0, 1, 2, 3];
+            if (cur === 0) sample.splice(2, 1);
+            else if (cur === 1) sample.splice(3, 1);
+            else if (cur === 2) sample.splice(0, 1);
+            else if (cur === 3) sample.splice(1, 1);
+            cur = sample[Math.trunc(Math.random() * 3)];
         }
     }
 }
@@ -103,7 +212,12 @@ class BarnsleyFern extends Transformation {
 const fractals = {
     Sierpinski: new SierpinskiTriangle(),
     Vicsek: new VicsekFractal(),
-    Barnsley: new BarnsleyFern()
+    Barnsley: new BarnsleyFern(),
+    Cantor: new CantorDust(),
+    Fractal1: new Fractal1(),
+    Fractal2: new Fractal2(),
+    Carpet: new SierpinskiCarpet(),
+    TSquare: new TSquare()
 };
 
 let currentFractal = fractals.Sierpinski;
@@ -119,14 +233,49 @@ Simulation
     .runsEvery(0.1)
     .onStep(() => field.apply(currentFractal))
     .frameSceneOn(view, { padding: 1.1, viewDirection: new Vec3(0, 0, 1) })
-    .append(new RadioGroup()
-        .add("Sierpinski", () => { field.data.fill(0); currentFractal = fractals.Sierpinski; })
-        .add("Vicsek", () =>     { field.data.fill(0); currentFractal = fractals.Vicsek; })
-        .add("Barnsley", () =>   { field.data.fill(0); currentFractal = fractals.Barnsley; })
-        .checked(0))
+    .append(new Button()
+        .withText("⚠️ Sierpinski triangle")
+        .onClick(event => { 
+            field.data.fill(0); 
+            currentFractal = fractals.Sierpinski; 
+        }).togetherWith(new Button()
+            .withText("🌿 Barnsley fern")
+            .onClick(event => {
+                field.data.fill(0); 
+                currentFractal = fractals.Barnsley; 
+            })))
+    .append(new Button()
+        .withText("🧹 Cantor dust")
+        .onClick(event => { 
+            field.data.fill(0); 
+            currentFractal = fractals.Cantor; 
+        }).togetherWith(new Button()
+            .withText("🧶 Sierpinski carpet")
+            .onClick(event => {
+                field.data.fill(0); 
+                currentFractal = fractals.Carpet; 
+            })))
+    .append(new Button()
+        .withText("⭐ Fractal star")
+        .onClick(event => { 
+            field.data.fill(0); 
+            currentFractal = fractals.Fractal1; 
+        }).togetherWith(new Button()
+            .withText("🌻 Fractal flower")
+            .onClick(event => {
+                field.data.fill(0); 
+                currentFractal = fractals.Fractal2; 
+            })))
+    .append(new Button()
+        .withText("🟨 T-square fractal")
+        .onClick(event => { 
+            field.data.fill(0); 
+            currentFractal = fractals.TSquare; 
+        }))
     .append(new Slider("Contrast")
         .withRange(new Range(0, 20, .1))
         .withValue(5)
+        // @ts-ignore
         .onInput(event => colorMapper.scale = Number(event.target.value)))
     .append(new Button("Clear")
         .withText("Clear")

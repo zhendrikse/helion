@@ -1,9 +1,10 @@
 import { generateUUID } from "../model/math/math.js";
 import { Simulation } from "../core/helion.js"
+import { Axes } from "../view/3d/composite/backgrounds.js";
 
 export class HtmlControl {
     /** @param {string} labelText */
-    constructor(labelText) {
+    constructor(labelText = generateUUID()) {
         this._buttonRow = this._createButtonRow();
         this._inputControl = null; // To be set by each concrete control / subclass
         this._targetObject = null; // To be set by each concrete control / subclass
@@ -48,7 +49,7 @@ export class HtmlControl {
     /**
      * @param {string} eventType 
      * @param {(event: Event) => void} callback 
-     * @returns 
+     * @returns {HtmlControl}
      */
     addEventListener(eventType, callback) {
         const isString = typeof eventType === "string" || eventType instanceof String;
@@ -269,6 +270,7 @@ export class RadioGroup extends HtmlControl {
     constructor() {
         super();
 
+        /** @type {HTMLInputElement[]} */
         this._buttons = [];
         this._groupName = generateUUID();
 
@@ -277,6 +279,11 @@ export class RadioGroup extends HtmlControl {
         this._inputControl.style.gap = "8px";
     }
 
+    /** 
+     * @param {string} label
+     * @param {(event: Event) => void} callback
+     * @return {RadioGroup}
+     */
     add(label, callback) {
         const radio = document.createElement("input");
         radio.type = "radio";
@@ -286,6 +293,7 @@ export class RadioGroup extends HtmlControl {
         text.textContent = label;
 
         radio.addEventListener("change", event => {
+            // @ts-ignore
             if (event.target.checked)
                 callback(event);
 
@@ -307,31 +315,50 @@ export class RadioGroup extends HtmlControl {
 }
 
 export class Button extends HtmlControl {
-    constructor(label) {
+    /** @param {string} label */
+    constructor(label = "") {
         super(label);
-        this._targetObject = null;
-
         this._inputControl = document.createElement("button");
         this._inputControl.id = this._labelId;
     }
 
+    /** 
+     * @param {string} text 
+     * @return {Button}
+     */
     withText(text) {
         this._inputControl.textContent = text;
         this._inputControl.value = text;
         return this;
     }
 
+    /** 
+     * @param {(event: Event) => void} callback
+     * @return {Button}
+     */
+    onClick(callback) {
+        this.addEventListener("click", callback);
+        return this;
+    }
+
+    /** 
+     * @param {string} name 
+     * @return {Button}
+     */
     withProperty(name) {
+        // @ts-ignore
         this.addEventListener("click", event => this._targetObject[name] = event.target.value);
         return this;
     }
 }
 
 export class AxesUI {
+    /** @param {Axes} axes */
     constructor(axes) {
         this._axes = axes;
     }
 
+    /** @param {Axes} axes */
     set axes(axes) { this._axes = axes; }
 
     ui() {
@@ -339,14 +366,17 @@ export class AxesUI {
             .add(new Checkbox("Frame ")
                 .checked(true)
                 .addEventListener("click", event =>
+                    // @ts-ignore
                     this._axes.withSettings({ frame: event.target.checked }))
                 .togetherWith(new Checkbox("Annotations ")
                     .checked(true)
                     .addEventListener("click", event =>
+                        // @ts-ignore
                         this._axes.withSettings({ annotations: event.target.checked }))
                     .togetherWith(new Checkbox("Tick labels ")
                         .checked(true)
                         .addEventListener("click", event =>
+                            // @ts-ignore
                             this._axes.withSettings({ tickLabels: event.target.checked }))
                     )
                 )
@@ -354,16 +384,19 @@ export class AxesUI {
             .add(new Checkbox("XY-plane")
                 .checked(true)
                 .addEventListener("click", event =>
+                    // @ts-ignore
                     this._axes.withSettings({ xyPlane: event.target.checked }))
                 .togetherWith(
                     new Checkbox("XZ-plane")
                         .checked(true)
                         .addEventListener("click", event =>
+                            // @ts-ignore
                             this._axes.withSettings({ xzPlane: event.target.checked }))
                         .togetherWith(
                             new Checkbox("YZ-plane")
                                 .checked(true)
                                 .addEventListener("click", event =>
+                                    // @ts-ignore
                                     this._axes.withSettings({ yzPlane: event.target.checked }))
                         )
                 )

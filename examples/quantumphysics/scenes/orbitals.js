@@ -61,51 +61,51 @@ const orbitals = {
         Y: (t) => Math.cos(t), 
         latex: "2p_z" 
     },
-    "3d_{z²}": { 
+    "3d_z²": { 
         Y: (t) => 3 * Math.cos(t) ** 2 - 1, 
         latex: "3d_{z^2}" 
     },
-    "3d_{xz}": { 
+    "3d_xz": { 
         Y: (t,p) => Math.sin(t) * Math.cos(t) * Math.cos(p), 
         latex: "3d_{xz}" 
     },
-    "3d_{yz}": { 
+    "3d_yz": { 
         Y: (t,p) => Math.sin(t) * Math.cos(t) * Math.sin(p), 
         latex: "3d_{yz}" 
     },
-    "3d_{x²-y²}": { 
+    "3d_x²-y²": { 
         Y: (t,p) => Math.sin(t) ** 2 * Math.cos(2 * p), 
         latex: "3d_{x^2-y^2}" 
     },
-    "3d_{xy}": { 
+    "3d_xy": { 
         Y: (t,p) => Math.sin(t) ** 2 * Math.sin(2 * p), 
         latex: "3d_{xy}" 
     },
-    "4f_{z³}": { 
+    "4f_z³": { 
         Y: (t) => 5 * Math.cos(t) ** 3 - 3 * Math.cos(t), 
         latex: "4f_{z^3}" 
     },
-    "4f_{x(5z²-r²)}": { 
+    "4f_x(5z²-r²)": { 
         Y: (t,p) => Math.sin(t) * (5 * Math.cos(t) ** 2 - 1) * Math.cos(p), 
         latex: "4f_{x(5z^2-r^2)}" 
     },
-    "4f_{y(5z²-r²)}": { 
+    "4f_y(5z²-r²)": { 
         Y: (t,p) => Math.sin(t) * (5 * Math.cos(t) ** 2 - 1) * Math.sin(p), 
         latex: "4f_{y(5z^2-r^2)}" 
     },
-    "4f_{xyz}": { 
+    "4f_xyz": { 
         Y: (t,p) => Math.sin(t) ** 2 * Math.cos(t) * Math.sin(2 * p), 
         latex: "4f_{xyz}" 
     },
-    "4f_{z(x²-y²)}": { 
+    "4f_z(x²-y²)": { 
         Y: (t,p) => Math.sin(t) ** 2 * Math.cos(t) * Math.cos(2 * p), 
         latex: "4f_{z(x^2-y^2)}" 
     },
-    "4f_{x(x²-3y²)}": { 
+    "4f_x(x²-3y²)": { 
         Y: (t,p) => Math.sin(t) ** 3 * Math.cos(3 * p), 
         latex: "4f_{x(x^2-3y^2)}" 
     },
-    "4f_{y(3x²-y²)}": { 
+    "4f_y(3x²-y²)": { 
         Y: (t,p) => Math.sin(t) ** 3 * Math.sin(3 * p), 
         latex: "4f_{y(3x^2-y^2)}" 
     },
