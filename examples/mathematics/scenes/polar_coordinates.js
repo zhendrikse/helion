@@ -1,20 +1,18 @@
 import {
     Simulation, ParametricSurface, Domain, Slider, Range, DifferentialFrame, TangentFrameView,
-    SurfaceVisualization, SurfaceResolution, Checkbox, LineSegment, Vec3, LineSegmentView
+    SurfaceVisualization, SurfaceResolution, Checkbox, LineSegment, Vec3, LineSegmentView, ColorMappers
 } from "../../../src/index.js";
 
-const theta = (/** @type {number} */ u) => u * Math.PI;
-const phi   = (/** @type {number} */ v) => v * -2 * Math.PI;
 const radius = 2;
 const sphereSurface = new ParametricSurface({
-    domain: new Domain([1e-3, 1], [1e-3, 1]),
-    x: (u, v) => radius * Math.sin(theta(u)) * Math.cos(phi(v)),
-    y: (u, v) => radius * Math.sin(theta(u)) * Math.sin(phi(v)),
-    z: (u, v) => radius * Math.cos(theta(u))
+    domain: new Domain([1e-3, Math.PI], [1e-3, 2 * Math.PI]),
+    x: (u, v) => radius * Math.sin(u) * Math.cos(v),
+    y: (u, v) => radius * Math.sin(u) * Math.sin(v),
+    z: (u, v) => radius * Math.cos(u)
 });
 
 const initialU = 45 / 180;
-const initialV = 280 / 360;
+const initialV = 80 / 360;
 const surfacePoint = new DifferentialFrame({u: initialU, v: initialV});
 const line = new LineSegment(new Vec3(), surfacePoint.position);
 sphereSurface.frameAt(initialU, initialV, surfacePoint);
@@ -29,7 +27,8 @@ const tangentFrameView = new TangentFrameView({
 const sphereView = new SurfaceVisualization({
     resolution: new SurfaceResolution(60, 60),
     opacity: 0.15,
-    display: SurfaceVisualization.Display.Surface
+    display: SurfaceVisualization.Display.Surface,
+    colorMapper: ColorMappers.get(ColorMappers.Viridis)
 });
 sphereView.surfaceLayer.wireframe = true;
 
@@ -43,7 +42,7 @@ const simulation = Simulation.with({
     .bind(line.alwaysWith(new LineSegmentView({lineWidth: 2})))
     .append(new Slider("θ (theta)")
         .withRange(new Range(0, 180, 1))
-        .withValue(45)
+        .withValue(initialU * 180)
         .onInput(e => { 
             // @ts-ignore
             surfacePoint.u = Number(e.target.value) / 180;
@@ -52,7 +51,7 @@ const simulation = Simulation.with({
     )
     .append(new Slider("φ (phi)")
         .withRange(new Range(0, 360, 1))
-        .withValue(280)
+        .withValue(initialV * 360)
         .onInput(e => {
             // @ts-ignore
             surfacePoint.v = Number(e.target.value) / 360;
