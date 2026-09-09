@@ -4,6 +4,10 @@ import {Complex, Interval, Vec2, Vec3} from "./math.js";
 import { Solver } from "./numerics/solvers/solvers.js";
 
 export class Domain {
+    /**
+     * @param {number[]} xRange 
+     * @param {number[]} yRange 
+     */
     constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
         this.xRange = new Interval(xRange[0], xRange[1]);
         this.yRange = new Interval(yRange[0], yRange[1]);
@@ -28,7 +32,11 @@ export class Domain {
  * VectorField  (composition) ──────► VectorVisualization
  */
 export class Field extends MathPhysicsModelBehavior {
-    /** @param {number} u  @param {number} v  @param {any} target */
+    /** 
+     * @param {number} u  
+     * @param {number} v  
+     * @param {any} target 
+     */
     sample(u, v, target) {}
 }
 
@@ -68,15 +76,12 @@ export class VectorField extends MathPhysicsModelBehavior {
     }
 }
 
-
 export class MultivariateFunction extends ScalarField {
-    /**
-     * @typedef {Object} MultivariateFunctionOptions
-     * @property {(x: number, y: number, t: number) => number} [func]
-     * @property {Domain} [domain]
+    /** @param {{
+     *  domain?: Domain
+     *  func?: (x: number, y: number, t: number) => number
+     * }} [options] 
      */
-
-    /** @param {MultivariateFunctionOptions} [options] */
     constructor({
         domain = new Domain(),
         func = (x, y, t) => 0
@@ -104,7 +109,10 @@ export class MultivariateFunction extends ScalarField {
         return interval;
     }
 
-    /** @param {number} u @param {number} v */
+    /** 
+     * @param {number} u 
+     * @param {number} v 
+     */
     sample(u, v) {
         const x = this.domain.xRange.scaleUnitParameter(u);
         const y = this.domain.yRange.scaleUnitParameter(v);
@@ -116,13 +124,12 @@ export class MultivariateFunction extends ScalarField {
 }
 
 export class RealFunction extends MathPhysicsModelBehavior {
-    /**
-     * @typedef {Object} RealFunctionOptions
-     * @property {(x: number) => number} [func]
-     * @property {Interval} [domain]
+    /** 
+     * @param {{
+     *  func?: (x: number) => number,
+     *  domain?: Interval
+     * }} [options] 
      */
-
-    /** @param {RealFunctionOptions} [options] */
     constructor({
         domain = new Interval(-1, 1),
         func = x => 0
@@ -160,13 +167,12 @@ export class ComplexFunctionSample {
 }
 
 export class ComplexFunction extends ComplexField {
-    /**
-     * @typedef {Object} ComplexFunctionOptions
-     * @property {(x: Complex) => Complex} [func]
-     * @property {Domain} [domain]
+    /** 
+     * @param {{
+     *  func?: (z: Complex) => Complex,
+     *  domain?: Domain
+     * }} [options] 
      */
-
-    /** @param {ComplexFunctionOptions} [options] */
     constructor({
         domain = new Domain(),
         func = z => new Complex(0, 0)
@@ -194,6 +200,12 @@ export class ComplexFunction extends ComplexField {
  * Discrete scalar field, i.e. a scalar field on a grid.
  */
 export class DiscreteScalarField extends ScalarField {
+    /** 
+     * @param {{
+     *  nx?: number,
+     *  ny?: number
+     * }} [options] 
+     */
     constructor({
         nx = 100,
         ny = 100
@@ -208,17 +220,27 @@ export class DiscreteScalarField extends ScalarField {
     get ny() { return this._ny; }
     get data() { return this._data; }
 
-    /** @param {number} x  @param {number} y */
+    /** 
+     * @param {number} x  
+     * @param {number} y 
+     */
     index(x, y) {
         return y * this._nx + x;
     }
 
-    /** @param {number} x  @param {number} y */
+    /** 
+     * @param {number} x  
+     * @param {number} y 
+     */
     valueAt(x, y) {
         return this._data[this.index(x, y)];
     }
 
-    /** @param {number} x  @param {number} y  @param {number} value */
+    /** 
+     * @param {number} x  
+     * @param {number} y  
+     * @param {number} value 
+     */
     setValueAt(x, y, value) {
         this._data[this.index(x, y)] = value;
     }
@@ -236,7 +258,10 @@ export class DiscreteScalarField extends ScalarField {
         return interval;
     }
 
-    /** @param {Solver} solver  @param {number} dt */
+    /** 
+     * @param {Solver} solver  
+     * @param {number} dt 
+     */
     evolve(solver, dt) {
         solver.step(this, dt);
         return this;
@@ -247,6 +272,14 @@ export class DiscreteScalarField extends ScalarField {
  * Discrete complex scalar field, i.e. a complex scalar field on a grid.
  */
 export class DiscreteComplexField extends ComplexField {
+    /** 
+     * @param {{
+     *  nx?: number,
+     *  ny?: number,
+     *  real?: Float64Array,
+     *  imag?: Float64Array
+     * }} [options] 
+     */
     constructor({
         nx = 128,
         ny = 128,
@@ -262,7 +295,10 @@ export class DiscreteComplexField extends ComplexField {
 
     get size() { return this.nx; }
 
-    /** @param {number} x  @param {number} y */
+    /** 
+     * @param {number} x  
+     * @param {number} y 
+     */
     index(x, y) {
         return y * this.nx + x;
     }
@@ -273,7 +309,10 @@ export class DiscreteComplexField extends ComplexField {
         return this;
     }
 
-    /** @param {Solver} solver  @param {number} dt */
+    /** 
+     * @param {Solver} solver  
+     * @param {number} dt 
+     */
     evolve(solver, dt) {
         solver.step(this, dt);
         return this;

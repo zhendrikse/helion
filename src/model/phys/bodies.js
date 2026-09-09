@@ -124,17 +124,15 @@ class Configuration {
 
 export class Body extends MathPhysicsModelBehavior{
     /**
-     * @typedef {Object} BodyOptions
-     * @property {Vec3 | Vec2} [position]
-     * @property {Vec3 | Vec2} [velocity]
-     * @property {Vec3 | Vec2} [orientation]
-     * @property {number} [mass]
-     * @property {boolean} [fixed]
-     * @property {number} [charge]
-     */
-
-    /**
-     * @param {BodyOptions} [options]
+     * @param {{
+     *  position?: Vec3 | Vec2
+     *  velocity?: Vec3 | Vec2
+     *  acceleration?: Vec3 | Vec2
+     *  mass?: number
+     *  fixed?: boolean
+     *  charge?: number
+     *  orientation?: Vec3
+     * }} [options]
      */
     constructor({
         position = new Vec3(),
@@ -156,6 +154,11 @@ export class Body extends MathPhysicsModelBehavior{
         this.localPosition = new Vec3();
     }
 
+    /** @param {Body} otherBody */
+    and(otherBody) { 
+        return new BodyPair(this, otherBody) 
+    };
+
     /** @param {Configuration} configuration */
     reorient(configuration) {
         this.position.copy(configuration.position);
@@ -176,7 +179,10 @@ export class Body extends MathPhysicsModelBehavior{
         });
     }
 
-    /** @param {"x"|"y"|"z"}  axis @param {number} angle */
+    /** 
+     * @param {"x"|"y"|"z"}  
+     * axis @param {number} angle 
+     */
     rotate(axis, angle) {
         this.position.rotate(axis, angle);
         this.rotateWorld(axis, angle);
@@ -191,7 +197,10 @@ export class Body extends MathPhysicsModelBehavior{
             child.rotateWithParent(axis, angle);
     }
 
-    /** @param {"x"|"y"|"z"}  axis @param {number} angle */
+    /** 
+     * @param {"x"|"y"|"z"}  
+     * axis @param {number} angle 
+     */
     rotateWithParent(axis, angle) {
         this.localPosition.rotate(axis, angle);
         this.rotateWorld(axis, angle);
@@ -337,6 +346,18 @@ export class Body extends MathPhysicsModelBehavior{
 }
 
 export class AxialSymmetricBody extends Body {
+    /**
+     * @param {{
+     *  position?: Vec3
+     *  velocity?: Vec3
+     *  axis?: Vec3
+     *  mass?: number
+     *  radius?: number
+     *  fixed?: boolean
+     *  charge?: number
+     *  orientation?: Vec3
+     * }} [options]
+     */
     constructor({
         position = new Vec3(),
         velocity = new Vec3(),
@@ -360,6 +381,17 @@ export class AxialSymmetricBody extends Body {
 }
 
 export class RadialSymmetricBody extends Body {
+    /**
+     * @param {{
+     *  position?: Vec3
+     *  velocity?: Vec3
+     *  mass?: number
+     *  radius?: number
+     *  fixed?: boolean
+     *  charge?: number
+     *  orientation?: Vec3
+     * }} [options]
+     */
     constructor({
         position = new Vec3(0, 0, 0),
         velocity = new Vec3(0, 0, 0),
@@ -375,6 +407,17 @@ export class RadialSymmetricBody extends Body {
 }
 
 export class Block extends Body {
+    /**
+     * @param {{
+     *  position?: Vec3 | Vec2
+     *  velocity?: Vec3 | Vec2
+     *  size?: Vec3 | Vec2
+     *  mass?: number
+     *  fixed?: boolean
+     *  charge?: number
+     *  orientation?: Vec3
+     * }} [options]
+     */
     constructor({
         position = new Vec3(0, 0, 0),
         velocity = new Vec3(0, 0, 0),
@@ -441,7 +484,6 @@ export class Lattice extends MathPhysicsModelBehavior {
     }
 
     /**
-     * 
      * @param {Body} body1 
      * @param {Body} body2 
      * @param {{
@@ -539,6 +581,15 @@ export class ChainTopology {
 }
 
 export class CubicLatticeTopology {
+    /**
+     * @param {{
+     *  nx?: number
+     *  ny?: number
+     *  nz?: number
+     *  spacing?: number
+     *  totalMass?: number
+     * }} [options]
+     */
     constructor({
         nx = 4,
         ny = 4,
@@ -602,7 +653,11 @@ export class CubicLatticeTopology {
                 }
     }
 
-    /** @param {number} i @param {number} j @param {number} k */
+    /** 
+     * @param {number} i 
+     * @param {number} j 
+     * @param {number} k 
+     */
     index(i, j, k) {
         return i + this._nx * (j + this._ny * k);
     }

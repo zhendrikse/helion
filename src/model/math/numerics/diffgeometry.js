@@ -1,20 +1,27 @@
+import { MathPhysicsModelBehavior } from "../../../core/helion.js";
 import {Vec3} from "../math.js";
+import { DifferentiableSurface } from "../surfaces.js";
 
-export class DifferentialFrame {
+export class DifferentialFrame extends MathPhysicsModelBehavior {
     constructor({
         position = new Vec3(),
         normal = new Vec3(),
         k1 = 0,
         k2 = 0,
         d1 = new Vec3(),
-        d2 = new Vec3()
+        d2 = new Vec3(),
+        u = 0,
+        v = 0
     } = {}) {
+        super();
         this.position = position;
         this.normal = normal;
         this.k1 = k1;
         this.k2 = k2;
         this.d1 = d1;  // tangent direction
         this.d2 = d2;
+        this.u = u;
+        this.v = v;
     }
 }
 
@@ -23,6 +30,7 @@ export class DifferentialFrame {
  * object that implements the sample(u, v, target) method.
  */
 export class DifferentialGeometry {
+    /** @param {DifferentiableSurface} surface */
     constructor(surface, { eps = 1e-4 } = {}) {
         this._surface = surface;
         this.eps = eps;
@@ -51,25 +59,30 @@ export class DifferentialGeometry {
         this._d2 = new Vec3();
     }
 
+    /**
+     * @param {number} u 
+     * @param {number} v 
+     * @param {DifferentialFrame} target 
+     */
     differentialFrame(u, v, target) {
         const e = this.eps;
         const inv2e = 1 / (2 * e);
         const inve2 = 1 / (e * e);
         const inv4e2 = 1 / (4 * e * e);
-        const s = this._surface;
+        const surface = this._surface;
 
-        s.sample(u, v, this._p00);
+        surface.sample(u, v, this._p00);
 
-        s.sample(u + e, v, this._pu1);
-        s.sample(u - e, v, this._pu0);
+        surface.sample(u + e, v, this._pu1);
+        surface.sample(u - e, v, this._pu0);
 
-        s.sample(u, v + e, this._pv1);
-        s.sample(u, v - e, this._pv0);
+        surface.sample(u, v + e, this._pv1);
+        surface.sample(u, v - e, this._pv0);
 
-        s.sample(u + e, v + e, this._pu1v1);
-        s.sample(u + e, v - e, this._pu1v0);
-        s.sample(u - e, v + e, this._pu0v1);
-        s.sample(u - e, v - e, this._pu0v0);
+        surface.sample(u + e, v + e, this._pu1v1);
+        surface.sample(u + e, v - e, this._pu1v0);
+        surface.sample(u - e, v + e, this._pu0v1);
+        surface.sample(u - e, v - e, this._pu0v0);
 
         const Xu = this._Xu
             .copy(this._pu1)
@@ -175,6 +188,8 @@ export class DifferentialGeometry {
         target.k2 = k2;
         target.d1.copy(this._d1);
         target.d2.copy(this._d2);
+        target.u = u;
+        target.v = v;
 
         return target;
     }

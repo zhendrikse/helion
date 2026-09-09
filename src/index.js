@@ -29,7 +29,7 @@ export {
 } from "./model/phys/forces.js";
 
 export {
-    Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid, FunctionGraph, LinearCombination,
+    Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid, LinearCombination,
     SegmentedCircle
 } from "./model/math/objects.js"
 
@@ -57,6 +57,8 @@ export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js
 export { Renderable3D } from "./view/renderer.js";
 export { DiscreteFieldBoxView } from "./view/3d/views.js"
 export { ContoursLayer, PrincipalDirectionsLayer } from "./view/3d/surfaces/layers.js";
+export { TangentFrameView } from "./view/3d/surfaces/tangentframe.js";
+export { DifferentialGeometry, DifferentialFrame } from "./model/math/numerics/diffgeometry.js";
 export { Matrix2D } from "./model/transformations/matrices.js";
 export { Arrow2D } from "./view/2d/primitives.js";
 export { ArrowField2D } from "./view/2d/composite/composites.js";

@@ -1,7 +1,7 @@
 import { generateUUID } from "../model/math/math.js";
 import { Simulation } from "../core/helion.js"
 
-class HtmlControl {
+export class HtmlControl {
     /** @param {string} labelText */
     constructor(labelText) {
         this._buttonRow = this._createButtonRow();

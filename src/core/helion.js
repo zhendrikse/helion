@@ -5,7 +5,7 @@ import { Axes } from "../view/3d/composite/backgrounds.js";
 import { generateUUID, Vec3 } from "../model/math/math.js";
 import { BodyPair } from "../model/phys/bodies.js";
 import { UPlotGraph } from "./uplot.js";
-import { AxesUI, Button } from "./controls.js";
+import { AxesUI, Button, HtmlControl } from "./controls.js";
 import { renderMath } from "../view/mathrenderer.js";
 import { Viewport } from "./viewport.js";
 import { ThreeJsScene } from "../view/3d/scene.js";
@@ -22,12 +22,21 @@ export class Registry {
         this._id = id;
     }
 
+    /**
+     * @param {string} name 
+     * @returns {any}
+     */
     get(name) { return this._entries[name]; }
 
     get label() { return this._label; }
     get id() { return this._id; }
     get names() { return Object.keys(this._entries); }
 
+    /**
+     * @param {string} name
+     * @param {any} value 
+     * @returns {any}
+     */
     add(name, value) { this._entries[name] = value; }
 }
 
@@ -62,11 +71,6 @@ export class MathPhysicsModelBehavior {
         return this;
     }
 
-    /** @param {Body} otherBody */
-    and(otherBody) { 
-        return new BodyPair(this, otherBody) 
-    };
-
     reset() {}
 }
 
@@ -79,13 +83,18 @@ export class Binding {
         ONCE: "once"
     });
 
-    /** @param {MathPhysicsModelBehavior} model @param {Renderable} view @param {string} mode */
+    /** 
+     * @param {MathPhysicsModelBehavior} model 
+     * @param {Renderable} view 
+     * @param {string} mode 
+     */
     constructor(model, view, mode = Binding.Mode.ALWAYS) {
         this.model = model;
         this.view = view;
         this.mode = mode;
     }
 
+    /** @param {number} atClockTime */
     forceSynchronize(atClockTime) {
         this.view.synchronizeWith(this.model, atClockTime);
     }
@@ -249,8 +258,10 @@ export class Simulation {
         this._maxPerformanceFunction = null; // Used to maximize CPU utilization
         this._iterationsPerFrame = 10;       // Automatically tuned during execution to maximize CPU utilization
         this._minimumFrameRate = 30;         // Limit beyond which number of iterations per frame is no longer increased
-        this._stepFunction = null;           // Called at fixed dt intervals
+        /** @type (clock: SimulationClock, dt: number) => void */
+        this._stepFunction = (clock, dt) => {}; // Called at fixed dt intervals
         this._stepsPerClockTick = 1;         // At each clock tick, execute this many (sub)steps
+        /** @type (time: number) => void */
         this._onFrame = (time) => {};        // Called 1x per (requestAnimation)frame => machine dependent!
         this._lastTime = performance.now();
         this._framesPerSecond = 0;
@@ -494,7 +505,7 @@ export class Simulation {
      * frame 3 -> step
      * frame 4 -> step + step
      *
-     * @param stepFunction this function is called with the frequency that is required to make
+     * @param {(clock: SimulationClock, dt: number) => void} stepFunction this function is called with the frequency that is required to make
      * the simulate time run synchronously with the real clock time.
      */
     onStep(stepFunction = (clock, dt) => {}) {
@@ -527,7 +538,7 @@ export class Simulation {
     /**
      * Called each (requestAnimation)frame.
      *
-     * @param callback the function that is called each (requestAnimation)frame.
+     * @param {(timeStamp: number) => void} callback the function that is called each (requestAnimation)frame.
      */
     onFrame(callback = (timeStamp) => {}) {
         this._onFrame = callback;
@@ -547,8 +558,9 @@ export class Simulation {
      * Add a mouse-click event listener to a simulation canvas. It defaults to start/stop.
      * When calling this function with a custom callback, the default start/stop functionality is
      * lost and needs to be re-added if needed!!
+     * @param {Event} event
      */
-    defaultMouseClickCallback = event => {
+    defaultMouseClickCallback (event) {
         if (this._status === Simulation.Status.STOPPED) {
             this._hud?.show("Running", 1000);
             this._status = Simulation.Status.RUNNING;
@@ -561,7 +573,13 @@ export class Simulation {
             this._status = Simulation.Status.STOPPED;
         }
     }
-    withMouseClickEventListener(callback = event => this.defaultMouseClickCallback()) {
+
+    /**
+     * 
+     * @param {(event: Event) => void} callback} 
+     * @returns {Simulation}
+     */
+    withMouseClickEventListener(callback = event => this.defaultMouseClickCallback(event)) {
         this._viewport.canvasWrapper.addEventListener("click", event => callback(event) );
         return this;
     }
@@ -585,6 +603,10 @@ export class Simulation {
         return this
     }
 
+    /**
+     * @param {HtmlControl} control 
+     * @returns {Simulation}
+     */
     append(control) {
         control.append(this._viewport.controlsDiv).to(this);
         this._viewport.enableParameterMenu();
@@ -615,6 +637,7 @@ export class Simulation {
         return this;
     }
 
+    /** @param {Event} event */
     onUserInteraction(event) {
         for (const binding of this._bindings)
             binding.forceSynchronize(this._clock.clockTime);

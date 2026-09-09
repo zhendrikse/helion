@@ -1,4 +1,4 @@
-import {Domain} from "./fields.js";
+import {DiscreteScalarField, Domain, Field, MultivariateFunction} from "./fields.js";
 import {Interval, Vec2, Vec3} from "./math.js";
 import {DifferentialFrame, DifferentialGeometry} from "./numerics/diffgeometry.js";
 import {MathPhysicsModelBehavior} from "../../core/helion.js";
@@ -21,7 +21,11 @@ export class DifferentiableSurface extends Surface {
         return new Vec2(1, 1);
     }
 
-    /** @param {number} u @param {number} v @param {DifferentialFrame} target */
+    /** 
+     * @param {number} u 
+     * @param {number} v 
+     * @param {DifferentialFrame} target 
+     */
     frameAt(u, v, target) {
         return this._differentialGeometry.differentialFrame(u, v, target);
     }
@@ -30,9 +34,21 @@ export class DifferentiableSurface extends Surface {
     rangeAt(resolution) {
         return new Interval();
     }
+
+    /** 
+     * @param {number} u 
+     * @param {number} v 
+     * @param {any} target 
+     */
+    sample(u, v, target) {
+        return target;
+    }
 }
 
 export class ScalarFieldSurface extends DifferentiableSurface {
+    /**
+     * @param {MultivariateFunction} multivariateFunction 
+     */
     constructor(multivariateFunction) {
         super();
         this._function = multivariateFunction;
@@ -43,7 +59,11 @@ export class ScalarFieldSurface extends DifferentiableSurface {
         return this._function.rangeAt(resolution);
     }
 
-    /** @param {number} u @param {number} v @param {Vec3} target */
+    /** 
+     * @param {number} u 
+     * @param {number} v 
+     * @param {Vec3} target 
+     */
     sample(u, v, target) {
         const x = this._function.domain.xRange.scaleUnitParameter(u);
         const y = this._function.domain.yRange.scaleUnitParameter(v);
@@ -55,11 +75,19 @@ export class ScalarFieldSurface extends DifferentiableSurface {
  * A 2D surface defined as (u, v) => (x, y, z)
  */
 export class ParametricSurface extends DifferentiableSurface {
+    /**
+     * @param {{
+     *  domain?: Domain
+     *  x?: (u: number, v: number) => number
+     *  y?: (u: number, v: number) => number
+     *  z?: (u: number, v: number) => number
+     *  }} options 
+     */
     constructor({
         domain = new Domain(),
-        x = (/** @type {number} */ u, /** @type {number} */ v) => u,
-        y = (/** @type {number} */ u, /** @type {number} */ v) => v,
-        z = (/** @type {number} */ u, /** @type {number} */ v) => 0,
+        x = (u, v) => u,
+        y = (u, v) => v,
+        z = (u, v) => 0,
     } = {}) {
         super();
         this._domain = domain;
@@ -88,7 +116,11 @@ export class ParametricSurface extends DifferentiableSurface {
         return new Vec2(dx, dy);
     }
 
-    /** @param {number} u @param {number} v @param {Vec3} target */
+    /** 
+     * @param {number} u 
+     * @param {number} v 
+     * @param {Vec3} target 
+     */
     sample(u, v, target) {
         const uu = this._domain.xRange.scaleUnitParameter(u);
         const vv = this._domain.yRange.scaleUnitParameter(v);
@@ -97,6 +129,9 @@ export class ParametricSurface extends DifferentiableSurface {
 }
 
 export class DiscreteFieldSurface extends DifferentiableSurface {
+    /**
+     * @param {DiscreteScalarField} field 
+     */
     constructor(field) {
         super();
         this._field = field;
@@ -104,10 +139,14 @@ export class DiscreteFieldSurface extends DifferentiableSurface {
 
     /** @param {SurfaceResolution} resolution */
     rangeAt(resolution) {
-        return this._field.rangeAt(resolution);
+        return this._field.rangeAt();
     }
 
-    /** @param {number} u @param {number} v @param {DifferentialFrame} target */
+    /** 
+     * @param {number} u 
+     * @param {number} v 
+     * @param {DifferentialFrame} target 
+     */
     frameAt(u, v, target) {
         const i = u * (this._field.nx - 1);
         const j = v * (this._field.ny - 1);
@@ -119,9 +158,14 @@ export class DiscreteFieldSurface extends DifferentiableSurface {
         target.position.set(i, z, j);
 
         this._normalAt(ii, jj, target.normal);
+        return target;
     }
 
-    /** @param {number} i @param {number} j @param {Vec3} target */
+    /** 
+     * @param {number} i 
+     * @param {number} j 
+     * @param {Vec3} target 
+     */
     _normalAt(i, j, target) {
         const hL = this._field.valueAt(i - 1, j);
         const hR = this._field.valueAt(i + 1, j);

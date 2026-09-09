@@ -8,7 +8,7 @@ import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js
 import { Renderable3D } from "../../renderer.js";
 import { Interval, Vec2, Vec3 } from "../../../model/math/math.js";
 import { LineSegment, Segments } from "../../../model/math/objects.js";
-import { ColorMappers } from "../../colormappers.js";
+import { ColorMapper, ColorMappers } from "../../colormappers.js";
 
 class InstancedSegmentsView extends Renderable3D {
     constructor({
@@ -115,6 +115,16 @@ export class BoxSegmentsView extends InstancedSegmentsView {
 }
 
 export class LineSegmentView extends Renderable3D {
+    /** 
+     * @param {{
+     *   lineWidth?: number
+     *   dashed?: boolean
+     *   dashSize?: number
+     *   gapSize?: number
+     *   visible?: boolean
+     *   colorMapper?: ColorMapper
+     * }} options
+     */
     constructor({
         lineWidth = 1,
         dashed = false,
@@ -142,16 +152,19 @@ export class LineSegmentView extends Renderable3D {
         this.visible = visible;
     }
 
+    /** @param {LineSegment} segment */
     initialize(segment) {
         this._3d = segment.from.z !== undefined && segment.to.z !== undefined;
     }
 
+    /** @param {LineSegment} model */
     canBindTo(model) {
         if (!(model instanceof LineSegment))
             throw new Error("This view can only be bound to a LineSegment");
         return true;
     }
 
+    /** @param {LineSegment} segment */
     synchronizeWith(segment) {
         this._geometry.setPositions([
             segment.from.x, segment.from.y, this._3d ? segment.from.z : 0,

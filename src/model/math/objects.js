@@ -1,15 +1,15 @@
-import {MathPhysicsModelBehavior} from "../../core/helion.js";
+import {MathPhysicsModelBehavior, Transformation} from "../../core/helion.js";
 import {degToRad, Vec2, Vec3} from "./math.js";
 import {Integrators} from "./numerics/integrators/integrators.js";
 
 /**
  * A vector model.
- *
- * Arrow expects:
- *     position
- *     axis
  */
 export class VectorModel extends MathPhysicsModelBehavior {
+    /**
+     * @param {Vec2 | Vec3 } position 
+     * @param {Vec2 | Vec3} axis 
+     */
     constructor(position, axis) {
         super();
         if (!position || !axis)
@@ -22,11 +22,13 @@ export class VectorModel extends MathPhysicsModelBehavior {
         return new VectorModel(this.position.clone(), this.axis.clone());
     }
 
+    /** @param {VectorModel} vectorModel */
     copy(vectorModel) {
         this.axis.copy(vectorModel.axis);
         this.position.copy(vectorModel.position);
     }
 
+    /** @param {Transformation} transformation */
     apply(transformation) {
         transformation.applyTo(this.axis);
         return this;
@@ -38,9 +40,9 @@ export class VectorModel extends MathPhysicsModelBehavior {
  */
 export class LineSegment extends MathPhysicsModelBehavior {
     /**
-     * @param fromVec coordinates of from-point.
-     * @param toVec coordinates of to-point.
-     * @param value a color can be passed on to this segment by using the hue scalar value for a color.
+     * @param {Vec2 | Vec3} fromVec coordinates of from-point.
+     * @param {Vec2 | Vec3} toVec coordinates of to-point.
+     * @param {number} value a color can be passed on to this segment by using the hue scalar value for a color.
      */
     constructor(fromVec, toVec, value=0) {
         super();
@@ -65,6 +67,7 @@ export class LineSegment extends MathPhysicsModelBehavior {
          return this.to.clone().sub(this.from);
     }
 
+    /** @param {Transformation} transformation */
     apply(transformation) {
         transformation.applyTo(this.from);
         transformation.applyTo(this.to);
@@ -75,6 +78,7 @@ export class LineSegment extends MathPhysicsModelBehavior {
 export class Segments extends MathPhysicsModelBehavior {
     constructor() {
         super();
+        /** @type {LineSegment[]} */
         this._segments = [];
     }
 
@@ -88,6 +92,7 @@ export class Segments extends MathPhysicsModelBehavior {
         this._segments.length = 0;
     }
 
+    /** @param {LineSegment} segment */
     push(segment) {
         this._segments.push(segment);
     }
@@ -197,6 +202,7 @@ export class StrangeAttractor extends Segments {
 }
 
 export class LinearCombination {
+    /** @param {{basis: ((x: any) => number)[], coefficients: number[]}} options */
     constructor({ basis, coefficients }) {
         this._basis = basis;
         this._coefficients = coefficients;
@@ -209,44 +215,6 @@ export class LinearCombination {
             result += this._coefficients[n] * this._basis[n](x);
 
         return result;
-    }
-}
-
-export class FunctionGraph extends Segments {
-    constructor({
-        func,
-        interval,
-        samples = 200,
-        yOffset = 0
-    }) {
-        super();
-
-        this._function = func;
-        this._interval = interval;
-        this._samples = samples;
-        this._yOffset = yOffset;
-
-        this.update();
-    }
-
-    setFunction(func) {
-        this._function = func;
-        this.update();
-    }
-
-    update() {
-        this.clear();
-        const dx = this._interval.range / this._samples;
-        let x1 = this._interval.from;
-        let y1 = this._function(x1) + this._yOffset;
-
-        for (let i = 1; i <= this._samples; i++) {
-            const x2 = this._interval.from + i * dx;
-            const y2 = this._function(x2) + this._yOffset;
-            this.push(new LineSegment(new Vec2(x1, y1), new Vec2(x2, y2)));
-            x1 = x2;
-            y1 = y2;
-        }
     }
 }
 
