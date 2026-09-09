@@ -1,4 +1,5 @@
 import {MathPhysicsModelBehavior, Transformation} from "../../core/helion.js";
+import { Matrix2D } from "../transformations/matrices.js";
 import {degToRad, Vec2, Vec3} from "./math.js";
 import {Integrators} from "./numerics/integrators/integrators.js";
 
@@ -12,7 +13,7 @@ export class VectorModel extends MathPhysicsModelBehavior {
      */
     constructor(position, axis) {
         super();
-        if (!position || !axis)
+        if (position == null || axis == null)
             throw new Error("Vector model requires both position and axis arguments (Vec2 or Vec3)");
         this.position = position.clone();
         this.axis = axis;
@@ -119,10 +120,12 @@ export class Grid extends Segments {
         this._gridLines.forEach(line => this.push(line));
     }
 
+    /** @param {Matrix2D} matrix */
     apply(matrix) {
         this.clear();
         for (const segment of this._gridLines)
             this.push(segment.clone().apply(matrix));
+        return this;
     }
 }
 
@@ -150,6 +153,7 @@ export class SegmentedCircle extends Segments {
         this._points.forEach(segment => this.push(new LineSegment(segment.from.clone(), segment.to.clone(), color)));
     }
 
+    /** @param {Matrix2D} matrix */
     apply(matrix) {
         this.clear();
 
@@ -224,6 +228,12 @@ export class Turtle extends Segments {
         DOWN: true
     });
 
+    /**
+     * @param {{
+     * penState?: boolean
+     * color?: number
+     * }} param0 
+     */
     constructor({
         penState = Turtle.PenState.UP,
         color =0xffff00
@@ -249,16 +259,19 @@ export class Turtle extends Segments {
         this.clear();
     }
 
+    /** @param {number} angle */
     right(angle) {
         this.angle += degToRad(angle);
         return this;
     }
 
+    /** @param {number} angle */
     left(angle) {
         this.angle -= degToRad(angle);
         return this;
     }
 
+    /** @param {number} distance */
     backward(distance) {
         return this.forward(-distance);
     }
@@ -273,11 +286,13 @@ export class Turtle extends Segments {
         return this;
     }
 
+    /** @param {number} color */
     color(color) {
         this.currentColor = color;
         return this;
     }
 
+    /** @param {number} distance */
     forward(distance) {
         const newX = this.x + distance * Math.cos(this.angle);
         const newY = this.y - distance * Math.sin(this.angle);
@@ -286,6 +301,10 @@ export class Turtle extends Segments {
         return this;
     }
 
+    /** 
+     * @param {number} x 
+     * @param {number} y
+     */
     goto(x, y) {
         const from = new Vec2(this.x, this.y);
         const to = new Vec2(x, y);

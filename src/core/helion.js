@@ -259,7 +259,7 @@ export class Simulation {
         this._iterationsPerFrame = 10;       // Automatically tuned during execution to maximize CPU utilization
         this._minimumFrameRate = 30;         // Limit beyond which number of iterations per frame is no longer increased
         /** @type (clock: SimulationClock, dt: number) => void */
-        this._stepFunction = (clock, dt) => {}; // Called at fixed dt intervals
+        this._stepFunction = null;           // Called at fixed dt intervals
         this._stepsPerClockTick = 1;         // At each clock tick, execute this many (sub)steps
         /** @type (time: number) => void */
         this._onFrame = (time) => {};        // Called 1x per (requestAnimation)frame => machine dependent!

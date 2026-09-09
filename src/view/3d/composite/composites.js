@@ -279,7 +279,7 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
         this._numArrows = numArrows;
         this._round = round;
         this._size = size;
-        this._valueVector = new VectorModel(new Vector3());
+        this._valueVector = new VectorModel(new Vec3(), new Vec3());
         this._color = new Color();
     }
 
