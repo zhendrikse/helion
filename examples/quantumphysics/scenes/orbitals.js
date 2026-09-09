@@ -5,14 +5,9 @@ import {
 } from "../../../src/index.js";
 import { ColorMappers } from "../../../src/view/colormappers.js";
 
-// Fysica: dit zijn polaire plots r(θ,φ)=|Y_l^m(θ,φ)| van de reële sferische harmonischen
-// (hoekdeel van ψ_{n,l,m}=R_{n,l}(r)·Y_{l,m}(θ,φ)). |Y| geeft vorm (twee lobben voor p),
-// teken via kleur geeft fase (±) — cruciaal voor binding. R_{n,l}(r) en knopen (bv. 2s)
-// zijn hier weggelaten (hoekvorm alleen); schaal ∝n²a₀ niet getoond.
-// Domain met 1e-3 offset vermijdt pool-singulariteit detI≈0 (G≈0) in diffgeometry.js:133.
-
 const PI = Math.PI;
 const eps = 1e-3;
+// Domain with 1e-3 offset mitigates pole-singularity detI≈0 (G≈0) in diffgeometry.js.
 const domain = new Domain([eps, PI - eps], [0, 2 * PI]);
 
 /** @param {(theta: number, phi: number) => number} Y */
@@ -28,7 +23,7 @@ function orbitalSurface(Y) {
     });
 }
 
-// fase-kleur: - → blauw, + → rood (divergerend). Gebruikt teken van Y, niet |Y|.
+// phase color: - → blue, + → red (diverging). Use sign of Y, not |Y|.
 class PhaseLayer {
     /** @param {(theta: number, phi: number) => number} Y */
     constructor(Y) { this.Y = Y; }
@@ -128,8 +123,8 @@ const surfaceView = new SurfaceVisualization({
 const simulation = Simulation.with({
     htmlDivId: "orbitalsContainer",
     infoPanel: {
-        text: "<strong>⚛️ Atomic orbitals</strong><br/>Polar plots $r=|Y_l^m(θ,φ)|$ of real spherical harmonics. " + 
-            "Shape from $|Y|$ (e.g. two lobes for $p$), color (RdYlBu) = sign → phase ±. " + 
+        text: "<strong>⚛️ Atomic orbitals</strong><br/>Polar plots $r=|Y_l^m(θ,φ)|$ of real spherical harmonics.<br/>" + 
+            "Shape from $|Y|$ (e.g. two lobes for $p$), color (RdYlBu) = sign → phase ±.<br/>" + 
             "Full $ψ_{n,l,m}=R_{n,l}(r)Y_{l,m}$: radial part $R$ and nodes (e.g. $2s$) omitted, " + 
             "scale $∝n^2a_0$ not to scale."
     },
