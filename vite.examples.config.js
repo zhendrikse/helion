@@ -71,7 +71,6 @@ export default defineConfig({
                 sierpinski: path.resolve(__dirname, 'examples/mathematics/scenes/sierpinski.js'),
                 spectral_theorem: path.resolve(__dirname, 'examples/mathematics/scenes/spectral_theorem.js'),
                 spherical_harmonics: path.resolve(__dirname, 'examples/mathematics/scenes/spherical_harmonics.js'),
-                lightcone: path.resolve(__dirname, 'examples/relativity/scenes/lightcone.js'),
                 spiral_galaxy: path.resolve(__dirname, 'examples/astrophysics/scenes/spiral_galaxy.js'),
                 star_cluster: path.resolve(__dirname, 'examples/astrophysics/scenes/star_cluster.js'),
                 sun: path.resolve(__dirname, 'examples/astrophysics/scenes/planets/sun.js'),
