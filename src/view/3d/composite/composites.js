@@ -226,8 +226,8 @@ export class ElectromagneticWave extends Renderable3D {
         const scaling = this._scalingFunction(fieldVector.position);
         fieldVector.axis.y = scaling * wave.valueAt(x);
 
-        // Magnetic field (orthogonal)
-        this._magneticFieldVectors[index].axis.copy(this._tempAxis.copy(fieldVector.axis).cross(this._i_hat));
+        // Magnetic field B = k × E / c (k along x) — was E×k met geïnverteerde cross
+        this._magneticFieldVectors[index].axis.copy(this._i_hat).cross(fieldVector.axis);
     }
 
     /** @param {OneDimensionalPlaneWave} wave */

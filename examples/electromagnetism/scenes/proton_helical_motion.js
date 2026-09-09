@@ -29,7 +29,11 @@ class UniformMagneticField extends VectorField {
 const magneticField = new UniformMagneticField();
 const lorentzForce = LorentzForce.in(magneticField);
 const proton = new RadialSymmetricBody({
-    position: new Vec3(0, -boxSize, boxSize * .5),
+    // y=-boxSize onderin, z=0 gecentreerd — met correcte v×B (Vec3.cross = this×v)
+    // is de Larmor-straal r_L=m·v_perp/(qB)=12.3 en guiding center z0+v0x/ω≈12.3,
+    // dus z∈[0,24.6] blijft binnen Aquarium (±42). Voorheen met omgekeerde cross
+    // was centrum op 32.3 en raakte z=44.6 de wand.
+    position: new Vec3(0, -boxSize, 0),
     velocity: new Vec3(initialSspeed * Math.cos(angle), initialSspeed * Math.sin(angle), 0),
     mass: 1,
     charge: 0.8,

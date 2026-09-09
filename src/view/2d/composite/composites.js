@@ -109,8 +109,8 @@ export class ArrowField2D extends Renderable2D {
 
     /** @param {number} index  @param {number} positionX @param {number} positionY */
     _updateVectorAt(index, positionX, positionY) {
-        const x = this._target.x;
-        const y = this._target.y;
+        const x = -this._target.x;
+        const y = -this._target.y;
         const magnitude = Math.hypot(x, y);
 
         if (magnitude < 1e-12) {
