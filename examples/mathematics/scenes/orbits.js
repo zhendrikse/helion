@@ -30,9 +30,6 @@ const simulation = Simulation
         headUpDisplay: {
             enabled: false
         },
-        viewport: {
-            aspectRatio: "19/12"
-        },
         infoPanel: {
             text: "<strong>💫 Group orbits</strong><br/>$G = SO(2),\\ X=\\mathbb{R}^2$<br/>" +
                 "<ul><li>Choose point $x\\in X$</li>" +
@@ -100,13 +97,13 @@ simulation
         text: () => "X",
         fontSize: "20px",
         color: "#bbbbbb",
-        offset: () => new Vec2(1.25 * size, 0)
+        offset: () => new Vec2(1.2 * size, 0)
     })))
     .bind(yAxis.onceWith(new Label({
         text: () => "Y",
         fontSize: "20px",
         color: "#bbbbbb",
-        offset: () => new Vec2(0, 1.25 * size)
+        offset: () => new Vec2(0, 1.2 * size)
     })))
     .bind(orbit.alwaysWith(new CurveView({
         resolution: samples,

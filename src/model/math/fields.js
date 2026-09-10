@@ -123,6 +123,9 @@ export class MultivariateFunction extends ScalarField {
     set time(time) { this._time = time; }
 }
 
+/**
+ * Real function f: R → R
+ */
 export class RealFunction extends MathPhysicsModelBehavior {
     /** 
      * @param {{

@@ -9,10 +9,6 @@ export {
 } from "./model/math/math.js";
 
 export {
-    ParametricCurve
-} from "./model/math/curves.js";
-
-export {
     ParametricSurface, Surface, DiscreteFieldSurface, ScalarFieldSurface
 } from "./model/math/surfaces.js"
 
@@ -34,7 +30,7 @@ export {
 
 export {
     Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid, LinearCombination,
-    SegmentedCircle
+    SegmentedCircle, ParametricCurve
 } from "./model/math/objects.js"
 
 export {
