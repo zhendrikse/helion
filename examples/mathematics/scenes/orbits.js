@@ -33,6 +33,13 @@ const simulation = Simulation
         viewport: {
             aspectRatio: "19/12"
         },
+        infoPanel: {
+            text: "<strong>💫 Group orbits</strong><br/>$G = SO(2),\\ X=\\mathbb{R}$<br/>" +
+                "<ul><li>Choose point $x\\in X$</li>" +
+                "<li>Modify rotation matrix $g_\\theta\\in G$</li>" +
+                "<li>Action $g_\\theta\\cdot x$</li>" +
+                "<li>Orbit of $G\\cdot x$ is circle: $r = ∥x∥$</li></ul>"
+        },
         parameterMenuCollapsed: false
     });
 
