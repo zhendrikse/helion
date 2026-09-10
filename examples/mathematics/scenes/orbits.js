@@ -1,5 +1,5 @@
 import {
-    RealFunction, CurveView, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
+    ParametricCurve, CurveView, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
     Grid, Interval, Label, Arrow2D, ColorMappers, RotationMatrix2D, VectorModel, Vec2
 } from "../../../src/index.js";
 
@@ -12,7 +12,7 @@ const transformedPoint = new VectorModel(new Vec2(), new Vec2());
 const rotation = RotationMatrix2D.Identity;
 let rotationAngle = 0;
 
-const orbit = new RealFunction({
+const orbit = new ParametricCurve({
     domain: angleInterval,
     func: angle => new Vec2(
         point.axis.length() * Math.cos(angle),
@@ -34,18 +34,18 @@ const simulation = Simulation
             aspectRatio: "19/12"
         },
         infoPanel: {
-            text: "<strong>💫 Group orbits</strong><br/>$G = SO(2),\\ X=\\mathbb{R}$<br/>" +
+            text: "<strong>💫 Group orbits</strong><br/>$G = SO(2),\\ X=\\mathbb{R}^2$<br/>" +
                 "<ul><li>Choose point $x\\in X$</li>" +
                 "<li>Modify rotation matrix $g_\\theta\\in G$</li>" +
                 "<li>Action $g_\\theta\\cdot x$</li>" +
-                "<li>Orbit of $G\\cdot x$ is circle: $r = ∥x∥$</li></ul>"
+                "<li>Orbit $G\\cdot x$ is a circle: $r = ∥x∥$</li></ul>"
         },
         parameterMenuCollapsed: false
     });
 
 const grid = new Grid({size, stepSize: 1});
 const xAxis = new LineSegment(new Vec2(-size *.55, 0), new Vec2(size * .55, 0));
-const yAxis = new LineSegment(new Vec2(0, -size *.55), new Vec2(0, size * .55));
+const yAxis = new LineSegment(new Vec2(0, -size * .55), new Vec2(0, size * .55));
 
 function updateRotation(angle) {
     rotationAngle = angle;
