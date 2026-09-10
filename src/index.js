@@ -30,7 +30,7 @@ export {
 
 export {
     Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid, LinearCombination,
-    SegmentedCircle
+    SegmentedCircle, ParametricCurve
 } from "./model/math/objects.js"
 
 export {
@@ -59,7 +59,7 @@ export { DiscreteFieldBoxView } from "./view/3d/views.js"
 export { ContoursLayer, PrincipalDirectionsLayer } from "./view/3d/surfaces/layers.js";
 export { TangentFrameView } from "./view/3d/surfaces/tangentframe.js";
 export { DifferentialGeometry, DifferentialFrame } from "./model/math/numerics/diffgeometry.js";
-export { Matrix2D } from "./model/transformations/matrices.js";
+export { Matrix2D, RotationMatrix2D } from "./model/transformations/matrices.js";
 export { Arrow2D } from "./view/2d/primitives.js";
 export { ArrowField2D } from "./view/2d/composite/composites.js";
 
@@ -89,5 +89,5 @@ export {
 
 export {
     wavelengthColor, wavelengthToRGBNormalized, ColorMapper, toColorString, ComplexColorMappers, HueColorMapper,
-    WavelengthColorMapper, ColorMappers, HexValueColorMapper
+    WavelengthColorMapper, HexValueColorMapper, ColorMappers
 } from "./view/colormappers.js";

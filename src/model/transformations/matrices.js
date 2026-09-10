@@ -2,12 +2,28 @@ import {Transformation} from "../../core/helion.js";
 import {Vec3} from "../math/math.js";
 
 export class Matrix2D extends Transformation {
+    static Identity = new Matrix2D(1, 0, 0, 1);
+
+    /**
+     * @param {number} a
+     * @param {number} b
+     * @param {number} c
+     * @param {number} d
+     */
     constructor(a, b, c, d) {
         super();
         this.a = a;
         this.b = b;
         this.c = c;
         this.d = d;
+    }
+
+    /** @param {Matrix2D} fromOtherMatrix */
+    copy(fromOtherMatrix) {
+        this.a = fromOtherMatrix.a;
+        this.b = fromOtherMatrix.b;
+        this.c = fromOtherMatrix.c;
+        this.d = fromOtherMatrix.d;
     }
 
     applyTo(vector) {
@@ -23,6 +39,7 @@ export class Matrix2D extends Transformation {
     /**
      * Calculate the real eigenvalues and eigenvectors.
      * If there are no real eigenvalues, an empty array is returned.
+     * @param {number} scaleFactor
      * @returns
      * [
      *     { value: lambda1, vector: Vec3 },
@@ -82,5 +99,19 @@ export class Matrix2D extends Transformation {
         }
 
         return result;
+    }
+}
+
+export class RotationMatrix2D extends Matrix2D {
+    static Identity = new RotationMatrix2D(1, 0, 0, 1);
+    static fromAngle = (angle) =>
+        new RotationMatrix2D(Math.cos(angle), -Math.sin(angle), Math.sin(angle), Math.cos(angle));
+
+    set angle(angle) {
+        this.a =  Math.cos(angle);
+        this.b = -Math.sin(angle);
+        this.c =  Math.sin(angle);
+        this.d =  Math.cos(angle);
+        console.log(this.a, this.b, this.c, this.d);
     }
 }
