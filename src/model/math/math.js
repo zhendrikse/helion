@@ -93,7 +93,10 @@ export function linspace(start, stop, num) {
     return linSpace;
 }
 
-/** @param {number[]} x @param {number[]} y */
+/**
+ * @param {number[]} x
+ * @param {number[]} y
+ */
 export function meshgrid(x, y) {
     const X = [];
     const Y = [];
@@ -107,6 +110,11 @@ export function meshgrid(x, y) {
 }
 
 export class Vec3 {
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} z
+     */
     constructor(x=0, y=0, z=0) {
         this.x = x;
         this.y = y;
@@ -153,7 +161,10 @@ export class Vec3 {
         return this;
     }
     
-    /** @param {Vec2 | Vec3} v @param {number} alpha */
+    /**
+     * @param {Vec2 | Vec3} v
+     * @param {number} alpha
+     */
     lerp(v, alpha) {
         this.x += (v.x - this.x) * alpha;
         this.y += (v.y - this.y) * alpha;
@@ -175,7 +186,10 @@ export class Vec3 {
         return this;
     }
 
-    /** @param{number} x @param{number} y */
+    /**
+     * @param{number} x
+     * @param{number} y
+     */
     set(x,y,z=0) {
         this.x = x;
         this.y = y;
@@ -206,7 +220,10 @@ export class Vec3 {
         return this;
     }
 
-    /** @param {Vec2 | Vec3} v  @param {number} scalar*/
+    /**
+     * @param {Vec2 | Vec3} v
+     * @param {number} scalar
+     */
     addScaledVector(v, scalar) {
         this.x += v.x * scalar;
         this.y += v.y * scalar;
@@ -214,7 +231,9 @@ export class Vec3 {
         return this;
     }
 
-    /** @param {Vec2 | Vec3} v */
+    /**
+     * @param {Vec2 | Vec3} v
+     */
     sub(v) {
         this.x -= v.x;
         this.y -= v.y;
@@ -222,7 +241,10 @@ export class Vec3 {
         return this;
     }
 
-    /** @param {Vec2 | Vec3} a  @param {Vec3} b*/
+    /**
+     * @param {Vec2 | Vec3} a
+     * @param {Vec3} b
+     */
     subVectors(a, b) {
         this.x = a.x - b.x;
         this.y = a.y - b.y;
@@ -307,13 +329,21 @@ export class Vec3 {
 }
 
 export class Vec2 extends Vec3 {
-    constructor(x=1, y=0) {
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
+    constructor(x=0, y=0) {
         super(x, y, 0);
     }
 }
 
 export class Range {
-    /** @param {number} from  @param {number} to @param {number} stepSize */
+    /**
+     * @param {number} from
+     * @param {number} to
+     * @param {number} stepSize
+     */
     constructor(from, to, stepSize) {
         this.from = from;
         this.to = to;

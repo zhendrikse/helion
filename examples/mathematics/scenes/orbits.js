@@ -1,6 +1,6 @@
 import {
     RealFunction, CurveView, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
-    Grid, Interval, Label, Arrow2D, ColorMappers, Matrix2D, VectorModel, Vec2
+    Grid, Interval, Label, Arrow2D, ColorMappers, RotationMatrix2D, VectorModel, Vec2
 } from "../../../src/index.js";
 
 const size = 4;
@@ -9,7 +9,7 @@ const angleInterval = new Interval(0, 2 * Math.PI);
 
 const point = new VectorModel(new Vec2(), new Vec2(2, 1));
 const transformedPoint = new VectorModel(new Vec2(), new Vec2());
-const rotation = new Matrix2D(1, 0, 0, 1);
+const rotation = RotationMatrix2D.Identity;
 let rotationAngle = 0;
 
 const orbit = new RealFunction({
@@ -25,7 +25,7 @@ const simulation = Simulation
         htmlDivId: "orbitsContainer",
         camera: {
             position: new Vec3(0, 0, 3 * size),
-            controls: false
+            orthographic: true
         },
         headUpDisplay: {
             enabled: false
@@ -37,24 +37,20 @@ const simulation = Simulation
     });
 
 const grid = new Grid({size, stepSize: 1});
-const xAxis = new LineSegment(new Vec2(-size, 0), new Vec2(size, 0));
-const yAxis = new LineSegment(new Vec2(0, -size), new Vec2(0, size));
+const xAxis = new LineSegment(new Vec2(-size *.55, 0), new Vec2(size * .55, 0));
+const yAxis = new LineSegment(new Vec2(0, -size *.55), new Vec2(0, size * .55));
 
 function updateRotation(angle) {
     rotationAngle = angle;
-
-    rotation.a = Math.cos(angle);
-    rotation.b = -Math.sin(angle);
-    rotation.c = Math.sin(angle);
-    rotation.d = Math.cos(angle);
+    rotation.angle = angle;
 
     transformedPoint.axis.copy(point.axis);
     rotation.applyTo(transformedPoint.axis);
 
     simulation.setLatexTitle(
         "g_\\theta = \\begin{pmatrix}" +
-        rotation.a.toFixed(2) + " && " + rotation.b.toFixed(2) + " \\\\" +
-        rotation.c.toFixed(2) + " && " + rotation.d.toFixed(2) +
+        rotation.a.toFixed(2) + " & " + rotation.b.toFixed(2) + " \\\\" +
+        rotation.c.toFixed(2) + " & " + rotation.d.toFixed(2) +
         "\\end{pmatrix},\\quad g_\\theta \\cdot x = " +
         "\\begin{pmatrix}" + transformedPoint.axis.x.toFixed(2) + "\\\\" +
         transformedPoint.axis.y.toFixed(2) + "\\end{pmatrix}"
@@ -97,13 +93,13 @@ simulation
         text: () => "X",
         fontSize: "20px",
         color: "#bbbbbb",
-        offset: () => new Vec2(1.05 * size, 0)
+        offset: () => new Vec2(1.25 * size, 0)
     })))
     .bind(yAxis.onceWith(new Label({
         text: () => "Y",
         fontSize: "20px",
         color: "#bbbbbb",
-        offset: () => new Vec2(0, 1.05 * size)
+        offset: () => new Vec2(0, 1.25 * size)
     })))
     .bind(orbit.alwaysWith(new CurveView({
         resolution: samples,
