@@ -9,6 +9,8 @@ const angleInterval = new Interval(0, 2 * Math.PI);
 
 const point = new VectorModel(new Vec2(), new Vec2(2, 1));
 const transformedPoint = new VectorModel(new Vec2(), new Vec2());
+const rotation = new Matrix2D(1, 0, 0, 1);
+let rotationAngle = 0;
 
 const orbit = new RealFunction({
     domain: angleInterval,
@@ -17,8 +19,6 @@ const orbit = new RealFunction({
         point.axis.length() * Math.sin(angle)
     )
 });
-
-const rotation = new Matrix2D(1, 0, 0, 1);
 
 const simulation = Simulation
     .with({
@@ -41,12 +41,15 @@ const xAxis = new LineSegment(new Vec2(-size, 0), new Vec2(size, 0));
 const yAxis = new LineSegment(new Vec2(0, -size), new Vec2(0, size));
 
 function updateRotation(angle) {
+    rotationAngle = angle;
+
     rotation.a = Math.cos(angle);
     rotation.b = -Math.sin(angle);
     rotation.c = Math.sin(angle);
     rotation.d = Math.cos(angle);
 
-    transformedPoint.axis.copy(point.axis).applyMatrix2D(rotation);
+    transformedPoint.axis.copy(point.axis);
+    rotation.applyTo(transformedPoint.axis);
 
     simulation.setLatexTitle(
         "g_\\theta = \\begin{pmatrix}" +
@@ -102,7 +105,7 @@ simulation
         color: "#bbbbbb",
         offset: () => new Vec2(0, 1.05 * size)
     })))
-    .bind(orbit.onceWith(new CurveView({
+    .bind(orbit.alwaysWith(new CurveView({
         resolution: samples,
         lineWidth: 2,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0x44dd88})
@@ -141,5 +144,4 @@ simulation
         })
     );
 
-let rotationAngle = 0;
 updateRotation(rotationAngle);
