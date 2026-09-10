@@ -24,7 +24,7 @@ const simulation = Simulation
     .with({
         htmlDivId: "orbitsContainer",
         camera: {
-            position: new Vec3(0, 0, 3 * size),
+            position: new Vec3(0, 0, 2.5 * size),
             orthographic: true
         },
         headUpDisplay: {
