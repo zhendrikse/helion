@@ -9,6 +9,10 @@ export {
 } from "./model/math/math.js";
 
 export {
+    ParametricCurve
+} from "./model/math/curves.js";
+
+export {
     ParametricSurface, Surface, DiscreteFieldSurface, ScalarFieldSurface
 } from "./model/math/surfaces.js"
 
@@ -89,5 +93,5 @@ export {
 
 export {
     wavelengthColor, wavelengthToRGBNormalized, ColorMapper, toColorString, ComplexColorMappers, HueColorMapper,
-    WavelengthColorMapper, ColorMappers, HexValueColorMapper
+    WavelengthColorMapper, HexValueColorMapper, ColorMappers
 } from "./view/colormappers.js";
