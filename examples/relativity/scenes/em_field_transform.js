@@ -124,7 +124,7 @@ const chargeSp = new RadialSymmetricBody({
     charge: q
 });
 
-// ── Scene: draden + ringen (inspiratie faradays_law.js:75) ──
+// ── Scene: wires and rings ──
 const wireS = new AxialSymmetricBody({
     position: new Vec3(-10, 0, 0),
     axis: new Vec3(20, 0, 0),
@@ -177,7 +177,6 @@ addRingsAndArrows(yOffsetSprime);
 
 // E/B velden als ArrowField — beide tegelijk zichtbaar
 const staticElectromagneticField = new WireElectromagneticField(I0, 0);
-const bField = staticElectromagneticField.magneticField;
 const restFrameElectromagneticField = new WireElectromagneticField(I0, yOffsetSprime);
 const lorentzTransform = new LorentzTransform(0.3);
 const electromagneticField = restFrameElectromagneticField.apply(lorentzTransform);
@@ -196,7 +195,7 @@ function setBeta(beta) {
 }
 setBeta(0.3);
 
-simulation.bind(bField.onceWith(new ArrowField({
+simulation.bind(staticElectromagneticField.magneticField.onceWith(new ArrowField({
     xRange: new Range(-8, 8, 4),
     yRange: new Range(-4, 4, 1),
     zRange: new Range(-4, 4, 1),
@@ -231,7 +230,7 @@ simulation
     .runsEvery(5e-3)
     .advancesBy(1e-2)
     .onStep((_, dt) => {
-        bField.sample(rr0, B);
+        staticElectromagneticField.magneticField.sample(rr0, B);
         electromagneticField.magneticField.sample(rr1, Bp);
         electromagneticField.electricField.sample(rr1, Ep);
 
@@ -244,6 +243,7 @@ simulation
     .append(new Slider("β = v/c")
         .withRange(new Range(0, 0.9, 0.05))
         .withValue(0.3)
+        // @ts-ignore
         .onInput(event => setBeta(Number(event.target.value))))
     .append(new Slider("I")
         .withRange(new Range(5, 25, 1))
