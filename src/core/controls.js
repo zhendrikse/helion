@@ -229,6 +229,12 @@ export class Slider extends HtmlControl {
         return this;
     }
 
+    /**
+     * 
+     * @param {string} eventType 
+     * @param {(event: Event) => void} callback 
+     * @returns 
+     */
     addEventListener(eventType, callback) {
         const isString = typeof eventType === "string" || eventType instanceof String;
         if (!isString)

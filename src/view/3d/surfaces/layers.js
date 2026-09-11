@@ -1,12 +1,12 @@
 import {
     Box3, BoxGeometry, BufferAttribute, BufferGeometry, CapsuleGeometry, Color, ConeGeometry, CylinderGeometry,
     DoubleSide, DynamicDrawUsage, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Line,
-    LineBasicMaterial, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, SphereGeometry, Vector3
+    LineBasicMaterial, Material, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, SphereGeometry, Vector3
 } from "three";
 import {Renderable3D} from "../../renderer.js";
 import {DifferentialFrame} from "../../../model/math/numerics/diffgeometry.js";
-import {AdaptiveSymmetricNormalizer, HeightLayer, SurfaceResolution} from "./visualization.js";
-import {ColorMappers} from "../../colormappers.js";
+import {AdaptiveSymmetricNormalizer, ColorLayer, ColorLayers, HeightLayer, Normalizer, SurfaceResolution} from "./visualization.js";
+import {ColorMapper, ColorMappers} from "../../colormappers.js";
 import {Registry} from "../../../core/helion.js";
 import {Checkbox, DropdownMenu} from "../../../core/controls.js";
 import {Interval, Vec3} from "../../../model/math/math.js";
@@ -19,7 +19,13 @@ export class Layer extends Renderable3D {
         metalness: 0.1,
         transparent: true,
     });
-
+    /**
+     * @param {Object} [param0={}] 
+     * @param {SurfaceResolution} [param0.resolution=new SurfaceResolution(100, 100)] 
+     * @param {ColorLayer} [param0.colorLayer=new HeightLayer()] 
+     * @param {ColorMapper} [param0.colorMapper=new ColorMappers().get(ColorMappers.Gradient)()] 
+     * @param {Normalizer} [param0.normalizer=new AdaptiveSymmetricNormalizer()] 
+     */
     constructor({
         resolution = new SurfaceResolution(100, 100),
         colorLayer = new HeightLayer(),
@@ -39,16 +45,19 @@ export class Layer extends Renderable3D {
 
     get dirty() { return this._dirty; }
 
+    /** @param {ColorMapper} colorMapper */
     set colorMapper(colorMapper) {
         this._colorMapper = colorMapper;
         this._dirty = true;
     }
 
+    /** @param {ColorLayer} colorLayer */
     set colorLayer(colorLayer) {
         this._colorLayer = colorLayer;
         this._dirty = true;
     }
 
+    /** @param {Normalizer} normalizer */
     set normalizer(normalizer) {
         this._normalizer = normalizer;
         this._dirty = true;
@@ -95,6 +104,13 @@ export class Layer extends Renderable3D {
 }
 
 class MeshLayer extends Layer {
+    /**
+     * @param {Object} [param0={}] 
+     * @param {SurfaceResolution} [param0.resolution=new SurfaceResolution(100, 100)] 
+     * @param {ColorLayer} [param0.colorLayer=new HeightLayer()] 
+     * @param {ColorMapper} [param0.colorMapper=new ColorMappers().get(ColorMappers.Gradient)()] 
+     * @param {Normalizer} [param0.normalizer=new AdaptiveSymmetricNormalizer()] 
+     */
     constructor({
         resolution = new SurfaceResolution(100, 100),
         colorLayer = new HeightLayer(),
@@ -150,6 +166,18 @@ class MeshLayer extends Layer {
 }
 
 export class SurfaceLayer extends MeshLayer {
+    /**
+     * @param {{
+     *  glyphType?: string
+     *  resolution?: SurfaceResolution
+     *  colorLayer?: ColorLayer
+     *  colorMapper?: ColorMapper
+     *  normalizer?: Normalizer
+     *  material?: Material
+     *  opacity?: number
+     *  glyphScale?: number
+     * }} param0 
+     */
     constructor({
         resolution = new SurfaceResolution(100, 100),
         colorLayer = new HeightLayer(),
@@ -256,6 +284,18 @@ export class GlyphLayer extends MeshLayer {
         })
     });
 
+    /**
+     * @param {{
+     *  glyphType?: string
+     *  resolution?: SurfaceResolution
+     *  colorLayer?: ColorLayer
+     *  colorMapper?: ColorMapper
+     *  normalizer?: Normalizer
+     *  material?: Material
+     *  opacity?: number
+     *  glyphScale?: number
+     * }} param0 
+     */
     constructor({
         glyphType = MeshLayer.GlyphTypes.BOXES,
         resolution = new SurfaceResolution(100, 100),
@@ -577,7 +617,9 @@ export class ContoursLayer extends Layer {
         this._material = material;
         this._contourSegments = contourSegments;
         this._resolution = resolution;
+        /** @type {{line: Line, u: number}[]} */
         this._uLines = [];
+        /** @type {{line: Line, u: number}[]} */
         this._vLines = [];
 
         this._showContours = true;

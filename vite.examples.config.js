@@ -53,6 +53,7 @@ export default defineConfig({
                 plane_wave: path.resolve(__dirname, 'examples/quantumphysics/scenes/plane_wave.js'),
                 polar_coordinates: path.resolve(__dirname, 'examples/mathematics/scenes/polar_coordinates.js'),
                 polar_coordinates_integration: path.resolve(__dirname, 'examples/mathematics/scenes/polar_coordinates_integration.js'),
+                pool_with_moving_obstacle: path.resolve(__dirname, 'examples/waves/scenes/pool_with_moving_obstacle.js'),
                 potential_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/potential_field.js'),
                 proton_helical_motion: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_helical_motion.js'),
                 proton_in_magnetic_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_in_magnetic_field.js'),
