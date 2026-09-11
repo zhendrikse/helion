@@ -1,7 +1,7 @@
 import {Color} from "three";
 import {
     Arrow, ArrowField, AxialSymmetricBody, Cylinder, RadialSymmetricBody, Range, Ring, Simulation,
-    Slider, Sphere, Trail, Vec3, VectorField
+    Slider, Sphere, Trail, Transformation, Vec3, VectorField
 } from "../../../src/index.js";
 
 const I0 = 8; // VPython roept Euler(rr,8) aan — I=8, niet 15, mu0=1
@@ -12,10 +12,9 @@ const rr1 = rr0.clone().add(new Vec3(0, yOffsetSprime, 0));
 
 // ── Velden rond rechte draad langs x-as ──
 class MagneticField extends VectorField {
-    constructor(I = I0, beta = 0, yOffset = 0) {
+    constructor(I = I0, yOffset = 0) {
         super();
         this._currentInWire = I;
-        this._beta = beta;
         this._yOffset = yOffset;
     }
 
@@ -34,9 +33,25 @@ class MagneticField extends VectorField {
 
         const B = this._currentInWire / (2 * Math.PI * r);
         const theta = Math.atan2(y0, pos.z);
-        const gamma = 1 / Math.sqrt(1 - this._beta * this._beta);
-        target.set(0, -gamma * B * Math.cos(theta), gamma * B * Math.sin(theta));
+        target.set(0, -B * Math.cos(theta), B * Math.sin(theta));
         return target;
+    }
+}
+
+class LorentzTransform extends Transformation {
+    constructor(beta = 0) {
+        super();
+        this._beta = beta;
+    }
+
+    applyTo(vectorField) {
+        const gamma = 1 / Math.sqrt(1 - this._beta * this._beta);
+
+        const currentSampleMethod = vectorField.sample.bind(vectorField);
+        vectorField.sample = (pos, target) => {
+            currentSampleMethod(pos, target);
+            target.multiplyScalar(gamma);
+        };
     }
 }
 
@@ -81,17 +96,6 @@ const chargeSp = new RadialSymmetricBody({
     mass: m0,
     charge: q
 });
-
-function setBeta(beta) {
-    const gamma = 1 / Math.sqrt(1 - beta * beta);
-    const denominator = gamma * (1 - chargeS.velocity.x * beta);
-    chargeSp._state.mass = m0 * gamma;
-    chargeSp._state.velocity = new Vec3(
-        gamma * (chargeS.velocity.x - beta),
-        chargeS.velocity.y,
-        chargeS.velocity.z).divideScalar(denominator);
-}
-setBeta(0.3);
 
 // ── Scene: draden + ringen (inspiratie faradays_law.js:75) ──
 const wireS = new AxialSymmetricBody({
@@ -146,8 +150,23 @@ addRingsAndArrows(yOffsetSprime);
 
 // E/B velden als ArrowField — beide tegelijk zichtbaar
 const bField = new MagneticField(I0, 0);
-const bpField = new MagneticField(I0, 0.3, yOffsetSprime);
 const epField = new ElectricField(I0, 0.3, yOffsetSprime);
+
+let bpField;
+function setBeta(beta) {
+    const gamma = 1 / Math.sqrt(1 - beta * beta);
+
+    bpField = new MagneticField(I0, yOffsetSprime);
+    bpField.apply(new LorentzTransform(beta));
+
+    const denominator = gamma * (1 - chargeS.velocity.x * beta);
+    chargeSp._state.mass = m0 * gamma;
+    chargeSp._state.velocity = new Vec3(
+        gamma * (chargeS.velocity.x - beta),
+        chargeS.velocity.y,
+        chargeS.velocity.z).divideScalar(denominator);
+}
+setBeta(0.3);
 
 simulation.bind(bField.onceWith(new ArrowField({
     xRange: new Range(-8, 8, 4),
