@@ -71,7 +71,7 @@ export function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-/** @param {number n} */
+/** @param {number} n */
 export function factorial(n) {
     let result = 1;
     for (let i=2; i<=n; i++)
@@ -187,10 +187,11 @@ export class Vec3 {
     }
 
     /**
-     * @param{number} x
-     * @param{number} y
+     * @param {number} x
+     * @param {number} y
+     * @oaram {number} z
      */
-    set(x,y,z=0) {
+    set(x,y, z=0) {
         this.x = x;
         this.y = y;
         this.z = z;

@@ -497,7 +497,10 @@ export class ArrowField extends Renderable3D {
         this._shaftMesh.instanceColor.setXYZ(index, c.r, c.g, c.b);
     }
 
-    /** @param {number} index @param {Vec3} pos */
+    /**
+     * @param {number} index
+     * @param {Vec3} pos
+     */
     _updateVectorAt(index, pos) {
         const mag = this._target.length();
 
@@ -508,7 +511,7 @@ export class ArrowField extends Renderable3D {
         }
 
         // Direction
-        this._dir.copy(this._target).normalize();
+        this._dir.set(this._target.x, this._target.y, this._target.z).normalize();
         this._q.setFromUnitVectors(UP, this._dir);
 
         const visualMag = this._matrixMagnitudeMap(mag) * this._scaleFactor;
