@@ -68,7 +68,8 @@ export class ComplexField extends Field {
 export class VectorField extends MathPhysicsModelBehavior {
     /**
      * @param {Vec2 | Vec3} positionVector 
-     * @param {Vec2 | Vec3} target 
+     * @param {Vec2 | Vec3} target
+     * @return { Vec2 | Vec3 | void }
      */
     sample(positionVector, target) {
         target.set(0, 0, 0);

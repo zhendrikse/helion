@@ -77,19 +77,13 @@ class ElectromagneticWaveField extends VectorField {
             .multiplyScalar(1 / (C * distance * kappa3));
 
         const E = velocityTerm.add(radiationTerm).multiplyScalar(K * this._source.charge);
-        if (this._electric)
-            target.copy(E);
-        else
-            target.copy(n.cross(E).multiplyScalar(1 / C));
+        target.copy(this._electric ? E : n.cross(E).multiplyScalar(1 / C));
     }
 }
 
 const electron = new OscillatingCharge(-Q);
 const proton = new OscillatingCharge(Q);
 
-//
-// Combined fields
-//
 class CombinedField extends VectorField {
     constructor(fields) {
         super();

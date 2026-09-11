@@ -6,12 +6,12 @@ import { SpringForce} from "./forces.js";
 export class PhysicsState {
     /**
      * @param {{
-     *  position?: Vec3 | Vec2,
-     *  velocity?: Vec3 | Vec2,
-     *  acceleration?: Vec3 | Vec2,
-     *  mass?: number,
-     *  charge?: number
-}} options
+     *    position?: Vec3 | Vec2,
+     *    velocity?: Vec3 | Vec2,
+     *    acceleration?: Vec3 | Vec2,
+     *    mass?: number,
+     *    charge?: number
+     *  }} options
      */
     constructor({
         position = new Vec3(),
@@ -180,8 +180,8 @@ export class Body extends MathPhysicsModelBehavior{
     }
 
     /** 
-     * @param {"x"|"y"|"z"}  
-     * axis @param {number} angle 
+     * @param {"x"|"y"|"z"} axis
+     * @param {number} angle
      */
     rotate(axis, angle) {
         this.position.rotate(axis, angle);
@@ -191,15 +191,18 @@ export class Body extends MathPhysicsModelBehavior{
             child.position.copy(this.position).add(child.localPosition));
     }
 
-    /** @param {"x"|"y"|"z"}  axis @param {number} angle */
+    /**
+     * @param {"x"|"y"|"z"}  axis
+     * @param {number} angle
+     */
     rotateChildren(axis, angle) {
         for (const child of this._children)
             child.rotateWithParent(axis, angle);
     }
 
     /** 
-     * @param {"x"|"y"|"z"}  
-     * axis @param {number} angle 
+     * @param {"x"|"y"|"z"} axis
+     * @param {number} angle
      */
     rotateWithParent(axis, angle) {
         this.localPosition.rotate(axis, angle);
@@ -218,6 +221,7 @@ export class Body extends MathPhysicsModelBehavior{
         this._children.forEach(callback);
     }
 
+    /** @returns {ArrayIterator<Body>} */
     [Symbol.iterator]() {
         return this._children[Symbol.iterator]();
     }
@@ -324,13 +328,19 @@ export class Body extends MathPhysicsModelBehavior{
         }
     }
 
+    /**
+     * Perform an integration step.
+     * @param {number} dt
+     * @param {(physicsState: PhysicsState, dt: number) => void} integrator
+     * @returns {Body}
+     */
     integrate(dt = 0.01, integrator = Integrators.symplecticEulerStep) {
         if (this.fixed)
             return this;
 
-        this._state.acceleration.copy(this.force.multiplyScalar(1 / this.mass));
-        this._force.set(0, 0, 0); // Force has been divided by mass => thus dirty => thus clean
+        this._state.acceleration.copy(this._force.multiplyScalar(1 / this.mass));
         integrator(this._state, dt);
+        this._force.set(0, 0, 0); // Force has been divided by mass => thus dirty => thus clean
         return this;
     }
 
