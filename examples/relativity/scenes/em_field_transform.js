@@ -38,28 +38,53 @@ class MagneticField extends VectorField {
     }
 }
 
+class ElectromagneticField {
+    /**
+     * @param {VectorField} electricField 
+     * @param {VectorField} magneticField 
+     */
+    constructor(electricField, magneticField) {
+        this.electricField = electricField;
+        this.magneticField = magneticField;
+    }
+
+    /** @param {Transformation} transformation */
+    apply(transformation) {
+        transformation.applyTo(this);
+        return this;
+    }
+}
+
 class LorentzTransform extends Transformation {
     constructor(beta = 0) {
         super();
         this._beta = beta;
     }
 
-    applyTo(vectorField) {
+    /** @param {ElectromagneticField} electromagneticField */
+    applyTo(electromagneticField) {
         const gamma = 1 / Math.sqrt(1 - this._beta * this._beta);
 
-        const currentSampleMethod = vectorField.sample.bind(vectorField);
-        vectorField.sample = (pos, target) => {
-            currentSampleMethod(pos, target);
+        const magneticField = electromagneticField.magneticField;
+        const currentSampleMethodE = magneticField.sample.bind(magneticField);
+        magneticField.sample = (/** @type {Vec3} */ pos, /** @type {Vec3} */ target) => {
+            currentSampleMethodE(pos, target);
             target.multiplyScalar(gamma);
+        };
+
+        const electricField = electromagneticField.electricField;
+        const currentSampleMethodB = electricField.sample.bind(electricField);
+        electricField.sample = (/** @type {Vec3} */ pos, /** @type {Vec3} */ target) => {
+            currentSampleMethodB(pos, target);
+            target.multiplyScalar(this._beta * gamma);
         };
     }
 }
 
 class ElectricField extends VectorField {
-    constructor(I = I0, beta, yOffset = 0) {
+    constructor(I = I0, yOffset = 0) {
         super();
         this._currentInWire = I;
-        this._beta = beta;
         this._yOffset = yOffset;
     }
 
@@ -77,8 +102,7 @@ class ElectricField extends VectorField {
         }
         const B = this._currentInWire / (2 * Math.PI * r);
         const theta = Math.atan2(y0, pos.z);
-        const gamma = 1 / Math.sqrt(1 - this._beta * this._beta);
-        target.set(0, -gamma * this._beta * B * Math.sin(theta), -gamma * this._beta * B * Math.cos(theta));
+        target.set(0, -B * Math.sin(theta), -B * Math.cos(theta));
         return target;
     }
 }
@@ -130,7 +154,7 @@ const simulation = Simulation
     .bind(chargeS.alwaysWith(new Trail({ color: 0xff4444, maxPoints: 400 })))
     .bind(chargeSp.alwaysWith(new Trail({ color: 0xff8888, maxPoints: 400 })));
 
-// ringen + B-pijlen rond draad (zoals faradays_law.js)
+/** @param {number} y0 */
 function addRingsAndArrows(y0) {
     const xs = [-6, -2, 2, 6];
     for (const x of xs) {
@@ -150,14 +174,16 @@ addRingsAndArrows(yOffsetSprime);
 
 // E/B velden als ArrowField — beide tegelijk zichtbaar
 const bField = new MagneticField(I0, 0);
-const epField = new ElectricField(I0, 0.3, yOffsetSprime);
+const eField = new ElectricField(I0, 0);
+let electromagneticField =
+    new ElectromagneticField(new ElectricField(I0, yOffsetSprime), new MagneticField(I0, yOffsetSprime));
 
-let bpField;
+/** @param {number} beta */
 function setBeta(beta) {
     const gamma = 1 / Math.sqrt(1 - beta * beta);
 
-    bpField = new MagneticField(I0, yOffsetSprime);
-    bpField.apply(new LorentzTransform(beta));
+    electromagneticField = new ElectromagneticField(new ElectricField(I0, yOffsetSprime), new MagneticField(I0, yOffsetSprime));
+    electromagneticField.apply(new LorentzTransform(beta));
 
     const denominator = gamma * (1 - chargeS.velocity.x * beta);
     chargeSp._state.mass = m0 * gamma;
@@ -177,7 +203,7 @@ simulation.bind(bField.onceWith(new ArrowField({
     colorMap: () => new Color("orange"),
     magnitudeMap: m => Math.log(1 + m)
 })));
-simulation.bind(bpField.onceWith(new ArrowField({
+simulation.bind(electromagneticField.magneticField.onceWith(new ArrowField({
     xRange: new Range(-8, 8, 4),
     yRange: new Range(yOffsetSprime - 4, yOffsetSprime + 4, 1),
     zRange: new Range(-4, 4, 1),
@@ -186,7 +212,7 @@ simulation.bind(bpField.onceWith(new ArrowField({
     colorMap: () => new Color("orange"),
     magnitudeMap: m => Math.log(1 + m)
 })));
-simulation.bind(epField.onceWith(new ArrowField({
+simulation.bind(electromagneticField.electricField.onceWith(new ArrowField({
     xRange: new Range(-8, 8, 4),
     yRange: new Range(yOffsetSprime - 4, yOffsetSprime + 4, 1),
     zRange: new Range(-4, 4, 1),
@@ -204,8 +230,8 @@ simulation
     .advancesBy(1e-2)
     .onStep((_, dt) => {
         bField.sample(rr0, B);
-        bpField.sample(rr1, Bp);
-        epField.sample(rr1, Ep);
+        electromagneticField.magneticField.sample(rr1, Bp);
+        electromagneticField.electricField.sample(rr1, Ep);
 
         chargeS._force.copy(new Vec3().copy(chargeS.velocity).cross(B).multiplyScalar(q));
         chargeS.integrate(dt);

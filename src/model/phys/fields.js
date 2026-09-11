@@ -68,31 +68,3 @@ export class ElectricField extends VectorField {
     }
 }
 
-/**
- * Electromagnetic field consisting of coupled electric and magnetic fields.
- */
-export class ElectromagneticField {
-    /**
-     * @param {{
-     * electric: VectorField,
-     * magnetic: VectorField
-     * }} options
-     */
-    constructor({ electric, magnetic }) {
-        if (electric == null || magnetic == null)
-            throw new Error("An ElectromagneticField requires electric and magnetic fields.");
-
-        this.electric = electric;
-        this.magnetic = magnetic;
-    }
-
-    /**
-     * Create the electromagnetic field represented in another frame.
-     *
-     * @param {import("../../core/helion.js").Transformation} transformation
-     * @returns {ElectromagneticField}
-     */
-    transformedBy(transformation) {
-        return transformation.applyTo(this);
-    }
-}
