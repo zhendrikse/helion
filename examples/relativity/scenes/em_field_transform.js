@@ -12,8 +12,8 @@ const rr1 = rr0.clone().add(new Vec3(0, yOffsetSprime, 0));
 
 class ElectromagneticField {
     /**
-     * @param {VectorField} electricField 
-     * @param {VectorField} magneticField 
+     * @param {VectorField} electricField
+     * @param {VectorField} magneticField
      */
     constructor(electricField, magneticField) {
         this.electricField = electricField;
@@ -22,8 +22,7 @@ class ElectromagneticField {
 
     /** @param {Transformation} transformation */
     apply(transformation) {
-        transformation.applyTo(this);
-        return this;
+        return transformation.applyTo(this);
     }
 }
 
@@ -32,21 +31,17 @@ class WireElectromagneticField extends ElectromagneticField {
         super(new VectorField(), new VectorField());
         this._currentInWire = I;
         this._yOffset = yOffset;
-        
-        const currentSampleMethodB = this.magneticField.sample.bind(this.magneticField);
+
+        this.magneticField = new VectorField();
+        this.electricField = new VectorField();
         this.magneticField.sample = (/** @type {Vec3} */ pos, /** @type {Vec3} */ target) => {
-            currentSampleMethodB(pos, target);
             this._sample(pos, target, false);
             return target;
         };
-
-        const currentSampleMethodE = this.electricField.sample.bind(this.electricField);
         this.electricField.sample = (/** @type {Vec3} */ pos, /** @type {Vec3} */ target) => {
-            currentSampleMethodE(pos, target);
             this._sample(pos, target, true);
             return target;
         };
-
     }
 
     _sample(pos, target, setElectricField) {
@@ -66,29 +61,52 @@ class WireElectromagneticField extends ElectromagneticField {
     }
 }
 
+class TransformedVectorField extends VectorField {
+    /**
+     * @param {VectorField} sourceField
+     * @param {(source: Vec3, target: Vec3) => void} transform
+     */
+    constructor(sourceField, transform) {
+        super();
+        this._sourceField = sourceField;
+        this._transform = transform;
+    }
+
+    sample(pos, target) {
+        this._sourceField.sample(pos, target);
+        this._transform(target, target);
+        return target;
+    }
+}
+
 class LorentzTransform extends Transformation {
     constructor(beta = 0) {
         super();
         this._beta = beta;
     }
 
+    /** @param {number} beta */
+    set beta(beta) {
+        this._beta = beta;
+    }
+
     /** @param {ElectromagneticField} electromagneticField */
     applyTo(electromagneticField) {
-        const gamma = 1 / Math.sqrt(1 - this._beta * this._beta);
+        const magneticField = new TransformedVectorField(
+            electromagneticField.magneticField,
+            (_, target) => target.multiplyScalar(this._gamma)
+        );
 
-        const magneticField = electromagneticField.magneticField;
-        const currentSampleMethodE = magneticField.sample.bind(magneticField);
-        magneticField.sample = (/** @type {Vec3} */ pos, /** @type {Vec3} */ target) => {
-            currentSampleMethodE(pos, target);
-            target.multiplyScalar(gamma);
-        };
+        const electricField = new TransformedVectorField(
+            electromagneticField.magneticField,
+            (_, target) => target.multiplyScalar(this._beta * this._gamma)
+        );
 
-        const electricField = electromagneticField.electricField;
-        const currentSampleMethodB = electricField.sample.bind(electricField);
-        electricField.sample = (/** @type {Vec3} */ pos, /** @type {Vec3} */ target) => {
-            currentSampleMethodB(pos, target);
-            target.multiplyScalar(this._beta * gamma);
-        };
+        return new ElectromagneticField(electricField, magneticField);
+    }
+
+    get _gamma() {
+        return 1 / Math.sqrt(1 - this._beta * this._beta);
     }
 }
 
@@ -127,7 +145,7 @@ const simulation = Simulation
         camera: { position: new Vec3(18, 15, 38), fieldOfView: 35 },
         infoPanel: {
             text: "<strong/>Lorentz transform of EM-fields</strong><br/>" +
-                "$\nE'_x = E_x$<br/>$\nE'_y = \\gamma (E_y - v B_z)$<br/>$E'_z = \\gamma(E_z+v B_y)$<br/>and<br/>" + 
+                "$\nE'_x = E_x$<br/>$\nE'_y = \\gamma (E_y - v B_z)$<br/>$E'_z = \\gamma(E_z+v B_y)$<br/>and<br/>" +
                 "$B'_x = B_x$<br/>$B'_y = \\gamma (B_y + vE_z/c^2)$<br/>$\B'_z = \\gamma (B_z - vE_y/c^2)$"
         }
     })
@@ -160,15 +178,14 @@ addRingsAndArrows(yOffsetSprime);
 // E/B velden als ArrowField — beide tegelijk zichtbaar
 const staticElectromagneticField = new WireElectromagneticField(I0, 0);
 const bField = staticElectromagneticField.magneticField;
-let electromagneticField =
-    new WireElectromagneticField(I0, yOffsetSprime);
+const restFrameElectromagneticField = new WireElectromagneticField(I0, yOffsetSprime);
+const lorentzTransform = new LorentzTransform(0.3);
+const electromagneticField = restFrameElectromagneticField.apply(lorentzTransform);
 
 /** @param {number} beta */
 function setBeta(beta) {
     const gamma = 1 / Math.sqrt(1 - beta * beta);
-
-    electromagneticField = new WireElectromagneticField(I0, yOffsetSprime);
-    electromagneticField.apply(new LorentzTransform(beta));
+    lorentzTransform.beta = beta;
 
     const denominator = gamma * (1 - chargeS.velocity.x * beta);
     chargeSp._state.mass = m0 * gamma;
@@ -235,5 +252,5 @@ simulation
             // @ts-ignore
             const I = Number(e.target.value);
             staticElectromagneticField._currentInWire = I;
-            electromagneticField._currentInWire = I;
+            restFrameElectromagneticField._currentInWire = I;
         }));
