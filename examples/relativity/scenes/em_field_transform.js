@@ -98,7 +98,7 @@ class LorentzTransform extends Transformation {
         );
 
         const electricField = new TransformedVectorField(
-            electromagneticField.magneticField,
+            electromagneticField.electricField,
             (_, target) => target.multiplyScalar(this._beta * this._gamma)
         );
 
