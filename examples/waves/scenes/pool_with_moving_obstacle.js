@@ -210,7 +210,7 @@ let simulation = Simulation
         new RadioGroup()
             .add("Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface))
             .add("Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
-            .checked(0)
+            .checked(1)
     )
     .append(waterSurface.glyphLayer.ui())
     .append(new Checkbox("Wireframe ").on(waterSurface.surfaceLayer).withProperty("wireframe"))
