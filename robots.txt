@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.hendrikse.name/helion/sitemap-index.xml
