@@ -62,7 +62,7 @@ class WireElectromagneticField extends ElectromagneticField {
         if (setElectricField)
             target.set(0, -B * Math.sin(theta), -B * Math.cos(theta));
         else
-            target.set(0, -B * Math.cos(theta), B * Math.sin(theta));
+        target.set(0, -B * Math.cos(theta), B * Math.sin(theta));
     }
 }
 
@@ -127,7 +127,7 @@ const simulation = Simulation
         camera: { position: new Vec3(18, 15, 38), fieldOfView: 35 },
         infoPanel: {
             text: "<strong/>Lorentz transform of EM-fields</strong><br/>" +
-                "$\nE'_x = E_x$<br/>$\nE'_y = \\gamma (E_y - v B_z)$<br/>$E'_z = \\gamma(E_z+v B_y)$<br/>and<br/>" + 
+                "$\nE'_x = E_x$<br/>$\nE'_y = \\gamma (E_y - v B_z)$<br/>$E'_z = \\gamma(E_z+v B_y)$<br/>and<br/>" +
                 "$B'_x = B_x$<br/>$B'_y = \\gamma (B_y + vE_z/c^2)$<br/>$\B'_z = \\gamma (B_z - vE_y/c^2)$"
         }
     })
