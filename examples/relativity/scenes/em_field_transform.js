@@ -227,6 +227,7 @@ simulation
     .append(new Slider("β = v/c")
         .withRange(new Range(0, 0.9, 0.05))
         .withValue(0.3)
+        // @ts-ignore
         .onInput(event => setBeta(Number(event.target.value))))
     .append(new Slider("I")
         .withRange(new Range(5, 25, 1))
