@@ -193,11 +193,9 @@ const simulation = Simulation
             position: new Vec3(0, 15, 35).multiplyScalar(.275),
             fieldOfView: 40
         },
-        scene: {
-            scale: 10
-        }
+        scene: { scale: 10 },
+        headUpDisplay: false
     })
-    .withMouseClickEventListener()
     .runsEvery(1e-2)
     .bind(sprinkler.alwaysWith(new Box({ color: 0xffff00 })))
     .bind(new RadialSymmetricBody({ radius: 0.03 * LENGTH }).onceWith(new Sphere({color: 0xff0000})))
@@ -228,10 +226,9 @@ const simulation = Simulation
         .withProperty("waterVelocity")
         .withRange(new Range(0, 1, .01))
         .withValue(.3)
-    );
+    )
+    .start();
 
 for (const droplet of sprinkler)
-    simulation.bind(droplet.alwaysWith(
-        new Sphere({ color: 0x00ffff })
-    ));
+    simulation.bind(droplet.alwaysWith(new Sphere({ color: 0x00ffff })));
 
