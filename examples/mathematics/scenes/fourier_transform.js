@@ -128,13 +128,13 @@ simulation
     .bind(xAxis.onceWith(new Label({
         text: () => "X",
         fontSize: "20px",
-        color: "#ffffff",
+        color: 0xffffff,
         offset: () => new Vec2(2.2 * size, 0)
     })))
     .bind(yAxis.onceWith(new Label({
         text: () => "Y",
         fontSize: "20px",
-        color: "#ffffff",
+        color: 0xffffff,
         offset: () => new Vec2(0, 2.2 * size)
     })))
     .bind(exactFunction.onceWith(new CurveView({
@@ -151,9 +151,10 @@ simulation
         .withRange(new Range(0, maximumFrequency, 1))
         .withValue(0)
         .onInput(event => {
+            // @ts-ignore
             const frequency = Number(event.target.value);
             const terms = numberOfTermsForFrequency(frequency);
-            approximatedFunction.setFunction(x => fourierExpansion.evaluate(x, terms));
+            approximatedFunction.setFunction((/** @type {number} */ x) => fourierExpansion.evaluate(x, terms));
             simulation.setLatexTitle(fourierLatex(frequency));
         })
     );
