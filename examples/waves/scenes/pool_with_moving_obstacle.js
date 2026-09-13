@@ -4,12 +4,17 @@ import {
     SurfaceVisualization, FixedIntervalNormalizer, RadioGroup, Checkbox, Slider, Range, ColorMappers,
 } from "../../../src/index.js";
 
+const RESOLUTION = 200;
+const NX = 200, NY = 200, POOL_SIZE = NX;
+
 export class PoolWaveEquation {
     constructor({ velocity = 5, damping = 0.02 } = {}) {
         this._velocity = velocity;
         this._damping = damping;
     }
+
     get damping() { return this._damping; }
+
     acceleration(field, i, j) {
         return this._velocity * this._velocity * LaplaceOperator.at(field, i, j);
     }
@@ -32,28 +37,31 @@ export class MovingObstacle extends Block {
         this._start = start;
         this._speed = speed;
         this._reachedEnd = false;
-        this._blockHeight = blockHeight;
         this._initialPosition = initialPosition.clone();
     }
+
     get speed() { return this._speed; }
     set speed(v) { this._speed = v; }
+
     boundaries() {
         return { start: this._start, width: this._width, yStart: this._yStart, yEnd: this._yEnd };
     }
+
     isMoving() { return !this._reachedEnd && Math.abs(this._speed) > 1e-9; }
+
     /** @param {number} dt scaled simulation time */
     move(dt) {
         if (this._reachedEnd) return;
         this._start += this._speed * dt;
         this.position.x = this._start + this._width / 2;
-        if (this._start + this._width >= this._poolSize / 2 - 2) this._reachedEnd = true;
+        if (this._start + this._width >= this._poolSize / 2 - 2)
+            this._reachedEnd = true;
     }
+
     reset() {
+        super.reset();
         this._start = this._initialStart;
         this._reachedEnd = false;
-        this.position.copy(this._initialPosition);
-        // Body reset zou _initialState herstellen, maar _start is leidend voor boundaries
-        super.reset();
         this.position.copy(this._initialPosition);
     }
 }
@@ -106,54 +114,29 @@ class BowWake extends Transformation {
     }
 }
 
-function createPoolWalls(poolSize = 200, wallThickness = 2, depth = 8) {
-    const half = poolSize / 2;
-    const wallColor = 0xccaa00;
-    const walls = [];
-
-    walls.push({ 
-        model: new Block({
-            position: new Vec3(0, -depth, 0),
-            size: new Vec3(poolSize, wallThickness, poolSize),
-            fixed: true
-        }),
-        view: new Box({ color: wallColor })
-    }); // Bottom
-    walls.push({
-        model: new Block({
-            position: new Vec3(0, -2, -half),
-            size: new Vec3(poolSize, 10, wallThickness),
-            fixed: true
-        }),
-        view: new Box({ color: wallColor })
-    }); // Back wall
-    walls.push({
-        model: new Block({
-            position: new Vec3(-half, -2, 0),
-            size: new Vec3(wallThickness, 10, poolSize),
-            fixed: true
-        }),
-        view: new Box({ color: wallColor })
-    }); // Left wall
-    walls.push({
-        model: new Block({
-            position: new Vec3(half, -2, 0),
-            size: new Vec3(wallThickness, 10, poolSize),
-            fixed: true
-        }),
-        view: new Box({ color: wallColor })
-    }); // Right wall
-    return walls;
-}
-
-const RESOLUTION = 200;
-const NX = 200, NY = 200, POOL_SIZE = NX;
+const wallThickness = 2;
+const poolWalls = [];
+poolWalls.push(new Block({
+    position: new Vec3(0, -8, 0),
+    size: new Vec3(POOL_SIZE, wallThickness, POOL_SIZE)
+})); // Bottom
+poolWalls.push(new Block({
+    position: new Vec3(0, -2, -POOL_SIZE / 2),
+    size: new Vec3(POOL_SIZE, 10, wallThickness)
+})); // Back wall
+poolWalls.push(new Block({
+    position: new Vec3(-POOL_SIZE / 2, -2, 0),
+    size: new Vec3(wallThickness, 10, POOL_SIZE)
+})); // Left wall
+poolWalls.push(new Block({
+    position: new Vec3(POOL_SIZE / 2, -2, 0),
+    size: new Vec3(wallThickness, 10, POOL_SIZE)
+})); // Right wall
 
 const field = new DiscreteScalarField({ nx: NX, ny: NY });
 const waveEquation = new PoolWaveEquation({ velocity: 5, damping: 0.02 });
 const solver = new WaveEquationSolver(waveEquation);
 const surface = new DiscreteFieldSurface(field);
-const poolWalls = createPoolWalls(POOL_SIZE, 2, 8);
 
 const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(RESOLUTION, RESOLUTION),
@@ -206,11 +189,10 @@ let simulation = Simulation
         field.apply(mask);
     })
     .append(waterSurface.ui())
-    .append(
-        new RadioGroup()
-            .add("Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface))
-            .add("Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
-            .checked(1)
+    .append(new RadioGroup()
+        .add("Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface))
+        .add("Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
+        .checked(1)
     )
     .append(waterSurface.glyphLayer.ui())
     .append(new Checkbox("Wireframe ").on(waterSurface.surfaceLayer).withProperty("wireframe"))
@@ -219,4 +201,4 @@ let simulation = Simulation
         .withValue(5).onInput(e => obstacle.speed = Number(e.target.value))
     );
 
-for (const { model, view } of poolWalls) simulation.bind(model.onceWith(view));
+poolWalls.forEach(wall => simulation.bind(wall.onceWith(new Box({ color: 0xccaa00 }))));

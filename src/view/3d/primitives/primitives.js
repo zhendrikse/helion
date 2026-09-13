@@ -383,6 +383,14 @@ export class Cylinder extends Renderable3D {
 // Box
 //
 export class Box extends Renderable3D {
+    /**
+     * @param param0
+     * @param {number} param0.color
+     * @param {number} param0.opacity
+     * @param {boolean} param0.visible
+     * @param {boolean} param0.castShadow
+     * @param {Material} param0.material
+     */
     constructor({
         color = 0xff0000,
         opacity = 1,
@@ -403,7 +411,7 @@ export class Box extends Renderable3D {
     }
 
     canBindTo(body) {
-        if (!body.position || !body.size || !body.size.x || !body.orientation)
+        if (body.position === undefined || body.size === undefined || body.orientation === undefined)
             throw new Error("Box can only bind to bodies with a position, size, and orientation.");
         return true;
     }
