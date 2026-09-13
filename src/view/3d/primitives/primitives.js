@@ -5,8 +5,9 @@ import {
 } from "three";
 import { Renderable3D } from "../../renderer.js";
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
-import {Vec3} from "../../../model/math/math.js";
-import {ColorMappers} from "../../colormappers.js";
+import { Vec3 } from "../../../model/math/math.js";
+import { MathPhysicsModelBehavior } from "../../../core/helion.js";
+import { Body } from "../../../model/phys/bodies.js";
 
 //
 // T R A I L
@@ -520,12 +521,12 @@ export class Helix extends Renderable3D {
         this._radius = 1;
     }
 
-    initialize(bodyPair) {
-        this._restLength = bodyPair.axis.length();
-        this._radius = this._radiusFunction(bodyPair);
+    initialize(body) {
+        this._restLength = body.axis.length();
+        this._radius = this._radiusFunction(body);
         this._curve = new Coils(
             new Vector3(0, 0, 0),
-            new Vector3(0, 0, bodyPair.axis.length()),
+            new Vector3(0, 0, body.axis.length()),
             this._coils,
             this._radius,
             0
@@ -547,8 +548,12 @@ export class Helix extends Renderable3D {
         this.add(this._mesh);
     }
 
+    /** 
+     * @param {Body} body
+     * returns {boolean} 
+     */
     canBindTo(body) {
-        if (!body.position || !body.axis)
+        if (body.position === undefined || body.axis === undefined)
             throw new Error("Helix can only bind to bodies with a position and an axis.");
         return true;
     }
@@ -580,6 +585,15 @@ export class Helix extends Renderable3D {
 }
 
 export class Label extends Renderable3D {
+    /**
+     * @param {{
+     *     text?: (model: Body) => string
+     *     offset?: (model: Body) => Vec3
+     *     color?: number | string
+     *     fontSize?: string
+     *     visible?: boolean 
+     * }} param0 
+     */
     constructor({
         text = model => "" ,
         offset = model => new Vec3(),
@@ -610,16 +624,22 @@ export class Label extends Renderable3D {
         this.visible = visible;
     }
 
+    /** 
+     * @param {Body} model
+     * returns {boolean} 
+     */
     canBindTo(model) {
         if(model.position === undefined)
             throw new Error("A label can only bind to bodies with a position");
         return true;
     }
 
+    /** @param {Body} model */
     initialize(model) {
         this._position = model.position.clone();
     }
 
+    /** @param {Body} model */
     synchronizeWith(model) {
         this._position.copy(model.position.clone().add(this._offset(model)));
         this._label.position.set(this._position.x, this._position.y, this._position.z ? this._position.z : 0);

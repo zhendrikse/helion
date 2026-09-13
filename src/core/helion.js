@@ -41,7 +41,7 @@ export class Registry {
 }
 
 export class Transformation {
-    /** @param {MathPhysicsModelBehavior} body */
+    /** @param {any} body */
     applyTo(body) {}
 }
 

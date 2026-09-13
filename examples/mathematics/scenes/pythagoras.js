@@ -4,6 +4,10 @@ import {
 } from "../../../src/index.js";
 
 class Pythagoras extends Segments {
+    /** 
+     * @param {number} a 
+     * @param {number} b 
+     */
     constructor(a = 4.0, b = 3.0) {
         super();
 
@@ -37,6 +41,12 @@ class Pythagoras extends Segments {
         this.addSquare(this._C, this._B, 0xffaa44, 1);
     }
 
+    /**
+     * @param {Vec2} p1 
+     * @param {Vec2} p2 
+     * @param {number} color 
+     * @param {number} direction 
+     */    
     addSquare(p1, p2, color, direction = 1) {
         const side = p2.clone().sub(p1);
 
@@ -53,11 +63,13 @@ class Pythagoras extends Segments {
         this.push(new LineSegment(p4, p1, color));
     }
 
+    /** @param {number} a */
     set a(a) {
         this._a = a;
         this.generate();
     }
 
+    /** @param {number} b */
     set b(b) {
         this._b = b;
         this.generate();

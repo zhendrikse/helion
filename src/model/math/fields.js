@@ -151,6 +151,9 @@ export class RealFunction extends MathPhysicsModelBehavior {
         return interval;
     }
 
+    /** @param {(x: number) => number} */
+    setFunction(func) { this._func = func; }
+
     /** @param {number} u */
     sample(u, target = new Vec2()) {
         const x = this.domain.scaleUnitParameter(u);

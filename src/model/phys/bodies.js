@@ -233,6 +233,7 @@ export class Body extends MathPhysicsModelBehavior{
     get charge() { return this._state.charge; }
     get state() { return this._state; }
     get force() { return this._force; }
+    get speed() { return this.velocity.length(); }
 
     reset() {
         this._state= this._initialState.clone();

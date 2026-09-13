@@ -229,6 +229,7 @@ export class StrangeAttractor extends Segments {
         this.generate();
     }
 
+    /** @param {Vec3} point */
     derivative(point) {}
 
     hue(parameter, index) {
@@ -249,12 +250,22 @@ export class StrangeAttractor extends Segments {
 }
 
 export class LinearCombination {
-    /** @param {{basis: ((x: any) => number)[], coefficients: number[]}} options */
+    /** 
+     * @param {{
+     * basis: ((x: any) => number)[], 
+     * coefficients: number[]}} options 
+     */
     constructor({ basis, coefficients }) {
         this._basis = basis;
         this._coefficients = coefficients;
     }
 
+    /**
+     * @param {number} x 
+     * @param {number} numberOfTerms 
+     * @returns {number}
+     * }}
+     */
     evaluate(x, numberOfTerms = this._basis.length) {
         let result = 0;
 
