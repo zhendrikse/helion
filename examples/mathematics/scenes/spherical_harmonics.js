@@ -1,13 +1,13 @@
 import {
-    Simulation, ParametricSurface, Domain, Registry, Slider, Range, Vec3,
-    SurfaceVisualization, SurfaceResolution, ContoursLayer, Checkbox, DropdownMenu
+    Simulation, ParametricSurface, Domain, Registry, TextInput, Button,
+    SurfaceVisualization, SurfaceResolution, ContoursLayer, Checkbox, DropdownMenu,
 } from "../../../src/index.js";
 
 const PI = Math.PI;
 
-// Old demo r(u,v) strings use ^ for exponent and sin/cos with pi
-function rFunctionFromString(expr) {
-    const js = expr
+/** @param {string} regularExpression */
+function rFunctionFromString(regularExpression) {
+    const js = regularExpression
         .replace(/\^/g, "**")
         .replace(/\bsin\b/g, "Math.sin")
         .replace(/\bcos\b/g, "Math.cos")
@@ -16,8 +16,9 @@ function rFunctionFromString(expr) {
     return new Function("u", "v", `return (${js});`);
 }
 
-function makeSurface(rExpr) {
-    const rFn = rFunctionFromString(rExpr);
+/** @param {string} regularExpression */
+function makeSurface(regularExpression) {
+    const rFn = rFunctionFromString(regularExpression);
     return new ParametricSurface({
         domain: new Domain([-PI, PI], [0, PI]),
         // Helion ParametricSurface does target.set(x, z, y) -> world Y = z, Z = y
@@ -47,7 +48,6 @@ const presetRegistry = new Registry({ label: "Preset ", entries: presets });
 
 let currentR = surfaceData[0].r;
 let currentSurface = makeSurface(currentR);
-
 const contoursLayer = new ContoursLayer({
     resolution: new SurfaceResolution(100, 100),
     contourSegments: 100
@@ -60,13 +60,36 @@ const surfaceView = new SurfaceVisualization({
 }).addOverlayLayer(contoursLayer);
 
 const simulation = Simulation.with({
-    htmlDivId: "sphericalHarmonicsContainer",
-    camera: { fieldOfView: 20 },
-    headUpDisplay: { enabled: false }
-}).bind(currentSurface.onceWith(surfaceView))
-  .provideAxesAround(surfaceView)
-  .frameSceneOn(surfaceView, { padding: 0.9, translationY: -2 });
+        htmlDivId: "sphericalHarmonicsContainer",
+        camera: { fieldOfView: 20 },
+        headUpDisplay: { enabled: false }
+    })
+    .bind(currentSurface.onceWith(surfaceView))
+    .provideAxesAround(surfaceView)
+    .frameSceneOn(surfaceView, { padding: 0.9, translationY: -2 })
+    .append(new DropdownMenu()
+    .for(presetRegistry)
+    .addEventListener("change", e => 
+        // @ts-ignore
+        updateSurface(presetRegistry.get(e.target.value).r)
+    ))
+    .append(new Checkbox("Contours ")
+        .on(contoursLayer)
+        .withProperty("visible")
+        .checked(contoursLayer.visible)
+        .togetherWith(new Checkbox("Wireframe ")
+            .on(surfaceView.surfaceLayer)
+            .withProperty("wireframe"))
+);
 
+// Custom R(u,v) — herbruikbare component zoals in src/core/controls.js
+const rInput = new TextInput("R(u,v) =")
+    .withValue(currentR)
+    .withPlaceholder("e.g. sin(2*u)**2 + cos(4*v)**2")
+    .withMinWidth("280px")
+    .onEnter(() => updateSurface(rInput.value));
+
+/** @param {string} rExpr */
 function updateSurface(rExpr) {
     try {
         const next = makeSurface(rExpr);
@@ -76,54 +99,17 @@ function updateSurface(rExpr) {
         simulation.provideAxesAround(surfaceView);
         simulation.frameSceneOn(surfaceView, { padding: 0.9, translationY: -2 });
         simulation.setLatexTitle(`r=${rExpr}\\newline\\quad \\newline \\begin{pmatrix}x\\\\y\\\\z\\end{pmatrix}=r\\begin{pmatrix}sin(u)cos(v)\\\\cos(u)\\\\sin(u)sin(v)\\end{pmatrix}, u\\in[-\\pi,\\pi], v\\in[0,\\pi]`);
-        if (customInput) { customInput.value = rExpr; customInput.style.borderColor=""; }
+        rInput.value = rExpr;   
+        rInput.valid = true; 
     } catch (e) {
-        if (customInput) customInput.style.borderColor="red";
+        rInput.valid = false;
         console.error(e);
     }
 }
 
-// Preset
-simulation.append(new DropdownMenu().for(presetRegistry).addEventListener("change", e => {
-    // @ts-ignore
-    const preset = presetRegistry.get(e.target.value);
-    updateSurface(preset.r);
-}));
+const applyBtn = new Button()
+    .withText("Apply")
+    .onClick(() => updateSurface(rInput.value));
 
-// Contours — replaces old ViewParameters/ContourParameters
-simulation.append(
-    new Checkbox("Contours ").on(contoursLayer).withProperty("visible").checked(contoursLayer.visible)
-        .togetherWith(new Checkbox("Wireframe ").on(surfaceView.surfaceLayer).withProperty("wireframe"))
-);
-
-// Custom R(u,v) — replaces old LiteralStringBasedSurfaceDefinition math folder
-const customRow = document.createElement("div");
-customRow.style.display = "flex";
-customRow.style.gap = "6px";
-customRow.style.alignItems = "center";
-customRow.style.marginBottom = "5px";
-const customLabel = document.createElement("label");
-customLabel.textContent = "R(u,v) =";
-customLabel.style.fontSize = "12px";
-customLabel.style.marginRight = "5px";
-const customInput = document.createElement("input");
-customInput.type = "text";
-customInput.value = currentR;
-customInput.style.flex = "1";
-customInput.style.minWidth = "280px";
-customInput.placeholder = "e.g. sin(2*u)**2 + cos(4*v)**2";
-const customBtn = document.createElement("button");
-customBtn.textContent = "Apply";
-customBtn.style.padding = "2px 8px";
-customBtn.onclick = () => updateSurface(customInput.value);
-customInput.onkeydown = e => { if (e.key === "Enter") customBtn.click(); };
-customRow.append(customLabel, customInput, customBtn);
-
-// append via dummy HtmlControl-like wrapper to hook into Helion controlsDiv
-const customControl = {
-    append(controlsDiv) { controlsDiv.appendChild(customRow); return this; },
-    to(sim) { return this; }
-};
-simulation.append(customControl);
-
+simulation.append(rInput.togetherWith(applyBtn));
 updateSurface(currentR);

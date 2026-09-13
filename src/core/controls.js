@@ -1,14 +1,17 @@
-import { generateUUID } from "../model/math/math.js";
-import { Simulation } from "../core/helion.js"
+import { generateUUID, Range } from "../model/math/math.js";
+import { Registry, Simulation } from "../core/helion.js"
 import { Axes } from "../view/3d/composite/backgrounds.js";
+import "../assets/style.css";
 
 export class HtmlControl {
     /** @param {string} labelText */
     constructor(labelText) {
         this._buttonRow = this._createButtonRow();
+        /** @type { any } */
         this._inputControl = null; // To be set by each concrete control / subclass
         this._targetObject = null; // To be set by each concrete control / subclass
         this._childControl = null; // Other control in this same button row
+        /** @type {Simulation | null} */
         this._simulation = null;
 
         //
@@ -20,6 +23,7 @@ export class HtmlControl {
         this._label.style.marginRight = "5px";
         this._label.textContent = labelText ? labelText : "";
 
+        /** @type {HTMLSpanElement | null} */
         this._span = null;
     }
 
@@ -28,6 +32,7 @@ export class HtmlControl {
         this._inputControl.disabled = booleanValue;
     }
 
+    /** @param {any} targetObject */
     on(targetObject) {
         this._targetObject = targetObject;
         return this;
@@ -36,13 +41,6 @@ export class HtmlControl {
     _createButtonRow() {
         const buttonRow = document.createElement("div");
         buttonRow.classList.add("helionButtonRow");
-        buttonRow.style.display = "flex";
-        buttonRow.style.justifyContent = "flex-start";
-        buttonRow.style.flexWrap = "wrap";
-        buttonRow.style.gap = "2px";
-        buttonRow.style.left = "10px";
-        buttonRow.style.marginBottom = "5px";
-        buttonRow.style.borderRadius = "8px";
         return buttonRow;
     }
 
@@ -56,7 +54,7 @@ export class HtmlControl {
         if (!isString)
             throw new Error("First argument must be an event type string");
 
-        this._inputControl.addEventListener(eventType, event => {
+        this._inputControl.addEventListener(eventType, (/** @type {Event} */ event) => {
             callback(event);
             this._simulation.onUserInteraction(event);
         });
@@ -73,6 +71,10 @@ export class HtmlControl {
         return this.addEventListener("input", callback);
     }
 
+    /**
+     * @param {HtmlControl} control 
+     * @param {HTMLDivElement} buttonRow 
+     */
     _appendToButtonRow(control, buttonRow) {
         buttonRow.appendChild(control._label);
         buttonRow.appendChild(control._inputControl);
@@ -92,6 +94,10 @@ export class HtmlControl {
         return this;
     }
 
+    /**
+     * @param {HtmlControl} control 
+     * @param {Simulation} simulation 
+     */
     _setSimulationOn(control, simulation) {
         control._simulation = simulation;
         if (control.hasChildControl)
@@ -122,18 +128,21 @@ export class HtmlControl {
  */
 export class CompoundControl extends HtmlControl {
     constructor() {
-        super();
+        super("");
+        /** @type {HTMLDivElement[]} */
         this._buttonRows = [];
+        /** @type {HtmlControl[]} */
         this._controls = [];
     }
 
+    /** @param {HtmlControl} control */
     add(control) {
         this._controls.push(control);
 
         const row = this._createButtonRow();
         this._buttonRows.push(row);
 
-        const addRecursive = control => {
+        const addRecursive = (/** @type {HtmlControl} */ control) => {
             this._appendToButtonRow(control, row);
             if (control.hasChildControl)
                 addRecursive(control._childControl);
@@ -144,11 +153,13 @@ export class CompoundControl extends HtmlControl {
         return this;
     }
 
+    /** @param {Simulation} simulation */
     to(simulation) {
         for (const control of this._controls)
             this._setSimulationOn(control, simulation);
     }
 
+    /** @param {HTMLDivElement} controlsDiv */
     append(controlsDiv) {
         for (const buttonRow of this._buttonRows)
             controlsDiv.appendChild(buttonRow);
@@ -158,9 +169,10 @@ export class CompoundControl extends HtmlControl {
 
 export class DropdownMenu extends HtmlControl {
     constructor() {
-        super();
+        super("");
     }
 
+    /** @param {Registry} registry */
     for(registry) {
         this._label.textContent = registry.label;
 
@@ -178,6 +190,7 @@ export class DropdownMenu extends HtmlControl {
         return this;
     }
 
+    /** @param {string} value */
     withValue(value) {
         this._inputControl.value = value;
         return this;
@@ -185,9 +198,9 @@ export class DropdownMenu extends HtmlControl {
 }
 
 export class Slider extends HtmlControl {
+    /** @param {string} label */
     constructor(label) {
         super(label);
-        this._targetObject = null;
 
         this._inputControl = document.createElement("input");
         this._inputControl.type = "range";
@@ -201,19 +214,22 @@ export class Slider extends HtmlControl {
         this._units = "";
     }
 
+    /** @param {string} units */
     withUnits(units) {
         this._units = units;
         return this;
     }
 
+    /** @param {number} value */
     withValue(value) {
-        this._inputControl.value = value;
+        this._inputControl.value = String(value);
         this._span.textContent = value.toFixed(2) + this._units;
         return this;
     }
 
     get value() { return Number(this._inputControl.value); }
 
+    /** @param {Range} range */
     withRange(range) {
         this._inputControl.min = String(range.from);
         this._inputControl.max = String(range.to);
@@ -221,9 +237,12 @@ export class Slider extends HtmlControl {
         return this;
     }
 
+    /** @param {string name} */
     withProperty(name) {
         this.addEventListener("input", (event) => {
+            // @ts-ignore
             this._targetObject[name] = Number(event.target.value);
+            // @ts-ignore
             this._span.textContent = Number(event.target.value).toFixed(2) + this._units;
         });
         return this;
@@ -243,6 +262,7 @@ export class Slider extends HtmlControl {
         this._inputControl.addEventListener(eventType, event => {
             callback(event);
             this._simulation.onUserInteraction(event);
+            // @ts-ignore
             const value = parseFloat(event.target.value);
             this._span.textContent = value.toFixed(2) + this._units;
         });
@@ -251,9 +271,11 @@ export class Slider extends HtmlControl {
 }
 
 export class Checkbox extends HtmlControl {
+    /**
+     * @param {string} label
+     */
     constructor(label) {
         super(label);
-        this._targetObject = null;
 
         this._inputControl = document.createElement("input");
         this._inputControl.type = "checkbox";
@@ -261,12 +283,15 @@ export class Checkbox extends HtmlControl {
         this._inputControl.style.marginRight = "10px";
     }
 
+    /** @param {boolean} value */
     checked(value) {
         this._inputControl.checked = !!value;
         return this;
     }
 
+    /** @param {string} name */
     withProperty(name) {
+        // @ts-ignore
         this.addEventListener("click", (event) => this._targetObject[name] = event.target.checked);
         return this;
     }
@@ -274,7 +299,7 @@ export class Checkbox extends HtmlControl {
 
 export class RadioGroup extends HtmlControl {
     constructor() {
-        super();
+        super("");
 
         /** @type {HTMLInputElement[]} */
         this._buttons = [];
@@ -312,10 +337,81 @@ export class RadioGroup extends HtmlControl {
         return this;
     }
 
+    /** @param {number} index */
     checked(index) {
         if (index >= 0 && index < this._buttons.length)
             this._buttons[index].checked = true;
 
+        return this;
+    }
+}
+
+export class TextInput extends HtmlControl {
+    /** @param {string} label */
+    constructor(label = "") {
+        super(label);
+        this._inputControl = document.createElement("input");
+        this._inputControl.type = "text";
+        this._inputControl.id = this._labelId;
+        this._inputControl.classList.add("helionTextInput");
+        this._label.classList.add("helionTextInputLabel");
+    }
+
+    /** 
+     * @param {string} text 
+     * @return {TextInput} 
+     */
+    withPlaceholder(text) {
+        this._inputControl.placeholder = text;
+        return this;
+    }
+
+    /** 
+     * @param {string} value 
+     * @return {TextInput} 
+     */
+    withValue(value) {
+        this._inputControl.value = value;
+        return this;
+    }
+
+    get value() { return this._inputControl.value; }
+    set value(v) { this._inputControl.value = v; }
+
+    /** @param {boolean} isValid */
+    set valid(isValid) {
+        this._inputControl.classList.toggle("helionTextInput--invalid", !isValid);
+    }
+
+    /** 
+     * @param {string|number} width 
+     * @return {TextInput} 
+     */
+    withMinWidth(width) {
+        this._inputControl.style.minWidth = typeof width === "number" ? `${width}px` : width;
+        return this;
+    }
+
+    /** 
+     * @param {string} name 
+     * @return {TextInput} 
+     */
+    withProperty(name) {
+        // @ts-ignore
+        this.addEventListener("change", event => this._targetObject[name] = event.target.value);
+        return this;
+    }
+
+    /** 
+     * @param {(event: KeyboardEvent) => void} callback 
+     * @return {TextInput} 
+     */
+    onEnter(callback) {
+        this.addEventListener("keydown", event => {
+            // @ts-ignore
+            if (event.key === "Enter") 
+                callback(event);
+        });
         return this;
     }
 }
@@ -326,6 +422,7 @@ export class Button extends HtmlControl {
         super(label);
         this._inputControl = document.createElement("button");
         this._inputControl.id = this._labelId;
+        this._inputControl.classList.add("helionButton");
     }
 
     /** 

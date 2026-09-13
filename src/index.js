@@ -50,7 +50,7 @@ export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { SunView } from "./view/3d/astro/sun.js";
 export { Saturn } from "./view/3d/astro/saturn.js";
 export { Planets, Sun } from "./model/phys/planets.js";
-export { DropdownMenu, Checkbox, Button, Slider, RadioGroup } from "./core/controls.js";
+export { DropdownMenu, Checkbox, Button, Slider, RadioGroup, TextInput } from "./core/controls.js";
 export { Simulation, Registry, MathPhysicsModelBehavior, Transformation } from "./core/helion.js";
 export { Floor, Aquarium, Ceiling } from "./view/3d/primitives/decorations.js";
 export { OneDimensionalComplexPlaneWave2D } from "./view/2d/composite/quantum.js";
