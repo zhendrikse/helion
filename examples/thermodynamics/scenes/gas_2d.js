@@ -3,7 +3,6 @@ import { RadialSymmetricBody, Simulation, SphereSphereCollision, Trail, Vec2, Ve
 import { Renderable2D } from "../../../src/view/renderer.js";
 
 const CONTAINER_SIZE = 10;
-const TRACER_COLOR = 0xff4444;
 
 class ParticleView2D extends Renderable2D {
     constructor({ color = 0xffff00 } = {}) {
@@ -108,7 +107,6 @@ const container = createContainerView(CONTAINER_SIZE);
 const simulation = Simulation
     .with({
         htmlDivId: "gas2dContainer",
-        viewport: { aspectRatio: "1 / 1" },
         camera: {
             position: new Vec3(0, 0, 14),
             orthographic: true,
@@ -125,15 +123,15 @@ const simulation = Simulation
     .addObject3D(container)
     .start();
 
-for (const [index, particle] of Array.from(gas).entries()) {
+Array.from(gas).forEach((particle, index) => {
     simulation.bind(particle.alwaysWith(new ParticleView2D({
-        color: index === 0 ? TRACER_COLOR : 0xffff00
+        color: index === 0 ? 0xff0000 : 0xffff00
     })));
 
     if (index === 0)
         simulation.bind(particle.alwaysWith(new Trail({
-            maxPoints: 300,
+            maxPoints: 150,
             trailStep: 2,
-            color: TRACER_COLOR
+            color: 0xBF40BF
         })));
-}
+});
