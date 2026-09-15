@@ -14,25 +14,20 @@ const TRAIL_COLOR = 0xBF40BF;
 class ParticleView2D extends Renderable2D {
     constructor({ color = PARTICLE_COLOR } = {}) {
         super();
-
         this._geometry = new CircleGeometry(1, 16);
         this._material = new MeshBasicMaterial({ color });
         this._mesh = new Mesh(this._geometry, this._material);
         this.add(this._mesh);
     }
-
     canBindTo(particle) {
         if (!particle.position || particle.radius == null)
             throw new Error("ParticleView2D can only bind to particles with a position and radius.");
-
         return true;
     }
-
     synchronizeWith(particle) {
         this.position.copy(particle.position);
         this.scale.setScalar(particle.radius);
     }
-
     dispose() {
         this._geometry.dispose();
         this._material.dispose();
@@ -56,7 +51,6 @@ class Gas2D {
         this._particleMass = particleMass;
         this._temperature = particleMass * initialSpeed * initialSpeed / 2;
         this._collisionHandler = new SphereSphereCollision();
-
         this.#addParticles(particleCount, this._temperature);
     }
 
@@ -64,10 +58,8 @@ class Gas2D {
     [Symbol.iterator]() {
         return this._particles.slice(0, this._activeParticleCount)[Symbol.iterator]();
     }
-
-    get temperature() {
-        return this._temperature;
-    }
+    get temperature() { return this._temperature; }
+    get activeParticleCount() { return this._activeParticleCount; }
 
     addParticles(numberOfParticles = PARTICLES_TO_ADD) {
         const particles = this.#addParticles(numberOfParticles, this._temperature);
@@ -78,32 +70,25 @@ class Gas2D {
     setTemperature(newTemperature) {
         if (newTemperature <= 0)
             throw new Error("Temperature must be greater than zero.");
-
         const scale = Math.sqrt(newTemperature / this._temperature);
         for (const particle of this._particles.slice(1, this._activeParticleCount))
             particle.velocity.multiplyScalar(scale);
-
         this._temperature = newTemperature;
     }
 
     reset(temperature = this._temperature) {
         this._activeParticleCount = this._baseParticleCount;
         this._temperature = temperature;
-
-        for (let i = 0; i < this._baseParticleCount; i++) {
-            const particle = this._particles[i];
-            this.#resetParticle(particle, i === 0 ? 0 : this._temperature);
-        }
+        for (let i = 0; i < this._baseParticleCount; i++)
+            this.#resetParticle(this._particles[i], i === 0 ? 0 : this._temperature);
     }
 
     evolve(dt) {
         const particles = this._particles.slice(0, this._activeParticleCount);
-
         for (const particle of particles) {
             particle.integrate(dt);
             this.#confineToBox(particle);
         }
-
         for (let i = 0; i < particles.length; i++)
             for (let j = i + 1; j < particles.length; j++)
                 particles[i].and(particles[j]).apply(this._collisionHandler);
@@ -112,7 +97,6 @@ class Gas2D {
     #addParticles(numberOfParticles, temperature) {
         const particles = [];
         const half = this._containerSize / 2 - this._particleRadius;
-
         for (let i = 0; i < numberOfParticles; i++) {
             const angle = Math.random() * 2 * Math.PI;
             const speed = Math.sqrt(2 * temperature / this._particleMass);
@@ -125,22 +109,16 @@ class Gas2D {
             this._particles.push(particle);
             particles.push(particle);
         }
-
         return particles;
     }
 
     #resetParticle(particle, temperature) {
         const half = this._containerSize / 2 - particle.radius;
-        particle.position.set(
-            (Math.random() * 2 - 1) * half,
-            (Math.random() * 2 - 1) * half
-        );
-
+        particle.position.set((Math.random() * 2 - 1) * half, (Math.random() * 2 - 1) * half);
         if (temperature === 0) {
             particle.velocity.set(0, 0);
             return;
         }
-
         const angle = Math.random() * 2 * Math.PI;
         const speed = Math.sqrt(2 * temperature / particle.mass);
         particle.velocity.set(Math.cos(angle) * speed, Math.sin(angle) * speed);
@@ -149,7 +127,6 @@ class Gas2D {
     #confineToBox(particle) {
         const half = this._containerSize / 2;
         const limit = half - particle.radius;
-
         if (particle.position.x > limit) {
             particle.position.x = limit;
             particle.velocity.x = -Math.abs(particle.velocity.x);
@@ -157,7 +134,6 @@ class Gas2D {
             particle.position.x = -limit;
             particle.velocity.x = Math.abs(particle.velocity.x);
         }
-
         if (particle.position.y > limit) {
             particle.position.y = limit;
             particle.velocity.y = -Math.abs(particle.velocity.y);
@@ -177,38 +153,24 @@ function createContainerView(size) {
 const gas = new Gas2D();
 const container = createContainerView(CONTAINER_SIZE);
 const particleViews = [];
-const tracerTrail = new Trail({
-    maxPoints: 150,
-    trailStep: 2,
-    color: TRAIL_COLOR
-});
+const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: TRAIL_COLOR });
 
 const simulation = Simulation
     .with({
         htmlDivId: "gas2dContainer",
-        camera: {
-            position: new Vec3(0, 0, 14),
-            orthographic: true,
-            controls: false
-        },
+        camera: { position: new Vec3(0, 0, 14), orthographic: true, controls: false },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
-        infoPanel: {
-            text: "<strong>2D gas</strong><br/>First Helion prototype: particles moving in a square container."
-        }
+        infoPanel: { text: "<strong>2D gas</strong><br/>First Helion prototype: particles moving in a square container." }
     })
     .runsEvery(0.01)
     .onStep((_, dt) => gas.evolve(dt))
     .addObject3D(container);
 
 function bindParticle(particle, index) {
-    const particleView = new ParticleView2D({
-        color: index === 0 ? TRACER_COLOR : PARTICLE_COLOR
-    });
-
+    const particleView = new ParticleView2D({ color: index === 0 ? TRACER_COLOR : PARTICLE_COLOR });
     particleViews.push(particleView);
     simulation.bind(particle.alwaysWith(particleView));
-
     if (index === 0)
         simulation.bind(particle.alwaysWith(tracerTrail));
 }
@@ -238,7 +200,7 @@ const resetButton = new Button()
 
 const showButton = new Button()
     .withText("Show")
-    .onClick(() => particleViews.forEach(view => view.visible = true));
+    .onClick(() => particleViews.forEach((view, index) => view.visible = index < gas.activeParticleCount));
 
 const hideButton = new Button()
     .withText("Hide")
