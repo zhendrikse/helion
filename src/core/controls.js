@@ -237,7 +237,7 @@ export class Slider extends HtmlControl {
         return this;
     }
 
-    /** @param {string name} */
+    /** @param {string} name */
     withProperty(name) {
         this.addEventListener("input", (event) => {
             // @ts-ignore

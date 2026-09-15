@@ -1,5 +1,8 @@
 import { CircleGeometry, Mesh, MeshBasicMaterial, BoxGeometry, EdgesGeometry, LineBasicMaterial, LineSegments } from "three";
-import { Button, RadialSymmetricBody, Simulation, Slider, SphereSphereCollision, Trail, Vec2, Vec3 } from "../../../src/index.js";
+import {
+    Range, Button, RadialSymmetricBody, Simulation, Slider, SphereSphereCollision,
+    Trail, Vec2, Vec3
+} from "../../../src/index.js";
 import { Renderable2D } from "../../../src/view/renderer.js";
 
 const CONTAINER_SIZE = 10;
@@ -7,9 +10,6 @@ const PARTICLE_COUNT = 200;
 const PARTICLES_TO_ADD = 50;
 const INITIAL_SPEED = 2;
 const INITIAL_TEMPERATURE = INITIAL_SPEED * INITIAL_SPEED / 2;
-const TRACER_COLOR = 0xff0000;
-const PARTICLE_COLOR = 0xffff00;
-const TRAIL_COLOR = 0xBF40BF;
 
 class ParticleView2D extends Renderable2D {
     constructor({ color = PARTICLE_COLOR } = {}) {
@@ -153,32 +153,10 @@ function createContainerView(size) {
 const gas = new Gas2D();
 const container = createContainerView(CONTAINER_SIZE);
 const particleViews = [];
-const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: TRAIL_COLOR });
-
-const simulation = Simulation
-    .with({
-        htmlDivId: "gas2dContainer",
-        camera: { position: new Vec3(0, 0, 14), orthographic: true, controls: false },
-        lighting: { enabled: false },
-        headUpDisplay: { enabled: false },
-        infoPanel: { text: "<strong>2D gas</strong><br/>First Helion prototype: particles moving in a square container." }
-    })
-    .runsEvery(0.01)
-    .onStep((_, dt) => gas.evolve(dt))
-    .addObject3D(container);
-
-function bindParticle(particle, index) {
-    const particleView = new ParticleView2D({ color: index === 0 ? TRACER_COLOR : PARTICLE_COLOR });
-    particleViews.push(particleView);
-    simulation.bind(particle.alwaysWith(particleView));
-    if (index === 0)
-        simulation.bind(particle.alwaysWith(tracerTrail));
-}
-
-Array.from(gas).forEach(bindParticle);
+const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: 0xBF40BF });
 
 const temperatureSlider = new Slider("Temperature")
-    .withRange({ from: 0.1, to: 4, stepSize: 0.1 })
+    .withRange(new Range(0.1, 4, 0.1 ))
     .withValue(gas.temperature)
     .onInput(event => gas.setTemperature(Number(event.target.value)));
 
@@ -194,30 +172,35 @@ const runButton = new Button()
         }
     });
 
-const resetButton = new Button()
-    .withText("⟳ Reset")
-    .onClick(() => simulation.reset());
-
-const showButton = new Button()
-    .withText("Show")
-    .onClick(() => particleViews.forEach((view, index) => view.visible = index < gas.activeParticleCount));
-
-const hideButton = new Button()
-    .withText("Hide")
-    .onClick(() => particleViews.slice(1).forEach(view => view.visible = false));
-
-const addButton = new Button()
-    .withText(`+${PARTICLES_TO_ADD} particles`)
-    .onClick(() => {
-        const particles = gas.addParticles(PARTICLES_TO_ADD);
-        const startIndex = particleViews.length;
-        particles.forEach((particle, index) => bindParticle(particle, startIndex + index));
-    });
-
-simulation
-    .append(runButton.togetherWith(resetButton))
+const simulation = Simulation
+    .with({
+        htmlDivId: "gas2dContainer",
+        camera: { position: new Vec3(0, 0, CONTAINER_SIZE), orthographic: true, controls: false },
+        lighting: { enabled: false },
+        infoPanel: { text: "<strong>2D gas</strong><br/>First Helion prototype: particles moving in a square container." }
+    })
+    .withMouseClickEventListener()
+    .runsEvery(0.01)
+    .onStep((_, dt) => gas.evolve(dt))
+    .addObject3D(container)
     .append(temperatureSlider)
-    .append(showButton.togetherWith(hideButton).togetherWith(addButton))
+    .append(runButton.togetherWith(new Button()
+        .withText("⟳ Reset")
+        .onClick(() => simulation.reset())
+        .togetherWith(new Button()
+            .withText("Show")
+            .onClick(() => particleViews.forEach((view, index) =>
+                view.visible = index < gas.activeParticleCount))
+            .togetherWith(new Button()
+                .withText("Hide")
+                .onClick(() => particleViews.slice(1).forEach(view => view.visible = false))
+                .togetherWith(new Button()
+                    .withText(`+${PARTICLES_TO_ADD} particles`)
+                    .onClick(() => {
+                        const particles = gas.addParticles(PARTICLES_TO_ADD);
+                        const startIndex = particleViews.length;
+                        particles.forEach((particle, index) => bindParticle(particle, startIndex + index));
+                  }))))))
     .onReset(() => {
         gas.reset(temperatureSlider.value);
         particleViews.slice(PARTICLE_COUNT).forEach(view => view.visible = false);
@@ -226,3 +209,16 @@ simulation
         runButton.withText("❚❚ Pause");
     })
     .start();
+
+function bindParticle(particle, index) {
+    const particleView = new ParticleView2D({ color: index === 0 ? 0xff0000 : particleColor });
+    particleViews.push(particleView);
+    simulation.bind(particle.alwaysWith(particleView));
+    if (index === 0)
+        simulation.bind(particle.alwaysWith(tracerTrail));
+}
+
+let particleColor = 0xffff00;
+Array.from(gas).forEach(bindParticle);
+particleColor = 0x00ffff;
+

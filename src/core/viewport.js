@@ -91,7 +91,7 @@ export class Viewport {
         this._details.classList.add("helionControlGroup");
         const summary = document.createElement("summary");
         summary.classList.add("helionControlSummary");
-        summary.textContent = "⚙️ Parameters";
+        summary.textContent = "⚙️ Settings";
         this._details.appendChild(summary);
         this._details.style.visibility = "hidden";
         this._details.style.paddingBottom = "15px";
