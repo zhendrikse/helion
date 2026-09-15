@@ -1,5 +1,5 @@
 import { CircleGeometry, Mesh, MeshBasicMaterial, BoxGeometry, EdgesGeometry, LineBasicMaterial, LineSegments } from "three";
-import { RadialSymmetricBody, Simulation, Vec2, Vec3 } from "../../../src/index.js";
+import { RadialSymmetricBody, Simulation, SphereSphereCollision, Vec2, Vec3 } from "../../../src/index.js";
 import { Renderable2D } from "../../../src/view/renderer.js";
 
 const PARTICLE_COUNT = 200;
@@ -7,6 +7,8 @@ const CONTAINER_SIZE = 10;
 const PARTICLE_RADIUS = 0.08;
 const PARTICLE_MASS = 1;
 const INITIAL_SPEED = 2;
+
+const sphereSphereCollision = new SphereSphereCollision();
 
 class ParticleView2D extends Renderable2D {
     constructor({ color = 0xffff00 } = {}) {
@@ -70,6 +72,10 @@ class Gas2D {
             particle.integrate(dt);
             this.#confineToBox(particle);
         }
+
+        for (let i = 0; i < this._particles.length; i++)
+            for (let j = i + 1; j < this._particles.length; j++)
+                this._particles[i].and(this._particles[j]).apply(sphereSphereCollision);
     }
 
     #confineToBox(particle) {
