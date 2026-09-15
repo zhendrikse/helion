@@ -2,13 +2,7 @@ import { CircleGeometry, Mesh, MeshBasicMaterial, BoxGeometry, EdgesGeometry, Li
 import { RadialSymmetricBody, Simulation, SphereSphereCollision, Vec2, Vec3 } from "../../../src/index.js";
 import { Renderable2D } from "../../../src/view/renderer.js";
 
-const PARTICLE_COUNT = 200;
 const CONTAINER_SIZE = 10;
-const PARTICLE_RADIUS = 0.08;
-const PARTICLE_MASS = 1;
-const INITIAL_SPEED = 2;
-
-const sphereSphereCollision = new SphereSphereCollision();
 
 class ParticleView2D extends Renderable2D {
     constructor({ color = 0xffff00 } = {}) {
@@ -41,14 +35,15 @@ class ParticleView2D extends Renderable2D {
 
 class Gas2D {
     constructor({
-        particleCount = PARTICLE_COUNT,
+        particleCount = 200,
         containerSize = CONTAINER_SIZE,
-        particleRadius = PARTICLE_RADIUS,
-        particleMass = PARTICLE_MASS,
-        initialSpeed = INITIAL_SPEED
+        particleRadius = 0.08,
+        particleMass = 1,
+        initialSpeed = 2
     } = {}) {
         this._particles = [];
         this._containerSize = containerSize;
+        this._collisionHandler = new SphereSphereCollision();
 
         const half = containerSize / 2 - particleRadius; // Possible location
         for (let i = 0; i < particleCount; i++) {
@@ -75,7 +70,7 @@ class Gas2D {
 
         for (let i = 0; i < this._particles.length; i++)
             for (let j = i + 1; j < this._particles.length; j++)
-                this._particles[i].and(this._particles[j]).apply(sphereSphereCollision);
+                this._particles[i].and(this._particles[j]).apply(this._collisionHandler);
     }
 
     #confineToBox(particle) {
@@ -102,7 +97,7 @@ class Gas2D {
 
 function createContainerView(size) {
     const geometry = new EdgesGeometry(new BoxGeometry(size, size, 0.01));
-    const material = new LineBasicMaterial({ color: 0xffffff });
+    const material = new LineBasicMaterial({ color: 0x00ffff });
     return new LineSegments(geometry, material);
 }
 
@@ -125,7 +120,6 @@ const simulation = Simulation
         }
     })
     .runsEvery(0.01)
-    .advancesBy(0.01)
     .onStep((_, dt) => gas.evolve(dt))
     .addObject3D(container)
     .start();
