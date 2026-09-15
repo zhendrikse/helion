@@ -8,6 +8,9 @@ import { Renderable2D } from "../../../src/view/renderer.js";
 const CONTAINER_SIZE = 10;
 const PARTICLE_COUNT = 200;
 const PARTICLES_TO_ADD = 50;
+const BIN_COUNT = 30;
+const MAX_SPEED = 5;
+const AVERAGING_FRAMES = 100;
 
 class ParticleView2D extends Renderable2D {
     constructor({ color = 0xffff00 } = {}) {
@@ -34,14 +37,6 @@ class ParticleView2D extends Renderable2D {
 }
 
 class Gas2D {
-    /**
-     * @param param0
-     * @param {number} param0.particleCount
-     * @param {number} param0.containerSize
-     * @param {number} param0.particleRadius
-     * @param {number} param0.particleMass
-     * @param {number} param0.initialSpeed
-     */
     constructor({
         particleCount = PARTICLE_COUNT,
         containerSize = CONTAINER_SIZE,
@@ -60,21 +55,18 @@ class Gas2D {
         this.#addParticles(particleCount, this._temperature);
     }
 
-    /** @returns {ArrayIterator<RadialSymmetricBody>} */
     [Symbol.iterator]() {
         return this._particles.slice(0, this._activeParticleCount)[Symbol.iterator]();
     }
     get temperature() { return this._temperature; }
     get activeParticleCount() { return this._activeParticleCount; }
 
-    /** @param {number} numberOfParticles */
     addParticles(numberOfParticles = PARTICLES_TO_ADD) {
         const particles = this.#addParticles(numberOfParticles, this._temperature);
         this._activeParticleCount += numberOfParticles;
         return particles;
     }
 
-    /** @param {number} newTemperature */
     set temperature(newTemperature) {
         if (newTemperature <= 0)
             throw new Error("Temperature must be greater than zero.");
@@ -85,12 +77,47 @@ class Gas2D {
         this._temperature = newTemperature;
     }
 
-    /** @param {number} temperature */
     reset(temperature = this._temperature) {
         this._activeParticleCount = this._baseParticleCount;
         this._temperature = temperature;
         for (let i = 0; i < this._baseParticleCount; i++)
             this.#resetParticle(this._particles[i], i === 0 ? 0 : this._temperature);
+    }
+
+    speedDistribution(binCount = BIN_COUNT, maxSpeed = MAX_SPEED) {
+        const bins = new Array(binCount).fill(0);
+        const binSize = maxSpeed / binCount;
+        let sumV2 = 0;
+        let particleCount = 0;
+
+        for (const particle of this._particles.slice(1, this._activeParticleCount)) {
+            const speed = particle.velocity.length();
+            sumV2 += speed * speed;
+            particleCount++;
+            const index = Math.min(Math.floor(speed / binSize), binCount - 1);
+            bins[index]++;
+        }
+
+        const meanV2 = particleCount > 0 ? sumV2 / particleCount : 0;
+        const temperature = meanV2 / 2;
+        const theory = new Array(binCount).fill(0);
+
+        if (temperature > 0 && particleCount > 0) {
+            for (let i = 0; i < binCount; i++) {
+                const speed = (i + 0.5) * binSize;
+                theory[i] = (speed / temperature) * Math.exp(-speed * speed / (2 * temperature));
+            }
+            const sumTheory = theory.reduce((sum, value) => sum + value, 0);
+            const scale = particleCount / sumTheory;
+            for (let i = 0; i < binCount; i++)
+                theory[i] *= scale;
+        }
+
+        return {
+            speeds: Array.from({ length: binCount }, (_, i) => (i + 0.5) * binSize),
+            bins,
+            theory
+        };
     }
 
     evolve(dt) {
@@ -157,9 +184,11 @@ class Gas2D {
 const gas = new Gas2D();
 const particleViews = [];
 const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: 0xBF40BF });
+const histogramBuffer = [];
+const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SPEED / BIN_COUNT);
 
 const temperatureSlider = new Slider("Temperature")
-    .withRange(new Range(0.1, 4, 0.1 ))
+    .withRange(new Range(0.1, 4, 0.1))
     .withValue(gas.temperature)
     .onInput(event => gas.temperature = Number(event.target.value));
 
@@ -204,12 +233,48 @@ const simulation = Simulation
                         const particles = gas.addParticles(PARTICLES_TO_ADD);
                         const startIndex = particleViews.length;
                         particles.forEach((particle, index) => bindParticle(particle, startIndex + index));
-                  }))))))
+                    }))))))
+    .setupGraphWith({
+        dataDefinition: [
+            {},
+            { label: "Simulation", color: "cyan", fill: "rgba(0, 255, 255, 0.2)" },
+            { label: "Maxwell (2D)", color: "orange" }
+        ],
+        height: 250,
+        title: "Speed Distribution (averaged)",
+        xLabel: "Speed",
+        yLabel: "Particles"
+    })
+    .onFrame(() => {
+        const { bins, theory } = gas.speedDistribution();
+        histogramBuffer.push(bins);
+        if (histogramBuffer.length > AVERAGING_FRAMES)
+            histogramBuffer.shift();
+
+        const averaged = new Array(BIN_COUNT).fill(0);
+        for (const frame of histogramBuffer)
+            for (let i = 0; i < BIN_COUNT; i++)
+                averaged[i] += frame[i];
+        for (let i = 0; i < BIN_COUNT; i++)
+            averaged[i] /= histogramBuffer.length;
+
+        const graphData = simulation._plot.graphData;
+        graphData[0].length = 0;
+        graphData[1].length = 0;
+        graphData[2].length = 0;
+        for (let i = 0; i < BIN_COUNT; i++) {
+            graphData[0].push(speedAxis[i]);
+            graphData[1].push(averaged[i]);
+            graphData[2].push(theory[i]);
+        }
+        simulation._plot.update();
+    })
     .onReset(() => {
         gas.reset(temperatureSlider.value);
         particleViews.slice(PARTICLE_COUNT).forEach(view => view.visible = false);
         particleViews.slice(0, PARTICLE_COUNT).forEach(view => view.visible = true);
         tracerTrail.reset();
+        histogramBuffer.length = 0;
         runButton.withText("❚❚ Pause");
     })
     .start();
@@ -225,4 +290,3 @@ function bindParticle(particle, index) {
 let particleColor = 0xffff00;
 Array.from(gas).forEach(bindParticle);
 particleColor = 0x00ffff;
-

@@ -6,9 +6,9 @@ export class UPlotGraph {
         dataDefinition,
         width = 600,
         height = 300,
-        title="",
-        xLabel="",
-        yLabel="",
+        title = "",
+        xLabel = "",
+        yLabel = "",
         maxPoints = 500,
         labelColor = "green",
     } = {}) {
@@ -20,7 +20,8 @@ export class UPlotGraph {
         dataDefinition.slice(1).forEach(dataPoint => {
             series.push({
                 label: dataPoint.label,
-                stroke: dataPoint.color
+                stroke: dataPoint.color,
+                fill: dataPoint.fill
             });
         });
 
@@ -31,19 +32,22 @@ export class UPlotGraph {
     }
 
     _uplotOptions(title, width, height, labelColor, xLabel, yLabel, series) {
-        return { title, width, height,
+        return {
+            title,
+            width,
+            height,
             scales: { x: { auto: true }, y: { auto: true } },
             axes: [{
-                    stroke: labelColor,
-                    font: "12px Arial",
-                    grid: { stroke: "rgba(255, 255, 255, 0.2)", width: 1 },
-                    label: xLabel,
-                }, {
-                    stroke: labelColor,
-                    font: "12px Arial",
-                    grid: { stroke: "rgba(255, 255, 255, 0.2)", width: 1 },
-                    label: yLabel
-                }],
+                stroke: labelColor,
+                font: "12px Arial",
+                grid: { stroke: "rgba(255, 255, 255, 0.2)", width: 1 },
+                label: xLabel,
+            }, {
+                stroke: labelColor,
+                font: "12px Arial",
+                grid: { stroke: "rgba(255, 255, 255, 0.2)", width: 1 },
+                label: yLabel
+            }],
             series
         };
     }
