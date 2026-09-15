@@ -1,8 +1,9 @@
 import { CircleGeometry, Mesh, MeshBasicMaterial, BoxGeometry, EdgesGeometry, LineBasicMaterial, LineSegments } from "three";
-import { RadialSymmetricBody, Simulation, SphereSphereCollision, Vec2, Vec3 } from "../../../src/index.js";
+import { RadialSymmetricBody, Simulation, SphereSphereCollision, Trail, Vec2, Vec3 } from "../../../src/index.js";
 import { Renderable2D } from "../../../src/view/renderer.js";
 
 const CONTAINER_SIZE = 10;
+const TRACER_COLOR = 0xff4444;
 
 class ParticleView2D extends Renderable2D {
     constructor({ color = 0xffff00 } = {}) {
@@ -124,5 +125,15 @@ const simulation = Simulation
     .addObject3D(container)
     .start();
 
-for (const particle of gas)
-    simulation.bind(particle.alwaysWith(new ParticleView2D()));
+for (const [index, particle] of Array.from(gas).entries()) {
+    simulation.bind(particle.alwaysWith(new ParticleView2D({
+        color: index === 0 ? TRACER_COLOR : 0xffff00
+    })));
+
+    if (index === 0)
+        simulation.bind(particle.alwaysWith(new Trail({
+            maxPoints: 300,
+            trailStep: 2,
+            color: TRACER_COLOR
+        })));
+}
