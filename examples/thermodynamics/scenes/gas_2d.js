@@ -1,5 +1,5 @@
 import { CircleGeometry, Mesh, MeshBasicMaterial, BoxGeometry, EdgesGeometry, LineBasicMaterial, LineSegments } from "three";
-import { RadialSymmetricBody, Simulation, Vec3 } from "../../../src/index.js";
+import { RadialSymmetricBody, Simulation, Vec2, Vec3 } from "../../../src/index.js";
 import { Renderable2D } from "../../../src/view/renderer.js";
 
 const PARTICLE_COUNT = 200;
@@ -48,31 +48,19 @@ class Gas2D {
         this._particles = [];
         this._containerSize = containerSize;
 
-        const half = containerSize / 2;
-
+        const half = containerSize / 2 - particleRadius; // Possible location
         for (let i = 0; i < particleCount; i++) {
-            const position = new Vec3(
-                (Math.random() * 2 - 1) * (half - particleRadius),
-                (Math.random() * 2 - 1) * (half - particleRadius),
-                0
-            );
-
             const angle = Math.random() * 2 * Math.PI;
-            const velocity = new Vec3(
-                Math.cos(angle) * initialSpeed,
-                Math.sin(angle) * initialSpeed,
-                0
-            );
-
             this._particles.push(new RadialSymmetricBody({
-                position,
-                velocity,
+                position: new Vec2((Math.random() * 2 - 1), (Math.random() * 2 - 1)).multiplyScalar(half),
+                velocity: new Vec2(Math.cos(angle), Math.sin(angle)).multiplyScalar(initialSpeed),
                 radius: particleRadius,
                 mass: particleMass
             }));
         }
     }
 
+    /** @returns {ArrayIterator<RadialSymmetricBody>} */
     [Symbol.iterator]() {
         return this._particles[Symbol.iterator]();
     }
@@ -121,7 +109,6 @@ const simulation = Simulation
         viewport: { aspectRatio: "1 / 1" },
         camera: {
             position: new Vec3(0, 0, 14),
-            target: new Vec3(0, 0, 0),
             orthographic: true,
             controls: false
         },
