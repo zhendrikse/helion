@@ -1,5 +1,5 @@
 import { CircleGeometry, Mesh, MeshBasicMaterial, BoxGeometry, EdgesGeometry, LineBasicMaterial, LineSegments } from "three";
-import { Button, RadialSymmetricBody, Range, Simulation, Slider, SphereSphereCollision, Trail, Vec2, Vec3 } from "../../../src/index.js";
+import { Button, RadialSymmetricBody, Simulation, Slider, SphereSphereCollision, Trail, Vec2, Vec3 } from "../../../src/index.js";
 import { Renderable2D } from "../../../src/view/renderer.js";
 
 const CONTAINER_SIZE = 10;
@@ -216,9 +216,8 @@ function bindParticle(particle, index) {
 Array.from(gas).forEach(bindParticle);
 
 const temperatureSlider = new Slider("Temperature")
-    .withRange(new Range({ from: 0.1, to: 4, stepSize: 0.1 }))
+    .withRange({ from: 0.1, to: 4, stepSize: 0.1 })
     .withValue(gas.temperature)
-    .withUnits("")
     .onInput(event => gas.setTemperature(Number(event.target.value)));
 
 const runButton = new Button()
