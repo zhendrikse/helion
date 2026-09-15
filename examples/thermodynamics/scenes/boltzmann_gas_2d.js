@@ -154,14 +154,7 @@ class Gas2D {
     }
 }
 
-function createContainerView(size) {
-    const geometry = new EdgesGeometry(new BoxGeometry(size, size, 0.01));
-    const material = new LineBasicMaterial({ color: 0x00ffff });
-    return new LineSegments(geometry, material);
-}
-
 const gas = new Gas2D();
-const container = createContainerView(CONTAINER_SIZE);
 const particleViews = [];
 const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: 0xBF40BF });
 
@@ -184,15 +177,16 @@ const runButton = new Button()
 
 const simulation = Simulation
     .with({
-        htmlDivId: "gas2dContainer",
+        htmlDivId: "idealGas2dContainer",
         camera: { position: new Vec3(0, 0, CONTAINER_SIZE), orthographic: true, controls: false },
         lighting: { enabled: false },
-        infoPanel: { text: "<strong>2D gas</strong><br/>First Helion prototype: particles moving in a square container." }
+        infoPanel: {
+            text: "<strong>🎈 2D gas</strong><br/>Velocity of an ideal two-dimensional gas in a square container."
+        }
     })
     .withMouseClickEventListener()
     .runsEvery(0.01)
     .onStep((_, dt) => gas.evolve(dt))
-    .addObject3D(container)
     .append(temperatureSlider)
     .append(runButton.togetherWith(new Button()
         .withText("⟳ Reset")

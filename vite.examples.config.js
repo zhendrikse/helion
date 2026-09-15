@@ -9,6 +9,7 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 antenna: path.resolve(__dirname, 'examples/electromagnetism/scenes/antenna.js'),
+                boltzmann_gas_2d: path.resolve(__dirname, 'examples/thermodynamics/scenes/boltzmann_gas_2d.js'),
                 black_hole_ray_tracer: path.resolve(__dirname, 'examples/astrophysics/scenes/black_hole_ray_tracer.js'),
                 black_hole_space_time: path.resolve(__dirname, 'examples/relativity/scenes/black_hole_space_time.js'),
                 bouncing_ball_on_floor: path.resolve(__dirname, 'examples/kinematics/scenes/bouncing_ball_on_floor.js'),
