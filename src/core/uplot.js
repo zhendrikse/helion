@@ -59,9 +59,4 @@ export class UPlotGraph {
             this._graphData.forEach(arr => arr.shift());
         this._uplotChart.setData(this._graphData);
     }
-
-    setData(data) {
-        this._graphData = data;
-        this._uplotChart.setData(this._graphData);
-    }
 }
