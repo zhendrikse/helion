@@ -8,11 +8,9 @@ import { Renderable2D } from "../../../src/view/renderer.js";
 const CONTAINER_SIZE = 10;
 const PARTICLE_COUNT = 200;
 const PARTICLES_TO_ADD = 50;
-const INITIAL_SPEED = 2;
-const INITIAL_TEMPERATURE = INITIAL_SPEED * INITIAL_SPEED / 2;
 
 class ParticleView2D extends Renderable2D {
-    constructor({ color = PARTICLE_COLOR } = {}) {
+    constructor({ color = 0xffff00 } = {}) {
         super();
         this._geometry = new CircleGeometry(1, 16);
         this._material = new MeshBasicMaterial({ color });
@@ -36,12 +34,20 @@ class ParticleView2D extends Renderable2D {
 }
 
 class Gas2D {
+    /**
+     * @param param0
+     * @param {number} param0.particleCount
+     * @param {number} param0.containerSize
+     * @param {number} param0.particleRadius
+     * @param {number} param0.particleMass
+     * @param {number} param0.initialSpeed
+     */
     constructor({
         particleCount = PARTICLE_COUNT,
         containerSize = CONTAINER_SIZE,
         particleRadius = 0.08,
         particleMass = 1,
-        initialSpeed = INITIAL_SPEED
+        initialSpeed = 2
     } = {}) {
         this._particles = [];
         this._baseParticleCount = particleCount;
@@ -61,21 +67,25 @@ class Gas2D {
     get temperature() { return this._temperature; }
     get activeParticleCount() { return this._activeParticleCount; }
 
+    /** @param {number} numberOfParticles */
     addParticles(numberOfParticles = PARTICLES_TO_ADD) {
         const particles = this.#addParticles(numberOfParticles, this._temperature);
         this._activeParticleCount += numberOfParticles;
         return particles;
     }
 
-    setTemperature(newTemperature) {
+    /** @param {number} newTemperature */
+    set temperature(newTemperature) {
         if (newTemperature <= 0)
             throw new Error("Temperature must be greater than zero.");
+
         const scale = Math.sqrt(newTemperature / this._temperature);
         for (const particle of this._particles.slice(1, this._activeParticleCount))
             particle.velocity.multiplyScalar(scale);
         this._temperature = newTemperature;
     }
 
+    /** @param {number} temperature */
     reset(temperature = this._temperature) {
         this._activeParticleCount = this._baseParticleCount;
         this._temperature = temperature;
@@ -158,7 +168,7 @@ const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: 0xBF40BF })
 const temperatureSlider = new Slider("Temperature")
     .withRange(new Range(0.1, 4, 0.1 ))
     .withValue(gas.temperature)
-    .onInput(event => gas.setTemperature(Number(event.target.value)));
+    .onInput(event => gas.temperature = Number(event.target.value));
 
 const runButton = new Button()
     .withText("❚❚ Pause")
