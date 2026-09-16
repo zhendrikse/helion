@@ -88,6 +88,6 @@ export {
 } from "./view/3d/composite/composites.js";
 
 export {
-    wavelengthColor, wavelengthToRGBNormalized, ColorMapper, toColorString, ComplexColorMappers, HueColorMapper,
+    wavelengthColor, ColorMapper, toColorString, ComplexColorMappers, HueColorMapper,
     WavelengthColorMapper, HexValueColorMapper, ColorMappers
 } from "./view/colormappers.js";

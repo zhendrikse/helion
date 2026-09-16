@@ -87,7 +87,7 @@ export function toColorString(hue) {
     return "#" + numberToTwoDigitHexString(r) + numberToTwoDigitHexString(g) + numberToTwoDigitHexString(b);
 }
 
-export function wavelengthToRGBNormalized(wavelength, targetColor) {
+function wavelengthToRGBNormalized(wavelength, targetColor) {
     let R = 0, G = 0, B = 0;
 
     if (wavelength >= 380 && wavelength < 440) {
