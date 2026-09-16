@@ -37,6 +37,23 @@ class ParticleView2D extends Renderable2D {
 }
 
 class Gas2D {
+    static ContainerType = Object.freeze({
+        Box: "box",
+        Sphere: "sphere"
+    });
+
+    static bounceWithinSphere = (particle, limit) => {
+        if (particle.position.lengthSq() > limit * limit)
+            particle.state.velocity.negate();
+    };
+
+    static bounceWithinBox = (particle, limit) => {
+        ["x", "y", "z"].forEach(axis => {
+            if (particle.position[axis] > limit || particle.position[axis] < -limit)
+                particle.velocity[axis] *= -1;
+        });
+    };
+
     /**
      * @param param0
      * @param {number} param0.particleCount Number of particles in gas
@@ -44,13 +61,15 @@ class Gas2D {
      * @param {number} param0.particleRadius Radius of particles
      * @param {number} param0.particleMass Mass of particles
      * @param {number} param0.initialSpeed Initial speed of particles
+     * @param {string} param0.containerType The container the gas is placed in
      */
     constructor({
         particleCount = PARTICLE_COUNT,
         containerSize = CONTAINER_SIZE,
         particleRadius = 0.08,
         particleMass = 1,
-        initialSpeed = 2
+        initialSpeed = 2,
+        containerType = Gas2D.ContainerType.Sphere
     } = {}) {
         this._particles = [];
         this._baseParticleCount = particleCount;
@@ -59,6 +78,9 @@ class Gas2D {
         this._particleMass = particleMass;
         this._temperature = particleMass * initialSpeed * initialSpeed / 2;
         this._collisionHandler = new SphereSphereCollision();
+        this._k = 1;
+        this._limitToContainer = containerType === Gas2D.ContainerType.Box ?
+            Gas2D.bounceWithinBox: Gas2D.bounceWithinSphere;
         this.addParticles(particleCount);
     }
 
@@ -72,21 +94,19 @@ class Gas2D {
 
     /** @param {number} numberOfParticles */
     addParticles(numberOfParticles = PARTICLES_TO_ADD) {
-        const particles = [];
-        const half = this._containerSize / 2 - this._particleRadius;
-        for (let i = 0; i < numberOfParticles; i++) {
-            const angle = Math.random() * 2 * Math.PI;
-            const speed = Math.sqrt(2 * this._temperature / this._particleMass);
-            const particle = new RadialSymmetricBody({
-                position: new Vec2((Math.random() * 2 - 1), (Math.random() * 2 - 1)).multiplyScalar(half),
-                velocity: new Vec2(Math.cos(angle), Math.sin(angle)).multiplyScalar(speed),
+        for (let i = 0; i < numberOfParticles; i++)
+            this._particles.push(new RadialSymmetricBody({
+                velocity: this.#newInitialVelocity(this._temperature),
                 radius: this._particleRadius,
                 mass: this._particleMass
-            });
-            this._particles.push(particle);
-            particles.push(particle);
-        }
-        return particles;
+            }));
+    }
+
+    #newInitialVelocity(temperature) {
+        // Init speed based on temperature: v_rms^2 = 2 k T / m (2D)
+        const averageKineticEnergy = Math.sqrt(2 * this._k * temperature / this._particleMass);
+        const angle = Math.random() * 2 * Math.PI;
+        return new Vec2(Math.cos(angle), Math.sin(angle)).multiplyScalar(averageKineticEnergy);
     }
 
     /** @param {number} newTemperature */
@@ -107,6 +127,23 @@ class Gas2D {
             this.#resetParticle(this._particles[i], i === 0 ? 0 : this._temperature);
     }
 
+    computeTheoreticalCurve(meanV2, binCount, maxSpeed) {
+        const binSize = maxSpeed / binCount;
+        const T = meanV2 / 2;   // effective temperature
+
+        const theory = [];
+        for (let i = 0; i < binCount; i++) {
+            const v = (i + 0.5) * binSize;
+            const value = (v / T) * Math.exp(-v * v / (2 * T));
+            theory.push(value);
+        }
+
+        // normalize so that area is equal to histogram
+        const sumTheory = theory.reduce((a, b) => a + b, 0);
+        const scale = this._particles.length / sumTheory;
+        return theory.map(v => v * scale);
+    }
+
     /**
      * @param {number} binCount
      * @param {number} maxSpeed
@@ -115,44 +152,29 @@ class Gas2D {
         const bins = new Array(binCount).fill(0);
         const binSize = maxSpeed / binCount;
         let sumV2 = 0;
-        let particleCount = 0;
 
         for (const particle of this._particles) {
+            sumV2 += particle.velocity.lengthSq();
             const speed = particle.velocity.length();
-            sumV2 += speed * speed;
-            particleCount++;
             const index = Math.min(Math.floor(speed / binSize), binCount - 1);
             bins[index]++;
         }
 
-        const meanV2 = particleCount > 0 ? sumV2 / particleCount : 0;
-        const temperature = meanV2 / 2;
-        const theory = new Array(binCount).fill(0);
-
-        if (temperature > 0 && particleCount > 0) {
-            for (let i = 0; i < binCount; i++) {
-                const speed = (i + 0.5) * binSize;
-                theory[i] = (speed / temperature) * Math.exp(-speed * speed / (2 * temperature));
-            }
-            const sumTheory = theory.reduce((sum, value) => sum + value, 0);
-            const scale = particleCount / sumTheory;
-            for (let i = 0; i < binCount; i++)
-                theory[i] *= scale;
-        }
-
+        const meanV2 = sumV2 / this._particles.length;
         return {
             speeds: Array.from({ length: binCount }, (_, i) => (i + 0.5) * binSize),
             bins,
-            theory
+            theory: this.computeTheoreticalCurve(meanV2, binCount, maxSpeed)
         };
     }
 
     /** @param {number} dt */
     evolve(dt) {
         const particles = this._particles.slice(0, this._particles.length);
+        const limit = this._containerSize * .5 - this._particleRadius;
         for (const particle of particles) {
+            this._limitToContainer(particle, limit);
             particle.integrate(dt);
-            this.#confineToBox(particle);
         }
         for (let i = 0; i < particles.length; i++)
             for (let j = i + 1; j < particles.length; j++)
@@ -166,28 +188,7 @@ class Gas2D {
             particle.velocity.set(0, 0);
             return;
         }
-        const angle = Math.random() * 2 * Math.PI;
-        const speed = Math.sqrt(2 * temperature / particle.mass);
-        particle.velocity.set(Math.cos(angle) * speed, Math.sin(angle) * speed);
-    }
-
-    #confineToBox(particle) {
-        const half = this._containerSize / 2;
-        const limit = half - particle.radius;
-        if (particle.position.x > limit) {
-            particle.position.x = limit;
-            particle.velocity.x = -Math.abs(particle.velocity.x);
-        } else if (particle.position.x < -limit) {
-            particle.position.x = -limit;
-            particle.velocity.x = Math.abs(particle.velocity.x);
-        }
-        if (particle.position.y > limit) {
-            particle.position.y = limit;
-            particle.velocity.y = -Math.abs(particle.velocity.y);
-        } else if (particle.position.y < -limit) {
-            particle.position.y = -limit;
-            particle.velocity.y = Math.abs(particle.velocity.y);
-        }
+        particle.velocity.copy(this.#newInitialVelocity(temperature));
     }
 }
 
@@ -214,23 +215,24 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .runsEvery(0.01)
     .onStep((_, dt) => gas.evolve(dt))
-    .append(temperatureSlider)
     .appendStartStopResetUI()
     .append(new Button()
-            .withText("Show")
-            .onClick(() => particleViews.forEach((view, index) =>
-                view.visible = index < gas.activeParticleCount))
+        .withText("Show")
+        .onClick(() => particleViews.forEach((view, index) =>
+            view.visible = index < gas.activeParticleCount))
+        .togetherWith(new Button()
+            .withText("Hide")
+            .onClick(() => particleViews.slice(1).forEach(view => view.visible = false))
             .togetherWith(new Button()
-                .withText("Hide")
-                .onClick(() => particleViews.slice(1).forEach(view => view.visible = false))
-                .togetherWith(new Button()
-                    .withText(`+${PARTICLES_TO_ADD} particles`)
-                    .onClick(() => {
-                        const particles = gas.addParticles(PARTICLES_TO_ADD);
-                        const startIndex = particleViews.length;
-                        particles.forEach((particle, index) => bindParticle(particle, startIndex + index));
-                    })
-                )))
+                .withText(`+${PARTICLES_TO_ADD} particles`)
+                .onClick(() => {
+                    gas.addParticles(PARTICLES_TO_ADD);
+                    const startIndex = particleViews.length;
+                    Array.from(gas).forEach((particle, index) =>
+                        bindParticle(particle, startIndex + index));
+                })
+            )))
+    .append(temperatureSlider)
     .setupGraphWith({
         dataDefinition: [
             {},
