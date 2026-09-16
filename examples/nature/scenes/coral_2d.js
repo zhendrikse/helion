@@ -122,23 +122,14 @@ class CoralBounds extends Renderable2D {
     }
 }
 
-let thresholdDistance = 5;
-let thresholdDistanceSquared = thresholdDistance * thresholdDistance;
-const dpr = window.devicePixelRatio || 1;
-const noise = 10 / dpr;
-const verticalDrift = 1.5 / dpr;
-
-function updateThreshold() {
-    const dprNow = window.devicePixelRatio || 1;
-    thresholdDistance = 5 * dprNow;
-    thresholdDistanceSquared = thresholdDistance * thresholdDistance;
-}
+const thresholdDistance = 5;
+const thresholdDistanceSquared = thresholdDistance * thresholdDistance;
+const noise = 10;
+const verticalDrift = 1.5;
 
 const particleField = new ParticleCloud(swarmSize);
 const coralBounds = new CoralBounds(particleField);
 
-// Veralgemeniseerd: colorFunction mapt positie -> genormaliseerde scalar (afstand tot seed),
-// colorMapper mapt die scalar -> kleur. View doet beide.
 let colorMapper = new ColorMappers().get(ColorMappers.Scientific)();
 const colorFunction = (particle) => {
     if (!particle.frozen)
@@ -171,8 +162,6 @@ const simulation = Simulation
         })
     );
 
-// Bind elke particle individueel aan zijn eigen ParticleView2D met gedeelde
-// colorFunction + colorMapper (gegeneraliseerd i.p.v. per-particle Color).
 for (let i = 0; i < swarmSize; i++) {
     const handle = new CoralParticle(particleField, i);
     const view = new ParticleView2D({ colorFunction, colorMapper });
@@ -181,7 +170,6 @@ for (let i = 0; i < swarmSize; i++) {
 }
 
 function resetSimulation() {
-    updateThreshold();
     particleField.reset();
     simulation.frameSceneOn(coralBounds, {
         padding: 0.5,
