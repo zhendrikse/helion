@@ -1,0 +1,294 @@
+import {
+    Block, Box, Checkbox, degToRad, MathPhysicsModelBehavior, RadioGroup, RadialSymmetricBody, Range,
+    Simulation, Slider, Sphere, Trail, Vec3, Vec2, wavelengthColor
+} from "../../../src/index.js";
+
+import {
+    BufferAttribute, BufferGeometry, Color, Line, LineBasicMaterial, MeshBasicMaterial
+} from "three";
+import {Renderable2D} from "../../../src/view/renderer.js";
+
+class RayBundle extends MathPhysicsModelBehavior {
+    constructor({
+        rayCount = 6,
+        n1 = 1.0,
+        n2 = 1.5,
+        c = 1.0,
+        initialAngle = 45,
+        initialRange = 1
+    } = {}) {
+        super();
+
+        this._c = c;
+        this._v1 = c / n1;
+        this._v2 = c / n2;
+        this._mediumThickness = 5 * initialRange;
+        this._rayRadius = 1e-3 * this._mediumThickness;
+        this._raySpacing = 100 * this._rayRadius;
+        this._rayCount = Math.max(1, Math.min(10, rayCount));
+        this._rays = [];
+
+        for (let i = 0; i < this._rayCount; i++)
+            this._rays.push(new RadialSymmetricBody({
+                radius: this._rayRadius,
+                mass: 1
+            }));
+
+        this.initialize(initialAngle);
+    }
+
+    get rays() {
+        return this._rays;
+    }
+
+    get mediumThickness() {
+        return this._mediumThickness;
+    }
+
+    get rayRadius() {
+        return this._rayRadius;
+    }
+
+    /** @returns {ArrayIterator<RadialSymmetricBody>} */
+    [Symbol.iterator]() {
+        return this._rays[Symbol.iterator]();
+    }
+
+    /** @returns {ArrayIterator<[number, RadialSymmetricBody]>} */
+    entries() {
+        return this._rays.entries();
+    }
+
+    rayShifts(angle) {
+        const first = -Math.floor((this._rayCount - 1) / 2);
+        const last = Math.floor(this._rayCount / 2);
+
+        const shifts = [];
+        for (let i = first; i <= last; i++)
+            shifts.push(new Vec2(-Math.sin(angle), Math.cos(angle)).multiplyScalar(i * this._raySpacing));
+
+        return shifts;
+    }
+
+    initialize(angleInDegrees) {
+        const angle = degToRad(angleInDegrees);
+        const shifts = this.rayShifts(angle);
+
+        let rayXMaxIndex = 0;
+        let rayXMax = -this._mediumThickness;
+
+        this._rays.forEach((ray, i) => {
+            ray.position.copy(new Vec2(-Math.cos(angle), -Math.sin(angle))
+                .multiplyScalar(this._mediumThickness))
+                .add(shifts[i]);
+
+            ray.velocity.set(this._v1 * Math.cos(angle), this._v1 * Math.sin(angle));
+
+            if (ray.position.x > rayXMax) {
+                rayXMax = ray.position.x;
+                rayXMaxIndex = i;
+            }
+        });
+
+        return rayXMaxIndex;
+    }
+
+    advance(angleInDegrees, dt) {
+        const angle = degToRad(angleInDegrees);
+        const direction = new Vec2(Math.cos(angle), Math.sin(angle));
+        for (const ray of this._rays) {
+            if (ray.position.x >= 0)
+                ray.velocity.copy(direction).multiplyScalar(this._v2);
+
+            ray.position.addScaledVector(ray.velocity, dt);
+        }
+    }
+
+    positionOfRay(index) {
+        return this._rays[index].position;
+    }
+}
+
+class WavefrontView2D extends Renderable2D {
+    constructor({ color = 0xffffff, visible = true } = {}) {
+        super();
+
+        this.visible = visible;
+        this._geometry = new BufferGeometry();
+        this._material = new LineBasicMaterial({ color });
+        this._line = new Line(this._geometry, this._material);
+
+        this.add(this._line);
+    }
+
+    canBindTo(rayBundle) {
+        if (!rayBundle?.rays)
+            throw new Error("WavefrontView2D can only bind to a RayBundle.");
+
+        return true;
+    }
+
+    initialize(rayBundle) {
+        const positions = new Float32Array(rayBundle.rays.length * 3);
+        this._geometry.setAttribute("position", new BufferAttribute(positions, 3));
+    }
+
+    synchronizeWith(rayBundle) {
+        const positions = this._geometry.attributes.position.array;
+
+        rayBundle.rays.forEach((ray, index) => {
+            positions[3 * index] = ray.position.x;
+            positions[3 * index + 1] = ray.position.y;
+            positions[3 * index + 2] = 0;
+        });
+
+        this._geometry.attributes.position.needsUpdate = true;
+        this._geometry.computeBoundingSphere();
+    }
+
+    set color(value) { this._material.color.set(value); }
+
+    dispose() {
+        this._geometry.dispose();
+        this._material.dispose();
+        this.clear();
+    }
+}
+
+const INITIAL_RANGE = 1;
+const LAMBDA_RED = 750;
+const LAMBDA_BLUE = 380;
+const INITIAL_ANGLE = 45;
+const INITIAL_RATE = 500;
+const DT = 1e-3;
+const N1 = 1.0;
+const N2 = 1.5;
+const C = 1;
+
+const MEDIUM_FACTOR = 5;
+const MEDIUM_THICKNESS = MEDIUM_FACTOR * INITIAL_RANGE;
+const RAY_RADIUS = 1e-3 * MEDIUM_THICKNESS;
+const RAY_SHIFT = 100 * RAY_RADIUS;
+
+const rays = new RayBundle({
+    rayCount: 6,
+    n1: N1,
+    n2: N2,
+    c: C,
+    initialAngle: INITIAL_ANGLE,
+    initialRange: INITIAL_RANGE
+});
+
+const medium = new Block({
+    position: new Vec3(0.5 * MEDIUM_THICKNESS, 0, -0.25 * MEDIUM_THICKNESS),
+    size: new Vec3(MEDIUM_THICKNESS, MEDIUM_THICKNESS, MEDIUM_THICKNESS),
+    fixed: true
+});
+
+const rayViews = [];
+const trails = [];
+for (const ray of rays) {
+    const rayView = new Sphere({
+        material: new MeshBasicMaterial({color: 0xffffff}),
+        segments: 16
+    });
+
+    const trail = new Trail({
+        maxPoints: 1000,
+        trailStep: 1,
+        color: 0xffffff
+    });
+
+    rayViews.push(rayView);
+    trails.push(trail);
+}
+
+const wavefrontView = new WavefrontView2D();
+const wavelengthSlider = new Slider("Wavelength")
+    .withValue(585)
+    .withRange(new Range(LAMBDA_BLUE, LAMBDA_RED, 1))
+    .onInput(event => updateLightColor(false, Number(event.target.value)));
+
+let incidentAngle = INITIAL_ANGLE;
+let animationRate = INITIAL_RATE;
+let ang2 = 0;
+
+const simulation = Simulation
+    .with({
+        htmlDivId: "refractionRaysAndWavefrontContainer",
+        camera: {
+            position: new Vec3(0, 0, 10),
+            orthographic: true,
+            controls: false
+        },
+        viewport: { aspectRatio: "2 / 1" },
+        lighting: { enabled: false },
+        headUpDisplay: { enabled: false },
+        parameterMenuCollapsed: false,
+        infoPanel: {
+            text: "<strong>🌈 Refraction</strong><br/>" +
+                "Rays and wavefronts at a boundary between two media."
+        }
+    })
+    .bind(medium.alwaysWith(new Box({
+        color: 0xc0c0ff,
+        opacity: 0.75
+    })))
+    .bind(rays.alwaysWith(wavefrontView))
+    .onStep((_, dt) => {
+        rays.advance(ang2, dt);
+    })
+    .appendStartStopResetUI()
+    .append(new Slider("Incident angle")
+        .withValue(INITIAL_ANGLE)
+        .withRange(new Range(-89, 89, 1))
+        .onInput(event => {
+            incidentAngle = Number(event.target.value);
+            initializeRays();
+        }))
+    .append(new Slider("Animation speed")
+        .withValue(INITIAL_RATE)
+        .withRange(new Range(0, INITIAL_RATE * 5, 1))
+        .onInput(event => {
+            animationRate = Number(event.target.value);
+            simulation.atSpeed(animationRate / INITIAL_RATE);
+        }))
+    .append(wavelengthSlider)
+    .append(new Checkbox("White")
+        .checked(0)
+        .onChange(() => updateLightColor(true)))
+    .append(new Checkbox("Wavefront")
+        .checked(true)
+        .on(wavefrontView)
+        .withProperty("visible"))
+    .onReset(() => {
+        incidentAngle = INITIAL_ANGLE;
+        initializeRays();
+    });
+
+for (const [index, ray] of rays.entries()) {
+    simulation.bind(ray.alwaysWith(rayViews[index]));
+    simulation.bind(ray.alwaysWith(trails[index]));
+}
+
+function initializeRays(angle = incidentAngle) {
+    const angleRad = degToRad(angle);
+    ang2 = Math.asin((N1 / N2) * Math.sin(angleRad));
+    rays.initialize(angle);
+    wavefrontView.synchronizeWith(rays);
+    for (const trail of trails)
+        trail.reset();
+}
+initializeRays();
+
+const color = new Color();
+function updateLightColor(isWhite, wavelength = wavelengthSlider.value) {
+    wavelengthColor(wavelength, color);
+    const colorHex = isWhite ? 0xffffff :
+        (Math.round(color.r * 255) << 16) | (Math.round(color.g * 255) << 8) | Math.round(color.b * 255);
+
+    rayViews.forEach(view => view.color = colorHex);
+    trails.forEach(trail => trail.color = colorHex);
+    wavefrontView.color = colorHex;
+}
+
