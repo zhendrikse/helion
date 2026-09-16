@@ -1,5 +1,5 @@
 import {
-    Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, ParticleView2D
+    Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, ParticleView2D, Checkbox
 } from "../../../src/index.js";
 
 const CONTAINER_SIZE = 10;
@@ -37,23 +37,18 @@ const simulation = Simulation
     .onStep((_, dt) => gas.evolve(dt))
     .appendStartStopResetUI()
     .append(new Button()
-        .withText("Show")
-        .onClick(() => particleViews.forEach((view, index) =>
-            view.visible = index < gas.particleCount))
-        .togetherWith(new Button()
-            .withText("Hide")
-            .onClick(() => particleViews.slice(1).forEach(view => view.visible = false))
-            .togetherWith(new Button()
-                .withText(`Add ${PARTICLES_TO_ADD}`)
-                .onClick(() => {
-                    const startIndex = gas.particleCount;
-                    gas.addParticles(PARTICLES_TO_ADD);
-                    for (const [index, particle] of gas.entries())
-                        if (index >= startIndex)
-                            bindParticle(particle, index);
-                })
-            )))
-    .append(new RadioGroup()
+        .withText(`Add ${PARTICLES_TO_ADD}`)
+        .onClick(() => {
+            const startIndex = gas.particleCount;
+            gas.addParticles(PARTICLES_TO_ADD);
+            for (const [index, particle] of gas.entries())
+                if (index >= startIndex)
+                    bindParticle(particle, index);
+        }))
+    .append(new Checkbox("Gas particles")
+        .addEventListener("change", event => particleViews.slice(1).forEach(view => view.visible = event.target.checked))
+        .checked(true)
+        .togetherWith(new RadioGroup()
         .add("Box", event => {
             gas.limitToContainer = Gas.bounceWithinBox;
             gas.reset();
@@ -63,7 +58,7 @@ const simulation = Simulation
             gas.limitToContainer = Gas.bounceWithinSphere;
             gas.reset();
             tracerTrail.reset();
-        }).checked(0))
+        }).checked(0)))
     .append(temperatureSlider)
     .setupGraphWith({
         dataDefinition: [
