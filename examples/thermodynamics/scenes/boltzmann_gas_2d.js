@@ -37,11 +37,6 @@ class ParticleView2D extends Renderable2D {
 }
 
 class Gas2D {
-    static ContainerType = Object.freeze({
-        Box: "box",
-        Sphere: "sphere"
-    });
-
     static bounceWithinSphere = (particle, limit) => {
         if (particle.position.lengthSq() > limit * limit)
             particle.state.velocity.negate();
@@ -61,7 +56,7 @@ class Gas2D {
      * @param {number} param0.particleRadius Radius of particles
      * @param {number} param0.particleMass Mass of particles
      * @param {number} param0.initialSpeed Initial speed of particles
-     * @param {string} param0.containerType The container the gas is placed in
+     * @param {(particle: AxialSymmetricBody, limit: number) => void} param0.containerFunction
      */
     constructor({
         particleCount = PARTICLE_COUNT,
@@ -69,7 +64,7 @@ class Gas2D {
         particleRadius = 0.08,
         particleMass = 1,
         initialSpeed = 2,
-        containerType = Gas2D.ContainerType.Sphere
+        containerFunction = Gas2D.bounceWithinBox
     } = {}) {
         this._particles = [];
         this._baseParticleCount = particleCount;
@@ -79,8 +74,7 @@ class Gas2D {
         this._temperature = particleMass * initialSpeed * initialSpeed / 2;
         this._collisionHandler = new SphereSphereCollision();
         this._k = 1;
-        this._limitToContainer = containerType === Gas2D.ContainerType.Box ?
-            Gas2D.bounceWithinBox: Gas2D.bounceWithinSphere;
+        this._limitToContainer = containerFunction;
         this.addParticles(particleCount);
     }
 
@@ -88,9 +82,14 @@ class Gas2D {
     [Symbol.iterator]() {
         return this._particles[Symbol.iterator]();
     }
-    
+
+    /** @returns {ArrayIterator<[number, RadialSymmetricBody]>} */
+    entries() {
+        return this._particles.entries();
+    }
+
     get temperature() { return this._temperature; }
-    get activeParticleCount() { return this._particles.length; }
+    get particleCount() { return this._particles.length; }
 
     /** @param {number} numberOfParticles */
     addParticles(numberOfParticles = PARTICLES_TO_ADD) {
@@ -219,17 +218,18 @@ const simulation = Simulation
     .append(new Button()
         .withText("Show")
         .onClick(() => particleViews.forEach((view, index) =>
-            view.visible = index < gas.activeParticleCount))
+            view.visible = index < gas.particleCount))
         .togetherWith(new Button()
             .withText("Hide")
             .onClick(() => particleViews.slice(1).forEach(view => view.visible = false))
             .togetherWith(new Button()
                 .withText(`+${PARTICLES_TO_ADD} particles`)
                 .onClick(() => {
+                    const startIndex = gas.particleCount;
                     gas.addParticles(PARTICLES_TO_ADD);
-                    const startIndex = particleViews.length;
-                    Array.from(gas).forEach((particle, index) =>
-                        bindParticle(particle, startIndex + index));
+                    for (const [index, particle] of gas.entries())
+                        if (index >= startIndex)
+                            bindParticle(particle, index);
                 })
             )))
     .append(temperatureSlider)
