@@ -1,111 +1,15 @@
 import {
     Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, InstancedMesh, InstancedBufferAttribute,
-    DynamicDrawUsage, Object3D, Color, SphereGeometry, MeshStandardMaterial,
-    DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry, ConeGeometry, CylinderGeometry, CapsuleGeometry,
-    CircleGeometry
+    DynamicDrawUsage, Object3D, Color, Box3, CircleGeometry
 } from "three";
 
 import { Renderable2D } from "../renderer.js";
 import { CompoundControl, DropdownMenu } from "../../core/controls.js";
-import { Registry } from "../../core/helion.js";
 import { ColorMapper, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from "../colormappers.js";
 import { AdaptiveSymmetricNormalizer, SurfaceResolution} from "../3d/surfaces/visualization.js";
 import { ComplexFunctionSample, DiscreteScalarField} from "../../model/math/fields.js";
 import { Normalizer} from "../3d/surfaces/visualization.js"
-
-export class ParticleCloudView extends Renderable2D {
-    static material = new MeshStandardMaterial({
-        side: DoubleSide,
-        roughness: 0.25,
-        metalness: 0.1,
-        transparent: true,
-    });
-
-    static Shape = Object.freeze({
-        Box: new BoxGeometry(2, 2, 2),
-        Capsule: new CapsuleGeometry(.75, 2.5),
-        Cone: new ConeGeometry(1.5, 3),
-        Cylinder: new CylinderGeometry(.75, .75, 2.5, 16),
-        Icosahedron: new IcosahedronGeometry(1.5),
-        Sphere: new SphereGeometry(1.25, 16, 16)
-    });
-
-    static Shapes = new Registry({
-        id: "shapeSelector",
-        label: "Particle shape ",
-        entries: ParticleCloudView.Shape
-    });
-
-    constructor({
-        particleCount = 5000,
-        type = "Sphere"
-    } = {}) {
-        super();
-
-        this._mesh = new InstancedMesh(ParticleCloudView.Shape[type], ParticleCloudView.material, particleCount);
-        this.add(this._mesh);
-
-        this._colorArray = new Float32Array(particleCount * 3);
-        this._mesh.instanceColor = new InstancedBufferAttribute(this._colorArray, 3);
-        this._mesh.instanceColor.setUsage(DynamicDrawUsage);
-
-        this._dummy = new Object3D();
-        this._color = new Color();
-        this._boundingBox = new Box3();
-    }
-
-    synchronizeWith(particleField) {
-        let index = 0;
-        this._boundingBox = new Box3();
-        for (let i = 0; i < particleField.size; i++) {
-            const pos = particleField.particleStateAt(i).position;
-            const r = particleField.particleStateAt(i).size;
-            const color = particleField.particleStateAt(i).color;
-
-            this._boundingBox.expandByPoint(new Vector3(pos.x - r, pos.y - r, pos.z - r));
-            this._boundingBox.expandByPoint(new Vector3(pos.x + r, pos.y + r, pos.z + r));
-
-            this._dummy.position.set(pos.x, pos.y, 0);
-            this._dummy.scale.setScalar(particleField.particleStateAt(i).size);
-            this._dummy.updateMatrix();
-            this._mesh.setMatrixAt(index, this._dummy.matrix);
-
-            const k = 3 * index;
-            this._colorArray[k]     = color.r;
-            this._colorArray[k + 1] = color.g;
-            this._colorArray[k + 2] = color.b;
-
-            index++;
-        }
-
-        this._mesh.count = index;
-        this._mesh.instanceMatrix.needsUpdate = true;
-        this._mesh.instanceColor.needsUpdate = true;
-    }
-
-    canBindTo(model) {
-        return model.particleStateAt;
-    }
-
-    get boundingBox() { return this._boundingBox; }
-
-    controls() {
-        return new DropdownMenu()
-            .for(ParticleCloudView.Shapes)
-            .addEventListener("change", event => this.shape = event.target.value
-        );
-    }
-
-    set shape(shapeType) {
-        const oldGeometry = this._mesh.geometry;
-        this._mesh.geometry = ParticleCloudView.Shape[shapeType];
-
-        if (oldGeometry)
-            oldGeometry.dispose();
-
-        //this._dirty = true;
-    }
-}
+import { RadialSymmetricBody } from "../../model/phys/bodies.js";
 
 export class PixelRasterView extends Renderable2D {
     constructor({
@@ -172,6 +76,10 @@ export class PixelRasterView extends Renderable2D {
         this._texture.needsUpdate = true;
     }
 
+    /**
+     * @param {number} width 
+     * @param {number} height 
+     */
     resize(width, height) {
         this._width = width;
         this._height = height;
@@ -361,9 +269,16 @@ export class ComplexFieldViewable2D extends Renderable2D {
 }
 
 export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
+    /**
+    * @param {{
+    * showPhaseColour?: boolean, 
+    * brightnessFunction?: (modulus: number) => number, 
+    * colorMapper?: ColorMapper, 
+    * defaultResolution?: SurfaceResolution}} [param0]
+     */
     constructor({
         showPhaseColour = true,
-        brightnessFunction = modulus => modulus > 1.0 ? 1.0 : modulus,
+        brightnessFunction = (/** @type {number} */ modulus) => modulus > 1.0 ? 1.0 : modulus,
         colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsv),
         defaultResolution = new SurfaceResolution(400, 400),
     } = {}) {
@@ -375,6 +290,7 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
         this._phaseColor = showPhaseColour;
     }
 
+    /** @param {ColorMapper} mapper */
     set colorMapper(mapper) { this._colorMapper = mapper; }
 
     initialize(field) {
@@ -404,6 +320,7 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
             );
     }
 
+    /** @param {boolean} showPhaseColour */
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
     synchronizeWith(field) {
@@ -454,15 +371,11 @@ export class TiledPlane extends Renderable2D {
      * @property {(value: number) => number} [opacityFunction]
      * @property {number} [cellSize]
      */
-
-    /**
-     * @param {TiledPlaneOptions} [options]
-     */
     constructor({
         colorMapper = new HexValueColorMapper(),
         normalizer = new AdaptiveSymmetricNormalizer(),
         opacity = 1,
-        opacityFunction = () => 1,
+        opacityFunction = (/** @type {number} */ _value) => 1,
         cellSize = 1,
     } = {}) {
         super();
@@ -607,25 +520,54 @@ export class TiledPlane extends Renderable2D {
 }
 
 export class ParticleView2D extends Renderable2D {
+    /**
+     * 
+     * @param {{
+     * color?: number
+     * segments?: number
+     * colorFunction?: (property: any) => number
+     * colorMapper?: ColorMapper
+     * }} param0 
+     */
     constructor({
         color = 0xffff00,
-        segments = 16
+        segments = 16,
+        colorFunction = particle => 0xfff00,
+        colorMapper = new HexValueColorMapper()
     } = {}) {
         super();
         this._geometry = new CircleGeometry(1, segments);
         this._material = new MeshBasicMaterial({ color });
         this._mesh = new Mesh(this._geometry, this._material);
         this.add(this._mesh);
+        this._colorFunction = colorFunction;
+        this._colorMapper = colorMapper;
+        this._color = new Color();
     }
+
+    set colorMapper(mapper) { this._colorMapper = mapper; }
+    get colorMapper() { return this._colorMapper; }
+    set colorFunction(fn) { this._colorFunction = fn; }
+    get colorFunction() { return this._colorFunction; }
+
+    /**
+     * @param {RadialSymmetricBody} particle 
+     * @returns {boolean}
+     */
     canBindTo(particle) {
-        if (!particle.position || particle.radius == null)
-            throw new Error("ParticleView2D can only bind to particles with a position and radius.");
+        if (!particle.position)
+            throw new Error("ParticleView2D can only bind to particles with a position.");
         return true;
     }
+    
+    /**  @param {RadialSymmetricBody} particle */
     synchronizeWith(particle) {
         this.position.copy(particle.position);
         this.scale.setScalar(particle.radius);
+        this._colorMapper.map(this._colorFunction(particle), this._color);
+        this._material.color.copy(this._color);
     }
+
     dispose() {
         this._geometry.dispose();
         this._material.dispose();

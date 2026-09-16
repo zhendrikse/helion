@@ -165,6 +165,7 @@ export class Gas {
     /**
      * @param {number} binCount
      * @param {number} maxSpeed
+     * @return {{ speeds: number[], bins: number[], theory: number[] }}
      */
     speedDistribution(binCount = 30, maxSpeed = 10) {
         const bins = new Array(binCount).fill(0);
