@@ -34,7 +34,7 @@ const simulation = Simulation
         infoPanel: {
             text: "<strong>🎈 2D ideal gas</strong><br/>Maxwell velocity distribution of an ideal two-dimensional gas" + 
             " in a square container.\n $$ A=\\frac{m}{2 \\pi k_B T}$$\n $$f(\\overrightarrow{v}) d^2\\overrightarrow{v} =" +
-            "e^{(-Av^2}) d^2\\overrightarrow{v}$$"
+            "e^{(-Av^2)} d^2\\overrightarrow{v}$$"
         }
     })
     .runsEvery(0.01)
