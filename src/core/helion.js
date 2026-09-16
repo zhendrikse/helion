@@ -12,10 +12,10 @@ import { Renderable } from "../view/renderer.js";
 
 export class Registry {
     constructor({
-        id = generateUUID(),
-        label = "registryLabel",
-        entries = {}
-    }) {
+                    id = generateUUID(),
+                    label = "registryLabel",
+                    entries = {}
+                }) {
         this._entries = entries;
         this._label = label;
         this._id = id;
@@ -120,10 +120,10 @@ export class Binding {
 
 class SimulationClock {
     constructor({
-        realTimeStep = 0.01,
-        simulationTimeStep = realTimeStep,
-        maxAccumulatedTime = 0.25
-    } = {}) {
+                    realTimeStep = 0.01,
+                    simulationTimeStep = realTimeStep,
+                    maxAccumulatedTime = 0.25
+                } = {}) {
         this.realTimeStep = realTimeStep;             // realtime scheduling interval
         this.simulationTimeStep = simulationTimeStep;   // simulated-time increment
 
@@ -177,63 +177,63 @@ export class Simulation {
     }
 
     static with(
-    /**
-     * @param {{
-     *   htmlDivId?: string,
-     *   viewport?: { aspectRatio?: string },
-     *   camera?: {
-     *     position?: Vec3,
-     *     target?: Vec3,
-     *     fieldOfView?: number,
-     *     controls?: boolean,
-     *     autoRotate?: boolean,
-     *     orthographic?: boolean
-     *   },
-     *   scene?: {
-     *     background?: number,
-     *     backgroundColor?: number,
-     *     scale?: number
-     *   },
-     *   lighting?: {
-     *     enabled?: boolean,
-     *     shadows?: boolean
-     *   },
-     *   headUpDisplay?: { enabled?: boolean },
-     *   infoPanel?: { text?: string },
-     *   parameterMenuCollapsed?: boolean
-     * }} [options]
-     */
-    {
-        // @ts-ignore htmlDivId is part of the documented options object.
-        htmlDivId,
-        viewport = {
-            aspectRatio: "1 / 1"
-        },
-        camera = {
-            position: new Vec3(3, 3, 3),
-            target: new Vec3(0, 0, 0),
-            fieldOfView: 50,
-            controls: true,
-            autoRotate: false,
-            orthographic: false
-        },
-        scene = {
-            background: ThreeJsScene.Background.TRANSPARENT,
-            backgroundColor: 0x0088ff,
-            scale: 1
-        },
-        lighting = {
-            enabled: true,
-            shadows: false
-        },
-        headUpDisplay = {
-            enabled: true
-        },
-        infoPanel = {
-            text: ""
-        },
-        parameterMenuCollapsed = true
-    } = {}) {
+        /**
+         * @param {{
+         *   htmlDivId?: string,
+         *   viewport?: { aspectRatio?: string },
+         *   camera?: {
+         *     position?: Vec3,
+         *     target?: Vec3,
+         *     fieldOfView?: number,
+         *     controls?: boolean,
+         *     autoRotate?: boolean,
+         *     orthographic?: boolean
+         *   },
+         *   scene?: {
+         *     background?: number,
+         *     backgroundColor?: number,
+         *     scale?: number
+         *   },
+         *   lighting?: {
+         *     enabled?: boolean,
+         *     shadows?: boolean
+         *   },
+         *   headUpDisplay?: { enabled?: boolean },
+         *   infoPanel?: { text?: string },
+         *   parameterMenuCollapsed?: boolean
+         * }} [options]
+         */
+        {
+            // @ts-ignore htmlDivId is part of the documented options object.
+            htmlDivId,
+            viewport = {
+                aspectRatio: "1 / 1"
+            },
+            camera = {
+                position: new Vec3(3, 3, 3),
+                target: new Vec3(0, 0, 0),
+                fieldOfView: 50,
+                controls: true,
+                autoRotate: false,
+                orthographic: false
+            },
+            scene = {
+                background: ThreeJsScene.Background.TRANSPARENT,
+                backgroundColor: 0x0088ff,
+                scale: 1
+            },
+            lighting = {
+                enabled: true,
+                shadows: false
+            },
+            headUpDisplay = {
+                enabled: true
+            },
+            infoPanel = {
+                text: ""
+            },
+            parameterMenuCollapsed = true
+        } = {}) {
         const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, parameterMenuCollapsed, viewport.aspectRatio);
         const renderer = new ThreeJsRenderer({ camera, viewport, lighting, scene });
         renderer.attach(viewPort);
@@ -663,15 +663,15 @@ export class Simulation {
     }
 
     setupGraphWith({
-        dataDefinition,
-        width = this._viewport.width,
-        height = this._viewport.height,
-        title="",
-        xLabel="",
-        yLabel="",
-        maxPoints = 500,
-        labelColor = "green",
-    } = {}) {
+                       dataDefinition,
+                       width = this._viewport.width,
+                       height = this._viewport.height,
+                       title="",
+                       xLabel="",
+                       yLabel="",
+                       maxPoints = 500,
+                       labelColor = "green",
+                   } = {}) {
         const plotParentDiv = this._viewport.addOnsDiv;
         this._plot = new UPlotGraph({
             plotParentDiv, dataDefinition, width, height, title, xLabel, yLabel, maxPoints, labelColor
