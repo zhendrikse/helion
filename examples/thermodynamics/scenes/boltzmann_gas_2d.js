@@ -181,8 +181,7 @@ class Gas2D {
     }
 
     #resetParticle(particle, temperature) {
-        const half = this._containerSize / 2 - particle.radius;
-        particle.position.set((Math.random() * 2 - 1) * half, (Math.random() * 2 - 1) * half);
+        particle.position.set(0, 0, 0);
         if (temperature === 0) {
             particle.velocity.set(0, 0);
             return;
