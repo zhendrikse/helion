@@ -1,5 +1,6 @@
 import {
-    Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, ParticleView2D, Checkbox
+    Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, ParticleView2D, Checkbox,
+    RadialSymmetricBody
 } from "../../../src/index.js";
 
 const CONTAINER_SIZE = 10;
@@ -10,18 +11,21 @@ const MAX_SPEED = 10;
 const AVERAGING_FRAMES = 100;
 
 const gas = new Gas({
-    container: CONTAINER_SIZE,
+    containerSize: CONTAINER_SIZE,
     tracerMass: 50,
     tracerRadius: 0.3
 });
+/** @type {ParticleView2D[]} */
 const particleViews = [];
 const tracerTrail = new Trail({ maxPoints: 500, trailStep: 5, color: 0xBF40BF });
+/** @type {number[][]} */
 const histogramBuffer = [];
 const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SPEED / BIN_COUNT);
 
 const temperatureSlider = new Slider("Temperature")
     .withRange(new Range(0.1, MAX_SPEED * .5, 0.1))
     .withValue(gas.temperature)
+    // @ts-ignore
     .onInput(event => gas.temperature = Number(event.target.value));
 
 const simulation = Simulation
@@ -30,8 +34,10 @@ const simulation = Simulation
         camera: { position: new Vec3(0, 0, CONTAINER_SIZE * 1.05), orthographic: true, controls: false },
         lighting: { enabled: false },
         infoPanel: {
-            text: "<strong>🚶🏻‍➡️️ Random walk / Brownian motion</strong><br/>"
-        }
+            text: "<strong>🚶🏻‍➡️️ Random walk / Brownian motion</strong><br/>Maxwell velocity distribution of an ideal two-dimensional gas" + 
+            " in a square container.\n $$ A=\\frac{m}{2 \\pi k_B T}$$\n $$f(\\overrightarrow{v}) d^2\\overrightarrow{v} =" +
+            "e^{(-Av^2}) d^2\\overrightarrow{v}$$"
+        }    
     })
     .runsEvery(0.01)
     .onStep((_, dt) => gas.evolve(dt))
@@ -104,9 +110,13 @@ const simulation = Simulation
     })
     .start();
 
+/**
+ * @param {RadialSymmetricBody} particle 
+ * @param {number} index 
+ */
 function bindParticle(particle, index) {
     const particleView = new ParticleView2D({
-        color: index === 0 ? 0xff0000 : particleColor,
+        colorFunction: () => index === 0 ? 0xff0000 : particleColor,
         segments: index === 0 ? 32 : 16
     });
     particleViews.push(particleView);

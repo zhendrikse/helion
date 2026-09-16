@@ -384,10 +384,11 @@ export class Simulation {
 
     /**
      * @param {Renderable} anObject
-     * @param {number} padding
-     * @param {number} translationY
-     * @param {number} minDistance
-     * @param {Vec3} viewDirection
+     * @param {object} [options={}] Configuration for framing the scene.
+     * @param {number} [options.padding=1.2]
+     * @param {number} [options.translationY=0]
+     * @param {number} [options.minDistance=2]
+     * @param {Vec3} [options.viewDirection=new Vec3(1, 1, 1)]
      */
     frameSceneOn(anObject, {
         padding = 1.2,

@@ -13,10 +13,14 @@ export class SurfaceResolution {
 }
 
 export class Normalizer {
-    /** @param {Range} range */
-    adaptTo(range) {}
-    /** @param {number} value */
-    normalize(value) {}
+    /** @param {Interval} rangeInterval */
+    adaptTo(rangeInterval) {}
+    
+    /** 
+     * @param {number} value
+     * @return {number} 
+     */
+    normalize(value) { return 0; }
     reset() {}
 }
 
@@ -29,10 +33,10 @@ export class FixedIntervalNormalizer extends Normalizer {
 
 export class AdaptiveSymmetricNormalizer extends Normalizer {
     constructor(smoothing = 0.05) { super(); this._smoothing = smoothing; this._maxAbs = 1; }
-    /** @param {Range} range */
-    adaptTo(range) {
-        if (!Number.isFinite(range.from) || !Number.isFinite(range.to)) return;
-        const maxAbs = Math.max(Math.abs(range.from), Math.abs(range.to));
+    /** @param {Interval} rangeInterval */
+    adaptTo(rangeInterval) {
+        if (!Number.isFinite(rangeInterval.from) || !Number.isFinite(rangeInterval.to)) return;
+        const maxAbs = Math.max(Math.abs(rangeInterval.from), Math.abs(rangeInterval.to));
         this._maxAbs = Math.max(this._maxAbs * (1 - this._smoothing) + maxAbs * this._smoothing, maxAbs);
     }
     /** @param {number} value */
@@ -47,11 +51,11 @@ export class AdaptiveSymmetricNormalizer extends Normalizer {
 
 export class AdaptiveNormalizer extends Normalizer {
     constructor(smoothing = 0.05) { super(); this._smoothing = smoothing; this._min = 0; this._max = 1; }
-    /** @param {Range} range */
-    adaptTo(range) {
-        if (!Number.isFinite(range.from) || !Number.isFinite(range.to)) return;
-        this._min = this._min * (1 - this._smoothing) + range.from * this._smoothing;
-        this._max = this._max * (1 - this._smoothing) + range.to * this._smoothing;
+    /** @param {Interval} rangeInterval */
+    adaptTo(rangeInterval) {
+        if (!Number.isFinite(rangeInterval.from) || !Number.isFinite(rangeInterval.to)) return;
+        this._min = this._min * (1 - this._smoothing) + rangeInterval.from * this._smoothing;
+        this._max = this._max * (1 - this._smoothing) + rangeInterval.to * this._smoothing;
     }
     /** @param {number} value */
     normalize(value) {
