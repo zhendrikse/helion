@@ -1,18 +1,19 @@
 import {
     Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, InstancedMesh, InstancedBufferAttribute,
     DynamicDrawUsage, Object3D, Color, SphereGeometry, MeshStandardMaterial,
-    DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry, ConeGeometry, CylinderGeometry, CapsuleGeometry
+    DoubleSide, BoxGeometry, Vector3, Box3, IcosahedronGeometry, ConeGeometry, CylinderGeometry, CapsuleGeometry,
+    CircleGeometry
 } from "three";
 
-import {Renderable2D, Renderable3D} from "../renderer.js";
-import {CompoundControl, DropdownMenu } from "../../core/controls.js";
+import { Renderable2D } from "../renderer.js";
+import { CompoundControl, DropdownMenu } from "../../core/controls.js";
 import { Registry } from "../../core/helion.js";
-import {ColorMapper, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from "../colormappers.js";
-import {AdaptiveSymmetricNormalizer, SurfaceResolution} from "../3d/surfaces/visualization.js";
-import {ComplexFunctionSample, DiscreteScalarField} from "../../model/math/fields.js";
+import { ColorMapper, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from "../colormappers.js";
+import { AdaptiveSymmetricNormalizer, SurfaceResolution} from "../3d/surfaces/visualization.js";
+import { ComplexFunctionSample, DiscreteScalarField} from "../../model/math/fields.js";
 import { Normalizer} from "../3d/surfaces/visualization.js"
 
-export class ParticleCloudView extends Renderable3D {
+export class ParticleCloudView extends Renderable2D {
     static material = new MeshStandardMaterial({
         side: DoubleSide,
         roughness: 0.25,
@@ -106,7 +107,7 @@ export class ParticleCloudView extends Renderable3D {
     }
 }
 
-export class PixelRasterView extends Renderable3D {
+export class PixelRasterView extends Renderable2D {
     constructor({
         width = 512,
         height = 512,
@@ -247,7 +248,7 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
  * Visualizes the edge of a pixel raster as a
  * vertical plane perpendicular to the intensity pixel raster itself.
  */
-export class FieldEdgeIntensityPixelRaster extends Renderable3D {
+export class FieldEdgeIntensityPixelRaster extends Renderable2D {
     constructor({
         edgeHeight = 100,
         colorMapper = new WavelengthColorMapper(525),
@@ -602,5 +603,32 @@ export class TiledPlane extends Renderable2D {
         this._mesh.instanceMatrix.needsUpdate = true;
         this._mesh.instanceColor.needsUpdate = true;
         this._opacityAttribute.needsUpdate = true;
+    }
+}
+
+export class ParticleView2D extends Renderable2D {
+    constructor({
+        color = 0xffff00,
+        segments = 16
+    } = {}) {
+        super();
+        this._geometry = new CircleGeometry(1, segments);
+        this._material = new MeshBasicMaterial({ color });
+        this._mesh = new Mesh(this._geometry, this._material);
+        this.add(this._mesh);
+    }
+    canBindTo(particle) {
+        if (!particle.position || particle.radius == null)
+            throw new Error("ParticleView2D can only bind to particles with a position and radius.");
+        return true;
+    }
+    synchronizeWith(particle) {
+        this.position.copy(particle.position);
+        this.scale.setScalar(particle.radius);
+    }
+    dispose() {
+        this._geometry.dispose();
+        this._material.dispose();
+        this.clear();
     }
 }

@@ -19,7 +19,7 @@ export {
 } from "./model/transformations/operators.js";
 
 export {
-    ParticleCloudView, DiscreteFieldSurfaceView, ComplexSurfaceView2D,
+    ParticleCloudView, DiscreteFieldSurfaceView, ComplexSurfaceView2D, ParticleView2D,
     FieldEdgeIntensityPixelRaster, TiledPlane
 } from "./view/2d/views.js";
 
@@ -45,7 +45,7 @@ export { SphereSphereCollision } from "./model/transformations/interactions.js";
 export { BarrierWaveEquation } from "./model/math/equations.js";
 export { Shapes, ShapeConfiguration } from "./model/math/shapes.js";
 export { OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave } from "./model/phys/waves.js";
-export { PointCloud } from "./model/phys/clouds.js";
+export { PointCloud, Gas } from "./model/phys/clouds.js";
 export { Integrators } from "./model/math/numerics/integrators/integrators.js";
 export { SunView } from "./view/3d/astro/sun.js";
 export { Saturn } from "./view/3d/astro/saturn.js";

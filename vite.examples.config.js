@@ -14,6 +14,7 @@ export default defineConfig({
                 black_hole_space_time: path.resolve(__dirname, 'examples/relativity/scenes/black_hole_space_time.js'),
                 bouncing_ball_on_floor: path.resolve(__dirname, 'examples/kinematics/scenes/bouncing_ball_on_floor.js'),
                 bouncing_ball_on_spring: path.resolve(__dirname, 'examples/kinematics/scenes/bouncing_ball_on_spring.js'),
+                brownian_motion_2d: path.resolve(__dirname, 'examples/thermodynamics/scenes/brownian_motion_2d.js'),
                 carbon_dioxide: path.resolve(__dirname, 'examples/molecularphysics/scenes/carbon_dioxide.js'),
                 chain_drop: path.resolve(__dirname, 'examples/kinematics/scenes/chain_drop.js'),
                 chaos_fractals: path.resolve(__dirname, 'examples/mathematics/scenes/chaos_fractals.js'),

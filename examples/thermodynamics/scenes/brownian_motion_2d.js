@@ -1,5 +1,5 @@
 import {
-    Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, ParticleView2D, Checkbox
+    Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, ParticleView2D
 } from "../../../src/index.js";
 
 const CONTAINER_SIZE = 10;
@@ -11,9 +11,11 @@ const AVERAGING_FRAMES = 100;
 
 const gas = new Gas({
     container: CONTAINER_SIZE,
+    tracerMass: 50,
+    tracerRadius: 0.3
 });
 const particleViews = [];
-const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: 0xBF40BF });
+const tracerTrail = new Trail({ maxPoints: 500, trailStep: 5, color: 0xBF40BF });
 const histogramBuffer = [];
 const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SPEED / BIN_COUNT);
 
@@ -24,44 +26,44 @@ const temperatureSlider = new Slider("Temperature")
 
 const simulation = Simulation
     .with({
-        htmlDivId: "idealGas2dContainer",
+        htmlDivId: "brownianMotionContainer",
         camera: { position: new Vec3(0, 0, CONTAINER_SIZE * 1.05), orthographic: true, controls: false },
         lighting: { enabled: false },
         infoPanel: {
-            text: "<strong>🎈 2D gas</strong><br/>Velocity of an ideal two-dimensional gas in a square container."
+            text: "<strong>🚶🏻‍➡️️ Random walk / Brownian motion</strong><br/>"
         }
     })
     .runsEvery(0.01)
     .onStep((_, dt) => gas.evolve(dt))
     .appendStartStopResetUI()
     .append(new Button()
-        .withText(`Add ${PARTICLES_TO_ADD}`)
-        .onClick(() => {
-            const startIndex = gas.particleCount;
-            gas.addParticles(PARTICLES_TO_ADD);
-            for (const [index, particle] of gas.entries())
-                if (index >= startIndex)
-                    bindParticle(particle, index);
-        }))
-    .append(new Checkbox("Tracer particle")
-        .addEventListener("change", event => {
-            particleViews[0].visible = event.target.checked;
-            tracerTrail.visible = event.target.checked
+        .withText("Show")
+        .onClick(() => particleViews.forEach((view, index) =>
+            view.visible = index < gas.particleCount))
+        .togetherWith(new Button()
+            .withText("Hide")
+            .onClick(() => particleViews.slice(1).forEach(view => view.visible = false))
+            .togetherWith(new Button()
+                .withText(`Add ${PARTICLES_TO_ADD}`)
+                .onClick(() => {
+                    const startIndex = gas.particleCount;
+                    gas.addParticles(PARTICLES_TO_ADD);
+                    for (const [index, particle] of gas.entries())
+                        if (index >= startIndex)
+                            bindParticle(particle, index);
+                })
+            )))
+    .append(new RadioGroup()
+        .add("Box", event => {
+            gas.limitToContainer = Gas.bounceWithinBox;
+            gas.reset();
+            tracerTrail.reset();
         })
-        .checked(true)
-        .togetherWith(new RadioGroup()
-            .add("Box", event => {
-                gas.limitToContainer = Gas.bounceWithinBox;
-                gas.reset();
-                tracerTrail.reset();
-            })
-            .add("Sphere", event => {
-                gas.limitToContainer = Gas.bounceWithinSphere;
-                gas.reset();
-                tracerTrail.reset();
-            })
-            .checked(0)
-        ))
+        .add("Sphere", event => {
+            gas.limitToContainer = Gas.bounceWithinSphere;
+            gas.reset();
+            tracerTrail.reset();
+        }).checked(0))
     .append(temperatureSlider)
     .setupGraphWith({
         dataDefinition: [
@@ -109,7 +111,8 @@ const simulation = Simulation
 
 function bindParticle(particle, index) {
     const particleView = new ParticleView2D({
-        color: index === 0 ? 0xff0000 : particleColor
+        color: index === 0 ? 0xff0000 : particleColor,
+        segments: index === 0 ? 32 : 16
     });
     particleViews.push(particleView);
     simulation.bind(particle.alwaysWith(particleView));
