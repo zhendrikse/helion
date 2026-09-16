@@ -521,7 +521,6 @@ export class TiledPlane extends Renderable2D {
 
 export class ParticleView2D extends Renderable2D {
     /**
-     * 
      * @param {{
      * color?: number
      * segments?: number
@@ -546,9 +545,6 @@ export class ParticleView2D extends Renderable2D {
     }
 
     set colorMapper(mapper) { this._colorMapper = mapper; }
-    get colorMapper() { return this._colorMapper; }
-    set colorFunction(fn) { this._colorFunction = fn; }
-    get colorFunction() { return this._colorFunction; }
 
     /**
      * @param {RadialSymmetricBody} particle 
