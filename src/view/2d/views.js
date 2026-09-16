@@ -1,6 +1,6 @@
 import {
     Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, InstancedMesh, InstancedBufferAttribute,
-    DynamicDrawUsage, Object3D, Color, Box3, CircleGeometry
+    DynamicDrawUsage, Object3D, Color, Box3, CircleGeometry, DoubleSide
 } from "three";
 
 import { Renderable2D } from "../renderer.js";
