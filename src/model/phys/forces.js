@@ -1,7 +1,7 @@
 import { Vec3 } from "../math/math.js";
 import { Transformation} from "../../core/helion.js";
 import { VectorField } from "../math/fields.js";
-import { Body, BodyPair } from "../phys/bodies.js"
+import { Body, BodyPair, BodyPairs } from "../phys/bodies.js"
 
 export const G = 6.67e-11;   // Gravitational constant
 export const EC = 1.602E-19; // Coulomb charge
@@ -16,7 +16,7 @@ export class Force extends Transformation {
 
     get asVector() { return this._forceVector; }
 
-    /** @param {Body | BodyPair} body */
+    /** @param {Body | BodyPair | BodyPairs} body */
     _calculateForceOn(body) {}
 
     /** @param {Body} body */
@@ -155,7 +155,7 @@ export class SpringForce extends PairForce {
      */
     constructor({
         k = 200,
-        restLength,
+        restLength = 1,
         damping = 0
     } = {}) {
         super();

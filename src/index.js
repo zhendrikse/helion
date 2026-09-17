@@ -1,6 +1,6 @@
 export {
     AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology,
-    CubicLatticeTopology, BodyPair, Body, Block
+    CubicLatticeTopology, BodyPair, Body, Block, BodyPairs
 } from "./model/phys/bodies.js";
 
 export {

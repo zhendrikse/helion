@@ -11,6 +11,11 @@ const RADIUS = 3.0E-11;
 const SCALE  = 1e10; 
 
 class ElectricField extends VectorField {
+    /**
+     * @param {Vec3} position 
+     * @param {number} magnitude 
+     * @param {number} frequency 
+     */
     constructor( position, magnitude = 0, frequency = 8.0 ) {
         super();
         this._position = position.clone();
@@ -20,6 +25,10 @@ class ElectricField extends VectorField {
         this._direction = new Vec3();
     }
 
+    /**
+     * @param {Vec3} position 
+     * @param {Vec3} target 
+     */    
     sample(position, target) {
         target.set(0, this._magnitude * this.direction.y, 0);
     }
@@ -27,11 +36,19 @@ class ElectricField extends VectorField {
     get omega() { return this._frequency * 2 * Math.PI * 1.00001E10; }
     get direction() { return this._direction.set(0, Math.cos(this._time * this.omega), 0); }
     get position() { return this._position; }
+    /** @param {number} value */
     set frequency(value) { this._frequency = value; }
+    /** @param {number} value */
     set time(value) { this._time = value; }
 }
 
 class BendForce extends Force {
+    /**
+     * @param {{
+     * k?: number
+     * restLength?: number
+     * }} param0 
+     */
     constructor({ k, restLength }) {
         super();
 
@@ -44,10 +61,11 @@ class BendForce extends Force {
         this._force = new Vec3();
     }
 
+    /** @param {BodyPairs} bondPairs */
     _calculateForceOn(bondPairs) {
-        const center = bondPairs.body1.body1;
-        const outer1 = bondPairs.body1.body2;
-        const outer2 = bondPairs.body2.body2;
+        const center = bondPairs.bodyPair1.body1;
+        const outer1 = bondPairs.bodyPair1.body2;
+        const outer2 = bondPairs.bodyPair2.body2;
 
         this._v1.copy(outer1.position).sub(center.position); // v1 = O1 - C
         this._v2.copy(outer2.position).sub(center.position); // v2 = O2 - C
@@ -81,11 +99,12 @@ class BendForce extends Force {
         this._forceVector.copy(this._sum).multiplyScalar(-this._k * this._restLength * angle);
     }
 
+    /** @param {BodyPairs} bondPairs */
     applyTo(bondPairs) {
         this._calculateForceOn(bondPairs);
-        bondPairs.body1.body2.force.add(this._forceVector);
-        bondPairs.body2.body2.force.add(this._forceVector);
-        bondPairs.body1.body1.force.addScaledVector(this._forceVector, -2);
+        bondPairs.bodyPair1.body2.force.add(this._forceVector);
+        bondPairs.bodyPair2.body2.force.add(this._forceVector);
+        bondPairs.bodyPair1.body1.force.addScaledVector(this._forceVector, -2);
     }
 }
 
@@ -126,6 +145,7 @@ class CarbonDioxide extends MathPhysicsModelBehavior {
         this._carbon.reset();
     }
 
+    /** @param {Force} force */
     apply(force) {
         this._oxygen1.apply(force);
         this._oxygen2.apply(force);

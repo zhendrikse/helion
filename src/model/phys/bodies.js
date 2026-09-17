@@ -73,6 +73,29 @@ class VelocityVector extends MathPhysicsModelBehavior {
 //
 // Bodies to do physics with
 //
+
+export class BodyPairs extends MathPhysicsModelBehavior {
+    /**
+     * @param {BodyPair} bodyPair1 
+     * @param {BodyPair} bodyPair2 
+     */
+    constructor(bodyPair1, bodyPair2) {
+        super();
+        this.bodyPair1 = bodyPair1;
+        this.bodyPair2 = bodyPair2;
+    }
+    
+    integrate(dt = 0.01, integrator = Integrators.symplecticEulerStep) {
+        this.bodyPair1.integrate(dt, integrator);
+        this.bodyPair2.integrate(dt, integrator);
+    }
+
+    reset() {
+        this.bodyPair1.reset?.();
+        this.bodyPair2.reset?.();
+    }
+}
+
 export class BodyPair extends MathPhysicsModelBehavior {
     /**
      * @param {Body} body1 
@@ -83,6 +106,11 @@ export class BodyPair extends MathPhysicsModelBehavior {
         this.body1 = body1;
         this.body2 = body2;
     }
+
+    /** @param {BodyPair} otherBodyPair */
+    and(otherBodyPair) { 
+        return new BodyPairs(this, otherBodyPair) 
+    };
 
     reset() {
         this.body1.reset?.();

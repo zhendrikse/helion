@@ -1,6 +1,7 @@
 import {
     Vec3, Simulation, Sphere, SwitchableBondView, VectorView, RadioGroup, RadialSymmetricBody,
-    MathPhysicsModelBehavior, VectorField, CoulombForce, SpringForce, Force, EC
+    MathPhysicsModelBehavior, VectorField, CoulombForce, SpringForce, Force, EC,
+    BodyPairs
 } from "../../../src/index.js";
 
 const BOND_LENGTH   = 1.0E-10;
@@ -13,6 +14,11 @@ const WATER_ANGLE = 105 * Math.PI / 180;
 const SCALE         = 1e10;
 
 class ElectricField extends VectorField {
+    /**
+     * @param {Vec3} position 
+     * @param {number} magnitude 
+     * @param {number} frequency 
+     */
     constructor(position, magnitude = 0.0, frequency = 0.25) {
         super();
 
@@ -23,6 +29,10 @@ class ElectricField extends VectorField {
         this._direction = new Vec3();
     }
 
+    /**
+     * @param {Vec3} position 
+     * @param {Vec3} target 
+     */
     sample(position, target) {
         target.set(0, this._magnitude * this.direction.y, 0);
     }
@@ -30,7 +40,9 @@ class ElectricField extends VectorField {
     get omega() { return this._frequency * 2 * Math.PI * 1.00001E10; }
     get direction() { return this._direction.set(0, Math.cos(this._time * this.omega), 0); }
     get position() { return this._position; }
+    /** @param {number} value */
     set frequency(value) { this._frequency = value; }
+    /** @param {number} value */
     set time(value) { this._time = value; }
 
     reset() {
@@ -47,6 +59,13 @@ class ElectricField extends VectorField {
  * forces on the two outer atoms.
  */
 class TorqueForce extends Force {
+    /**
+     * @param {{
+     * k?: number
+     * restLength?: number
+     * restAngle?: number
+     * }} param0 
+     */
     constructor({ k, restAngle = 0, restLength }) {
         super();
 
@@ -60,10 +79,11 @@ class TorqueForce extends Force {
         this._bisector = new Vec3();
     }
 
+    /** @param {BodyPairs} bondPairs */
     _calculateForceOn(bondPairs) {
-        const center = bondPairs.body1.body1;
-        const outer1 = bondPairs.body1.body2;
-        const outer2 = bondPairs.body2.body2;
+        const center = bondPairs.bodyPair1.body1;
+        const outer1 = bondPairs.bodyPair1.body2;
+        const outer2 = bondPairs.bodyPair2.body2;
 
         this._v1.copy(outer1.position).sub(center.position); // v1 = h1.pos - oxygen.pos
         this._v2.copy(outer2.position).sub(center.position); // v2 = h2.pos - oxygen.pos
@@ -89,18 +109,21 @@ class TorqueForce extends Force {
         this._bisector.multiplyScalar(1 / bisectorLength);
 
         // torque_force = kt * spacing * (angle - bond_angle) * norm(v1 + v2)
+        // @ts-ignore
         this._forceVector.copy(this._bisector).multiplyScalar(this._k * this._restLength * (angle - this._restAngle));
     }
 
+    /** @param {BodyPairs} bondPairs */
     applyTo(bondPairs) {
         this._calculateForceOn(bondPairs);
-        bondPairs.body1.body2.force.add(this._forceVector);
-        bondPairs.body2.body2.force.add(this._forceVector);
-        bondPairs.body1.body1.force.addScaledVector(this._forceVector, -2);
+        bondPairs.bodyPair1.body2.force.add(this._forceVector);
+        bondPairs.bodyPair2.body2.force.add(this._forceVector);
+        bondPairs.bodyPair1.body1.force.addScaledVector(this._forceVector, -2);
     }
 }
 
 class Water extends MathPhysicsModelBehavior {
+    /** @param {number} bondAngle */
     constructor(bondAngle) {
         super();
 
@@ -161,6 +184,7 @@ class Water extends MathPhysicsModelBehavior {
         this._hydrogen2.reset();
     }
 
+    /** @param {Force} force */
     apply(force) {
         this._oxygen.apply(force);
         this._hydrogen1.apply(force);
@@ -168,6 +192,7 @@ class Water extends MathPhysicsModelBehavior {
         return this;
     }
 
+    /** @param {number} dt */
     integrate(dt) {
         this._oxygen.integrate(dt);
         this._hydrogen1.integrate(dt);
