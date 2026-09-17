@@ -1,11 +1,11 @@
 import {
-    Block, Box, Checkbox, degToRad, LineSegment, LineSegmentView, MathPhysicsModelBehavior,
+    Block, Box, Checkbox, degToRad, LineSegment, LineSegmentView,
     RadialSymmetricBody, Range, Simulation, Slider, Sphere, Trail, Vec3, Vec2, wavelengthColor, Colour
 } from "../../../src/index.js";
 
 import {MeshBasicMaterial} from "three";
 
-class RayBundle extends MathPhysicsModelBehavior {
+class RayBundle {
     constructor({
         rayCount = 6,
         n1 = 1.0,
@@ -14,8 +14,6 @@ class RayBundle extends MathPhysicsModelBehavior {
         initialAngle = 45,
         initialRange = 1
     } = {}) {
-        super();
-
         this._c = c;
         this._v1 = c / n1;
         this._v2 = c / n2;
@@ -32,18 +30,6 @@ class RayBundle extends MathPhysicsModelBehavior {
             }));
 
         this.initialize(initialAngle);
-    }
-
-    get rays() {
-        return this._rays;
-    }
-
-    get mediumThickness() {
-        return this._mediumThickness;
-    }
-
-    get rayRadius() {
-        return this._rayRadius;
     }
 
     /** @returns {ArrayIterator<RadialSymmetricBody>} */
@@ -111,7 +97,6 @@ const LAMBDA_RED = 750;
 const LAMBDA_BLUE = 380;
 const INITIAL_ANGLE = 45;
 const INITIAL_RATE = 500;
-const DT = 1e-3;
 const N1 = 1.0;
 const N2 = 1.5;
 const C = 1;
@@ -165,8 +150,8 @@ const wavefrontView = new LineSegmentView({
 });
 
 const wavelengthSlider = new Slider("Wavelength")
-    .withValue(585)
     .withRange(new Range(LAMBDA_BLUE, LAMBDA_RED, 1))
+    .withValue(550)
     .onInput(event => updateLightColor(false, Number(event.target.value)));
 
 let incidentAngle = INITIAL_ANGLE;
@@ -245,7 +230,7 @@ function initializeRays(angle = incidentAngle) {
 initializeRays();
 
 const color = new Colour();
-function updateLightColor(isWhite, wavelength = wavelengthSlider.value) {
+function updateLightColor(isWhite, wavelength = 550) {
     wavelengthColor(wavelength, color);
     const colorHex = isWhite ? 0xffffff : color.asHexValue();
     rayViews.forEach(view => view.color = colorHex);
