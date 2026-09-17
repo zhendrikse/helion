@@ -525,24 +525,46 @@ export class ParticleView2D extends Renderable2D {
      * segments?: number
      * colorFunction?: (property: any) => number
      * colorMapper?: ColorMapper
+     * hasBorder?: boolean
+     * borderColor?: Colour
      * }} param0 
      */
     constructor({
         segments = 16,
         colorFunction = particle => 0xffff00,
-        colorMapper = new HexValueColorMapper()
+        colorMapper = new HexValueColorMapper(),
+        hasBorder = false,
+        borderColor = Colour.Yellow
     } = {}) {
         super();
+        this._hasBorder = hasBorder;
+        this._color = new Colour();
+        this._borderGeometry = new CircleGeometry(1.15, segments);
+
+        const threeJsColor = new Color();
+        borderColor.asThreeJsColor(threeJsColor)
+        this._borderMaterial = new MeshBasicMaterial({ color: threeJsColor });
+        
+        this._borderMesh = new Mesh(this._borderGeometry, this._borderMaterial);
+        this.add(this._borderMesh);
+        this._borderMesh.visible = hasBorder;
+
         this._geometry = new CircleGeometry(1, segments);
         this._material = new MeshBasicMaterial();
         this._mesh = new Mesh(this._geometry, this._material);
         this.add(this._mesh);
         this._colorFunction = colorFunction;
         this._colorMapper = colorMapper;
-        this._color = new Color();
     }
 
-    set colorMapper(mapper) { this._colorMapper = mapper; }
+    /** @param {(property: any) => number} fn */
+    set colorFunction(fn) { this._colorFunction = fn; }
+    
+    /** @param {boolean} value */
+    set hasBorder(value) {
+        this._hasBorder = value;
+        this._borderMesh.visible = this._hasBorder && this._mesh.visible;
+    }
 
     /**
      * @param {RadialSymmetricBody} particle 
@@ -556,13 +578,16 @@ export class ParticleView2D extends Renderable2D {
     
     /**  @param {RadialSymmetricBody} particle */
     synchronizeWith(particle) {
+        this._borderMesh.visible = this._hasBorder;
         this.position.copy(particle.position);
-        this.scale.setScalar(particle.radius);
+        this.scale.setScalar(particle.radius ?? 1);
         this._colorMapper.map(this._colorFunction(particle), this._color);
         this._material.color.copy(this._color);
     }
 
     dispose() {
+        this._borderGeometry.dispose();
+        this._borderMaterial.dispose();
         this._geometry.dispose();
         this._material.dispose();
         this.clear();

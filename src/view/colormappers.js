@@ -9,14 +9,15 @@ export class Colour {
     static Yellow = new Colour(1, 1, 0);
     static Orange = new Colour(1, 0.6275, 0);
 
-    static fromHex = hexValue => {
+    static fromHex = (/** @type {number} */ hexValue) => {
         const r = ((hexValue >> 16) & 0xff) / 255;
         const g = ((hexValue >> 8)  & 0xff) / 255;
         const b = (hexValue & 0xff) / 255;
         return new Colour(r, g, b);
     }
 
-    static toHex = value => Math.round(value * 255).toString(16).padStart(2, "0");
+    static toHex = (/** @type {number} */ value) => 
+        Math.round(value * 255).toString(16).padStart(2, "0");
 
     /**
      * @param {number} r 0 <= red <= 1
@@ -54,8 +55,18 @@ export class Colour {
         this.b = (hexValue & 0xff) / 255;
     }
 
-    asThreeJsColor() {
-        return new Color().setRGB(this.r, this.g, this.b);
+    /**
+     * @param {number} h hue
+     * @param {number} s saturation
+     * @param {number} v value
+     */
+    setHSL(h, s, v) {
+        hsvToRgb(h, s, v, this);
+    }
+
+    /** @param {Color} targetColor */
+    asThreeJsColor(targetColor) {
+        targetColor.setRGB(this.r, this.g, this.b);
     }
 
     asHexString() {
@@ -173,6 +184,10 @@ export class WavelengthColorMapper extends ColorMapper {
         this._lambdaInNanos = lambdaInNanos;
     }
 
+    /**
+     * @param {number} intensity 
+     * @param {Colour} targetColor 
+     */
     map(intensity, targetColor) {
         if (this._showSpectralColor)
             wavelengthColor(this._lambdaInNanos, targetColor);

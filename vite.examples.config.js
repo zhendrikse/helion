@@ -53,6 +53,7 @@ export default defineConfig({
                 orbits: path.resolve(__dirname, 'examples/mathematics/scenes/orbits.js'),
                 parametric_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/parametric_surfaces.js'),
                 pendulum_wave: path.resolve(__dirname, 'examples/waves/scenes/pendulum_wave.js'),
+                phyllotaxis: path.resolve(__dirname, 'examples/nature/scenes/phyllotaxis.js'),
                 plane_wave: path.resolve(__dirname, 'examples/quantumphysics/scenes/plane_wave.js'),
                 polar_coordinates: path.resolve(__dirname, 'examples/mathematics/scenes/polar_coordinates.js'),
                 polar_coordinates_integration: path.resolve(__dirname, 'examples/mathematics/scenes/polar_coordinates_integration.js'),
