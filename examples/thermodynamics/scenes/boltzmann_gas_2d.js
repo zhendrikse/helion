@@ -82,7 +82,7 @@ const simulation = Simulation
         xLabel: "Speed",
         yLabel: "Particles"
     })
-    .onFrame(() => {
+    .onFrame((_) => {
         const { bins, theory } = gas.speedDistribution();
         histogramBuffer.push(bins);
         if (histogramBuffer.length > AVERAGING_FRAMES)
@@ -121,7 +121,7 @@ const simulation = Simulation
  */
 function bindParticle(particle, index) {
     const particleView = new ParticleView2D({
-        colorFunction: () => index === 0 ? 0xff0000 : particleColor
+        colorFunction: () => index === 0 ? 0xff0000 : index > PARTICLE_COUNT ? 0x00ffff : 0xffff00,
     });
     particleViews.push(particleView);
     simulation.bind(particle.alwaysWith(particleView));
@@ -129,6 +129,4 @@ function bindParticle(particle, index) {
         simulation.bind(particle.alwaysWith(tracerTrail));
 }
 
-let particleColor = 0xffff00;
 Array.from(gas).forEach(bindParticle);
-particleColor = 0x00ffff;

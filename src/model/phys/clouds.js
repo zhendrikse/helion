@@ -97,6 +97,11 @@ export class Gas {
         this.addParticles(particleCount);
     }
 
+    /** @param {number} mass */
+    set tracerMass(mass) {
+        this._particles[0].state.mass = mass;
+    }
+
     /** @returns {ArrayIterator<RadialSymmetricBody>} */
     [Symbol.iterator]() {
         return this._particles[Symbol.iterator]();
@@ -172,7 +177,7 @@ export class Gas {
         const binSize = maxSpeed / binCount;
         let sumV2 = 0;
 
-        for (const particle of this._particles) {
+        for (const particle of this._particles.slice(1)) { // Skip tracer
             sumV2 += particle.velocity.lengthSq();
             const speed = particle.velocity.length();
             const index = Math.min(Math.floor(speed / binSize), binCount - 1);

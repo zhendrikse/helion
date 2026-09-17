@@ -34,10 +34,10 @@ const simulation = Simulation
         camera: { position: new Vec3(0, 0, CONTAINER_SIZE * 1.05), orthographic: true, controls: false },
         lighting: { enabled: false },
         infoPanel: {
-            text: "<strong>🚶🏻‍➡️️ Random walk / Brownian motion</strong><br/>Maxwell velocity distribution of an ideal two-dimensional gas" + 
+            text: "<strong>🚶🏻‍➡️️ Random walk / Brownian motion</strong><br/>Maxwell velocity distribution of an ideal two-dimensional gas" +
             " in a square container.\n $$ A=\\frac{m}{2 \\pi k_B T}$$\n $$f(\\overrightarrow{v}) d^2\\overrightarrow{v} =" +
             "e^{(-Av^2)} d^2\\overrightarrow{v}$$"
-        }    
+        }
     })
     .runsEvery(0.01)
     .onStep((_, dt) => gas.evolve(dt))
@@ -65,6 +65,11 @@ const simulation = Simulation
             gas.reset();
             tracerTrail.reset();
         }).checked(0)))
+    .append(new Slider("Tracer mass")
+        .withValue(50)
+        .withRange(new Range(1, 100, 1))
+        .on(gas)
+        .withProperty("tracerMass"))
     .append(temperatureSlider)
     .setupGraphWith({
         dataDefinition: [
@@ -77,7 +82,7 @@ const simulation = Simulation
         xLabel: "Speed",
         yLabel: "Particles"
     })
-    .onFrame(() => {
+    .onFrame((_) => {
         const { bins, theory } = gas.speedDistribution();
         histogramBuffer.push(bins);
         if (histogramBuffer.length > AVERAGING_FRAMES)
@@ -116,7 +121,7 @@ const simulation = Simulation
  */
 function bindParticle(particle, index) {
     const particleView = new ParticleView2D({
-        colorFunction: () => index === 0 ? 0xff0000 : particleColor,
+        colorFunction: () => index === 0 ? 0xff0000 : index > PARTICLE_COUNT ? 0x00ffff : 0xffff00,
         segments: index === 0 ? 32 : 16
     });
     particleViews.push(particleView);
@@ -125,6 +130,4 @@ function bindParticle(particle, index) {
         simulation.bind(particle.alwaysWith(tracerTrail));
 }
 
-let particleColor = 0xffff00;
 Array.from(gas).forEach(bindParticle);
-particleColor = 0x00ffff;
