@@ -96,10 +96,18 @@ export function hsvToRgb(h, s = 1, v = 0.5, targetColor= new Colour()) {
     return targetColor;
 }
 
+/**
+ * @param {number} lambdaInNanos
+ * @param {Colour} targetColor
+ */
 export function wavelengthColor(lambdaInNanos, targetColor) {
     wavelengthToRGBNormalized(lambdaInNanos, targetColor);
 }
 
+/**
+ * @param {number} wavelength
+ * @param {Colour} targetColor
+ */
 function wavelengthToRGBNormalized(wavelength, targetColor) {
     let R = 0, G = 0, B = 0;
 
@@ -149,12 +157,16 @@ function wavelengthToRGBNormalized(wavelength, targetColor) {
 export class ColorMapper {
     /**
      * @param {number} value 
-     * @param {Color} targetColor 
+     * @param {Colour} targetColor
      */
     map(value, targetColor) {}
 }
 
 export class WavelengthColorMapper extends ColorMapper {
+    /**
+     * @param {number} lambdaInNanos
+     * @param {boolean} showSpectralColor
+     */
     constructor(lambdaInNanos = 590, showSpectralColor = true) {
         super();
         this._showSpectralColor = showSpectralColor;
@@ -168,7 +180,9 @@ export class WavelengthColorMapper extends ColorMapper {
             targetColor.setRGB(1, 1, 0);
     }
 
+    /** @param {boolean} value */
     set showSpectralColor(value) { this._showSpectralColor = value; }
+    /** @param {number} value */
     set lambdaInNanos(value) { this._lambdaInNanos = value; }
 }
 
