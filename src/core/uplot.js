@@ -1,6 +1,18 @@
 import uPlot from 'uplot';
 
 export class UPlotGraph {
+    /**
+     * @param {Object} options
+     * @param {HTMLDivElement} options.plotParentDiv,
+     * @param {string[]} options.dataDefinition,
+     * @param {number} options.width = 600,
+     * @param {number} options.height = 300,
+     * @param {string} options.title = '',
+     * @param {string} options.xLabel = '',
+     * @param {string} options.yLabel = '',
+     * @param {number} options.maxPoints = 500,
+     * @param {string} options.labelColor = 'green',
+     */
     constructor({
         plotParentDiv,
         dataDefinition,
@@ -11,7 +23,7 @@ export class UPlotGraph {
         yLabel = '',
         maxPoints = 500,
         labelColor = 'green',
-    } = {}) {
+    } = /** @type {any} */ ({})) {
         this._maxPoints = maxPoints;
         this._graphData = [];
         dataDefinition.forEach(() => this._graphData.push([]));
@@ -31,6 +43,15 @@ export class UPlotGraph {
         this._uplotChart = new uPlot(uPlotOptions, this._graphData, plotDiv);
     }
 
+    /**
+     * @param {string} title
+     * @param {number} width
+     * @param {number} height
+     * @param {string} labelColor
+     * @param {string} xLabel
+     * @param {string} yLabel
+     * @param {{}[]} series
+     */
     _uplotOptions(title, width, height, labelColor, xLabel, yLabel, series) {
         return {
             title,

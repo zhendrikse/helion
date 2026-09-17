@@ -3,6 +3,8 @@
  * e.g. "Click to start the simulation".
  */
 
+import { Viewport } from "./viewport";
+
 export class Hud {
     constructor() {
         this._element = document.createElement('div');
@@ -17,10 +19,15 @@ export class Hud {
         this._element.style.textAlign = 'center';
     }
 
+    /** @param {Viewport} viewPort */
     attach(viewPort) {
         viewPort.canvasWrapper.appendChild(this._element);
     }
 
+    /**
+     * @param {string} text 
+     * @param {number} duration in millis 
+     */
     show(text, duration=-1) {
         this._element.textContent = text;
         this._element.style.display = 'block';

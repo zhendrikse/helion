@@ -1,5 +1,7 @@
 import { Vec3 } from '../math/math.js';
 import { Transformation} from '../../core/helion.js';
+import { BodyPair, BodyPairs } from './bodies.js';
+import { VectorField } from '../math/fields.js';
 
 export const G = 6.67e-11;   // Gravitational constant
 export const EC = 1.602E-19; // Coulomb charge

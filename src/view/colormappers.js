@@ -92,7 +92,7 @@ export class Colour {
  * @param {Colour} targetColor
  */
 export function hsvToRgb(h, s = 1, v = 0.5, targetColor= new Colour()) {
-    let r, g, b;
+    let r = 0, g = 0, b = 0;
     let i = Math.floor(h * 6);
     let f = h * 6 - i;
     let p = v * (1 - s);
@@ -207,6 +207,10 @@ export class WavelengthColorMapper extends ColorMapper {
 }
 
 class ScientificColorMapper extends ColorMapper {
+    /**
+     * @param {number} normalizedValue
+     * @param {Colour | Color} targetColor
+     */
     map(normalizedValue, targetColor) {
         const num = Math.floor(4 * normalizedValue);
         const s = 4 * (normalizedValue - num / 4);
@@ -484,7 +488,7 @@ export class ColorMappers extends Registry {
                 Seismic: _options => new SeismicColorMapper(),
                 Scientific: _options => new ScientificColorMapper(),
                 Terrain: _options => new TerrainColorMapper(),
-                Uniform: _options => new UniformColorMapper(options),
+                Uniform: _options => new UniformColorMapper(_options),
                 Viridis: _options => new ViridisColorMapper(),
                 Water: _options => new WaterColorMapper(),
                 WaterAlternative: _options => new WaterAlternativeColorMapper()

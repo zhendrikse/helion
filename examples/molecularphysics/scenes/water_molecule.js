@@ -2,7 +2,7 @@ import {
     Vec3, Simulation, Sphere, SwitchableBondView, VectorView, RadioGroup, RadialSymmetricBody,
     MathPhysicsModelBehavior, VectorField, CoulombForce, SpringForce, Force, EC,
     BodyPairs
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const BOND_LENGTH   = 1.0E-10;
 const BOND_CONSTANT = 5.0E-6;       // Spring constant
@@ -231,7 +231,7 @@ const bondView2 = new SwitchableBondView({
 
 Simulation
     .with({
-        htmlDivId: "waterMoleculeContainer",
+        htmlDivId: 'waterMoleculeContainer',
         camera: {
             position: new Vec3(3, 0, 3),
             fieldOfView: 40,
@@ -240,7 +240,7 @@ Simulation
             scale: SCALE
         },
         viewport: {
-            aspectRatio: "4/3"
+            aspectRatio: '4/3'
         },
         parameterMenuCollapsed: false
     })
@@ -268,19 +268,19 @@ Simulation
     .bind(water.oxygen.and(water.hydrogen2).alwaysWith(bondView2))
     .bind(electricField.alwaysWith(electricArrow))
     .append(new RadioGroup()
-        .add("0.25", () => electricField.frequency = 0.25)
-        .add("8",    () => electricField.frequency = 8.0)
-        .add("5.291", () => electricField.frequency = 5.291)
-        .add("1.5",  () => electricField.frequency = 1.5)
-        .add("2.76", () => electricField.frequency = 2.76)
+        .add('0.25', () => electricField.frequency = 0.25)
+        .add('8',    () => electricField.frequency = 8.0)
+        .add('5.291', () => electricField.frequency = 5.291)
+        .add('1.5',  () => electricField.frequency = 1.5)
+        .add('2.76', () => electricField.frequency = 2.76)
         .checked(0)
     )
     .append(new RadioGroup()
-        .add("Springs", () => {
+        .add('Springs', () => {
             bondView1.bondType = SwitchableBondView.Type.Spring;
             bondView2.bondType = SwitchableBondView.Type.Spring;
         })
-        .add("Cylinders", () => {
+        .add('Cylinders', () => {
             bondView1.bondType = SwitchableBondView.Type.Cylinder;
             bondView2.bondType = SwitchableBondView.Type.Cylinder;
         })

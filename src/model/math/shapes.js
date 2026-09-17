@@ -3,10 +3,15 @@ import { CompoundControl, DropdownMenu, Slider } from '../../core/controls.js';
 import { Range } from './math.js';
 
 class ShapeLike {
+    /** @param {number} size */
     constructor(size) {
         this._size = size;
     }
 
+    /**
+     * @param {number} _x
+     * @param {number} _y
+     */
     sample(_x, _y) {}
 }
 
@@ -101,6 +106,7 @@ export class ShapesFactory extends Registry {
 
     static this_ = new ShapesFactory();
 
+    /** @param {ShapeConfiguration} shapeConfiguration */
     static create(shapeConfiguration) {
         const Type = ShapesFactory.this_.get(shapeConfiguration.shape);
         return new Type(shapeConfiguration.size);
@@ -127,6 +133,9 @@ export class ShapeConfiguration {
     get size() { return this._size; }
     get shape() { return this._shape; }
 
+    /**
+     * @param {() => void} onChangeEventListener
+     */
     set onChangeEventListener(onChangeEventListener) {
         this._onChangeEventListener = onChangeEventListener;
     }
@@ -137,6 +146,7 @@ export class ShapeConfiguration {
                 .for(new ShapesFactory())
                 .withValue(this._shape)
                 .addEventListener('change', event => {
+                    // @ts-ignore
                     this._shape = event.target.value;
                     this._onChangeEventListener(event);
                 })
@@ -145,6 +155,7 @@ export class ShapeConfiguration {
                 .withRange(new Range(5, 50, 1))
                 .withValue(this._size)
                 .addEventListener('input', event => {
+                    // @ts-ignore
                     this._size = Number(event.target.value);
                     this._onChangeEventListener(event);
                 })

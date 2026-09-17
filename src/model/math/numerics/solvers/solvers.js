@@ -1,6 +1,7 @@
 import { DiscreteComplexField, DiscreteScalarField, Field } from "../../fields.js";
 import {Complex} from "../../math.js";
 import {LaplaceOperator} from "../../../transformations/operators.js";
+import { DirichletBoundaryCondition } from "../boundaryconditions/dirichlet.js";
 
 /**
  * A solver shoud be applied to a discrete scalar field.
@@ -17,13 +18,17 @@ export class Solver {
 }
 
 export class JacobiSolver extends Solver {
+    /**
+     * @param {DirichletBoundaryCondition} boundaryCondition
+     */
     constructor(boundaryCondition) {
         super();
         this._boundaryCondition = boundaryCondition;
         this._next = null;
     }
 
-    set boundaryCondition(value) { this._boundaryCondition = value; }
+    /** @param {DirichletBoundaryCondition} boundaryCondition */
+    set boundaryCondition(boundaryCondition) { this._boundaryCondition = boundaryCondition; }
 
     reset() {
         this._next?.fill(0);

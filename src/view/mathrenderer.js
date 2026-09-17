@@ -1,6 +1,10 @@
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 
+/**
+ * @param {HTMLElement} element
+ * @param {string} latex
+ */
 export function renderMath(element, latex, {
     displayMode = true,
     throwOnError = false
@@ -24,6 +28,10 @@ export function renderMath(element, latex, {
     });
 }
 
+/**
+ * @param {HTMLDivElement} element
+ * @param {string} html
+ */
 export function renderMathInHtml(element, html, {
     displayMode = false,
     throwOnError = false
@@ -38,7 +46,7 @@ export function renderMathInHtml(element, html, {
 
     for (const textNode of textNodes) {
         const text = textNode.nodeValue;
-        if (!text.includes('$'))
+        if (!text?.includes('$'))
             continue;
 
         const fragment = document.createDocumentFragment();
@@ -64,6 +72,6 @@ export function renderMathInHtml(element, html, {
         if (position < text.length)
             fragment.appendChild(document.createTextNode(text.substring(position)));
 
-        textNode.parentNode.replaceChild(fragment, textNode);
+        textNode.parentNode?.replaceChild(fragment, textNode);
     }
 }

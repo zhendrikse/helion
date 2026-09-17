@@ -1,4 +1,5 @@
-import {MathPhysicsModelBehavior} from '../../core/helion.js';
+import {MathPhysicsModelBehavior, Transformation} from '../../core/helion.js';
+import { Matrix2D } from '../transformations/matrices.js';
 import { Interval, degToRad, Vec2, Vec3} from './math.js';
 import {Integrators} from './numerics/integrators/integrators.js';
 
@@ -231,7 +232,11 @@ export class StrangeAttractor extends Segments {
     /** @param {Vec3} _point */
     derivative(_point) {}
 
-    hue(_parameter, _index) {
+    /**
+     * @param {number} _parameter
+     * @param {number} _index
+     */
+    hue(_parameter, _index = 0) {
         return 0.5;
     }
 
