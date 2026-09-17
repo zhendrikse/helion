@@ -28,15 +28,18 @@ Factory: `Simulation.with(options)` → `Simulation` instance. All methods are c
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `htmlDivId` | `string` | auto-created | Container div id |
-| `background` | `Simulation.Background` | `TRANSPARENT` | `PLAIN`, `FOG`, `TRANSPARENT`, `STARS` |
-| `backgroundColor` | hex | `0x0088ff` | Used with `PLAIN` |
-| `scale` | `number` | `1` | Physics → world mapping |
-| `cameraPosition` | `Vec3` | `(3,3,3)` | Initial camera |
-| `controlsTarget` | `Vec3` | `(0,0,0)` | OrbitControls target |
-| `fieldOfView` | `number` | `50` | Perspective FOV |
-| `orthographic` | `boolean` | `false` | `camera:{orthographic:true}` or `simulation.setOrthographic(bool)` — orthographic disables rotate/pan, only zoom |
-| `shadowsEnabled` | `boolean` | `false` | Three.js shadows |
-| `headUpDisplay` | `boolean` | `false` | HUD overlay |
+| `viewport.aspectRatio` | `string` | `"1 / 1"` | CSS aspect-ratio for wrapper |
+| `camera.position` | `Vec3` | `(3,3,3)` | Initial camera position |
+| `camera.target` | `Vec3` | `(0,0,0)` | OrbitControls target |
+| `camera.fieldOfView` | `number` | `50` | Perspective FOV |
+| `camera.orthographic` | `boolean` | `false` | Orthographic disables rotate/pan (only zoom) |
+| `camera.controls` | `boolean` | `true` | OrbitControls enabled |
+| `scene.background` | `ThreeJsScene.Background` | `TRANSPARENT` | `PLAIN`, `FOG`, `TRANSPARENT`, `STARS` |
+| `scene.backgroundColor` | hex | `0x0088ff` | Used with `PLAIN` |
+| `scene.scale` | `number` | `1` | Physics → world mapping |
+| `lighting.enabled` / `shadows` | `boolean` | `true` / `false` | Three.js lights/shadows |
+| `headUpDisplay.enabled` | `boolean` | `true` | HUD overlay (`simulation.setLatexTitle` renders via `renderMath` in titleDiv) |
+| `infoPanel.text` | `string` | `""` | Info panel HTML |
 | `parameterMenuCollapsed` | `boolean` | `true` | Controls collapsed |
 
 Chaining API:
@@ -56,15 +59,18 @@ Simulation.with({ htmlDivId: "container", scale: 1e-9, headUpDisplay: true })
   .bind(model.onceWith(view))               // one-shot sync
   .append(new Slider("k").withRange(...))   // controls
    .provideAxesAround(view)                  // axes + AxesUI
-   .frameSceneOn(view, { padding: 1.2 })
-   .setOrthographic(true)                      // switch to orthographic top-down for 2D
-   .removeAxes() / setAxesVisible(false)       // hide axes for 2D
-  .setupGraphWith({ dataDefinition, title })
-  .plot([t, value])
-  .withMouseClickEventListener()             // click → start/pause/reset
-  .appendStartStopResetUI()
-  .onReset(() => field.reset())
-  .start()                                  // .stop(), .reset(), .isRunning
+    .frameSceneOn(view, { padding: 1.2 })
+    .setOrthographic(true)                      // switch to orthographic top-down for 2D
+    .removeAxes() / setAxesVisible(false)       // hide axes for 2D
+    .setLatexTitle("\\phi = n\\cdot137.5\\pi/180") // MathJax/KaTeX via renderMath in titleDiv
+    .setTextTitle("plain text")
+    .clearTitle()
+   .setupGraphWith({ dataDefinition, title })
+   .plot([t, value])
+   .withMouseClickEventListener()             // click → start/pause/reset
+   .appendStartStopResetUI()
+   .onReset(() => field.reset())
+   .start()                                  // .stop(), .reset(), .isRunning
 ```
 
 `runsEvery` vs `advancesBy`: scheduling interval vs simulated time. `maxOutCpu(fn, minFrameRate=30, iterationsPerFrame=10)` is the adaptive alternative to `onStep`.
@@ -156,9 +162,9 @@ f.sample(u, target=new Vec2()); // u∈[0,1] → Vec2(x,y)
 f.setFunction(newFunc); // for Taylor/Fourier demos
 ```
 
-### `VectorField` / `NormalizedScalarField`
+### `VectorField` / `DiscreteScalarField` sampling
 
-`VectorField.sample(positionVector, target)`. `NormalizedScalarField(scalarField, normalizer)` maps height via normalizer.
+`VectorField.sample(positionVector, target)`. Continuous vs discrete is a data-access detail: `field.sample(u,v,target)` vs `field.valueAt(i,j,target)` + `field.nx/ny`.
 
 ### `Surface` — abstract
 
@@ -168,17 +174,9 @@ f.setFunction(newFunc); // for Taylor/Fourier demos
 
 `sample` maps `[0,1]²` → `Domain` → `Vec3(x, z, y)` (Y-up).
 
-### `MultivariateFunctionSurface({ domain, z=(x,y,t)=>0 })`
+### `ScalarFieldSurface({ domain, func })` / `DiscreteFieldSurface({ field })`
 
-Adds `time` setter for animation.
-
-### `ComplexSurface({ domain, z=(c)=>c })`
-
-`sample` writes `Complex` (`re`/`im` from domain, then `z(c)`).
-
-### `DiscreteFieldSurface(field)`
-
-Adapter: `field: DiscreteScalarField`. Overrides `frameAt` with `valueAt` + central-difference `_normalAt`. Enables `SurfaceVisualization` for raster fields.
+`ScalarFieldSurface` embeds a continuous `MultivariateFunction`/`ComplexFunction` as height. `DiscreteFieldSurface` adapts a `DiscreteScalarField` via `valueAt` + central-difference normals — enables `SurfaceVisualization` for raster fields without manual conversion.
 
 ---
 
@@ -213,9 +211,9 @@ Spring network: `addBody(body)`, `connect(body1, body2, {k, restLength, damping}
 
 `applyTo(lattice)`, `index(i,j,k)`.
 
-### `PointCloud` / `BlockSegments` / `LineSegments`
+### `PointCloud` / `Gas`
 
-`PointCloud` — `particleStateAt(i, target)` etc. for `PointCloudView`. `LineSegments.add(from, to, color)`, `BlockSegments.push(block)`.
+`PointCloud` (`particleStateAt(i) → {position, color, size}`) for the legacy `PointCloudView` / `ParticleCloudView` pattern. `Gas` — 2D/3D kinetic gas used in `examples/thermodynamics` (`Gas` + `ParticleView2D` or `PointCloudView`). Discrete fields (`DiscreteScalarField`) are now visualized directly via `DiscreteFieldSurfaceView`/`TiledPlane` without an intermediate `PointCloud`.
 
 ---
 
@@ -337,15 +335,17 @@ All extend `Renderable3D` (`Object3D`). Contract: `canBindTo(model)`, `initializ
 | `Ring` | `{color, thickness=0.1}` | `body.position && body.axis && body.radius` |
 | `Helix` | `{color, coils=20, thickness=0.05, radiusFunction}` | `BodyPair` |
 | `Trail` | `{maxPoints=200, trailStep=1, color}` | `body.position` |
-| `VisibleWhen` | `(view, predicate)` | delegates to `view.canBindTo` |
+| `Label` | `{text, color, size}` | `body.position` |
 | `Floor/Aquarium/Ceiling` | — | decorations |
+
+> **Visibility:** prefer `particle.visible` on the *model* (e.g. `get visible(){return index < n}` in `FlowerParticle`) → `ParticleView2D` hides via child meshes and keeps `view.visible=true` so `Binding.synchronize()` stays active. Setting `view.visible=false` skips synchronization (see `src/core/helion.js:103` guard) and requires `forceSynchronize()` to recover.
 
 ### Composite
 
 | View | Options | Notes |
 |------|---------|-------|
 | `PointCloudView` | `{material}` | `pointCloud.positionAt` etc. |
-| `LatticeView.from({bodyView, bondView, bodyArgs, bondArgs})` | `Lattice` | `bondType`, `nodesVisible`, `.ui()` |
+| `LatticeView` | `{bodyViewFactory, bondViewFactory}` | `Lattice` — `new LatticeView({bodyViewFactory:()=>new Sphere(), bondViewFactory:()=>new SwitchableBondView()})` |
 | `DiatomicMolecule` | `{bondType, bondColor, atom1Color, atom2Color}` | `BodyPair` |
 | `SwitchableBondView` | `{bondType="Spring"/"Cylinder", color, coils}` | delegates to Helix/Cylinder |
 | `ArrowField` | `{xRange, yRange, zRange, scaleFactor, magnitudeMap, colorMap}` | `VectorField` |
@@ -378,12 +378,12 @@ vis.colorLayerUI() // Color layer dropdown
 - `ColorLayers` registry: `Height`, `PrincipalCurvature1/2`, `GaussianCurvature`, `MeanCurvature`, `ShapeIndex`, `Curvedness`
 - Layers: `SurfaceLayer`, `GlyphLayer` (`BOXES|CAPSULES|CYLINDERS|CONES|ICOSAHEDRONS|TILES|SPHERES`), `ContoursLayer`, `PrincipalDirectionsLayer`, `NormalsLayer`
 
-### 3D rasters (discrete fields)
+### 3D discrete-field views
 
 ```js
-new ComplexScalarFieldSurfaceRaster({ width=200, height=200, zScale=20, showPhaseColor, brightness })
-new PotentialField3DRaster({ width=200, height=200, heightScale=100, color, opacity })
- // canBindTo: field.valueAt && field.nx && field.ny
+new DiscreteFieldBoxView({ width=200, height=200, heightScale=100, color:0xff0033, opacity:0.35 })
+// Instanced BoxGeometry per texel; canBindTo: field.valueAt && field.nx && field.ny
+new DiscreteFieldSurfaceView({ colorMapper, opacityFunction }) // 2D DataTexture plane (also listed under 2D)
 ```
 
 ### Complex field views (2D/3D)
@@ -400,13 +400,16 @@ view3D.colorMapper = view2D.colorMapper = ComplexColorMappers.get(ComplexColorMa
 - Both share `sample(u,v, ComplexFunctionSample{input,output})` / `valueAt` contract and `resolution()` logic; `valueAt` is used for discrete grids (performance) without interpolation.
 - 2D uses `brightnessFunction` to modulate RGB (kept opaque) to avoid old-frame shine-through.
 
-### 2D rasters
+### 2D views — rasters, fields and particles
 
 ```js
-new ScalarFieldIntensityPixelRaster({ width=512, height=512, colorMapper })
-new ComplexScalarFieldRaster({ width=512, height=512, showPhaseColour, brightness })
-new FieldEdgeIntensityPixelRaster({ nx=100, ny=100, edgeHeight=100 })
-new ParticleCloudView({ particleCount=5000, type="Sphere" })
+new PixelRasterView({ width=512, height=512, transparent }) // DataTexture + PlaneGeometry, canBindTo: pixelAt/pixels
+new DiscreteFieldSurfaceView({ colorMapper:new WavelengthColorMapper(525), opacityFunction:v=>Math.sqrt(v) })
+new FieldEdgeIntensityPixelRaster({ edgeHeight:100, colorMapper, opacityFunction })
+new TiledPlane({ colorMapper:new HexValueColorMapper(), normalizer:new AdaptiveSymmetricNormalizer(), opacity:1, cellSize:1 }) // Instanced PlaneGeometry, per-texel color + instanceOpacity
+new ComplexSurfaceView2D({ showPhaseColour, brightnessFunction:m=>m>1?1:m, colorMapper:ComplexColorMappers.get(ComplexColorMappers.Hsv) })
+new ParticleView2D({ segments:16, colorFunction:p=>number, colorMapper:new HueColorMapper(), hasBorder:false, borderColor:Colour.Yellow, visible:true })
+// ParticleView2D replaces the legacy InstancedMesh ParticleCloudView; visibility via particle.visible (model) keeps Binding.synchronize() active; hasBorder adds CircleGeometry(1.15) outline
 ```
 
 ### 1D — CurveView (LineSegmentsView subclass)

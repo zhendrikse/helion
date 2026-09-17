@@ -362,22 +362,28 @@ Design principle:
 ```
 src/
   core/helion.js              Simulation, Binding, Viewport, SimulationClock, Registry
-  core/controls.js            Slider, DropdownMenu, Checkbox, RadioGroup, Button
+  core/controls.js            Slider, DropdownMenu, Checkbox, RadioGroup, Button, TextInput
+  core/mathrenderer.js        renderMath (MathJax/KaTeX for Simulation.setLatexTitle)
   model/math/math.js          Vec2, Vec3, Complex, Interval, Range, Domain
-  model/math/fields.js        Field, ScalarField, RealFunction, ComplexField, DiscreteScalarField, DiscreteComplexField
+  model/math/fields.js        Field, ScalarField, RealFunction, ComplexField, DiscreteScalarField, DiscreteComplexField, VectorField
   model/math/surfaces.js      Surface, ParametricSurface, ScalarFieldSurface, DiscreteFieldSurface
-  model/math/numerics/        DifferentialGeometry, solvers, integrators
-  model/phys/bodies.js        Body, RadialSymmetricBody, Block, Lattice, BodyPair
-  model/phys/forces.js        Force, GravitationalForce, CoulombForce, SpringForce
-  model/transformations/      Operators (FFT2D, GaussianImpulse, DoubleSlit, …)
+  model/math/numerics/        DifferentialGeometry, solvers (Wave/Shrodinger/Jacobi), integrators
+  model/phys/bodies.js        Body, RadialSymmetricBody, AxialSymmetricBody, Block, Lattice, BodyPair, BodyPairs
+  model/phys/clouds.js        PointCloud, Gas
+  model/phys/forces.js        Force, FieldForce, GravitationalForce, CoulombForce, SpringForce, DragForce, PairForce
+  model/transformations/      Operators (FFT2D, GaussianImpulse, DoubleSlit, ShapeMask, Softness, … + ShapeConfiguration/Shapes)
+  view/colormappers.js        Colour, hsvToRgb, ColorMappers, HueColorMapper, HexValueColorMapper, WavelengthColorMapper, ComplexColorMappers
   view/3d/surfaces/complex.js ComplexFieldViewable, ComplexSurfaceView3D, WaveFunctionSurface3D
-  view/3d/surfaces/           SurfaceVisualization, layers, normalizers
-  view/3d/composite/segmentviews.js CurveView, LineSegmentsView
-  view/3d/renderer.js         ThreeJsRenderer (perspective/orthographic, axes)
+  view/3d/surfaces/           SurfaceVisualization, ColorLayers, layers (Contours/PrincipalDirections/Glyph), normalizers (AdaptiveSymmetric/FixedInterval)
+  view/3d/views.js            DiscreteFieldBoxView (Instanced BoxGeometry for DiscreteScalarField)
+  view/3d/composite/segmentviews.js CurveView, LineSegmentsView, Box/CylinderSegmentsView
+  view/3d/renderer.js         ThreeJsRenderer (perspective/orthographic, axes, shadows)
   view/3d/camera.js           ThreeJsCamera (perspective/orthographic, OrbitControls)
-  view/3d/primitives/         Sphere, Box, Arrow, Trail, VectorView, …
-  view/3d/composite/          PointCloudView, LatticeView, …
-  view/2d/views.js             ComplexFieldViewable2D, ComplexSurfaceView2D, 2D rasters
+  view/3d/primitives/         Sphere, Box, Cylinder, Arrow, Ring, Helix, Trail, VectorView, Label, …
+  view/3d/composite/          PointCloudView, LatticeView, SwitchableBondView, DiatomicMolecule, ArrowField, ElectromagneticWave, …
+  view/2d/views.js            PixelRasterView, DiscreteFieldSurfaceView, FieldEdgeIntensityPixelRaster, ComplexFieldViewable2D, ComplexSurfaceView2D, TiledPlane, ParticleView2D (colorFunction/hasBorder)
+  view/2d/primitives.js       Arrow2D
+  view/2d/composite/          ArrowField2D, OneDimensionalComplexPlaneWave2D
 ```
 
 Conceptually:

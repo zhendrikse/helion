@@ -27,11 +27,12 @@ RadialSymmetricBody
 ##### Generic view objects visualize model properties:
 
 ```text
-Sphere          → radius + position
-Box             → size + position + orientation
-VectorView      → willekeurige Vec3
-ConditionalView → zichtbaarheid op basis van model state
-BondView        → BodyPair
+Sphere / Box / Cylinder / Ring / Arrow → position + radius/size/axis (Body, RadialSymmetricBody, AxialSymmetricBody, Block)
+VectorView / Trail / Label           → willekeurige Vec3 + body.position (vector, trail, label)
+SwitchableBondView / DiatomicMolecule → BodyPair (breedte switchbaar via SwitchableBondView.Type.Spring/Cylinder)
+ParticleView2D / PointCloudView       → 2D/3D deeltjes (position + radius/size + colorFunction/hasBorder voor 2D)
+TiledPlane / DiscreteFieldSurfaceView → DiscreteScalarField (via colorMapper/normalizer)
+Zichtbaarheid                         → model.visible (bijv. get visible(){return index < n}) — houdt Binding.synchronize actief, i.p.v. view.visible
 ```
 
 ##### Simulations combine model and generic view objects:
