@@ -61,6 +61,10 @@ export class Colour {
     asHexString() {
         return `#${Colour.toHex(this.r)}${Colour.toHex(this.g)}${Colour.toHex(this.b)}`;
     }
+
+    asHexValue() {
+        return (Math.round(this.r * 255) << 16) | (Math.round(this.g * 255) << 8) | (Math.round(this.b * 255));
+    }
 }
 
 /**

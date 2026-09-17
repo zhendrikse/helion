@@ -1,6 +1,6 @@
 import {
-    Block, Box, Checkbox, degToRad, MathPhysicsModelBehavior, RadioGroup, RadialSymmetricBody, Range,
-    Simulation, Slider, Sphere, Trail, Vec3, Vec2, wavelengthColor, colorToHexValue
+    Block, Box, Checkbox, degToRad, MathPhysicsModelBehavior, RadialSymmetricBody, Range,
+    Simulation, Slider, Sphere, Trail, Vec3, Vec2, wavelengthColor, Colour
 } from "../../../src/index.js";
 
 import {
@@ -181,11 +181,13 @@ const rays = new RayBundle({
 
 const medium = new Block({
     position: new Vec3(0.5 * MEDIUM_THICKNESS, 0, -0.25 * MEDIUM_THICKNESS),
-    size: new Vec3(MEDIUM_THICKNESS, MEDIUM_THICKNESS, MEDIUM_THICKNESS),
+    size: new Vec3(MEDIUM_THICKNESS, MEDIUM_THICKNESS, 0.1 * MEDIUM_THICKNESS),
     fixed: true
 });
 
+/** @type {Sphere[]} */
 const rayViews = [];
+/** @type {Trail[]} */
 const trails = [];
 for (const ray of rays) {
     const rayView = new Sphere({
@@ -232,7 +234,7 @@ const simulation = Simulation
     })
     .bind(medium.alwaysWith(new Box({
         color: 0xc0c0ff,
-        opacity: 0.75
+        opacity: 0.35
     })))
     .bind(rays.alwaysWith(wavefrontView))
     .onStep((_, dt) => {
@@ -281,10 +283,10 @@ function initializeRays(angle = incidentAngle) {
 }
 initializeRays();
 
-const color = new Color();
+const color = new Colour();
 function updateLightColor(isWhite, wavelength = wavelengthSlider.value) {
     wavelengthColor(wavelength, color);
-    const colorHex = isWhite ? 0xffffff : colorToHexValue(color);
+    const colorHex = isWhite ? 0xffffff : color.asHexValue();
     rayViews.forEach(view => view.color = colorHex);
     trails.forEach(trail => trail.color = colorHex);
     wavefrontView.color = colorHex;
