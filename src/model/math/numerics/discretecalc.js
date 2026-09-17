@@ -1,5 +1,8 @@
+import { DiscreteScalarField } from "../fields";
+import { Vec2 } from "../math";
+
 export class ScalarFieldCalculus {
-    /** @param {DiscreteScalarField } field */
+    /** @param {DiscreteScalarField} field */
     constructor(field) {
         this._field = field;
     }

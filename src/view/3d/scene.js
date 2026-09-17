@@ -1,7 +1,10 @@
 import {
-    Scene, Group, Fog, Color
+    Scene, Group, Fog, Color,
+    Object3D
 } from "three";
 import { SkyDome } from "./composite/backgrounds.js";
+import { Vec3 } from "../../model/math/math.js";
+import { Renderable } from "../renderer.js";
 
 export class ThreeJsScene {
     static Background = Object.freeze({
@@ -11,6 +14,9 @@ export class ThreeJsScene {
         STARS: "Stars"
     });
 
+    /**
+     * @param {Vec3} cameraPosition
+     */
     constructor(cameraPosition, {
         background = ThreeJsScene.Background.TRANSPARENT,
         backgroundColor = 0x0088ff,
@@ -33,6 +39,11 @@ export class ThreeJsScene {
 
     get skydome() { return this._skydome; }
 
+    /**
+     * @param {Vec3} cameraPosition
+     * @param {string} background
+     * @param {number} backgroundColor
+     */
     #initBackground(cameraPosition, background, backgroundColor) {
         switch (background) {
             case ThreeJsScene.Background.PLAIN:
@@ -55,16 +66,19 @@ export class ThreeJsScene {
         }
     }
 
+    /** @param {Object3D} threeJsObject */
     addToWorld(threeJsObject) {
         this._world.add(threeJsObject);
     }
 
+    /** @param {Object3D} light */
     addLight(light) {
         this._scene.add(light);
     }
 
     get scene() { return this._scene; }
 
+    /** @param {Renderable} view */
     removeFromWorld(view) {
         this._world.remove(view);
     }

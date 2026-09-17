@@ -1,14 +1,28 @@
+import { PhysicsState } from "../../../phys/bodies";
+
 export class Integrators {
+    /**
+     * @param {PhysicsState} physicsState
+     * @param {number} dt
+     */
     static eulerStep(physicsState, dt) {
         physicsState.position.addScaledVector(physicsState.velocity, dt);
         physicsState.velocity.addScaledVector(physicsState.acceleration, dt);
     }
 
+    /**
+     * @param {PhysicsState} physicsState
+     * @param {number} dt
+     */
     static symplecticEulerStep(physicsState, dt) {
         physicsState.velocity.addScaledVector(physicsState.acceleration, dt);
         physicsState.position.addScaledVector(physicsState.velocity, dt);
     }
 
+    /**
+     * @param {PhysicsState} physicsState
+     * @param {number} dt
+     */
     static rk2Step(physicsState, dt, derivativeFn = state => ({
         dx: state.velocity.clone(),
         dv: state.acceleration
@@ -43,6 +57,10 @@ export class Integrators {
             .addScaledVector(k4, dt / 6);
     }
 
+    /**
+     * @param {PhysicsState} physicsState
+     * @param {number} dt
+     */
     static rk4Step(physicsState, dt) {
         const derivative = body => ({
             dx: body.velocity.clone(),

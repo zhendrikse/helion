@@ -3,10 +3,11 @@ import { ThreeJsRenderer} from '../view/3d/renderer.js';
 import { Axes } from '../view/3d/composite/backgrounds.js';
 import { generateUUID, Vec3 } from '../model/math/math.js';
 import { UPlotGraph } from './uplot.js';
-import { AxesUI, Button } from './controls.js';
+import { AxesUI, Button, HtmlControl } from './controls.js';
 import { renderMath } from '../view/mathrenderer.js';
 import { Viewport } from './viewport.js';
 import { ThreeJsScene } from '../view/3d/scene.js';
+import { Renderable, Renderer } from '../view/renderer.js';
 
 export class Registry {
     constructor({
@@ -117,11 +118,17 @@ export class Binding {
 }
 
 class SimulationClock {
+    /**
+     * @param {Object} [options]
+     * @param {number} [options.realTimeStep=0.01]
+     * @param {number} [options.simulationTimeStep=options.realTimeStep]
+     * @param {number} [options.maxAccumulatedTime=0.25]
+     */
     constructor({
-                    realTimeStep = 0.01,
-                    simulationTimeStep = realTimeStep,
-                    maxAccumulatedTime = 0.25
-                } = {}) {
+        realTimeStep = 0.01,
+        simulationTimeStep = realTimeStep,
+        maxAccumulatedTime = 0.25
+    } = {}) {
         this.realTimeStep = realTimeStep;             // realtime scheduling interval
         this.simulationTimeStep = simulationTimeStep;   // simulated-time increment
 
@@ -146,6 +153,10 @@ class SimulationClock {
         this.simulatedTime += this.simulationTimeStep;
     }
 
+    /** 
+     * @param {number} clockTime 
+     * @param {number} timeScale
+     */
     updateWith(clockTime, timeScale) {
         this.previousClockTime = this.clockTime;
         this.clockTime = clockTime;
@@ -162,6 +173,12 @@ export class Simulation {
         STOPPED: 'Stopped',
     });
 
+    /**
+     * @param {string} htmlDivId 
+     * @param {boolean} parameterMenuCollapsed 
+     * @param {string} aspectRatio 
+     * @returns {Viewport}
+     */
     static viewportFromHtmlDiv = (htmlDivId, parameterMenuCollapsed, aspectRatio) => {
         let canvasWrapper = document.getElementById(htmlDivId);
         if (!canvasWrapper) {
@@ -231,13 +248,19 @@ export class Simulation {
                 text: ''
             },
             parameterMenuCollapsed = true
-        } = {}) {
+        } = {htmlDivId: '', camera: {}, viewport: {}, scene: {}, lighting: {}, headUpDisplay: {}, infoPanel: {}}) {
         const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, parameterMenuCollapsed, viewport.aspectRatio);
         const renderer = new ThreeJsRenderer({ camera, viewport, lighting, scene });
         renderer.attach(viewPort);
         return new Simulation(viewPort, renderer, headUpDisplay.enabled, infoPanel);
     }
 
+    /**
+     * @param {Viewport} viewport 
+     * @param {Renderer} renderer 
+     * @param {boolean} headUpDisplay 
+     * @param {boolean} infoPanel 
+     */
     constructor(viewport, renderer, headUpDisplay, infoPanel) {
         this._viewport = viewport;
         this._renderer = renderer;
@@ -256,6 +279,7 @@ export class Simulation {
         this._iterationsPerFrame = 10;       // Automatically tuned during execution to maximize CPU utilization
         this._minimumFrameRate = 30;         // Limit beyond which number of iterations per frame is no longer increased
         /** @type (clock: SimulationClock, dt: number) => void */
+        // @ts-ignore as this signals not to use the stepfunction!!
         this._stepFunction = null;           // Called at fixed dt intervals
         this._stepsPerClockTick = 1;         // At each clock tick, execute this many (sub)steps
         /** @type (_time: number) => void */
@@ -402,17 +426,18 @@ export class Simulation {
 
     /**
      * @param {Renderable} anObject object to place the axes around
-     * @param {string} layoutType
-     * @param {number} divisions
-     * @param {boolean} frame show axis frame
-     * @param {boolean} annotations
-     * @param {boolean} tickLabels show tick labels along axes
-     * @param {boolean} xyPlane show the XY-plane
-     * @param {boolean} xzPlane show the XZ-plane
-     * @param {boolean} yzPlane show the YZ-plane
-     * @param {string[]} axisLabels show the labels on the axes
-     * @param {boolean} positiveXZ
-     * @param {boolean} bottomAlign align the axes with the bottom of the object
+     * @param {Object} [options={}] Configuration for the axes.
+     * @param {string} [options.layoutType]
+     * @param {number} [options.divisions]
+     * @param {boolean} [options.frame] show axis frame
+     * @param {boolean} [options.annotations]
+     * @param {boolean} [options.tickLabels] show tick labels along axes
+     * @param {boolean} [options.xyPlane] show the XY-plane
+     * @param {boolean} [options.xzPlane] show the XZ-plane
+     * @param {boolean} [options.yzPlane] show the YZ-plane
+     * @param {string[]} [options.axisLabels] show the labels on the axes
+     * @param {boolean} [options.positiveXZ]
+     * @param {boolean} [options.bottomAlign] align the axes with the bottom of the object
      */
     provideAxesAround(anObject, {
         layoutType = Axes.Type.MATLAB,
@@ -468,6 +493,7 @@ export class Simulation {
         }
     }
 
+    /** @param {number} timeStamp */
     _tuneIterationsPerFrame(timeStamp) {
         if (this._framesPerSecond < this._minimumFrameRate)
             this._iterationsPerFrame--;
@@ -479,7 +505,8 @@ export class Simulation {
         this._lastTime = timeStamp;
     }
 
-    animate = (timeStamp) => {
+    /** @param {number} timeStamp */
+    animate = timeStamp => {
         if (this._status === Simulation.Status.RUNNING) {
             if (this._maxPerformanceFunction) {
                 if (timeStamp - this._lastTime > 1000) // Update iterations per RAF every second
@@ -538,9 +565,9 @@ export class Simulation {
      * Every second the system tries to optimize the CPU/computation cycles
      * per animation frame, within the minimum required frame rate constraint.
      *
-     * @param maxPerformanceFunction The function that is called.
-     * @param minimumFrameRate The number of times per second requestAnimationFrame() needs to be invoked.
-     * @param iterationsPerFrame The initial iterations per frame, that subsequently gets tuned every second!
+     * @param {(clock: SimulationClock) => void} maxPerformanceFunction The function that is called.
+     * @param {number} minimumFrameRate The number of times per second requestAnimationFrame() needs to be invoked.
+     * @param {number} iterationsPerFrame The initial iterations per frame, that subsequently gets tuned every second!
      */
     maxOutCpu(maxPerformanceFunction, minimumFrameRate = 30, iterationsPerFrame = 10) {
         if (this._stepFunction)
@@ -661,16 +688,27 @@ export class Simulation {
             binding.forceSynchronize(this._clock.clockTime);
     }
 
+    /**
+    * @param {Object} [options={}] 
+    * @param {Object} [options.dataDefinition]
+    * @param {number} [options.width]
+    * @param {number} [options.height]
+    * @param {string} [options.title]
+    * @param {string} [options.xLabel]
+    * @param {string} [options.yLabel]
+    * @param {number} [options.maxPoints]
+    * @param {string} [options.labelColor]
+     */
     setupGraphWith({
-                       dataDefinition,
-                       width = this._viewport.width,
-                       height = this._viewport.height,
-                       title='',
-                       xLabel='',
-                       yLabel='',
-                       maxPoints = 500,
-                       labelColor = 'green',
-                   } = {}) {
+        dataDefinition,
+        width = this._viewport.width,
+        height = this._viewport.height,
+        title='',
+        xLabel='',
+        yLabel='',
+        maxPoints = 500,
+        labelColor = 'green',
+    } = {}) {
         const plotParentDiv = this._viewport.addOnsDiv;
         this._plot = new UPlotGraph({
             plotParentDiv, dataDefinition, width, height, title, xLabel, yLabel, maxPoints, labelColor

@@ -2,9 +2,18 @@ import { MathPhysicsModelBehavior } from '../../core/helion.js';
 import { PhysicsState, RadialSymmetricBody } from './bodies.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
 import { SphereSphereCollision } from '../transformations/interactions.js';
-import { Vec2 } from '../math/math.js';
+import { Vec2, Vec3 } from '../math/math.js';
 
 export class PointCloud extends MathPhysicsModelBehavior {
+    /**
+     * @param {{
+     *     positions?: Vec3[],
+     *     velocities?: Vec3[],
+     *     masses?: number[],
+     *     colors?: number[],
+     *     sizes?: number[]
+     * }} param0
+     */
     constructor({
         positions = [],
         velocities = [],
@@ -22,6 +31,7 @@ export class PointCloud extends MathPhysicsModelBehavior {
         this._particleState = new PhysicsState();
     }
 
+    /** @param {number} index */
     particleAt(index) {
         this._particleState.position.copy(this._positions[index]);
         this._particleState.velocity.copy(this._velocities[index]);
@@ -40,8 +50,11 @@ export class PointCloud extends MathPhysicsModelBehavior {
 
     get length() { return this._positions.length; }
 
+    /** @param {number} index */
     positionAt(index) { return this._positions[index]; }
+    /** @param {number} index */
     colorAt(index) { return this._colors[index]; }
+    /** @param {number} index */
     sizeAt(index) { return this._sizes[index]; }
 }
 
@@ -59,15 +72,16 @@ export class Gas {
     };
 
     /**
-     * @param param0
-     * @param {number} param0.particleCount Number of particles in gas
-     * @param {number} param0.containerSize Size of container
-     * @param {number} param0.particleRadius Radius of particles
-     * @param {number} param0.particleMass Mass of particles
-     * @param {number} param0.tracerRadius Radius of particles
-     * @param {number} param0.tracerMass Mass of particles
-     * @param {number} param0.initialSpeed Initial speed of particles
-     * @param {(particle: AxialSymmetricBody, limit: number) => void} param0.containerFunction
+    * @param {Partial<{
+    *     particleCount: number,
+    *     containerSize: number,
+    *     particleRadius: number,
+    *     particleMass: number,
+    *     tracerRadius: number,
+    *     tracerMass: number,
+    *     initialSpeed: number,
+    *     containerFunction: (particle: RadialSymmetricBody, limit: number) => void
+    * }>} [param0={}] Optional gas configuration
      */
     constructor({
         particleCount = 200,
@@ -125,6 +139,7 @@ export class Gas {
             }));
     }
 
+    /** @param {number} temperature */
     #newInitialVelocity(temperature) {
         // Init speed based on temperature: v_rms^2 = 2 k T / m (2D)
         const averageKineticEnergy = Math.sqrt(2 * this._k * temperature / this._particleMass);
@@ -150,6 +165,11 @@ export class Gas {
             this.#resetParticle(this._particles[i], i === 0 ? 0 : this._temperature);
     }
 
+    /**
+     * @param {number} meanV2
+     * @param {number} binCount
+     * @param {number} maxSpeed
+     */
     computeTheoreticalCurve(meanV2, binCount, maxSpeed) {
         const binSize = maxSpeed / binCount;
         const T = meanV2 / 2;   // effective temperature
@@ -205,6 +225,10 @@ export class Gas {
                 particles[i].and(particles[j]).apply(this._collisionHandler);
     }
 
+    /**
+     * @param {RadialSymmetricBody} particle
+     * @param {number} temperature
+     */
     #resetParticle(particle, temperature) {
         particle.position.set(0, 0, 0);
         if (temperature === 0) {
@@ -214,7 +238,7 @@ export class Gas {
         particle.velocity.copy(this.#newInitialVelocity(temperature));
     }
 
-    /** @param {(particle: AxialSymmetricBody, limit: number) => void} limitFunction */
+    /** @param {(particle: RadialSymmetricBody, limit: number) => void} limitFunction */
     set limitToContainer(limitFunction) {
         this._limitToContainer = limitFunction;
     }

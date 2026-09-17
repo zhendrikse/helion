@@ -24,6 +24,11 @@ import {renderMathInHtml} from '../view/mathrenderer.js';
  * │           └── ...
  */
 export class Viewport {
+    /**
+     * @param {HTMLElement} containerDiv
+     * @param {boolean} parameterMenuCollapsed
+     * @param {string} aspectRatio
+     */
     constructor(containerDiv, parameterMenuCollapsed, aspectRatio) {
         this._container = containerDiv;
         this._container.classList.add('helionContainer');
@@ -201,6 +206,7 @@ export class Viewport {
     get height() { return this._canvasWrapperDiv.clientHeight; }
     get titleDiv() { return this._titleDiv; }
 
+    /** @param {string} text */
     set infoPanelText(text) {
         renderMathInHtml(this._infoPanelDiv, text);
         this._infoButton.style.visibility = 'visible';

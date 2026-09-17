@@ -1,5 +1,6 @@
 import { MathPhysicsModelBehavior } from '../../../core/helion.js';
 import {Vec3} from '../math.js';
+import { DifferentiableSurface } from '../surfaces.js';
 
 export class DifferentialFrame extends MathPhysicsModelBehavior {
     constructor({

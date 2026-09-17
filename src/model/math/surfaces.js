@@ -1,7 +1,8 @@
-import { Domain } from './fields.js';
-import {Interval, Vec2, } from './math.js';
-import { DifferentialGeometry} from './numerics/diffgeometry.js';
+import { DiscreteScalarField, Domain, MultivariateFunction } from './fields.js';
+import {Interval, Vec2, Vec3, } from './math.js';
+import { DifferentialFrame, DifferentialGeometry} from './numerics/diffgeometry.js';
 import {MathPhysicsModelBehavior} from '../../core/helion.js';
+import { SurfaceResolution } from '../../view/3d/surfaces/visualization.js';
 
 /**
  * Mathematical definition of a surface.

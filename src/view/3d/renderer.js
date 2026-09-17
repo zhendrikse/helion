@@ -1,9 +1,10 @@
-import { WebGLRenderer, DirectionalLight, PCFShadowMap, AmbientLight } from "three";
-import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer";
-import { Renderer } from "../renderer.js"
-import { Axes } from "./composite/backgrounds.js";
-import { ThreeJsCamera } from "./camera.js";
-import { ThreeJsScene } from "./scene.js";
+import { WebGLRenderer, DirectionalLight, PCFShadowMap, AmbientLight } from 'three';
+import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer';
+import { Renderable, Renderer } from '../renderer.js'
+import { Axes } from './composite/backgrounds.js';
+import { ThreeJsCamera } from './camera.js';
+import { ThreeJsScene } from './scene.js';
+import { Vec3 } from '../../model/math/math.js';
 
 export class Lighting {
     constructor(scene, {
@@ -39,6 +40,7 @@ export class Lighting {
 }
 
 export class ThreeJsRenderer extends Renderer {
+    /** @param {Object} options */
     constructor(options) {
         super();
         this._options = options;
@@ -52,9 +54,13 @@ export class ThreeJsRenderer extends Renderer {
         this._controls = null;
     }
 
+    /** @param {boolean} autoRotate */
     set autoRotate(autoRotate)     { this._camera.autoRotate = autoRotate; }
+    /** @param {Vec3} position */
     set cameraPosition(position)   { this._camera.camera.position.copy(position); }
+    /** @param {boolean} visible */
     set axesVisible(visible)       { if (this._axes) this._axes.visible = visible; }
+    /** @param {boolean} orthographic */
     set orthographic(orthographic) { this._camera.orthographic = orthographic; }
 
     attach(viewport) {
@@ -73,7 +79,7 @@ export class ThreeJsRenderer extends Renderer {
         const _ = new Lighting(this._scene, this._options.lighting);
 
         this.resize();
-        window.addEventListener("resize", () => this.resize());
+        window.addEventListener('resize', () => this.resize());
     }
 
     #createLabelRenderer(viewport) {
@@ -81,16 +87,16 @@ export class ThreeJsRenderer extends Renderer {
         this._labelRenderer.setSize(viewport.width, viewport.height, false);
 
         Object.assign(this._labelRenderer.domElement.style, {
-            position: "absolute",
-            top: "0",
-            left: "0",
-            width: "100%",
-            height: "100%",
-            margin: "0",
-            padding: "0",
-            display: "block",
-            pointerEvents: "none",
-            zIndex: "5"
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            margin: '0',
+            padding: '0',
+            display: 'block',
+            pointerEvents: 'none',
+            zIndex: '5'
         });
 
         viewport.canvasWrapper.appendChild(this._labelRenderer.domElement);
@@ -128,6 +134,10 @@ export class ThreeJsRenderer extends Renderer {
         this._scene.removeFromWorld(view);
     }
 
+    /**
+     * @param {Renderable} anObject 
+     * @param {Object} options 
+     */
     frameSceneOn(anObject, options) {
         this._camera.frameSceneOn(anObject, options);
     }
@@ -138,6 +148,10 @@ export class ThreeJsRenderer extends Renderer {
         this._axes = null;
     }
 
+    /**
+     * @param {Renderable} anObject 
+     * @param {Object} options 
+     */
     provideAxesAround(anObject, options) {
         if (this._axes)
             this.remove(this._axes);

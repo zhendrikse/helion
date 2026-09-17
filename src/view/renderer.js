@@ -1,4 +1,6 @@
 import { Object3D, Box3 } from 'three';
+import { MathPhysicsModelBehavior } from '../core/helion';
+import { Viewport } from '../core/viewport';
 
 /**
  * Base class for all view objects that are to be coupled with a model and rendered in the scene. 
@@ -38,13 +40,24 @@ export class Renderer {
     add(_viewObject) {}
 
     /**
-     * @param {Renderable} _view
      * @param {number} _time
      */
-    render(_view, _time) {}
+    render(_time) {}
 
     resize() {}
 
     /** @param {Viewport} _viewport */
     attach(_viewport) {}
+
+    /**
+     * @param {Renderable} _anObject 
+     * @param {Object} _options 
+     */
+    frameSceneOn(_anObject, _options) {}
+
+    /**
+     * @param {Renderable} _anObject 
+     * @param {Object} _options 
+     */
+    provideAxesAround(_anObject, _options) {}
 }
