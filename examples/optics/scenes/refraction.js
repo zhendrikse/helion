@@ -1,12 +1,9 @@
 import {
-    Block, Box, Checkbox, degToRad, MathPhysicsModelBehavior, RadialSymmetricBody, Range,
-    Simulation, Slider, Sphere, Trail, Vec3, Vec2, wavelengthColor, Colour
+    Block, Box, Checkbox, degToRad, LineSegment, LineSegmentView, MathPhysicsModelBehavior,
+    RadialSymmetricBody, Range, Simulation, Slider, Sphere, Trail, Vec3, Vec2, wavelengthColor, Colour
 } from "../../../src/index.js";
 
-import {
-    BufferAttribute, BufferGeometry, Color, Line, LineBasicMaterial, MeshBasicMaterial
-} from "three";
-import {Renderable2D} from "../../../src/view/renderer.js";
+import {MeshBasicMaterial} from "three";
 
 class RayBundle extends MathPhysicsModelBehavior {
     constructor({
@@ -109,52 +106,6 @@ class RayBundle extends MathPhysicsModelBehavior {
     }
 }
 
-class WavefrontView2D extends Renderable2D {
-    constructor({ color = 0xffffff, visible = true } = {}) {
-        super();
-
-        this.visible = visible;
-        this._geometry = new BufferGeometry();
-        this._material = new LineBasicMaterial({ color });
-        this._line = new Line(this._geometry, this._material);
-
-        this.add(this._line);
-    }
-
-    canBindTo(rayBundle) {
-        if (!rayBundle?.rays)
-            throw new Error("WavefrontView2D can only bind to a RayBundle.");
-
-        return true;
-    }
-
-    initialize(rayBundle) {
-        const positions = new Float32Array(rayBundle.rays.length * 3);
-        this._geometry.setAttribute("position", new BufferAttribute(positions, 3));
-    }
-
-    synchronizeWith(rayBundle) {
-        const positions = this._geometry.attributes.position.array;
-
-        rayBundle.rays.forEach((ray, index) => {
-            positions[3 * index] = ray.position.x;
-            positions[3 * index + 1] = ray.position.y;
-            positions[3 * index + 2] = 0;
-        });
-
-        this._geometry.attributes.position.needsUpdate = true;
-        this._geometry.computeBoundingSphere();
-    }
-
-    set color(value) { this._material.color.set(value); }
-
-    dispose() {
-        this._geometry.dispose();
-        this._material.dispose();
-        this.clear();
-    }
-}
-
 const INITIAL_RANGE = 1;
 const LAMBDA_RED = 750;
 const LAMBDA_BLUE = 380;
@@ -205,7 +156,14 @@ for (const ray of rays) {
     trails.push(trail);
 }
 
-const wavefrontView = new WavefrontView2D();
+const wavefrontColor = new Colour();
+const wavefront = new LineSegment(new Vec2(), new Vec2());
+const wavefrontView = new LineSegmentView({
+    colorMapper: {
+        map: (_value, targetColor) => wavefrontColor.asThreeJsColor(targetColor)
+    }
+});
+
 const wavelengthSlider = new Slider("Wavelength")
     .withValue(585)
     .withRange(new Range(LAMBDA_BLUE, LAMBDA_RED, 1))
@@ -236,9 +194,11 @@ const simulation = Simulation
         color: 0xc0c0ff,
         opacity: 0.35
     })))
-    .bind(rays.alwaysWith(wavefrontView))
+    .bind(wavefront.alwaysWith(wavefrontView))
     .onStep((_, dt) => {
         rays.advance(ang2, dt);
+        wavefront.from.copy(rays.positionOfRay(0));
+        wavefront.to.copy(rays.positionOfRay(5));
     })
     .appendStartStopResetUI()
     .append(new Slider("Incident angle")
@@ -277,7 +237,8 @@ function initializeRays(angle = incidentAngle) {
     const angleRad = degToRad(angle);
     ang2 = Math.asin((N1 / N2) * Math.sin(angleRad));
     rays.initialize(angle);
-    wavefrontView.synchronizeWith(rays);
+    wavefront.from.copy(rays.positionOfRay(0));
+    wavefront.to.copy(rays.positionOfRay(5));
     for (const trail of trails)
         trail.reset();
 }
@@ -289,6 +250,6 @@ function updateLightColor(isWhite, wavelength = wavelengthSlider.value) {
     const colorHex = isWhite ? 0xffffff : color.asHexValue();
     rayViews.forEach(view => view.color = colorHex);
     trails.forEach(trail => trail.color = colorHex);
-    wavefrontView.color = colorHex;
+    wavefrontColor.copy(isWhite ? Colour.fromHex(0xffffff) : color);
 }
-
+updateLightColor(false);
