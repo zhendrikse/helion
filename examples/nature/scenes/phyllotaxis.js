@@ -1,7 +1,7 @@
 import {
     ParticleView2D, Simulation, Vec3, Vec2, Slider, Range, Button, Checkbox,
     HueColorMapper, RadialSymmetricBody
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const numberOfDots = 360;
 let c = 15;
@@ -53,15 +53,15 @@ const resetParticleViews = () => particleViews.forEach(view => view.visible = fa
 
 const simulation = Simulation
     .with({
-        htmlDivId: "flowerContainer",
+        htmlDivId: 'flowerContainer',
         camera: { controls: false, position: new Vec3(0, 0, 750), orthographic: true },
-        infoPanel: { text: "" },
+        infoPanel: { text: '' },
         parameterMenuCollapsed: false
     })
     .withMouseClickEventListener()
     .onReset(() => {
         n = 0;
-        flowerSeeds.forEach(seed => seed.updateWith(c))
+        flowerSeeds.forEach(seed => seed.updateWith(c));
         updateTitle(c, n);
     })
     .runsEvery(0.02)
@@ -74,26 +74,26 @@ const simulation = Simulation
         updateTitle(c, n);
         n++;
     })
-    .append(new Slider("Growth rate")
+    .append(new Slider('Growth rate')
         .withRange(new Range(10, 20, 0.5))
         .withValue(c)
         .onInput(event => {
             // @ts-ignore
             c = Number(event.target.value);
             n = 0;
-            flowerSeeds.forEach(seed => seed.updateWith(c))
+            flowerSeeds.forEach(seed => seed.updateWith(c));
             updateTitle(c, n);
         })
     )
     .append(
-        new Button().withText("Colors 1").onClick(() => setColoringSchemeTo(0))
-            .togetherWith(new Button().withText("Colors 2").onClick(() => setColoringSchemeTo(1))
-                .togetherWith(new Button().withText("Colors 3").onClick(() => setColoringSchemeTo(2))
-                    .togetherWith(new Button().withText("Monochrome").onClick(() => setColoringSchemeTo(3)))))
+        new Button().withText('Colors 1').onClick(() => setColoringSchemeTo(0))
+            .togetherWith(new Button().withText('Colors 2').onClick(() => setColoringSchemeTo(1))
+                .togetherWith(new Button().withText('Colors 3').onClick(() => setColoringSchemeTo(2))
+                    .togetherWith(new Button().withText('Monochrome').onClick(() => setColoringSchemeTo(3)))))
     )
-    .append(new Checkbox("Border around dots")
+    .append(new Checkbox('Border around dots')
         .checked(drawBorderAroundDots)
-        .addEventListener("click", event => {
+        .addEventListener('click', event => {
             for (const view of particleViews) 
                 // @ts-ignore
                 view.hasBorder = event.target.checked;

@@ -1,7 +1,7 @@
 import {
     Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody, ThreeJsScene
-} from "../../../src/index.js";
-import {Color, MeshStandardMaterial} from "three";
+} from '../../../src/index.js';
+import {Color, MeshStandardMaterial} from 'three';
 
 const g = 9.8;
 
@@ -24,7 +24,7 @@ class Pendulum extends AxialSymmetricBody {
         this._ball = new RadialSymmetricBody({
             position: this.position,
             radius: 0.1
-        })
+        });
         this._omega = 0;
         this._theta = theta0;
         this._mass = mass;
@@ -81,7 +81,7 @@ for (let i = 0; i < total; i++) {
 
 const simulation = Simulation
     .with({
-        htmlDivId: "pendulumWaveContainer",
+        htmlDivId: 'pendulumWaveContainer',
         camera: {
             target: new Vec3(0.2, -3.3, -0.4),
             fieldOfView: 50,

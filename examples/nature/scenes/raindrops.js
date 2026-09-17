@@ -2,7 +2,7 @@ import {
     DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
     SurfaceResolution, WaveEquationSolver, GaussianImpulse, SurfaceVisualization,
     FixedIntervalNormalizer, RadioGroup, Checkbox, ColorMappers
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 export class WaveEquation {
     constructor({
@@ -41,13 +41,13 @@ waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
 
 Simulation
     .with({
-        htmlDivId: "raindropContainer",
+        htmlDivId: 'raindropContainer',
         camera: {
             position: new Vec3(4, 2, 4.2).multiplyScalar(75),
             fieldOfView: 19
         },
         viewport: {
-            aspectRatio: "19/12"
+            aspectRatio: '19/12'
         },
         headUpDisplay: {
             enabled: false
@@ -71,13 +71,13 @@ Simulation
     .append(waterSurface.ui())
     .append(
         new RadioGroup()
-            .add("Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface))
-            .add("Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
+            .add('Smooth', () => waterSurface.display(SurfaceVisualization.Display.Surface))
+            .add('Glyphs', () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
             .checked(1)
     )
     .append(waterSurface.glyphLayer.ui())
-    .append(new Checkbox("Wireframe ")
+    .append(new Checkbox('Wireframe ')
         .on(waterSurface.surfaceLayer)
-        .withProperty("wireframe")
+        .withProperty('wireframe')
     )
     .start();

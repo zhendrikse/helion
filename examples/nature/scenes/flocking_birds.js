@@ -1,4 +1,4 @@
-import {Body, Simulation, Vec3, Arrow, Slider, Range, Button, VectorView} from "../../../src/index.js";
+import {Body, Simulation, Vec3, Slider, Range, Button, VectorView} from '../../../src/index.js';
 
 // Simulation parameters
 const speed = 6;  // initial horizontal speed
@@ -28,7 +28,7 @@ class Flock {
 
     // avoid nearest birds (A BETTER VERSION WOULD ANTICIPATE COLLISIONS)
     avoidNearestBirds() {
-        const avoid = []
+        const avoid = [];
         for (let i = 0; i < this._bird_count; i++) {
             avoid.push(new Vec3(0, 0, 0));
             for (let j = 0; j < i; j++) {
@@ -100,7 +100,7 @@ const birdCount = 250;
 const flock = new Flock(birdCount);
 const simulation = Simulation
     .with({
-        htmlDivId: "birdsContainer",
+        htmlDivId: 'birdsContainer',
         camera: {
             position: new Vec3(15, 0, 30).multiplyScalar(1.5),
             fieldOfView: 30
@@ -112,29 +112,29 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .runsEvery(0.01)
     .onStep((_, dt) => flock.update(dt))
-    .append(new Slider("Random behavior: ")
+    .append(new Slider('Random behavior: ')
         .on(flock)
-        .withProperty("randomWeight")
+        .withProperty('randomWeight')
         .withRange(new Range(0, 50, 1))
         .withValue(5))
-    .append(new Slider("Centering behavior: ")
+    .append(new Slider('Centering behavior: ')
         .on(flock)
-        .withProperty("centeringWeight")
+        .withProperty('centeringWeight')
         .withRange(new Range(0, 2, .01))
         .withValue(.1))
-    .append(new Slider("Direction behavior: ")
+    .append(new Slider('Direction behavior: ')
         .on(flock)
-        .withProperty("directionWeight")
+        .withProperty('directionWeight')
         .withRange(new Range(0, 2, .01))
         .withValue(.1))
-    .append(new Slider("Avoidance behavior: ")
+    .append(new Slider('Avoidance behavior: ')
         .on(flock)
-        .withProperty("avoidWeight")
+        .withProperty('avoidWeight')
         .withRange(new Range(0, 2, .01))
         .withValue(1))
     .append(new Button()
-        .withText("Startle birds")
-        .addEventListener("click", () => flock.startleBirds()))
+        .withText('Startle birds')
+        .addEventListener('click', () => flock.startleBirds()))
     .start();
 
 for (let i = 0; i < birdCount; i++)
@@ -142,5 +142,5 @@ for (let i = 0; i < birdCount; i++)
     vectorProperty: body => body.velocity,
     color: 0x77ff77,
     size: 0.2,
-    magnitudeMap: mag => .7
+    magnitudeMap: _mag => .7
 })));

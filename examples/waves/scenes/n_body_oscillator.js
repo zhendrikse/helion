@@ -1,7 +1,7 @@
 import {
     Vec3, Simulation, Sphere, Floor, SwitchableBondView, Transformation,
     Slider, Range, Vec2, ChainTopology, Lattice, LatticeView, ThreeJsScene
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 
 class InitialDisplacement extends Transformation {
@@ -33,7 +33,7 @@ const latticeView = LatticeView.from({
     bondView: SwitchableBondView,
     bodyArgs: {
         castShadow: true,
-        color: "red"
+        color: 'red'
     },
     bondArgs: {
         thickness: 0.075,
@@ -43,11 +43,11 @@ const latticeView = LatticeView.from({
         castShadow: true
     }
 });
-latticeView.position.y = 4
+latticeView.position.y = 4;
 
 const simulation = Simulation
     .with({
-        htmlDivId: "oscillatorContainer",
+        htmlDivId: 'oscillatorContainer',
         camera: {
             position: new Vec3(17, 6, -4).multiplyScalar(1.75),
             fieldOfView: 45
@@ -59,7 +59,7 @@ const simulation = Simulation
             shadows: true
         },
         viewport: {
-            aspectRatio: "19/12"
+            aspectRatio: '19/12'
         }
     })
     .withMouseClickEventListener()
@@ -72,16 +72,16 @@ const simulation = Simulation
     }))
     .setupGraphWith({
             dataDefinition: [
-                { label: "t" },
-                { label: "left", color: "blue" },
-                { label: "right", color: "red" },
-                { label: "ball3", color: "red" },
-                { label: "ball4", color: "red" },
-                { label: "ball5", color: "blue" },
+                { label: 't' },
+                { label: 'left', color: 'blue' },
+                { label: 'right', color: 'red' },
+                { label: 'ball3', color: 'red' },
+                { label: 'ball4', color: 'red' },
+                { label: 'ball5', color: 'blue' },
             ],
-            title: "Kinetic Energy vs Time",
-            xLabel: "Time [s]",
-            yLabel: "Displacement"
+            title: 'Kinetic Energy vs Time',
+            xLabel: 'Time [s]',
+            yLabel: 'Displacement'
         }
     )
     .onStep((clock, dt) => {
@@ -105,10 +105,10 @@ const simulation = Simulation
         chain.apply(new InitialDisplacement());
     })
     .append(latticeView.ui())
-    .append(new Slider("Damping ")
+    .append(new Slider('Damping ')
         .withRange(new Range(0, 1, .01))
         .on(chain)
-        .withProperty("damping")
+        .withProperty('damping')
         .withValue(0.2)
     );
 

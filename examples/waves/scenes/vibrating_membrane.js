@@ -1,7 +1,7 @@
 import {
     Domain, Simulation, Button, SurfaceVisualization,
     ContoursLayer, RadioGroup, Checkbox, MultivariateFunction, ScalarFieldSurface
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const PI = Math.PI;
 const cos = Math.cos;
@@ -34,9 +34,9 @@ const surfaceView = new SurfaceVisualization().addOverlayLayer(contours);
 
 Simulation
     .with({
-        htmlDivId: "membraneContainer",
+        htmlDivId: 'membraneContainer',
         viewport: {
-            aspectRatio: "19/12"
+            aspectRatio: '19/12'
         },
         headUpDisplay: {
             enabled: false
@@ -49,29 +49,29 @@ Simulation
         padding: 0.65,
         translationY: -1.25
     })
-    .append(new Button("Mode-x: ").on(membraneFunction).withProperty("normalModeX").withText(" 1 ")
-        .togetherWith(new Button().on(membraneFunction).withProperty("normalModeX").withText(` 2 `)
-            .togetherWith(new Button().on(membraneFunction).withProperty("normalModeX").withText(` 3 `)
-                .togetherWith(new Button().on(membraneFunction).withProperty("normalModeX").withText(` 4 `)
-                    .togetherWith(new Button().on(membraneFunction).withProperty("normalModeX").withText(` 5 `)))))
+    .append(new Button('Mode-x: ').on(membraneFunction).withProperty('normalModeX').withText(' 1 ')
+        .togetherWith(new Button().on(membraneFunction).withProperty('normalModeX').withText(' 2 ')
+            .togetherWith(new Button().on(membraneFunction).withProperty('normalModeX').withText(' 3 ')
+                .togetherWith(new Button().on(membraneFunction).withProperty('normalModeX').withText(' 4 ')
+                    .togetherWith(new Button().on(membraneFunction).withProperty('normalModeX').withText(' 5 ')))))
     )
-    .append(new Button("Mode-y: ").on(membraneFunction).withProperty("normalModeY").withText(" 1 ")
-        .togetherWith(new Button().on(membraneFunction).withProperty("normalModeY").withText(` 2 `)
-            .togetherWith(new Button().on(membraneFunction).withProperty("normalModeY").withText(` 3 `)
-                .togetherWith(new Button().on(membraneFunction).withProperty("normalModeY").withText(` 4 `)
-                    .togetherWith(new Button().on(membraneFunction).withProperty("normalModeY").withText(` 5 `)))))
+    .append(new Button('Mode-y: ').on(membraneFunction).withProperty('normalModeY').withText(' 1 ')
+        .togetherWith(new Button().on(membraneFunction).withProperty('normalModeY').withText(' 2 ')
+            .togetherWith(new Button().on(membraneFunction).withProperty('normalModeY').withText(' 3 ')
+                .togetherWith(new Button().on(membraneFunction).withProperty('normalModeY').withText(' 4 ')
+                    .togetherWith(new Button().on(membraneFunction).withProperty('normalModeY').withText(' 5 ')))))
     )
     .append(surfaceView.ui())
-    .append(new Checkbox("Contours ")
+    .append(new Checkbox('Contours ')
         .on(contours)
-        .withProperty("visible")
+        .withProperty('visible')
         .checked(true)
         .togetherWith(surfaceView.surfaceLayer.ui()))
     .append(
         new RadioGroup()
-            .add("Smooth", () => surfaceView.display(SurfaceVisualization.Display.Surface))
-            .add("Glyphs", () => surfaceView.display(SurfaceVisualization.Display.Glyphs))
-            .add("None", () => surfaceView.display(SurfaceVisualization.Display.None))
+            .add('Smooth', () => surfaceView.display(SurfaceVisualization.Display.Surface))
+            .add('Glyphs', () => surfaceView.display(SurfaceVisualization.Display.Glyphs))
+            .add('None', () => surfaceView.display(SurfaceVisualization.Display.None))
             .checked(0)
     )
     .append(surfaceView.glyphLayer.ui())

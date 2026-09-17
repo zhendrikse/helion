@@ -546,7 +546,7 @@ export class Lattice extends MathPhysicsModelBehavior {
     }
 }
 
-export class ChainTopology {
+export class ChainTopology extends Transformation {
     /**
      * @param {{
      * count?: number, 
@@ -561,6 +561,7 @@ export class ChainTopology {
         bondRestLength = length / (count -1),
         totalMass = 0.025
     } = {}) {
+        super();
         this._count = count;
         this._length = length;
         this._totalMass = totalMass;

@@ -2,14 +2,14 @@ import {
     DiscreteScalarField, Simulation, Vec3, DiscreteFieldSurface, WaveEquationSolver, DiscreteFieldBoxView,
     SineImpulseOperator, ShapeConfiguration, BarrierWaveEquation, ShapeMask, SurfaceVisualization,
     SurfaceResolution, RadioGroup, Checkbox, ColorMappers
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const resolution = 256;
 const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(resolution, resolution),
     colorMapper: new ColorMappers().get(ColorMappers.WaterAlternative)(),
     opacity: 0.9
-})
+});
 waterSurface.position.set(-resolution * .5, 0, -resolution * .5);
 
 const field = new DiscreteScalarField({ nx: resolution, ny: resolution });
@@ -41,13 +41,13 @@ reset(configuration);
 
 Simulation
     .with({
-        htmlDivId: "waveScatteringContainer",
+        htmlDivId: 'waveScatteringContainer',
         viewport: {
-            aspectRatio: "19 / 12"
+            aspectRatio: '19 / 12'
         },
         camera: {
             position: new Vec3(2, 1, 2.1).multiplyScalar(resolution * .75),
-            aspectRatio: "19/12",
+            aspectRatio: '19/12',
             fieldOfView: 20
         },
         headUpDisplay: {
@@ -63,7 +63,7 @@ Simulation
         color: 0x008080
     })))
     .runsEvery(1e-3)
-    .onStep((_, dt) => field.evolve(solver, 0.015))
+    .onStep((_, _dt) => field.evolve(solver, 0.015))
     .onReset(() => reset(configuration))
     .appendStartStopResetUI()
     .append(waveEquation.ui())
@@ -72,12 +72,12 @@ Simulation
     .append(waterSurface.ui())
     .append(
         new RadioGroup()
-            .add("Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface))
-            .add("Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
+            .add('Smooth', () => waterSurface.display(SurfaceVisualization.Display.Surface))
+            .add('Glyphs', () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
             .checked(0)
     )
     .append(waterSurface.glyphLayer.ui())
-    .append(new Checkbox("Wireframe ")
+    .append(new Checkbox('Wireframe ')
             .on(waterSurface.surfaceLayer)
-            .withProperty("wireframe")
+            .withProperty('wireframe')
     );

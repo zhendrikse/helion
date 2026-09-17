@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Box, RadioGroup, RadialSymmetricBody, Block, Slider, Range
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const LENGTH = 0.1;
 const DROPLET_RADIUS = 0.04 * LENGTH;
@@ -188,7 +188,7 @@ const sprinkler = new Sprinkler({ length: LENGTH, dropletPoolSize: 100 });
 
 const simulation = Simulation
     .with({
-        htmlDivId: "waterSprinklerContainer",
+        htmlDivId: 'waterSprinklerContainer',
         camera: {
             position: new Vec3(0, 15, 35).multiplyScalar(.275),
             fieldOfView: 40
@@ -205,25 +205,25 @@ const simulation = Simulation
     })
     .onReset(() => sprinkler.reset())
     .append(new RadioGroup()
-        .add("Outward", () => sprinkler.shootOutward = true)
-        .add("Inward", () => sprinkler.shootOutward = false)
+        .add('Outward', () => sprinkler.shootOutward = true)
+        .add('Inward', () => sprinkler.shootOutward = false)
         .checked(0)
     )
-    .append(new Slider("Omega")
+    .append(new Slider('Omega')
         .on(sprinkler)
-        .withProperty("omega")
+        .withProperty('omega')
         .withRange(new Range(-2 * Math.PI, 2 * Math.PI, .1))
         .withValue(Math.PI)
     )
-    .append(new Slider("Droplet / s")
+    .append(new Slider('Droplet / s')
         .on(sprinkler)
-        .withProperty("dropletFrequency")
+        .withProperty('dropletFrequency')
         .withRange(new Range(1, 30, 1))
         .withValue(15)
     )
-    .append(new Slider("Water velocity")
+    .append(new Slider('Water velocity')
         .on(sprinkler)
-        .withProperty("waterVelocity")
+        .withProperty('waterVelocity')
         .withRange(new Range(0, 1, .01))
         .withValue(.3)
     )

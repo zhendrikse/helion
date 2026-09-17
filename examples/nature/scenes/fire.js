@@ -1,7 +1,7 @@
-import { Color} from "three";
+import { Color} from 'three';
 import {
     Simulation, Vec3, DiscreteScalarField, TiledPlane, ColorMapper, Interval, FixedIntervalNormalizer
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 export class FireColorMapper extends ColorMapper {
     constructor() {
@@ -37,7 +37,6 @@ export class FireSolver {
     }
 
     _doStep(field, row, col, old) {
-        const idx = col + row * field.nx;
         if (row === 0 && col > 5 && col < field.nx - 5) {
             const below = old[col + 1 * field.nx] ?? 0;
             field.setValueAt(col, row, below + Math.random() * 0.9);
@@ -89,7 +88,7 @@ for (let c = 0; c < NX; c++) field.setValueAt(c, 0, Math.random());
 
 Simulation
     .with({
-        htmlDivId: "fireContainer",
+        htmlDivId: 'fireContainer',
         viewport: {
             aspectRatio: NX / NY
         },
@@ -99,11 +98,11 @@ Simulation
         },
         headUpDisplay: { enabled: false },
         infoPanel: {
-            text: "<strong>🔥 Fire</strong><br/> Helion port of VPython " + 
-            "<a href=\"https://github.com/beltoforion/recreational_mathematics_with_python/blob/master/Fire/fire.py\">fire.py</a> " + 
-            "<a href=\"https://beltoforion.de/en/\">(Beltoforion</a> $\\rightarrow$ <a href=\"https://www.hendrikse.name\">Zeger</a>).<br/> " + 
-            "Bottom row random fuel, then diffusion with intensity<br/><br/>\n" + 
-            "$$\n4.1+\\dfrac{0.3*\\|x-center\\|}{center}.\n$$"
+            text: '<strong>🔥 Fire</strong><br/> Helion port of VPython ' + 
+            '<a href=\'https://github.com/beltoforion/recreational_mathematics_with_python/blob/master/Fire/fire.py\'>fire.py</a> ' + 
+            '<a href=\'https://beltoforion.de/en/\'>(Beltoforion</a> $\\rightarrow$ <a href=\'https://www.hendrikse.name\'>Zeger</a>).<br/> ' + 
+            'Bottom row random fuel, then diffusion with intensity<br/><br/>\n' + 
+            '$$\n4.1+\\dfrac{0.3*\\|x-center\\|}{center}.\n$$'
         }
     })
     .bind(field.alwaysWith(view))

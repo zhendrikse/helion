@@ -1,7 +1,7 @@
 import {
     RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule,
     BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, SpringForce
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 
 // Simulation constants
@@ -16,7 +16,7 @@ const sphereSphereCollision = new SphereSphereCollision();
 const bondForce = new SpringForce({
     restLength: distance,
     k: 18600
-})
+});
 
 export class CarbonMonoxide extends BodyPair {
     constructor(position, initialSpeed) {
@@ -34,15 +34,12 @@ export class CarbonMonoxide extends BodyPair {
             mass: carbonMass,
             radius: radius
         });
-        super(oxygen.and(carbon));
-
-        this.body1 = oxygen;
-        this.body2 = carbon;
+        super(oxygen, carbon);
     }
 
     _confineToBox(atom, size) {
         const half = size / 2;
-        ["x", "y", "z"].forEach(axis => {
+        ['x', 'y', 'z'].forEach(axis => {
             if (atom.position[axis] > half - atom.radius)
                 atom.state.velocity[axis] = -Math.abs(atom.velocity[axis]);
             if (atom.position[axis] < -half + atom.radius)
@@ -209,7 +206,7 @@ for (let i = 0; i < 150; i++)
 
 const simulation = Simulation
     .with({
-        htmlDivId: "energyEquipartitionContainer",
+        htmlDivId: 'energyEquipartitionContainer',
         scene: {
             scale: SCALE
         },
@@ -239,24 +236,24 @@ const simulation = Simulation
     })
     // .setupGraphWith({
     //         dataDefinition: [
-    //             { label: "t" },
-    //             { label: "Translational KE", stroke: "green" },
-    //             { label: "Vibrational PE", stroke: "red" },
-    //             { label: "Vibrational KE", stroke: "cyan" },
-    //             { label: "Rotational KE", stroke: "yellow" }
+    //             { label: 't' },
+    //             { label: 'Translational KE', stroke: 'green' },
+    //             { label: 'Vibrational PE', stroke: 'red' },
+    //             { label: 'Vibrational KE', stroke: 'cyan' },
+    //             { label: 'Rotational KE', stroke: 'yellow' }
     //         ],
-    //         title: "Kinetic Energy vs Time",
-    //         xLabel: "Time [ps]",
-    //         yLabel: "KE [J]"
+    //         title: 'Kinetic Energy vs Time',
+    //         xLabel: 'Time [ps]',
+    //         yLabel: 'KE [J]'
     //     }
     // )
     .addObject3D(new Aquarium({ size: new Vec3(1, 1, 1).multiplyScalar(2 * L) }))
     .append(new RadioGroup()
-        .add("Springs", () => {
+        .add('Springs', () => {
             for (const moleculeView of moleculeViews)
                 moleculeView.bondType = SwitchableBondView.Type.Spring;
         })
-        .add("Cylinders", () => {
+        .add('Cylinders', () => {
             for (const moleculeView of moleculeViews)
                 moleculeView.bondType = SwitchableBondView.Type.Cylinder;
         })

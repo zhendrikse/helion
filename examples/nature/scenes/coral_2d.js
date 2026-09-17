@@ -1,9 +1,8 @@
 import {
-    ParticleView2D, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers
-} from "../../../src/index.js";
-import { MathPhysicsModelBehavior } from "../../../src/core/helion.js";
-import { Renderable2D } from "../../../src/view/renderer.js";
-import { Box3, Vector3 } from "three";
+    ParticleView2D, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, MathPhysicsModelBehavior
+} from '../../../src/index.js';
+import { Renderable2D } from '../../../src/view/renderer.js';
+import { Box3, Vector3 } from 'three';
 
 const swarmSize = 1500;
 const width = 500;
@@ -21,9 +20,7 @@ export class ParticleCloud extends MathPhysicsModelBehavior {
         return position1.distanceSquaredTo(position2) < thresholdDistanceSquared;
     }
 
-    /**
-     * @param {number} N 
-     */
+    /**  @param {number} N  */
     constructor(N) {
         super();
         this._count = N;
@@ -142,7 +139,7 @@ const particleViews = [];
 
 const simulation = Simulation
     .with({
-        htmlDivId: "coralContainer",
+        htmlDivId: 'coralContainer',
         camera: {
             controls: false
         }
@@ -153,7 +150,7 @@ const simulation = Simulation
     .onStep(() => particleField.update())
     .append(new DropdownMenu()
         .for(new ColorMappers())
-        .addEventListener("change", event => {
+        .addEventListener('change', event => {
             // @ts-ignore
             colorMapper = ColorMappers.get(event.target.value);
             // propagate naar alle bestaande views (veralgemeniseerd model)
@@ -163,10 +160,9 @@ const simulation = Simulation
     );
 
 for (let i = 0; i < swarmSize; i++) {
-    const handle = new CoralParticle(particleField, i);
     const view = new ParticleView2D({ colorFunction, colorMapper });
     particleViews.push(view);
-    simulation.bind(handle.alwaysWith(view));
+    simulation.bind(new CoralParticle(particleField, i).alwaysWith(view));
 }
 
 function resetSimulation() {

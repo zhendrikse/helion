@@ -2,7 +2,7 @@ import {
     DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, Transformation,
     SurfaceResolution, WaveEquationSolver, LaplaceOperator, Box, Block, GlyphLayer,
     SurfaceVisualization, FixedIntervalNormalizer, RadioGroup, Checkbox, Slider, Range, ColorMappers,
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const RESOLUTION = 200;
 const NX = 200, NY = 200, POOL_SIZE = NX;
@@ -159,12 +159,12 @@ const wake = new BowWake(obstacle);
 
 let simulation = Simulation
     .with({
-        htmlDivId: "poolWithMovingObstacleContainer",
+        htmlDivId: 'poolWithMovingObstacleContainer',
         camera: { 
             position: new Vec3(0.45, 0.7, 1.0).multiplyScalar(POOL_SIZE * 1.4), 
             target: new Vec3(-0, 0, 0),
             fieldOfView: 30 },
-        viewport: { aspectRatio: "19/12" }
+        viewport: { aspectRatio: '19/12' }
     })
     .bind(surface.alwaysWith(waterSurface))
     .bind(obstacle.alwaysWith(obstacleView))
@@ -190,13 +190,13 @@ let simulation = Simulation
     })
     .append(waterSurface.ui())
     .append(new RadioGroup()
-        .add("Smooth", () => waterSurface.display(SurfaceVisualization.Display.Surface))
-        .add("Glyphs", () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
+        .add('Smooth', () => waterSurface.display(SurfaceVisualization.Display.Surface))
+        .add('Glyphs', () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
         .checked(1)
     )
     .append(waterSurface.glyphLayer.ui())
-    .append(new Checkbox("Wireframe ").on(waterSurface.surfaceLayer).withProperty("wireframe"))
-    .append(new Slider("Obstacle speed")
+    .append(new Checkbox('Wireframe ').on(waterSurface.surfaceLayer).withProperty('wireframe'))
+    .append(new Slider('Obstacle speed')
         .withRange(new Range(0, 10, 0.1))
         .withValue(5).onInput(e => obstacle.speed = Number(e.target.value))
     );

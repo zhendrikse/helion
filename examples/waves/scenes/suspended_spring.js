@@ -1,7 +1,7 @@
 import {
     Vec3, Simulation, Floor, Box, Block, Slider, Range, Vec2, Lattice, LatticeView,
     ChainTopology, UniformGravitationalForce, DragForce, ThreeJsScene
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 
 const count = 50;
@@ -34,17 +34,17 @@ const latticeView = LatticeView.from({
 const pole1 = new Block({
     size: new Vec3(0.175, 2.85, 0.175),
     position: new Vec3(-5, -1.25, 0)
-})
+});
 const pole2 = new Block({
     size: new Vec3(0.175, 2.85, 0.175),
     position: new Vec3(5, -1.25, 0)
-})
+});
 
 const gravitationalForce = new UniformGravitationalForce();
 const dragForce = new DragForce(1e-4);
 Simulation
     .with({
-        htmlDivId: "suspendedSpringContainer",
+        htmlDivId: 'suspendedSpringContainer',
         camera: {
             position: new Vec3(-10, .25, 5).multiplyScalar(1.25),
             target: new Vec3(-1.5, -1.5, 0),
@@ -79,15 +79,15 @@ Simulation
         planeSizeXy: new Vec2(200, 200),
         granularity: 20
     }))
-    .append(new Slider("Bond force ")
+    .append(new Slider('Bond force ')
         .on(chain)
-        .withProperty("bondForce")
+        .withProperty('bondForce')
         .withRange(new Range(10, 1000, 1))
         .withValue(30)
     )
-    .append(new Slider("Damping ")
+    .append(new Slider('Damping ')
         .on(chain)
-        .withProperty("damping")
+        .withProperty('damping')
         .withRange(new Range(0, .5, .01))
         .withValue(0.2)
     );

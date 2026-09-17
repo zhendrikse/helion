@@ -1,7 +1,7 @@
 import {
     Vec3, Simulation, Sphere, Floor, SwitchableBondView, Transformation,
     Slider, Range, Vec2, Lattice, LatticeView, ChainTopology, ThreeJsScene
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 
 class BoundaryCondition extends Transformation {
@@ -61,14 +61,14 @@ const latticeView = LatticeView.from({
 
 Simulation
     .with({
-        htmlDivId: "travellingWaveContainer",
+        htmlDivId: 'travellingWaveContainer',
         camera: {
             position: new Vec3(-10, .25, 1.5).multiplyScalar(1.4),
             fieldOfView: 30,
             target: new Vec3(-5, 0, 0)
         },
         viewport: {
-            aspectRatio: "19/12",
+            aspectRatio: '19/12',
         },
         scene: {
             background: ThreeJsScene.Background.FOG
@@ -94,27 +94,27 @@ Simulation
         granularity: 20
     }))
     .append(latticeView.ui())
-    .append(new Slider("Bond force ")
+    .append(new Slider('Bond force ')
         .on(chain)
-        .withProperty("bondForce")
+        .withProperty('bondForce')
         .withRange(new Range(10, 1000, 1))
         .withValue(1.5 * (count - 1))
     )
-    .append(new Slider("Damping ")
+    .append(new Slider('Damping ')
         .on(chain)
-        .withProperty("damping")
+        .withProperty('damping')
         .withRange(new Range(0, 1, .01))
         .withValue(0.2)
     )
-    .append(new Slider("Omega ")
+    .append(new Slider('Omega ')
         .on(boundaryCondition)
-        .withProperty("omega")
+        .withProperty('omega')
         .withRange(new Range(10, 100, 1))
         .withValue(45)
     )
-    .append(new Slider("Amplitude ")
+    .append(new Slider('Amplitude ')
         .on(boundaryCondition)
-        .withProperty("amplitude")
+        .withProperty('amplitude')
         .withRange(new Range(.1, 1, .01))
         .withValue(0.8)
     );

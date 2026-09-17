@@ -1,7 +1,7 @@
 import {
     DiscreteScalarField, DiscreteFieldSurface, Simulation, PerlinNoiseOperator, Vec3, DiamondSquareOperator,
     SurfaceVisualization, SurfaceResolution, RadioGroup, ColorMappers
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 class Landscape {
     static perlinNoiseOperator = new PerlinNoiseOperator({
@@ -18,14 +18,14 @@ class Landscape {
     constructor() {
         const field = new DiscreteScalarField({ nx: 257,  ny: 257 });
         this._surface = new DiscreteFieldSurface(field);
-        this.noiseType = "diamondSquare";
+        this.noiseType = 'diamondSquare';
     }
 
     get surface() { return this._surface; }
 
     set noiseType(operatorNameAsString) {
         const field = new DiscreteScalarField({ nx: 257,  ny: 257 });
-        field.apply(operatorNameAsString === "perlin" ?
+        field.apply(operatorNameAsString === 'perlin' ?
             Landscape.perlinNoiseOperator :
             Landscape.diamondSquareOperator);
         this._surface = new DiscreteFieldSurface(field);
@@ -41,7 +41,7 @@ surfaceView.position.set(-128, 0, -128);
 
 const simulation = Simulation
     .with({
-        htmlDivId: "terrainContainer",
+        htmlDivId: 'terrainContainer',
         camera: {
             position: new Vec3(300, 300, 300),
             fieldOfView: 30
@@ -53,12 +53,12 @@ const simulation = Simulation
     .bind(landscape.surface.onceWith(surfaceView))
     .append(surfaceView.ui())
     .append(new RadioGroup()
-        .add("Perlin noise: ", () => {
-            landscape.noiseType = "perlin";
+        .add('Perlin noise: ', () => {
+            landscape.noiseType = 'perlin';
             simulation.bind(landscape.surface.onceWith(surfaceView));
         })
-        .add("Diamond-square: ", () => {
-            landscape.noiseType = "diamondSquare";
+        .add('Diamond-square: ', () => {
+            landscape.noiseType = 'diamondSquare';
             simulation.bind(landscape.surface.onceWith(surfaceView));
         })
         .checked(1)

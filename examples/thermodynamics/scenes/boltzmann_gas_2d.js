@@ -1,7 +1,7 @@
 import {
     Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, ParticleView2D, Checkbox,
     RadialSymmetricBody
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const CONTAINER_SIZE = 10;
 const PARTICLE_COUNT = 200;
@@ -20,7 +20,7 @@ const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: 0xBF40BF })
 const histogramBuffer = [];
 const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SPEED / BIN_COUNT);
 
-const temperatureSlider = new Slider("Temperature")
+const temperatureSlider = new Slider('Temperature')
     .withRange(new Range(0.1, MAX_SPEED * .5, 0.1))
     .withValue(gas.temperature)
     // @ts-ignore
@@ -28,13 +28,13 @@ const temperatureSlider = new Slider("Temperature")
 
 const simulation = Simulation
     .with({
-        htmlDivId: "idealGas2dContainer",
+        htmlDivId: 'idealGas2dContainer',
         camera: { position: new Vec3(0, 0, CONTAINER_SIZE * 1.05), orthographic: true, controls: false },
         lighting: { enabled: false },
         infoPanel: {
-            text: "<strong>🎈 2D ideal gas</strong><br/>Maxwell velocity distribution of an ideal two-dimensional gas" + 
-            " in a square container.\n $$ A=\\frac{m}{2 \\pi k_B T}$$\n $$f(\\overrightarrow{v}) d^2\\overrightarrow{v} =" +
-            "e^{(-Av^2)} d^2\\overrightarrow{v}$$"
+            text: '<strong>🎈 2D ideal gas</strong><br/>Maxwell velocity distribution of an ideal two-dimensional gas' + 
+            ' in a square container.\n $$ A=\\frac{m}{2 \\pi k_B T}$$\n $$f(\\overrightarrow{v}) d^2\\overrightarrow{v} =' +
+            'e^{(-Av^2)} d^2\\overrightarrow{v}$$'
         }
     })
     .runsEvery(0.01)
@@ -49,21 +49,21 @@ const simulation = Simulation
                 if (index >= startIndex)
                     bindParticle(particle, index);
         }))
-    .append(new Checkbox("Tracer particle")
-        .addEventListener("change", event => {
+    .append(new Checkbox('Tracer particle')
+        .addEventListener('change', event => {
             // @ts-ignore
             particleViews[0].visible = event.target.checked;
             // @ts-ignore
-            tracerTrail.visible = event.target.checked
+            tracerTrail.visible = event.target.checked;
         })
         .checked(true)
         .togetherWith(new RadioGroup()
-            .add("Box", event => {
+            .add('Box', _event => {
                 gas.limitToContainer = Gas.bounceWithinBox;
                 gas.reset();
                 tracerTrail.reset();
             })
-            .add("Sphere", event => {
+            .add('Sphere', _event => {
                 gas.limitToContainer = Gas.bounceWithinSphere;
                 gas.reset();
                 tracerTrail.reset();
@@ -74,13 +74,13 @@ const simulation = Simulation
     .setupGraphWith({
         dataDefinition: [
             {},
-            { label: "Simulation", color: "cyan", fill: "rgba(0, 255, 255, 0.2)" },
-            { label: "Maxwell (2D)", color: "orange" }
+            { label: 'Simulation', color: 'cyan', fill: 'rgba(0, 255, 255, 0.2)' },
+            { label: 'Maxwell (2D)', color: 'orange' }
         ],
         height: 250,
-        title: "Speed Distribution (averaged)",
-        xLabel: "Speed",
-        yLabel: "Particles"
+        title: 'Speed Distribution (averaged)',
+        xLabel: 'Speed',
+        yLabel: 'Particles'
     })
     .onFrame((_) => {
         const { bins, theory } = gas.speedDistribution();
