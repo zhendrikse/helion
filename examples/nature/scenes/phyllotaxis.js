@@ -69,8 +69,7 @@ const simulation = Simulation
         if (n > numberOfDots)
             return; 
 
-        for (let i = 0; i < n; i++)
-            particleViews[i].visible = true;
+        particleViews[n].visible = true;
         updateTitle(c, n);
         n++;
     })
@@ -101,7 +100,7 @@ const simulation = Simulation
     )
     .start();
 
-for (let index = 0; index < numberOfDots; index++) {
+for (let index = 0; index <= numberOfDots; index++) {
     flowerSeeds.push(new FlowerParticle(c, index));
     const view = new ParticleView2D({ 
         colorFunction: colorSchemes[3], 
@@ -117,8 +116,7 @@ resetParticleViews();
 function setColoringSchemeTo(index) {
     n = 0;
     resetParticleViews();
-    for (const view of particleViews) 
-        view.colorFunction = colorSchemes[index];
+    particleViews.forEach(view => view.colorFunction = colorSchemes[index]);
     updateTitle(c, n);
 }
 
@@ -131,4 +129,3 @@ function updateTitle(cValue, nValue) {
     const latex = `\\begin{cases} \\phi &= ${nValue} \\cdot \\dfrac{137.5\\pi}{180} \\\\ r &= ${cValue}\\sqrt{${nValue}} \\end{cases} \\Rightarrow  \\begin{cases} x &= r \\cdot \\cos(\\phi) \\\\ y &= r \\cdot \\sin(\\phi) \\end{cases}`;
     simulation.setLatexTitle(latex);
 }
-
