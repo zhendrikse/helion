@@ -5,7 +5,7 @@ import {
 
 const numberOfDots = 360;
 let c = 15;
-let n = 0; // aantal reeds zichtbare stippen (increment per frame zoals origineel loop())
+let n = 0; // number of seeds
 let drawBorderAroundDots = false;
 
 /** @param {number} value */
@@ -40,9 +40,9 @@ class FlowerParticle extends RadialSymmetricBody {
 
 const colorSchemes = [
     (/** @type {{ angle: number; distance: number; }} */ p) => normalizeHue(p.angle - p.distance), // (angle - radius) % 360
-    (/** @type {{ n: any; }} */ p) => normalizeHue(p.n), // n % 360
-    (/** @type {{ angle: any; }} */ p) => normalizeHue(p.angle), // angle % 360
-    (/** @type {{ angle: any; }} */ _p) => 65 / 360 // monochrome 65°
+    (/** @type {{ n: number; }} */ p) => normalizeHue(p.n), // n % 360
+    (/** @type {{ angle: number; }} */ p) => normalizeHue(p.angle), // angle % 360
+    (/** @type {{ angle: number; }} */ _p) => 65 / 360 // monochrome 65°
 ];
 
 /** @type {FlowerParticle[]} */
@@ -113,12 +113,12 @@ for (let index = 0; index < numberOfDots; index++) {
 }
 resetParticleViews();
 
-/** @param {number} number} */
-function setColoringSchemeTo(number) {
+/** @param {number} index */
+function setColoringSchemeTo(index) {
     n = 0;
     resetParticleViews();
     for (const view of particleViews) 
-        view.colorFunction = colorSchemes[number];
+        view.colorFunction = colorSchemes[index];
     updateTitle(c, n);
 }
 
