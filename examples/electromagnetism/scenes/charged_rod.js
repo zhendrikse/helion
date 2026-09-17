@@ -1,6 +1,5 @@
-import { Color } from "three";
-import { 
-    RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, Simulation, Vec3
+import {
+    RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, Simulation, Vec3, Colour
 } from "../../../src/index.js";
 
 //
@@ -132,7 +131,7 @@ const magneticArrowField = new ArrowField({
     zRange: new Range(-0.4, 0.4, 0.12),
     scaleFactor: 0.15,
     magnitudeMap: m => m < 0.05 ? 0 : Math.sqrt(m), // set tiny arrows to zero
-    colorMap: () => new Color("cyan"),
+    colorMap: () => Colour.Cyan,
     round: true
 });
 
@@ -142,7 +141,7 @@ const electricArrowField = new ArrowField({
     zRange: new Range(-0.4, 0.4, 0.12),
     scaleFactor: 0.15,
     magnitudeMap: m => m < 0.05 ? 0 : Math.sqrt(m), // set tiny arrows to zero
-    colorMap: () => new Color("red"),
+    colorMap: () => Colour.Red,
     round: true
 });
 
@@ -169,7 +168,7 @@ const simulation = Simulation
     });
 
 for (const charge of rod.charges) {
-    const sphere = new Sphere({ color: new Color("yellow") });
+    const sphere = new Sphere({ color: 0xffff00 });
     simulation.bind(charge.alwaysWith(sphere));
     simulation.bind(charge.alwaysWith(new Trail({ maxPoints: 150, color: sphere.color })));
 }

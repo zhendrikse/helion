@@ -1,6 +1,5 @@
-import {Color} from "three";
 import {
-    Arrow, ArrowField, AxialSymmetricBody, Cylinder, RadialSymmetricBody, Range, Ring, Simulation,
+    Arrow, ArrowField, AxialSymmetricBody, Colour, Cylinder, RadialSymmetricBody, Range, Ring, Simulation,
     Slider, Sphere, Trail, Transformation, Vec3, VectorField
 } from "../../../src/index.js";
 
@@ -179,13 +178,22 @@ function setBeta(beta) {
 }
 setBeta(0.3);
 
-simulation.bind(bField.onceWith(new ArrowField({
+simulation.bind(staticElectromagneticField.magneticField.onceWith(new ArrowField({
     xRange: new Range(-8, 8, 4),
     yRange: new Range(-4, 4, 1),
     zRange: new Range(-4, 4, 1),
     scaleFactor: 0.9,
     round: true,
-    colorMap: () => new Color("orange"),
+    colorMap: () => Colour.Orange,
+    magnitudeMap: m => Math.log(1 + m)
+})));
+simulation.bind(staticElectromagneticField.electricField.onceWith(new ArrowField({
+    xRange: new Range(-8, 8, 4),
+    yRange: new Range(-4, 4, 1),
+    zRange: new Range(-4, 4, 1),
+    scaleFactor: 0.9,
+    round: true,
+    colorMap: () => Colour.Cyan,
     magnitudeMap: m => Math.log(1 + m)
 })));
 simulation.bind(electromagneticField.magneticField.onceWith(new ArrowField({
@@ -194,7 +202,7 @@ simulation.bind(electromagneticField.magneticField.onceWith(new ArrowField({
     zRange: new Range(-4, 4, 1),
     scaleFactor: 0.9,
     round: true,
-    colorMap: () => new Color("orange"),
+    colorMap: () => Colour.Orange,
     magnitudeMap: m => Math.log(1 + m)
 })));
 simulation.bind(electromagneticField.electricField.onceWith(new ArrowField({
@@ -203,7 +211,7 @@ simulation.bind(electromagneticField.electricField.onceWith(new ArrowField({
     zRange: new Range(-4, 4, 1),
     scaleFactor: 2,
     round: true,
-    colorMap: () => new Color("cyan"),
+    colorMap: () => Colour.Cyan,
     magnitudeMap: m => Math.log(1 + m)
 })));
 

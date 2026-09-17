@@ -7,7 +7,6 @@ import {
 import { Arrow, Cylinder, Helix, Sphere } from "../primitives/primitives.js";
 import { Vec3 } from "../../../model/math/math.js";
 import { Renderable3D } from "../../renderer.js";
-import { MathPhysicsModelBehavior } from "../../../core/helion.js";
 import { Checkbox, CompoundControl, RadioGroup } from "../../../core/controls.js";
 import { BodyPair, Lattice } from "../../../model/phys/bodies.js";
 import { Range } from "../../../model/math/math.js";
@@ -15,6 +14,7 @@ import { VectorField } from "../../../model/math/fields.js";
 import { OneDimensionalComplexPlaneWave, OneDimensionalPlaneWave } from "../../../model/phys/waves.js";
 import { VectorModel } from "../../../model/math/objects.js";
 import { PointCloud } from "../../../model/phys/clouds.js";
+import {Colour, hsvToRgb} from "../../colormappers.js";
 //
 // Point cloud
 //
@@ -410,7 +410,7 @@ export class ArrowField extends Renderable3D {
      * scaleFactor?: number,
      * round?: boolean,
      * magnitudeMap?: (value: number) => number,
-     * colorMap?: (dir: Vec3, mag: number) => number | Color,
+     * colorMap?: (dir: Vec3, mag: number) => Colour,
      * shaftWidth?: number,
      * headLength?: number,
      * headWidth?: number,
@@ -424,7 +424,7 @@ export class ArrowField extends Renderable3D {
         scaleFactor = 1,
         round = false,
         magnitudeMap = mag => Math.log(1 + mag),
-        colorMap = (dir, mag) => new Color().setHSL(Math.min(Math.log(1 + mag) / 5, 1), 0.7, 0.5),
+        colorMap = (dir, mag) => hsvToRgb(Math.min(Math.log(1 + mag) / 5, 1), 0.7, 0.5),
         shaftWidth = 0.08,
         headWidth = 2.0,
         headLength = 4.0,
@@ -442,6 +442,7 @@ export class ArrowField extends Renderable3D {
         this._scaleFactor = scaleFactor;
         this._matrixMagnitudeMap = magnitudeMap;
         this._colorMap = colorMap;
+        this._color = new Colour();
 
         this._shaftWidth = shaftWidth;
         this._headWidth = headWidth;
@@ -491,10 +492,8 @@ export class ArrowField extends Renderable3D {
     }
 
     #setColor(index, dir, mag) {
-        if (!this._colorMap) return;
-
-        const c = this._colorMap(dir, mag);
-        this._shaftMesh.instanceColor.setXYZ(index, c.r, c.g, c.b);
+        this._color.copy(this._colorMap(dir, mag));
+        this._shaftMesh.instanceColor.setXYZ(index, this._color.r, this._color.g, this._color.b);
     }
 
     /**

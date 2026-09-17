@@ -1,7 +1,5 @@
-import { Color } from "three";
-
 import {
-    RadialSymmetricBody, VectorField, Range, Simulation, Sphere, ArrowField, Vec3
+    RadialSymmetricBody, VectorField, Range, Simulation, Sphere, ArrowField, Vec3, Colour
 } from "../../../src/index.js";
 
 const Q = 1.6e-19;
@@ -120,7 +118,7 @@ const electricArrowField = new ArrowField({
     scaleFactor: 2.5e-12,
     magnitudeMap: magnitude => Math.log(magnitude + 1),
     //colorMap: (axis, magnitude) => new Color().setHSL(0.15, 1, Math.min(Math.log(magnitude + 1), 0.6)),
-    colorMap: (axis, magnitude) => new Color(0xbbbb55),
+    colorMap: (axis, magnitude) => Colour.fromHex(0xbbbb55),
     round: true
 });
 
@@ -130,7 +128,7 @@ const magneticArrowField = new ArrowField({
     zRange: new Range(-6e-10, 6e-10, 1.25e-10),
     scaleFactor: 2.5e-11,
     magnitudeMap: magnitude => Math.log(magnitude + 1),
-    colorMap: () => new Color("cyan"),
+    colorMap: () => Colour.Cyan,
     round: true
 });
 
@@ -148,10 +146,10 @@ Simulation
     .withMouseClickEventListener()
     .runsEvery(1e-3)
     .advancesBy(4e-20)
-    .bind(electron.alwaysWith(new Sphere({ color: new Color("red") })))
+    .bind(electron.alwaysWith(new Sphere({ color: 0xff0000 })))
     .bind(electricField.alwaysWith(electricArrowField))
     .bind(magneticField.alwaysWith(magneticArrowField))
-    .bind(proton.alwaysWith(new Sphere({ color: new Color("yellow") })))
+    .bind(proton.alwaysWith(new Sphere({ color: 0xffff00 })))
     .onStep((clock, _) => {
         electron.updateAt(clock.simulatedTime);
         proton.updateAt(clock.simulatedTime);

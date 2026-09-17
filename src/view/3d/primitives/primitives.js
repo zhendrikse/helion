@@ -6,8 +6,8 @@ import {
 import { Renderable3D } from "../../renderer.js";
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { Vec3 } from "../../../model/math/math.js";
-import { MathPhysicsModelBehavior } from "../../../core/helion.js";
 import { Body } from "../../../model/phys/bodies.js";
+import {Colour} from "../../colormappers.js";
 
 //
 // T R A I L
@@ -597,7 +597,7 @@ export class Label extends Renderable3D {
      * @param {{
      *     text?: (model: Body) => string
      *     offset?: (model: Body) => Vec3
-     *     color?: number | string
+     *     color?: Colour
      *     fontSize?: string
      *     visible?: boolean 
      * }} param0 
@@ -605,7 +605,7 @@ export class Label extends Renderable3D {
     constructor({
         text = model => "" ,
         offset = model => new Vec3(),
-        color = "#ffff00",
+        color = Colour.Yellow,
         fontSize = "16px",
         visible = true
     } = {}) {

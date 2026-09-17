@@ -1,5 +1,5 @@
-import { toColorString } from "../../colormappers.js";
 import {Renderable3D} from "../../renderer.js";
+import {hsvToRgb} from "../../colormappers.js";
 
 export class OneDimensionalComplexPlaneWave2D extends Renderable3D {
     static Mode = Object.freeze({
@@ -24,7 +24,7 @@ export class OneDimensionalComplexPlaneWave2D extends Renderable3D {
         // Precompute color map for phase visualization
         this._phaseColors = new Array(nColors + 1);
         for (let c = 0; c <= nColors; c++) {
-            this._phaseColors[c] = toColorString(c / nColors);
+            this._phaseColors[c] = hsvToRgb(c / nColors).asHexString();
         }
         this._nColors = nColors;
         this._context = null;

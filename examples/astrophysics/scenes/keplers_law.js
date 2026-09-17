@@ -49,7 +49,7 @@ class Planet extends RadialSymmetricBody {
                 Number(time * 2).toFixed(3) + ' "months", initial speed: ' + 
                 Math.round(this.speed).toFixed(3);
 
-        // oldColour fix: label krijgt huidige colour (vorig maand), daarna pas nieuwe random (py:32)
+        // label first gets current colour (previous month), thereafter a new random value
         const oldColour = colour;
         let labelColour;
         if (whole === 1) {
@@ -62,7 +62,7 @@ class Planet extends RadialSymmetricBody {
         const label = new Label({
             text: () => labelText,
             offset: () => this.position.clone().multiplyScalar(offset),
-            color: "#" + labelColour.toString(16).padStart(6, '0')
+            color: labelColour
         });
         views.push(label);
         simulation.bind(line.onceWith(label));

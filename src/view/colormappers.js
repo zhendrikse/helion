@@ -1,33 +1,77 @@
 import { Color, DataTexture, RGBFormat, LinearFilter } from "three";
 import { Registry } from "../core/helion.js";
 
-// export class Colour {
-//     constructor(r=0, g=0, b=0, a=0) {
-//         this.r = r;
-//         this.g = g;
-//         this.b = b;
-//         this.a = a;
-//     }
-//
-//     set(r, g, b, a=0) {
-//         this.r = r;
-//         this.g = g;
-//         this.b = b;
-//         this.a = a;
-//     }
-//
-//     copy(colour) {
-//         this.r = colour.r;
-//         this.g = colour.g;
-//         this.b = colour.b;
-//         this.a = colour.a;
-//     }
-// }
+export class Colour {
+    static Red = new Colour(1, 0, 0);
+    static Green = new Colour(0, 1, 0);
+    static Blue = new Colour(0, 0, 1);
+    static Cyan = new Colour(0, 1, 1);
+    static Yellow = new Colour(1, 1, 0);
+    static Orange = new Colour(1, 0.6275, 0);
 
-//
-// Color mapping functions
-//
-export function hsvToRgbNormalized(h, s, v, target) {
+    static fromHex = hexValue => {
+        const r = ((hexValue >> 16) & 0xff) / 255;
+        const g = ((hexValue >> 8)  & 0xff) / 255;
+        const b = (hexValue & 0xff) / 255;
+        return new Colour(r, g, b);
+    }
+
+    static toHex = value => Math.round(value * 255).toString(16).padStart(2, "0");
+
+    /**
+     * @param {number} r 0 <= red <= 1
+     * @param {number} g 0 <= green <= 1
+     * @param {number} b 0 <= blue <=1
+     */
+    constructor(r = 0, g = 0, b = 0) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+    }
+
+    /**
+     * @param {number} r 0 <= red <= 1
+     * @param {number} g 0 <= green <= 1
+     * @param {number} b 0 <= blue <=1
+     */
+    setRGB(r, g, b) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+    }
+
+    /** @param {Colour} otherColour */
+    copy(otherColour) {
+        this.r = otherColour.r;
+        this.g = otherColour.g;
+        this.b = otherColour.b;
+    }
+
+    /** @param {number} hexValue */
+    setHex(hexValue) {
+        this.r = ((hexValue >> 16) & 0xff) / 255;
+        this.g = ((hexValue >> 8)  & 0xff) / 255;
+        this.b = (hexValue & 0xff) / 255;
+    }
+
+    asThreeJsColor() {
+        return new Color().setRGB(this.r, this.g, this.b);
+    }
+
+    asHexString() {
+        return `#${Colour.toHex(this.r)}${Colour.toHex(this.g)}${Colour.toHex(this.b)}`;
+    }
+}
+
+/**
+ * Utility function to create a Three.js color for a given hue (between 0 and 1)
+ *
+ * @param {number} h hue
+ * @param {number} s saturation
+ * @param {number} v value
+ * @param {Colour} targetColor
+ */
+export function hsvToRgb(h, s = 1, v = 0.5, targetColor= new Colour()) {
     let r, g, b;
     let i = Math.floor(h * 6);
     let f = h * 6 - i;
@@ -44,47 +88,12 @@ export function hsvToRgbNormalized(h, s, v, target) {
         case 5: r = v, g = p, b = q; break;
     }
 
-    target.set(Math.round(r), Math.round(g), Math.round(b));
+    targetColor.setRGB(r, g, b);
+    return targetColor;
 }
 
 export function wavelengthColor(lambdaInNanos, targetColor) {
     wavelengthToRGBNormalized(lambdaInNanos, targetColor);
-}
-
-/** Utility function to convert a number to a two-digit hex string (from stackoverflow): */
-function numberToTwoDigitHexString(numberToConvert) {
-    const hex = numberToConvert.toString(16); // 16 is necessary for conversion to hex string!
-    return hex.length === 1 ? "0" + hex : hex;
-}
-
-/** Utility function to create a hex color string for a given hue (between 0 and 1): */
-export function toColorString(hue) {
-    let r, g, b;
-    if (hue < 1/6) { // red to yellow
-        r = 255; g = Math.round(hue * 6 * 255);
-        b = 0;
-    } else if (hue < 1/3) { // yellow to green
-        r = Math.round((1/3 - hue) * 6 * 255);
-        g = 255;
-        b = 0;
-    } else if (hue < 1/2) { // green to cyan
-        r = 0;
-        g = 255;
-        b = Math.round((hue - 1/3) * 6 * 255);
-    } else if (hue < 2/3) { // cyan to blue
-        r = 0;
-        g = Math.round((2/3 - hue) * 6 * 255);
-        b = 255;
-    } else if (hue < 5/6) { // blue to magenta
-        r = Math.round((hue - 2/3) * 6 * 255);
-        g = 0;
-        b = 255;
-    } else { // magenta to red
-        r = 255;
-        g = 0;
-        b = Math.round((1 - hue) * 6 * 255);
-    }
-    return "#" + numberToTwoDigitHexString(r) + numberToTwoDigitHexString(g) + numberToTwoDigitHexString(b);
 }
 
 function wavelengthToRGBNormalized(wavelength, targetColor) {

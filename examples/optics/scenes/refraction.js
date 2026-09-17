@@ -1,6 +1,6 @@
 import {
     Block, Box, Checkbox, degToRad, MathPhysicsModelBehavior, RadioGroup, RadialSymmetricBody, Range,
-    Simulation, Slider, Sphere, Trail, Vec3, Vec2, wavelengthColor
+    Simulation, Slider, Sphere, Trail, Vec3, Vec2, wavelengthColor, colorToHexValue
 } from "../../../src/index.js";
 
 import {
@@ -284,9 +284,7 @@ initializeRays();
 const color = new Color();
 function updateLightColor(isWhite, wavelength = wavelengthSlider.value) {
     wavelengthColor(wavelength, color);
-    const colorHex = isWhite ? 0xffffff :
-        (Math.round(color.r * 255) << 16) | (Math.round(color.g * 255) << 8) | Math.round(color.b * 255);
-
+    const colorHex = isWhite ? 0xffffff : colorToHexValue(color);
     rayViews.forEach(view => view.color = colorHex);
     trails.forEach(trail => trail.color = colorHex);
     wavefrontView.color = colorHex;

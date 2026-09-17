@@ -1,4 +1,3 @@
-import { Color } from "three"
 import {
     AxialSymmetricBody, VectorField, Range, Simulation, Vec3, Cylinder, ArrowField, Slider, Checkbox
 } from "../../../src/index.js";
@@ -106,7 +105,7 @@ const simulation = Simulation
     .bind(magneticField.onceWith(arrowField));
 
 for (const segment of solenoid.segments)
-    simulation.bind(segment.onceWith(new Cylinder({ color: new Color("yellow") })));
+    simulation.bind(segment.onceWith(new Cylinder({ color: 0xffff00 })));
 
 simulation.append(new Slider("️⚡ Field strength: ")
     .on(magneticField)

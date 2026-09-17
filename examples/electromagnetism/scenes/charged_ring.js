@@ -1,7 +1,6 @@
-import { Color } from "three";
 import {
-    RadialSymmetricBody, AxialSymmetricBody, Range, Simulation, EC,
-    Sphere, CylinderSegmentsView, ArrowField, Vec3, Trail, VectorField, CoulombForce, Segments
+    RadialSymmetricBody, AxialSymmetricBody, Range, Simulation, EC, Sphere,
+    CylinderSegmentsView, ArrowField, Vec3, Trail, VectorField, CoulombForce, Segments, hsvToRgb
 } from "../../../src/index.js";
 
 const K = 9e9;
@@ -103,8 +102,8 @@ const arrowField = new ArrowField({
         const radial = axis.clone().normalize();
         const t = Math.min(Math.sqrt(1 + magnitude) * 1.25e-6, 1);
         return radial.z > 0
-            ? new Color().setHSL(0.0, 1, -0.5 * t + 1)
-            : new Color().setHSL(0.66, 1, -0.5 * t + 1);
+            ? hsvToRgb(0.0, 1, -0.5 * t + 1)
+            : hsvToRgb(0.66, 1, -0.5 * t + 1);
     },
     // colorMap: (axis, magnitude) => new Color().setHSL(Math.min(Math.sqrt(1 + magnitude) * 5e-7, 1), 1, 0.5),
     round: true

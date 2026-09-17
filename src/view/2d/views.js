@@ -5,7 +5,7 @@ import {
 
 import { Renderable2D } from "../renderer.js";
 import { CompoundControl, DropdownMenu } from "../../core/controls.js";
-import { ColorMapper, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from "../colormappers.js";
+import {ColorMapper, Colour, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from "../colormappers.js";
 import { AdaptiveSymmetricNormalizer, SurfaceResolution} from "../3d/surfaces/visualization.js";
 import { ComplexFunctionSample, DiscreteScalarField} from "../../model/math/fields.js";
 import { Normalizer} from "../3d/surfaces/visualization.js"
@@ -522,21 +522,19 @@ export class TiledPlane extends Renderable2D {
 export class ParticleView2D extends Renderable2D {
     /**
      * @param {{
-     * color?: number
      * segments?: number
      * colorFunction?: (property: any) => number
      * colorMapper?: ColorMapper
      * }} param0 
      */
     constructor({
-        color = 0xffff00,
         segments = 16,
-        colorFunction = particle => 0xfff00,
+        colorFunction = particle => 0xffff00,
         colorMapper = new HexValueColorMapper()
     } = {}) {
         super();
         this._geometry = new CircleGeometry(1, segments);
-        this._material = new MeshBasicMaterial({ color });
+        this._material = new MeshBasicMaterial();
         this._mesh = new Mesh(this._geometry, this._material);
         this.add(this._mesh);
         this._colorFunction = colorFunction;

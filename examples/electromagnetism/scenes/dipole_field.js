@@ -1,7 +1,7 @@
 import { Color } from "three";
 import {
     RadialSymmetricBody, VectorField, Range, Simulation, Vec3, Slider,
-    Sphere, ArrowField, Checkbox
+    Sphere, ArrowField, Checkbox, hsvToRgb
 } from "../../../src/index.js";
 
 const scale = 1e15;
@@ -66,7 +66,7 @@ const arrowField = new ArrowField({
     round: true,
     magnitudeMap: m => Math.sqrt(1e-7 * m),
     scaleFactor: 1e-16,
-    colorMap: (axis, magnitude) => new Color().setHSL(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.5)
+    colorMap: (axis, magnitude) => hsvToRgb(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.5)
 });
 
 const simulation = Simulation

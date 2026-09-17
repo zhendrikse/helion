@@ -122,7 +122,7 @@ export class LineSegment extends MathPhysicsModelBehavior {
 export class Segments extends MathPhysicsModelBehavior {
     constructor() {
         super();
-        /** @type {LineSegment[]} */
+        /** @type {MathPhysicsModelBehavior[]} */
         this._segments = [];
     }
 
@@ -136,7 +136,7 @@ export class Segments extends MathPhysicsModelBehavior {
         this._segments.length = 0;
     }
 
-    /** @param {LineSegment} segment */
+    /** @param {MathPhysicsModelBehavior} segment */
     push(segment) {
         this._segments.push(segment);
     }
