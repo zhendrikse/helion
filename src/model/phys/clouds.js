@@ -1,8 +1,8 @@
-import { MathPhysicsModelBehavior } from "../../core/helion.js";
-import { PhysicsState, RadialSymmetricBody } from "./bodies.js";
-import { Integrators } from "../math/numerics/integrators/integrators.js";
-import { SphereSphereCollision } from "../transformations/interactions.js";
-import { Vec2 } from "../math/math.js";
+import { MathPhysicsModelBehavior } from '../../core/helion.js';
+import { PhysicsState, RadialSymmetricBody } from './bodies.js';
+import { Integrators } from '../math/numerics/integrators/integrators.js';
+import { SphereSphereCollision } from '../transformations/interactions.js';
+import { Vec2 } from '../math/math.js';
 
 export class PointCloud extends MathPhysicsModelBehavior {
     constructor({
@@ -52,7 +52,7 @@ export class Gas {
     };
 
     static bounceWithinBox = (particle, limit) => {
-        ["x", "y", "z"].forEach(axis => {
+        ['x', 'y', 'z'].forEach(axis => {
             if (particle.position[axis] > limit || particle.position[axis] < -limit)
                 particle.velocity[axis] *= -1;
         });
@@ -135,7 +135,7 @@ export class Gas {
     /** @param {number} newTemperature */
     set temperature(newTemperature) {
         if (newTemperature <= 0)
-            throw new Error("Temperature must be greater than zero.");
+            throw new Error('Temperature must be greater than zero.');
 
         const scale = Math.sqrt(newTemperature / this._temperature);
         for (const particle of this._particles.slice(1, this._particles.length))

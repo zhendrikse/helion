@@ -128,7 +128,7 @@ export class Vec3 {
     /**
      * Rotates the body around a world-space axis.
      *
-     * @param {"x"|"y"|"z"} axis
+     * @param {'x'|'y'|'z'} axis
      * @param {number} angle Angle in radians.
      * @returns {this}
      */
@@ -139,17 +139,17 @@ export class Vec3 {
         const { x, y, z } = this;
 
         switch (axis) {
-            case "x":
+            case 'x':
                 this.y = cos * y - sin * z;
                 this.z = sin * y + cos * z;
                 break;
 
-            case "y":
+            case 'y':
                 this.x = cos * x + sin * z;
                 this.z = -sin * x + cos * z;
                 break;
 
-            case "z":
+            case 'z':
                 this.x = cos * x - sin * y;
                 this.y = sin * x + cos * y;
                 break;
@@ -354,9 +354,9 @@ export class Range {
     /** @returns {Generator<number, void, number>} */
     *[Symbol.iterator]() {
         if (!isFinite(this.from) || !isFinite(this.to))
-            throw new Error("Cannot iterate over an infinite interval.");
+            throw new Error('Cannot iterate over an infinite interval.');
         if (this.stepSize <= 0)
-            throw new Error("stepSize must be > 0");
+            throw new Error('stepSize must be > 0');
 
         const n = Math.floor((this.to - this.from) / this.stepSize);
         for (let i = 0; i <= n; i++)
@@ -446,7 +446,7 @@ export class Complex {
     /** @param {Complex} complex */
     multiply(complex) {
         const real = this.re * complex.re - this.im * complex.im;
-        const imag = this.re * complex.im + this.im * complex.re
+        const imag = this.re * complex.im + this.im * complex.re;
         this.re = real;
         this.im = imag;
         return this;
@@ -498,7 +498,7 @@ export class Complex {
         this.re = re / denominator;
         this.im = im / denominator;
         return this;
-    }
+    };
 
     sqrt() {
         const r = this.abs;

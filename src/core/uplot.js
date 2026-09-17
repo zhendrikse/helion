@@ -1,4 +1,4 @@
-import uPlot from "uplot";
+import uPlot from 'uplot';
 
 export class UPlotGraph {
     constructor({
@@ -6,11 +6,11 @@ export class UPlotGraph {
         dataDefinition,
         width = 600,
         height = 300,
-        title = "",
-        xLabel = "",
-        yLabel = "",
+        title = '',
+        xLabel = '',
+        yLabel = '',
         maxPoints = 500,
-        labelColor = "green",
+        labelColor = 'green',
     } = {}) {
         this._maxPoints = maxPoints;
         this._graphData = [];
@@ -26,7 +26,7 @@ export class UPlotGraph {
         });
 
         const uPlotOptions = this._uplotOptions(title, width, height, labelColor, xLabel, yLabel, series);
-        const plotDiv = document.createElement("div");
+        const plotDiv = document.createElement('div');
         plotParentDiv.appendChild(plotDiv);
         this._uplotChart = new uPlot(uPlotOptions, this._graphData, plotDiv);
     }
@@ -39,13 +39,13 @@ export class UPlotGraph {
             scales: { x: { auto: true }, y: { auto: true } },
             axes: [{
                 stroke: labelColor,
-                font: "12px Arial",
-                grid: { stroke: "rgba(255, 255, 255, 0.2)", width: 1 },
+                font: '12px Arial',
+                grid: { stroke: 'rgba(255, 255, 255, 0.2)', width: 1 },
                 label: xLabel,
             }, {
                 stroke: labelColor,
-                font: "12px Arial",
-                grid: { stroke: "rgba(255, 255, 255, 0.2)", width: 1 },
+                font: '12px Arial',
+                grid: { stroke: 'rgba(255, 255, 255, 0.2)', width: 1 },
                 label: yLabel
             }],
             series

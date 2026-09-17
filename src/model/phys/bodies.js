@@ -1,7 +1,7 @@
-import { Vec3, Vec2 } from "../math/math.js";
-import { Integrators } from "../math/numerics/integrators/integrators.js";
-import { MathPhysicsModelBehavior, Transformation } from "../../core/helion.js";
-import { SpringForce} from "./forces.js";
+import { Vec3 } from '../math/math.js';
+import { Integrators } from '../math/numerics/integrators/integrators.js';
+import { MathPhysicsModelBehavior } from '../../core/helion.js';
+import { SpringForce} from './forces.js';
 
 export class PhysicsState {
     /**
@@ -36,38 +36,6 @@ export class PhysicsState {
             charge: this.charge
         });
     }
-}
-
-class AccelerationVector extends MathPhysicsModelBehavior {
-    /** @param {Body} parent */
-    constructor(parent) {
-        super();
-        this._parent = parent;
-    }
-
-    clone() { return new AccelerationVector(this._parent); }
-
-    get position() { return this._parent.position; }
-    get velocity() { return this._parent.velocity; }
-    get acceleration() { return this._parent.acceleration; }
-    get axis() { return this._parent.acceleration; }
-    set axis(newAxis) { this._parent.acceleration.copy(newAxis); }
-}
-
-class VelocityVector extends MathPhysicsModelBehavior {
-    /** @param {Body} parent */
-    constructor(parent) {
-        super();
-        this._parent = parent;
-    }
-
-    clone() { return new VelocityVector(this._parent); }
-
-    get position() { return this._parent.position; }
-    get velocity() { return this._parent.velocity; }
-    get acceleration() { return this._parent.acceleration; }
-    get axis() { return this._parent.velocity; }
-    set axis(newAxis) { this._parent.velocity.copy(newAxis); }
 }
 
 //
@@ -109,7 +77,7 @@ export class BodyPair extends MathPhysicsModelBehavior {
 
     /** @param {BodyPair} otherBodyPair */
     and(otherBodyPair) { 
-        return new BodyPairs(this, otherBodyPair) 
+        return new BodyPairs(this, otherBodyPair);
     };
 
     reset() {
@@ -184,7 +152,7 @@ export class Body extends MathPhysicsModelBehavior{
 
     /** @param {Body} otherBody */
     and(otherBody) { 
-        return new BodyPair(this, otherBody) 
+        return new BodyPair(this, otherBody);
     };
 
     /** @param {Configuration} configuration */
@@ -208,7 +176,7 @@ export class Body extends MathPhysicsModelBehavior{
     }
 
     /** 
-     * @param {"x"|"y"|"z"} axis
+     * @param {'x'|'y'|'z'} axis
      * @param {number} angle
      */
     rotate(axis, angle) {
@@ -220,7 +188,7 @@ export class Body extends MathPhysicsModelBehavior{
     }
 
     /**
-     * @param {"x"|"y"|"z"}  axis
+     * @param {'x'|'y'|'z'}  axis
      * @param {number} angle
      */
     rotateChildren(axis, angle) {
@@ -229,7 +197,7 @@ export class Body extends MathPhysicsModelBehavior{
     }
 
     /** 
-     * @param {"x"|"y"|"z"} axis
+     * @param {'x'|'y'|'z'} axis
      * @param {number} angle
      */
     rotateWithParent(axis, angle) {
@@ -286,7 +254,7 @@ export class Body extends MathPhysicsModelBehavior{
     /**
      * Rotates the body around a world-space axis.
      *
-     * @param {"x"|"y"|"z"} axis World-space rotation axis.
+     * @param {'x'|'y'|'z'} axis World-space rotation axis.
      * @param {number} angle Rotation angle in radians.
      */
     rotateWorld(axis, angle) {
@@ -313,9 +281,9 @@ export class Body extends MathPhysicsModelBehavior{
         const c = Math.cos(halfAngle);
 
         let rotation;
-        if (axis === "x")
+        if (axis === 'x')
             rotation = { x: s, y: 0, z: 0, w: c };
-        else if (axis === "y")
+        else if (axis === 'y')
             rotation = { x: 0, y: s, z: 0, w: c };
         else
             rotation = { x: 0, y: 0, z: s, w: c };
@@ -378,7 +346,7 @@ export class Body extends MathPhysicsModelBehavior{
     /** @param {Body} other */
     distanceToSquared(other) { return this.position.distanceSquaredTo(other.position); }
     /** @param {Body} other */
-    distanceTo(other) { return this.position.distanceTo(other.position) }
+    distanceTo(other) { return this.position.distanceTo(other.position); }
 
     get kineticEnergy() { return 0.5 * this.mass * this.velocity.dot(this.velocity); }
     get momentum() { return this.velocity.clone().multiplyScalar(this.mass); }
@@ -542,8 +510,8 @@ export class Lattice extends MathPhysicsModelBehavior {
     /** @param {number} value */
     set omega(value) { this._omega = value; }
 
-    get bodyCount() { return this._bodies.length }
-    get bondCount() { return this._bonds.length }
+    get bodyCount() { return this._bodies.length; }
+    get bondCount() { return this._bonds.length; }
 
     /** @param {number} index */
     bodyAt(index) { return this._bodies[index]; }

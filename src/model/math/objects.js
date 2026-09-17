@@ -1,7 +1,6 @@
-import {MathPhysicsModelBehavior, Transformation} from "../../core/helion.js";
-import { Matrix2D } from "../transformations/matrices.js";
-import { Interval, degToRad, Vec2, Vec3} from "./math.js";
-import {Integrators} from "./numerics/integrators/integrators.js";
+import {MathPhysicsModelBehavior} from '../../core/helion.js';
+import { Interval, degToRad, Vec2, Vec3} from './math.js';
+import {Integrators} from './numerics/integrators/integrators.js';
 
 /**
  * Mathematical definition of a parametrically defined curve.
@@ -57,7 +56,7 @@ export class VectorModel extends MathPhysicsModelBehavior {
     constructor(position, axis) {
         super();
         if (position == null || axis == null)
-            throw new Error("Vector model requires both position and axis arguments (Vec2 or Vec3)");
+            throw new Error('Vector model requires both position and axis arguments (Vec2 or Vec3)');
         this.position = position.clone();
         this.axis = axis;
     }
@@ -91,7 +90,7 @@ export class LineSegment extends MathPhysicsModelBehavior {
     constructor(fromVec, toVec, value=0) {
         super();
         if (!fromVec || !toVec)
-            throw new Error("Vector model requires both fromVec and toVec arguments (Vec2 or Vec3)");
+            throw new Error('Vector model requires both fromVec and toVec arguments (Vec2 or Vec3)');
         this.from = fromVec;
         this.to = toVec;
         this.scalar = value;
@@ -126,7 +125,7 @@ export class Segments extends MathPhysicsModelBehavior {
         this._segments = [];
     }
 
-    get count() { return this._segments.length }
+    get count() { return this._segments.length; }
 
     [Symbol.iterator]() {
         return this._segments[Symbol.iterator]();
@@ -150,7 +149,7 @@ export class Grid extends Segments {
         super();
         this._gridLines = [];
         if (stepSize <=0 || stepSize > size)
-            throw new Error("Step size must be between 0 and size, but was " + stepSize);
+            throw new Error('Step size must be between 0 and size, but was ' + stepSize);
 
         let pos = -size;
         for (let i = -size / stepSize; i <= size / stepSize; i++) {
@@ -229,10 +228,10 @@ export class StrangeAttractor extends Segments {
         this.generate();
     }
 
-    /** @param {Vec3} point */
-    derivative(point) {}
+    /** @param {Vec3} _point */
+    derivative(_point) {}
 
-    hue(parameter, index) {
+    hue(_parameter, _index) {
         return 0.5;
     }
 

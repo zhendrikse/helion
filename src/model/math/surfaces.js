@@ -1,8 +1,7 @@
-import {DiscreteScalarField, Domain, Field, MultivariateFunction} from "./fields.js";
-import {Interval, Vec2, Vec3} from "./math.js";
-import {DifferentialFrame, DifferentialGeometry} from "./numerics/diffgeometry.js";
-import {MathPhysicsModelBehavior} from "../../core/helion.js";
-import { SurfaceResolution } from "../../view/3d/surfaces/visualization.js";
+import { Domain } from './fields.js';
+import {Interval, Vec2, } from './math.js';
+import { DifferentialGeometry} from './numerics/diffgeometry.js';
+import {MathPhysicsModelBehavior} from '../../core/helion.js';
 
 /**
  * Mathematical definition of a surface.
@@ -16,8 +15,8 @@ export class DifferentiableSurface extends Surface {
         this._differentialGeometry = new DifferentialGeometry(this);
     }
 
-    /** @param {SurfaceResolution} resolution */
-    sampleSpacing(resolution) {
+    /** @param {SurfaceResolution} _resolution */
+    sampleSpacing(_resolution) {
         return new Vec2(1, 1);
     }
 
@@ -30,8 +29,8 @@ export class DifferentiableSurface extends Surface {
         return this._differentialGeometry.differentialFrame(u, v, target);
     }
 
-    /** @param {SurfaceResolution} resolution */
-    rangeAt(resolution) {
+    /** @param {SurfaceResolution} _resolution */
+    rangeAt(_resolution) {
         return new Interval();
     }
 
@@ -85,9 +84,9 @@ export class ParametricSurface extends DifferentiableSurface {
      */
     constructor({
         domain = new Domain(),
-        x = (u, v) => u,
+        x = (u, _v) => u,
         y = (u, v) => v,
-        z = (u, v) => 0,
+        z = (_u, _v) => 0,
     } = {}) {
         super();
         this._domain = domain;
@@ -137,8 +136,8 @@ export class DiscreteFieldSurface extends DifferentiableSurface {
         this._field = field;
     }
 
-    /** @param {SurfaceResolution} resolution */
-    rangeAt(resolution) {
+    /** @param {SurfaceResolution} _resolution */
+    rangeAt(_resolution) {
         return this._field.rangeAt();
     }
 

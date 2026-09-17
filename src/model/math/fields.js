@@ -1,7 +1,5 @@
-import {MathPhysicsModelBehavior} from "../../core/helion.js";
-import { SurfaceResolution } from "../../view/3d/surfaces/visualization.js";
-import {Complex, Interval, Vec2, Vec3} from "./math.js";
-import { Solver } from "./numerics/solvers/solvers.js";
+import {MathPhysicsModelBehavior} from '../../core/helion.js';
+import {Complex, Interval, Vec2} from './math.js';
 
 export class Domain {
     /**
@@ -32,36 +30,36 @@ export class Domain {
  * VectorField  (composition) ──────► VectorVisualization
  */
 export class Field extends MathPhysicsModelBehavior {
-    /** 
-     * @param {number} u  
-     * @param {number} v  
-     * @param {any} target 
+    /**
+     * @param {number} _u normalized coordinate one.
+     * @param {number} _v normalized coordinate two.
+     * @param {ComplexFunctionSample} _target
      */
-    sample(u, v, target) {}
+    sample(_u, _v, _target) {}
 }
 
 export class ScalarField extends Field {
     /**
-     * @param {number} u normalized coordinate one.
-     * @param {number} v normalized coordinate two.
+     * @param {number} _u normalized coordinate one.
+     * @param {number} _v normalized coordinate two.
      */
-    sample(u, v) {
+    sample(_u, _v) {
         return 0;
     }
 
-    /** @param {SurfaceResolution} resolution */
-    rangeAt(resolution) {
+    /** @param {SurfaceResolution} _resolution */
+    rangeAt(_resolution) {
         return new Interval();
     }
 }
 
 export class ComplexField extends Field {
     /**
-     * @param {number} u normalized coordinate one.
-     * @param {number} v normalized coordinate two.
-     * @param {ComplexFunctionSample} target
+     * @param {number} _u normalized coordinate one.
+     * @param {number} _v normalized coordinate two.
+     * @param {ComplexFunctionSample} _target
      */
-    sample(u, v, target) {
+    sample(_u, _v, _target) {
     }
 }
 
@@ -85,7 +83,7 @@ export class MultivariateFunction extends ScalarField {
      */
     constructor({
         domain = new Domain(),
-        func = (x, y, t) => 0
+        func = (_x, _y, _t) => 0
     } = {}) {
         super();
         this.domain = domain;
@@ -111,7 +109,7 @@ export class MultivariateFunction extends ScalarField {
     }
 
     /** 
-     * @param {number} u 
+     * @param {number} u
      * @param {number} v 
      */
     sample(u, v) {
@@ -136,7 +134,7 @@ export class RealFunction extends MathPhysicsModelBehavior {
      */
     constructor({
         domain = new Interval(-1, 1),
-        func = x => 0
+        func = _x => 0
     } = {}) {
         super();
         this.domain = domain;
@@ -151,10 +149,13 @@ export class RealFunction extends MathPhysicsModelBehavior {
         return interval;
     }
 
-    /** @param {(x: number) => number} */
+    /** @param {(x: number) => number} func */
     setFunction(func) { this._func = func; }
 
-    /** @param {number} u */
+    /**
+     * @param {number} u
+     * @param {Vec2} target
+     */
     sample(u, target = new Vec2()) {
         const x = this.domain.scaleUnitParameter(u);
         target.set(x, this._func(x));
@@ -182,7 +183,7 @@ export class ComplexFunction extends ComplexField {
      */
     constructor({
         domain = new Domain(),
-        func = z => new Complex(0, 0)
+        func = _z => new Complex(0, 0)
     } = {}) {
         super();
         this._domain = domain;
@@ -312,7 +313,7 @@ export class DiscreteComplexField extends ComplexField {
 
     reset() {
         this.real = new Float64Array(this.nx * this.ny);
-        this.imag = new Float64Array(this.nx * this.ny)
+        this.imag = new Float64Array(this.nx * this.ny);
         return this;
     }
 

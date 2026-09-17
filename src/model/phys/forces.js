@@ -1,7 +1,5 @@
-import { Vec3 } from "../math/math.js";
-import { Transformation} from "../../core/helion.js";
-import { VectorField } from "../math/fields.js";
-import { Body, BodyPair, BodyPairs } from "../phys/bodies.js"
+import { Vec3 } from '../math/math.js';
+import { Transformation} from '../../core/helion.js';
 
 export const G = 6.67e-11;   // Gravitational constant
 export const EC = 1.602E-19; // Coulomb charge
@@ -16,8 +14,8 @@ export class Force extends Transformation {
 
     get asVector() { return this._forceVector; }
 
-    /** @param {Body | BodyPair | BodyPairs} body */
-    _calculateForceOn(body) {}
+    /** @param {Body | BodyPair | BodyPairs} _body */
+    _calculateForceOn(_body) {}
 
     /** @param {Body} body */
     applyTo(body) {
@@ -167,7 +165,7 @@ export class SpringForce extends PairForce {
     /** @param {BodyPair} bodyPair */
     _calculateForceOn(bodyPair) {
         const left = bodyPair.body1;
-        const right = bodyPair.body2
+        const right = bodyPair.body2;
         const direction = left.positionVectorTo(right);
 
         // Hooke's law

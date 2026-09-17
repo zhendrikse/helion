@@ -1,5 +1,5 @@
-import {MathPhysicsModelBehavior} from "../../core/helion.js";
-import {Complex, Vec3} from "../math/math.js";
+import {MathPhysicsModelBehavior} from '../../core/helion.js';
+import {Complex, Vec3} from '../math/math.js';
 
 export class OneDimensionalPlaneWave extends MathPhysicsModelBehavior {
     static c = 3e8;

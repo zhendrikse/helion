@@ -1,19 +1,17 @@
-import { Hud } from "./hud.js";
-import { ThreeJsRenderer} from "../view/3d/renderer.js";
-import { Object3D } from "three";
-import { Axes } from "../view/3d/composite/backgrounds.js";
-import { generateUUID, Vec3 } from "../model/math/math.js";
-import { UPlotGraph } from "./uplot.js";
-import { AxesUI, Button, HtmlControl } from "./controls.js";
-import { renderMath } from "../view/mathrenderer.js";
-import { Viewport } from "./viewport.js";
-import { ThreeJsScene } from "../view/3d/scene.js";
-import { Renderable } from "../view/renderer.js";
+import { Hud } from './hud.js';
+import { ThreeJsRenderer} from '../view/3d/renderer.js';
+import { Axes } from '../view/3d/composite/backgrounds.js';
+import { generateUUID, Vec3 } from '../model/math/math.js';
+import { UPlotGraph } from './uplot.js';
+import { AxesUI, Button } from './controls.js';
+import { renderMath } from '../view/mathrenderer.js';
+import { Viewport } from './viewport.js';
+import { ThreeJsScene } from '../view/3d/scene.js';
 
 export class Registry {
     constructor({
                     id = generateUUID(),
-                    label = "registryLabel",
+                    label = 'registryLabel',
                     entries = {}
                 }) {
         this._entries = entries;
@@ -40,8 +38,8 @@ export class Registry {
 }
 
 export class Transformation {
-    /** @param {any} body */
-    applyTo(body) {}
+    /** @param {any} _body */
+    applyTo(_body) {}
 }
 
 export class MathPhysicsModelBehavior {
@@ -78,8 +76,8 @@ export class MathPhysicsModelBehavior {
  */
 export class Binding {
     static Mode = Object.freeze({
-        ALWAYS: "always",
-        ONCE: "once"
+        ALWAYS: 'always',
+        ONCE: 'once'
     });
 
     /**
@@ -106,7 +104,7 @@ export class Binding {
 
     initialize() {
         if (!this.view.canBindTo(this.model))
-            throw new Error("Helion cannot bind this view to this model");
+            throw new Error('Helion cannot bind this view to this model');
 
         this.view.initialize(this.model);
         this.view.synchronizeWith(this.model); // The first (and for sync-once-objects last) sync happens here!
@@ -159,22 +157,22 @@ class SimulationClock {
 
 export class Simulation {
     static Status = Object.freeze({
-        RUNNING: "Running",
-        PAUSED: "Paused",
-        STOPPED: "Stopped",
-    })
+        RUNNING: 'Running',
+        PAUSED: 'Paused',
+        STOPPED: 'Stopped',
+    });
 
     static viewportFromHtmlDiv = (htmlDivId, parameterMenuCollapsed, aspectRatio) => {
         let canvasWrapper = document.getElementById(htmlDivId);
         if (!canvasWrapper) {
-            console.warn(`No HTML div with ID = \"${htmlDivId}\" found: creating Helion div automatically!`);
-            canvasWrapper = document.createElement("div");
+            console.warn(`No HTML div with ID = \'${htmlDivId}\' found: creating Helion div automatically!`);
+            canvasWrapper = document.createElement('div');
             canvasWrapper.id = generateUUID();
             document.body.appendChild(canvasWrapper);
         }
 
         return new Viewport(canvasWrapper, parameterMenuCollapsed, aspectRatio);
-    }
+    };
 
     static with(
         /**
@@ -207,7 +205,7 @@ export class Simulation {
             // @ts-ignore htmlDivId is part of the documented options object.
             htmlDivId,
             viewport = {
-                aspectRatio: "1 / 1"
+                aspectRatio: '1 / 1'
             },
             camera = {
                 position: new Vec3(3, 3, 3),
@@ -230,7 +228,7 @@ export class Simulation {
                 enabled: true
             },
             infoPanel = {
-                text: ""
+                text: ''
             },
             parameterMenuCollapsed = true
         } = {}) {
@@ -251,7 +249,7 @@ export class Simulation {
         /** @type {string} */
         this._status = Simulation.Status.STOPPED;
         this._axesUI = null;
-        this._runButton = new Button().withText("▶︎ Run");
+        this._runButton = new Button().withText('▶︎ Run');
         this._timeScale = 1;
         this._clock = new SimulationClock();
         this._maxPerformanceFunction = null; // Used to maximize CPU utilization
@@ -260,13 +258,13 @@ export class Simulation {
         /** @type (clock: SimulationClock, dt: number) => void */
         this._stepFunction = null;           // Called at fixed dt intervals
         this._stepsPerClockTick = 1;         // At each clock tick, execute this many (sub)steps
-        /** @type (time: number) => void */
-        this._onFrame = (time) => {};        // Called 1x per (requestAnimation)frame => machine dependent!
+        /** @type (_time: number) => void */
+        this._onFrame = (_time) => {};        // Called 1x per (requestAnimation)frame => machine dependent!
         this._lastTime = performance.now();
         this._framesPerSecond = 0;
 
         if (headUpDisplay)
-            this._initHud()
+            this._initHud();
 
         if (infoPanel.text)
             this._viewport.infoPanelText = infoPanel.text;
@@ -368,8 +366,8 @@ export class Simulation {
 
     _initHud() {
         this._hud = new Hud();
-        this._hud.attach(this._viewport)
-        this._hud.show("Click to start the simulation");
+        this._hud.attach(this._viewport);
+        this._hud.show('Click to start the simulation');
     }
 
     /**
@@ -425,7 +423,7 @@ export class Simulation {
         xyPlane = true,
         xzPlane = true,
         yzPlane = true,
-        axisLabels = ["X", "Y", "Z"],
+        axisLabels = ['X', 'Y', 'Z'],
         positiveXZ = false,
         bottomAlign = true
     } = {}) {
@@ -439,7 +437,7 @@ export class Simulation {
             this._axesUI.axes = axes;
         else {
             this._axesUI = new AxesUI(axes);
-            this.append(this._axesUI.ui())
+            this.append(this._axesUI.ui());
         }
 
         return this;
@@ -527,9 +525,9 @@ export class Simulation {
      * @param {(clock: SimulationClock, dt: number) => void} stepFunction this function is called with the frequency that is required to make
      * the simulate time run synchronously with the real clock time.
      */
-    onStep(stepFunction = (clock, dt) => {}) {
+    onStep(stepFunction = (_clock, _dt) => {}) {
         if (this._maxPerformanceFunction)
-            throw new Error("Cannot mix iteration mode and step mode");
+            throw new Error('Cannot mix iteration mode and step mode');
 
         this._stepFunction = stepFunction;
         return this;
@@ -546,7 +544,7 @@ export class Simulation {
      */
     maxOutCpu(maxPerformanceFunction, minimumFrameRate = 30, iterationsPerFrame = 10) {
         if (this._stepFunction)
-            throw new Error("Cannot mix iteration mode and step mode");
+            throw new Error('Cannot mix iteration mode and step mode');
 
         this._maxPerformanceFunction = maxPerformanceFunction;
         this._iterationsPerFrame = iterationsPerFrame;
@@ -559,7 +557,7 @@ export class Simulation {
      *
      * @param {(timeStamp: number) => void} callback the function that is called each (requestAnimation)frame.
      */
-    onFrame(callback = (timeStamp) => {}) {
+    onFrame(callback = (_timeStamp) => {}) {
         this._onFrame = callback;
         return this;
     }
@@ -577,18 +575,18 @@ export class Simulation {
      * Add a mouse-click event listener to a simulation canvas. It defaults to start/stop.
      * When calling this function with a custom callback, the default start/stop functionality is
      * lost and needs to be re-added if needed!!
-     * @param {Event} event
+     * @param {Event} _event
      */
-    defaultMouseClickCallback (event) {
+    defaultMouseClickCallback (_event) {
         if (this._status === Simulation.Status.STOPPED) {
-            this._hud?.show("Running", 1000);
+            this._hud?.show('Running', 1000);
             this._status = Simulation.Status.RUNNING;
         } else if (this._status === Simulation.Status.RUNNING) {
-            this._hud?.show("Click to reset the simulation");
+            this._hud?.show('Click to reset the simulation');
             this._status = Simulation.Status.PAUSED;
         } else if (this._status === Simulation.Status.PAUSED) {
             this.reset();
-            this._hud?.show("Click to restart the simulation");
+            this._hud?.show('Click to restart the simulation');
             this._status = Simulation.Status.STOPPED;
         }
     }
@@ -599,21 +597,21 @@ export class Simulation {
      * @returns {Simulation}
      */
     withMouseClickEventListener(callback = event => this.defaultMouseClickCallback(event)) {
-        this._viewport.canvasWrapper.addEventListener("click", event => callback(event) );
+        this._viewport.canvasWrapper.addEventListener('click', event => callback(event) );
         return this;
     }
 
     start() {
-        this._hud?.show("Running", 1000);
+        this._hud?.show('Running', 1000);
         this._status = Simulation.Status.RUNNING;
-        this._runButton.withText("❚❚ Pause")
+        this._runButton.withText('❚❚ Pause');
         return this;
     }
 
     stop() {
-        this._hud?.show("Simulation stopped");
+        this._hud?.show('Simulation stopped');
         this._status = Simulation.Status.STOPPED;
-        this._runButton.withText("▶︎ Run")
+        this._runButton.withText('▶︎ Run');
         return this;
     }
 
@@ -621,7 +619,7 @@ export class Simulation {
 
     onReset(resetFunction = () => {}) {
         this._onReset = resetFunction;
-        return this
+        return this;
     }
 
     /**
@@ -636,29 +634,29 @@ export class Simulation {
 
     appendStartStopResetUI() {
         this._runButton
-            .addEventListener("click", () => {
+            .addEventListener('click', () => {
                 if (this._status === Simulation.Status.RUNNING) {
-                    this._hud?.show("Paused");
-                    this._runButton.withText("▶︎ Run")
+                    this._hud?.show('Paused');
+                    this._runButton.withText('▶︎ Run');
                     this.stop();
                 } else {
-                    this._hud?.show("Running", 1000);
-                    this._runButton.withText("❚❚ Pause")
+                    this._hud?.show('Running', 1000);
+                    this._runButton.withText('❚❚ Pause');
                     this.start();
                 }
             })
             .togetherWith(new Button()
-                .withText("⟳ Reset")
-                .addEventListener("click", () => {
-                    this._hud?.show("Reset", 1000);
+                .withText('⟳ Reset')
+                .addEventListener('click', () => {
+                    this._hud?.show('Reset', 1000);
                     this.reset();
                 }));
         this._runButton.append(this._viewport.simulationButtonsDiv).to(this);
         return this;
     }
 
-    /** @param {Event} event */
-    onUserInteraction(event) {
+    /** @param {Event} _event */
+    onUserInteraction(_event) {
         for (const binding of this._bindings)
             binding.forceSynchronize(this._clock.clockTime);
     }
@@ -667,11 +665,11 @@ export class Simulation {
                        dataDefinition,
                        width = this._viewport.width,
                        height = this._viewport.height,
-                       title="",
-                       xLabel="",
-                       yLabel="",
+                       title='',
+                       xLabel='',
+                       yLabel='',
                        maxPoints = 500,
-                       labelColor = "green",
+                       labelColor = 'green',
                    } = {}) {
         const plotParentDiv = this._viewport.addOnsDiv;
         this._plot = new UPlotGraph({

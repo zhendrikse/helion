@@ -1,6 +1,6 @@
-import {LaplaceOperator} from "../transformations/operators.js";
-import {Slider} from "../../core/controls.js";
-import {Range} from "./math.js";
+import {LaplaceOperator} from '../transformations/operators.js';
+import {Slider} from '../../core/controls.js';
+import {Range} from './math.js';
 
 export class BarrierWaveEquation {
     constructor({
@@ -22,9 +22,9 @@ export class BarrierWaveEquation {
     }
 
     ui() {
-        return new Slider("💤 Damping")
+        return new Slider('💤 Damping')
             .withValue(this._damping * 100)
             .withRange(new Range(0, .1, 1e-4))
-            .addEventListener("input", event => this._damping = Number(event.target.value) / 100)
+            .addEventListener('input', event => this._damping = Number(event.target.value) / 100);
     }
 }

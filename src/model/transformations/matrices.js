@@ -1,5 +1,5 @@
-import {Transformation} from "../../core/helion.js";
-import {Vec3} from "../math/math.js";
+import {Transformation} from '../../core/helion.js';
+import {Vec3} from '../math/math.js';
 
 export class Matrix2D extends Transformation {
     static Identity = new Matrix2D(1, 0, 0, 1);

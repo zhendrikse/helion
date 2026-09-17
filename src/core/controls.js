@@ -1,7 +1,5 @@
-import { generateUUID, Range } from "../model/math/math.js";
-import { Registry, Simulation } from "../core/helion.js"
-import { Axes } from "../view/3d/composite/backgrounds.js";
-import "../assets/style.css";
+import { generateUUID } from '../model/math/math.js';
+import '../assets/style.css';
 
 export class HtmlControl {
     /** @param {string} labelText */
@@ -15,13 +13,13 @@ export class HtmlControl {
         this._simulation = null;
 
         //
-        // <label for="anId">labelText</label><input id="anId" ... />
+        // <label for='anId'>labelText</label><input id='anId' ... />
         //
-        this._label = document.createElement("label");
+        this._label = document.createElement('label');
         this._labelId = generateUUID();
         this._label.htmlFor = this._labelId;
-        this._label.style.marginRight = "5px";
-        this._label.textContent = labelText ? labelText : "";
+        this._label.style.marginRight = '5px';
+        this._label.textContent = labelText ? labelText : '';
 
         /** @type {HTMLSpanElement | null} */
         this._span = null;
@@ -39,8 +37,8 @@ export class HtmlControl {
     }
 
     _createButtonRow() {
-        const buttonRow = document.createElement("div");
-        buttonRow.classList.add("helionButtonRow");
+        const buttonRow = document.createElement('div');
+        buttonRow.classList.add('helionButtonRow');
         return buttonRow;
     }
 
@@ -50,9 +48,9 @@ export class HtmlControl {
      * @returns {HtmlControl}
      */
     addEventListener(eventType, callback) {
-        const isString = typeof eventType === "string" || eventType instanceof String;
+        const isString = typeof eventType === 'string' || eventType instanceof String;
         if (!isString)
-            throw new Error("First argument must be an event type string");
+            throw new Error('First argument must be an event type string');
 
         this._inputControl.addEventListener(eventType, (/** @type {Event} */ event) => {
             callback(event);
@@ -63,12 +61,12 @@ export class HtmlControl {
 
     /** @param {(event: Event) => void} callback */
     onChange(callback) {
-        return this.addEventListener("change", callback);
+        return this.addEventListener('change', callback);
     }
 
     /** @param {(event: Event) => void} callback */
     onInput(callback) {
-        return this.addEventListener("input", callback);
+        return this.addEventListener('input', callback);
     }
 
     /**
@@ -128,7 +126,7 @@ export class HtmlControl {
  */
 export class CompoundControl extends HtmlControl {
     constructor() {
-        super("");
+        super('');
         /** @type {HTMLDivElement[]} */
         this._buttonRows = [];
         /** @type {HtmlControl[]} */
@@ -169,19 +167,19 @@ export class CompoundControl extends HtmlControl {
 
 export class DropdownMenu extends HtmlControl {
     constructor() {
-        super("");
+        super('');
     }
 
     /** @param {Registry} registry */
     for(registry) {
         this._label.textContent = registry.label;
 
-        this._inputControl = document.createElement("select");
+        this._inputControl = document.createElement('select');
         this._inputControl.name = registry.id;
         this._inputControl.id = registry.id;
 
         for (const value of Object.values(registry.names)) {
-            const option = document.createElement("option");
+            const option = document.createElement('option');
             option.value = String(value);
             option.textContent = String(value);
             this._inputControl.appendChild(option);
@@ -202,16 +200,16 @@ export class Slider extends HtmlControl {
     constructor(label) {
         super(label);
 
-        this._inputControl = document.createElement("input");
-        this._inputControl.type = "range";
+        this._inputControl = document.createElement('input');
+        this._inputControl.type = 'range';
         this._inputControl.id = this._labelId;
-        this._inputControl.style.marginRight = "10px";
+        this._inputControl.style.marginRight = '10px';
 
-        this._span = document.createElement("span");
-        this._span.style.marginRight = "25px";
-        this._span.style.borderRadius = "8px";
+        this._span = document.createElement('span');
+        this._span.style.marginRight = '25px';
+        this._span.style.borderRadius = '8px';
 
-        this._units = "";
+        this._units = '';
     }
 
     /** @param {string} units */
@@ -239,7 +237,7 @@ export class Slider extends HtmlControl {
 
     /** @param {string} name */
     withProperty(name) {
-        this.addEventListener("input", (event) => {
+        this.addEventListener('input', (event) => {
             // @ts-ignore
             this._targetObject[name] = Number(event.target.value);
             // @ts-ignore
@@ -255,9 +253,9 @@ export class Slider extends HtmlControl {
      * @returns 
      */
     addEventListener(eventType, callback) {
-        const isString = typeof eventType === "string" || eventType instanceof String;
+        const isString = typeof eventType === 'string' || eventType instanceof String;
         if (!isString)
-            throw new Error("First argument must be an event type string");
+            throw new Error('First argument must be an event type string');
 
         this._inputControl.addEventListener(eventType, event => {
             callback(event);
@@ -277,10 +275,10 @@ export class Checkbox extends HtmlControl {
     constructor(label) {
         super(label);
 
-        this._inputControl = document.createElement("input");
-        this._inputControl.type = "checkbox";
+        this._inputControl = document.createElement('input');
+        this._inputControl.type = 'checkbox';
         this._inputControl.id = this._labelId;
-        this._inputControl.style.marginRight = "10px";
+        this._inputControl.style.marginRight = '10px';
     }
 
     /** @param {boolean} value */
@@ -292,22 +290,22 @@ export class Checkbox extends HtmlControl {
     /** @param {string} name */
     withProperty(name) {
         // @ts-ignore
-        this.addEventListener("click", (event) => this._targetObject[name] = event.target.checked);
+        this.addEventListener('click', (event) => this._targetObject[name] = event.target.checked);
         return this;
     }
 }
 
 export class RadioGroup extends HtmlControl {
     constructor() {
-        super("");
+        super('');
 
         /** @type {HTMLInputElement[]} */
         this._buttons = [];
         this._groupName = generateUUID();
 
-        this._inputControl = document.createElement("div");
-        this._inputControl.style.display = "flex";
-        this._inputControl.style.gap = "8px";
+        this._inputControl = document.createElement('div');
+        this._inputControl.style.display = 'flex';
+        this._inputControl.style.gap = '8px';
     }
 
     /** 
@@ -316,14 +314,14 @@ export class RadioGroup extends HtmlControl {
      * @return {RadioGroup}
      */
     add(label, callback) {
-        const radio = document.createElement("input");
-        radio.type = "radio";
+        const radio = document.createElement('input');
+        radio.type = 'radio';
         radio.name = this._groupName;
 
-        const text = document.createElement("label");
+        const text = document.createElement('label');
         text.textContent = label;
 
-        radio.addEventListener("change", event => {
+        radio.addEventListener('change', event => {
             // @ts-ignore
             if (event.target.checked)
                 callback(event);
@@ -348,13 +346,13 @@ export class RadioGroup extends HtmlControl {
 
 export class TextInput extends HtmlControl {
     /** @param {string} label */
-    constructor(label = "") {
+    constructor(label = '') {
         super(label);
-        this._inputControl = document.createElement("input");
-        this._inputControl.type = "text";
+        this._inputControl = document.createElement('input');
+        this._inputControl.type = 'text';
         this._inputControl.id = this._labelId;
-        this._inputControl.classList.add("helionTextInput");
-        this._label.classList.add("helionTextInputLabel");
+        this._inputControl.classList.add('helionTextInput');
+        this._label.classList.add('helionTextInputLabel');
     }
 
     /** 
@@ -380,7 +378,7 @@ export class TextInput extends HtmlControl {
 
     /** @param {boolean} isValid */
     set valid(isValid) {
-        this._inputControl.classList.toggle("helionTextInput--invalid", !isValid);
+        this._inputControl.classList.toggle('helionTextInput--invalid', !isValid);
     }
 
     /** 
@@ -388,7 +386,7 @@ export class TextInput extends HtmlControl {
      * @return {TextInput} 
      */
     withMinWidth(width) {
-        this._inputControl.style.minWidth = typeof width === "number" ? `${width}px` : width;
+        this._inputControl.style.minWidth = typeof width === 'number' ? `${width}px` : width;
         return this;
     }
 
@@ -398,7 +396,7 @@ export class TextInput extends HtmlControl {
      */
     withProperty(name) {
         // @ts-ignore
-        this.addEventListener("change", event => this._targetObject[name] = event.target.value);
+        this.addEventListener('change', event => this._targetObject[name] = event.target.value);
         return this;
     }
 
@@ -407,9 +405,9 @@ export class TextInput extends HtmlControl {
      * @return {TextInput} 
      */
     onEnter(callback) {
-        this.addEventListener("keydown", event => {
+        this.addEventListener('keydown', event => {
             // @ts-ignore
-            if (event.key === "Enter") 
+            if (event.key === 'Enter') 
                 callback(event);
         });
         return this;
@@ -418,11 +416,11 @@ export class TextInput extends HtmlControl {
 
 export class Button extends HtmlControl {
     /** @param {string} label */
-    constructor(label = "") {
+    constructor(label = '') {
         super(label);
-        this._inputControl = document.createElement("button");
+        this._inputControl = document.createElement('button');
         this._inputControl.id = this._labelId;
-        this._inputControl.classList.add("helionButton");
+        this._inputControl.classList.add('helionButton');
     }
 
     /** 
@@ -440,7 +438,7 @@ export class Button extends HtmlControl {
      * @return {Button}
      */
     onClick(callback) {
-        this.addEventListener("click", callback);
+        this.addEventListener('click', callback);
         return this;
     }
 
@@ -450,7 +448,7 @@ export class Button extends HtmlControl {
      */
     withProperty(name) {
         // @ts-ignore
-        this.addEventListener("click", event => this._targetObject[name] = event.target.value);
+        this.addEventListener('click', event => this._targetObject[name] = event.target.value);
         return this;
     }
 }
@@ -466,43 +464,43 @@ export class AxesUI {
 
     ui() {
         return new CompoundControl()
-            .add(new Checkbox("Frame ")
+            .add(new Checkbox('Frame ')
                 .checked(true)
-                .addEventListener("click", event =>
+                .addEventListener('click', event =>
                     // @ts-ignore
                     this._axes.withSettings({ frame: event.target.checked }))
-                .togetherWith(new Checkbox("Annotations ")
+                .togetherWith(new Checkbox('Annotations ')
                     .checked(true)
-                    .addEventListener("click", event =>
+                    .addEventListener('click', event =>
                         // @ts-ignore
                         this._axes.withSettings({ annotations: event.target.checked }))
-                    .togetherWith(new Checkbox("Tick labels ")
+                    .togetherWith(new Checkbox('Tick labels ')
                         .checked(true)
-                        .addEventListener("click", event =>
+                        .addEventListener('click', event =>
                             // @ts-ignore
                             this._axes.withSettings({ tickLabels: event.target.checked }))
                     )
                 )
             )
-            .add(new Checkbox("XY-plane")
+            .add(new Checkbox('XY-plane')
                 .checked(true)
-                .addEventListener("click", event =>
+                .addEventListener('click', event =>
                     // @ts-ignore
                     this._axes.withSettings({ xyPlane: event.target.checked }))
                 .togetherWith(
-                    new Checkbox("XZ-plane")
+                    new Checkbox('XZ-plane')
                         .checked(true)
-                        .addEventListener("click", event =>
+                        .addEventListener('click', event =>
                             // @ts-ignore
                             this._axes.withSettings({ xzPlane: event.target.checked }))
                         .togetherWith(
-                            new Checkbox("YZ-plane")
+                            new Checkbox('YZ-plane')
                                 .checked(true)
-                                .addEventListener("click", event =>
+                                .addEventListener('click', event =>
                                     // @ts-ignore
                                     this._axes.withSettings({ yzPlane: event.target.checked }))
                         )
                 )
-            )
+            );
     }
 }

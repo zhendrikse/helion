@@ -1,5 +1,5 @@
-import { Color, DataTexture, RGBFormat, LinearFilter } from "three";
-import { Registry } from "../core/helion.js";
+import { Color, DataTexture, RGBFormat, LinearFilter } from 'three';
+import { Registry } from '../core/helion.js';
 
 export class Colour {
     static Red = new Colour(1, 0, 0);
@@ -14,10 +14,10 @@ export class Colour {
         const g = ((hexValue >> 8)  & 0xff) / 255;
         const b = (hexValue & 0xff) / 255;
         return new Colour(r, g, b);
-    }
+    };
 
     static toHex = (/** @type {number} */ value) => 
-        Math.round(value * 255).toString(16).padStart(2, "0");
+        Math.round(value * 255).toString(16).padStart(2, '0');
 
     /**
      * @param {number} r 0 <= red <= 1
@@ -39,6 +39,7 @@ export class Colour {
         this.r = r;
         this.g = g;
         this.b = b;
+        return this;
     }
 
     /** @param {Colour} otherColour */
@@ -46,6 +47,7 @@ export class Colour {
         this.r = otherColour.r;
         this.g = otherColour.g;
         this.b = otherColour.b;
+        return this;
     }
 
     /** @param {number} hexValue */
@@ -53,6 +55,7 @@ export class Colour {
         this.r = ((hexValue >> 16) & 0xff) / 255;
         this.g = ((hexValue >> 8)  & 0xff) / 255;
         this.b = (hexValue & 0xff) / 255;
+        return this;
     }
 
     /**
@@ -62,11 +65,13 @@ export class Colour {
      */
     setHSL(h, s, v) {
         hsvToRgb(h, s, v, this);
+        return this;
     }
 
     /** @param {Color} targetColor */
     asThreeJsColor(targetColor) {
         targetColor.setRGB(this.r, this.g, this.b);
+        return targetColor;
     }
 
     asHexString() {
@@ -167,10 +172,10 @@ function wavelengthToRGBNormalized(wavelength, targetColor) {
  */
 export class ColorMapper {
     /**
-     * @param {number} value 
-     * @param {Colour} targetColor
+     * @param {number} _value
+     * @param {Colour} _targetColor
      */
-    map(value, targetColor) {}
+    map(_value, _targetColor) {}
 }
 
 export class WavelengthColorMapper extends ColorMapper {
@@ -429,23 +434,23 @@ export class ComplexColorMappers extends Registry {
         return new ComplexColorMappers().get(type)(options);
     }
 
-    static PhaseBands = "PhaseBands";
-    static Saturation = "Saturation";
-    static BlackZero = "BlackZero";
-    static Hsv = "Hsv";
-    static Hsl = "Hsl";
-    static Domain = "Domain";
+    static PhaseBands = 'PhaseBands';
+    static Saturation = 'Saturation';
+    static BlackZero = 'BlackZero';
+    static Hsv = 'Hsv';
+    static Hsl = 'Hsl';
+    static Domain = 'Domain';
 
-    constructor(label = "🎨 Color map") {
+    constructor(label = '🎨 Color map') {
         super({
             label: label,
             entries: {
-                Hsv: options => new ComplexHsvColorMapper(),
-                Hsl: options => new ComplexHslColorMapper(),
-                PhaseBands: options => new ComplexPhaseBandsColorMapper(),
-                Saturation: options => new ComplexSaturationColorMapper(),
-                BlackZero: options => new ComplexBlackZeroColorMapper(),
-                Domain: options => new ComplexDomainColorMapper()
+                Hsv: _options => new ComplexHsvColorMapper(),
+                Hsl: _options => new ComplexHslColorMapper(),
+                PhaseBands: _options => new ComplexPhaseBandsColorMapper(),
+                Saturation: _options => new ComplexSaturationColorMapper(),
+                BlackZero: _options => new ComplexBlackZeroColorMapper(),
+                Domain: _options => new ComplexDomainColorMapper()
             }
         });
     }
@@ -456,33 +461,33 @@ export class ColorMappers extends Registry {
         return new ColorMappers().get(type)(options);
     }
 
-    static Gradient = "Gradient";
-    static Hue = "Hue";
-    static HexValueColorMapper = "HexValueColorMapper";
-    static Inferno = "Inferno";
-    static RdYlBu = "RdYlBu";
-    static Seismic = "Seismic";
-    static Scientific = "Scientific";
-    static Terrain = "Terrain";
-    static Uniform = "Uniform";
-    static Viridis = "Viridis";
-    static Water = "Water";
-    static WaterAlternative = "WaterAlternative";
+    static Gradient = 'Gradient';
+    static Hue = 'Hue';
+    static HexValueColorMapper = 'HexValueColorMapper';
+    static Inferno = 'Inferno';
+    static RdYlBu = 'RdYlBu';
+    static Seismic = 'Seismic';
+    static Scientific = 'Scientific';
+    static Terrain = 'Terrain';
+    static Uniform = 'Uniform';
+    static Viridis = 'Viridis';
+    static Water = 'Water';
+    static WaterAlternative = 'WaterAlternative';
 
-    constructor(label = "🎨 Color map") {
+    constructor(label = '🎨 Color map') {
         super({
             label: label,
             entries: {
-                Gradient: options => new GradientColorMapper(),
-                Inferno: options => new InfernoColorMapper(),
-                RdYlBu: options => new RdYlBuColorMapper(),
-                Seismic: options => new SeismicColorMapper(),
-                Scientific: options => new ScientificColorMapper(),
-                Terrain: options => new TerrainColorMapper(),
-                Uniform: options => new UniformColorMapper(options),
-                Viridis: options => new ViridisColorMapper(),
-                Water: options => new WaterColorMapper(),
-                WaterAlternative: options => new WaterAlternativeColorMapper()
+                Gradient: _options => new GradientColorMapper(),
+                Inferno: _options => new InfernoColorMapper(),
+                RdYlBu: _options => new RdYlBuColorMapper(),
+                Seismic: _options => new SeismicColorMapper(),
+                Scientific: _options => new ScientificColorMapper(),
+                Terrain: _options => new TerrainColorMapper(),
+                Uniform: _options => new UniformColorMapper(options),
+                Viridis: _options => new ViridisColorMapper(),
+                Water: _options => new WaterColorMapper(),
+                WaterAlternative: _options => new WaterAlternativeColorMapper()
             }
         });
     }

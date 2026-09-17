@@ -1,6 +1,6 @@
-import { VectorField, DiscreteScalarField } from "../math/fields.js";
-import { Vec2 } from "../math/math.js";
-import { ScalarFieldCalculus } from "../math/numerics/discretecalc.js"
+import { VectorField } from '../math/fields.js';
+import { Vec2 } from '../math/math.js';
+import { ScalarFieldCalculus } from '../math/numerics/discretecalc.js';
 
 /**
  * Electric field derived from a scalar potential field.
@@ -29,13 +29,13 @@ export class ElectricField extends VectorField {
         super();
 
         if (potential == null)
-            throw new Error("Cannot calculate electric field without potential.");
+            throw new Error('Cannot calculate electric field without potential.');
 
         if (gridSpacing <= 0)
-            throw new Error("gridSpacing must be > 0.");
+            throw new Error('gridSpacing must be > 0.');
 
         if (derivativeSpacing <= 0)
-            throw new Error("derivativeSpacing must be > 0.");
+            throw new Error('derivativeSpacing must be > 0.');
         this._potentialField = potential;
         this._target = new Vec2();
         this._gridSpacing = gridSpacing;

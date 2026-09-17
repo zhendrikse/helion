@@ -1,6 +1,4 @@
-import { Object3D, Box3 } from "three";
-import { MathPhysicsModelBehavior } from "../core/helion";
-import { Viewport } from "../core/viewport";
+import { Object3D, Box3 } from 'three';
 
 /**
  * Base class for all view objects that are to be coupled with a model and rendered in the scene. 
@@ -16,12 +14,12 @@ import { Viewport } from "../core/viewport";
  * @method dispose() - Disposes of the object and releases any resources it holds.  
  */
 export class Renderable extends Object3D {
-    /** @param {MathPhysicsModelBehavior} model */
-    canBindTo(model) { return false; }
-    /** @param {MathPhysicsModelBehavior} model */
-    initialize(model) {}
-    /** @param {MathPhysicsModelBehavior} model */
-    synchronizeWith(model) {}
+    /** @param {MathPhysicsModelBehavior} _model */
+    canBindTo(_model) { return false; }
+    /** @param {MathPhysicsModelBehavior} _model */
+    initialize(_model) {}
+    /** @param {MathPhysicsModelBehavior} _model */
+    synchronizeWith(_model) {}
     reset() {}
     dispose() {}
 
@@ -36,17 +34,17 @@ export class Renderable3D extends Renderable {}
 export class Renderable2D extends Renderable {}
 
 export class Renderer {
-    /** @param {Object3D} viewObject */
-    add(viewObject) {}
+    /** @param {Object3D} _viewObject */
+    add(_viewObject) {}
 
     /**
-     * @param {Renderable} view 
-     * @param {number} time 
+     * @param {Renderable} _view
+     * @param {number} _time
      */
-    render(view, time) {}
+    render(_view, _time) {}
 
     resize() {}
 
-    /** @param {Viewport} viewport */
-    attach(viewport) {}
+    /** @param {Viewport} _viewport */
+    attach(_viewport) {}
 }

@@ -6,19 +6,25 @@ export class DirichletBoundaryCondition {
      * }} options
      */
     constructor({
-        isFixed = (x, y) => false,
-        valueAt = (x, y) => 0
+        isFixed = (_x, _y) => false,
+        valueAt = (_x, _y) => 0
     }) {
         this._isFixed = isFixed;
         this._valueAt = valueAt;
     }
 
-    /** @param {number} x  @param {number} y */
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
     isFixed(x, y) {
         return this._isFixed(x, y);
     }
 
-    /** @param {number} x  @param {number} y */
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
     valueAt(x, y) {
         return this._valueAt(x, y);
     }

@@ -1,13 +1,13 @@
-import { Registry } from "../../core/helion.js";
-import { CompoundControl, DropdownMenu, Slider } from "../../core/controls.js";
-import { Range } from "./math.js";
+import { Registry } from '../../core/helion.js';
+import { CompoundControl, DropdownMenu, Slider } from '../../core/controls.js';
+import { Range } from './math.js';
 
 class ShapeLike {
     constructor(size) {
         this._size = size;
     }
 
-    sample(x, y) {}
+    sample(_x, _y) {}
 }
 
 class SingleSlit extends ShapeLike {
@@ -79,13 +79,13 @@ class Step extends ShapeLike {
 }
 
 export const Shapes = Object.freeze({
-    SingleSlit: "SingleSlit",
-    DoubleSlit: "DoubleSlit",
-    Grating: "Grating",
-    Circle: "Circle",
-    Step: "Step",
-    Line: "Line",
-    Square: "Square"
+    SingleSlit: 'SingleSlit',
+    DoubleSlit: 'DoubleSlit',
+    Grating: 'Grating',
+    Circle: 'Circle',
+    Step: 'Step',
+    Line: 'Line',
+    Square: 'Square'
 });
 
 export class ShapesFactory extends Registry {
@@ -107,8 +107,8 @@ export class ShapesFactory extends Registry {
     }
 
     constructor() {
-        const id = "shapeTypeSelect",
-            label = "🟦 Shape  ",
+        const id = 'shapeTypeSelect',
+            label = '🟦 Shape  ',
             entries = ShapesFactory.Shapes;
         super({ id, label, entries });
     }
@@ -136,18 +136,18 @@ export class ShapeConfiguration {
             .add(new DropdownMenu()
                 .for(new ShapesFactory())
                 .withValue(this._shape)
-                .addEventListener("change", event => {
+                .addEventListener('change', event => {
                     this._shape = event.target.value;
                     this._onChangeEventListener(event);
                 })
             )
-            .add(new Slider("📐 Size")
+            .add(new Slider('📐 Size')
                 .withRange(new Range(5, 50, 1))
                 .withValue(this._size)
-                .addEventListener("input", event => {
+                .addEventListener('input', event => {
                     this._size = Number(event.target.value);
                     this._onChangeEventListener(event);
                 })
-            )
+            );
     }
 }

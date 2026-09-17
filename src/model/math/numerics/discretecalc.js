@@ -1,6 +1,3 @@
-import { DiscreteScalarField } from "../../math/fields.js";
-import { Vec2 } from "../../math/math.js";
-
 export class ScalarFieldCalculus {
     /** @param {DiscreteScalarField } field */
     constructor(field) {

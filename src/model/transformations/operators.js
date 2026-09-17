@@ -1,9 +1,8 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import { Range, Vec3} from "../math/math.js";
-import {CompoundControl, Slider} from "../../core/controls.js";
-import {ShapeConfiguration, Shapes, ShapesFactory} from "../math/shapes.js";
-import {Transformation} from "../../core/helion.js";
-import { DiscreteComplexField, DiscreteScalarField } from '../math/fields.js';
+import { Range, Vec3} from '../math/math.js';
+import {CompoundControl, Slider} from '../../core/controls.js';
+import { Shapes, ShapesFactory} from '../math/shapes.js';
+import {Transformation} from '../../core/helion.js';
 
 export class DiamondSquareOperator extends Transformation {
     constructor({
@@ -15,7 +14,12 @@ export class DiamondSquareOperator extends Transformation {
         this._amplitude = amplitude;
     }
 
-    /** @param {DiscreteScalarField} field  @param {number} step  @param {number} scale  @param {number} size*/
+    /**
+     * @param {DiscreteScalarField} field
+     * @param {number} step
+     * @param {number} scale
+     * @param {number} size
+     */
     #diamondStep(field, step, size, scale) {
         const half = step >> 1;
         for (let x = half; x < size; x += step)
@@ -31,7 +35,12 @@ export class DiamondSquareOperator extends Transformation {
             }
     }
 
-    /** @param {DiscreteScalarField} field  @param {number} step  @param {number} scale  @param {number} size*/
+    /**
+     * @param {DiscreteScalarField} field
+     * @param {number} step
+     * @param {number} scale
+     * @param {number} size
+     */
     #squareStep(field, step, size, scale) {
         const half = step >> 1;
         for (let x = 0; x <= size; x += half)
@@ -341,24 +350,24 @@ export class SineImpulseOperator {
          periodRange = new Range(0, 2, .01),
      } = {}) {
         return new CompoundControl()
-            .add(new Slider("〰️ Wavelength")
+            .add(new Slider('〰️ Wavelength')
                 .withRange(wavelengthInPixelsRange)
                 .withValue(this._waveLength)
                 // @ts-ignore
                 .onInput(event => this._waveLength = Number(event.target.value))
             )
-            .add(new Slider("〽️ Amplitude")
+            .add(new Slider('〽️ Amplitude')
                 .withRange(amplitudeRange)
                 .withValue(this._amplitude)
                 // @ts-ignore
                 .onInput(event => this._amplitude = Number(event.target.value))
             )
-            .add(new Slider("🕓 Period")
+            .add(new Slider('🕓 Period')
                 .withRange(periodRange)
                 .withValue(this._periods)
                 // @ts-ignore
                 .onInput(event => this._periods = Number(event.target.value))
-            )
+            );
     }
 }
 
@@ -370,7 +379,7 @@ class FFT {
     /** @param {number} size */
     constructor(size) {
         this._size = size | 0;
-        if (this._size <= 1) throw new Error("Size must be > 1");
+        if (this._size <= 1) throw new Error('Size must be > 1');
 
         this._twiddles = new Array(this._size);
         for (let i = 0; i < this._size; i++) {

@@ -1,5 +1,5 @@
-import katex from "katex";
-import "katex/dist/katex.min.css";
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 
 export function renderMath(element, latex, {
     displayMode = true,
@@ -20,7 +20,7 @@ export function renderMath(element, latex, {
     katex.render(latex, element, {
         displayMode,
         throwOnError,
-        output: "html"
+        output: 'html'
     });
 }
 
@@ -38,7 +38,7 @@ export function renderMathInHtml(element, html, {
 
     for (const textNode of textNodes) {
         const text = textNode.nodeValue;
-        if (!text.includes("$"))
+        if (!text.includes('$'))
             continue;
 
         const fragment = document.createDocumentFragment();
@@ -54,8 +54,8 @@ export function renderMathInHtml(element, html, {
 
             const latex = match[1] ?? match[2];
             const isDisplay = match[1] !== undefined;
-            const mathSpan = document.createElement(isDisplay ? "div" : "span");
-            katex.render(latex, mathSpan, {displayMode: isDisplay, throwOnError, output: "html"});
+            const mathSpan = document.createElement(isDisplay ? 'div' : 'span');
+            katex.render(latex, mathSpan, {displayMode: isDisplay, throwOnError, output: 'html'});
             fragment.appendChild(mathSpan);
             position = matchStart + match[0].length;
         }
