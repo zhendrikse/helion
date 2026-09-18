@@ -6,7 +6,7 @@ import {
 } from 'three';
 import { Renderable3D } from '../../renderer.js';
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-import { Vec3 } from '../../../model/math/math.js';
+import { Vec2, Vec3 } from '../../../model/math/math.js';
 import { Body } from '../../../model/phys/bodies.js';
 import {Colour} from '../../colormappers.js';
 
@@ -14,6 +14,12 @@ import {Colour} from '../../colormappers.js';
 // T R A I L
 //
 class TrailLine {
+    /**
+     * @param param0
+     * @param {number} param0.maxPoints
+     * @param {Colour} param0.color
+     * @param {number} param0.linewidth
+     */
     constructor({
         maxPoints = 200,
         color = Colour.Yellow,
@@ -22,12 +28,11 @@ class TrailLine {
         this._maxPoints = maxPoints;
         this._positions = [];
         this._geometry = new BufferGeometry();
-        const _col = new Color();
-        color.asThreeJsColor(_col);
-        this._material = new LineBasicMaterial({ color: _col, linewidth });
+        this._material = new LineBasicMaterial({ color: color.asThreeJsColor(new Color()), linewidth });
         this._line = new Line(this._geometry, this._material);
     }
 
+    /** @param {Vec2 | Vec3} position */
     addPoint(position) {
         this._positions.push(position.clone());
 
@@ -52,6 +57,13 @@ class TrailLine {
 }
 
 export class Trail extends Renderable3D {
+    /**
+     * @param param0
+     * @param {number} param0.maxPoints
+     * @param {Colour} param0.color
+     * @param {number} param0.lineWidth
+     * @param {number} trailStep
+     */
     constructor({
         maxPoints = 200,
         trailStep = 1,
@@ -84,6 +96,7 @@ export class Trail extends Renderable3D {
         this._renew();
     }
 
+    /** @param {Vec2 | Vec3} position */
     startAt(position) {
         this._trailAccumulator = 0;
         this._previousPosition.copy(position);
@@ -113,12 +126,12 @@ export class Trail extends Renderable3D {
         this.add(this._trail._line);
     }
 
+    /** @param {Colour} value */
     set color(value) {
         this._color = value;
 
-        if (this._trail?._line?.material) {
+        if (this._trail?._line?.material)
             value.asThreeJsColor(this._trail._line.material.color);
-        }
     }
 
     dispose() {
