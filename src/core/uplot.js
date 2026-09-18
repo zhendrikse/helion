@@ -1,10 +1,10 @@
 import uPlot from 'uplot';
+import { Interval } from '../model/math/math';
 
 export class UPlotGraph {
     /**
      * @param {Object} options
-     * @param {HTMLDivElement} options.plotParentDiv,
-     * @param {string[]} options.dataDefinition,
+     * @param {any} options.dataDefinition,
      * @param {number} options.width = 600,
      * @param {number} options.height = 300,
      * @param {string} options.title = '',
@@ -12,9 +12,9 @@ export class UPlotGraph {
      * @param {string} options.yLabel = '',
      * @param {number} options.maxPoints = 500,
      * @param {string} options.labelColor = 'green',
+     * @param {Interval | null} options.yRange = null no range means auto range
      */
     constructor({
-        plotParentDiv,
         dataDefinition,
         width = 600,
         height = 300,
@@ -26,6 +26,7 @@ export class UPlotGraph {
         yRange = null,
     } = /** @type {any} */ ({})) {
         this._maxPoints = maxPoints;
+        /** @type {number[][]} */
         this._graphData = [];
         dataDefinition.forEach(() => this._graphData.push([]));
 
@@ -38,10 +39,24 @@ export class UPlotGraph {
             });
         });
 
-        const uPlotOptions = this._uplotOptions(title, width, height, labelColor, xLabel, yLabel, series, yRange);
+        this._uPlotOptionsArgs = [title, width, height, labelColor, xLabel, yLabel, series, yRange ? [yRange.from, yRange.to] : null];
+        this._uplotChart = null;
+        this._plotDiv = null;
+    }
+
+    /**
+     * Attach graph to a parent div (fluent API: graph lives elsewhere, Simulation only appends it).
+     * @param {HTMLDivElement} parentDiv
+     * @returns {UPlotGraph}
+     */
+    attach(parentDiv) {
+        if (this._uplotChart) return this;
+        const uPlotOptions = this._uplotOptions(...this._uPlotOptionsArgs);
         const plotDiv = document.createElement('div');
-        plotParentDiv.appendChild(plotDiv);
+        parentDiv.appendChild(plotDiv);
+        this._plotDiv = plotDiv;
         this._uplotChart = new uPlot(uPlotOptions, this._graphData, plotDiv);
+        return this;
     }
 
     /**
@@ -81,6 +96,25 @@ export class UPlotGraph {
     update() {
         if (this._graphData[0].length > this._maxPoints)
             this._graphData.forEach(arr => arr.shift());
-        this._uplotChart.setData(this._graphData);
+        this._uplotChart?.setData(this._graphData);
+    }
+
+    /**
+     * Push one row of variables (t, series...) and update chart.
+     * Preferred over Simulation.plot() in new code.
+     * @param {number[]} variables
+     * @returns {UPlotGraph}
+     */
+    push(variables) {
+        for (let i = 0; i < variables.length; ++i)
+            this._graphData[i].push(variables[i]);
+        this.update();
+        return this;
+    }
+
+    reset() {
+        this._graphData.forEach(arr => arr.length = 0);
+        this.update();
+        return this;
     }
 }

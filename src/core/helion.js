@@ -689,6 +689,18 @@ export class Simulation {
     }
 
     /**
+     * Append a pre-built graph (new pattern, like controls).
+     * Graph lives in its own file/class; Simulation only attaches it.
+     * @param {UPlotGraph} graph
+     * @returns {Simulation}
+     */
+    addGraph(graph) {
+        graph.attach(this._viewport.addOnsDiv);
+        this._plot = graph;
+        return this;
+    }
+
+    /**
     * @param {Object} [options={}] 
     * @param {Object} [options.dataDefinition]
     * @param {number} [options.width]
@@ -711,16 +723,14 @@ export class Simulation {
         labelColor = 'green',
         yRange = null,
     } = {}) {
-        const plotParentDiv = this._viewport.addOnsDiv;
-        this._plot = new UPlotGraph({
-            plotParentDiv, dataDefinition, width, height, title, xLabel, yLabel, maxPoints, labelColor, yRange
-        });
-        return this;
+        // Facade for backward compat — delegates to addGraph
+        return this.addGraph(new UPlotGraph({
+            dataDefinition, width, height, title, xLabel, yLabel, maxPoints, labelColor, yRange
+        }));
     }
 
     plot(variables) {
-        for (let i = 0; i < variables.length; ++i)
-            this._plot.graphData[i].push(variables[i]);
-        this._plot.update();
+        this._plot?.push(variables);
+        return this;
     }
 }

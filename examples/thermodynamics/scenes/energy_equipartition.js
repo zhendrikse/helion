@@ -1,6 +1,7 @@
 import {
-    RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule, Body,
-    BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, SpringForce
+    RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule,
+    BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, SpringForce, UPlotGraph,
+    Interval
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 
@@ -213,6 +214,24 @@ let totalRotational = 0;
 for (let i = 0; i < 150; i++)
     gas.evolve(dt);
 
+const graph = new UPlotGraph({
+    dataDefinition: [
+        { label: 't' },
+        { label: 'Translational KE', color: 'green' },
+        { label: 'Vibrational KE', color: 'cyan' },
+        { label: 'Vibrational PE', color: 'red' },
+        { label: 'Rotational KE', color: 'yellow' }
+    ],
+    width: 800,
+    height: 400,
+    title: 'Energies vs Time',
+    xLabel: 'Time [ps]',
+    yLabel: 'Energy [J]',
+    maxPoints: 1000,
+    labelColor: 'black',
+    yRange: new Interval(0, 1.1e-14)
+});
+
 const simulation = Simulation
     .with({
         htmlDivId: 'energyEquipartitionContainer',
@@ -224,19 +243,7 @@ const simulation = Simulation
         }
     })
     .withMouseClickEventListener()
-    .setupGraphWith({
-            dataDefinition: [
-                { label: 't' },
-                { label: 'Translational KE', color: 'green' },
-                { label: 'Vibrational KE', color: 'cyan' },
-                { label: 'Vibrational PE', color: 'red' },
-                { label: 'Rotational KE', color: 'yellow' }
-            ],
-            title: 'Energies vs Time',
-            xLabel: 'Time [ps]',
-            yLabel: 'Energy [J]',
-        }
-    )
+    .addGraph(graph)
     .runsEvery(0.003)
     .substeps(3)
     .onStep((clock, _dt) => {
@@ -253,7 +260,7 @@ const simulation = Simulation
         steps++;
 
         if (steps % 150 === 0) {
-            simulation.plot([
+            graph.push([
                 t * 1e12,
                 totalTranslational / steps,
                 totalVibrationalKE / steps,
@@ -266,7 +273,8 @@ const simulation = Simulation
         t = 0;
         steps = 0;
         totalTranslational = totalVibrationalKE = totalVibrationalPE = totalRotational = 0;
-        simulation.plot([0, 0, 0, 0, 0]);
+        graph.reset();
+        graph.push([0, 0, 0, 0, 0]);
     })
     .addObject3D(new Aquarium({ size: new Vec3(1, 1, 1).multiplyScalar(2 * L) }))
     .append(new RadioGroup()
