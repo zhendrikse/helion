@@ -1,7 +1,8 @@
 import { Color, Group } from 'three';
 import {
     VectorField, Range, Cylinder, ArrowField, Sphere, RadialSymmetricBody, Vec3,
-    Arrow, Ring, Checkbox, Simulation, AxialSymmetricBody, Colour} from '../../../src/index.js';
+    Arrow, Ring, Checkbox, Simulation, AxialSymmetricBody, Colour
+} from '../../../src/index.js';
 
 const loopSegments = 10;
 const loopRadius = 0.5;   // pas aan voor visual scale

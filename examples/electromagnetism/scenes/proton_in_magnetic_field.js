@@ -1,6 +1,7 @@
 import { Color } from 'three';
 import {
-    RadialSymmetricBody, LorentzForce, Range, Simulation, Slider, Sphere, ArrowField, Trail, Vec3, VectorField, Colour} from '../../../src/index.js';
+    RadialSymmetricBody, LorentzForce, Range, Simulation, Slider, Sphere, ArrowField, Trail, Vec3, VectorField, Colour
+} from '../../../src/index.js';
 
 //
 // Physics

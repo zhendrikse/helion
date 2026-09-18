@@ -1,9 +1,9 @@
-import { Color } from "three/src/Three.Core.js";
+import { Color } from 'three/src/Three.Core.js';
 import {
     Simulation, Vec3, DiscreteScalarField, TiledPlane, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
     JacobiSolver, ColorMapper, Checkbox, Arrow2D, Button, ElectricField
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const N = 201;
 const h = 1e-2 / (N - 1);
@@ -93,7 +93,7 @@ const arrows = new ArrowField2D({
     size: 0.25,
     headLength: 0.5,
     headWidth: 0.4,
-    colorMap: (dir, mag) => 0x333333,
+    colorMap: (_dir, _mag) => 0x333333,
     headStyle: Arrow2D.HeadStyle.Filled,
     visible: false
 });
@@ -105,19 +105,19 @@ let stepSize = 25;
 const reset = () => {
     solvedIterations = 0;
     potential.reset(); 
-}
+};
 const simulation = Simulation
     .with({
-        htmlDivId: "potentialFieldContainer",
+        htmlDivId: 'potentialFieldContainer',
         camera: { orthographic: true },
-        viewport: { aspectRatio: "1/1"  },
+        viewport: { aspectRatio: '1/1'  },
         headUpDisplay: { enabled: false },
         parameterMenuCollapsed: false,
         infoPanel: {
-            text: "<strong>💪 Potential fields</strong><br/>" +
-            "Laplace solver for potentials, charges ±100V.<br/>" + 
-            "Colors: <span style=\"color: #ff0000\">red (-)</span>, <span style=\"color: #00ff00\">green (+)</span>.<br/>" +
-            "Electric field arrows $$\\overrightarrow{E}=-\\overrightarrow{\\nabla}V$$"
+            text: '<strong>💪 Potential fields</strong><br/>' +
+            'Laplace solver for potentials, charges ±100V.<br/>' + 
+            'Colors: <span style=\'color: #ff0000\'>red (-)</span>, <span style=\'color: #00ff00\'>green (+)</span>.<br/>' +
+            'Electric field arrows $$\\overrightarrow{E}=-\\overrightarrow{\\nabla}V$$'
         }
     })
     .bind(potential.alwaysWith(view))
@@ -130,7 +130,7 @@ const simulation = Simulation
         solvedIterations += stepSize;
         simulation.setTextTitle(`Iterations: ${solvedIterations}`);
     })
-    .append(new Slider("Iterations")
+    .append(new Slider('Iterations')
         .withRange(new Range(0, 15000, 100))
         .withValue(iterationLimit)
         .onChange(event => {
@@ -138,18 +138,18 @@ const simulation = Simulation
             iterationLimit = Number(event.target.value);
             reset();
         }))
-    .append(new Checkbox("Electric field arrows ")
+    .append(new Checkbox('Electric field arrows ')
         .on(arrows)
-        .withProperty("visible")
+        .withProperty('visible')
     )
     .append(new Button()
-        .withText("🔋 Capacitor")
-        .addEventListener("click", () => {
+        .withText('🔋 Capacitor')
+        .addEventListener('click', () => {
             solver.boundaryCondition = new CapacitorBoundaryCondition();
             reset(); 
         }).togetherWith(new Button()
-        .withText("⚡ Dipole")
-        .addEventListener("click", () => { 
+        .withText('⚡ Dipole')
+        .addEventListener('click', () => { 
             solver.boundaryCondition = new DipoleBoundaryCondition();
             reset(); 
         }))

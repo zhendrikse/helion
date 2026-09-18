@@ -1,6 +1,8 @@
 import { Color, AmbientLight, PointLight } from 'three';
 import {
-    RadialSymmetricBody, EC, Range, Simulation, Trail, Vec3, Slider, Sphere, ArrowField, CoulombForce, VectorField, Colour} from '../../../src/index.js';
+    RadialSymmetricBody, EC, Range, Simulation, Trail, Vec3, Slider, Sphere, ArrowField, CoulombForce,
+    VectorField, Colour
+} from '../../../src/index.js';
 
 const K = 9e9;
 const scale = 1e14;

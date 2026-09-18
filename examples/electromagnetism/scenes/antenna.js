@@ -1,6 +1,6 @@
 import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Vec3, Range,
     Cylinder, ElectromagneticWave, Slider
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 //
 // Physics model
@@ -28,7 +28,7 @@ const antenna = new AxialSymmetricBody({
 
 const simulation = Simulation
     .with({
-        htmlDivId: "antennaContainer",
+        htmlDivId: 'antennaContainer',
         camera: {
             position: new Vec3(-1, 4, -10).multiplyScalar(5),
             fieldOfView: 25
@@ -42,7 +42,7 @@ const simulation = Simulation
         for (let wave of planeWaves)
             wave.propagate(clock.simulatedTime);
     })
-    .append(new Slider("🧲 Field strength: ")
+    .append(new Slider('🧲 Field strength: ')
         .withValue(10)
         .withRange(new Range(1, 20, .1))
         .onInput(event => {
@@ -51,7 +51,7 @@ const simulation = Simulation
         })
     );
 
-const slit = new Vec3(0, 0, lambda)
+const slit = new Vec3(0, 0, lambda);
 for (let wave of planeWaves)
     simulation.bind(wave.alwaysWith(new ElectromagneticWave({
         numArrows: 120,

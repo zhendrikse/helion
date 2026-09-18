@@ -1,6 +1,6 @@
 import {
     AxialSymmetricBody, VectorField, Range, Simulation, Vec3, Cylinder, ArrowField, Slider, Checkbox
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const MU0 = 4 * Math.PI * 1e-7;
 const CURRENT = 1e8;
@@ -93,7 +93,7 @@ const arrowField = new ArrowField({
 
 const simulation = Simulation
     .with({
-        htmlDivId: "solenoidContainer",
+        htmlDivId: 'solenoidContainer',
         headUpDisplay: {
             enabled: false
         },
@@ -107,11 +107,11 @@ const simulation = Simulation
 for (const segment of solenoid.segments)
     simulation.bind(segment.onceWith(new Cylinder({ color: 0xffff00 })));
 
-simulation.append(new Slider("️⚡ Field strength: ")
+simulation.append(new Slider('️⚡ Field strength: ')
     .on(magneticField)
-    .withProperty("fieldStrength")
+    .withProperty('fieldStrength')
     .withRange(new Range(0, 1, 0.01))
     .withValue(.5)
-    .togetherWith(new Checkbox("↻ Rotate: ")
-        .withProperty("autoRotate")
+    .togetherWith(new Checkbox('↻ Rotate: ')
+        .withProperty('autoRotate')
         .on(simulation)));

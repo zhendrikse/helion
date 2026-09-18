@@ -1,4 +1,3 @@
-import { Color } from 'three';
 import {
     RadialSymmetricBody, VectorField, Range, Simulation, Vec3, Slider,
     Sphere, ArrowField, Checkbox, hsvToRgb, Colour} from '../../../src/index.js';
@@ -20,7 +19,10 @@ class Dipole {
         });
     }
 
-    /** @param {Vec3} position */
+    /**
+     * @param {Vec3} position
+     * @param {Vec3} out
+     */
     fieldAt(position, out = new Vec3()) {
         out.copy(this.positive.fieldAt(position)
             .add(this.negative.fieldAt(position)));
