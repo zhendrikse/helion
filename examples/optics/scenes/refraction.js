@@ -134,7 +134,7 @@ for (const ray of rays) {
     const trail = new Trail({
         maxPoints: 1000,
         trailStep: 1,
-        color: 0xffffff
+        color: Colour.fromHex(0xffffff)
     });
 
     rayViews.push(rayView);
@@ -232,9 +232,9 @@ initializeRays();
 const color = new Colour();
 function updateLightColor(isWhite, wavelength = 550) {
     wavelengthColor(wavelength, color);
-    const colorHex = isWhite ? 0xffffff : color.asHexValue();
-    rayViews.forEach(view => view.color = colorHex);
-    trails.forEach(trail => trail.color = colorHex);
-    wavefrontColor.copy(isWhite ? Colour.fromHex(0xffffff) : color);
+    const colour = isWhite ? Colour.fromHex(0xffffff) : color;
+    rayViews.forEach(view => view.color = colour);
+    trails.forEach(trail => trail.color = colour);
+    wavefrontColor.copy(colour);
 }
 updateLightColor(false);

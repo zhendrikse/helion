@@ -1,7 +1,6 @@
 import {
     Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, ParticleView2D, Checkbox,
-    RadialSymmetricBody, UPlotGraph
-} from '../../../src/index.js';
+    RadialSymmetricBody, UPlotGraph, Colour} from '../../../src/index.js';
 
 const CONTAINER_SIZE = 10;
 const PARTICLE_COUNT = 200;
@@ -15,7 +14,7 @@ const gas = new Gas({
 });
 /** @type {ParticleView2D[]} */
 const particleViews = [];
-const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: 0xBF40BF });
+const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: Colour.fromHex(0xBF40BF) });
 /** @type {number[][]} */
 const histogramBuffer = [];
 const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SPEED / BIN_COUNT);

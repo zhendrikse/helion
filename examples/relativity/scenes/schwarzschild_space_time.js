@@ -266,9 +266,9 @@ spaceTimeCone.addOverlayLayer(new ContoursLayer({
     colorMapper: new ColorMappers().get(ColorMappers.Uniform)()
 }));
 
-const realCometTrail = new Trail({ color: 0xff8800 });
-const flatCometTrail = new Trail({ color: 0xff0000 });
-const cometTrail = new Trail({ color: 0x00ffff });
+const realCometTrail = new Trail({ color: Colour.fromHex(0xff8800) });
+const flatCometTrail = new Trail({ color: Colour.fromHex(0xff0000) });
+const cometTrail = new Trail({ color: Colour.fromHex(0x00ffff) });
 const simulation = Simulation
     .with({
         htmlDivId: "spaceTimeContainer",

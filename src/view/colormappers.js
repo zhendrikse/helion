@@ -9,6 +9,8 @@ export class Colour {
     static Yellow = new Colour(1, 1, 0);
     static Orange = new Colour(1, 0.6275, 0);
 
+    static fromThreeJsColor = (/** @type {Color} */ threeJsColor) => new Colour(threeJsColor.r, threeJsColor.g, threeJsColor.b);
+
     static fromHex = (/** @type {number} */ hexValue) => {
         const r = ((hexValue >> 16) & 0xff) / 255;
         const g = ((hexValue >> 8)  & 0xff) / 255;

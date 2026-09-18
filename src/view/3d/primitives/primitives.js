@@ -23,9 +23,7 @@ class TrailLine {
         this._positions = [];
         this._geometry = new BufferGeometry();
         const _col = new Color();
-        if (color instanceof Colour) color.asThreeJsColor(_col);
-        else if (color instanceof Color) _col.copy(color);
-        else _col.set(color);
+        color.asThreeJsColor(_col);
         this._material = new LineBasicMaterial({ color: _col, linewidth });
         this._line = new Line(this._geometry, this._material);
     }
@@ -61,7 +59,7 @@ export class Trail extends Renderable3D {
         color = Colour.Yellow
     } = {}) {
         super();
-        this._color = color instanceof Colour ? color : (typeof color === 'number' ? Colour.fromHex(color) : color instanceof Color ? new Colour(color.r, color.g, color.b) : Colour.fromHex(0xffff00));
+        this._color = color;
         this._maxPoints = maxPoints;
         this._lineWidth = lineWidth;
         this._trailAccumulator = 0;
@@ -116,12 +114,10 @@ export class Trail extends Renderable3D {
     }
 
     set color(value) {
-        this._color = value instanceof Colour ? value : (typeof value === 'number' ? Colour.fromHex(value) : value instanceof Color ? new Colour(value.r, value.g, value.b) : value);
+        this._color = value;
 
         if (this._trail?._line?.material) {
-            if (value instanceof Colour) value.asThreeJsColor(this._trail._line.material.color);
-            else if (value instanceof Color) this._trail._line.material.color.copy(value);
-            else this._trail._line.material.color.set(value);
+            value.asThreeJsColor(this._trail._line.material.color);
         }
     }
 
@@ -194,7 +190,7 @@ export class Sphere extends Renderable3D {
         this.scale.setScalar(body.radius);
     }
 
-    get color() { return this._mesh.material.color; }
+    get color() { return Colour.fromThreeJsColor(this._mesh.material.color); }
     /** @param {Colour} newColor */
     set color(newColor) {
         newColor.asThreeJsColor(this._mesh.material.color);
