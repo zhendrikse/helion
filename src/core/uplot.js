@@ -23,6 +23,7 @@ export class UPlotGraph {
         yLabel = '',
         maxPoints = 500,
         labelColor = 'green',
+        yRange = null,
     } = /** @type {any} */ ({})) {
         this._maxPoints = maxPoints;
         this._graphData = [];
@@ -37,7 +38,7 @@ export class UPlotGraph {
             });
         });
 
-        const uPlotOptions = this._uplotOptions(title, width, height, labelColor, xLabel, yLabel, series);
+        const uPlotOptions = this._uplotOptions(title, width, height, labelColor, xLabel, yLabel, series, yRange);
         const plotDiv = document.createElement('div');
         plotParentDiv.appendChild(plotDiv);
         this._uplotChart = new uPlot(uPlotOptions, this._graphData, plotDiv);
@@ -52,12 +53,14 @@ export class UPlotGraph {
      * @param {string} yLabel
      * @param {{}[]} series
      */
-    _uplotOptions(title, width, height, labelColor, xLabel, yLabel, series) {
+    _uplotOptions(title, width, height, labelColor, xLabel, yLabel, series, yRange = null) {
         return {
             title,
             width,
             height,
-            scales: { x: { auto: true }, y: { auto: true } },
+            scales: yRange
+                ? { x: { auto: true }, y: { auto: false, range: yRange } }
+                : { x: { auto: true }, y: { auto: true } },
             axes: [{
                 stroke: labelColor,
                 font: '12px Arial',

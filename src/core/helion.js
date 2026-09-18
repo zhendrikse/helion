@@ -696,8 +696,9 @@ export class Simulation {
     * @param {string} [options.title]
     * @param {string} [options.xLabel]
     * @param {string} [options.yLabel]
-    * @param {number} [options.maxPoints]
-    * @param {string} [options.labelColor]
+     * @param {number} [options.maxPoints]
+     * @param {string} [options.labelColor]
+     * @param {[number, number]|null} [options.yRange]
      */
     setupGraphWith({
         dataDefinition,
@@ -708,10 +709,11 @@ export class Simulation {
         yLabel='',
         maxPoints = 500,
         labelColor = 'green',
+        yRange = null,
     } = {}) {
         const plotParentDiv = this._viewport.addOnsDiv;
         this._plot = new UPlotGraph({
-            plotParentDiv, dataDefinition, width, height, title, xLabel, yLabel, maxPoints, labelColor
+            plotParentDiv, dataDefinition, width, height, title, xLabel, yLabel, maxPoints, labelColor, yRange
         });
         return this;
     }

@@ -1,5 +1,5 @@
 import {
-    RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule,
+    RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule, Body,
     BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, SpringForce
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
@@ -19,6 +19,10 @@ const bondForce = new SpringForce({
 });
 
 export class CarbonMonoxide extends BodyPair {
+    /**
+     * @param {Vec3} position
+     * @param {number} initialSpeed
+     */
     constructor(position, initialSpeed) {
         const axis = new Vec3(distance, 0, 0);
         const oxygenMass = 16E-23, carbonMass = 12E-23;
@@ -47,11 +51,13 @@ export class CarbonMonoxide extends BodyPair {
         });
     }
 
+    /** @param {number} boxLength */
     checkBoxBounce(boxLength) {
         this._confineToBox(this.body1, boxLength);
         this._confineToBox(this.body2, boxLength);
     }
 
+    /** @param {CarbonMonoxide} otherMolecule */
     resolveCollisionWith(otherMolecule) {
         this.body1.and(otherMolecule.body1).apply(sphereSphereCollision);
         this.body1.and(otherMolecule.body2).apply(sphereSphereCollision);
@@ -120,9 +126,10 @@ export class CarbonMonoxide extends BodyPair {
             .divideScalar(this.mass);
     }
 
+    /** @param {number} scaleFactor */
     scaleVelocity(scaleFactor) {
-        this.body2.scaleVelocity(scaleFactor);
-        this.body1.scaleVelocity(scaleFactor);
+        this.body2.scaleVelocity(scaleFactor); // TODO
+        this.body1.scaleVelocity(scaleFactor); // TODO
     }
 
     get mass() { return this.body2.mass + this.body1.mass; }
@@ -143,13 +150,12 @@ class CarbonMonoxideGas {
         }
     }
 
-    /**
-     * @returns {Iterator<CarbonMonoxide>}
-     */
+    /**  @returns {Iterator<CarbonMonoxide>} */
     [Symbol.iterator]() {
         return this._molecules[Symbol.iterator]();
     }
 
+    /** @param {number} dt */
     evolve(dt) {
         for (const molecule of this._molecules)
             molecule.apply(bondForce);
@@ -164,6 +170,7 @@ class CarbonMonoxideGas {
                 this._molecules[i].resolveCollisionWith(this._molecules[j]);
     }
 
+    /** @param {number} newTemperature */
     updateToNewTemperature(newTemperature) {
         // Modify the speed of all molecules according to equipartition: v ~ sqrt(T)
         const scaleFactor = Math.sqrt(newTemperature / this._temperature); // ratio new temp / old temp
@@ -191,14 +198,16 @@ class CarbonMonoxideGas {
 
 
 const gas = new CarbonMonoxideGas();
+/** @type {DiatomicMolecule[]} */
 const moleculeViews = [];
 
 const dt = 5e-16;
-let t = 0,
-    totalTranslational = 0,
-    totalVibrationalKE = 0,
-    totalVibrationalPE = 0,
-    totalRotational = 0;
+let t = 0;
+let steps = 0;
+let totalTranslational = 0;
+let totalVibrationalKE = 0;
+let totalVibrationalPE = 0;
+let totalRotational = 0;
 
 // Perform some initial timesteps to make the gas look more realistic
 for (let i = 0; i < 150; i++)
@@ -215,38 +224,50 @@ const simulation = Simulation
         }
     })
     .withMouseClickEventListener()
+    .setupGraphWith({
+            dataDefinition: [
+                { label: 't' },
+                { label: 'Translational KE', color: 'green' },
+                { label: 'Vibrational KE', color: 'cyan' },
+                { label: 'Vibrational PE', color: 'red' },
+                { label: 'Rotational KE', color: 'yellow' }
+            ],
+            title: 'Energies vs Time',
+            xLabel: 'Time [ps]',
+            yLabel: 'Energy [J]',
+        }
+    )
     .runsEvery(0.003)
     .substeps(3)
-    .onStep(() => {
+    .onStep((clock, _dt) => {
         gas.evolve(dt);
         t += dt;
 
-        // totalTranslational += gas.translationalKineticEnergy;
-        // totalVibrationalKE += gas.vibrationalKineticEnergy;
-        // totalVibrationalPE += gas.vibrationalPotentialEnergy;
-        // totalRotational += gas.rotationalKineticEnergy;
-        //
-        // const plotData = [t];
-        // plotData.push(totalTranslational);
-        // plotData.push(totalVibrationalKE);
-        // plotData.push(totalVibrationalPE);
-        // plotData.push(totalRotational);
-        //
-        // simulation.plot(plotData);
+        if (!simulation.isRunning) return;
+
+        // 1-op-1 oude logica: cumulatief gemiddelde, decimated plot
+        totalTranslational += gas.translationalKineticEnergy;
+        totalVibrationalKE += gas.vibrationalKineticEnergy;
+        totalVibrationalPE += gas.vibrationalPotentialEnergy;
+        totalRotational += gas.rotationalKineticEnergy;
+        steps++;
+
+        if (steps % 150 === 0) {
+            simulation.plot([
+                t * 1e12,
+                totalTranslational / steps,
+                totalVibrationalKE / steps,
+                totalVibrationalPE / steps,
+                totalRotational / steps,
+            ]);
+        }
     })
-    // .setupGraphWith({
-    //         dataDefinition: [
-    //             { label: 't' },
-    //             { label: 'Translational KE', stroke: 'green' },
-    //             { label: 'Vibrational PE', stroke: 'red' },
-    //             { label: 'Vibrational KE', stroke: 'cyan' },
-    //             { label: 'Rotational KE', stroke: 'yellow' }
-    //         ],
-    //         title: 'Kinetic Energy vs Time',
-    //         xLabel: 'Time [ps]',
-    //         yLabel: 'KE [J]'
-    //     }
-    // )
+    .onReset(() => {
+        t = 0;
+        steps = 0;
+        totalTranslational = totalVibrationalKE = totalVibrationalPE = totalRotational = 0;
+        simulation.plot([0, 0, 0, 0, 0]);
+    })
     .addObject3D(new Aquarium({ size: new Vec3(1, 1, 1).multiplyScalar(2 * L) }))
     .append(new RadioGroup()
         .add('Springs', () => {

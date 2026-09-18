@@ -2,7 +2,7 @@ import {
     Group, Vector3, MeshStandardMaterial, Mesh, BufferGeometry, LineBasicMaterial,
     BoxGeometry, Color, RepeatWrapping, DoubleSide, Line,
     TextureLoader, Vector2, PlaneGeometry, EdgesGeometry, LineSegments
-} from "three";
+} from 'three';
 
 import woodWicketColorUrl from '../../../textures/Wood_Wicker_011_color.png';
 import woodWicketNormalUrl from '../../../textures/Wood_Wicker_011_normal.png';
@@ -10,7 +10,7 @@ import woodWicketRoughnessUrl from '../../../textures/Wood_Wicker_011_roughness.
 import pavingColorUrl from '../../../textures/paving_color.jpg';
 import pavingRoughnessUrl from '../../../textures/paving_roughness.jpg';
 import pavingNormalUrl from '../../../textures/paving_normal.jpg';
-import {Vec3, Vec2} from "../../../model/math/math.js";
+import {Vec3, Vec2} from '../../../model/math/math.js';
 import grassColorUrl from '../../../textures/grass.jpg';
 import grassNormalUrl from '../../../textures/grassNormal.jpg';
 
@@ -19,6 +19,14 @@ import grassNormalUrl from '../../../textures/grassNormal.jpg';
  *******************************************/
 
 class Grid extends Group {
+    /**
+     * @param {{
+     * size?: number,
+     * granularity?: number
+     * y?: number
+     * color?: number
+     * }} param0 
+     */
     constructor({
         size = 1,
         granularity = 20,
@@ -36,10 +44,20 @@ class Grid extends Group {
         }
     }
 
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} size
+     */
     #verticalLine(x, y, size) {
         return new BufferGeometry().setFromPoints([new Vector3(x, y, -size), new Vector3(x, y, size)]);
     }
 
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} size
+     */
     #horizontalLine(x, y, size) {
         return new BufferGeometry().setFromPoints([new Vector3(-size, y, x), new Vector3(size, y, x)]);
     }
@@ -47,19 +65,31 @@ class Grid extends Group {
 
 export class Floor extends Group {
     static Type = Object.freeze({
-        PLAIN: "PLAIN",
-        GRID: "Grid",
-        PAVING: "Paving",
-        GRASS: "Grass",
-        WOOD_WICKER: "WoodWicker"  // https://3dtextures.me/2024/06/22/wood-wicker-011/
+        PLAIN: 'PLAIN',
+        GRID: 'Grid',
+        PAVING: 'Paving',
+        GRASS: 'Grass',
+        WOOD_WICKER: 'WoodWicker'  // https://3dtextures.me/2024/06/22/wood-wicker-011/
     });
+    /**
+     * 
+     * @param {{
+     * type?: string
+     * position?: Vec3
+     * planeSizeXy?: Vec2
+     * granularity?: number
+     * color?: number
+     * opacity?: number
+     * receiveShadow?: boolean
+     * }} param0 
+     */
     constructor({
         type= Floor.Type.PLAIN,
         position = new Vec3(),
         planeSizeXy = new Vec2(2, 2),
         granularity = 1,
         color = 0x00ff00,
-        opacity = null,
+        opacity = 1,
         receiveShadow = true
     } = {}) {
         super();
@@ -68,7 +98,7 @@ export class Floor extends Group {
             normalScale: new Vector2(planeSizeXy.x, planeSizeXy.y),
             roughness: 1,
             transparent: opacity !== null,
-            opacity: opacity ? opacity : 1,
+            opacity: opacity,
             side: DoubleSide
             //occlusionMap: textureAmbientOcclusion,
             //alphaMap: textureOpacity,
@@ -111,6 +141,11 @@ export class Floor extends Group {
         }
     }
 
+    /**
+     * @param {TextureLoader} loader
+     * @param {any} url
+     * @param {number} granularity
+     */
     _loadTexture(loader, url, granularity) {
         const texture = loader.load(url);
         texture.wrapS = RepeatWrapping;
@@ -144,9 +179,18 @@ export class Ceiling extends Mesh {
 }
 
 export class Aquarium extends Mesh {
+    /**
+     * @param {{
+     * position?: Vec3
+     * size?: Vec3
+     * opacity?: number
+     * contentColor?: Color
+     * frameColor?: number
+     * }} options 
+     */
     constructor({
-        position = new Vector3(0, 0, 0),
-        size = new Vector3(1, 1, 1),
+        position = new Vec3(0, 0, 0),
+        size = new Vec3(1, 1, 1),
         opacity = 0.35,
         contentColor = new Color(.1, .3, .78),
         frameColor = 0xaa9900
