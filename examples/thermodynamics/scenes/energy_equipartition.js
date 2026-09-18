@@ -222,8 +222,6 @@ const graph = new UPlotGraph({
         { label: 'Vibrational PE', color: 'red' },
         { label: 'Rotational KE', color: 'yellow' }
     ],
-    width: 800,
-    height: 400,
     title: 'Energies vs Time',
     xLabel: 'Time [ps]',
     yLabel: 'Energy [J]',
