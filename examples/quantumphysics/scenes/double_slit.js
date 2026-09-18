@@ -1,8 +1,7 @@
 import {
     AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider, Sphere, Vec3,
     DiscreteScalarField, WavelengthColorMapper, DiscreteFieldSurfaceView, DoubleSlitOperator,
-    FieldEdgeIntensityPixelRaster
-} from "../../../src/index.js";
+    FieldEdgeIntensityPixelRaster, Colour} from "../../../src/index.js";
 
 const resolution = 50;
 const xMax = 4;
@@ -84,5 +83,5 @@ function spawnParticleFromSlit(slitPos) {
         radius: .06 * resolution
     });
     particles.push(particle);
-    simulation.bind(particle.alwaysWith(new Sphere({ color: 0xffffff})));
+    simulation.bind(particle.alwaysWith(new Sphere({ color: Colour.fromHex(0xffffff)})));
 }

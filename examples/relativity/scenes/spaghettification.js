@@ -1,6 +1,5 @@
 import {
-    Simulation, RadialSymmetricBody, Vec3, Sphere, Renderable3D, MathPhysicsModelBehavior, ThreeJsScene
-} from "../../../src/index.js";
+    Simulation, RadialSymmetricBody, Vec3, Sphere, Renderable3D, MathPhysicsModelBehavior, ThreeJsScene, Colour} from "../../../src/index.js";
 import {AmbientLight, Color, PointLight} from "three";
 
 const vel0 = new Vec3(0, 0.65, 0);
@@ -95,7 +94,7 @@ class PersonView extends Renderable3D {
     constructor() {
         super();
         this._spheres = [];
-        this._spheres.push(new Sphere({ color: new Color(0.7, 0.6, 0.5) }));
+        this._spheres.push(new Sphere({ color: new Colour(0.7,0.6,0.5) }));
     }
 
     canBindTo(model) {
@@ -104,11 +103,11 @@ class PersonView extends Renderable3D {
 
     initialize(person) {
         for (let i = 0; i < person.body.length; i++)
-            this._spheres.push(new Sphere({ color: new Color(0.2, 0.4, 0.7) }));
+            this._spheres.push(new Sphere({ color: new Colour(0.2,0.4,0.7) }));
         for (let i = 0; i < person.arms.length; i++)
-            this._spheres.push(new Sphere({ color: new Color(0.2, 0.8, 0.9) }));
+            this._spheres.push(new Sphere({ color: new Colour(0.2,0.8,0.9) }));
         for (let i = 0; i < person.legs.length; i++)
-            this._spheres.push(new Sphere({ color: new Color(0.2, 0.2, 0.7) }));
+            this._spheres.push(new Sphere({ color: new Colour(0.2,0.2,0.7) }));
 
         this._spheres.forEach(sphere => this.add(sphere));
     }
@@ -143,6 +142,6 @@ Simulation
     .addObject3D(new AmbientLight(0xffffff, 1))
     .withMouseClickEventListener()
     .bind(person.alwaysWith(new PersonView()))
-    .bind(blackHole.onceWith(new Sphere({ color: new Color(0.3, 0.3, 0.3) })))
+    .bind(blackHole.onceWith(new Sphere({ color: new Colour(0.3,0.3,0.3) })))
     .runsEvery(6e-3)
     .onStep(() => person.update(0.02, blackHolePos));

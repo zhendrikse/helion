@@ -1,7 +1,6 @@
 import {
     RadialSymmetricBody, AxialSymmetricBody, Range, Simulation, EC, Sphere,
-    CylinderSegmentsView, ArrowField, Vec3, Trail, VectorField, CoulombForce, Segments, hsvToRgb
-} from "../../../src/index.js";
+    CylinderSegmentsView, ArrowField, Vec3, Trail, VectorField, CoulombForce, Segments, hsvToRgb, Colour} from '../../../src/index.js';
 
 const K = 9e9;
 
@@ -91,7 +90,7 @@ const electron = new RadialSymmetricBody({
 //
 // View model
 //
-const electronSphere = new Sphere({ color: "yellow" });
+const electronSphere = new Sphere({ color: Colour.Yellow });
 const arrowField = new ArrowField({
     xRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     yRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
@@ -111,7 +110,7 @@ const arrowField = new ArrowField({
 
 Simulation
     .with({
-        htmlDivId: "chargedRingContainer",
+        htmlDivId: 'chargedRingContainer',
         camera: {
             position: new Vec3(15, 5, 20),
             fieldOfView: 22,

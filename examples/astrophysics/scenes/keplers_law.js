@@ -1,7 +1,6 @@
 import {
     Simulation, Vec3, Sun, SunView, RadialSymmetricBody, Sphere, Trail, Renderable3D,
-    LineSegment, Label, ThreeJsScene, LineSegmentView, HexValueColorMapper,
-} from "../../../src/index.js";
+    LineSegment, Label, ThreeJsScene, LineSegmentView, HexValueColorMapper, Colour} from '../../../src/index.js';
 
 const randomColour = () => Math.floor(Math.random() * 65536 * 256);
 const randomVelocity = () => new Vec3(-(0.7 + 0.5 * Math.random()), 0, 0);
@@ -46,7 +45,7 @@ class Planet extends RadialSymmetricBody {
             // end of 'month', printing twice time gives about 12 'months' in 'year'
             String(Math.floor(time * 2 + dt)) :
             'Period: ' + 
-                Number(time * 2).toFixed(3) + ' "months", initial speed: ' + 
+                Number(time * 2).toFixed(3) + ' \"months\", initial speed: ' + 
                 Math.round(this.speed).toFixed(3);
 
         // label first gets current colour (previous month), thereafter a new random value
@@ -112,14 +111,14 @@ const planet = new Planet();
 const sun = new Sun({ radius: 0.12 });
 const simulation = Simulation
     .with({
-        htmlDivId: "keplersLawContainer",
+        htmlDivId: 'keplersLawContainer',
         camera: { position: new Vec3(0, -3, -1).multiplyScalar(1.5), fieldOfView: 38 },
         scene: { background: ThreeJsScene.Background.STARS },
-        viewport: { aspectRatio: "19/12"}
+        viewport: { aspectRatio: '19/12'}
     })
     .withMouseClickEventListener()
     .bind(sun.alwaysWith(new SunView()))
-    .bind(planet.alwaysWith(new Sphere({ color: 0x00ffff })))
+    .bind(planet.alwaysWith(new Sphere({ color: Colour.Cyan })))
     .bind(planet.alwaysWith(new Trail({ color: 0xff4444, maxPoints: 600 })))
     .advancesBy(0.025)
     .runsEvery(0.02)

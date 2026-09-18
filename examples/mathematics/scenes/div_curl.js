@@ -1,6 +1,5 @@
 import {
-    Arrow, Checkbox, Label, RadialSymmetricBody, Simulation, Sphere, Vec3, VectorField, VectorModel
-} from "../../../src/index.js";
+    Arrow, Checkbox, Label, RadialSymmetricBody, Simulation, Sphere, Vec3, VectorField, VectorModel, Colour} from "../../../src/index.js";
 
 class DemoVectorField extends VectorField {
     constructor(sourcePosition, sinkPosition, curlPosition=null) {
@@ -179,9 +178,9 @@ const simulation = Simulation.with({
         }
     })
     .withMouseClickEventListener()
-    .bind(source.onceWith(new Sphere({color: "red", opacity: 0.7 })))
-    .bind(sink.onceWith(new Sphere({color: "green", opacity: 0.7 })))
-    .bind(curl.onceWith(new Sphere({color: "cyan", opacity: 0.7 })))
+    .bind(source.onceWith(new Sphere({color: Colour.Red, opacity: 0.7 })))
+    .bind(sink.onceWith(new Sphere({color: Colour.Green, opacity: 0.7 })))
+    .bind(curl.onceWith(new Sphere({color: Colour.Cyan, opacity: 0.7 })))
     .bind(source.onceWith(sourceLabel))
     .bind(sink.onceWith(sinkLabel))
     .bind(curl.onceWith(curlLabel))
@@ -219,7 +218,7 @@ const simulation = Simulation.with({
         }));
 
 for (const particle of particles)
-    simulation.bind(particle.alwaysWith(new Sphere({ color: "orange"})));
+    simulation.bind(particle.alwaysWith(new Sphere({ color: Colour.Orange})));
 
 arrows.forEach((arrow, index) => simulation.bind(arrow.alwaysWith(arrowViews[index])));
 

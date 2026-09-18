@@ -1,8 +1,7 @@
-import { Color } from "three";
+import { Color } from 'three';
 import {
     RadialSymmetricBody, VectorField, Range, Simulation, Vec3, Slider,
-    Sphere, ArrowField, Checkbox, hsvToRgb
-} from "../../../src/index.js";
+    Sphere, ArrowField, Checkbox, hsvToRgb, Colour} from '../../../src/index.js';
 
 const scale = 1e15;
 const ec = 1.6e-19;
@@ -57,8 +56,8 @@ const dipoleField = new DipoleField(dipole);
 //
 // View
 //
-const positiveSphere = new Sphere({ color: "red" });
-const negativeSphere = new Sphere({ color: "blue" });
+const positiveSphere = new Sphere({ color: Colour.Red });
+const negativeSphere = new Sphere({ color: Colour.Blue });
 const arrowField = new ArrowField({
     xRange: new Range(-20 / scale, 20 / scale, 2 / scale),
     yRange: new Range(-12 / scale, 12 / scale, 2 / scale),
@@ -71,7 +70,7 @@ const arrowField = new ArrowField({
 
 const simulation = Simulation
     .with({
-        htmlDivId: "dipoleContainer",
+        htmlDivId: 'dipoleContainer',
         headUpDisplay: {
             enabled: false
         },
@@ -87,13 +86,13 @@ const simulation = Simulation
     .bind(dipole.negative.onceWith(negativeSphere))
     .bind(dipoleField.onceWith(arrowField));
 
-simulation.append(new Slider("️⚡ Field strength: ")
+simulation.append(new Slider('️⚡ Field strength: ')
     .on(dipoleField)
-    .withProperty("fieldStrength")
+    .withProperty('fieldStrength')
     .withRange(new Range(0, 1, 0.01))
     .withValue(.5)
-    .togetherWith(new Checkbox("↻ Rotate: ")
-        .withProperty("autoRotate")
+    .togetherWith(new Checkbox('↻ Rotate: ')
+        .withProperty('autoRotate')
         .on(simulation)
     ));
 

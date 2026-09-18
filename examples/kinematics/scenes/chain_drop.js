@@ -1,7 +1,7 @@
 import {
     Vec3, Simulation, Sphere, Box, Slider, Range, SwitchableBondView, RadialSymmetricBody,
     MathPhysicsModelBehavior, SpringForce, Force, UniformGravitationalForce, Block, G, UPlotGraph,
-    BodyPair
+    BodyPair, Colour
 } from '../../../src/index.js';
 import {g} from '../../../src/model/phys/forces.js';
 
@@ -232,7 +232,7 @@ const simulation = Simulation
     );
 
 for (const ball of chain.balls)
-    simulation.bind(ball.alwaysWith(new Sphere({ color: 0x00ffff, segments: 20})));
+    simulation.bind(ball.alwaysWith(new Sphere({ color: Colour.Cyan, segments: 20})));
 
 for (const bond of chain.bonds)
     simulation.bind(bond.alwaysWith(

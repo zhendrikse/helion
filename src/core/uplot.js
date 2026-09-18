@@ -50,12 +50,17 @@ export class UPlotGraph {
      * @returns {UPlotGraph}
      */
     attach(parentDiv) {
-        if (this._uplotChart) return this;
+        if (this._uplotChart) 
+            return this;
+        
         let [title, width, height, labelColor, xLabel, yLabel, series, yRange] = this._uPlotOptionsArgs;
-        if (width == null) width = parentDiv.clientWidth || parentDiv.getBoundingClientRect?.().width || 600;
-        // fallback if still 0 (before layout)
-        if (!width) width = 600;
-        if (height == null) height = Math.round(width * 0.5);
+        if (width == null) 
+            width = parentDiv.clientWidth || parentDiv.getBoundingClientRect?.().width || 600;
+        
+        if (!width) // fallback if still 0 (before layout)
+            width = 600;
+        if (height == null) 
+            height = Math.round(width * 0.5);
         const uPlotOptions = this._uplotOptions(title, width, height, labelColor, xLabel, yLabel, series, yRange);
         const plotDiv = document.createElement('div');
         parentDiv.appendChild(plotDiv);

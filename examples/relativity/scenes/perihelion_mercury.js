@@ -3,7 +3,7 @@ import { MeshPhongMaterial, TextureLoader, Scene, PerspectiveCamera, WebGLRender
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { ThreeJsUtils, Sphere, TrailProperties } from '../js/three-js-extensions.js';
 import { SkyDome, Sun, TEXTURES_PATH, PLANET_SCALE, SUN_SCALE } from '../js/astro-extensions.js';
-import {Planets, Vec3} from "../../../src/index.js";
+import {Planets, Vec3, Colour} from "../../../src/index.js";
 
 const planetsCanvas = document.getElementById('planetsCanvas');
 planetsCanvas.focus();
@@ -157,7 +157,7 @@ function angleBetween(v1, v2) {
 function markPerihelion() {
     planetaryScene.add(new Sphere({
         position: vec_r_last,
-        color: 0x00ff00,
+        color: Colour.Green,
         radius: 0.2
     }));
     const prev = perihelion_list[perihelion_list.length - 2];

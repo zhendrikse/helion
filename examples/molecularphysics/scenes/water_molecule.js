@@ -1,8 +1,7 @@
 import {
     Vec3, Simulation, Sphere, SwitchableBondView, VectorView, RadioGroup, RadialSymmetricBody,
     MathPhysicsModelBehavior, VectorField, CoulombForce, SpringForce, Force, EC,
-    BodyPairs
-} from '../../../src/index.js';
+    BodyPairs, Colour} from '../../../src/index.js';
 
 const BOND_LENGTH   = 1.0E-10;
 const BOND_CONSTANT = 5.0E-6;       // Spring constant
@@ -261,9 +260,9 @@ Simulation
         water.reset();
         electricField.reset();
     })
-    .bind(water.oxygen.alwaysWith(new Sphere({color: 0xff0000, segments: 36})))
-    .bind(water.hydrogen1.alwaysWith(new Sphere({color: 0x0000ff, segments: 36})))
-    .bind(water.hydrogen2.alwaysWith(new Sphere({color: 0x0000ff, segments: 36})))
+    .bind(water.oxygen.alwaysWith(new Sphere({color: Colour.Red, segments: 36})))
+    .bind(water.hydrogen1.alwaysWith(new Sphere({color: Colour.Blue, segments: 36})))
+    .bind(water.hydrogen2.alwaysWith(new Sphere({color: Colour.Blue, segments: 36})))
     .bind(water.oxygen.and(water.hydrogen1).alwaysWith(bondView1))
     .bind(water.oxygen.and(water.hydrogen2).alwaysWith(bondView2))
     .bind(electricField.alwaysWith(electricArrow))
