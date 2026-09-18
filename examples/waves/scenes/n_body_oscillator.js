@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Floor, SwitchableBondView, Transformation,
-    Slider, Range, Vec2, ChainTopology, Lattice, LatticeView, ThreeJsScene
+    Slider, Range, Vec2, ChainTopology, Lattice, LatticeView, ThreeJsScene, UPlotGraph
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 
@@ -10,6 +10,7 @@ class InitialDisplacement extends Transformation {
         this._displacement = displacement;
     }
 
+    /** @param {Lattice} lattice */
     applyTo(lattice) {
         lattice.bodyAt(0).position.add(this._displacement);
     }
@@ -45,6 +46,20 @@ const latticeView = LatticeView.from({
 });
 latticeView.position.y = 4;
 
+const graph = new UPlotGraph({
+    dataDefinition: [
+        { label: 't' },
+        { label: 'left', color: 'blue' },
+        { label: 'right', color: 'red' },
+        { label: 'ball3', color: 'red' },
+        { label: 'ball4', color: 'red' },
+        { label: 'ball5', color: 'blue' },
+    ],
+    title: 'Kinetic Energy vs Time',
+    xLabel: 'Time [s]',
+    yLabel: 'Displacement'
+});
+
 const simulation = Simulation
     .with({
         htmlDivId: 'oscillatorContainer',
@@ -70,20 +85,7 @@ const simulation = Simulation
         planeSizeXy: new Vec2(200, 200),
         granularity: 5
     }))
-    .setupGraphWith({
-            dataDefinition: [
-                { label: 't' },
-                { label: 'left', color: 'blue' },
-                { label: 'right', color: 'red' },
-                { label: 'ball3', color: 'red' },
-                { label: 'ball4', color: 'red' },
-                { label: 'ball5', color: 'blue' },
-            ],
-            title: 'Kinetic Energy vs Time',
-            xLabel: 'Time [s]',
-            yLabel: 'Displacement'
-        }
-    )
+    .addGraph(graph)
     .onStep((clock, dt) => {
         chain.integrate(dt);
 
@@ -94,14 +96,15 @@ const simulation = Simulation
         for (let i = 0; i < chain.bodyCount; i++)
             plotData.push(chain.bodyAt(i).position.x);
 
-        simulation.plot(plotData);
+        graph.push(plotData);
     })
     .bind(chain.alwaysWith(latticeView))
     .onReset(() => {
         const plotData = [0];
         for (let i = 0; i < chain.size; i++)
             plotData.push(chain.ballAt(i).position.x);
-        simulation.plot(plotData);
+        graph.reset();
+        graph.push(plotData);
         chain.apply(new InitialDisplacement());
     })
     .append(latticeView.ui())

@@ -13,6 +13,7 @@ import pavingNormalUrl from '../../../textures/paving_normal.jpg';
 import {Vec3, Vec2} from '../../../model/math/math.js';
 import grassColorUrl from '../../../textures/grass.jpg';
 import grassNormalUrl from '../../../textures/grassNormal.jpg';
+import { Colour } from '../../colormappers';
 
 /*******************************************
  * Floor, Grid, Ceiling, Aquarium          *
@@ -184,20 +185,20 @@ export class Aquarium extends Mesh {
      * position?: Vec3
      * size?: Vec3
      * opacity?: number
-     * contentColor?: Color
-     * frameColor?: number
+     * contentColor?: Colour
+     * frameColor?: Colour
      * }} options 
      */
     constructor({
         position = new Vec3(0, 0, 0),
         size = new Vec3(1, 1, 1),
         opacity = 0.35,
-        contentColor = new Color(.1, .3, .78),
-        frameColor = 0xaa9900
+        contentColor = new Colour(.1, .3, .78),
+        frameColor = Colour.fromHex(0xaa9900)
     } = {}) {
         const geometry = new BoxGeometry(1, 1, 1);
         const material = new MeshStandardMaterial({
-            color: contentColor,
+            color: new Color(contentColor.r, contentColor.g, contentColor.b),
             transparent: true,
             opacity: opacity,
             depthWrite: false,
@@ -211,7 +212,7 @@ export class Aquarium extends Mesh {
         // --- Edges ---
         const edges = new EdgesGeometry(geometry);
         const lineMaterial = new LineBasicMaterial({
-            color: frameColor,
+            color: new Color(frameColor.r, frameColor.g, frameColor.b),
             depthTest: true
         });
 

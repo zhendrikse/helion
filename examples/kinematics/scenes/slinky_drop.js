@@ -1,8 +1,8 @@
 import {
     RadialSymmetricBody, Simulation, Vec3, Sphere, Helix, Cylinder, SpringForce, Floor, 
     Vec2, AxialSymmetricBody, UniformGravitationalForce
-} from "../../../src/index.js";
-import {AmbientLight, DirectionalLight} from "three";
+} from '../../../src/index.js';
+import {AmbientLight, DirectionalLight} from 'three';
 
 const g = new Vec3(0, -9.8, 0);
 const L0 = 2;
@@ -50,7 +50,7 @@ const onFloor = (ball, floorLevel, epsilon = 2e-2) =>
     ball.position.y - ball.radius <= shiftUp + floorLevel - epsilon;
 Simulation
     .with({
-        htmlDivId: "slinkyContainer",
+        htmlDivId: 'slinkyContainer',
         camera: {
             position: new Vec3(4, 2, 10).multiplyScalar(1.15),
             fieldOfView: 50
@@ -59,14 +59,14 @@ Simulation
             enabled: false,
         },
         viewport: {
-            aspectRatio: "4/3"
+            aspectRatio: '4/3'
         }
     })
     .bind(stick1.onceWith(new Cylinder({ color: 0x855E42})))
     .bind(stick2.onceWith(new Cylinder({ color: 0x855E42})))
-    .bind(ball1.alwaysWith(new Sphere({ color: "red" })))
-    .bind(ball2.alwaysWith(new Sphere({ color: "green" })))
-    .bind(ball3.alwaysWith(new Sphere({ color: "yellow" })))
+    .bind(ball1.alwaysWith(new Sphere({ color: 0xff0000 })))
+    .bind(ball2.alwaysWith(new Sphere({ color: 0x00ff00 })))
+    .bind(ball3.alwaysWith(new Sphere({ color: 0xffff00 })))
     .bind(ball1.and(ball2).alwaysWith(new Helix({
         color: 0x00ffff,
         thickness: 0.075

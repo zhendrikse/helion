@@ -5,8 +5,8 @@ export class UPlotGraph {
     /**
      * @param {Object} options
      * @param {any} options.dataDefinition,
-     * @param {number} options.width = 600,
-     * @param {number} options.height = 300,
+     * @param {number | null} options.width = null,
+     * @param {number | null} options.height = null,
      * @param {string} options.title = '',
      * @param {string} options.xLabel = '',
      * @param {string} options.yLabel = '',
@@ -16,8 +16,8 @@ export class UPlotGraph {
      */
     constructor({
         dataDefinition,
-        width = 600,
-        height = 300,
+        width = null,
+        height = null,
         title = '',
         xLabel = '',
         yLabel = '',
@@ -51,7 +51,12 @@ export class UPlotGraph {
      */
     attach(parentDiv) {
         if (this._uplotChart) return this;
-        const uPlotOptions = this._uplotOptions(...this._uPlotOptionsArgs);
+        let [title, width, height, labelColor, xLabel, yLabel, series, yRange] = this._uPlotOptionsArgs;
+        if (width == null) width = parentDiv.clientWidth || parentDiv.getBoundingClientRect?.().width || 600;
+        // fallback if still 0 (before layout)
+        if (!width) width = 600;
+        if (height == null) height = Math.round(width * 0.5);
+        const uPlotOptions = this._uplotOptions(title, width, height, labelColor, xLabel, yLabel, series, yRange);
         const plotDiv = document.createElement('div');
         parentDiv.appendChild(plotDiv);
         this._plotDiv = plotDiv;

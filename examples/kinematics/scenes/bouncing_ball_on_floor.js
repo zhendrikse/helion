@@ -1,13 +1,22 @@
-import { Vector2 } from "three";
+import { Vector2 } from 'three';
 import {
-    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, Trail, G, UniformGravitationalForce
-} from "../../../src/index.js";
+    RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, Trail, G, UniformGravitationalForce, UPlotGraph,
+    Vec2
+} from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 
 //
 // Physics model
 //
 class BouncingBall extends RadialSymmetricBody {
+    /**
+     * @param {{
+     * position?: Vec3
+     * velocity?: Vec3
+     * radius?: number
+     * mass?: number
+     * }} param0 
+     */
     constructor({position, velocity, radius, mass}) {
         super({position, velocity, radius, mass});
     }
@@ -18,6 +27,7 @@ class BouncingBall extends RadialSymmetricBody {
         return this.position.y - this.radius <= epsilon + floorLevel;
     }
 
+    /** @param {number} dt */
     bounceOffOfFloor(dt, elasticity=1, epsilon=1e-1) {
         this.velocity.y *= -elasticity;
         this.position.addScaledVector(this.velocity, dt);
@@ -36,22 +46,22 @@ const ball = new BouncingBall({
 });
 
 const gravitationalForce = new UniformGravitationalForce();
-const sphere = new Sphere({ color: "cyan" });
-const graphDefinition = {
+const sphere = new Sphere({ color: 0x00ffff });
+const graph = new UPlotGraph({
     dataDefinition: [
-        { label: "t" },
-        { label: "ball1", color: "blue" },
-        { label: "Y-position", color: "cyan" },
-        { label: "Kinetic Energy", color: "red" },
-        { label: "Potential Energy", color: "green" }
+        { label: 't' },
+        { label: 'ball1', color: 'blue' },
+        { label: 'Y-position', color: 'cyan' },
+        { label: 'Kinetic Energy', color: 'red' },
+        { label: 'Potential Energy', color: 'green' }
     ],
-    title: "Bouncing ball",
-    xLabel: "Simulation time",
-    yLabel: "Displacement"
-};
+    title: 'Bouncing ball',
+    xLabel: 'Simulation time',
+    yLabel: 'Displacement'
+});
 const simulation = Simulation
     .with({
-        htmlDivId: "bouncingBallContainer",
+        htmlDivId: 'bouncingBallContainer',
         camera: {
             position: new Vec3(2, 1, 0).multiplyScalar(3.25)
         }
@@ -75,16 +85,17 @@ const simulation = Simulation
     .onFrame((timeStamp) => updateGraph(timeStamp))
     .addObject3D(new Floor({
         type: Floor.Type.GRID,
-        planeSizeXy: new Vector2(5, 5),
+        planeSizeXy: new Vec2(5, 5),
         opacity: 0.3,
         granularity: 20
     }))
-    .setupGraphWith(graphDefinition);
+    .addGraph(graph);
 
+/** @param {number} simulatedTime */
 function updateGraph(simulatedTime) {
     if (ball.reachedEnd())
         return;
 
-    simulation.plot([simulatedTime, ball.position.y, ball.kineticEnergy, ball.mass * G * ball.position.y]);
+    graph.push([simulatedTime, ball.position.y, ball.kineticEnergy, ball.mass * G * ball.position.y]);
 }
 

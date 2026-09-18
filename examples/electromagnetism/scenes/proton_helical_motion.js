@@ -1,8 +1,9 @@
-import { Color } from "three";
+import { Color } from 'three';
 import {
     Range, Sphere, Trail, Vec3, ArrowField,
-    Slider, Simulation, Aquarium, RadialSymmetricBody, LorentzForce, VectorField, degToRad
-} from "../../../src/index.js";
+    Slider, Simulation, Aquarium, RadialSymmetricBody, LorentzForce, VectorField, degToRad,
+    Colour
+} from '../../../src/index.js';
 
 const initialSspeed = 50;
 const angle = degToRad(10);
@@ -18,6 +19,10 @@ class UniformMagneticField extends VectorField {
         this._fieldStrength = strength;
     }
 
+    /**
+     * @param {Vec3} position
+     * @param {Vec3} target
+     */
     sample(position, target) {
         target.copy(this._field.clone().multiplyScalar(this._fieldStrength));
     }
@@ -64,7 +69,7 @@ const outOfBox = (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize
 
 Simulation
     .with({
-        htmlDivId: "helicalProtonContainer",
+        htmlDivId: 'helicalProtonContainer',
         camera: {
             position: new Vec3(7, 4, 4.5).multiplyScalar(27),
             fieldOfView: 30
@@ -86,22 +91,22 @@ Simulation
             .integrate(dt);
     })
     .addObject3D(new Aquarium({
-        color: 0x1e90ff,
+        contentColor: Colour.fromHex(0x1e90ff),
         opacity: 0.1,
         size: new Vec3(boxSize, boxSize, boxSize).multiplyScalar(2.1),
-        frameColor: 0x779977
+        frameColor: Colour.fromHex(0x779977)
     }))
-    .append(new Slider("🪫 Charge: ")
+    .append(new Slider('🪫 Charge: ')
         .withRange(new Range(.25, 5, .1))
         .on(proton.state)
         .withValue(0.8)
-        .withProperty("charge"))
-    .append(new Slider("🧲 Field: ")
+        .withProperty('charge'))
+    .append(new Slider('🧲 Field: ')
         .withRange(new Range(.5, 5, .1))
         .on(magneticField)
         .withValue(1)
-        .withProperty("fieldStrength"))
-    .append(new Slider("🚀 Speed: ")
+        .withProperty('fieldStrength'))
+    .append(new Slider('🚀 Speed: ')
         .withRange(new Range(1, 100, 1))
         .withValue(50)
-        .addEventListener("input", speedCallback));
+        .addEventListener('input', speedCallback));

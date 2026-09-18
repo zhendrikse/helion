@@ -1,4 +1,6 @@
-import {Vec3, Block, Simulation, Box, Aquarium, UniformGravitationalForce, DragForce, Force } from "../../../src/index.js";
+import {
+    Vec3, Block, Simulation, Box, Aquarium, UniformGravitationalForce, DragForce, Force, UPlotGraph, Colour 
+} from '../../../src/index.js';
 
 const liquidDensity = 1000;
 const g = -9.8;
@@ -8,6 +10,7 @@ class WoodenBlock extends Block {
         super({ size: size, mass: density * size.x * size.y * size.z });
     }
 
+    /** @param {Aquarium} water */
     submergedVolume(water) {
         const topFluid = water.position.y + water.size.y / 2;
         const topBlock = this.position.y + this.size.y / 2;
@@ -26,6 +29,7 @@ class WoodenBlock extends Block {
 }
 
 class FloatingForce extends Force {
+    /** @param {Aquarium} water */
     constructor(water) {
         super();
         this._water = water;
@@ -35,6 +39,7 @@ class FloatingForce extends Force {
         this._forceVector.y = liquidDensity * -g * woodenBlock.submergedVolume(this._water);
     }
 
+    /** @param {Block} woodenBlock */
     applyTo(woodenBlock) {
         this._calculateForceOn(woodenBlock);
         woodenBlock.force.y += this._forceVector.y;
@@ -43,17 +48,28 @@ class FloatingForce extends Force {
 
 const woodenBlock = new WoodenBlock({ size: new Vec3(0.4, 0.4, 0.1) });
 const water = new Aquarium({
-    color: 0x1e90ff,
+    contentColor: Colour.fromHex(0x1e90ff),
     size: new Vec3(2, 2, 0.75),
-    frameColor: 0xffff00
+    frameColor: Colour.Yellow
 });
 const floatingForce = new FloatingForce(water);
 const gravitationalForce = new UniformGravitationalForce();
 const dragForce = new DragForce();
 
+const graph = new UPlotGraph({
+    dataDefinition: [
+        { label: 't [s]', color: 'yellow' },
+        { label: 'buoyancy', color: 'magenta' },
+        { label: 'drag', color: 'blue' }
+    ],
+    title: 'Buoyancy & drag forces',
+    xLabel: 'Simulation time',
+    yLabel: 'y [m]'
+});
+
 const simulation = Simulation
     .with({
-        htmlDivId: "floatingBlockContainer",
+        htmlDivId: 'floatingBlockContainer',
         camera: {
             position: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
         }
@@ -70,15 +86,6 @@ const simulation = Simulation
             .apply(floatingForce)
             .apply(dragForce);
         woodenBlock.integrate(dt);
-        simulation.plot([clock.simulatedTime, floatingForce.asVector.y, dragForce.asVector.y]);
+        graph.push([clock.simulatedTime, floatingForce.asVector.y, dragForce.asVector.y]);
     })
-    .setupGraphWith({
-        dataDefinition: [
-            { label: "t [s]", color: "yellow" },
-            { label: "buoyancy", color: "magenta" },
-            { label: "drag", color: "blue" }
-        ],
-        title: "Buoyancy & drag forces",
-        xLabel: "Simulation time",
-        yLabel: "y [m]"
-    })
+    .addGraph(graph)

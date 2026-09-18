@@ -1,6 +1,6 @@
 import {
     Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, ParticleView2D, Checkbox,
-    RadialSymmetricBody
+    RadialSymmetricBody, UPlotGraph
 } from '../../../src/index.js';
 
 const CONTAINER_SIZE = 10;
@@ -27,6 +27,18 @@ const temperatureSlider = new Slider('Temperature')
     .withValue(gas.temperature)
     // @ts-ignore
     .onInput(event => gas.temperature = Number(event.target.value));
+
+const graph = new UPlotGraph({
+    dataDefinition: [
+        {},
+        { label: 'Simulation', color: 'cyan', fill: 'rgba(0, 255, 255, 0.2)' },
+        { label: 'Maxwell (2D)', color: 'orange' }
+    ],
+    height: 250,
+    title: 'Speed Distribution (averaged)',
+    xLabel: 'Speed',
+    yLabel: 'Particles'
+});
 
 const simulation = Simulation
     .with({
@@ -71,17 +83,7 @@ const simulation = Simulation
         .on(gas)
         .withProperty('tracerMass'))
     .append(temperatureSlider)
-    .setupGraphWith({
-        dataDefinition: [
-            {},
-            { label: 'Simulation', color: 'cyan', fill: 'rgba(0, 255, 255, 0.2)' },
-            { label: 'Maxwell (2D)', color: 'orange' }
-        ],
-        height: 250,
-        title: 'Speed Distribution (averaged)',
-        xLabel: 'Speed',
-        yLabel: 'Particles'
-    })
+    .addGraph(graph)
     .onFrame((_) => {
         const { bins, theory } = gas.speedDistribution();
         histogramBuffer.push(bins);
@@ -95,7 +97,7 @@ const simulation = Simulation
         for (let i = 0; i < BIN_COUNT; i++)
             averaged[i] /= histogramBuffer.length;
 
-        const graphData = simulation._plot.graphData;
+        const graphData = graph.graphData;
         graphData[0].length = 0;
         graphData[1].length = 0;
         graphData[2].length = 0;
@@ -104,7 +106,7 @@ const simulation = Simulation
             graphData[1].push(averaged[i]);
             graphData[2].push(theory[i]);
         }
-        simulation._plot.update();
+        graph.update();
     })
     .onReset(() => {
         gas.reset(temperatureSlider.value);

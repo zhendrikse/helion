@@ -1,14 +1,21 @@
 import {
     Vec3, Simulation, Sphere, Box, Slider, Range, SwitchableBondView, RadialSymmetricBody,
-    MathPhysicsModelBehavior, SpringForce, Force, UniformGravitationalForce, Block, G
-} from "../../../src/index.js";
-import {g} from "../../../src/model/phys/forces.js";
+    MathPhysicsModelBehavior, SpringForce, Force, UniformGravitationalForce, Block, G, UPlotGraph,
+    BodyPair
+} from '../../../src/index.js';
+import {g} from '../../../src/model/phys/forces.js';
 
 /**
  * Artificial restoring force used to keep the chain close to
  * the horizontal/vertical corner around the pivot.
  */
 class PivotForce extends Force {
+    /**
+     * @param {{
+     * springConstant?: number,
+     * distance?: number
+     * }} param0 
+     */
     constructor({ springConstant, distance }) {
         super();
 
@@ -16,6 +23,7 @@ class PivotForce extends Force {
         this._distance = distance;
     }
 
+    /** @param {Body} body */
     _calculateForceOn(body) {
         const pos = body.position;
         const d = this._distance;
@@ -32,6 +40,7 @@ class PivotForce extends Force {
             this._forceVector.set(-pos.x, -pos.y, 0);
     }
 
+    /** @param {Body} body */
     applyTo(body) {
         this._calculateForceOn(body);
         body.force.addScaledVector(this._forceVector, this._springConstant);
@@ -54,7 +63,9 @@ class Chain extends MathPhysicsModelBehavior {
         this._mass = mass;
         this._amountHanging = amountHanging;
         this._interBallLength = length / (totalBalls - 1);
+        /** @type {RadialSymmetricBody[]} */
         this._balls = [];
+        /** @type {BodyPair[]} */
         this._bonds = [];
 
         this._pivotForce = new PivotForce({
@@ -84,6 +95,11 @@ class Chain extends MathPhysicsModelBehavior {
         this._pivotForce._springConstant = .5 * value;
     }
 
+    /**
+     * @param {Vec3} position
+     * @param {number} spacing
+     * @param {number} bodyMass
+     */
     _createHorizontalChainSection(position, spacing, bodyMass) {
         for (let i = 0; i < this._totalBalls; i++) {
             if (position.x > 0)
@@ -99,6 +115,11 @@ class Chain extends MathPhysicsModelBehavior {
         }
     }
 
+    /**
+     * @param {Vec3} position
+     * @param {number} spacing
+     * @param {number} bodyMass
+     */
     _createVerticalChainSection(position, spacing, bodyMass) {
         position = this._balls[this._balls.length - 1].position.clone();
         while (position.y > -this._amountHanging) {
@@ -125,6 +146,7 @@ class Chain extends MathPhysicsModelBehavior {
             this._bonds.push(this._balls[i].and(this._balls[i + 1]));
     }
 
+    /** @param {number} dt */
     update(dt) {
         for (const bond of this._bonds)
             bond.apply(this._springForce);
@@ -157,12 +179,25 @@ const table = new Block({
     size: new Vec3(1, 0.1, 0.3)
 });
 
+const graph = new UPlotGraph({
+    dataDefinition: [
+        { label: 't', color: 'yellow' },
+        { label: 'a (chain end)', color: 'white' },
+        { label: 'g', color: 'red' }
+    ],
+    title: 'Acceleration of chain end',
+    xLabel: 'Time [s]',
+    yLabel: 'Acceleration [m/s²]',
+    maxPoints: 500,
+    labelColor: 'yellow'
+});
+
 const simulation = Simulation
     .with({
-        htmlDivId: "chainDropContainer",
+        htmlDivId: 'chainDropContainer',
         camera: {
             position: new Vec3(1, 0.5, 2).multiplyScalar(1.75),
-            controls: new Vec3(.2, -.7, 0),
+            target: new Vec3(.2, -0.7, 0),
             fieldOfView: 30,
         },
         scene: {
@@ -177,32 +212,21 @@ const simulation = Simulation
     .onFrame(timestep => {
         if (!simulation.isRunning)
             return;
-        simulation.plot([timestep, chain.endBall.acceleration.y, g]);
+        graph.push([timestep, chain.endBall.acceleration.y, g]);
     })
     .bind(table.onceWith(new Box({ color: 0x888888, opacity: 0.3 })))
-    .setupGraphWith({
-        dataDefinition: [
-            { label: "t", color: "yellow" },
-            { label: "a (chain end)", color: "white" },
-            { label: "g", color: "red" }
-        ],
-        title: "Acceleration of chain end",
-        xLabel: "Time [s]",
-        yLabel: "Acceleration [m/s²]",
-        maxPoints: 500,
-        labelColor: "yellow"
-    })
+    .addGraph(graph)
     .append(
-        new Slider("Spring force ")
+        new Slider('Spring force ')
             .on(chain)
-            .withProperty("springConstant")
+            .withProperty('springConstant')
             .withRange(new Range(1, 100, 1))
             .withValue(chain.springConstant)
     )
     .append(
-        new Slider("Damping ")
+        new Slider('Damping ')
             .on(chain)
-            .withProperty("damping")
+            .withProperty('damping')
             .withRange(new Range(0, 1, 0.01))
             .withValue(chain.damping)
     );
