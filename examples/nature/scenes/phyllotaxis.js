@@ -17,10 +17,7 @@ class FlowerParticle extends RadialSymmetricBody {
      * @param {number} index 
      */
     constructor(cValue, index) {
-        super({
-            radius: 8
-        });
-
+        super({ radius: 8 });
         this.n = index;
         this.angle = 0;
         this.distance = 0;
@@ -37,6 +34,16 @@ class FlowerParticle extends RadialSymmetricBody {
         this.state.position.copy(new Vec2(radius * Math.cos(rad), radius * Math.sin(rad)));
     }
 }
+
+/**
+ * @param {number} cValue 
+ * @param {number} nValue 
+ */
+const updateTitle = (cValue, nValue) =>
+    simulation.setLatexTitle(
+        `\\begin{cases} \\phi &= ${nValue} \\cdot \\dfrac{137.5\\pi}{180} \\\\ r &= ${cValue}\\sqrt{${nValue}} \\end{cases}` + 
+        `\\Rightarrow  \\begin{pmatrix} x \\\\ y \\end{pmatrix} = r \\begin{pmatrix} \\cos(\\phi) \\\\ \\sin(\\phi) \\end{pmatrix}`
+    );
 
 const colorSchemes = [
     (/** @type {{ angle: number; distance: number; }} */ p) => normalizeHue(p.angle - p.distance), // (angle - radius) % 360
@@ -118,14 +125,4 @@ function setColoringSchemeTo(index) {
     resetParticleViews();
     particleViews.forEach(view => view.colorFunction = colorSchemes[index]);
     updateTitle(c, n);
-}
-
-/**
- * @param {number} cValue 
- * @param {number} nValue 
- */
-function updateTitle(cValue, nValue) {
-    // Origineel: $$\begin{cases} \phi &= n·137.5π/180 \\ r &= c√n \end{cases} ⇒ {x = r cos φ, y = r sin φ}
-    const latex = `\\begin{cases} \\phi &= ${nValue} \\cdot \\dfrac{137.5\\pi}{180} \\\\ r &= ${cValue}\\sqrt{${nValue}} \\end{cases} \\Rightarrow  \\begin{cases} x &= r \\cdot \\cos(\\phi) \\\\ y &= r \\cdot \\sin(\\phi) \\end{cases}`;
-    simulation.setLatexTitle(latex);
 }
