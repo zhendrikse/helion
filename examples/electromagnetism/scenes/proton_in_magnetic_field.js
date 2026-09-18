@@ -1,7 +1,6 @@
-import { Color } from "three";
+import { Color } from 'three';
 import {
-    RadialSymmetricBody, LorentzForce, Range, Simulation, Slider, Sphere, ArrowField, Trail, Vec3, VectorField
-} from "../../../src/index.js";
+    RadialSymmetricBody, LorentzForce, Range, Simulation, Slider, Sphere, ArrowField, Trail, Vec3, VectorField, Colour} from '../../../src/index.js';
 
 //
 // Physics
@@ -35,7 +34,7 @@ const lorentzForce = LorentzForce.in(magneticField);
 //
 // View
 //
-const sphere = new Sphere({ color: 0xff0000 });
+const sphere = new Sphere({ color: Colour.Red });
 const arrowField = new ArrowField({
     xRange: new Range(-6, 6, .5),
     yRange: new Range(0, 0, .5),
@@ -49,12 +48,12 @@ const arrowField = new ArrowField({
 const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
 Simulation
     .with({
-        htmlDivId: "protonInFieldContainer",
+        htmlDivId: 'protonInFieldContainer',
         camera: {
             position: new Vec3(0, 5, -10)
         },
         viewport: {
-            aspectRatio: "19/12"
+            aspectRatio: '19/12'
         }
     })
     .withMouseClickEventListener()
@@ -68,15 +67,15 @@ Simulation
             .apply(lorentzForce)
             .integrate(dt);
     })
-    .append(new Slider("🧲 Field: ")
+    .append(new Slider('🧲 Field: ')
         .withRange(new Range(.1, 1, .01))
         .on(magneticField)
         .withValue(.2)
-        .withProperty("magnitude")
+        .withProperty('magnitude')
     )
-    .append(new Slider("🚀 Speed: ")
+    .append(new Slider('🚀 Speed: ')
         .withRange(new Range(1, 100, 1))
         .withValue(50)
-        .addEventListener("input", event =>
+        .addEventListener('input', event =>
             proton.state.velocity.copy(speedToVelocity(event.target.value * .01, proton.velocity)))
     );

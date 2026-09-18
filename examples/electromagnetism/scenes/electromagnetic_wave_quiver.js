@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, VectorField, Range, Simulation, Sphere, ArrowField, Vec3, Colour
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const Q = 1.6e-19;
 const K = 9e9;
@@ -134,7 +134,7 @@ const magneticArrowField = new ArrowField({
 
 Simulation
     .with({
-        htmlDivId: "electromagneticWaveContainer",
+        htmlDivId: 'electromagneticWaveContainer',
         camera: {
             position: new Vec3(15, 5, 20),
             fieldOfView: 45
@@ -146,10 +146,10 @@ Simulation
     .withMouseClickEventListener()
     .runsEvery(1e-3)
     .advancesBy(4e-20)
-    .bind(electron.alwaysWith(new Sphere({ color: 0xff0000 })))
+    .bind(electron.alwaysWith(new Sphere({ color: Colour.Red })))
     .bind(electricField.alwaysWith(electricArrowField))
     .bind(magneticField.alwaysWith(magneticArrowField))
-    .bind(proton.alwaysWith(new Sphere({ color: 0xffff00 })))
+    .bind(proton.alwaysWith(new Sphere({ color: Colour.Yellow })))
     .onStep((clock, _) => {
         electron.updateAt(clock.simulatedTime);
         proton.updateAt(clock.simulatedTime);

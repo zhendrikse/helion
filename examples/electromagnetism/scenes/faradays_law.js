@@ -1,8 +1,7 @@
-import { Color, Group } from "three";
+import { Color, Group } from 'three';
 import {
     VectorField, Range, Cylinder, ArrowField, Sphere, RadialSymmetricBody, Vec3,
-    Arrow, Ring, Checkbox, Simulation, AxialSymmetricBody
-} from "../../../src/index.js";
+    Arrow, Ring, Checkbox, Simulation, AxialSymmetricBody, Colour} from '../../../src/index.js';
 
 const loopSegments = 10;
 const loopRadius = 0.5;   // pas aan voor visual scale
@@ -43,17 +42,17 @@ faradayLoopsGroup.visible = false;
 
 const simulation = Simulation
     .with({
-        htmlDivId: "faradayLawContainer",
+        htmlDivId: 'faradayLawContainer',
         camera: {
             position: new Vec3(3, 1, 4),
             fieldOfView: 45
         },
         viewport: {
-            aspectRatio: "19/12"
+            aspectRatio: '19/12'
         }
     })
     .withMouseClickEventListener()
-    .bind(wire.onceWith(new Cylinder({ color: new Color("yellow") })))
+    .bind(wire.onceWith(new Cylinder({ color: new Color('yellow') })))
     .runsEvery(1e-3)
     .advancesBy(.01)
     .substeps(10)
@@ -67,9 +66,9 @@ const simulation = Simulation
         for (const charge of charges)
             charge.position.z = zStart + ((charge.baseZ + (clock.simulatedTime % 20) / 25) % numCharges);
     })
-    .append(new Checkbox("Show Faraday loop: ")
+    .append(new Checkbox('Show Faraday loop: ')
         .on(faradayLoopsGroup)
-        .withProperty("visible")
+        .withProperty('visible')
     );
 
 function createFaradayLoops(faradayLoopsGroup) {
@@ -84,7 +83,7 @@ function createFaradayLoops(faradayLoopsGroup) {
             });
 
             const arrow = new Arrow({
-                color: new Color("green"),
+                color: new Color('green'),
                 size: 0.05,
                 round: true
             });
@@ -92,7 +91,7 @@ function createFaradayLoops(faradayLoopsGroup) {
             faradayLoopsGroup.add(arrow);
         }
 
-        const ring = new Ring({ color: new Color("green"), thickness: 3e-2 });
+        const ring = new Ring({ color: new Color('green'), thickness: 3e-2 });
         simulation.bind(new AxialSymmetricBody({
             position: new Vec3(0, 0, z + .5),
             axis: new Vec3(0, 0, 1),
@@ -121,7 +120,7 @@ for (let i = 0; i < numCharges; i++) {
     const charge = new RadialSymmetricBody({ position: new Vec3(0, 0, i), radius: 0.055 });
     charge.baseZ = i;
     charges.push(charge);
-    simulation.bind(charge.alwaysWith(new Sphere({ color: new Color("orange") })));
+    simulation.bind(charge.alwaysWith(new Sphere({ color: Colour.Orange })));
 }
 
 const magneticVectors = [];
@@ -129,7 +128,7 @@ for (const position of magneticFieldPositions) {
     const body = new AxialSymmetricBody({ position });
     magneticVectors.push(body);
     simulation.bind(body.alwaysWith(new Arrow({
-        color: new Color("red"),
+        color: new Color('red'),
         size: 7.5e-2,
         round: true
     })));

@@ -1,7 +1,6 @@
 import {
     Vec3, Simulation, Sphere, SwitchableBondView, EC, SpringForce, Force, VectorView,
-    RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField, CoulombForce
-} from "../../../src/index.js";
+    RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField, CoulombForce, Colour} from "../../../src/index.js";
 
 const BOND_LENGTH     = 1.0E-10;
 const BOND_CONSTANT   = 8.0E-4;
@@ -219,9 +218,9 @@ Simulation
         co2.reset();
         electricField.update(0);
     })
-    .bind(co2.oxygen1.alwaysWith(new Sphere({ color: 0x00ff00, segments: 36 })))
-    .bind(co2.oxygen2.alwaysWith(new Sphere({ color: 0x00ff00, segments: 36 })))
-    .bind(co2.carbon.alwaysWith(new Sphere({ color: 0xff0000, segments: 36 })))
+    .bind(co2.oxygen1.alwaysWith(new Sphere({ color: Colour.Green, segments: 36 })))
+    .bind(co2.oxygen2.alwaysWith(new Sphere({ color: Colour.Green, segments: 36 })))
+    .bind(co2.carbon.alwaysWith(new Sphere({ color: Colour.Red, segments: 36 })))
     .bind(co2.oxygen1.and(co2.carbon).alwaysWith(bondView1))
     .bind(co2.oxygen2.and(co2.carbon).alwaysWith(bondView2))
     .bind(electricField.alwaysWith(electricArrow))

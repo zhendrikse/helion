@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Floor, SwitchableBondView, Transformation,
-    Slider, Range, Vec2, ChainTopology, Lattice, LatticeView, ThreeJsScene, UPlotGraph
+    Slider, Range, Vec2, ChainTopology, Lattice, LatticeView, ThreeJsScene, UPlotGraph, Colour
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 
@@ -34,7 +34,7 @@ const latticeView = LatticeView.from({
     bondView: SwitchableBondView,
     bodyArgs: {
         castShadow: true,
-        color: 'red'
+        color: Colour.Red
     },
     bondArgs: {
         thickness: 0.075,

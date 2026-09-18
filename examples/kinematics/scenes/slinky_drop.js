@@ -1,7 +1,6 @@
 import {
     RadialSymmetricBody, Simulation, Vec3, Sphere, Helix, Cylinder, SpringForce, Floor, 
-    Vec2, AxialSymmetricBody, UniformGravitationalForce
-} from '../../../src/index.js';
+    Vec2, AxialSymmetricBody, UniformGravitationalForce, Colour} from '../../../src/index.js';
 import {AmbientLight, DirectionalLight} from 'three';
 
 const g = new Vec3(0, -9.8, 0);
@@ -64,9 +63,9 @@ Simulation
     })
     .bind(stick1.onceWith(new Cylinder({ color: 0x855E42})))
     .bind(stick2.onceWith(new Cylinder({ color: 0x855E42})))
-    .bind(ball1.alwaysWith(new Sphere({ color: 0xff0000 })))
-    .bind(ball2.alwaysWith(new Sphere({ color: 0x00ff00 })))
-    .bind(ball3.alwaysWith(new Sphere({ color: 0xffff00 })))
+    .bind(ball1.alwaysWith(new Sphere({ color: Colour.Red })))
+    .bind(ball2.alwaysWith(new Sphere({ color: Colour.Green })))
+    .bind(ball3.alwaysWith(new Sphere({ color: Colour.Yellow })))
     .bind(ball1.and(ball2).alwaysWith(new Helix({
         color: 0x00ffff,
         thickness: 0.075

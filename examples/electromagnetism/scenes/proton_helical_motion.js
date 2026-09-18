@@ -48,7 +48,7 @@ const proton = new RadialSymmetricBody({
 //
 // View
 //
-const protonSphere = new Sphere({ color: 0xff0000 });
+const protonSphere = new Sphere({ color: Colour.Red });
 const arrowField = new ArrowField({
     xRange: new Range(-boxSize, boxSize, 10),
     yRange: new Range(-boxSize, boxSize, 10),

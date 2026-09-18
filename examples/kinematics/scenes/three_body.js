@@ -1,6 +1,5 @@
 import {
-    Integrators, RadialSymmetricBody, G, Simulation, Vec3, Sphere, Trail, GravitationalForce
-} from "../../../src/index.js";
+    Integrators, RadialSymmetricBody, G, Simulation, Vec3, Sphere, Trail, GravitationalForce, Colour} from "../../../src/index.js";
 
 //
 // Physics model
@@ -48,12 +47,12 @@ Simulation
             scale: 1e-9
         }
     })
-    .bind(bodyA.alwaysWith(new Sphere({ color: "yellow" })))
-    .bind(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: "yellow" })))
-    .bind(bodyB.alwaysWith(new Sphere({ color: "cyan" })))
-    .bind(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: "cyan" })))
-    .bind(bodyC.alwaysWith(new Sphere({ color: "magenta" })))
-    .bind(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: "magenta" })))
+    .bind(bodyA.alwaysWith(new Sphere({ color: Colour.Yellow })))
+    .bind(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: Colour.Yellow })))
+    .bind(bodyB.alwaysWith(new Sphere({ color: Colour.Cyan })))
+    .bind(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: Colour.Cyan })))
+    .bind(bodyC.alwaysWith(new Sphere({ color: Colour.fromHex(0xff00ff) })))
+    .bind(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: Colour.fromHex(0xff00ff) })))
     .maxOutCpu(_ => {
         bodyA.and(bodyB).apply(gravitationalForce);
         bodyA.and(bodyC).apply(gravitationalForce);

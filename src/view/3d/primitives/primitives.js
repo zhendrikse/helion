@@ -1,13 +1,14 @@
 import {
     Vector3, BufferAttribute, TorusGeometry, LineBasicMaterial, Line, TubeGeometry,
     MeshStandardMaterial, SphereGeometry, Mesh, BufferGeometry,
-    CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion
-} from "three";
-import { Renderable3D } from "../../renderer.js";
-import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
-import { Vec3 } from "../../../model/math/math.js";
-import { Body } from "../../../model/phys/bodies.js";
-import {Colour} from "../../colormappers.js";
+    CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion,
+    Material
+} from 'three';
+import { Renderable3D } from '../../renderer.js';
+import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { Vec3 } from '../../../model/math/math.js';
+import { Body } from '../../../model/phys/bodies.js';
+import {Colour} from '../../colormappers.js';
 
 //
 // T R A I L
@@ -15,13 +16,15 @@ import {Colour} from "../../colormappers.js";
 class TrailLine {
     constructor({
         maxPoints = 200,
-        color = 0xffffff,
+        color = Colour.Yellow,
         linewidth = 1,
     } = {}) {
         this._maxPoints = maxPoints;
         this._positions = [];
         this._geometry = new BufferGeometry();
-        this._material = new LineBasicMaterial({ color, linewidth });
+        const _col = new Color();
+        color.asThreeJsColor(_col);
+        this._material = new LineBasicMaterial({ color: _col, linewidth });
         this._line = new Line(this._geometry, this._material);
     }
 
@@ -53,7 +56,7 @@ export class Trail extends Renderable3D {
         maxPoints = 200,
         trailStep = 1,
         lineWidth = 1,
-        color = 0xffff00
+        color = Colour.Yellow
     } = {}) {
         super();
         this._color = color;
@@ -72,7 +75,7 @@ export class Trail extends Renderable3D {
 
     canBindTo(model) {
         if (!model.position)
-            throw new Error("Trail can only bind to bodies with a position.");
+            throw new Error('Trail can only bind to bodies with a position.');
         return true;
     }
 
@@ -113,8 +116,9 @@ export class Trail extends Renderable3D {
     set color(value) {
         this._color = value;
 
-        if (this._trail?._line?.material)
-            this._trail._line.material.color.set(value);
+        if (this._trail?._line?.material) {
+            value.asThreeJsColor(this._trail._line.material.color);
+        }
     }
 
     dispose() {
@@ -135,46 +139,62 @@ export class Trail extends Renderable3D {
 // Sphere
 //
 export class Sphere extends Renderable3D {
+    /**
+     * @param {{
+     * color?: Colour,
+     * opacity?: number,
+     * wireframe?: boolean,
+     * visible?: boolean
+     * material?: Material | null,
+     * segments?: number,
+     * castShadow?: boolean
+     * }} param0 
+     */
     constructor({
-        color = 0xffff00,
+        color = Colour.Yellow,
         opacity = 1,
         wireframe = false,
         visible = true,
-        material = new MeshStandardMaterial({
-            color: color,
-            opacity: opacity,
-            transparent: true,
-            wireframe: wireframe,
-            visible: visible,
-            roughness: 0.2,
-            metalness: 0.8
-        }),
+        material = null,
         segments = 24,
         castShadow = false,
     } = {}) {
         super();
+        if (!material) {
+            material = new MeshStandardMaterial({
+                color: color.asThreeJsColor(new Color()),
+                opacity: opacity,
+                transparent: true,
+                wireframe: wireframe,
+                visible: visible,
+                roughness: 0.2,
+                metalness: 0.8
+            });
+        }
         this._mesh = new Mesh(new SphereGeometry(1, segments, segments), material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
         this.visible = visible;
     }
 
+    /** @param {Body} body */
     canBindTo(body) {
         if (!body.position || !body.radius)
-            throw new Error("Sphere can only bind to bodies with a position and a radius.");
+            throw new Error('Sphere can only bind to bodies with a position and a radius.');
         return true;
     }
 
+    /** @param {Body} body */
     synchronizeWith(body) {
         this.position.copy(body.position);
         this.scale.setScalar(body.radius);
     }
 
-    get radius() { return this._radius; }
-    get color() { return this._mesh.material.color; }
-
-    set radius(newRadius) { this._radius = newRadius; }
-    set color(newColor) { this._mesh.material.color.set(newColor); }
+    get color() { return Colour.fromThreeJsColor(this._mesh.material.color); }
+    /** @param {Colour} newColor */
+    set color(newColor) {
+        newColor.asThreeJsColor(this._mesh.material.color);
+    }
 }
 
 /**
@@ -255,7 +275,7 @@ export class Arrow extends Renderable3D {
 
     canBindTo(body) {
         if (!body.position || !body.axis)
-            throw new Error("Arrow can only bind to bodies with a position and an axis.");
+            throw new Error('Arrow can only bind to bodies with a position and an axis.');
         return true;
     }
 
@@ -326,7 +346,7 @@ export class VectorView extends Renderable3D {
 
     canBindTo(body) {
         if (!body.position || !this._vectorPropertyOf)
-            throw new Error("VectorView can only bind to bodies with a position and a vector property.");
+            throw new Error('VectorView can only bind to bodies with a position and a vector property.');
         return true;
     }
 
@@ -363,7 +383,7 @@ export class Cylinder extends Renderable3D {
 
     canBindTo(body) {
         if (!body.position || !body.axis)
-            throw new Error("Cylinder can only bind to bodies with a position and an axis.");
+            throw new Error('Cylinder can only bind to bodies with a position and an axis.');
         return true;
     }
 
@@ -412,7 +432,7 @@ export class Box extends Renderable3D {
 
     canBindTo(body) {
         if (body.position === undefined || body.size === undefined || body.orientation === undefined)
-            throw new Error("Box can only bind to bodies with a position, size, and orientation.");
+            throw new Error('Box can only bind to bodies with a position, size, and orientation.');
         return true;
     }
 
@@ -447,7 +467,7 @@ export class Ring extends Renderable3D {
 
     canBindTo(body) {
         if (!body.position || !body.axis || !body.radius)
-            throw new Error("Ring can only bind to bodies with a position, axis, and radius.");
+            throw new Error('Ring can only bind to bodies with a position, axis, and radius.');
         return true;
     }
 
@@ -562,7 +582,7 @@ export class Helix extends Renderable3D {
      */
     canBindTo(body) {
         if (body.position === undefined || body.axis === undefined)
-            throw new Error("Helix can only bind to bodies with a position and an axis.");
+            throw new Error('Helix can only bind to bodies with a position and an axis.');
         return true;
     }
 
@@ -603,24 +623,24 @@ export class Label extends Renderable3D {
      * }} param0 
      */
     constructor({
-        text = model => "" ,
+        text = model => '' ,
         offset = model => new Vec3(),
         color = Colour.Yellow,
-        fontSize = "16px",
+        fontSize = '16px',
         visible = true
     } = {}) {
         super();
 
-        this._element = document.createElement("div");
-        this._element.className = "helionLabel";
+        this._element = document.createElement('div');
+        this._element.className = 'helionLabel';
 
         Object.assign(this._element.style, {
             color,
             fontSize,
-            margin: "0",
-            padding: "0",
-            lineHeight: "normal",
-            whiteSpace: "nowrap"
+            margin: '0',
+            padding: '0',
+            lineHeight: 'normal',
+            whiteSpace: 'nowrap'
         });
 
         this._label = new CSS2DObject(this._element);
@@ -638,7 +658,7 @@ export class Label extends Renderable3D {
      */
     canBindTo(model) {
         if(model.position === undefined)
-            throw new Error("A label can only bind to bodies with a position");
+            throw new Error('A label can only bind to bodies with a position');
         return true;
     }
 

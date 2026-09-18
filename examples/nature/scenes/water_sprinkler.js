@@ -1,6 +1,5 @@
 import {
-    Vec3, Simulation, Sphere, Box, RadioGroup, RadialSymmetricBody, Block, Slider, Range
-} from '../../../src/index.js';
+    Vec3, Simulation, Sphere, Box, RadioGroup, RadialSymmetricBody, Block, Slider, Range, Colour} from '../../../src/index.js';
 
 const LENGTH = 0.1;
 const DROPLET_RADIUS = 0.04 * LENGTH;
@@ -198,7 +197,7 @@ const simulation = Simulation
     })
     .runsEvery(1e-2)
     .bind(sprinkler.alwaysWith(new Box({ color: 0xffff00 })))
-    .bind(new RadialSymmetricBody({ radius: 0.03 * LENGTH }).onceWith(new Sphere({color: 0xff0000})))
+    .bind(new RadialSymmetricBody({ radius: 0.03 * LENGTH }).onceWith(new Sphere({color: Colour.Red})))
     .onStep((clock, dt) => {
         sprinkler.shedWater(dt);
         sprinkler.rotate(dt);
@@ -230,5 +229,5 @@ const simulation = Simulation
     .start();
 
 for (const droplet of sprinkler)
-    simulation.bind(droplet.alwaysWith(new Sphere({ color: 0x00ffff })));
+    simulation.bind(droplet.alwaysWith(new Sphere({ color: Colour.Cyan })));
 

@@ -1,7 +1,6 @@
 import {
     RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix,
-    Slider, Range, UniformGravitationalForce, SpringForce, DragForce, Body, BodyPair, VectorView
-} from "../../../src/index.js";
+    Slider, Range, UniformGravitationalForce, SpringForce, DragForce, Body, BodyPair, VectorView, Colour} from "../../../src/index.js";
 
 const floor = new Floor({
     position: new Vec3(0, -1, 0),
@@ -48,7 +47,7 @@ const helix = new Helix({
     color: "yellow",
     radiusFunction: () => 0.1
 });
-const sphere = new Sphere({ color: "orange" });
+const sphere = new Sphere({ color: Colour.Orange });
 const velocityArrow = new Arrow({
     color: "cyan",
     size: .1,

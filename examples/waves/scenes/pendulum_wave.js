@@ -1,7 +1,7 @@
 import {
-    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody, ThreeJsScene
+    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody, ThreeJsScene, Colour
 } from '../../../src/index.js';
-import {Color, MeshStandardMaterial} from 'three';
+import {MeshStandardMaterial} from 'three';
 
 const g = 9.8;
 
@@ -136,7 +136,7 @@ pendulums.forEach((pendulum, i) =>
     simulation.bind(pendulum._ball.alwaysWith(
         new Sphere({
             castShadow: true,
-            color: new Color().setHSL(i / (total - 1), 1, 0.5)
+            color: new Colour().setHSL(i / (total - 1), 1, 0.5)
         }))
     )
 );

@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, VectorField, Range, Sphere, ArrowField, Trail, Simulation, Vec3, Colour
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 //
 // Constants
@@ -148,13 +148,13 @@ const electricArrowField = new ArrowField({
 const allGone = () => rod.charges.every(c => c.position.y > 1);
 const simulation = Simulation
     .with({
-        htmlDivId: "chargedRodContainer",
+        htmlDivId: 'chargedRodContainer',
         camera: {
             position: new Vec3(2, .8, 2.5),
             fieldOfView: 30
         },
         viewport: {
-            aspectRatio: "3/4"
+            aspectRatio: '3/4'
         }
     })
     .bind(electricField.alwaysWith(electricArrowField))
@@ -168,7 +168,7 @@ const simulation = Simulation
     });
 
 for (const charge of rod.charges) {
-    const sphere = new Sphere({ color: 0xffff00 });
+    const sphere = new Sphere({ color: Colour.Yellow });
     simulation.bind(charge.alwaysWith(sphere));
     simulation.bind(charge.alwaysWith(new Trail({ maxPoints: 150, color: sphere.color })));
 }

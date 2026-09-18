@@ -1,7 +1,7 @@
 import {
     Block, RadialSymmetricBody, Range, Sphere, Trail, ArrowField, Colour,
     EC, Simulation, Vec3, CoulombForce, VectorField, Segments, BoxSegmentsView
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const K = 9e9;
 
@@ -74,7 +74,7 @@ const electron = new RadialSymmetricBody({
     radius: sheetSize / 35
 });
 
-const electronSphere = new Sphere({ color: 0xffff00 });
+const electronSphere = new Sphere({ color: Colour.Yellow });
 const arrowField = new ArrowField({
     xRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
     yRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
@@ -90,7 +90,7 @@ const arrowField = new ArrowField({
 
 Simulation
     .with({
-        htmlDivId: "chargedSheetContainer",
+        htmlDivId: 'chargedSheetContainer',
         camera: {
             position: new Vec3(12, 8, 16),
             fieldOfView: 20

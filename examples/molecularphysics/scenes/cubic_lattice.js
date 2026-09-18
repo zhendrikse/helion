@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, SwitchableBondView,
-    Slider, Range, Lattice, LatticeView, CubicLatticeTopology, Transformation
+    Slider, Range, Lattice, LatticeView, CubicLatticeTopology, Transformation, Colour
 } from "../../../src/index.js";
 import 'uplot/dist/uPlot.min.css';
 
@@ -43,7 +43,7 @@ const latticeView = LatticeView.from({
     bodyView: Sphere,
     bondView: SwitchableBondView,
     bodyArgs: {
-        color: 0x44eeee,
+        color: Colour.fromHex(0x44eeee),
         castShadow: true
     },
     bondArgs: {

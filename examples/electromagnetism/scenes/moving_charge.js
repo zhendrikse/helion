@@ -1,7 +1,6 @@
-import { Color, AmbientLight, PointLight } from "three";
+import { Color, AmbientLight, PointLight } from 'three';
 import {
-    RadialSymmetricBody, EC, Range, Simulation, Trail, Vec3, Slider, Sphere, ArrowField, CoulombForce, VectorField
-} from "../../../src/index.js";
+    RadialSymmetricBody, EC, Range, Simulation, Trail, Vec3, Slider, Sphere, ArrowField, CoulombForce, VectorField, Colour} from '../../../src/index.js';
 
 const K = 9e9;
 const scale = 1e14;
@@ -59,7 +58,7 @@ const movingCharge = new RadialSymmetricBody({
     charge: 5e-42 * EC
 });
 
-const sphere = new Sphere({ color: new Color(0x44ff44) });
+const sphere = new Sphere({ color: Colour.fromHex(0x44ff44) });
 const arrowField = new ArrowField({
     xRange: new Range(-18 / scale, 18 / scale, 8 / scale),
     yRange: new Range(-9 / scale, 9 / scale, 4 / scale),
@@ -72,26 +71,26 @@ const arrowField = new ArrowField({
 
 const chargeCallback = event => movingCharge.state.charge = Number(event.target.value) * 5e-42 * EC;
 const speedCallback = event => movingCharge.state.velocity.x = event.target.value / scale;
-const chargeSlider = new Slider("🪫 Charge: ")
-    .withUnits(" electron charge(s)")
+const chargeSlider = new Slider('🪫 Charge: ')
+    .withUnits(' electron charge(s)')
     .withValue(1)
     .withRange(new Range(0, 5, .1))
-    .addEventListener("input", chargeCallback);
-const speedSlider = new Slider("🚀 Speed: ")
-    .withUnits(" x 1E-14 m/s")
+    .addEventListener('input', chargeCallback);
+const speedSlider = new Slider('🚀 Speed: ')
+    .withUnits(' x 1E-14 m/s')
     .withValue(25)
     .withRange(new Range(1, 50, 1))
-    .addEventListener("input", speedCallback);
+    .addEventListener('input', speedCallback);
 
 const simulation = Simulation
     .with({
-        htmlDivId: "movingChargeContainer",
+        htmlDivId: 'movingChargeContainer',
         camera: {
             position: new Vec3(-50, 0, 75).multiplyScalar(0.5),
             fieldOfView: 60,
         },
         viewport: {
-            aspectRatio: "19/12",
+            aspectRatio: '19/12',
         },
         scene: {
             scale: scale
@@ -124,6 +123,6 @@ const simulation = Simulation
 
 for (const charge of capacitor)
     simulation.bind(charge.onceWith(new Sphere({
-        color: charge.charge > 0 ? new Color(0x4444ff) : new Color(0xff0000)
+        color: charge.charge > 0 ? Colour.fromHex(0x4444ff) : Colour.Red
     })));
 

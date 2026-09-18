@@ -1,8 +1,7 @@
 import { Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
 import {
     Floor, Sphere, Trail, Vec3, Simulation, RadialSymmetricBody, Sun, Checkbox, Slider, Range,
-    SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene
-} from "../../../src/index.js";
+    SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene, Colour} from "../../../src/index.js";
 
 let initialCometDistance = 33;
 let currentIsRingOrbitValue = false;
@@ -267,9 +266,9 @@ spaceTimeCone.addOverlayLayer(new ContoursLayer({
     colorMapper: new ColorMappers().get(ColorMappers.Uniform)()
 }));
 
-const realCometTrail = new Trail({ color: 0xff8800 });
-const flatCometTrail = new Trail({ color: 0xff0000 });
-const cometTrail = new Trail({ color: 0x00ffff });
+const realCometTrail = new Trail({ color: Colour.fromHex(0xff8800) });
+const flatCometTrail = new Trail({ color: Colour.fromHex(0xff0000) });
+const cometTrail = new Trail({ color: Colour.fromHex(0x00ffff) });
 const simulation = Simulation
     .with({
         htmlDivId: "spaceTimeContainer",
@@ -286,11 +285,11 @@ const simulation = Simulation
     .addObject3D(photonRing)
     .bind(coneGeometry.onceWith(spaceTimeCone))
     .bind(sun.alwaysWith(new SunView()))
-    .bind(realComet.alwaysWith(new Sphere({ color: 0xff8800 })))
+    .bind(realComet.alwaysWith(new Sphere({ color: Colour.fromHex(0xff8800) })))
     .bind(realComet.alwaysWith(realCometTrail))
-    .bind(flatComet.alwaysWith(new Sphere({ color: 0xff0000 })))
+    .bind(flatComet.alwaysWith(new Sphere({ color: Colour.Red })))
     .bind(flatComet.alwaysWith(flatCometTrail))
-    .bind(comet.alwaysWith(new Sphere({ color: 0x00ffff })))
+    .bind(comet.alwaysWith(new Sphere({ color: Colour.Cyan })))
     .bind(comet.alwaysWith(cometTrail))
     .runsEvery(0.03)
     .onStep((clock, _) => timeStep(clock.clockTime))
