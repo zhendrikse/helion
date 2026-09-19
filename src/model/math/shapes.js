@@ -30,7 +30,7 @@ class SingleSlit extends ShapeLike {
 
 class DoubleSlit extends ShapeLike {
     sample(x, y, field) {
-        if (x < Math.floor(field.nx / 2) - 5 || x > Math.floor(field.nx / 2) + 5)
+        if (x < Math.floor(field.nx / 2 + this._position.x) - 5 || x > Math.floor(field.nx / 2 + this._position.x) + 5)
             return false;
 
         const slitDistance = this._size;
@@ -43,7 +43,7 @@ class Grating extends ShapeLike {
     sample(x, y, field) {
         if (y < Math.floor(field.ny / 4 + this._position.y) || y > Math.floor(3 * field.ny / 4 + this._position.y))
             return false;
-        if (x < Math.floor(field.nx / 2) - 5 || x > Math.floor(field.nx / 2) + 5)
+        if (x < Math.floor(field.nx / 2 + this._position.x) - 5 || x > Math.floor(field.nx / 2 + this._position.x) + 5)
             return false;
 
         return (y - this._position.y) % this._size < this._size / 2;
@@ -69,21 +69,14 @@ class Square extends ShapeLike {
 
 class Line extends ShapeLike {
     sample(x, y, field) {
-        for (let y = 0; y < field.ny; y++)
-            if (x < Math.floor(field.nx / 2 + this._position.x) || x > Math.floor(field.nx / 2 + this._position.x) + this._size)
-                return false;
-
-        return true;
+        return x >= Math.floor(field.nx / 2 + this._position.x) &&
+            x <= Math.floor(field.nx / 2 + this._position.x) + this._size;
     }
 }
 
 class Step extends ShapeLike {
     sample(x, y, field) {
-        for (let y = 0; y < field.ny; y++)
-            if(x < Math.floor(field.nx / 2 + this._position.x) || x > field.nx)
-                return false;
-
-        return true;
+        return x >= Math.floor(field.nx / 2 + this._position.x);
     }
 }
 
