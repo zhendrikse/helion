@@ -37,6 +37,7 @@ const simulation = Simulation
             orthographic: true,
             controls: false
         },
+        headUpDisplay: false,
         lighting: { enabled: false },
         infoPanel: {
             text:
@@ -46,12 +47,8 @@ const simulation = Simulation
         }
     })
     .runsEvery(0.01)
-    .onStep(() => {
-        fluid.evolve();
-        fluid.evolve();
-    })
-    .appendStartStopResetUI()
-    .start();
+    .onStep(() => fluid.evolve())
+    .appendStartStopResetUI();
 
 simulation.bind(fluid.curlField.alwaysWith(curlView));
 simulation.bind(fluid.barrierField.alwaysWith(barrierView));
