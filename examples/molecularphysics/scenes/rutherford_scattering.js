@@ -95,7 +95,7 @@ const simulation = Simulation
         }
     })
     .withMouseClickEventListener()
-    .bind(source.onceWith(new Cylinder({segments: 48, color: 0x999999})))
+    .bind(source.onceWith(new Cylinder({segments: 48, color: Colour.fromHex(0x999999) })))
     .bind(gold.alwaysWith(new Sphere({ color: Colour.Yellow, segments: 36 })))
     .maxOutCpu(() => {
         if (!alpha)

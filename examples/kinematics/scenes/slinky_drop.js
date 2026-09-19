@@ -61,8 +61,8 @@ Simulation
             aspectRatio: '4/3'
         }
     })
-    .bind(stick1.onceWith(new Cylinder({ color: 0x855E42})))
-    .bind(stick2.onceWith(new Cylinder({ color: 0x855E42})))
+    .bind(stick1.onceWith(new Cylinder({ color: Colour.fromHex(0x855E42) })))
+    .bind(stick2.onceWith(new Cylinder({ color: Colour.fromHex(0x855E42) })))
     .bind(ball1.alwaysWith(new Sphere({ color: Colour.Red })))
     .bind(ball2.alwaysWith(new Sphere({ color: Colour.Green })))
     .bind(ball3.alwaysWith(new Sphere({ color: Colour.Yellow })))

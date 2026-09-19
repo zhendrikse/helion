@@ -1,5 +1,6 @@
 import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Vec3, Range,
-    Cylinder, ElectromagneticWave, Slider
+    Cylinder, ElectromagneticWave, Slider,
+    Colour
 } from '../../../src/index.js';
 
 //
@@ -37,7 +38,7 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .runsEvery(1e-2)
     .advancesBy(lambda / OneDimensionalPlaneWave.c / 100.0)
-    .bind(antenna.onceWith(new Cylinder({color: 0xcccc77})))
+    .bind(antenna.onceWith(new Cylinder({color: Colour.fromHex(0xcccc77) })))
     .onStep((clock, _) => {
         for (let wave of planeWaves)
             wave.propagate(clock.simulatedTime);
@@ -47,6 +48,7 @@ const simulation = Simulation
         .withRange(new Range(1, 20, .1))
         .onInput(event => {
             for (let wave of planeWaves)
+                // @ts-ignore
                 wave.amplitude = event.target.value;
         })
     );

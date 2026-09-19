@@ -1,5 +1,6 @@
 import {
-    AxialSymmetricBody, VectorField, Range, Simulation, Vec3, Cylinder, ArrowField, Slider, Checkbox
+    AxialSymmetricBody, VectorField, Range, Simulation, Vec3, Cylinder, ArrowField, Slider, Checkbox,
+    Colour
 } from '../../../src/index.js';
 
 const MU0 = 4 * Math.PI * 1e-7;
@@ -16,6 +17,12 @@ class Solenoid {
         this._segments = this._createSegments(radius, segments, turns, direct);
     }
 
+    /**
+     * @param {number} radius
+     * @param {number} totalSegments
+     * @param {number} turns
+     * @param {boolean} direct
+     */
     _createSegments(radius, totalSegments, turns, direct) {
         const points = Array.from({ length: totalSegments }, (_, i) =>
             new Vec3(
@@ -36,6 +43,10 @@ class Solenoid {
         return segments;
     }
 
+    /**
+     * @param {AxialSymmetricBody} segment
+     * @param {Vec3} position
+     */
     _contributionFrom(segment, position) {
         const r = position.clone().sub(segment.position);
         const r2 = r.lengthSq();
@@ -45,6 +56,7 @@ class Solenoid {
             .multiplyScalar(MU0 * CURRENT / (4 * Math.PI) * segment.axis.length() / r2);
     }
 
+    /** @param {Vec3} position */
     fieldAt(position) {
         const field = new Vec3();
 
@@ -58,16 +70,22 @@ class Solenoid {
 }
 
 class SolenoidField extends VectorField {
+    /** @param {Solenoid} solenoid */
     constructor(solenoid) {
         super();
         this._solenoid = solenoid;
         this._fieldStrength = 1;
     }
 
+    /**
+     * @param {Vec3} position
+     * @param {Vec3} target
+     */
     sample(position, target) {
         target.copy(this._solenoid.fieldAt(position).multiplyScalar(this._fieldStrength));
     }
 
+    /** @param {number} value */
     set fieldStrength(value) { this._fieldStrength = value; }
 }
 
@@ -105,7 +123,7 @@ const simulation = Simulation
     .bind(magneticField.onceWith(arrowField));
 
 for (const segment of solenoid.segments)
-    simulation.bind(segment.onceWith(new Cylinder({ color: 0xffff00 })));
+    simulation.bind(segment.onceWith(new Cylinder({ color: Colour.Yellow })));
 
 simulation.append(new Slider('️⚡ Field strength: ')
     .on(magneticField)

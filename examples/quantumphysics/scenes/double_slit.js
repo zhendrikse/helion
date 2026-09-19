@@ -1,7 +1,7 @@
 import {
     AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider, Sphere, Vec3,
     DiscreteScalarField, WavelengthColorMapper, DiscreteFieldSurfaceView, DoubleSlitOperator,
-    FieldEdgeIntensityPixelRaster, Colour} from "../../../src/index.js";
+    FieldEdgeIntensityPixelRaster, Colour} from '../../../src/index.js';
 
 const resolution = 50;
 const xMax = 4;
@@ -30,15 +30,16 @@ const field = new DiscreteScalarField({
 });
 field.apply(doubleSlitOperator);
 
+/** @type {RadialSymmetricBody[]} */
 const particles = [];
 const simulation = Simulation
     .with({
-        htmlDivId: "doubleSlitContainer",
+        htmlDivId: 'doubleSlitContainer',
         camera: { position: new Vec3(0, -9, 7).multiplyScalar(resolution) },
-        viewport: { aspectRatio: "2/1" }
+        viewport: { aspectRatio: '2/1' }
     })
-    .bind(slit1.onceWith(new Cylinder({ color: 0xffffff })))
-    .bind(slit2.onceWith(new Cylinder({ color: 0xffffff })))
+    .bind(slit1.onceWith(new Cylinder({ color: Colour.White })))
+    .bind(slit2.onceWith(new Cylinder({ color: Colour.White })))
     .bind(field.onceWith(new FieldEdgeIntensityPixelRaster({
         edgeHeight: .6 * xMax * resolution,
         colorMapper: wavelengthColorMapper
@@ -54,25 +55,29 @@ const simulation = Simulation
             if (particle.position.y < xMax * resolution - particle.radius * 2)
                 particle.integrate(0.025);
     })
-    .append(new Slider("Wavelength ")
+    .append(new Slider('Wavelength ')
         .withRange(new Range(380, 700, 1))
         .withValue(480)
-        .addEventListener("input", event => {
+        .addEventListener('input', event => {
+            // @ts-ignore
             wavelengthColorMapper.lambdaInNanos = Number(event.target.value);
+            // @ts-ignore
             doubleSlitOperator.wavelength = Number(event.target.value);
             field.apply(doubleSlitOperator);
         })
     );
 
 let spawnParticles = true;
-simulation.append(new Checkbox("Particles: ")
+simulation.append(new Checkbox('Particles: ')
     .checked(true)
-    .addEventListener("click", (event) => spawnParticles = event.target.checked)
-    .togetherWith(new Checkbox("↻ Rotate: ")
-        .withProperty("autoRotate")
+    // @ts-ignore
+    .addEventListener('click', (event) => spawnParticles = event.target.checked)
+    .togetherWith(new Checkbox('↻ Rotate: ')
+        .withProperty('autoRotate')
         .on(simulation))
 );
 
+/** @param {Vec3} slitPos */
 function spawnParticleFromSlit(slitPos) {
     if (!spawnParticles)
         return;

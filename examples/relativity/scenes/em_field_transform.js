@@ -131,8 +131,8 @@ const simulation = Simulation
         }
     })
     .withMouseClickEventListener()
-    .bind(wireS.onceWith(new Cylinder({ color: 0xffffff })))
-    .bind(wireSp.onceWith(new Cylinder({ color: 0xffffff })))
+    .bind(wireS.onceWith(new Cylinder({ color: Colour.White })))
+    .bind(wireSp.onceWith(new Cylinder({ color: Colour.White })))
     .bind(chargeS.alwaysWith(new Sphere({ color: Colour.Red })))
     .bind(chargeSp.alwaysWith(new Sphere({ color: Colour.Red })))
     .bind(chargeS.alwaysWith(new Trail({ color: Colour.fromHex(0xff4444), maxPoints: 400 })))

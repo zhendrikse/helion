@@ -15,10 +15,7 @@ import {Colour} from '../../colormappers.js';
 //
 class TrailLine {
     /**
-     * @param param0
-     * @param {number} param0.maxPoints
-     * @param {Colour} param0.color
-     * @param {number} param0.linewidth
+     * @param {{ maxPoints?: number, color?: Colour, linewidth?: number }} param0
      */
     constructor({
         maxPoints = 200,
@@ -26,6 +23,7 @@ class TrailLine {
         linewidth = 1,
     } = {}) {
         this._maxPoints = maxPoints;
+        /** @type {Vec3[]} */
         this._positions = [];
         this._geometry = new BufferGeometry();
         this._material = new LineBasicMaterial({ color: color.asThreeJsColor(new Color()), linewidth });
@@ -409,12 +407,12 @@ export class VectorView extends Renderable3D {
 //
 export class Cylinder extends Renderable3D {
     constructor({
-        color = 0xffff00,
+        color = Colour.Yellow,
         opacity = 1,
         segments = 24,
         castShadow = false,
         material = new MeshStandardMaterial({
-            color,
+            color: color.asThreeJsColor(new Color()),
             opacity,
             transparent: opacity < 1
         }),

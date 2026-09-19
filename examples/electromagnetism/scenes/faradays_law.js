@@ -53,7 +53,7 @@ const simulation = Simulation
         }
     })
     .withMouseClickEventListener()
-    .bind(wire.onceWith(new Cylinder({ color: new Color('yellow') })))
+    .bind(wire.onceWith(new Cylinder({ color: Colour.Yellow })))
     .runsEvery(1e-3)
     .advancesBy(.01)
     .substeps(10)
