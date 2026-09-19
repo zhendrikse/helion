@@ -406,6 +406,16 @@ export class VectorView extends Renderable3D {
 // Cylinder
 //
 export class Cylinder extends Renderable3D {
+    /**
+     * @param {{
+     *     color?: Colour,
+     *     opacity?: number,
+     *     segments?: number,
+     *     castShadow?: boolean,
+     *     material: Material,
+     *     radiusFunction?: (body: any) => number,
+     * }} param0
+     */
     constructor({
         color = Colour.Yellow,
         opacity = 1,
@@ -452,15 +462,16 @@ export class Cylinder extends Renderable3D {
 //
 export class Box extends Renderable3D {
     /**
-    * @param {object} [param0]
-     * @param {number} [param0.color]
-     * @param {number} [param0.opacity]
-     * @param {boolean} [param0.visible]
-     * @param {boolean} [param0.castShadow]
-     * @param {Material} [param0.material]
+     * @param {{
+     *     color?: Colour,
+     *     opacity?: number,
+     *     visible?: boolean,
+     *     castShadow?: boolean,
+     *     material: Material,
+     * }} param0
      */
     constructor({
-        color = 0xff0000,
+        color = Colour.Yellow,
         opacity = 1,
         visible = true,
         castShadow = false,
@@ -471,7 +482,7 @@ export class Box extends Renderable3D {
     } = {}) {
         super();
         material.opacity = opacity;
-        material.color = new Color().setHex(color);
+        material.color.copy(color.asThreeJsColor(new Color()));
         this._mesh = new Mesh(new BoxGeometry(1, 1, 1), material);
         this.add(this._mesh);
         this._mesh.castShadow = castShadow;

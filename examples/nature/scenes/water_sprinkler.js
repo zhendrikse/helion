@@ -196,7 +196,7 @@ const simulation = Simulation
         headUpDisplay: false
     })
     .runsEvery(1e-2)
-    .bind(sprinkler.alwaysWith(new Box({ color: 0xffff00 })))
+    .bind(sprinkler.alwaysWith(new Box({ color: Colour.fromHex(0xffff00) })))
     .bind(new RadialSymmetricBody({ radius: 0.03 * LENGTH }).onceWith(new Sphere({color: Colour.Red})))
     .onStep((clock, dt) => {
         sprinkler.shedWater(dt);

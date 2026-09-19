@@ -79,7 +79,7 @@ const simulation = Simulation
     .runsEvery(2e-3)
     .advancesBy(1e-3)
     .substeps(4)
-    .bind(woodenBlock.alwaysWith(new Box({ color: 0xdeb887 })))
+    .bind(woodenBlock.alwaysWith(new Box({ color: Colour.fromHex(0xdeb887) })))
     .onStep((clock, dt) => {
         woodenBlock
             .apply(gravitationalForce)

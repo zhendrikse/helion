@@ -214,7 +214,7 @@ const simulation = Simulation
             return;
         graph.push([timestep, chain.endBall.acceleration.y, g]);
     })
-    .bind(table.onceWith(new Box({ color: 0x888888, opacity: 0.3 })))
+    .bind(table.onceWith(new Box({ color: Colour.fromHex(0x888888), opacity: 0.3 })))
     .addGraph(graph)
     .append(
         new Slider('Spring force ')
