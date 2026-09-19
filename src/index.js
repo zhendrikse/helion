@@ -63,10 +63,11 @@ export { DifferentialGeometry, DifferentialFrame } from './model/math/numerics/d
 export { Matrix2D, RotationMatrix2D } from './model/transformations/matrices.js';
 export { Arrow2D } from './view/2d/primitives.js';
 export { ArrowField2D } from './view/2d/composite/composites.js';
+export { WaveEquationSolver, JacobiSolver } from './model/math/numerics/solvers/solvers.js';
 
 export {
-    WaveEquationSolver, JacobiSolver, SchrodingerSolver, SchrodingerEigenstateSolver, WaveFunctionEigenStateSolver
-} from './model/math/numerics/solvers/solvers.js';
+    SchrodingerSolver, SchrodingerEigenstateSolver, WaveFunctionEigenStateSolver
+} from './model/math/numerics/solvers/qmsolvers.js'
 
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
 
