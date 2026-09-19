@@ -35,9 +35,11 @@ const solution = solver.solve(potential, { states: 6 });
 
 console.log('Schrödinger eigenstate energies:', solution.energies);
 
-const waveFunction = new WaveFunctionSurface3D();
+const waveFunction = new WaveFunctionSurface3D({
+    zScale: 35,
+    brightness: 4
+});
 waveFunction.phaseColor = true;
-waveFunction.zScale = 25;
 
 let stateIndex = 0;
 
