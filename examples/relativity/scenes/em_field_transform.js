@@ -1,7 +1,7 @@
 import {
     Arrow, ArrowField, AxialSymmetricBody, Colour, Cylinder, RadialSymmetricBody, Range, Ring, Simulation,
     Slider, Sphere, Trail, Transformation, Vec3, VectorField
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const I0 = 8; // VPython roept Euler(rr,8) aan — I=8, niet 15, mu0=1
 const q = 1, m0 = 1;
@@ -122,7 +122,7 @@ const Bp = new Vec3();
 const Ep = new Vec3();
 const simulation = Simulation
     .with({
-        htmlDivId: "emTransformContainer",
+        htmlDivId: 'emTransformContainer',
         camera: { position: new Vec3(18, 15, 38), fieldOfView: 35 },
         infoPanel: {
             text: "<strong/>Lorentz transform of EM-fields</strong><br/>" +
@@ -144,8 +144,8 @@ function addRingsAndArrows(y0) {
     for (const x of xs) {
         const ring = new Ring({ color: 0xffa500, thickness: 0.04 });
         simulation.bind(new AxialSymmetricBody({ position: new Vec3(x, y0, 0), axis: new Vec3(1, 0, 0), radius: 2.2 }).onceWith(ring));
-        const a1 = new Arrow({ color: 0xffa500, size: 0.35 });
-        const a2 = new Arrow({ color: 0xffa500, size: 0.35 });
+        const a1 = new Arrow({ color: Colour.fromHex(0xffa500), size: 0.35 });
+        const a2 = new Arrow({ color: Colour.fromHex(0xffa500), size: 0.35 });
         // B is azimutaal: boven draad +z, onder -z (bij y-offset)
         const b1 = new AxialSymmetricBody({ position: new Vec3(x, y0 + 2.2, 0), axis: new Vec3(0, 0, 1.2) });
         const b2 = new AxialSymmetricBody({ position: new Vec3(x, y0 - 2.2, 0), axis: new Vec3(0, 0, -1.2) });
@@ -232,12 +232,12 @@ simulation
         chargeSp._force.copy(new Vec3().copy(Ep).add(chargeSp.velocity.clone().cross(Bp).multiplyScalar(q)));
         chargeSp.integrate(dt);
     })
-    .append(new Slider("β = v/c")
+    .append(new Slider('β = v/c')
         .withRange(new Range(0, 0.9, 0.05))
         .withValue(0.3)
         // @ts-ignore
         .onInput(event => setBeta(Number(event.target.value))))
-    .append(new Slider("I")
+    .append(new Slider('I')
         .withRange(new Range(5, 25, 1))
         .withValue(I0)
         .onInput(e => {

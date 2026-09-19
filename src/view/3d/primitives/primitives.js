@@ -58,11 +58,12 @@ class TrailLine {
 
 export class Trail extends Renderable3D {
     /**
-     * @param param0
-     * @param {number} param0.maxPoints
-     * @param {Colour} param0.color
-     * @param {number} param0.lineWidth
-     * @param {number} trailStep
+     * @param {{
+    *   maxPoints?: number
+    *   color?: Colour
+    *   lineWidth?: number
+    *   trailStep?: number
+     * }} param0 
      */
     constructor({
         maxPoints = 200,
@@ -76,17 +77,19 @@ export class Trail extends Renderable3D {
         this._lineWidth = lineWidth;
         this._trailAccumulator = 0;
         this._trailStep = trailStep;
-        this._previousPosition = null;
+        this._previousPosition = new Vec3();
     }
 
+    /** @param {{position:Vec3|Vec2}} body */
     initialize(body) {
         this._previousPosition = body.position.clone();
         this._renew();
         this.startAt(body.position);
     }
 
-    canBindTo(model) {
-        if (!model.position)
+    /** @param {{position:Vec3|Vec2}} body */
+    canBindTo(body) {
+        if (!body.position)
             throw new Error('Trail can only bind to bodies with a position.');
         return true;
     }
@@ -103,6 +106,7 @@ export class Trail extends Renderable3D {
         this._trail.addPoint(position);
     }
 
+    /** @param {{position:Vec3|Vec2}} body */
     synchronizeWith(body) {
         if (this._previousPosition.x === body.position.x &&
             this._previousPosition.y === body.position.y &&
@@ -190,14 +194,14 @@ export class Sphere extends Renderable3D {
         this.visible = visible;
     }
 
-    /** @param {Body} body */
+    /** @param {{position:Vec3|Vec2, radius:number}} body */
     canBindTo(body) {
         if (!body.position || !body.radius)
             throw new Error('Sphere can only bind to bodies with a position and a radius.');
         return true;
     }
 
-    /** @param {Body} body */
+    /** @param {{position:Vec3|Vec2, radius:number}} body */
     synchronizeWith(body) {
         this.position.copy(body.position);
         this.scale.setScalar(body.radius);
@@ -238,8 +242,20 @@ export class Arrow extends Renderable3D {
     static HeadGeometryRound = new ConeGeometry(1, 1, 16).translate(0, 0.5, 0);
     static HeadGeometrySquare = new ConeGeometry(1, 1, 4).translate(0, 0.5, 0);
 
+    /**
+     * @param {{
+     *     color?: Colour,
+     *     size?: number,
+     *     opacity?: number,
+     *     round?: boolean,
+     *     visible?: boolean,
+     *     castShadow?: boolean,
+     *     magnitudeMap?: (magnitude: number) => number,
+     *     material?: any,
+     * }} param0
+     */
     constructor({
-        color = 0xff0000,
+        color = Colour.Red,
         size = 1,
         opacity = 1,
         round = false,
@@ -265,7 +281,7 @@ export class Arrow extends Renderable3D {
             : Arrow.HeadGeometrySquare;
 
         this._material = material;
-        this._material.color.set(color);
+        this._material.color.set(color.asThreeJsColor(new Color()));
         this._material.opacity = opacity;
         this._shaft = new Mesh(shaftGeometry, this._material);
         this._head = new Mesh(headGeometry, this._material);
@@ -286,17 +302,23 @@ export class Arrow extends Renderable3D {
         this._tempAxis = new Vector3();
     }
 
+    /** @param {{position:Vec3, axis:number}} body */
     canBindTo(body) {
         if (!body.position || !body.axis)
             throw new Error('Arrow can only bind to bodies with a position and an axis.');
         return true;
     }
 
+    /** @param {{position:Vec3, axis:Vec3}} body */
     synchronizeWith(body) {
         this.setVector(body.position, body.axis);
     }
 
-    setVector(position, vector) {
+    /**
+     * @param {Vec3} position
+     * @param {Vec3} vector
+     */
+    setVector(position, vector) {        
         this.position.copy(position);
         this._tempAxis.copy(vector);
         const magnitude = this._tempAxis.length();
@@ -329,7 +351,9 @@ export class Arrow extends Renderable3D {
         this.clear();
     }
 
+    /** @param {number} opacity */
     set opacity(opacity) { this._material.opacity = opacity; }
+    /** @param {number} color */
     set color(color) { this._material.color.set(color); }
 }
 
@@ -339,21 +363,32 @@ export class Arrow extends Renderable3D {
  * as if it had an axis property.
  */
 export class VectorView extends Renderable3D {
+    /**
+     * @param {{
+     *     vectorProperty?: (body: any) => any,
+     *     color?: Colour,
+     *     size?: number,
+     *     opacity?: number,
+     *     round?: boolean,
+     *     visible?: boolean,
+     *     castShadow?: boolean,
+     *     magnitudeMap?: (magnitude: number) => number,
+     * }} param0
+     */
     constructor({
         vectorProperty = body => body.velocity,
-        color = 0xff0000,
+        color = Colour.Red,
         size = 1,
         opacity = 1,
         round = false,
         visible = true,
         castShadow = false,
-        magnitudeMap = magnitude => Math.max(magnitude, 0.1),
-        colorMap = null
+        magnitudeMap = magnitude => Math.max(magnitude, 0.1)
     } = {}) {
         super();
 
         this._vectorPropertyOf = vectorProperty;
-        this._arrow = new Arrow({ color,size, opacity, round, visible, castShadow, magnitudeMap, colorMap });
+        this._arrow = new Arrow({ color,size, opacity, round, visible, castShadow, magnitudeMap });
         this.add(this._arrow);
     }
 
@@ -394,12 +429,14 @@ export class Cylinder extends Renderable3D {
         this._radiusFunction = radiusFunction;
     }
 
+    /** @param {{position:Vec3, axis:Vec3}} body */
     canBindTo(body) {
         if (!body.position || !body.axis)
             throw new Error('Cylinder can only bind to bodies with a position and an axis.');
         return true;
     }
 
+    /** @param {{position:Vec3, axis:Vec3}} body */
     synchronizeWith(body) {
         this.position.copy(body.position);
         this._direction.copy(body.axis);
@@ -417,12 +454,12 @@ export class Cylinder extends Renderable3D {
 //
 export class Box extends Renderable3D {
     /**
-     * @param param0
-     * @param {number} param0.color
-     * @param {number} param0.opacity
-     * @param {boolean} param0.visible
-     * @param {boolean} param0.castShadow
-     * @param {Material} param0.material
+    * @param {object} [param0]
+     * @param {number} [param0.color]
+     * @param {number} [param0.opacity]
+     * @param {boolean} [param0.visible]
+     * @param {boolean} [param0.castShadow]
+     * @param {Material} [param0.material]
      */
     constructor({
         color = 0xff0000,
@@ -443,12 +480,14 @@ export class Box extends Renderable3D {
         this.visible = visible;
     }
 
+    /** @param {{position:Vec3, size:Vec3, orientation:Vec3}} body */
     canBindTo(body) {
         if (body.position === undefined || body.size === undefined || body.orientation === undefined)
             throw new Error('Box can only bind to bodies with a position, size, and orientation.');
         return true;
     }
 
+    /** @param {{position:Vec3, size:Vec3, orientation:Vec3}} body */
     synchronizeWith(body) {
         this.position.copy(body.position);
         this.scale.copy(body.size);
@@ -478,12 +517,14 @@ export class Ring extends Renderable3D {
         this._direction = new Vector3();
     }
 
+    /** @param {{position:Vec3, axis:Vec3, radius:number}} body */
     canBindTo(body) {
         if (!body.position || !body.axis || !body.radius)
             throw new Error('Ring can only bind to bodies with a position, axis, and radius.');
         return true;
     }
 
+    /** @param {{position:Vec3, axis:Vec3, radius:number}} body */
     synchronizeWith(body) {
         this.position.copy(body.position);
         this.scale.setScalar(body.radius);
@@ -562,6 +603,7 @@ export class Helix extends Renderable3D {
         this._radius = 1;
     }
 
+    /** @param {{position:Vec3, axis:Vec3}} body */
     initialize(body) {
         this._restLength = body.axis.length();
         this._radius = this._radiusFunction(body);
@@ -589,10 +631,7 @@ export class Helix extends Renderable3D {
         this.add(this._mesh);
     }
 
-    /** 
-     * @param {Body} body
-     * returns {boolean} 
-     */
+    /** @param {{position:Vec3, axis:Vec3}} body */
     canBindTo(body) {
         if (body.position === undefined || body.axis === undefined)
             throw new Error('Helix can only bind to bodies with a position and an axis.');
@@ -648,7 +687,7 @@ export class Label extends Renderable3D {
         this._element.className = 'helionLabel';
 
         Object.assign(this._element.style, {
-            color,
+            color: color.asHexString(),
             fontSize,
             margin: '0',
             padding: '0',

@@ -1,7 +1,13 @@
 import {
-    Arrow, Checkbox, Label, RadialSymmetricBody, Simulation, Sphere, Vec3, VectorField, VectorModel, Colour} from "../../../src/index.js";
+    Arrow, Checkbox, Label, RadialSymmetricBody, Simulation, Sphere, Vec3, VectorField, VectorModel, Colour
+} from '../../../src/index.js';
 
 class DemoVectorField extends VectorField {
+    /**
+     * @param {Vec3} sourcePosition
+     * @param {Vec3} sinkPosition
+     * @param {Vec3 | null} curlPosition
+     */
     constructor(sourcePosition, sinkPosition, curlPosition=null) {
         super();
         this._source = sourcePosition;
@@ -9,6 +15,10 @@ class DemoVectorField extends VectorField {
         this._curl = curlPosition;
     }
 
+    /**
+     * @param {Vec3} position
+     * @param {Vec3} target
+     */
     sample(position, target) {
         target.set(0, 0, 0);
 
@@ -42,7 +52,12 @@ const x_max = 2,
     y_min = -y_max;
 
 class OriginalDemoVectorField extends VectorField {
-    constructor(sourcePosition, sinkPosition, curlPosition=null) {
+    /**
+     * @param {Vec3} sourcePosition
+     * @param {Vec3} sinkPosition
+     * @param {Vec3} curlPosition
+     */
+    constructor(sourcePosition, sinkPosition, curlPosition) {
         super();
         this._source = sourcePosition;
         this._sink = sinkPosition;
@@ -50,6 +65,10 @@ class OriginalDemoVectorField extends VectorField {
         this._radius = 0.75;
     }
     
+    /**
+     * @param {Vec3} position
+     * @param {Vec3} target
+     */
     sample(position, target) {
         if (this._curl.x - this._radius <= position.x &&
             position.x <= this._curl.x + this._radius &&
@@ -117,41 +136,42 @@ const source = new RadialSymmetricBody({
     radius: 0.25,
 });
 const sourceLabel = new Label({
-    text: () => "Source",
-    fontSize: "30px",
+    text: () => 'Source',
+    fontSize: '30px',
     visible: false,
-    color: "#aaaaaa"
+    color: Colour.fromHex(0xaaaaaa)
 });
 const sink = new RadialSymmetricBody({
     position:  new Vec3(-1, -0.5, 0),
     radius: 0.25,
 });
 const sinkLabel = new Label({
-    text: () => "Sink",
-    fontSize: "30px",
+    text: () => 'Sink',
+    fontSize: '30px',
     visible: false,
-    color: "#aaaaaa"
+    color: Colour.fromHex(0xaaaaaa)
 });
 const curl = new RadialSymmetricBody({
     position:  new Vec3(1, 0.5, 0),
     radius: 0.25
 });
 const curlLabel = new Label({
-    text: () => "Zero divergence",
+    text: () => 'Zero divergence',
     offset: () => new Vec3(0, -1.25, 0),
-    fontSize: "30px",
+    fontSize: '30px',
     visible: false,
-    color: "#aaaaaa"
+    color: Colour.fromHex(0xaaaaaa)
 });
 
 let vectorField = new OriginalDemoVectorField(source.position, sink.position, curl.position);
 const particles = createParticles();
 const arrows = createArrows();
+/** @type Arrow[] */
 const arrowViews = [];
 let opacity = 0;
 for (const arrow of arrows)
     arrowViews.push(new Arrow({
-        color: "yellow",
+        color: Colour.Yellow,
         opacity: opacity,
         round: true,
         size: .04
@@ -160,21 +180,21 @@ for (const arrow of arrows)
 const velocity = new Vec3();
 let resetCounter = 0;
 const simulation = Simulation.with({
-        htmlDivId: "divCurlDemoContainer",
+        htmlDivId: 'divCurlDemoContainer',
         camera: {
             orthographic: true,
             position: new Vec3(0, 0, 4.5),
         },
         infoPanel: {
-            text: "<strong>Divergence:</strong><br/>" +
-                "$$\\overrightarrow{\\nabla} =\\begin{pmatrix} \\partial/\\partial x \\\\ \\partial/\\partial y \\\\ \\partial/\\partial y \\end{pmatrix} " +
-                "\\Rightarrow$$$$ \\overrightarrow{\\nabla} \\cdot \\overrightarrow{V} = \\dfrac{\\partial V_x}{\\partial x} + \\dfrac{\\partial V_y}{\\partial y} + \\dfrac{\\partial V_z}{\\partial z}" +
-                "$$<strong>Curl:</strong><br/>$$\\overrightarrow{\\nabla} \\times \\overrightarrow{V} = " +
-                "\\begin{vmatrix} \\hat{x} & \\hat{y} & \\hat{z} \\\\ " +
-                "\\dfrac{\\partial}{\\partial x} & \\dfrac{\\partial}{\\partial y} & \\dfrac{\\partial}{\\partial z} \\\\ " +
-                "V_x & V_y & V_z \\end{vmatrix} $$$$ = \\begin{pmatrix} \\partial V_z/\\partial y - \\partial F_y/\\partial z \\\\ " +
-                "\\partial V_x/\\partial z - \\partial F_z/\\partial x \\\\ \\partial V_y/\\partial x - \\partial F_x/\\partial y" +
-                "\\end{pmatrix}$$"
+            text: '<strong>Divergence:</strong><br/>' +
+                '$$\\overrightarrow{\\nabla} =\\begin{pmatrix} \\partial/\\partial x \\\\ \\partial/\\partial y \\\\ \\partial/\\partial y \\end{pmatrix} ' +
+                '\\Rightarrow$$$$ \\overrightarrow{\\nabla} \\cdot \\overrightarrow{V} = \\dfrac{\\partial V_x}{\\partial x} + \\dfrac{\\partial V_y}{\\partial y} + \\dfrac{\\partial V_z}{\\partial z}' +
+                '$$<strong>Curl:</strong><br/>$$\\overrightarrow{\\nabla} \\times \\overrightarrow{V} = ' +
+                '\\begin{vmatrix} \\hat{x} & \\hat{y} & \\hat{z} \\\\ ' +
+                '\\dfrac{\\partial}{\\partial x} & \\dfrac{\\partial}{\\partial y} & \\dfrac{\\partial}{\\partial z} \\\\ ' +
+                'V_x & V_y & V_z \\end{vmatrix} $$$$ = \\begin{pmatrix} \\partial V_z/\\partial y - \\partial F_y/\\partial z \\\\ ' +
+                '\\partial V_x/\\partial z - \\partial F_z/\\partial x \\\\ \\partial V_y/\\partial x - \\partial F_x/\\partial y' +
+                '\\end{pmatrix}$$'
         }
     })
     .withMouseClickEventListener()
@@ -209,11 +229,14 @@ const simulation = Simulation.with({
                 arrow.opacity = opacity;
         }
     })
-    .append(new Checkbox("Labels")
+    .append(new Checkbox('Labels')
         .checked(false)
         .onChange(event => {
+            // @ts-ignore
             sourceLabel.visible = event.target.checked;
+            // @ts-ignore
             sinkLabel.visible = event.target.checked;
+            // @ts-ignore
             curlLabel.visible = event.target.checked;
         }));
 

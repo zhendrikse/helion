@@ -64,14 +64,15 @@ const simulation = Simulation
         for (const vec of magneticVectors)
             vec.axis.set(0, 0, fieldLength);
 
-        for (const charge of charges)
-            charge.position.z = zStart + ((charge.baseZ + (clock.simulatedTime % 20) / 25) % numCharges);
+        charges.forEach((charge, index) =>
+            charge.position.z = zStart + ((index + (clock.simulatedTime % 20) / 25) % numCharges));
     })
     .append(new Checkbox('Show Faraday loop: ')
         .on(faradayLoopsGroup)
         .withProperty('visible')
     );
 
+/** @param {Group} faradayLoopsGroup */
 function createFaradayLoops(faradayLoopsGroup) {
     for (const z of loopZs) {
         for (let i = 0; i < loopSegments; i++) {
@@ -84,7 +85,7 @@ function createFaradayLoops(faradayLoopsGroup) {
             });
 
             const arrow = new Arrow({
-                color: new Color('green'),
+                color: Colour.Green,
                 size: 0.05,
                 round: true
             });
@@ -116,20 +117,21 @@ simulation.bind(new FaradayField().onceWith(new ArrowField({
     round: true
 })));
 
+/** @type {RadialSymmetricBody[]} */
 const charges = [];
 for (let i = 0; i < numCharges; i++) {
     const charge = new RadialSymmetricBody({ position: new Vec3(0, 0, i), radius: 0.055 });
-    charge.baseZ = i;
     charges.push(charge);
     simulation.bind(charge.alwaysWith(new Sphere({ color: Colour.Orange })));
 }
 
+/** @type {AxialSymmetricBody[]} */
 const magneticVectors = [];
 for (const position of magneticFieldPositions) {
     const body = new AxialSymmetricBody({ position });
     magneticVectors.push(body);
     simulation.bind(body.alwaysWith(new Arrow({
-        color: new Color('red'),
+        color: Colour.Red,
         size: 7.5e-2,
         round: true
     })));

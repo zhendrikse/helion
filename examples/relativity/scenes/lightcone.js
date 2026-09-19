@@ -1,4 +1,4 @@
-import { Simulation, Vec3, Renderable3D, MathPhysicsModelBehavior, Slider, Range } from "../../../src/index.js";
+import { Simulation, Vec3, Renderable3D, MathPhysicsModelBehavior, Slider, Range, Colour } from "../../../src/index.js";
 import { Arrow } from "../../../src/view/3d/primitives/primitives.js";
 import { Color, MeshBasicMaterial, Mesh, ConeGeometry, RingGeometry, DoubleSide, Vector3, Box3 } from "three";
 
@@ -74,7 +74,7 @@ class PhotonView extends Renderable3D {
     constructor() {
         super();
         this._body = { position: new Vec3(0, 0, 0), axis: new Vec3(1, 1, 0) };
-        this._arrow = new Arrow({ color: 0xffff00, size: 0.12, round: true, magnitudeMap: m => m });
+        this._arrow = new Arrow({ color: Colour.Yellow, size: 0.12, round: true, magnitudeMap: m => m });
         this.add(this._arrow);
     }
     canBindTo(m) { return m instanceof Spacetime; }
@@ -90,8 +90,8 @@ class BoostedAxesView extends Renderable3D {
         super();
         this._xBody = { position: new Vec3(0, 0, 0), axis: new Vec3(1, 0, 0) };
         this._tBody = { position: new Vec3(0, 0, 0), axis: new Vec3(0, 1, 0) };
-        this._xPrime = new Arrow({ color: 0x00ffff, size: 0.12, magnitudeMap: m => m });
-        this._tPrime = new Arrow({ color: 0xff8800, size: 0.12, magnitudeMap: m => m });
+        this._xPrime = new Arrow({ color: Colour.Cyan, size: 0.12, magnitudeMap: m => m });
+        this._tPrime = new Arrow({ color: Colour.Orange, size: 0.12, magnitudeMap: m => m });
         this.add(this._xPrime, this._tPrime);
     }
     canBindTo(m) { return m instanceof Spacetime; }

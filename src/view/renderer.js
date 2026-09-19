@@ -16,11 +16,11 @@ import { Viewport } from '../core/viewport';
  * @method dispose() - Disposes of the object and releases any resources it holds.  
  */
 export class Renderable extends Object3D {
-    /** @param {MathPhysicsModelBehavior} _model */
+    /** @param {any} _model */
     canBindTo(_model) { return false; }
-    /** @param {MathPhysicsModelBehavior} _model */
+    /** @param {any} _model */
     initialize(_model) {}
-    /** @param {MathPhysicsModelBehavior} _model */
+    /** @param {any} _model */
     synchronizeWith(_model) {}
     reset() {}
     dispose() {}

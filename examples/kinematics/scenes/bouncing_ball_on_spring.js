@@ -44,26 +44,21 @@ const spring = new Spring({
 const helix = new Helix({
     coils: 15,
     thickness: 0.075,
-    color: "yellow",
+    color: 0xffff00,
     radiusFunction: () => 0.1
 });
 const sphere = new Sphere({ color: Colour.Orange });
-const velocityArrow = new Arrow({
-    color: "cyan",
-    size: .1,
-    magnitudeMap: mag => mag * .1
-});
 
 const velocityView = new VectorView({
     vectorProperty: body => body.velocity,
-    color: "cyan",
+    color: Colour.Cyan,
     size: 0.1,
     magnitudeMap: mag => mag * 0.15
 });
 
 const forceArrow = new VectorView({
     vectorProperty: body => body.acceleration,
-    color: "red",
+    color: Colour.Red,
     size: 0.1,
     magnitudeMap: mag => mag * .025
 });
@@ -94,7 +89,7 @@ Simulation
     })
     .addObject3D(floor)
     .append(new Checkbox("🚀 Velocity: ")
-        .on(velocityArrow)
+        .on(velocityView)
         .withProperty("visible")
         .checked(true)
         .togetherWith(new Checkbox("💪🏻 Force: ")
