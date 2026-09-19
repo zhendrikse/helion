@@ -1,9 +1,7 @@
 import {
-    Simulation, DropdownMenu, Domain, ParametricSurface, Registry,
-    SurfaceResolution, SurfaceVisualization, AdaptiveSymmetricNormalizer,
-    DifferentialFrame
+    Simulation, DropdownMenu, Domain, ParametricSurface, Registry, ColorMappers,
+    SurfaceResolution, SurfaceVisualization, AdaptiveSymmetricNormalizer, DifferentialFrame
 } from '../../../src/index.js';
-import { ColorMappers } from '../../../src/view/colormappers.js';
 
 const PI = Math.PI;
 const eps = 1e-3;
@@ -44,8 +42,8 @@ class PhaseLayer {
     preferredNormalizer() { return new AdaptiveSymmetricNormalizer(); }
 }
 
-// genormaliseerde reële Y_l^m (vereenvoudigd: factor weggelaten voor gelijke visuele schaal,
-// vorm identiek; echte factor bv. p_z=√(3/4π)cosθ). Hier alleen hoekvorm, schaal genormaliseerd op ~1.
+// normalized real Y_l^m (simplified: factor omitted for equal visual scale,
+// shape identical; real factor e.g. p_z=√(3/4π)cosθ). Here angular shape only, scale normalized to ~1.
 const orbitals = {
     '1s': { 
         Y: () => 1, 
@@ -122,29 +120,34 @@ const surfaceView = new SurfaceVisualization({
     opacity: 1
 });
 
-const simulation = Simulation.with({
-    htmlDivId: 'orbitalsContainer',
-    infoPanel: {
-        text: '<strong>⚛️ Atomic orbitals</strong><br/>Polar plots $r=|Y_l^m(θ,φ)|$ of real spherical harmonics.<br/>' + 
-            'Shape from $|Y|$ (e.g. two lobes for $p$), color (RdYlBu) = sign → phase ±.<br/>' + 
-            'Full $ψ_{n,l,m}=R_{n,l}(r)Y_{l,m}$: radial part $R$ and nodes (e.g. $2s$) omitted, ' + 
-            'scale $∝n^2a_0$ not to scale.'
-    },
-    headUpDisplay: { enabled: false },
-    camera: { fieldOfView: 20 },
-    parameterMenuCollapsed: false
-});
+const simulation = Simulation
+    .with({
+        htmlDivId: 'orbitalsContainer',
+        infoPanel: {
+            text: '<strong>⚛️ Atomic orbitals</strong><br/>Polar plots $r=|Y_l^m(θ,φ)|$ of real spherical harmonics.<br/>' +
+                'Shape from $|Y|$ (e.g. two lobes for $p$), color (RdYlBu) = sign → phase ±.<br/>' +
+                'Full $ψ_{n,l,m}=R_{n,l}(r)Y_{l,m}$: radial part $R$ and nodes (e.g. $2s$) omitted, ' +
+                'scale $∝n^2a_0$ not to scale.'
+        },
+        headUpDisplay: { enabled: false },
+        camera: { fieldOfView: 20 },
+        parameterMenuCollapsed: false
+    })
+    .append(new DropdownMenu()
+        .for(orbitalRegistry)
+        .withValue('3d_z²')
+        // @ts-ignore
+        .onChange(e => showOrbital(e.target.value)))
+    .append(surfaceView.ui());
 
 /** @param {string} name */
 function showOrbital(name) {
     const entry = orbitalRegistry.get(name);
     phaseLayer.Y = entry.Y;
-    // hergebruik zelfde view → Simulation.bind vervangt binding i.p.v. stapelen
+    // reuse same view → Simulation.bind replaces binding as opposed to 'stacking'
     simulation.bind(orbitalSurface(entry.Y).onceWith(surfaceView));
     simulation.frameSceneOn(surfaceView, { padding: 0.8 });
     simulation.setLatexTitle(`\\Large{${entry.latex}}\\ \\text{orbital}\\ (Y_{l}^{m},\\ r=|Y|)`);
 }
 
-// @ts-ignore
-simulation.append(new DropdownMenu().for(orbitalRegistry).withValue('3d_z²').onChange(e => showOrbital(e.target.value)));
 showOrbital('3d_z²');
