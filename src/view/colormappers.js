@@ -278,23 +278,6 @@ class InfernoColorMapper extends ColorMapper {
 }
 
 class WaterColorMapper extends ColorMapper {
-    static deep = new Color(0x001a33);
-    static mid = new Color(0x0066aa);
-    static surf = new Color(0x66ccff);
-    static foam = new Color(0xffffff);
-
-    map(value, targetColor) {
-        if (value < 0.5)
-            targetColor.lerpColors(WaterColorMapper.deep, WaterColorMapper.mid, value * 2);
-
-        if (value < 0.85)
-            targetColor.lerpColors(WaterColorMapper.mid, WaterColorMapper.surf, (value - 0.5) / 0.35);
-
-        targetColor.lerpColors(WaterColorMapper.surf, WaterColorMapper.foam, (value - 0.85) / 0.15);
-    }
-}
-
-class WaterAlternativeColorMapper extends ColorMapper {
     map(value, targetColor) {
         targetColor.setRGB(value * 0.15, value * 0.3, value);
     }
@@ -481,7 +464,6 @@ export class ColorMappers extends Registry {
     static Uniform = 'Uniform';
     static Viridis = 'Viridis';
     static Water = 'Water';
-    static WaterAlternative = 'WaterAlternative';
 
     constructor(label = '🎨 Color map') {
         super({
@@ -495,8 +477,7 @@ export class ColorMappers extends Registry {
                 Terrain: _options => new TerrainColorMapper(),
                 Uniform: _options => new UniformColorMapper(_options),
                 Viridis: _options => new ViridisColorMapper(),
-                Water: _options => new WaterColorMapper(),
-                WaterAlternative: _options => new WaterAlternativeColorMapper()
+                Water: _options => new WaterColorMapper()
             }
         });
     }

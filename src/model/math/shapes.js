@@ -28,7 +28,8 @@ class ShapeLike {
 class SingleSlit extends ShapeLike {
     sample(x, y, field) {
         const holeEdge = Math.round(field.ny / 2 + this._position.y - this._size / 2);
-        if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth || x > Math.floor(field.nx / 2 + this._position.x) + this._lineWidth)
+        if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth ||
+            x > Math.floor(field.nx / 2 + this._position.x) + this._lineWidth)
             return false;
 
         return y <= holeEdge || y > holeEdge + this._size;
@@ -37,7 +38,8 @@ class SingleSlit extends ShapeLike {
 
 class DoubleSlit extends ShapeLike {
     sample(x, y, field) {
-        if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth || x > Math.floor(field.nx / 2 + this._position.x) + this._lineWidth)
+        if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth ||
+            x > Math.floor(field.nx / 2 + this._position.x) + this._lineWidth)
             return false;
 
         const slitDistance = this._size;
@@ -48,9 +50,11 @@ class DoubleSlit extends ShapeLike {
 
 class Grating extends ShapeLike {
     sample(x, y, field) {
-        if (y < Math.floor(field.ny / 4 + this._position.y) || y > Math.floor(3 * field.ny / 4 + this._position.y))
+        if (y < Math.floor(field.ny / 4 + this._position.y) ||
+            y > Math.floor(3 * field.ny / 4 + this._position.y))
             return false;
-        if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth || x > Math.floor(field.nx / 2 + this._position.x) + this._lineWidth)
+        if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth ||
+            x > Math.floor(field.nx / 2 + this._position.x) + this._lineWidth)
             return false;
 
         return (y - this._position.y) % this._size < this._size / 2;
@@ -60,7 +64,9 @@ class Grating extends ShapeLike {
 class Circle extends ShapeLike {
     sample(x, y, field) {
         const rSquared = this._size * this._size / 4.0;
-        return (x - (field.nx / 2 + this._position.x)) * (x - (field.nx / 2 + this._position.x)) + (y - (field.ny / 2 + this._position.y)) * (y - (field.ny / 2 + this._position.y)) < rSquared;
+        const xx = (x - (field.nx / 2 + this._position.x));
+        const yy = (field.ny / 2 + this._position.y);
+        return  xx * xx + yy * yy < rSquared;
     }
 }
 
@@ -76,7 +82,7 @@ class Square extends ShapeLike {
 
 class Line extends ShapeLike {
     sample(x, y, field) {
-        const gap = 10;
+        const gap = 30;
         const lineX = Math.floor(field.nx / 2 + this._position.x);
 
         return x >= lineX &&

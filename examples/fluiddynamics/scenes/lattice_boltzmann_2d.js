@@ -1,6 +1,6 @@
 import {
     AdaptiveSymmetricNormalizer, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
-    Interval, ShapeConfiguration, ShapeMask, Simulation, TiledPlane, Vec3, DiscreteScalarField, Vec2
+    Interval, ShapeConfiguration, ShapeMask, Simulation, TiledPlane, Vec3, DiscreteScalarField, Vec2, Shapes
 } from '../../../src/index.js';
 import { Solver } from '../../../src/model/math/numerics/solvers/solvers.js';
 
@@ -201,7 +201,8 @@ const barrierField = new DiscreteScalarField({ nx: NX, ny: NY });
 
 const configuration = new ShapeConfiguration({
     defaultPosition: new Vec2(-NX * .35, 0),
-    defaultLineWidth: 1
+    defaultLineWidth: 1,
+    defaultShape: Shapes.Line
 });
 const solver = new LatticeBoltzmannSolver({
     barrierField,
@@ -233,8 +234,6 @@ const barrierView = new TiledPlane({
     opacityFunction: value => value
 });
 
-barrierView.position.z = 0.01;
-
 Simulation.with({
     htmlDivId: 'latticeBoltzmann2dContainer',
     viewport: { aspectRatio: '19/12' },
@@ -245,21 +244,21 @@ Simulation.with({
     },
     headUpDisplay: true,
     lighting: { enabled: false },
+    parameterMenuCollapsed: false,
     infoPanel: {
         text:
             '<strong>🫗 Lattice Boltzmann</strong><br/>' +
             'A simple D2Q9 fluid flowing around a configurable obstacle. ' +
             'The background shows vorticity (curl).'
-    }
-})
+    }})
     .maxOutCpu(() => curlField.evolve(solver), 20, 30)
     .appendStartStopResetUI()
     .bind(curlField.alwaysWith(curlView))
     .bind(barrierField.onceWith(barrierView))
     .onReset(reset)
-    .append(configuration.ui())
     .append(new DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.Inferno)
         // @ts-ignore
-        .onChange(event => curlView._colorMapper = ColorMappers.get(event.target.value)));
+        .onChange(event => curlView._colorMapper = ColorMappers.get(event.target.value)))
+    .append(configuration.ui());
