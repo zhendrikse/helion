@@ -38,6 +38,7 @@ export default defineConfig({
                 flocking_birds: path.resolve(__dirname, 'examples/nature/scenes/flocking_birds.js'),
                 fractal_terrain: path.resolve(__dirname, 'examples/nature/scenes/fractal_terrain.js'),
                 fractals: path.resolve(__dirname, 'examples/mathematics/scenes/fractals.js'),
+                fluid_dynamics_2d: path.resolve(__dirname, 'examples/fluiddynamics/scenes/lattice_boltzmann_2d.js'),
                 fourier_transform: path.resolve(__dirname, 'examples/mathematics/scenes/fourier_transform.js'),
                 fourier_transform_2d: path.resolve(__dirname, 'examples/mathematics/scenes/fourier_transform_2d.js'),
                 fraunhofer_diffraction: path.resolve(__dirname, 'examples/optics/scenes/fraunhofer_diffraction.js'),
