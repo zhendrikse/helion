@@ -72,7 +72,7 @@ export class CarbonMonoxide extends BodyPair {
 
     get vibrationalKineticEnergy() {
         // Project velocities along the bond axis
-        const bondAxis = this.body2.position.clone().sub(this.body1.position).normalize();
+        const bondAxis = this.body1.positionVectorTo(this.body2).normalize();
         const comVel = this.comVelocity();
 
         const velocityCarbon = this.body2.velocity.clone().sub(comVel);
@@ -85,7 +85,7 @@ export class CarbonMonoxide extends BodyPair {
     }
 
     get vibrationalPotentialEnergy() {
-        const length = this.body2.position.clone().sub(this.body1.position).length();
+        const length = this.body1.positionVectorTo(this.body2).length();
         const stretch = length - distance;
         return 0.5 * bondForce.k * stretch * stretch;
     }
@@ -93,12 +93,12 @@ export class CarbonMonoxide extends BodyPair {
     get rotationalKineticEnergy() {
         // Rotation around the center of mass
         const comVel = this.comVelocity();
-        const bondAxis = this.body2.position.clone().sub(this.body1.position);
+        const bondAxis = this.body1.positionVectorTo(this.body2).normalize();
 
         const velocityCarbon_perp = this.body2.velocity.clone()
-            .sub(comVel).clone()
-            .sub(bondAxis.clone()
-                .normalize()
+            .sub(comVel)
+            .sub(bondAxis
+                .clone()
                 .multiplyScalar(
                     this.body2.velocity.clone()
                         .sub(comVel)
@@ -107,9 +107,9 @@ export class CarbonMonoxide extends BodyPair {
             );
 
         const velocityOxygen_perp = this.body1.velocity.clone()
-            .sub(comVel).clone()
-            .sub(bondAxis.clone()
-                .normalize()
+            .sub(comVel)
+            .sub(bondAxis
+                .clone()
                 .multiplyScalar(
                     this.body1.velocity.clone()
                         .sub(comVel)
@@ -197,12 +197,10 @@ class CarbonMonoxideGas {
     }
 }
 
-
 const gas = new CarbonMonoxideGas();
 /** @type {DiatomicMolecule[]} */
 const moleculeViews = [];
 
-const dt = 5e-16;
 let t = 0;
 let steps = 0;
 let totalTranslational = 0;
@@ -212,7 +210,7 @@ let totalRotational = 0;
 
 // Perform some initial timesteps to make the gas look more realistic
 for (let i = 0; i < 150; i++)
-    gas.evolve(dt);
+    gas.evolve(5e-16);
 
 const graph = new UPlotGraph({
     dataDefinition: [
@@ -233,18 +231,15 @@ const graph = new UPlotGraph({
 const simulation = Simulation
     .with({
         htmlDivId: 'energyEquipartitionContainer',
-        scene: {
-            scale: SCALE
-        },
-        camera: {
-            position: new Vec3(4.25, 1.25, 7.25).multiplyScalar(1.5)
-        }
+        scene: { scale: SCALE },
+        camera: { position: new Vec3(4.25, 1.25, 7.25).multiplyScalar(1.5) }
     })
     .withMouseClickEventListener()
     .addGraph(graph)
     .runsEvery(0.003)
+    .advancesBy(5e-16)
     .substeps(3)
-    .onStep((clock, _dt) => {
+    .onStep((_, dt) => {
         gas.evolve(dt);
         t += dt;
 
@@ -276,14 +271,8 @@ const simulation = Simulation
     })
     .addObject3D(new Aquarium({ size: new Vec3(1, 1, 1).multiplyScalar(2 * L) }))
     .append(new RadioGroup()
-        .add('Springs', () => {
-            for (const moleculeView of moleculeViews)
-                moleculeView.bondType = SwitchableBondView.Type.Spring;
-        })
-        .add('Cylinders', () => {
-            for (const moleculeView of moleculeViews)
-                moleculeView.bondType = SwitchableBondView.Type.Cylinder;
-        })
+        .add('Springs', () => moleculeViews.forEach(view => view.bondType = SwitchableBondView.Type.Spring))
+        .add('Cylinders', () => moleculeViews.forEach(view => view.bondType = SwitchableBondView.Type.Cylinder))
         .checked(1)
     );
 
@@ -292,4 +281,3 @@ for (const molecule of gas) {
     moleculeViews.push(moleculeView);
     simulation.bind(molecule.alwaysWith(moleculeView));
 }
-
