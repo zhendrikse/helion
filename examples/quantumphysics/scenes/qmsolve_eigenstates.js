@@ -1,63 +1,58 @@
 import {
-    DiscreteComplexField,
-    DiscreteScalarField,
-    Range,
-    SchrodingerEigenstateSolver,
-    Simulation,
-    Slider,
-    Vec3,
-    WaveFunctionSurface3D
+    DiscreteComplexField, DiscreteScalarField, Range, SchrodingerEigenstateSolver, Simulation,
+    Slider, Transformation, Vec3, WaveFunctionSurface3D
 } from '../../../src/index.js';
 
-const N = 80;
+const N = 100;
 const spacing = 0.15;
 const springConstant = 0.05;
 
-const potential = new DiscreteScalarField({ nx: N, ny: N });
-const psi = new DiscreteComplexField({ nx: N, ny: N });
 
-for (let y = 0; y < N; y++)
-    for (let x = 0; x < N; x++) {
-        const px = (x - (N - 1) / 2) * spacing;
-        const py = (y - (N - 1) / 2) * spacing;
-        potential.setValueAt(x, y, 0.5 * springConstant * (px * px + py * py));
+class GaussianPotential extends Transformation {
+    constructor() {
+        super();
     }
 
+    applyTo(field) {
+        for (let y = 0; y < N; y++)
+            for (let x = 0; x < N; x++) {
+                const px = (x - (N - 1) / 2) * spacing;
+                const py = (y - (N - 1) / 2) * spacing;
+                field.setValueAt(x, y, 0.5 * springConstant * (px * px + py * py));
+            }
+    }
+}
+
+const potential = new DiscreteScalarField({ nx: N, ny: N });
+const psi = new DiscreteComplexField({ nx: N, ny: N });
 const solver = new SchrodingerEigenstateSolver({
+    potential,
     spacing,
+    states: 6,
     hbar: 1,
     mass: 1,
     iterations: 900,
     dt: 0.01
 });
-
-const solution = solver.solve(potential, { states: 6 });
-
-console.log('Schrödinger eigenstate energies:', solution.energies);
+potential.apply(new GaussianPotential());
+solver.initialize(psi, 0.01);
 
 const waveFunction = new WaveFunctionSurface3D({
     zScale: 35,
-    brightness: 4
+    brightness: 25
 });
-waveFunction.phaseColor = true;
 
-let stateIndex = 0;
-
-function showState(index) {
-    stateIndex = index;
-    const state = solution.states[stateIndex];
-
-    psi.real.set(state);
+function showState(index = 0) {
+    psi.real.set(solver._eigenstates[index]);
     psi.imag.fill(0);
 }
-
-showState(stateIndex);
+showState();
 
 const simulation = Simulation
     .with({
         htmlDivId: 'qmsolveEigenstates',
         viewport: {
-            aspectRatio: '1/1'
+            aspectRatio: '19/12'
         },
         headUpDisplay: {
             enabled: false
@@ -65,8 +60,8 @@ const simulation = Simulation
     })
     .bind(psi.alwaysWith(waveFunction))
     .append(new Slider('🌀 Eigenstate')
-        .withRange(new Range(0, solution.states.length - 1, 1))
-        .withValue(stateIndex)
+        .withRange(new Range(0, solver._states - 1, 1))
+        .withValue(0)
         .addEventListener('input', event => showState(Number(event.target.value)))
     )
     .append(new Slider('📐 Height scale')
@@ -77,7 +72,7 @@ const simulation = Simulation
     );
 
 simulation.frameSceneOn(waveFunction, {
-    padding: 0.8,
+    padding: 0.5,
     translationY: 0,
     viewDirection: new Vec3(-1, 0.8, 0.9)
 });

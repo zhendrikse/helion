@@ -11,10 +11,10 @@ import { Renderable, Renderer } from '../view/renderer.js';
 
 export class Registry {
     constructor({
-                    id = generateUUID(),
-                    label = 'registryLabel',
-                    entries = {}
-                }) {
+        id = generateUUID(),
+        label = 'registryLabel',
+        entries = {}
+    }) {
         this._entries = entries;
         this._label = label;
         this._id = id;
@@ -39,8 +39,11 @@ export class Registry {
 }
 
 export class Transformation {
-    /** @param {any} _body */
-    applyTo(_body) {}
+    /**
+     * @abstract
+     * @param {any} body
+     */
+    applyTo(body) {}
 }
 
 export class MathPhysicsModelBehavior {

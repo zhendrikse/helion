@@ -4,7 +4,7 @@ import {LaplaceOperator} from "../../../transformations/operators.js";
 import { DirichletBoundaryCondition } from "../boundaryconditions/dirichlet.js";
 
 /**
- * A solver shoud be applied to a discrete scalar field.
+ * A solver should be applied to a discrete scalar field.
  */
 export class Solver {
     /**
@@ -113,6 +113,7 @@ export class WaveEquationSolver extends Solver {
  * Also note that these are 1D arrays, with index i = y*xMax + x, for efficiency.
  */
  export class SchrodingerSolver extends Solver {
+     /** @param {DiscreteScalarField} potential */
     constructor(potential) {
         super();
         this._potential = potential;
@@ -179,7 +180,6 @@ export class WaveEquationSolver extends Solver {
     }
 }
 
-
 /**
  * Eigenstate solver for a time-independent 2D Schrödinger Hamiltonian.
  *
@@ -189,74 +189,72 @@ export class WaveEquationSolver extends Solver {
  */
 export class SchrodingerEigenstateSolver extends Solver {
     constructor({
+        potential = new DiscreteComplexField(),
+        states = 4,
         spacing = 1,
         hbar = 1,
         mass = 1,
-        iterations = 1200,
-        dt = 0.01
+        iterations = 1200
     } = {}) {
         super();
+        this._potential = potential;
+        this._states = states;
         this._spacing = spacing;
         this._hbar = hbar;
         this._mass = mass;
         this._iterations = iterations;
-        this._dt = dt;
+        this._eigenvalues = [];
+        this._eigenstates = [];
     }
 
-    solve(potential, {
-        states = 4,
-        initialState = null
-    } = {}) {
-        const nx = potential.nx;
-        const ny = potential.ny;
+    step(psi, dt = 0) {
+
+    }
+
+    _createEigenState(state, waveFunction, previousStates, dt) {
+        const nx = waveFunction.nx;
+        const ny = waveFunction.ny;
         const size = nx * ny;
-        const previousStates = [];
-        const eigenvalues = [];
-        const eigenstates = [];
+        let psi = new Float64Array(size);
 
-        for (let state = 0; state < states; state++) {
-            let psi = new Float64Array(size);
-
-            if (initialState) {
-                psi.set(initialState(state, nx, ny));
-            } else {
-                for (let y = 1; y < ny - 1; y++)
-                    for (let x = 1; x < nx - 1; x++) {
-                        const u = x / (nx - 1);
-                        const v = y / (ny - 1);
-                        psi[y * nx + x] =
-                            Math.sin((state + 1) * Math.PI * u) *
-                            Math.sin(Math.PI * v);
-                    }
+        for (let y = 1; y < ny - 1; y++) {
+            const v = y / (ny - 1);
+            for (let x = 1; x < nx - 1; x++) {
+                const u = x / (nx - 1);
+                psi[waveFunction.index(x, y)] = Math.sin((state + 1) * Math.PI * u) * Math.sin(Math.PI * v);
             }
-
-            this._orthogonalize(psi, previousStates);
-            this._normalize(psi);
-
-            for (let iteration = 0; iteration < this._iterations; iteration++) {
-                const hPsi = this._applyHamiltonian(psi, potential);
-                const next = new Float64Array(size);
-
-                for (let i = 0; i < size; i++)
-                    next[i] = psi[i] - this._dt * hPsi[i];
-
-                this._orthogonalize(next, previousStates);
-                this._normalize(next);
-                psi = next;
-            }
-
-            const energy = this._rayleighQuotient(psi, potential);
-            previousStates.push(psi);
-            eigenvalues.push(energy);
-            eigenstates.push(psi);
         }
 
-        return { energies: eigenvalues, states: eigenstates };
+        this._orthogonalize(psi, previousStates);
+        this._normalize(psi);
+
+        for (let iteration = 0; iteration < this._iterations; iteration++) {
+            const hPsi = this._applyHamiltonian(psi);
+            const next = new Float64Array(size);
+
+            for (let i = 0; i < size; i++)
+                next[i] = psi[i] - dt * hPsi[i];
+
+            this._orthogonalize(next, previousStates);
+            this._normalize(next);
+            psi = next;
+        }
+
+        const energy = this._rayleighQuotient(psi);
+        previousStates.push(psi);
+        this._eigenvalues.push(energy);
+        this._eigenstates.push(psi);
     }
 
-    _applyHamiltonian(psi, potential) {
-        const nx = potential.nx;
-        const ny = potential.ny;
+    initialize(waveFunction, dt=0.01) {
+        const previousStates = [];
+        for (let state = 0; state < this._states; state++)
+            this._createEigenState(state, waveFunction, previousStates, dt);
+    }
+
+    _applyHamiltonian(psi) {
+        const nx = this._potential.nx;
+        const ny = this._potential.ny;
         const h2 = this._spacing * this._spacing;
         const kinetic = this._hbar * this._hbar / (2 * this._mass);
         const hPsi = new Float64Array(nx * ny);
@@ -267,7 +265,7 @@ export class SchrodingerEigenstateSolver extends Solver {
                 const laplacian =
                     (psi[i - 1] + psi[i + 1] + psi[i - nx] + psi[i + nx] - 4 * psi[i]) / h2;
 
-                hPsi[i] = -kinetic * laplacian + potential.data[i] * psi[i];
+                hPsi[i] = -kinetic * laplacian + this._potential.data[i] * psi[i];
             }
 
         return hPsi;
@@ -299,8 +297,8 @@ export class SchrodingerEigenstateSolver extends Solver {
             psi[i] /= norm;
     }
 
-    _rayleighQuotient(psi, potential) {
-        const hPsi = this._applyHamiltonian(psi, potential);
+    _rayleighQuotient(psi) {
+        const hPsi = this._applyHamiltonian(psi);
         let numerator = 0;
         let denominator = 0;
 
