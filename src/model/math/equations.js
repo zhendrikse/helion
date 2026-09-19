@@ -1,8 +1,16 @@
 import {LaplaceOperator} from '../transformations/operators.js';
 import {Slider} from '../../core/controls.js';
 import {Range} from './math.js';
+import { DiscreteScalarField } from './fields.js';
 
 export class BarrierWaveEquation {
+    /**
+     * @param {{
+     * obstacleField?: DiscreteScalarField
+     * velocity?: number
+     * damping?: number
+     * }} param0 
+     */
     constructor({
         obstacleField,
         velocity = 1,

@@ -272,7 +272,7 @@ export class DiscreteScalarField extends ScalarField {
      * @param {Solver} solver  
      * @param {number} dt 
      */
-    evolve(solver, dt) {
+    evolve(solver, dt=0.01) {
         solver.step(this, dt);
         return this;
     }
