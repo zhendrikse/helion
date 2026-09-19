@@ -607,7 +607,12 @@ export class DiatomicMolecule extends Renderable3D {
 }
 
 export class LatticeView extends Renderable3D {
-    /** @param {{bodyViewFactory: () => Renderable3D, bondViewFactory: () => SwitchableBondView}} options */
+    /**
+     *  @param {{
+     * bodyViewFactory: () => Renderable3D,
+     * bondViewFactory: () => SwitchableBondView}}
+     * options
+     */
     constructor({ bodyViewFactory, bondViewFactory }) {
         super();
 
@@ -651,8 +656,8 @@ export class LatticeView extends Renderable3D {
                 .checked(this._bondViews[0].bondType === SwitchableBondView.Type.Spring ? 0 : 1)
             )
             .add(new Checkbox("Show nodes ")
-                .addEventListener("change", event => this.nodesVisible = event.target.checked)
                 .checked(true)
+                .addEventListener("change", event => this.nodesVisible = event.target.checked)
             );
     }
 
