@@ -4,9 +4,12 @@ import { Range } from './math.js';
 
 class ShapeLike {
     /** @param {number} size */
-    constructor(size) {
+    constructor(size, position = { x: 0, y: 0 }) {
         this._size = size;
+        this._position = position;
     }
+
+    get position() { return this._position; }
 
     /**
      * @param {number} _x
@@ -17,8 +20,8 @@ class ShapeLike {
 
 class SingleSlit extends ShapeLike {
     sample(x, y, field) {
-        const holeEdge = Math.round(field.ny / 2 - this._size / 2);
-        if (x < Math.floor(field.nx / 2) - 5 || x > Math.floor(field.nx / 2) + 5)
+        const holeEdge = Math.round(field.ny / 2 + this._position.y - this._size / 2);
+        if (x < Math.floor(field.nx / 2 + this._position.x) - 5 || x > Math.floor(field.nx / 2 + this._position.x) + 5)
             return false;
 
         return y <= holeEdge || y > holeEdge + this._size;
@@ -31,33 +34,33 @@ class DoubleSlit extends ShapeLike {
             return false;
 
         const slitDistance = this._size;
-        const dhEdge = Math.round(field.ny / 2 - slitDistance / 2);
+        const dhEdge = Math.round(field.ny / 2 + this._position.y - slitDistance / 2);
         return y <= dhEdge - 10 || y > dhEdge + slitDistance + 10 || (y > dhEdge && y <= dhEdge + slitDistance);
     }
 }
 
 class Grating extends ShapeLike {
     sample(x, y, field) {
-        if (y < Math.floor(field.ny / 4) || y > Math.floor(3 * field.ny / 4))
+        if (y < Math.floor(field.ny / 4 + this._position.y) || y > Math.floor(3 * field.ny / 4 + this._position.y))
             return false;
         if (x < Math.floor(field.nx / 2) - 5 || x > Math.floor(field.nx / 2) + 5)
             return false;
 
-        return y % this._size < this._size / 2;
+        return (y - this._position.y) % this._size < this._size / 2;
     }
 }
 
 class Circle extends ShapeLike {
     sample(x, y, field) {
         const rSquared = this._size * this._size/4.0;
-        return (x - field.nx / 2) * (x - field.nx / 2) + (y - field.ny / 2) * (y - field.ny / 2) < rSquared;
+        return (x - (field.nx / 2 + this._position.x)) * (x - (field.nx / 2 + this._position.x)) + (y - (field.ny / 2 + this._position.y)) * (y - (field.ny / 2 + this._position.y)) < rSquared;
     }
 }
 
 class Square extends ShapeLike {
     sample(x, y, field) {
-        const xEdge = Math.round(field.nx / 2 - this._size / 2);
-        const yEdge = Math.round(field.ny / 2 - this._size / 2);
+        const xEdge = Math.round(field.nx / 2 + this._position.x - this._size / 2);
+        const yEdge = Math.round(field.ny / 2 + this._position.y - this._size / 2);
         if (y < yEdge || y > yEdge + this._size)
             return false;
         return !(x < xEdge || x > xEdge + this._size);
@@ -67,7 +70,7 @@ class Square extends ShapeLike {
 class Line extends ShapeLike {
     sample(x, y, field) {
         for (let y = 0; y < field.ny; y++)
-            if (x < Math.floor(field.nx / 2) || x > Math.floor(field.nx / 2) + this._size)
+            if (x < Math.floor(field.nx / 2 + this._position.x) || x > Math.floor(field.nx / 2 + this._position.x) + this._size)
                 return false;
 
         return true;
@@ -77,7 +80,7 @@ class Line extends ShapeLike {
 class Step extends ShapeLike {
     sample(x, y, field) {
         for (let y = 0; y < field.ny; y++)
-            if(x < Math.floor(field.nx / 2) || x > field.nx)
+            if(x < Math.floor(field.nx / 2 + this._position.x) || x > field.nx)
                 return false;
 
         return true;
@@ -110,7 +113,7 @@ export class ShapesFactory extends Registry {
     /** @param {ShapeConfiguration} shapeConfiguration */
     static create(shapeConfiguration) {
         const Type = ShapesFactory.this_.get(shapeConfiguration.shape);
-        return new Type(shapeConfiguration.size);
+        return new Type(shapeConfiguration.size, shapeConfiguration.position);
     }
 
     constructor() {
@@ -124,15 +127,18 @@ export class ShapesFactory extends Registry {
 export class ShapeConfiguration {
     constructor({
                     defaultSize = 40,
-                    defaultShape = Shapes.DoubleSlit
+                    defaultShape = Shapes.DoubleSlit,
+                    defaultPosition = { x: 0, y: 0 }
                 } = {}) {
         this._size = defaultSize;
+        this._position = { ...defaultPosition };
         this._shape = defaultShape;
         this._onChangeEventListener = () => {};
     }
 
     get size() { return this._size; }
     get shape() { return this._shape; }
+    get position() { return this._position; }
 
     /**
      * @param {() => void} onChangeEventListener
