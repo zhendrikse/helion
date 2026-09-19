@@ -248,8 +248,10 @@ Simulation.with({
     infoPanel: {
         text:
             '<strong>🫗 Lattice Boltzmann</strong><br/>' +
-            'A simple D2Q9 fluid flowing around a configurable obstacle. ' +
-            'The background shows vorticity (curl).'
+            'A simple D2Q9 fluid flowing around a barrier. ' +
+            'The background shows vorticity (curl).<br/>' +
+            '• D2 $\\rightarrow$ 2-dimensional, i.e. a flat grid.<br/>' +
+            '• Q9 $\\rightarrow$ 9 velocities, each grid point has 9 distinct directions where fluid particles can go.'
     }})
     .maxOutCpu(() => curlField.evolve(solver), 20, 30)
     .appendStartStopResetUI()
