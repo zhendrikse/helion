@@ -1,6 +1,6 @@
 import {
     Simulation, ParametricSurface, Domain, Slider, Range, DifferentialFrame, TangentFrameView,
-    SurfaceVisualization, SurfaceResolution, Checkbox, LineSegment, Vec3, LineSegmentView, ColorMappers
+    SurfaceVisualization, SurfaceResolution, Checkbox, LineSegment, Vec3, LineSegmentView, ColorMappers, Colour
 } from "../../../src/index.js";
 
 const radius = 2;
@@ -18,7 +18,7 @@ const line = new LineSegment(new Vec3(), surfacePoint.position);
 sphereSurface.frameAt(initialU, initialV, surfacePoint);
 
 const tangentFrameView = new TangentFrameView({
-    color: 0xffff00,
+    color: Colour.Yellow,
     scale: 1.0,
     opacity: 0.5,
     wireframe: false

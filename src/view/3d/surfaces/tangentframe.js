@@ -5,6 +5,7 @@ import {
 import { Renderable3D } from "../../renderer.js";
 import { Arrow } from "../primitives/primitives.js";
 import { DifferentialFrame } from "../../../model/math/numerics/diffgeometry.js";
+import {Colour} from "../../colormappers.js";
 
 export class TangentFrameView extends Renderable3D {
     /**
@@ -14,7 +15,7 @@ export class TangentFrameView extends Renderable3D {
      *   wireframe?: boolean
      *   scale?: number
      *   opacity?: number
-     *   color?: number
+     *   color?: Colour
      *   visible?: boolean
      * }} options 
      */
@@ -24,7 +25,7 @@ export class TangentFrameView extends Renderable3D {
         wireframe = false,
         scale = 0.7,
         opacity = 0.5,
-        color = 0x8888ff,
+        color = Colour.fromHex(0x8888ff),
         visible = true,
     } = {}) {
         super();
@@ -49,14 +50,14 @@ export class TangentFrameView extends Renderable3D {
         });
 
         this._axes = {
-            uArrow: new Arrow(arrowOpts(0xff0000)),
-            vArrow: new Arrow(arrowOpts(0x00ff00)),
-            normalArrow: new Arrow(arrowOpts(0x00aaff))
+            uArrow: new Arrow(arrowOpts(Colour.Red)),
+            vArrow: new Arrow(arrowOpts(Colour.Green)),
+            normalArrow: new Arrow(arrowOpts(Colour.fromHex(0x00aaff)))
         };
 
         this._principals = {
-            k1Arrow: new Arrow(arrowOpts(0xffaa00)),
-            k2Arrow: new Arrow(arrowOpts(0xaa00ff))
+            k1Arrow: new Arrow(arrowOpts(Colour.fromHex(0xffaa00))),
+            k2Arrow: new Arrow(arrowOpts(Colour.fromHex(0xaa00ff)))
         };
 
         this._tangentPlane = new Mesh(
