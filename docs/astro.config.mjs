@@ -40,6 +40,11 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
+					label: 'Fluid dynamics',
+					items: [{ autogenerate: { directory: 'fluiddynamics' } }],
+				},
+				{
+					collapsed: true,
 					label: 'Games',
 					items: [{ autogenerate: { directory: 'games' } }],
 				},
@@ -50,26 +55,21 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
-					label: 'Fluid dynamics',
-					items: [{ autogenerate: { directory: 'fluiddynamics' } }],
-				},
-				{
-					collapsed: true,
 					label: 'Mathematics',
 					items: [{ autogenerate: { directory: 'mathematics' } }],
-				},
-				{
-					collapsed: true,
-					label: 'Optics',
-					items: [
-						{ autogenerate: { directory: 'optics' } },
-					],
 				},
 				{
 					collapsed: true,
 					label: 'Nature',
 					items: [
 						{ autogenerate: { directory: 'nature' } },
+					],
+				},
+				{
+					collapsed: true,
+					label: 'Optics',
+					items: [
+						{ autogenerate: { directory: 'optics' } },
 					],
 				},
 				{
