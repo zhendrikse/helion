@@ -10,6 +10,7 @@ export class Colour {
     static Orange = new Colour(1, 0.6275, 0);
     static White = new Colour(1, 1, 1);
     static Black = new Colour(0, 0, 0);
+    static Purple = new Colour(0.5, 0, 0.5);
 
     static fromThreeJsColor = (/** @type {Color} */ threeJsColor) => new Colour(threeJsColor.r, threeJsColor.g, threeJsColor.b);
 
