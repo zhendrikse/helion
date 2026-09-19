@@ -16,6 +16,11 @@ class IsingField extends DiscreteScalarField {
         return this;
     }
 
+    /**
+     * @param {number} i 
+     * @param {number} j 
+     * @returns {number}
+     */
     deltaU(i, j) {
         const s = this.valueAt(i, j);
         const left = this.valueAt(i === 0 ? this.nx - 1 : i - 1, j);
@@ -25,7 +30,11 @@ class IsingField extends DiscreteScalarField {
         return 2 * s * (left + right + top + bottom);
     }
 
-    // Metropolis sweep
+    /**
+     * Metropolis sweep
+     * @param {number} T temperature
+     * @param {number} steps 
+     */
     metropolis(T, steps) {
         for (let k = 0; k < steps; k++) {
             const i = Math.floor(Math.random() * this.nx);
@@ -48,28 +57,20 @@ class IsingColorMapper extends ColorMapper {
         // normalized 0 => -1 (dark), 1 => +1 (purple #8000ff)
         if (normalized > 0.5) 
             target.setRGB(0x80 / 255, 0, 1);
-        else 
-            target.setRGB(0x1a / 255, 0x1a / 255, 0x1a / 255);
     }
 }
 
-const latticeSize = 200;
-const stepsPerFrame = 10000;
+let latticeSize = 200;
+let stepsPerFrame = 10000;
 
 const field = new IsingField(latticeSize);
 const view = new TiledPlane({
     cellSize: 0.1,
     colorMapper: new IsingColorMapper(),
+    opacityFunction: v => v > 0.5 ? 1 : 0.1,
 });
 
-let T = 2.27; // rond kritieke temperatuur Tc≈2.27 voor J=1
-
-const tempSlider = new Slider('Temperature')
-    .withRange(new Range(0.1, 4, 0.01))
-    .withValue(T)
-    .onInput(e => { T = Number(e.target.value); });
-
-// Helion Simulation vervangt canvas/wrapper/resizeCanvas/requestAnimationFrame
+let T = 2.27; // around critical temperature Tc≈2.27 voor J=1
 const simulation = Simulation
     .with({
         htmlDivId: 'isingSpingCanvasWrapper',
@@ -79,12 +80,21 @@ const simulation = Simulation
     .bind(field.alwaysWith(view))
     .runsEvery(0.01)
     .onStep((_clock, _dt) => field.metropolis(T, stepsPerFrame))
-    .append(tempSlider)
-    .append(new Button().withText('Pause').onClick(() => {
-        if (simulation.isRunning) 
-            simulation.stop();
-        else 
-            simulation.start();
+    .append(new Slider('Temperature')
+        .withRange(new Range(0.1, 4, 0.01))
+        .withValue(T)
+        .onInput(event => T = Number(event.target.value)))
+    .append(new Slider('Steps / frame')
+        .withRange(new Range(1000, 50000, 1000))
+        .withValue(stepsPerFrame)
+        .onInput(event => stepsPerFrame = Number(event.target.value)))
+    .append(new Button()
+        .withText('Pause')
+        .onClick(() => {
+            if (simulation.isRunning) 
+                simulation.stop();
+            else 
+                simulation.start();
     }))
     .onReset(() => field.randomize())
     .start();
