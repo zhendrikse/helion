@@ -50,6 +50,11 @@ export default defineConfig({
 				},
 				{
 					collapsed: true,
+					label: 'Fluid dynamics',
+					items: [{ autogenerate: { directory: 'fluiddynamics' } }],
+				},
+				{
+					collapsed: true,
 					label: 'Mathematics',
 					items: [{ autogenerate: { directory: 'mathematics' } }],
 				},

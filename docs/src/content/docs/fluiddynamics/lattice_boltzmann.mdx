@@ -1,0 +1,98 @@
+---
+title: "🫗 Lattice Boltzmann"
+layout: ../../../layouts/DocsLayout.astro
+---
+
+<div class="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### Simulation
+<div class="header_line"><br/></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/fluiddynamics/scenes/lattice_boltzmann.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=lattice_boltzmann.js"/>
+    </a>
+</div>
+
+🧠 Inspired by the famous [Fluid Dynamics](https://physics.weber.edu/thermal/isingHTML5.html) simulation by [Daniel V. Schroeder](https://physics.weber.edu/schroeder/) (Weber State University)<br/>
+
+<div id="latticeBoltzmann2dContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/lattice_boltzmann_2d.js"}></script>
+
+
+#### [From Boltzmann Statistics to Fluid Dynamics](https://physics.weber.edu/schroeder/lb/LatticeBoltzmann.html)
+
+🚨 This section is a reproduction of [From Boltzmann Statistics to Fluid Dynamics](https://physics.weber.edu/schroeder/lb/LatticeBoltzmann.html)
+
+For simplicity, this simulation works in two dimensions, and discretizes space 
+into a square grid or lattice. Each lattice
+site is big enough to hold a large number of gas molecules, 
+which will be moving in various directions due to their thermal motion 
+plus any large-scale fluid flow.  
+
+We approximate this rich complexity by allowing only _nine_ different 
+velocity vectors only, corresponding
+to nine elementary displacements during a unit of time: up, down, right, left, 
+along any 45&deg; diagonal,or zero (staying in place). 
+The nine elementary displacements are illustrated and listed below,
+using a unit system in which the lattice spacing is one unit.
+
+$\overrightarrow{ e_0} = 0$ <br/> 
+$\overrightarrow{ e_1} = (1,0)$ <br/> 
+$\overrightarrow{ e_2} = (0,1)$ <br/>
+$\overrightarrow{ e_3} = (-1,0)$ <br/> 
+$\overrightarrow{ e_4} = (0,-1)$ <br/> 
+$\overrightarrow{ e_5} = (1,1)$ <br/> 
+$\overrightarrow{ e_6} = (-1,1)$ <br/> 
+$\overrightarrow{ e_7} = (-1,-1)$ <br/>
+$\overrightarrow{ e_8} = (1,-1)$ <br/>
+
+To keep track of how many gas molecules at a site are moving in each of these nine directions,
+we'll need nine variables.  I'll call these variables $n_i$, for $i=0\ldots8$, and define them as
+the respective <i>densities</i> of molecules with the corresponding velocities.  Then the total
+density $\rho$ of all molecules at any given site is their sum:
+
+$$
+\rho = \sum_{i=0}^8 n_i.
+$$
+We can also calculate the macroscopic fluid flow velocity, by taking a weighted average of the
+nine elementary velocities.  I'll call the flow velocity $\overrightarrow{ u}$, and use the symbol $c$ for the
+natural unit of velocity, one grid site per unit time.  Then the flow velocity at any given 
+site is
+
+$$
+\overrightarrow{ u} = \sum_{i=0}^8 \frac{n_i}{\rho} \overrightarrow{ e_i} c,
+$$
+
+which we can write more explicitly as
+$$
+\begin{array}{ll}
+u_x &=& \frac{c}{\rho}(n_1 + n_5 + n_8 - n_3 - n_6 - n_7) \\
+u_y &=& \frac{c}{\rho}(n_2 + n_5 + n_6 - n_4 - n_7 - n_8)
+\end{array}
+$$
+
+taking the $x$ and $y$ directions to point rightward and upward, respectively.
+
+#### Thermal Velocities
+
+The thermal velocities of ideal gas molecules are described by the Boltzmann distribution,
+which in two dimensions is
+
+$$
+D(\overrightarrow{ v}) = \frac{m}{2\pi kT} e^{-m|\overrightarrow{ v}|^2/2kT}.
+$$
+
+This is the function that, when integrated over any range of $v_x$ and $v_y$ values, gives
+the probability of a molecule's velocity being in that range, where $m$ is the molecule&rsquo;s
+mass, $k$ is Boltzmann&rsquo;s constant, and $T$ is the temperature. The exponent in the last equation
+is the molecule&rsquo;s kinetic energy, and the prefactor $m/2\pi kT$ ensures that the integral of $D(\overrightarrow{ v})$
+over _all_ velocity vectors equals $1$ (which you can easily check).
+

@@ -39,7 +39,6 @@ export {
 } from './model/math/fields.js';
 
 export { ElectricField } from './model/phys/fields.js';
-export { LatticeBoltzmannFluid2D } from './model/phys/fluid.js';
 export { ComplexSurfaceView3D, WaveFunctionSurface3D } from './view/3d/surfaces/complex.js';
 export { ThreeJsScene } from './view/3d/scene.js';
 export { SphereSphereCollision } from './model/transformations/interactions.js';
