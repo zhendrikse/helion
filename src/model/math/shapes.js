@@ -76,8 +76,13 @@ class Square extends ShapeLike {
 
 class Line extends ShapeLike {
     sample(x, y, field) {
-        return x >= Math.floor(field.nx / 2 + this._position.x) &&
-            x <= Math.floor(field.nx / 2 + this._position.x) + this._lineWidth;
+        const gap = 10;
+        const lineX = Math.floor(field.nx / 2 + this._position.x);
+
+        return x >= lineX &&
+            x <= lineX + this._lineWidth &&
+            y >= gap &&
+            y <= field.ny - gap;
     }
 }
 
