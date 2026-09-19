@@ -121,10 +121,16 @@ export class ShapesFactory extends Registry {
 }
 
 export class ShapeConfiguration {
+    /**
+     * @param {{
+     * defaultSize?: number
+     * defaultShape?: string
+     * }} param0 
+     */
     constructor({
-                    defaultSize = 40,
-                    defaultShape = Shapes.DoubleSlit
-                } = {}) {
+        defaultSize = 40,
+        defaultShape = Shapes.DoubleSlit
+    } = {}) {
         this._size = defaultSize;
         this._shape = defaultShape;
         this._onChangeEventListener = () => {};
@@ -133,9 +139,7 @@ export class ShapeConfiguration {
     get size() { return this._size; }
     get shape() { return this._shape; }
 
-    /**
-     * @param {() => void} onChangeEventListener
-     */
+    /** @param {() => void} onChangeEventListener */
     set onChangeEventListener(onChangeEventListener) {
         this._onChangeEventListener = onChangeEventListener;
     }
