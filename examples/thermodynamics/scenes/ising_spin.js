@@ -73,7 +73,7 @@ const view = new TiledPlane({
 let T = 2.27; // around critical temperature Tc≈2.27 voor J=1
 const simulation = Simulation
     .with({
-        htmlDivId: 'isingSpingCanvasWrapper',
+        htmlDivId: 'isingSpinContainer',
         camera: { position: new Vec3(0, 0, 15), orthographic: true, controls: false },
         parameterMenuCollapsed: false
     })
