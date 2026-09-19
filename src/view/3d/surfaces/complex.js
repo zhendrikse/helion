@@ -2,7 +2,7 @@ import { Mesh, DoubleSide, MeshStandardMaterial, PlaneGeometry, Color, BufferAtt
 import { Renderable3D } from "../../renderer.js";
 import { AdaptiveSymmetricNormalizer, SurfaceResolution } from "./visualization.js";
 import { Interval, Range} from "../../../model/math/math.js";
-import { ComplexColorMappers} from "../../colormappers.js";
+import {ComplexColorMappers} from "../../colormappers.js";
 import { CompoundControl, DropdownMenu, Slider } from "../../../core/controls.js";
 import {ComplexFunctionSample} from "../../../model/math/fields.js";
 
@@ -241,7 +241,10 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
         if (this._fieldIsDiscrete === undefined) this.canBindTo(field);
         this.dispose();
         const { width, height } = this.resolution(field);
-        const geometry = new PlaneGeometry(1, 1, width, height);
+
+        // A discrete field has width × height samples, so it needs
+        // (width - 1) × (height - 1) segments to produce exactly width × height vertices.
+        const geometry = new PlaneGeometry(1, 1, width - 1, height - 1);
         const material = new ShaderMaterial({
             vertexShader: WaveFunctionSurface3D.vertexShader,
             fragmentShader: WaveFunctionSurface3D.fragmentShader,
