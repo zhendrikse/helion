@@ -199,7 +199,9 @@ class LatticeBoltzmannSolver extends Solver {
 const curlField = new DiscreteScalarField({ nx: NX, ny: NY });
 const barrierField = new DiscreteScalarField({ nx: NX, ny: NY });
 
-const configuration = new ShapeConfiguration();
+const configuration = new ShapeConfiguration({
+    defaultPosition: { x: -45, y: 0 }
+});
 const solver = new LatticeBoltzmannSolver({
     barrierField,
     viscosity: 0.02,
