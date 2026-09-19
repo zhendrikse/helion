@@ -1,7 +1,6 @@
 import {
-    Complex,
     ComplexFunctionSample, Cylinder, DiscreteComplexField, Renderable3D, Simulation, Vec3, WaveFunctionEigenStateSolver
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 class DiscreteComplexFieldCylinderView extends Renderable3D {
     constructor({
@@ -11,22 +10,30 @@ class DiscreteComplexFieldCylinderView extends Renderable3D {
         super();
         this._spacing = spacing;
         this._cylinderScale = cylinderScale;
+        /** @type {Cylinder[]} */
         this._cylinders = [];
         this._sample = new ComplexFunctionSample();
     }
 
+    /** @param {DiscreteComplexField} model */
     canBindTo(model) {
         if (!model.valueAt)
-            throw new Error("Arrow can only bind to models with a complex value.");
+            throw new Error('Arrow can only bind to models with a complex value.');
         return true;
     }
 
+    /** @param {DiscreteComplexField} psi */
     synchronizeWith(psi) {
         for (let i = 0; i < psi.nx; i++)
             for (let j = 0; j < psi.ny; j++)
                 this._updateCylinder(psi, i, j);
     }
 
+    /**
+     * @param {DiscreteComplexField} psi 
+     * @param {number} i 
+     * @param {number} j 
+     */
     _updateCylinder(psi, i, j) {
         psi.valueAt(i, j, this._sample);
         const output = this._sample.output;
@@ -44,6 +51,7 @@ class DiscreteComplexFieldCylinderView extends Renderable3D {
         cylinder._mesh.material.color.setHSL(hue, 1, 0.5);
     }
 
+    /** @param {DiscreteComplexField} psi */
     initialize(psi) {
         for (let i = 0; i < psi.nx; i++)
             for (let j = 0; j < psi.ny; j++) {
@@ -59,20 +67,20 @@ const solver = new WaveFunctionEigenStateSolver();
 waveFunctionPsi.evolve(solver, 0.01);
 
 Simulation.with({
-        htmlDivId: "infiniteSquareWell2D",
+        htmlDivId: 'infiniteSquareWell2D',
         camera: {
             position: new Vec3(12, 4, 2).multiplyScalar(0.8)
         },
         viewport: {
-            aspectRatio: "19/12"
+            aspectRatio: '19/12'
         },
         infoPanel: {
-            text: "<strong>Particle in a 2D box 📦</strong><br/>" +
-                "- Cylinders $\\propto \\|\\Psi\\|$<br/>" +
-                "- Height $\\propto Re(\\Psi)$<br/>" +
-                "- Radius $\\propto Im(\\Psi)$<br/>" +
-                "- Color represents the value of the phase factor<br/>" +
-                "- System evolves by summing the Fourier coefficients times the eigenstates."
+            text: '<strong>Particle in a 2D box 📦</strong><br/>' +
+                '- Cylinders $\\propto \\|\\Psi\\|$<br/>' +
+                '- Height $\\propto Re(\\Psi)$<br/>' +
+                '- Radius $\\propto Im(\\Psi)$<br/>' +
+                '- Color represents the value of the phase factor<br/>' +
+                '- System evolves by summing the Fourier coefficients times the eigenstates.'
         }
     })
     .bind(waveFunctionPsi.alwaysWith(waveFunctionView))

@@ -2,7 +2,7 @@ import {
     WaveFunctionSurface3D, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
     SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField,
     ShapeConfiguration, Softness, Potential, ComplexSurfaceView2D, DiscreteFieldSurfaceView, SurfaceResolution,
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 let xMax = 400,
     width = xMax,
@@ -43,9 +43,9 @@ reset(shapeConfiguration, potentialStrength, softness);
 
 const simulation = Simulation
     .with({
-        htmlDivId: "quantumScattering",
+        htmlDivId: 'quantumScattering',
         viewport: {
-            aspectRatio: "19/12"
+            aspectRatio: '19/12'
         },
         headUpDisplay: {
             enabled: false
@@ -59,42 +59,42 @@ const simulation = Simulation
     .onReset(() => reset(shapeConfiguration, potentialStrength, softness))
     .maxOutCpu(() => psi.evolve(solver, dt), 20, 10)
     .append(new RadioGroup()
-        .add("2D", event => setDimension(false))
-        .add("3D", event => setDimension(true))
+        .add('2D', event => setDimension(false))
+        .add('3D', event => setDimension(true))
         .checked(1))
-    .append(new Checkbox("🌈 Show phase color ")
+    .append(new Checkbox('🌈 Show phase color ')
         .checked(true)
         .onChange(event => {
             waveFunctionSurface2d.phaseColor = event.target.checked;
             waveFunctionSurface.phaseColor = event.target.checked;
         })
     )
-    .append(new Slider("🏃 Packet energy ")
+    .append(new Slider('🏃 Packet energy ')
         .on(gaussianImpulse)
-        .withProperty("wavePacketEnergy")
+        .withProperty('wavePacketEnergy')
         .withRange(new Range(0.001, 0.1, 0.001))
         .withValue(0.050)
-        .addEventListener("input", () => reset())
+        .addEventListener('input', () => reset())
     )
-    .append(new Slider("🪜 Height scale")
+    .append(new Slider('🪜 Height scale')
         .withRange(new Range(10, 25, 0.1))
         .withValue(waveFunctionSurface.zScale)
         .on(waveFunctionSurface)
-        .withProperty("zScale")
+        .withProperty('zScale')
     )
     .append(shapeConfiguration.ui())
-    .append(new Slider("💪🏻 Energy barrier")
+    .append(new Slider('💪🏻 Energy barrier')
         .withRange(new Range(-0.1, 0.1, .001))
         .withValue(potentialStrength)
-        .addEventListener("input", event => {
+        .addEventListener('input', event => {
             potentialStrength = Number(event.target.value);
             reset(shapeConfiguration, potentialStrength, softness);
         })
     )
-    .append(new Slider("🧸 Softness")
+    .append(new Slider('🧸 Softness')
         .withRange(new Range(0, 20, 1))
         .withValue(softness)
-        .addEventListener("input", event => {
+        .addEventListener('input', event => {
             softness = Number(event.target.value);
             reset(shapeConfiguration, potentialStrength, softness);
         }));
