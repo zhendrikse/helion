@@ -1,7 +1,6 @@
 import {
     AdaptiveSymmetricNormalizer, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
-    Interval, ShapeConfiguration, ShapeMask, Simulation, TiledPlane, Vec3,
-    DiscreteScalarField
+    Interval, ShapeConfiguration, ShapeMask, Simulation, TiledPlane, Vec3, DiscreteScalarField
 } from '../../../src/index.js';
 import { Solver } from '../../../src/model/math/numerics/solvers/solvers.js';
 
@@ -27,13 +26,9 @@ class LatticeBoltzmannSolver extends Solver {
         this._eq = new Float64Array(9);
     }
 
-    init(field) {
+    reset(field) {
         this._f = Array.from({ length: 9 }, () => new Float64Array(field.nx * field.ny));
         this._next = Array.from({ length: 9 }, () => new Float64Array(field.nx * field.ny));
-        this.reset(field);
-    }
-
-    reset(field) {
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++) {
                 const i = field.index(x, y);
