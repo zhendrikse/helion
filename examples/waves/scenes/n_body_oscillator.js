@@ -40,7 +40,7 @@ const latticeView = LatticeView.from({
         thickness: 0.075,
         tubularSegments: 600,
         coils: 30,
-        color: 0xffff4d,
+        color: Colour.fromHex(0xffff4d),
         castShadow: true
     }
 });

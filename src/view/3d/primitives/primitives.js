@@ -422,7 +422,6 @@ export class Cylinder extends Renderable3D {
         segments = 24,
         castShadow = false,
         material = new MeshStandardMaterial({
-            color: color.asThreeJsColor(new Color()),
             opacity,
             transparent: opacity < 1
         }),
@@ -430,6 +429,7 @@ export class Cylinder extends Renderable3D {
     } = {}) {
         super();
         const geometry = new CylinderGeometry(1, 1, 1, segments);
+        material.color.copy(color.asThreeJsColor(new Color()));
         this._mesh = new Mesh(geometry, material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);

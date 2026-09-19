@@ -330,7 +330,7 @@ export class SwitchableBondView extends Renderable3D {
     });
     /**
      * @param {{
-     * color?: number,
+     * color?: Colour,
      * coils?: number,
      * tubularSegments?: number,
      * thickness?: number,
@@ -340,7 +340,7 @@ export class SwitchableBondView extends Renderable3D {
      * }} options
      */
     constructor({
-        color = 0xffff00,
+        color = Colour.Yellow,
         coils = 25,
         tubularSegments = 400,
         thickness = 0.075,

@@ -7,7 +7,7 @@ import {
 const resolution = 256;
 const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(resolution, resolution),
-    colorMapper: new ColorMappers().get(ColorMappers.WaterAlternative)(),
+    colorMapper: new ColorMappers().get(ColorMappers.Water)(),
     opacity: 0.9
 });
 waterSurface.position.set(-resolution * .5, 0, -resolution * .5);

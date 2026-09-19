@@ -327,12 +327,13 @@ export class ComplexSoftness extends Transformation {
     }
 }
 
-export class SineImpulseOperator {
+export class SineImpulseOperator extends Transformation {
     constructor({
         wavelengthInPixels = 10,
         amplitude = 1,
         periods = 1
     } = {}) {
+        super();
         this._waveLength = wavelengthInPixels;
         this._amplitude = amplitude;
         this._periods = periods;

@@ -241,7 +241,7 @@ for (const bond of chain.bonds)
             coils: 15,
             thickness: 0.04,
             tubularSegments: 400,
-            color: 0xffff66
+            color: Colour.fromHex(0xffff66)
         }))
     );
 
