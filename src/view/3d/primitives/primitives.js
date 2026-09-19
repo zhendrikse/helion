@@ -508,19 +508,29 @@ export class Box extends Renderable3D {
 // Ring
 //
 export class Ring extends Renderable3D {
+    /**
+     * @param {{
+     *     color?: Colour,
+     *     tickness?: number,
+     *     radialSegments?: number,
+     *     tubularSegments: number,
+     *     material: Material,
+     * }} param0
+     */
     constructor({
-        color = 0xffff00,
+        color = Colour.Yellow,
         thickness = 0.1,
         radialSegments = 16,
-        tubularSegments = 32
+        tubularSegments = 32,
+        material = new MeshStandardMaterial({
+            color: color.asThreeJsColor(new Color()),
+            roughness: 0.4,
+            metalness: 0.75
+        })
     } = {}) {
         super();
         const geometry = new TorusGeometry(1, thickness, radialSegments, tubularSegments);
-        const material = new MeshStandardMaterial({
-            color: color,
-            roughness: 0.4,
-            metalness: 0.75
-        });
+        material.color.copy(color.asThreeJsColor(new Color()));
         this._mesh = new Mesh(geometry, material);
         this.add(this._mesh);
         this._direction = new Vector3();

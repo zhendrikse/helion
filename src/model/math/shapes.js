@@ -1,27 +1,34 @@
 import { Registry } from '../../core/helion.js';
 import { CompoundControl, DropdownMenu, Slider } from '../../core/controls.js';
-import { Range } from './math.js';
+import {Range, Vec2} from './math.js';
 
 class ShapeLike {
-    /** @param {number} size */
-    constructor(size, position = { x: 0, y: 0 }) {
+    /**
+     * @param {Vec2} position
+     * @param {number} size
+     * @param {number} lineWidth
+     */
+    constructor(size, position = new Vec2(), lineWidth = 5) {
         this._size = size;
         this._position = position;
+        this._lineWidth = lineWidth;
     }
 
     get position() { return this._position; }
 
     /**
-     * @param {number} _x
-     * @param {number} _y
+     * @abstract
+     * @param {number} x
+     * @param {number} y
+     * @param {DiscreteScalarField} field
      */
-    sample(_x, _y) {}
+    sample(x, y, field) {}
 }
 
 class SingleSlit extends ShapeLike {
     sample(x, y, field) {
         const holeEdge = Math.round(field.ny / 2 + this._position.y - this._size / 2);
-        if (x < Math.floor(field.nx / 2 + this._position.x) - 5 || x > Math.floor(field.nx / 2 + this._position.x) + 5)
+        if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth || x > Math.floor(field.nx / 2 + this._position.x) + this._lineWidth)
             return false;
 
         return y <= holeEdge || y > holeEdge + this._size;
@@ -30,7 +37,7 @@ class SingleSlit extends ShapeLike {
 
 class DoubleSlit extends ShapeLike {
     sample(x, y, field) {
-        if (x < Math.floor(field.nx / 2 + this._position.x) - 5 || x > Math.floor(field.nx / 2 + this._position.x) + 5)
+        if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth || x > Math.floor(field.nx / 2 + this._position.x) + this._lineWidth)
             return false;
 
         const slitDistance = this._size;
@@ -43,7 +50,7 @@ class Grating extends ShapeLike {
     sample(x, y, field) {
         if (y < Math.floor(field.ny / 4 + this._position.y) || y > Math.floor(3 * field.ny / 4 + this._position.y))
             return false;
-        if (x < Math.floor(field.nx / 2 + this._position.x) - 5 || x > Math.floor(field.nx / 2 + this._position.x) + 5)
+        if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth || x > Math.floor(field.nx / 2 + this._position.x) + this._lineWidth)
             return false;
 
         return (y - this._position.y) % this._size < this._size / 2;
@@ -52,7 +59,7 @@ class Grating extends ShapeLike {
 
 class Circle extends ShapeLike {
     sample(x, y, field) {
-        const rSquared = this._size * this._size/4.0;
+        const rSquared = this._size * this._size / 4.0;
         return (x - (field.nx / 2 + this._position.x)) * (x - (field.nx / 2 + this._position.x)) + (y - (field.ny / 2 + this._position.y)) * (y - (field.ny / 2 + this._position.y)) < rSquared;
     }
 }
@@ -70,7 +77,7 @@ class Square extends ShapeLike {
 class Line extends ShapeLike {
     sample(x, y, field) {
         return x >= Math.floor(field.nx / 2 + this._position.x) &&
-            x <= Math.floor(field.nx / 2 + this._position.x) + this._size;
+            x <= Math.floor(field.nx / 2 + this._position.x) + this._lineWidth;
     }
 }
 
@@ -106,7 +113,7 @@ export class ShapesFactory extends Registry {
     /** @param {ShapeConfiguration} shapeConfiguration */
     static create(shapeConfiguration) {
         const Type = ShapesFactory.this_.get(shapeConfiguration.shape);
-        return new Type(shapeConfiguration.size, shapeConfiguration.position);
+        return new Type(shapeConfiguration.size, shapeConfiguration.position, shapeConfiguration.defaultLineThickness);
     }
 
     constructor() {
@@ -118,17 +125,28 @@ export class ShapesFactory extends Registry {
 }
 
 export class ShapeConfiguration {
+    /**
+     * @param {{
+     *     defaultSize?: number,
+     *     defaultShape?: string,
+     *     defaultPosition?: Vec2,
+     *     defaultLineWidth?: number
+     * }} param0
+     */
     constructor({
-                    defaultSize = 40,
-                    defaultShape = Shapes.DoubleSlit,
-                    defaultPosition = { x: 0, y: 0 }
-                } = {}) {
+        defaultSize = 40,
+        defaultShape = Shapes.DoubleSlit,
+        defaultLineWidth = 5,
+        defaultPosition = new Vec2(0, 0)
+    } = {}) {
         this._size = defaultSize;
         this._position = { ...defaultPosition };
         this._shape = defaultShape;
+        this._defaultLineWidth = defaultLineWidth;
         this._onChangeEventListener = () => {};
     }
 
+    get defaultLineThickness() { return this._defaultLineWidth; }
     get size() { return this._size; }
     get shape() { return this._shape; }
     get position() { return this._position; }

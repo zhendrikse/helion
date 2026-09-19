@@ -1,6 +1,6 @@
 import {
     AdaptiveSymmetricNormalizer, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
-    Interval, ShapeConfiguration, ShapeMask, Simulation, TiledPlane, Vec3, DiscreteScalarField
+    Interval, ShapeConfiguration, ShapeMask, Simulation, TiledPlane, Vec3, DiscreteScalarField, Vec2
 } from '../../../src/index.js';
 import { Solver } from '../../../src/model/math/numerics/solvers/solvers.js';
 
@@ -200,7 +200,8 @@ const curlField = new DiscreteScalarField({ nx: NX, ny: NY });
 const barrierField = new DiscreteScalarField({ nx: NX, ny: NY });
 
 const configuration = new ShapeConfiguration({
-    defaultPosition: { x: -45, y: 0 }
+    defaultPosition: new Vec2(-NX * .35, 0),
+    defaultLineWidth: 1
 });
 const solver = new LatticeBoltzmannSolver({
     barrierField,
