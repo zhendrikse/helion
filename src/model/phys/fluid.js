@@ -10,6 +10,7 @@ const DY = [0, 0, 1, 0, -1, 1, 1, -1, -1];
  * The model deliberately keeps the first implementation simple:
  * - maintained left-to-right inflow,
  * - bounce-back top/bottom walls and an internal barrier,
+ * - open right-hand outlet,
  * - BGK collision,
  * - an exposed scalar field containing the 2D vorticity (curl).
  *
@@ -43,10 +44,7 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
         this._curl = new DiscreteScalarField({ nx, ny });
         this._barrierField = new DiscreteScalarField({ nx, ny });
 
-        for (let y = 0; y < ny; y++)
-            for (let x = 0; x < nx; x++)
-                this._barrierField.setValueAt(x, y, this._barrier[this.index(x, y)]);
-
+        this._updateBarrierField();
         this.reset();
     }
 
@@ -76,6 +74,7 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
             }
 
         this._curl.reset();
+        this._updateBarrierField();
         this._updateCurl();
         return this;
     }
@@ -89,6 +88,7 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
         this._stream();
         this._collide();
         this._applyInflow();
+        this._applyOutlet();
         this._updateCurl();
         return this;
     }
@@ -108,11 +108,15 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
                     const tx = x + DX[k];
                     const ty = y + DY[k];
 
-                    if (ty < 0 || ty >= ny || tx < 0 || tx >= nx ||
-                        this.isBarrier(tx, ty)) {
+                    if (ty < 0 || ty >= ny || this.isBarrier(tx, ty)) {
                         this._next[OPPOSITE[k]][sourceIndex] += this._f[k][sourceIndex];
                         continue;
                     }
+
+                    // Populations leaving through the left/right boundary are
+                    // handled by the inflow/outlet boundary conditions.
+                    if (tx < 0 || tx >= nx)
+                        continue;
 
                     this._next[k][this.index(tx, ty)] += this._f[k][sourceIndex];
                 }
@@ -160,6 +164,22 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
             for (let k = 0; k < 9; k++)
                 this._f[k][i] = equilibrium[k];
         }
+    }
+
+    _applyOutlet() {
+        for (let y = 1; y < this._ny - 1; y++) {
+            const outlet = this.index(this._nx - 1, y);
+            const interior = this.index(this._nx - 2, y);
+
+            for (let k = 0; k < 9; k++)
+                this._f[k][outlet] = this._f[k][interior];
+        }
+    }
+
+    _updateBarrierField() {
+        for (let y = 0; y < this._ny; y++)
+            for (let x = 0; x < this._nx; x++)
+                this._barrierField.setValueAt(x, y, this._barrier[this.index(x, y)]);
     }
 
     _equilibrium(rho, ux, uy, target) {
