@@ -1,6 +1,6 @@
 import {
     AdaptiveSymmetricNormalizer, Button, Checkbox, ColorMappers, Colour, FixedIntervalNormalizer,
-    Interval, LatticeBoltzmannFluid2D, Simulation, Slider, TiledPlane, Vec3
+    Interval, LatticeBoltzmannFluid2D, Simulation, TiledPlane, Vec3
 } from '../../../src/index.js';
 
 const NX = 120;
@@ -47,18 +47,10 @@ const simulation = Simulation
     })
     .runsEvery(0.01)
     .onStep(() => {
-        // A few lattice steps per simulation tick keeps the flow moving smoothly.
         fluid.evolve();
         fluid.evolve();
     })
     .appendStartStopResetUI()
-    .append(new Slider('Viscosity')
-        .withRange(new Interval(0.005, 0.08))
-        .withValue(0.02)
-        .onInput(event => {
-            // @ts-ignore
-            fluid.viscosity = Number(event.target.value);
-        }))
     .append(new Checkbox('Show barrier')
         .checked(true)
         .addEventListener('change', event => {
