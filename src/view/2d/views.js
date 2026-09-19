@@ -8,7 +8,7 @@ import { CompoundControl, DropdownMenu } from '../../core/controls.js';
 import {ColorMapper, Colour, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from '../colormappers.js';
 import { AdaptiveSymmetricNormalizer, SurfaceResolution} from '../3d/surfaces/visualization.js';
 import { ComplexFunctionSample, DiscreteScalarField} from '../../model/math/fields.js';
-import { Normalizer} from '../3d/surfaces/visualization.js'
+import { Normalizer} from '../3d/surfaces/visualization.js';
 import { RadialSymmetricBody } from '../../model/phys/bodies.js';
 
 export class PixelRasterView extends Renderable2D {
@@ -531,7 +531,7 @@ export class ParticleView2D extends Renderable2D {
      */
     constructor({
         segments = 16,
-        colorFunction = particle => 0xffff00,
+        colorFunction = _particle => 0xffff00,
         colorMapper = new HexValueColorMapper(),
         hasBorder = false,
         borderColor = Colour.Yellow
