@@ -1,5 +1,5 @@
 import {
-    AdaptiveSymmetricNormalizer, ColorMappers, Colour, FixedIntervalNormalizer,
+    AdaptiveSymmetricNormalizer, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
     Interval, ShapeConfiguration, ShapeMask, Simulation, TiledPlane, Vec3,
     DiscreteScalarField
 } from '../../../src/index.js';
@@ -17,11 +17,7 @@ const OPPOSITE = [0, 3, 4, 1, 2, 7, 8, 5, 6];
 const WEIGHT = [4 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 36, 1 / 36, 1 / 36, 1 / 36];
 
 class LatticeBoltzmannSolver extends Solver {
-    constructor({
-        barrierField = new DiscreteScalarField(),
-        viscosity = 0.02,
-        flowSpeed = 0.10,
-    } = {}) {
+    constructor({ barrierField = new DiscreteScalarField(), viscosity = 0.02, flowSpeed = 0.10 } = {}) {
         super();
         this._barrierField = barrierField;
         this._viscosity = viscosity;
@@ -31,20 +27,17 @@ class LatticeBoltzmannSolver extends Solver {
         this._eq = new Float64Array(9);
     }
 
-    /** @param {DiscreteScalarField} field */
     init(field) {
         this._f = Array.from({ length: 9 }, () => new Float64Array(field.nx * field.ny));
         this._next = Array.from({ length: 9 }, () => new Float64Array(field.nx * field.ny));
         this.reset(field);
     }
 
-    /** @param {DiscreteScalarField} field */
     reset(field) {
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++) {
                 const i = field.index(x, y);
                 this._equilibrium(1, this._flowSpeed, 0, this._eq);
-
                 for (let k = 0; k < 9; k++)
                     this._f[k][i] = this._eq[k];
             }
@@ -54,7 +47,6 @@ class LatticeBoltzmannSolver extends Solver {
         return this;
     }
 
-    /** @param {DiscreteScalarField} field */
     step(field) {
         this._stream(field);
         this._collide(field);
@@ -64,7 +56,6 @@ class LatticeBoltzmannSolver extends Solver {
         return this;
     }
 
-    /** @param {DiscreteScalarField} field */
     _stream(field) {
         const nx = field.nx;
         const ny = field.ny;
@@ -95,7 +86,6 @@ class LatticeBoltzmannSolver extends Solver {
         [this._f, this._next] = [this._next, this._f];
     }
 
-    /** @param {DiscreteScalarField} field */
     _collide(field) {
         const omega = 1 / (0.5 + 3 * this._viscosity);
 
@@ -130,7 +120,6 @@ class LatticeBoltzmannSolver extends Solver {
             }
     }
 
-    /** @param {DiscreteScalarField} field */
     _applyInflow(field) {
         for (let y = 1; y < field.ny - 1; y++) {
             const i = field.index(0, y);
@@ -141,7 +130,6 @@ class LatticeBoltzmannSolver extends Solver {
         }
     }
 
-    /** @param {DiscreteScalarField} field */
     _applyOutlet(field) {
         for (let y = 1; y < field.ny - 1; y++) {
             const outlet = field.index(field.nx - 1, y);
@@ -163,7 +151,6 @@ class LatticeBoltzmannSolver extends Solver {
         }
     }
 
-    /** @param {DiscreteScalarField} field */
     _updateCurl(field) {
         for (let y = 1; y < field.ny - 1; y++)
             for (let x = 1; x < field.nx - 1; x++) {
@@ -227,7 +214,7 @@ const solver = new LatticeBoltzmannSolver({
 function reset() {
     barrierField
         .reset()
-        .applyTo(new ShapeMask(configuration));
+        .apply(new ShapeMask(configuration));
 
     solver.reset(curlField);
 }
@@ -273,7 +260,7 @@ Simulation.with({
     .bind(barrierField.onceWith(barrierView))
     .onReset(reset)
     .append(configuration.ui())
-    .append(new (await import('../../../src/core/controls.js')).DropdownMenu()
+    .append(new DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.Inferno)
         // @ts-ignore
