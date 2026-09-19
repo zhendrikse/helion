@@ -103,6 +103,10 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._eigenstates = [];
     }
 
+    /**
+     * @param {DiscreteComplexField} psi
+     * @param {number} dt
+     */
     step(psi, dt = 0) {
 
     }
@@ -142,10 +146,14 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._eigenstates.push(psi);
     }
 
-    initialize(waveFunction, dt=0.01) {
+    /**
+     * @param {DiscreteComplexField} psi
+     * @param {number} dt
+     */
+    initialize(psi, dt=0.01) {
         const previousStates = [];
         for (let state = 0; state < this._states; state++)
-            this._createEigenState(state, waveFunction, previousStates, dt);
+            this._createEigenState(state, psi, previousStates, dt);
     }
 
     _applyHamiltonian(psi) {
