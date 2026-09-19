@@ -1,7 +1,7 @@
 import {
     ParametricCurve, CurveView, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
-    Grid, Interval, Label, Arrow2D, ColorMappers, RotationMatrix2D, VectorModel, Vec2
-} from "../../../src/index.js";
+    Grid, Interval, Label, Arrow2D, ColorMappers, RotationMatrix2D, VectorModel, Vec2, Colour
+} from '../../../src/index.js';
 
 const size = 4;
 const samples = 200;
@@ -22,7 +22,7 @@ const orbit = new ParametricCurve({
 
 const simulation = Simulation
     .with({
-        htmlDivId: "orbitsContainer",
+        htmlDivId: 'orbitsContainer',
         camera: {
             position: new Vec3(0, 0, 2.5 * size),
             orthographic: true
@@ -31,11 +31,11 @@ const simulation = Simulation
             enabled: false
         },
         infoPanel: {
-            text: "<strong>💫 Group orbits</strong><br/>$G = SO(2),\\ X=\\mathbb{R}^2$<br/>" +
-                "<ul><li>Choose point $x\\in X$</li>" +
-                "<li>Modify rotation matrix $g_\\theta\\in G$</li>" +
-                "<li>Action $g_\\theta\\cdot x$</li>" +
-                "<li>Orbit $G\\cdot x$ is a circle: $r = ∥x∥$</li></ul>"
+            text: '<strong>💫 Group orbits</strong><br/>$G = SO(2),\\ X=\\mathbb{R}^2$<br/>' +
+                '<ul><li>Choose point $x\\in X$</li>' +
+                '<li>Modify rotation matrix $g_\\theta\\in G$</li>' +
+                '<li>Action $g_\\theta\\cdot x$</li>' +
+                '<li>Orbit $G\\cdot x$ is a circle: $r = ∥x∥$</li></ul>'
         },
         parameterMenuCollapsed: false
     });
@@ -52,27 +52,27 @@ function updateRotation(angle) {
     rotation.applyTo(transformedPoint.axis);
 
     simulation.setLatexTitle(
-        "g_\\theta = \\begin{pmatrix}" +
-        rotation.a.toFixed(2) + " & " + rotation.b.toFixed(2) + " \\\\" +
-        rotation.c.toFixed(2) + " & " + rotation.d.toFixed(2) +
-        "\\end{pmatrix},\\quad g_\\theta \\cdot x = " +
-        "\\begin{pmatrix}" + transformedPoint.axis.x.toFixed(2) + "\\\\" +
-        transformedPoint.axis.y.toFixed(2) + "\\end{pmatrix}"
+        'g_\\theta = \\begin{pmatrix}' +
+        rotation.a.toFixed(2) + ' & ' + rotation.b.toFixed(2) + ' \\\\' +
+        rotation.c.toFixed(2) + ' & ' + rotation.d.toFixed(2) +
+        '\\end{pmatrix},\\quad g_\\theta \\cdot x = ' +
+        '\\begin{pmatrix}' + transformedPoint.axis.x.toFixed(2) + '\\\\' +
+        transformedPoint.axis.y.toFixed(2) + '\\end{pmatrix}'
     );
 }
 
 const labelPoint = new Label({
-    text: () => "x",
+    text: () => 'x',
     offset: model => model.axis.clone().multiplyScalar(1.15),
-    fontSize: "22px",
-    color: "#ff991c"
+    fontSize: '22px',
+    color: Colour.fromHex(0xff991c)
 });
 
 const labelTransformedPoint = new Label({
-    text: () => "gₜₕₑₜₐ · x",
+    text: () => 'gₜₕₑₜₐ · x',
     offset: model => model.axis.clone().multiplyScalar(1.15),
-    fontSize: "20px",
-    color: "#44aaff"
+    fontSize: '20px',
+    color: Colour.fromHex(0x44aaff)
 });
 
 simulation
@@ -85,24 +85,24 @@ simulation
     })))
     .bind(xAxis.onceWith(new Arrow2D({
         size: .2,
-        color: 0xbbbbbb,
+        color: Colour.fromHex(0xbbbbbb),
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(yAxis.onceWith(new Arrow2D({
         size: .2,
-        color: 0xbbbbbb,
+        color: Colour.fromHex(0xbbbbbb),
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(xAxis.onceWith(new Label({
-        text: () => "X",
-        fontSize: "20px",
-        color: "#bbbbbb",
+        text: () => 'X',
+        fontSize: '20px',
+        color: Colour.fromHex(0xbbbbbb),
         offset: () => new Vec2(1.2 * size, 0)
     })))
     .bind(yAxis.onceWith(new Label({
-        text: () => "Y",
-        fontSize: "20px",
-        color: "#bbbbbb",
+        text: () => 'Y',
+        fontSize: '20px',
+        color: Colour.fromHex(0xbbbbbb),
         offset: () => new Vec2(0, 1.2 * size)
     })))
     .bind(orbit.alwaysWith(new CurveView({
@@ -111,23 +111,23 @@ simulation
         colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0x44dd88})
     })))
     .bind(point.onceWith(new Arrow2D({
-        color: 0xff991c,
+        color: Colour.fromHex(0xff991c),
         size: .35,
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(transformedPoint.alwaysWith(new Arrow2D({
-        color: 0x44aaff,
+        color: Colour.fromHex(0x44aaff),
         size: .3,
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(point.onceWith(labelPoint))
     .bind(transformedPoint.alwaysWith(labelTransformedPoint))
-    .append(new Slider("Rotation")
+    .append(new Slider('Rotation')
         .withRange(new Range(0, 2 * Math.PI, 0.01))
         .withValue(0)
         .onInput(event => updateRotation(Number(event.target.value)))
     )
-    .append(new Slider("x")
+    .append(new Slider('x')
         .withRange(new Range(-size, size, 0.01))
         .withValue(2)
         .onInput(event => {
@@ -135,7 +135,7 @@ simulation
             updateRotation(rotationAngle);
         })
     )
-    .append(new Slider("y")
+    .append(new Slider('y')
         .withRange(new Range(-size, size, 0.01))
         .withValue(1)
         .onInput(event => {

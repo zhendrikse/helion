@@ -5,6 +5,7 @@ import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js
 import { Vec2 } from "../../model/math/math.js";
 import { Body } from "../../model/phys/bodies.js"
 import { Float32BufferAttribute, DoubleSide, MeshBasicMaterial, BufferGeometry, Mesh, Color } from "three";
+import {Colour} from "../colormappers.js";
 
 export class Arrow2D extends Renderable3D {
     static HeadStyle = Object.freeze({
@@ -13,7 +14,7 @@ export class Arrow2D extends Renderable3D {
     });
     /**
      * @typedef {Object} Arrow2DOptions
-     * @property {number} [color]
+     * @property {Colour} [color]
      * @property {number} [size]
      * @property {number} [lineWidth]
      * @property {number} [headWidth]
@@ -25,7 +26,7 @@ export class Arrow2D extends Renderable3D {
      * @param {Arrow2DOptions} [options]
      */
     constructor({
-        color = 0xff0000,
+        color = Colour.Red,
         size = 0.1,
         headLength = size,
         headWidth = size * 0.6,
@@ -39,11 +40,14 @@ export class Arrow2D extends Renderable3D {
         this._headWidth = headWidth;
 
         this._material = new LineMaterial({
-            color,
+            color: color.asThreeJsColor(new Color()),
             linewidth: lineWidth,
             resolution: new Vec2(window.innerWidth, window.innerHeight)
         });
-        this._headMaterial = new MeshBasicMaterial({color, side: DoubleSide});
+        this._headMaterial = new MeshBasicMaterial({
+            color: color.asThreeJsColor(new Color()),
+            side: DoubleSide
+        });
 
         this._headStyle = headStyle;
         this._headGeometry = new BufferGeometry();

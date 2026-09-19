@@ -1,7 +1,7 @@
 import {
     LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow2D,
-    Label, Matrix2D, VectorModel, Grid, RadioGroup, LineSegment, LineSegmentView, ColorMappers, Vec2
-} from "../../../src/index.js";
+    Label, Matrix2D, VectorModel, Grid, RadioGroup, LineSegment, LineSegmentView, ColorMappers, Vec2, Colour
+} from '../../../src/index.js';
 
 const size = 5;
 
@@ -26,7 +26,7 @@ const transformedEigenvector2 = new VectorModel(new Vec2(), new Vec2());
 
 const simulation = Simulation
     .with({
-        htmlDivId: "matrixTransformationContainer",
+        htmlDivId: 'matrixTransformationContainer',
         camera: {
             position: new Vec3(0, 0, 3 * (size + 0.1)),
             controls: false
@@ -35,7 +35,7 @@ const simulation = Simulation
             enabled: false
         },
         viewport: {
-            aspectRatio: "19/12"
+            aspectRatio: '19/12'
         },
         parameterMenuCollapsed: false,
     })
@@ -65,21 +65,21 @@ function updateVectors() {
 }
 
 function updateTitle(eigenvectors) {
-    let latexTitleString = "\\begin{pmatrix} x' \\\\ y' \\end{pmatrix}=\\begin{pmatrix}";
-    latexTitleString += transformation.a + " &&";
-    latexTitleString += transformation.b + " \\\\";
-    latexTitleString += transformation.c + " &&";
-    latexTitleString += transformation.d + " \\end{pmatrix}";
-    latexTitleString += "\\begin{pmatrix} x \\\\ y \\end{pmatrix}";
+    let latexTitleString = '\\begin{pmatrix} x\' \\\\ y\' \\end{pmatrix}=\\begin{pmatrix}';
+    latexTitleString += transformation.a + ' &&';
+    latexTitleString += transformation.b + ' \\\\';
+    latexTitleString += transformation.c + ' &&';
+    latexTitleString += transformation.d + ' \\end{pmatrix}';
+    latexTitleString += '\\begin{pmatrix} x \\\\ y \\end{pmatrix}';
 
     if (eigenvectors.length !== 0)
-        latexTitleString += "\\quad \\overrightarrow{e_1} = \\begin{pmatrix}" +
-            eigenvectors[0].vector.x.toFixed(1) + "\\\\" +
-            eigenvectors[0].vector.y.toFixed(1) + "\\end{pmatrix}";
+        latexTitleString += '\\quad \\overrightarrow{e_1} = \\begin{pmatrix}' +
+            eigenvectors[0].vector.x.toFixed(1) + '\\\\' +
+            eigenvectors[0].vector.y.toFixed(1) + '\\end{pmatrix}';
     if (eigenvectors.length === 2)
-        latexTitleString += "\\quad \\overrightarrow{e_2} = \\begin{pmatrix}" +
-            eigenvectors[1].vector.x.toFixed(1) + "\\\\" +
-            eigenvectors[1].vector.y.toFixed(1) + "\\end{pmatrix}";
+        latexTitleString += '\\quad \\overrightarrow{e_2} = \\begin{pmatrix}' +
+            eigenvectors[1].vector.x.toFixed(1) + '\\\\' +
+            eigenvectors[1].vector.y.toFixed(1) + '\\end{pmatrix}';
 
     simulation.setLatexTitle(latexTitleString);
 }
@@ -91,45 +91,45 @@ const onMatrixModified = (property, value) => {
 }
 
 const labelEigenVector1 = new Label({
-    text: () => "e₁",
+    text: () => 'e₁',
     offset: model => model.axis.clone().add(new Vec2(0, -0.25)),
-    fontSize: "25px",
-    color: "#ff4444"
+    fontSize: '25px',
+    color: Colour.fromHex(0xff4444)
 });
 
 const labelEigenVector2 = new Label({
-    text: () => "e₂",
+    text: () => 'e₂',
     offset: model => model.axis.clone().add(new Vec2(0, 0.25)),
-    fontSize: "25px",
-    color: "#44dd88"
+    fontSize: '25px',
+    color: Colour.fromHex(0x44dd88)
 });
 
 const labelOriginalVector = new Label({
-    text: () => "v₁",
+    text: () => 'v₁',
     offset: model => model.axis.clone().multiplyScalar(1.2),
-    fontSize: "25px",
-    color: "#ffffff"
+    fontSize: '25px',
+    color: Colour.White
 });
 
 const labelTransformedVector = new Label({
-    text: () => "v₂=Av₁",
+    text: () => 'v₂=Av₁',
     offset: model => model.axis.clone().multiplyScalar(1.2),
-    fontSize: "20px",
-    color: "#44aaff"
+    fontSize: '20px',
+    color: Colour.fromHex(0x44aaff)
 });
 
 const labelTransformedEigenVector1 = new Label({
-    text: () => "Ae₁",
+    text: () => 'Ae₁',
     offset: model => model.axis.clone().add(new Vec2(0, -0.25)),
-    fontSize: "20px",
-    color: "#ff0000"
+    fontSize: '20px',
+    color: Colour.Red
 });
 
 const labelTransformedEigenVector2 = new Label({
-    text: () => "Ae₂",
+    text: () => 'Ae₂',
     offset: model => model.axis.clone().add(new Vec2(0, 0.25)),
-    fontSize: "20px",
-    color: "#00ff00"
+    fontSize: '20px',
+    color: Colour.Green
 });
 
 function labelsVisibleIs(trueOrFalse) {
@@ -163,37 +163,37 @@ simulation
         lineWidth: 1.5,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffffff })
     })))
-    .bind(xAxis.onceWith(new Label({text: () => "X", offset: () => new Vec3(.6 * size, 0, 0)})))
-    .bind(yAxis.onceWith(new Label({text: () => "Y", offset: () => new Vec3(0, .6 * size, 0)})))
+    .bind(xAxis.onceWith(new Label({text: () => 'X', offset: () => new Vec3(.6 * size, 0, 0)})))
+    .bind(yAxis.onceWith(new Label({text: () => 'Y', offset: () => new Vec3(0, .6 * size, 0)})))
     .bind(yAxis.onceWith(new LineSegmentView({
         lineWidth: 1.25,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffffff })
     })))
     .bind(originalVector.onceWith(new Arrow2D({
-        color: 0xff991c,
+        color: Colour.fromHex(0xff991c),
         size: 0.5,
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(transformedVector.onceWith(new Arrow2D({
-        color: 0xffff00,
+        color: Colour.Yellow,
         size: 0.3,
     })))
     .bind(eigenvector1.onceWith(new Arrow2D({
-        color: 0xff4444,
+        color: Colour.fromHex(0xff4444),
         size: 0.5,
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(eigenvector2.onceWith(new Arrow2D({
-        color: 0x44dd88,
+        color: Colour.fromHex(0x44dd88),
         size: 0.3,
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(transformedEigenvector1.onceWith(new Arrow2D({
-        color: 0xff0000,
+        color: Colour.Red,
         size: 0.3,
     })))
     .bind(transformedEigenvector2.onceWith(new Arrow2D({
-        color: 0x00ff00,
+        color: Colour.Green,
         size: 0.3,
     })))
     .bind(originalVector.onceWith(labelOriginalVector))
@@ -202,46 +202,46 @@ simulation
     .bind(eigenvector2.onceWith(labelEigenVector2))
     .bind(transformedEigenvector1.onceWith(labelTransformedEigenVector1))
     .bind(transformedEigenvector2.onceWith(labelTransformedEigenVector2))
-    .append(new Slider("a")
+    .append(new Slider('a')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(2)
-        .onInput(event => onMatrixModified("a", Number(event.target.value)))
+        .onInput(event => onMatrixModified('a', Number(event.target.value)))
     )
-    .append(new Slider("b")
+    .append(new Slider('b')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(1)
-        .onInput(event => onMatrixModified("b", Number(event.target.value)))
+        .onInput(event => onMatrixModified('b', Number(event.target.value)))
     )
-    .append(new Slider("c")
+    .append(new Slider('c')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(0)
-        .onInput(event => onMatrixModified("c", Number(event.target.value)))
+        .onInput(event => onMatrixModified('c', Number(event.target.value)))
     )
-    .append(new Slider("d")
+    .append(new Slider('d')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(1)
-        .onInput(event => onMatrixModified("d", Number(event.target.value)))
+        .onInput(event => onMatrixModified('d', Number(event.target.value)))
     )
     .append(new RadioGroup()
-        .add("None", () => labelsVisibleIs(false))
-        .add("Vectors", () => {
+        .add('None', () => labelsVisibleIs(false))
+        .add('Vectors', () => {
             labelsVisibleIs(false);
             labelOriginalVector.visible = true;
             labelEigenVector1.visible = true;
             labelEigenVector2.visible = true;
         })
-        .add("Transformed vectors", () => {
+        .add('Transformed vectors', () => {
             labelsVisibleIs(false);
             labelTransformedVector.visible = true;
             labelTransformedEigenVector2.visible = true;
             labelTransformedEigenVector1.visible = true;
         })
-        .add("All", () => {
+        .add('All', () => {
             labelsVisibleIs(true);
         })
         .checked(0)
     )
-    .append(new Slider("x")
+    .append(new Slider('x')
         .withRange(new Range(-size, size, 0.01))
         .withValue(2)
         .onInput(event => {
@@ -249,7 +249,7 @@ simulation
             updateVectors();
         })
     )
-    .append(new Slider("y")
+    .append(new Slider('y')
         .withRange(new Range(-size, size, 0.01))
         .withValue(1)
         .onInput(event => {

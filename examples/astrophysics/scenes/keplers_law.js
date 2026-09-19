@@ -2,9 +2,9 @@ import {
     Simulation, Vec3, Sun, SunView, RadialSymmetricBody, Sphere, Trail, Renderable3D,
     LineSegment, Label, ThreeJsScene, LineSegmentView, HexValueColorMapper, Colour} from '../../../src/index.js';
 
-const randomColour = () => Math.floor(Math.random() * 65536 * 256);
+const randomColour = () => new Colour(Math.random(), Math.random(), Math.random());
 const randomVelocity = () => new Vec3(-(0.7 + 0.5 * Math.random()), 0, 0);
-let colour = 0xffffff;
+let colour = Colour.White;
 /** @type {Renderable3D[]} */
 let views = [];
 
@@ -55,7 +55,7 @@ class Planet extends RadialSymmetricBody {
             labelColour = oldColour;
             colour = randomColour();
         } else {
-            colour = 0xffffff;
+            colour = Colour.White;
             labelColour = colour;
         }
         const label = new Label({

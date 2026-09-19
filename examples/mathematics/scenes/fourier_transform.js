@@ -1,7 +1,7 @@
 import {
     RealFunction, CurveView, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range,
-    Grid, Interval, Label, Arrow2D, ColorMappers, LinearCombination, Vec2
-} from "../../../src/index.js";
+    Grid, Interval, Label, Arrow2D, ColorMappers, LinearCombination, Vec2, Colour
+} from '../../../src/index.js';
 
 const xMin = -2 * Math.PI;
 const xMax = 2 * Math.PI;
@@ -55,7 +55,7 @@ function functionToExpand(x) {
 const maximumFrequency = 3;
 const basis = [x => 1];
 const coefficients = [constantCoefficient(functionToExpand)];
-const terms = ["a_0/2"];
+const terms = ['a_0/2'];
 
 for (let n = 1; n <= maximumFrequency; n++) {
     basis.push(x => Math.cos(frequency(n) * x), x => Math.sin(frequency(n) * x));
@@ -71,7 +71,7 @@ function numberOfTermsForFrequency(frequency) {
 
 function fourierLatex(frequency) {
     if (frequency === 0)
-        return "f(x) \\approx \\dfrac{a_0}{2}";
+        return 'f(x) \\approx \\dfrac{a_0}{2}';
 
     return `f(x) \\approx \\dfrac{a_0}{2}`
         + ` + \\sum_{n=1}^{${frequency}}`
@@ -80,7 +80,7 @@ function fourierLatex(frequency) {
 
 const simulation = Simulation
     .with({
-        htmlDivId: "fourierTransformContainer",
+        htmlDivId: 'fourierTransformContainer',
         camera: {
             position: new Vec3(0, 0, 17.5),
             controls: false
@@ -117,24 +117,24 @@ simulation
     })))
     .bind(xAxis.onceWith(new Arrow2D({
         size: .25,
-        color: 0xbbbbbb,
+        color: Colour.fromHex(0xbbbbbb),
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(yAxis.onceWith(new Arrow2D({
         size: .25,
-        color: 0xbbbbbb,
+        color: Colour.fromHex(0xbbbbbb),
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(xAxis.onceWith(new Label({
-        text: () => "X",
-        fontSize: "20px",
-        color: 0xffffff,
+        text: () => 'X',
+        fontSize: '20px',
+        color: Colour.White,
         offset: () => new Vec2(2.2 * size, 0)
     })))
     .bind(yAxis.onceWith(new Label({
-        text: () => "Y",
-        fontSize: "20px",
-        color: 0xffffff,
+        text: () => 'Y',
+        fontSize: '20px',
+        color: Colour.White,
         offset: () => new Vec2(0, 2.2 * size)
     })))
     .bind(exactFunction.onceWith(new CurveView({
@@ -147,7 +147,7 @@ simulation
         lineWidth: 2,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xff0000 })
     })))
-    .append(new Slider("Maximum frequency")
+    .append(new Slider('Maximum frequency')
         .withRange(new Range(0, maximumFrequency, 1))
         .withValue(0)
         .onInput(event => {

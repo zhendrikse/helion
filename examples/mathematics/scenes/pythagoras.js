@@ -1,7 +1,7 @@
 import {
     Segments, LineSegment, Simulation, LineSegmentsView, Vec3, Slider, Range, LineSegmentView,
-    Label, Vec2, HexValueColorMapper
-} from "../../../src/index.js";
+    Label, Vec2, HexValueColorMapper, Colour
+} from '../../../src/index.js';
 
 class Pythagoras extends Segments {
     /** 
@@ -91,7 +91,7 @@ const segmentsView = new LineSegmentsView({
 
 Simulation
     .with({
-        htmlDivId: "pythagorasContainer",
+        htmlDivId: 'pythagorasContainer',
         headUpDisplay: {
             enabled: false
         },
@@ -99,42 +99,42 @@ Simulation
             controls: false
         }
     })
-    .setLatexTitle("\\Huge{a^2 = b^2 + c^2}")
+    .setLatexTitle('\\Huge{a^2 = b^2 + c^2}')
     .bind(pythagoras.onceWith(segmentsView))
     .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3})))
     .bind(pythagoras.ac.onceWith(new LineSegmentView({lineWidth: 3})))
     .bind(pythagoras.bc.onceWith(new LineSegmentView({lineWidth: 3})))
     .bind(pythagoras.ab.onceWith(new Label({
-        text: model => "a=" + pythagoras.a,
+        text: model => 'a=' + pythagoras.a,
         offset: model => new Vec2(0, -.5),
-        color: "#44aaff",
-        fontSize: "30px"
+        color: Colour.fromHex(0x44aaff),
+        fontSize: '30px'
     })))
     .bind(pythagoras.ac.onceWith(new Label({
-        text: model => "b=" + pythagoras.b,
+        text: model => 'b=' + pythagoras.b,
         offset: model => new Vec2(-.90, 0),
-        color: "#44dd88",
-        fontSize: "30px"
+        color: Colour.fromHex(0x44dd88),
+        fontSize: '30px'
     })))
     .bind(pythagoras.bc.onceWith(new Label({
-        text: model => "c=" + pythagoras.c.toFixed(2),
+        text: model => 'c=' + pythagoras.c.toFixed(2),
         offset: model => new Vec2(.75, .75),
-        color: "#ffaa44",
-        fontSize: "30px"
+        color: Colour.fromHex(0xffaa44),
+        fontSize: '30px'
     })))
     .frameSceneOn(segmentsView, {
         padding: 0.55,
         viewDirection: new Vec3(0, 0, 1)
     })
-    .append(new Slider("a")
+    .append(new Slider('a')
         .on(pythagoras)
-        .withProperty("a")
+        .withProperty('a')
         .withRange(new Range(1, 4, 0.01))
         .withValue(4)
     )
-    .append(new Slider("b")
+    .append(new Slider('b')
         .on(pythagoras)
-        .withProperty("b")
+        .withProperty('b')
         .withRange(new Range(1, 3, 0.01))
         .withValue(3)
     );
