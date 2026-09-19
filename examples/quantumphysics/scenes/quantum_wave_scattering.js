@@ -14,6 +14,11 @@ const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
 const solver = new SchrodingerSolver(potential);
 const gaussianImpulse = new GaussianImpulseComplex2D();
 
+/**
+ * @param {ShapeConfiguration} shapeConfig
+ * @param {number} potentialStrength
+ * @param {number} softness
+ */
 function reset(shapeConfig, potentialStrength, softness) {
     solver.initialize(psi, dt);
     psi
@@ -29,9 +34,7 @@ const waveFunctionSurface = new WaveFunctionSurface3D();
 const potentialBarrier = new DiscreteFieldBoxView({ width, height });
 
 const waveFunctionSurface2d = new ComplexSurfaceView2D();
-const potentialBarrier2d = new DiscreteFieldSurfaceView({
-    resolution: new SurfaceResolution(width, height)
-});
+const potentialBarrier2d = new DiscreteFieldSurfaceView();
 waveFunctionSurface2d.visible = false;
 potentialBarrier2d.visible = false;
 
@@ -59,8 +62,8 @@ const simulation = Simulation
     .onReset(() => reset(shapeConfiguration, potentialStrength, softness))
     .maxOutCpu(() => psi.evolve(solver, dt), 20, 10)
     .append(new RadioGroup()
-        .add('2D', event => setDimension(false))
-        .add('3D', event => setDimension(true))
+        .add('2D', _ => setDimension(false))
+        .add('3D', _ => setDimension(true))
         .checked(1))
     .append(new Checkbox('🌈 Show phase color ')
         .checked(true)
@@ -74,7 +77,7 @@ const simulation = Simulation
         .withProperty('wavePacketEnergy')
         .withRange(new Range(0.001, 0.1, 0.001))
         .withValue(0.050)
-        .addEventListener('input', () => reset())
+        .addEventListener('input', () => reset(shapeConfiguration, potentialStrength, softness))
     )
     .append(new Slider('🪜 Height scale')
         .withRange(new Range(10, 25, 0.1))

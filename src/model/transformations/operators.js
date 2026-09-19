@@ -5,6 +5,12 @@ import { Shapes, ShapesFactory} from '../math/shapes.js';
 import {Transformation} from '../../core/helion.js';
 
 export class DiamondSquareOperator extends Transformation {
+    /**
+     * @param {{
+     *     roughness?: number
+     *     amplitude?: number
+     * }} options
+     */
     constructor({
         roughness = 1,
         amplitude = 100
@@ -99,6 +105,15 @@ export class DiamondSquareOperator extends Transformation {
 }
 
 export class GaussianImpulse extends Transformation {
+    /**
+     * @param {{
+     *     centerX?: number
+     *     centerY?: number
+     *     amplitude?: number
+     *     sigma?: number
+     *     width?: number
+     * }} options
+     */
     constructor({
         centerX = 100,
         centerY = 100,
@@ -131,6 +146,12 @@ export class GaussianImpulse extends Transformation {
 }
 
 export class GaussianImpulseComplex2D extends Transformation {
+    /**
+     * @param {{
+     *     wavePacketEnergy?: number
+     *     packetWidth?: number
+     * }} options
+     */
     constructor({
         wavePacketEnergy=0.05,
         packetWidth = 48
@@ -163,6 +184,15 @@ export class GaussianImpulseComplex2D extends Transformation {
 }
 
 export class PerlinNoiseOperator extends Transformation {
+    /**
+     * @param {{
+     *     scale?: number
+     *     frequency?: number
+     *     octaves?: number
+     *     persistence?: number
+     *     z?: number
+     * }} options
+     */
     constructor({
         scale = 50,
         frequency = 0.02,
@@ -203,6 +233,13 @@ export class PerlinNoiseOperator extends Transformation {
 }
 
 export class DoubleSlitOperator extends Transformation {
+    /**
+     * @param {{
+     *     wavelength?: number
+     *     positionSlit1?: Vec3
+     *     positionSlit2?: Vec3
+     * }} options
+     */
     constructor({
         wavelength = 525,
         positionSlit1 = new Vec3(),
@@ -237,6 +274,10 @@ export class DoubleSlitOperator extends Transformation {
 }
 
 export class Potential extends Transformation {
+    /**
+     * @param {ShapeConfiguration } shapeConfiguration
+     * @param {number} reflectionStrength
+     */
     constructor(shapeConfiguration = Shapes.DoubleSlit, reflectionStrength = 0.1) {
         super();
         this._shapeConfiguration = shapeConfiguration;
@@ -286,6 +327,11 @@ export class ComplexShapeMask extends Transformation {
 }
 
 export class Softness extends Transformation {
+    /**
+     * @param {{
+     *     softness?: number
+     * }} options
+     */
     constructor({
         softness = 0
     } = {}) {
@@ -307,6 +353,11 @@ export class Softness extends Transformation {
 }
 
 export class ComplexSoftness extends Transformation {
+    /**
+     * @param {{
+     *     softness?: number
+     * }} options
+     */
     constructor({
         softness = 0
     } = {}) {
@@ -328,6 +379,13 @@ export class ComplexSoftness extends Transformation {
 }
 
 export class SineImpulseOperator extends Transformation {
+    /**
+     * @param {{
+     *     wavelengthInPixels?: number
+     *     amplitude?: number
+     *     periods?: number
+     * }} options
+     */
     constructor({
         wavelengthInPixels = 10,
         amplitude = 1,
