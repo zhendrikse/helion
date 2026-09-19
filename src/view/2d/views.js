@@ -1,15 +1,15 @@
 import {
     Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, InstancedMesh, InstancedBufferAttribute,
     DynamicDrawUsage, Object3D, Color, Box3, CircleGeometry, DoubleSide
-} from "three";
+} from 'three';
 
-import { Renderable2D } from "../renderer.js";
-import { CompoundControl, DropdownMenu } from "../../core/controls.js";
-import {ColorMapper, Colour, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from "../colormappers.js";
-import { AdaptiveSymmetricNormalizer, SurfaceResolution} from "../3d/surfaces/visualization.js";
-import { ComplexFunctionSample, DiscreteScalarField} from "../../model/math/fields.js";
-import { Normalizer} from "../3d/surfaces/visualization.js"
-import { RadialSymmetricBody } from "../../model/phys/bodies.js";
+import { Renderable2D } from '../renderer.js';
+import { CompoundControl, DropdownMenu } from '../../core/controls.js';
+import {ColorMapper, Colour, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from '../colormappers.js';
+import { AdaptiveSymmetricNormalizer, SurfaceResolution} from '../3d/surfaces/visualization.js';
+import { ComplexFunctionSample, DiscreteScalarField} from '../../model/math/fields.js';
+import { Normalizer} from '../3d/surfaces/visualization.js'
+import { RadialSymmetricBody } from '../../model/phys/bodies.js';
 
 export class PixelRasterView extends Renderable2D {
     constructor({
@@ -127,7 +127,7 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
 
     canBindTo(discreteScalarField) {
         if (discreteScalarField.valueAt === undefined || discreteScalarField.rangeAt === undefined)
-            throw new Error("This view needs valueAt() and rangeAt() methods to display surface");
+            throw new Error('This view needs valueAt() and rangeAt() methods to display surface');
         return true;
     }
 
@@ -193,7 +193,7 @@ export class FieldEdgeIntensityPixelRaster extends Renderable2D {
 
     canBindTo(discreteScalarField) {
         if (discreteScalarField.valueAt === undefined || discreteScalarField.rangeAt === undefined)
-            throw new Error("This view needs valueAt() and rangeAt() methods to display surface");
+            throw new Error('This view needs valueAt() and rangeAt() methods to display surface');
         return true;
     }
 
@@ -242,10 +242,10 @@ export class ComplexFieldViewable2D extends Renderable2D {
         this._fieldIsDiscrete = field.nx !== undefined && field.ny !== undefined;
         if (this._fieldIsDiscrete) {
             if (!field.valueAt)
-                throw new Error("2D complex view needs valueAt() on discrete field");
+                throw new Error('2D complex view needs valueAt() on discrete field');
         } else {
             if (!field.sample)
-                throw new Error("2D complex view needs sample() on continuous field");
+                throw new Error('2D complex view needs sample() on continuous field');
         }
         return true;
     }
@@ -316,7 +316,7 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
         return new CompoundControl()
             .add(new DropdownMenu()
                 .for(new ComplexColorMappers())
-                .addEventListener("change", event => this._colorMapper = ComplexColorMappers.get(event.target.value))
+                .addEventListener('change', event => this._colorMapper = ComplexColorMappers.get(event.target.value))
             );
     }
 
@@ -407,7 +407,7 @@ export class TiledPlane extends Renderable2D {
          * Opacity is an instance property rather than a property of
          * the material. The shader reads instanceOpacity for every tile.
          */
-        geometry.setAttribute("instanceOpacity", new InstancedBufferAttribute(this._opacityArray, 1));
+        geometry.setAttribute('instanceOpacity', new InstancedBufferAttribute(this._opacityArray, 1));
 
         const material = new MeshBasicMaterial({
             side: DoubleSide,
@@ -418,33 +418,33 @@ export class TiledPlane extends Renderable2D {
         material.onBeforeCompile = shader => {
             shader.vertexShader = shader.vertexShader
                 .replace(
-                    "#include <common>",
+                    '#include <common>',
                     `#include <common>
                     attribute float instanceOpacity;
                     varying float vInstanceOpacity;`
                 )
                 .replace(
-                    "#include <color_vertex>",
+                    '#include <color_vertex>',
                     `#include <color_vertex>
                     vInstanceOpacity = instanceOpacity;`
                 );
 
             shader.fragmentShader = shader.fragmentShader
                 .replace(
-                    "#include <common>",
+                    '#include <common>',
                     `#include <common>
                     varying float vInstanceOpacity;`
                 )
                 .replace(
-                    "vec4 diffuseColor = vec4( diffuse, opacity );",
-                    "vec4 diffuseColor = vec4( diffuse, opacity * vInstanceOpacity );"
+                    'vec4 diffuseColor = vec4( diffuse, opacity );',
+                    'vec4 diffuseColor = vec4( diffuse, opacity * vInstanceOpacity );'
                 );
         };
 
         this._mesh = new InstancedMesh(geometry, material, count);
         this._mesh.instanceColor = new InstancedBufferAttribute(this._colorArray, 3);
         this._mesh.instanceColor.setUsage(DynamicDrawUsage);
-        this._opacityAttribute = geometry.getAttribute("instanceOpacity");
+        this._opacityAttribute = geometry.getAttribute('instanceOpacity');
         this._opacityAttribute.setUsage(DynamicDrawUsage);
 
         this.add(this._mesh);
@@ -460,8 +460,8 @@ export class TiledPlane extends Renderable2D {
             scalarField.nx === undefined ||
             scalarField.ny === undefined )
             throw new Error(
-                "TiledPlane cannot bind to model without valueAt() " +
-                "and rangeAt() methods and nx and ny properties" );
+                'TiledPlane cannot bind to model without valueAt() ' +
+                'and rangeAt() methods and nx and ny properties' );
 
         return true;
     }
@@ -540,10 +540,7 @@ export class ParticleView2D extends Renderable2D {
         this._hasBorder = hasBorder;
         this._color = new Colour();
         this._borderGeometry = new CircleGeometry(1.15, segments);
-
-        const threeJsColor = new Color();
-        borderColor.asThreeJsColor(threeJsColor)
-        this._borderMaterial = new MeshBasicMaterial({ color: threeJsColor });
+        this._borderMaterial = new MeshBasicMaterial({ color: borderColor.asThreeJsColor(new Color()) });
         
         this._borderMesh = new Mesh(this._borderGeometry, this._borderMaterial);
         this.add(this._borderMesh);
@@ -572,7 +569,7 @@ export class ParticleView2D extends Renderable2D {
      */
     canBindTo(particle) {
         if (!particle.position)
-            throw new Error("ParticleView2D can only bind to particles with a position.");
+            throw new Error('ParticleView2D can only bind to particles with a position.');
         return true;
     }
     
