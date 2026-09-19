@@ -1,6 +1,9 @@
 import { MathPhysicsModelBehavior } from '../../core/helion.js';
 import { DiscreteScalarField } from '../math/fields.js';
 
+const DX = [0, 1, 0, -1, 0, 1, -1, -1, 1];
+const DY = [0, 0, 1, 0, -1, 1, 1, -1, -1];
+
 /**
  * Small educational D2Q9 lattice-Boltzmann fluid.
  *
@@ -212,7 +215,7 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
     }
 }
 
-const EX = [0, 1, 0, -1, 0, 1, -1, -1, 1];
-const EY = [0, 0, 1, 0, -1, 1, 1, -1, -1];
+const EX = DX;
+const EY = DY;
 const OPPOSITE = [0, 3, 4, 1, 2, 7, 8, 5, 6];
 const WEIGHT = [4 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 36, 1 / 36, 1 / 36, 1 / 36];
