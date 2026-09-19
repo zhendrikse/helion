@@ -93,7 +93,7 @@ function createFaradayLoops(faradayLoopsGroup) {
             faradayLoopsGroup.add(arrow);
         }
 
-        const ring = new Ring({ color: new Color('green'), thickness: 3e-2 });
+        const ring = new Ring({ color: Colour.Green, thickness: 3e-2 });
         simulation.bind(new AxialSymmetricBody({
             position: new Vec3(0, 0, z + .5),
             axis: new Vec3(0, 0, 1),

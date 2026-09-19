@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Floor, Box, Block, Slider, Range, Vec2, Lattice, LatticeView,
-    ChainTopology, UniformGravitationalForce, DragForce, ThreeJsScene
+    ChainTopology, UniformGravitationalForce, DragForce, ThreeJsScene, Colour
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 
@@ -71,8 +71,8 @@ Simulation
             .integrate(dt);
     })
     .bind(chain.alwaysWith(latticeView))
-    .bind(pole1.onceWith(new Box({ color: 0x855E42 })))
-    .bind(pole2.onceWith(new Box({ color: 0x855E42 })))
+    .bind(pole1.onceWith(new Box({ color: Colour.fromHex(0x855E42) })))
+    .bind(pole2.onceWith(new Box({ color: Colour.fromHex(0x855E42) })))
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
         position: new Vec3(0, -2.75, 0),

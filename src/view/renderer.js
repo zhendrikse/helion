@@ -1,5 +1,4 @@
 import { Object3D, Box3 } from 'three';
-import { MathPhysicsModelBehavior } from '../core/helion';
 import { Viewport } from '../core/viewport';
 
 /**
@@ -16,13 +15,28 @@ import { Viewport } from '../core/viewport';
  * @method dispose() - Disposes of the object and releases any resources it holds.  
  */
 export class Renderable extends Object3D {
-    /** @param {any} _model */
+    /**
+     * @abstract
+     * @param {any} _model
+     */
     canBindTo(_model) { return false; }
-    /** @param {any} _model */
+
+    /**
+     * @abstract
+     * @param {any} _model
+     */
     initialize(_model) {}
-    /** @param {any} _model */
+
+    /**
+     * @abstract
+     * @param {any} _model
+     */
     synchronizeWith(_model) {}
+
+    /** @abstract */
     reset() {}
+
+    /** @abstract */
     dispose() {}
 
     get boundingBox() {
@@ -36,28 +50,37 @@ export class Renderable3D extends Renderable {}
 export class Renderable2D extends Renderable {}
 
 export class Renderer {
-    /** @param {Object3D} _viewObject */
+    /**
+     * @abstract
+     * @param {Object3D} _viewObject
+     */
     add(_viewObject) {}
 
     /**
-     * @param {number} _time
+     * @abstract
+     * @param {number} time
      */
-    render(_time) {}
+    render (time) {}
 
     resize() {}
 
-    /** @param {Viewport} _viewport */
-    attach(_viewport) {}
+    /**
+     * @abstract
+     * @param {Viewport} viewport
+     */
+    attach(viewport) {}
 
     /**
-     * @param {Renderable} _anObject 
-     * @param {Object} _options 
+     * @abstract
+     * @param {Renderable} anObject
+     * @param {Object} options
      */
-    frameSceneOn(_anObject, _options) {}
+    frameSceneOn(anObject, options) {}
 
     /**
-     * @param {Renderable} _anObject 
-     * @param {Object} _options 
+     * @abstract
+     * @param {Renderable} anObject
+     * @param {Object} options
      */
-    provideAxesAround(_anObject, _options) {}
+    provideAxesAround(anObject, options) {}
 }

@@ -176,7 +176,7 @@ const simulation = Simulation
         }
     })
     .bind(medium.alwaysWith(new Box({
-        color: 0xc0c0ff,
+        color: Colour.fromHex(0xc0c0ff),
         opacity: 0.35
     })))
     .bind(wavefront.alwaysWith(wavefrontView))

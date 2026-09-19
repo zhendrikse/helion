@@ -1,5 +1,5 @@
 import { MeshStandardMaterial } from 'three';
-import {Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation} from "../../../src/index.js";
+import {Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation, Colour} from "../../../src/index.js";
 
 const SIZE = 1;
 const GAP = 0.06;
@@ -12,12 +12,12 @@ const Direction = Object.freeze({ forward: 1, backward: -1});
 const Axis = Object.freeze({ x: "x",  y: "y", z: "z" })
 
 const Colors = Object.freeze({
-    right:  0xff0000,
-    left:   0xff8800,
-    back:   0xffff00,
-    up:     0x3333cc,
-    front:  0xffffff,
-    down:   0x33cc33
+    right:  Colour.Red,
+    left:   Colour.fromHex(0xff8800),
+    back:   Colour.Yellow,
+    up:     Colour.fromHex(0x3333cc),
+    front:  Colour.White,
+    down:   Colour.fromHex(0x33cc33)
 });
 
 const StickerData = Object.freeze({
@@ -244,7 +244,7 @@ const simulation = Simulation.with({
 
 // Bind view to model
 for (const cubie of cube) {
-    simulation.bind(cubie.alwaysWith(new Box({ color: 0x111111 })));
+    simulation.bind(cubie.alwaysWith(new Box({ color: Colour.fromHex(0x111111) })));
     cubie.stickers.forEach(sticker => simulation.bind(sticker.alwaysWith(
         new Box({
             color: Colors[sticker.side],

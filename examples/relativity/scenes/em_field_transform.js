@@ -142,7 +142,7 @@ const simulation = Simulation
 function addRingsAndArrows(y0) {
     const xs = [-6, -2, 2, 6];
     for (const x of xs) {
-        const ring = new Ring({ color: 0xffa500, thickness: 0.04 });
+        const ring = new Ring({ color: Colour.fromHex(0xffa500), thickness: 0.04 });
         simulation.bind(new AxialSymmetricBody({ position: new Vec3(x, y0, 0), axis: new Vec3(1, 0, 0), radius: 2.2 }).onceWith(ring));
         const a1 = new Arrow({ color: Colour.fromHex(0xffa500), size: 0.35 });
         const a2 = new Arrow({ color: Colour.fromHex(0xffa500), size: 0.35 });

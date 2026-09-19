@@ -1,7 +1,7 @@
 import {
     DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, Transformation,
     SurfaceResolution, WaveEquationSolver, LaplaceOperator, Box, Block, GlyphLayer,
-    SurfaceVisualization, FixedIntervalNormalizer, RadioGroup, Checkbox, Slider, Range, ColorMappers,
+    SurfaceVisualization, FixedIntervalNormalizer, RadioGroup, Checkbox, Slider, Range, ColorMappers, Colour,
 } from '../../../src/index.js';
 
 const RESOLUTION = 200;
@@ -153,7 +153,7 @@ const obstacle = new MovingObstacle({
     speed: 5, 
     start: -POOL_SIZE / 2 + 10 
 });
-const obstacleView = new Box({ color: 0x00ff00, opacity: 0.9 });
+const obstacleView = new Box({ color: Colour.Green, opacity: 0.9 });
 const mask = new ObstacleMask(obstacle);
 const wake = new BowWake(obstacle);
 
@@ -172,7 +172,7 @@ let simulation = Simulation
             position: new Vec3(0, -4, 0),
             size: new Vec3(POOL_SIZE, 4, POOL_SIZE),
             fixed: true
-        }).onceWith(new Box({color: 0x0a3bbd, opacity: 0.8})))
+        }).onceWith(new Box({color: Colour.fromHex(0x0a3bbd), opacity: 0.8})))
     .withMouseClickEventListener()
     .onReset(() => {
         field.reset();
@@ -201,4 +201,4 @@ let simulation = Simulation
         .withValue(5).onInput(e => obstacle.speed = Number(e.target.value))
     );
 
-poolWalls.forEach(wall => simulation.bind(wall.onceWith(new Box({ color: 0xccaa00 }))));
+poolWalls.forEach(wall => simulation.bind(wall.onceWith(new Box({ color: Colour.fromHex(0xccaa00) }))));
