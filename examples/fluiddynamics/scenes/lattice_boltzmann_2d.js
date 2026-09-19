@@ -3,21 +3,23 @@ import {
     Interval, LatticeBoltzmannFluid2D, Simulation, TiledPlane, Vec3
 } from '../../../src/index.js';
 
-const NX = 120;
-const NY = 60;
+const NX = 150;
+const NY = 75;
 const CELL_SIZE = 0.08;
 
 const fluid = new LatticeBoltzmannFluid2D({
     nx: NX,
     ny: NY,
     viscosity: 0.02,
-    flowSpeed: 0.10
+    flowSpeed: 0.10,
+    barrierX: Math.floor(NX * 0.15),
 });
 
 const curlView = new TiledPlane({
     cellSize: CELL_SIZE,
     colorMapper: ColorMappers.get(ColorMappers.Seismic),
-    normalizer: new AdaptiveSymmetricNormalizer(0.08)
+    normalizer: new AdaptiveSymmetricNormalizer(0.04),
+    //opacityFunction: v => Math.min(1, Math.abs(v - 0.5) * 3)
 });
 
 const barrierView = new TiledPlane({
@@ -33,7 +35,7 @@ const simulation = Simulation
     .with({
         htmlDivId: 'latticeBoltzmann2dContainer',
         camera: {
-            position: new Vec3(0, 0, 10),
+            position: new Vec3(0, 0, 15),
             orthographic: true,
             controls: false
         },
@@ -46,8 +48,7 @@ const simulation = Simulation
                 'The background shows vorticity (curl).'
         }
     })
-    .runsEvery(0.01)
-    .onStep(() => fluid.evolve())
+    .maxOutCpu(() => fluid.evolve())
     .appendStartStopResetUI();
 
 simulation.bind(fluid.curlField.alwaysWith(curlView));
