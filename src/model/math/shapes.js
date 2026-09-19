@@ -17,7 +17,7 @@ class ShapeLike {
 
 class SingleSlit extends ShapeLike {
     sample(x, y, field) {
-        const holeEdge = Math.round(field.nx / 2 - this._size / 2);
+        const holeEdge = Math.round(field.ny / 2 - this._size / 2);
         if (x < Math.floor(field.nx / 2) - 5 || x > Math.floor(field.nx / 2) + 5)
             return false;
 
@@ -31,7 +31,7 @@ class DoubleSlit extends ShapeLike {
             return false;
 
         const slitDistance = this._size;
-        const dhEdge = Math.round(field.nx / 2 - slitDistance / 2);
+        const dhEdge = Math.round(field.ny / 2 - slitDistance / 2);
         return y <= dhEdge - 10 || y > dhEdge + slitDistance + 10 || (y > dhEdge && y <= dhEdge + slitDistance);
     }
 }
@@ -50,16 +50,17 @@ class Grating extends ShapeLike {
 class Circle extends ShapeLike {
     sample(x, y, field) {
         const rSquared = this._size * this._size/4.0;
-        return (x - field.nx / 2) * (x - field.nx / 2) + (y - field.nx / 2) * (y - field.nx / 2) < rSquared;
+        return (x - field.nx / 2) * (x - field.nx / 2) + (y - field.ny / 2) * (y - field.ny / 2) < rSquared;
     }
 }
 
 class Square extends ShapeLike {
     sample(x, y, field) {
-        const edge = Math.round(field.nx / 2 - this._size / 2);
-        if (y < edge || y > edge + this._size)
+        const xEdge = Math.round(field.nx / 2 - this._size / 2);
+        const yEdge = Math.round(field.ny / 2 - this._size / 2);
+        if (y < yEdge || y > yEdge + this._size)
             return false;
-        return !(x < edge || x > edge + this._size);
+        return !(x < xEdge || x > xEdge + this._size);
     }
 }
 
