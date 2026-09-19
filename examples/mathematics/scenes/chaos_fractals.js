@@ -1,7 +1,7 @@
 import {
-    Simulation, Vec3, Slider, Range, RadioGroup, Button, ColorMappers, DiscreteFieldSurfaceView,
-    SurfaceResolution, DiscreteScalarField, ColorMapper, Transformation
-} from "../../../src/index.js";
+    Simulation, Vec3, Slider, Range, Button, ColorMappers, DiscreteFieldSurfaceView,
+    DiscreteScalarField, ColorMapper, Transformation
+} from '../../../src/index.js';
 
 const NX = 1000;
 const NY = 1000;
@@ -224,7 +224,7 @@ let currentFractal = fractals.Sierpinski;
 
 Simulation
     .with({
-        htmlDivId: "chaosFractalsContainer",
+        htmlDivId: 'chaosFractalsContainer',
         camera: { orthographic: true },
         headUpDisplay: { enabled: false },
         parameterMenuCollapsed: false
@@ -234,52 +234,52 @@ Simulation
     .onStep(() => field.apply(currentFractal))
     .frameSceneOn(view, { padding: 1.1, viewDirection: new Vec3(0, 0, 1) })
     .append(new Button()
-        .withText("⚠️ Sierpinski triangle")
+        .withText('⚠️ Sierpinski triangle')
         .onClick(event => { 
             field.data.fill(0); 
             currentFractal = fractals.Sierpinski; 
         }).togetherWith(new Button()
-            .withText("🌿 Barnsley fern")
+            .withText('🌿 Barnsley fern')
             .onClick(event => {
                 field.data.fill(0); 
                 currentFractal = fractals.Barnsley; 
             })))
     .append(new Button()
-        .withText("🧹 Cantor dust")
+        .withText('🧹 Cantor dust')
         .onClick(event => { 
             field.data.fill(0); 
             currentFractal = fractals.Cantor; 
         }).togetherWith(new Button()
-            .withText("🧶 Sierpinski carpet")
+            .withText('🧶 Sierpinski carpet')
             .onClick(event => {
                 field.data.fill(0); 
                 currentFractal = fractals.Carpet; 
             })))
     .append(new Button()
-        .withText("⭐ Fractal star")
+        .withText('⭐ Fractal star')
         .onClick(event => { 
             field.data.fill(0); 
             currentFractal = fractals.Fractal1; 
         }).togetherWith(new Button()
-            .withText("🌻 Fractal flower")
+            .withText('🌻 Fractal flower')
             .onClick(event => {
                 field.data.fill(0); 
                 currentFractal = fractals.Fractal2; 
             })))
     .append(new Button()
-        .withText("🟨 T-square fractal")
+        .withText('🟨 T-square fractal')
         .onClick(event => { 
             field.data.fill(0); 
             currentFractal = fractals.TSquare; 
         }))
-    .append(new Slider("Contrast")
+    .append(new Slider('Contrast')
         .withRange(new Range(0, 20, .1))
         .withValue(5)
         // @ts-ignore
         .onInput(event => colorMapper.scale = Number(event.target.value)))
-    .append(new Button("Clear")
-        .withText("Clear")
-        .addEventListener("click", () => field.data.fill(0)))
+    .append(new Button('Clear')
+        .withText('Clear')
+        .addEventListener('click', () => field.data.fill(0)))
     .start();
 
 

@@ -499,7 +499,7 @@ export class Simulation {
             this._iterationsPerFrame--;
         else
             this._iterationsPerFrame++;
-
+        // console.info(`${this._iterationsPerFrame} iterations/frame @${this._framesPerSecond} fps`)
         // start new measurement time interval
         this._framesPerSecond = 0;
         this._lastTime = timeStamp;

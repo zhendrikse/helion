@@ -122,8 +122,8 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
 
                     // Populations leaving through the left/right boundary are
                     // handled by the inflow/outlet boundary conditions.
-                    if (tx < 0 || tx >= nx)
-                        continue;
+                    //if (tx < 0 || tx >= nx)
+                    //    continue;
 
                     this._next[k][this.index(tx, ty)] += this._f[k][sourceIndex];
                 }

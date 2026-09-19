@@ -97,19 +97,26 @@ export class PixelRasterView extends Renderable2D {
 }
 
 export class DiscreteFieldSurfaceView extends Renderable2D {
+    /**
+     * @param {{
+     * colorMapper?: ColorMapper
+     * opacityFunction?: (fieldValue: number) => number
+     * }} param0 
+     */
     constructor({
         colorMapper = new WavelengthColorMapper(525),
-        opacityFunction = fieldValue => Math.sqrt(fieldValue)
+        opacityFunction = (/** @type {number} */ fieldValue) => Math.sqrt(fieldValue)
     } = {}) {
         super();
         this._colorMapper = colorMapper;
         this._opacityFunction = opacityFunction;
         this._mesh = null;
-        this._pixels = null;
+        this._pixels = new Uint8Array();
         this._texture = null;
         this._rgb = new Color();
     }
 
+    /** @param {DiscreteScalarField} scalarField */
     initialize(scalarField) {
         const width = scalarField.nx;
         const height = scalarField.ny;
@@ -123,14 +130,14 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
         this.add(this._mesh);
     }
 
-    set context(context) { this._context = context; }
-
+    /** @param {DiscreteScalarField} discreteScalarField */
     canBindTo(discreteScalarField) {
         if (discreteScalarField.valueAt === undefined || discreteScalarField.rangeAt === undefined)
             throw new Error('This view needs valueAt() and rangeAt() methods to display surface');
         return true;
     }
 
+    /** @param {DiscreteScalarField} scalarField */
     synchronizeWith(scalarField) {
         const width = scalarField.nx;
         const height = scalarField.ny;
@@ -157,21 +164,29 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
  * vertical plane perpendicular to the intensity pixel raster itself.
  */
 export class FieldEdgeIntensityPixelRaster extends Renderable2D {
+    /**
+     * @param {{
+     * edgeHeight?: number
+     * colorMapper?: ColorMapper
+     * opacityFunction?: (fieldValue: number) => number
+     * }} param0 
+     */
     constructor({
         edgeHeight = 100,
         colorMapper = new WavelengthColorMapper(525),
-        opacityFunction = intensity => Math.sqrt(intensity)
+        opacityFunction = (/** @type {number} */ intensity) => Math.sqrt(intensity)
     } = {}) {
         super();
         this._opacityFunction = opacityFunction;
         this._texture = null;
-        this._pixels = null;
+        this._pixels = new Uint8Array();
         this._mesh = null;
         this._colorMapper = colorMapper;
         this._edgeHeight = edgeHeight;
         this._rgb = new Color();
     }
 
+    /** @param {DiscreteScalarField} scalarField */
     initialize(scalarField) {
         this._pixels = new Uint8Array(scalarField.nx * 4);
         this._texture = new DataTexture(this._pixels, scalarField.nx, 1, RGBAFormat);
@@ -191,12 +206,14 @@ export class FieldEdgeIntensityPixelRaster extends Renderable2D {
         this.add(this._mesh);    
     }
 
+    /** @param {DiscreteScalarField} discreteScalarField */
     canBindTo(discreteScalarField) {
         if (discreteScalarField.valueAt === undefined || discreteScalarField.rangeAt === undefined)
             throw new Error('This view needs valueAt() and rangeAt() methods to display surface');
         return true;
     }
 
+    /** @param {DiscreteScalarField} scalarField */
     synchronizeWith(scalarField) {
         const interval = scalarField.rangeAt();
         const j = scalarField.ny - 1;
@@ -221,13 +238,14 @@ export class FieldEdgeIntensityPixelRaster extends Renderable2D {
  * same resolution() and canBindTo() with valueAt fast-path for discrete grids.
  */
 export class ComplexFieldViewable2D extends Renderable2D {
+    /** @param {SurfaceResolution} defaultResolution */
     constructor(defaultResolution = new SurfaceResolution(200, 200)) {
         super();
         this._fieldIsDiscrete = false;
         this._sample = new ComplexFunctionSample();
         this._resolution = defaultResolution;
         this._mesh = null;
-        this._pixels = null;
+        this._pixels = new Uint8Array();
         this._texture = null;
     }
 
@@ -386,8 +404,8 @@ export class TiledPlane extends Renderable2D {
         this._opacityFunction = opacityFunction;
 
         this._mesh = null;
-        this._colorArray = null;
-        this._opacityArray = null;
+        this._colorArray = new Float32Array();
+        this._opacityArray = new Float32Array();
 
         this._rgb = new Color();
         this._cellSize = cellSize;
@@ -466,6 +484,10 @@ export class TiledPlane extends Renderable2D {
         return true;
     }
 
+    /**
+     * @param {number} index
+     * @param {number} value
+     */
     _updateColor(index, value) {
         const colorIndex = index * 3;
 
