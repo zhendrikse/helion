@@ -65,7 +65,7 @@ class Circle extends ShapeLike {
     sample(x, y, field) {
         const rSquared = this._size * this._size / 4.0;
         const xx = (x - (field.nx / 2 + this._position.x));
-        const yy = (field.ny / 2 + this._position.y);
+        const yy = (y - (field.ny / 2 + this._position.y));
         return  xx * xx + yy * yy < rSquared;
     }
 }
