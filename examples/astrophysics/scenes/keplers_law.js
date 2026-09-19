@@ -87,7 +87,7 @@ class Planet extends RadialSymmetricBody {
             line = new LineSegment(new Vec3(), this.position.clone(), 0xffffff);
             this.monthStep(simulation, line, time, dt);
         } else
-            line = new LineSegment(new Vec3(), this.position.clone(), colour); // plot radius vector
+            line = new LineSegment(new Vec3(), this.position.clone(), colour.asHexValue()); // plot radius vector
 
         simulation.bind(line.onceWith(lineView));
 

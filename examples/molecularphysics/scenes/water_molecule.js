@@ -207,7 +207,7 @@ const torqueForce = new TorqueForce({ k: ANGLE_CONSTANT , restAngle: WATER_ANGLE
 
 const electricArrow = new VectorView({
     vectorProperty: body => body.direction,
-    color: 0xff00ff,
+    color: Colour.fromHex(0xff00ff),
     size: 1.0e-11,
     magnitudeMap: magnitude => magnitude * BOND_LENGTH * 0.5
 });

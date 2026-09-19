@@ -74,7 +74,7 @@ export class Colour {
     }
 
     /** @param {Color} targetColor */
-    asThreeJsColor(targetColor) {
+    asThreeJsColor(targetColor = new Color()) {
         targetColor.setRGB(this.r, this.g, this.b);
         return targetColor;
     }

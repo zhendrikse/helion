@@ -26,7 +26,8 @@ class TrailLine {
         /** @type {Vec3[]} */
         this._positions = [];
         this._geometry = new BufferGeometry();
-        this._material = new LineBasicMaterial({ color: color.asThreeJsColor(new Color()), linewidth });
+        this._material = new LineBasicMaterial({ linewidth });
+        color.asThreeJsColor(this._material.color);
         this._line = new Line(this._geometry, this._material);
     }
 
@@ -177,7 +178,6 @@ export class Sphere extends Renderable3D {
         super();
         if (!material) {
             material = new MeshStandardMaterial({
-                color: color.asThreeJsColor(new Color()),
                 opacity: opacity,
                 transparent: true,
                 wireframe: wireframe,
@@ -186,6 +186,7 @@ export class Sphere extends Renderable3D {
                 metalness: 0.8
             });
         }
+        color.asThreeJsColor(material.color);
         this._mesh = new Mesh(new SphereGeometry(1, segments, segments), material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
@@ -278,8 +279,8 @@ export class Arrow extends Renderable3D {
             ? Arrow.HeadGeometryRound
             : Arrow.HeadGeometrySquare;
 
+        color.asThreeJsColor(material.color);
         this._material = material;
-        this._material.color.set(color.asThreeJsColor(new Color()));
         this._material.opacity = opacity;
         this._shaft = new Mesh(shaftGeometry, this._material);
         this._head = new Mesh(headGeometry, this._material);
@@ -429,7 +430,7 @@ export class Cylinder extends Renderable3D {
     } = {}) {
         super();
         const geometry = new CylinderGeometry(1, 1, 1, segments);
-        material.color.copy(color.asThreeJsColor(new Color()));
+        color.asThreeJsColor(material.color);
         this._mesh = new Mesh(geometry, material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
@@ -482,7 +483,7 @@ export class Box extends Renderable3D {
     } = {}) {
         super();
         material.opacity = opacity;
-        material.color.copy(color.asThreeJsColor(new Color()));
+        color.asThreeJsColor(material.color);
         this._mesh = new Mesh(new BoxGeometry(1, 1, 1), material);
         this.add(this._mesh);
         this._mesh.castShadow = castShadow;
@@ -523,14 +524,13 @@ export class Ring extends Renderable3D {
         radialSegments = 16,
         tubularSegments = 32,
         material = new MeshStandardMaterial({
-            color: color.asThreeJsColor(new Color()),
             roughness: 0.4,
             metalness: 0.75
         })
     } = {}) {
         super();
         const geometry = new TorusGeometry(1, thickness, radialSegments, tubularSegments);
-        material.color.copy(color.asThreeJsColor(new Color()));
+        color.asThreeJsColor(material.color);
         this._mesh = new Mesh(geometry, material);
         this.add(this._mesh);
         this._direction = new Vector3();
