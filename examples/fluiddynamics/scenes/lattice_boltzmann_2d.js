@@ -1,8 +1,7 @@
-import { intBitsToFloat } from 'three/src/nodes/math/BitcastNode.js';
 import {
-    AdaptiveSymmetricNormalizer, ColorMappers, Colour, DiscreteFieldSurfaceView, DropdownMenu, FixedIntervalNormalizer,
-    Interval, Simulation, TiledPlane, Vec3, DiscreteScalarField,
-    Transformation
+    AdaptiveSymmetricNormalizer, ColorMappers, Colour, FixedIntervalNormalizer,
+    Interval, ShapeConfiguration, ShapeMask, Simulation, TiledPlane, Vec3,
+    DiscreteScalarField
 } from '../../../src/index.js';
 import { Solver } from '../../../src/model/math/numerics/solvers/solvers.js';
 
@@ -17,46 +16,7 @@ const EY = DY;
 const OPPOSITE = [0, 3, 4, 1, 2, 7, 8, 5, 6];
 const WEIGHT = [4 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 36, 1 / 36, 1 / 36, 1 / 36];
 
-class Barrier extends Transformation {
-    constructor() {
-        super();
-        const barrierX = Math.floor(NX * 0.15);
-        const barrierHalfHeight = Math.floor(NY * 0.14);
-        this._barrier = new Uint8Array(NX * NY);
-        for (let y = Math.max(1, Math.floor(NY * 0.5) - barrierHalfHeight);
-            y <= Math.min(NY - 2, Math.floor(NY * 0.5) + barrierHalfHeight);
-            y++)
-            this._barrier[y * NX + barrierX] = 1;
-    }
-
-    /** @param {DiscreteScalarField} field */
-    applyTo(field) {
-        for (let y = 0; y < NY; y++)
-            for (let x = 0; x < NX; x++)
-                field.setValueAt(x, y, this._barrier[field.index(x, y)]);
-    }
-}
-
-/**
- * Small educational D2Q9 lattice-Boltzmann fluid.
- *
- * The model deliberately keeps the first implementation simple:
- * - maintained left-to-right inflow,
- * - bounce-back top/bottom walls and an internal barrier,
- * - open right-hand outlet,
- * - BGK collision,
- * - an exposed scalar field containing the 2D vorticity (curl).
- *
- * It is intended for qualitative visualization rather than quantitative CFD.
- */
-export class LatticeBoltzmannSolver extends Solver {
-    /**
-     * @param {{
-     * viscosity?: number
-     * flowSpeed?: number
-     * barrierField?: DiscreteScalarField
-     * }} param0 
-     */
+class LatticeBoltzmannSolver extends Solver {
     constructor({
         barrierField = new DiscreteScalarField(),
         viscosity = 0.02,
@@ -125,10 +85,9 @@ export class LatticeBoltzmannSolver extends Solver {
                         continue;
                     }
 
-                    // Populations leaving through the left/right boundary are
-                    // handled by the inflow/outlet boundary conditions.
-                    // if (tx < 0 || tx >= nx)
-                    //    continue;
+                    if (tx < 0 || tx >= nx)
+                        continue;
+
                     this._next[k][field.index(tx, ty)] += this._f[k][sourceIndex];
                 }
             }
@@ -144,8 +103,8 @@ export class LatticeBoltzmannSolver extends Solver {
             for (let x = 0; x < field.nx; x++) {
                 if (this._barrierField.valueAt(x, y) !== 0)
                     continue;
-                const i = field.index(x, y);
 
+                const i = field.index(x, y);
                 let rho = 0;
                 let ux = 0;
                 let uy = 0;
@@ -158,9 +117,9 @@ export class LatticeBoltzmannSolver extends Solver {
                 }
 
                 if (rho < 1e-8) continue;
+
                 ux /= rho;
                 uy /= rho;
-                // Ma cap voorkomt negatieve populaties / blow-up
                 ux = Math.max(-0.3, Math.min(0.3, ux));
                 uy = Math.max(-0.3, Math.min(0.3, uy));
 
@@ -193,12 +152,6 @@ export class LatticeBoltzmannSolver extends Solver {
         }
     }
 
-    /**
-     * @param {number} rho
-     * @param {number} ux
-     * @param {number} uy
-     * @param {number[] | Float64Array<ArrayBuffer>} target
-     */
     _equilibrium(rho, ux, uy, target) {
         const speedSquared = ux * ux + uy * uy;
 
@@ -218,6 +171,7 @@ export class LatticeBoltzmannSolver extends Solver {
                     field.setValueAt(x, y, 0);
                     continue;
                 }
+
                 const uxLeft = this._velocityX(field.index(x - 1, y));
                 const uxRight = this._velocityX(field.index(x + 1, y));
                 const uyDown = this._velocityY(field.index(x, y - 1));
@@ -229,7 +183,6 @@ export class LatticeBoltzmannSolver extends Solver {
             }
     }
 
-    /** @param {number} index */
     _velocityX(index) {
         let rho = 0;
         let momentum = 0;
@@ -245,7 +198,6 @@ export class LatticeBoltzmannSolver extends Solver {
         return isFinite(v) ? v : 0;
     }
 
-    /** @param {number} index */
     _velocityY(index) {
         let rho = 0;
         let momentum = 0;
@@ -264,25 +216,29 @@ export class LatticeBoltzmannSolver extends Solver {
 
 const curlField = new DiscreteScalarField({ nx: NX, ny: NY });
 const barrierField = new DiscreteScalarField({ nx: NX, ny: NY });
-barrierField.apply(new Barrier());
+
+const configuration = new ShapeConfiguration();
 const solver = new LatticeBoltzmannSolver({
     barrierField,
     viscosity: 0.02,
     flowSpeed: 0.10,
 });
-solver.init(curlField);
 
-// const curlView = new DiscreteFieldSurfaceView({
-//     colorMapper: ColorMappers.get(ColorMappers.Inferno),
-//     //opacityFunction: v => Math.min(1, Math.abs(v - 0.5) * 5),
-// });
-// curlView.scale.set(CELL_SIZE, CELL_SIZE, 1);
+function reset() {
+    barrierField
+        .reset()
+        .applyTo(new ShapeMask(configuration));
+
+    solver.reset(curlField);
+}
+
+configuration.onChangeEventListener = reset;
+reset();
 
 const curlView = new TiledPlane({
     cellSize: CELL_SIZE,
     colorMapper: ColorMappers.get(ColorMappers.Inferno),
     normalizer: new AdaptiveSymmetricNormalizer(0.06),
-    //opacityFunction: v => Math.min(1, Math.abs(v - 0.5) * 3)
 });
 
 const barrierView = new TiledPlane({
@@ -293,6 +249,7 @@ const barrierView = new TiledPlane({
 });
 
 barrierView.position.z = 0.01;
+
 Simulation.with({
     htmlDivId: 'latticeBoltzmann2dContainer',
     viewport: { aspectRatio: '19/12' },
@@ -306,19 +263,18 @@ Simulation.with({
     infoPanel: {
         text:
             '<strong>🫗 Lattice Boltzmann</strong><br/>' +
-            'A simple D2Q9 fluid flowing around a barrier. ' +
-            'The background shows vorticity (curl).<br/>' +
-            '• D2 $\\rightarrow$ 2-dimensional, i.e. a flat grid.<br/>' +
-            '• Q9 $\\rightarrow$ 9 velocities, each grid point has 9 distinct directions where fluid particles can go.'
-    }})
+            'A simple D2Q9 fluid flowing around a configurable obstacle. ' +
+            'The background shows vorticity (curl).'
+    }
+})
     .maxOutCpu(() => curlField.evolve(solver), 20, 30)
     .appendStartStopResetUI()
     .bind(curlField.alwaysWith(curlView))
     .bind(barrierField.onceWith(barrierView))
-    .onReset(() => solver.reset(curlField))
-    .append(new DropdownMenu()
+    .onReset(reset)
+    .append(configuration.ui())
+    .append(new (await import('../../../src/core/controls.js')).DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.Inferno)
         // @ts-ignore
         .onChange(event => curlView._colorMapper = ColorMappers.get(event.target.value)));
-
