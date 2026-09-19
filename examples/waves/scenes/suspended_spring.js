@@ -25,7 +25,7 @@ const latticeView = LatticeView.from({
     bondArgs: {
         thickness: 0.075,
         coils: 6,
-        color: 0xffff99,
+        color: Colour.fromHex(0xffff99),
         castShadow: true,
         radiusFunction: pair => .4 * (pair.body1.radius + pair.body2.radius)
     }
