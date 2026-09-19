@@ -179,6 +179,140 @@ export class WaveEquationSolver extends Solver {
     }
 }
 
+
+/**
+ * Eigenstate solver for a time-independent 2D Schrödinger Hamiltonian.
+ *
+ * It uses imaginary-time propagation with Gram-Schmidt deflation. This is
+ * deliberately matrix-free: the Hamiltonian is applied directly to the
+ * grid, just like the finite-difference Hamiltonian used by QMsolve.
+ */
+export class SchrodingerEigenstateSolver extends Solver {
+    constructor({
+        spacing = 1,
+        hbar = 1,
+        mass = 1,
+        iterations = 1200,
+        dt = 0.01
+    } = {}) {
+        super();
+        this._spacing = spacing;
+        this._hbar = hbar;
+        this._mass = mass;
+        this._iterations = iterations;
+        this._dt = dt;
+    }
+
+    solve(potential, {
+        states = 4,
+        initialState = null
+    } = {}) {
+        const nx = potential.nx;
+        const ny = potential.ny;
+        const size = nx * ny;
+        const previousStates = [];
+        const eigenvalues = [];
+        const eigenstates = [];
+
+        for (let state = 0; state < states; state++) {
+            let psi = new Float64Array(size);
+
+            if (initialState) {
+                psi.set(initialState(state, nx, ny));
+            } else {
+                for (let y = 1; y < ny - 1; y++)
+                    for (let x = 1; x < nx - 1; x++) {
+                        const u = x / (nx - 1);
+                        const v = y / (ny - 1);
+                        psi[y * nx + x] =
+                            Math.sin((state + 1) * Math.PI * u) *
+                            Math.sin(Math.PI * v);
+                    }
+            }
+
+            this._orthogonalize(psi, previousStates);
+            this._normalize(psi);
+
+            for (let iteration = 0; iteration < this._iterations; iteration++) {
+                const hPsi = this._applyHamiltonian(psi, potential);
+                const next = new Float64Array(size);
+
+                for (let i = 0; i < size; i++)
+                    next[i] = psi[i] - this._dt * hPsi[i];
+
+                this._orthogonalize(next, previousStates);
+                this._normalize(next);
+                psi = next;
+            }
+
+            const energy = this._rayleighQuotient(psi, potential);
+            previousStates.push(psi);
+            eigenvalues.push(energy);
+            eigenstates.push(psi);
+        }
+
+        return { energies: eigenvalues, states: eigenstates };
+    }
+
+    _applyHamiltonian(psi, potential) {
+        const nx = potential.nx;
+        const ny = potential.ny;
+        const h2 = this._spacing * this._spacing;
+        const kinetic = this._hbar * this._hbar / (2 * this._mass);
+        const hPsi = new Float64Array(nx * ny);
+
+        for (let y = 1; y < ny - 1; y++)
+            for (let x = 1; x < nx - 1; x++) {
+                const i = y * nx + x;
+                const laplacian =
+                    (psi[i - 1] + psi[i + 1] + psi[i - nx] + psi[i + nx] - 4 * psi[i]) / h2;
+
+                hPsi[i] = -kinetic * laplacian + potential.data[i] * psi[i];
+            }
+
+        return hPsi;
+    }
+
+    _orthogonalize(psi, states) {
+        for (const state of states) {
+            let projection = 0;
+
+            for (let i = 0; i < psi.length; i++)
+                projection += psi[i] * state[i];
+
+            for (let i = 0; i < psi.length; i++)
+                psi[i] -= projection * state[i];
+        }
+    }
+
+    _normalize(psi) {
+        let normSquared = 0;
+
+        for (const value of psi)
+            normSquared += value * value;
+
+        const norm = Math.sqrt(normSquared);
+        if (norm === 0)
+            throw new Error('SchrodingerEigenstateSolver produced a zero state.');
+
+        for (let i = 0; i < psi.length; i++)
+            psi[i] /= norm;
+    }
+
+    _rayleighQuotient(psi, potential) {
+        const hPsi = this._applyHamiltonian(psi, potential);
+        let numerator = 0;
+        let denominator = 0;
+
+        for (let i = 0; i < psi.length; i++) {
+            numerator += psi[i] * hPsi[i];
+            denominator += psi[i] * psi[i];
+        }
+
+        return numerator / denominator;
+    }
+}
+
 export class WaveFunctionEigenStateSolver extends Solver {
     static hbar = 1;
     static mass = 1;
