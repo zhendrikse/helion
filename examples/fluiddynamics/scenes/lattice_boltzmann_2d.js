@@ -1,5 +1,5 @@
 import {
-    AdaptiveSymmetricNormalizer, Button, Checkbox, ColorMappers, Colour, FixedIntervalNormalizer,
+    AdaptiveSymmetricNormalizer, ColorMappers, Colour, FixedIntervalNormalizer,
     Interval, LatticeBoltzmannFluid2D, Simulation, TiledPlane, Vec3
 } from '../../../src/index.js';
 
@@ -51,15 +51,6 @@ const simulation = Simulation
         fluid.evolve();
     })
     .appendStartStopResetUI()
-    .append(new Checkbox('Show barrier')
-        .checked(true)
-        .addEventListener('change', event => {
-            // @ts-ignore
-            barrierView.visible = event.target.checked;
-        }))
-    .append(new Button()
-        .withText('Reset')
-        .onClick(() => fluid.reset()))
     .start();
 
 simulation.bind(fluid.curlField.alwaysWith(curlView));
