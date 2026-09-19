@@ -5,10 +5,10 @@ import { DiscreteScalarField } from '../math/fields.js';
  * Small educational D2Q9 lattice-Boltzmann fluid.
  *
  * The model deliberately keeps the first implementation simple:
- * - periodic left/right domain with a maintained inflow,
+ * - maintained left-to-right inflow,
  * - bounce-back top/bottom walls and an internal barrier,
  * - BGK collision,
- * - the exposed scalar field is the 2D vorticity (curl).
+ * - an exposed scalar field containing the 2D vorticity (curl).
  *
  * It is intended for qualitative visualization rather than quantitative CFD.
  */
@@ -38,12 +38,19 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
         this._next = Array.from({ length: 9 }, () => new Float64Array(nx * ny));
 
         this._curl = new DiscreteScalarField({ nx, ny });
+        this._barrierField = new DiscreteScalarField({ nx, ny });
+
+        for (let y = 0; y < ny; y++)
+            for (let x = 0; x < nx; x++)
+                this._barrierField.setValueAt(x, y, this._barrier[this.index(x, y)]);
+
         this.reset();
     }
 
     get nx() { return this._nx; }
     get ny() { return this._ny; }
     get curlField() { return this._curl; }
+    get barrierField() { return this._barrierField; }
 
     isBarrier(x, y) {
         return this._barrier[this.index(x, y)] !== 0;
@@ -59,8 +66,7 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
         for (let y = 0; y < this._ny; y++)
             for (let x = 0; x < this._nx; x++) {
                 const i = this.index(x, y);
-                const rho = 1;
-                this._equilibrium(rho, this._flowSpeed, 0, equilibrium);
+                this._equilibrium(1, this._flowSpeed, 0, equilibrium);
 
                 for (let k = 0; k < 9; k++)
                     this._f[k][i] = equilibrium[k];
@@ -99,7 +105,6 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
                     const tx = x + DX[k];
                     const ty = y + DY[k];
 
-                    // Top/bottom wall or internal barrier: bounce back.
                     if (ty < 0 || ty >= ny || tx < 0 || tx >= nx ||
                         this.isBarrier(tx, ty)) {
                         this._next[OPPOSITE[k]][sourceIndex] += this._f[k][sourceIndex];
@@ -166,8 +171,6 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
     }
 
     _updateCurl() {
-        const field = this._curl;
-
         for (let y = 1; y < this._ny - 1; y++)
             for (let x = 1; x < this._nx - 1; x++) {
                 const uxLeft = this._velocityX(x - 1, y);
@@ -176,7 +179,7 @@ export class LatticeBoltzmannFluid2D extends MathPhysicsModelBehavior {
                 const uyUp = this._velocityY(x, y + 1);
 
                 const curl = 0.5 * ((uyUp - uyDown) - (uxRight - uxLeft));
-                field.setValueAt(x, y, curl);
+                this._curl.setValueAt(x, y, this.isBarrier(x, y) ? 0 : curl);
             }
     }
 
