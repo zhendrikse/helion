@@ -261,9 +261,10 @@ export class ShapeMask extends Transformation {
 
     /** @param {DiscreteScalarField} field */
     applyTo(field) {
+        const shape = ShapesFactory.create(this._shapeConfiguration);
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++)
-                if (ShapesFactory.create(this._shapeConfiguration).sample(x, y, field))
+                if (shape.sample(x, y, field))
                     field.setValueAt(x, y, 1);
     }
 }
