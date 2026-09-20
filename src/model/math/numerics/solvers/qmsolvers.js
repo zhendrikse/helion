@@ -84,8 +84,18 @@ import {Solver} from "./solvers.js";
  * grid, just like the finite-difference Hamiltonian used by QMsolve.
  */
 export class SchrodingerEigenstateSolver extends Solver {
+    /**
+     * @param {{
+     *   potential?: DiscreteScalarField
+     *   states?: number
+     *   spacing?: number
+     *   hbar?: number
+     *   mass: number
+     *   iterations?: number
+     * }} param0
+     */
     constructor({
-        potential = new DiscreteComplexField(),
+        potential = new DiscreteScalarField(),
         states = 4,
         spacing = 1,
         hbar = 1,
