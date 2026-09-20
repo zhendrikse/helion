@@ -385,3 +385,76 @@ export class DiscreteComplexField extends ComplexField {
         complexFunctionSample.output.im = i0 * (1 - ty) + i1 * ty;
     }
 }
+
+
+/**
+ * Discrete scalar field on a three-dimensional Cartesian grid.
+ */
+export class DiscreteScalarField3D extends ScalarField {
+    constructor({ nx = 32, ny = 32, nz = 32 } = {}) {
+        super();
+        this._nx = nx;
+        this._ny = ny;
+        this._nz = nz;
+        this._data = new Float64Array(nx * ny * nz);
+    }
+
+    get nx() { return this._nx; }
+    get ny() { return this._ny; }
+    get nz() { return this._nz; }
+    get data() { return this._data; }
+
+    index(x, y, z) {
+        return z * this._nx * this._ny + y * this._nx + x;
+    }
+
+    valueAt(x, y, z) {
+        return this._data[this.index(x, y, z)];
+    }
+
+    setValueAt(x, y, z, value) {
+        this._data[this.index(x, y, z)] = value;
+    }
+
+    reset() {
+        this._data.fill(0);
+        return this;
+    }
+}
+
+/**
+ * Discrete complex field on a three-dimensional Cartesian grid.
+ */
+export class DiscreteComplexField3D extends ComplexField {
+    constructor({
+        nx = 32,
+        ny = 32,
+        nz = 32,
+        real = new Float64Array(nx * ny * nz),
+        imag = new Float64Array(nx * ny * nz)
+    } = {}) {
+        super();
+        this.nx = nx;
+        this.ny = ny;
+        this.nz = nz;
+        this.real = real;
+        this.imag = imag;
+    }
+
+    get size() { return this.real.length; }
+
+    index(x, y, z) {
+        return z * this.nx * this.ny + y * this.nx + x;
+    }
+
+    reset() {
+        this.real.fill(0);
+        this.imag.fill(0);
+        return this;
+    }
+
+    evolve(solver, dt) {
+        solver.step(this, dt);
+        return this;
+    }
+}
