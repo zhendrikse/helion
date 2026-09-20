@@ -59,6 +59,7 @@ const diagnostics = solver.diagnosticsFor(0);
 console.log('Hydrogen-like 1s energy:', diagnostics.energy);
 console.log('1s eigenstate residual:', diagnostics.residual);
 console.log('1s radial symmetry error:', diagnostics.radialSymmetryError);
+console.log('1s inversion parity (expected +1):', diagnostics.inversionParity);
 
 const simulation = Simulation
     .with({

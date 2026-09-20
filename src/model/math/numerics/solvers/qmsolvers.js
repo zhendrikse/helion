@@ -46,7 +46,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
      * centre. This avoids introducing an arbitrary radial bin width.
      *
      * @param {number} index
-     * @returns {{ energy: number, residual: number, radialSymmetryError: number }}
+     * @returns {{ energy: number, residual: number, radialSymmetryError: number, inversionParity: number }}
      */
     diagnosticsFor(index) {
         const psi = this.eigenstateAt(index);
@@ -59,6 +59,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
 
         let residualSquared = 0;
         let normSquared = 0;
+        let inversionOverlap = 0;
 
         for (let z = 1; z < nz - 1; z++)
             for (let y = 1; y < ny - 1; y++)
@@ -67,6 +68,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
                     const difference = hPsi[i] - energy * psi[i];
                     residualSquared += difference * difference;
                     normSquared += psi[i] * psi[i];
+                    inversionOverlap += psi[i] * psi[this._index(nx - 1 - x, ny - 1 - y, nz - 1 - z)];
                 }
 
         const residual = Math.sqrt(residualSquared / normSquared);
@@ -114,8 +116,9 @@ export class SchrodingerEigenstateSolver3D extends Solver {
             ? 0
             : Math.sqrt(symmetrySquared / symmetryCount) /
               Math.max(Math.sqrt(normSquared / symmetryCount), 1e-12);
+        const inversionParity = normSquared === 0 ? 0 : inversionOverlap / normSquared;
 
-        return { energy, residual, radialSymmetryError };
+        return { energy, residual, radialSymmetryError, inversionParity };
     }
 
     reset() {

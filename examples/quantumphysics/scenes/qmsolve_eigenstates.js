@@ -7,11 +7,12 @@ const N = 100;
 const spacing = 0.15;
 const springConstant = 0.05;
 
-class GaussianPotential extends Transformation {
-    constructor() {
-        super();
-    }
-
+/**
+ * 2D isotropic harmonic oscillator:
+ * V(x, y) = 0.5 * k * (x^2 + y^2)
+ */
+class IsotropicHarmonicOscillator extends Transformation {
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         for (let y = 0; y < N; y++)
             for (let x = 0; x < N; x++) {
@@ -30,7 +31,7 @@ const solver = new SchrodingerEigenstateSolver({
     states: 10,
     iterations: 900
 });
-potential.apply(new GaussianPotential());
+potential.apply(new IsotropicHarmonicOscillator());
 solver.initialize(psi, 0.01);
 
 const waveFunction = new WaveFunctionSurface3D({
@@ -49,8 +50,10 @@ const simulation = Simulation
         htmlDivId: 'qmsolveEigenstates',
         viewport: { aspectRatio: '4/3' },
         infoPanel: {
-            text: '<strong>🫐 Stationary eigenstates</strong><br/>Visualization of the stationary ' +
-                'eigenstates of a quantum system. Each state reveals a characteristic pattern of amplitude ' +
+            text: '<strong>🫐 Stationary eigenstates</strong><br/>Stationary ' +
+                'eigenstates of a 2D isotropic harmonic oscillator:' +
+                '$$\nV(x,y)=\\frac{1}{2}k(x^2+y^2)\n$$' +
+                'Each state reveals a characteristic pattern of amplitude ' +
                 'and phase, forming the familiar wave-like lobes of quantum mechanics.\n'
         },
         headUpDisplay: { enabled: false }

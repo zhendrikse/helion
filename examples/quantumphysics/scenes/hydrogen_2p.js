@@ -45,12 +45,12 @@ class Hydrogen2PView extends Renderable3D {
     constructor({ spacing = 1 } = {}) {
         super();
         this._orbitals = [
-            new WaveFunctionOrbital3D({ spacing, pointSize: 4, threshold: 0.01 }),
-            new WaveFunctionOrbital3D({ spacing, pointSize: 4, threshold: 0.01 }),
-            new WaveFunctionOrbital3D({ spacing, pointSize: 4, threshold: 0.01 })
+            new WaveFunctionOrbital3D({ spacing, pointSize: 3, threshold: 0.08 }),
+            new WaveFunctionOrbital3D({ spacing, pointSize: 3, threshold: 0.08 }),
+            new WaveFunctionOrbital3D({ spacing, pointSize: 3, threshold: 0.08 })
         ];
 
-        const offsets = [-7, 0, 7];
+        const offsets = [-12, 0, 12];
         for (let i = 0; i < this._orbitals.length; i++) {
             this._orbitals[i].position.x = offsets[i];
             this.add(this._orbitals[i]);
@@ -101,8 +101,11 @@ const orbitals = [1, 2, 3].map(stateIndex => {
 for (let index = 0; index < solver.stateCount; index++)
     console.log('Hydrogen-like state ' + index + ' energy:', solver.energies[index]);
 
-for (let index = 0; index < orbitals.length; index++)
-    console.log('2p_' + 'xyz'[index] + ' residual:', solver.diagnosticsFor(index + 1).residual);
+for (let index = 0; index < orbitals.length; index++) {
+    const diagnostics = solver.diagnosticsFor(index + 1);
+    console.log('2p_' + 'xyz'[index] + ' residual:', diagnostics.residual);
+    console.log('2p_' + 'xyz'[index] + ' inversion parity (expected -1):', diagnostics.inversionParity);
+}
 
 const model = new Hydrogen2PStates(orbitals);
 const view = new Hydrogen2PView({ spacing });
@@ -110,7 +113,7 @@ const view = new Hydrogen2PView({ spacing });
 const simulation = Simulation
     .with({
         htmlDivId: 'hydrogen2pOrbital',
-        viewport: { aspectRatio: '16/6' },
+        viewport: { aspectRatio: '12/9' },
         infoPanel: {
             text: '<strong>⚛️ Hydrogen-like 2p orbitals</strong><br/>' +
                 'The three members of the first excited p-manifold are shown together: ' +
@@ -121,7 +124,7 @@ const simulation = Simulation
     .bind(model.alwaysWith(view));
 
 simulation.frameSceneOn(view, {
-    padding: 0.8,
+    padding: 0.5,
     translationY: 0,
     viewDirection: new Vec3(1, 0.8, 1)
 });
