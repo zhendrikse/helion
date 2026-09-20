@@ -1,4 +1,4 @@
-import { DiscreteComplexField, DiscreteScalarField } from '../../fields.js';
+import { DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D } from '../../fields.js';
 import {Complex} from '../../math.js';
 import {Solver} from './solvers.js';
 
