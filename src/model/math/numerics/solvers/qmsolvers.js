@@ -8,17 +8,51 @@ import {Solver} from "./solvers.js";
  * one time step behind the corresponding real parts.  This is admittedly confusing.
  * Also note that these are 1D arrays, with index i = y*xMax + x, for efficiency.
  */
- export class SchrodingerSolver extends Solver {
-     get states() { return this._states; }
+export class SchrodingerEigenstateSolver extends Solver {
+    constructor({
+        potential = new DiscreteScalarField(),
+        spacing = 1,
+        hbar = 1,
+        mass = 1,
+        states = 4,
+        iterations = 1200,
+        dt = 0.01
+    } = {}) {
+        super();
+        this._potential = potential;
+        this._spacing = spacing;
+        this._hbar = hbar;
+        this._mass = mass;
+        this._states = states;
+        this._iterations = iterations;
+        this._dt = dt;
+        this.reset();
+    }
+
+    get states() { return this._states; }
+    get stateCount() { return this._eigenstates.length; }
     get energies() { return this._eigenvalues; }
     get eigenstates() { return this._eigenstates; }
+
+    eigenstateAt(index) {
+        if (index < 0 || index >= this._eigenstates.length)
+            throw new RangeError(`Eigenstate index out of range: ${index}`);
+        return this._eigenstates[index];
+    }
 
     reset() {
         this._eigenvalues = [];
         this._eigenstates = [];
     }
 
-    _createEigenState(state, waveFunction, previousStates, dt) {
+    _createEigenState(state, waveFunction, previousStates) {
+
+    reset() {
+        this._eigenvalues = [];
+        this._eigenstates = [];
+    }
+
+    _createEigenState(state, waveFunction, previousStates) {
         const nx = waveFunction.nx;
         const ny = waveFunction.ny;
         const size = nx * ny;
@@ -40,7 +74,7 @@ import {Solver} from "./solvers.js";
             const next = new Float64Array(size);
 
             for (let i = 0; i < size; i++)
-                next[i] = psi[i] - dt * hPsi[i];
+                next[i] = psi[i] - this._dt * hPsi[i];
 
             this._orthogonalize(next, previousStates);
             this._normalize(next);
@@ -57,11 +91,15 @@ import {Solver} from "./solvers.js";
      * @param {DiscreteComplexField} psi
      * @param {number} dt
      */
-    initialize(psi, dt = 0.01) {
+    initialize(psi) {
         this.reset();
+        if (this._potential.nx !== psi.nx || this._potential.ny !== psi.ny)
+            throw new Error("Schrödinger potential and wavefunction grids must have the same dimensions.");
+
         const previousStates = [];
         for (let state = 0; state < this._states; state++)
-            this._createEigenState(state, psi, previousStates, dt);
+            this._createEigenState(state, psi, previousStates);
+        return this;
     }
 
     _applyHamiltonian(psi) {
