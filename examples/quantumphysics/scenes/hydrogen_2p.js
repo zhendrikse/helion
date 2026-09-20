@@ -1,11 +1,10 @@
 import {
-    DiscreteComplexField3D, DiscreteScalarField3D, SchrodingerEigenstateSolver3D, Simulation, Transformation, Vec3,
-    WaveFunctionOrbital3D
+    DiscreteComplexField3D, DiscreteScalarField3D, MathPhysicsModelBehavior, Renderable3D,
+    SchrodingerEigenstateSolver3D, Simulation, Transformation, Vec3, WaveFunctionOrbital3D
 } from '../../../src/index.js';
 
 const N = 64;
 const spacing = 0.16;
-const stateIndex = 1; // 2p_x; 2p_y and 2p_z are states 2 and 3.
 
 class HydrogenPotential extends Transformation {
     constructor({
@@ -35,10 +34,53 @@ class HydrogenPotential extends Transformation {
     }
 }
 
+class Hydrogen2PStates extends MathPhysicsModelBehavior {
+    constructor(fields) {
+        super();
+        this.orbitals = fields;
+    }
+}
+
+class Hydrogen2PView extends Renderable3D {
+    constructor({ spacing = 1 } = {}) {
+        super();
+        this._orbitals = [
+            new WaveFunctionOrbital3D({ spacing, pointSize: 4, threshold: 0.01 }),
+            new WaveFunctionOrbital3D({ spacing, pointSize: 4, threshold: 0.01 }),
+            new WaveFunctionOrbital3D({ spacing, pointSize: 4, threshold: 0.01 })
+        ];
+
+        const offsets = [-7, 0, 7];
+        for (let i = 0; i < this._orbitals.length; i++) {
+            this._orbitals[i].position.x = offsets[i];
+            this.add(this._orbitals[i]);
+        }
+    }
+
+    canBindTo(model) {
+        return model.orbitals?.length === 3;
+    }
+
+    initialize(model) {
+        for (let i = 0; i < this._orbitals.length; i++)
+            this._orbitals[i].initialize(model.orbitals[i]);
+    }
+
+    synchronizeWith(model) {
+        for (let i = 0; i < this._orbitals.length; i++)
+            this._orbitals[i].synchronizeWith(model.orbitals[i]);
+    }
+
+    dispose() {
+        for (const orbital of this._orbitals)
+            orbital.dispose();
+    }
+}
+
 const potential = new DiscreteScalarField3D({ nx: N, ny: N, nz: N });
-const psi = new DiscreteComplexField3D({ nx: N, ny: N, nz: N });
 potential.apply(new HydrogenPotential());
 
+// Compute the ground state plus the three members of the first excited p-manifold.
 const solver = new SchrodingerEigenstateSolver3D({
     potential,
     spacing,
@@ -46,37 +88,40 @@ const solver = new SchrodingerEigenstateSolver3D({
     iterations: 700
 });
 
-solver.initialize(psi, 0.002);
+const workspace = new DiscreteComplexField3D({ nx: N, ny: N, nz: N });
+solver.initialize(workspace, 0.002);
 
-const orbital = new WaveFunctionOrbital3D({
-    spacing,
-    pointSize: 4,
-    threshold: 0.01
+const orbitals = [1, 2, 3].map(stateIndex => {
+    const field = new DiscreteComplexField3D({ nx: N, ny: N, nz: N });
+    field.real.set(solver.eigenstateAt(stateIndex));
+    field.imag.fill(0);
+    return field;
 });
 
-psi.real.set(solver.eigenstateAt(stateIndex));
-psi.imag.fill(0);
-
 for (let index = 0; index < solver.stateCount; index++)
-    console.log(`Hydrogen-like state ${index} energy:`, solver.energies[index]);
+    console.log('Hydrogen-like state ' + index + ' energy:', solver.energies[index]);
 
-console.log(`2p_x residual:`, solver.diagnosticsFor(stateIndex).residual);
+for (let index = 0; index < orbitals.length; index++)
+    console.log('2p_' + 'xyz'[index] + ' residual:', solver.diagnosticsFor(index + 1).residual);
+
+const model = new Hydrogen2PStates(orbitals);
+const view = new Hydrogen2PView({ spacing });
 
 const simulation = Simulation
     .with({
         htmlDivId: 'hydrogen2pOrbital',
-        viewport: { aspectRatio: '1/1' },
+        viewport: { aspectRatio: '16/6' },
         infoPanel: {
             text: '<strong>⚛️ Hydrogen-like 2p orbitals</strong><br/>' +
-                'The first excited manifold contains three degenerate orbitals. ' +
-                'This view shows the 2pₓ orbital; the 2pᵧ and 2p_z states are generated alongside it.'
+                'The three members of the first excited p-manifold are shown together: ' +
+                '2pₓ, 2pᵧ and 2p_z. Each pair of lobes has opposite phase and a nodal plane through the nucleus.'
         },
         headUpDisplay: { enabled: false }
     })
-    .bind(psi.alwaysWith(orbital));
+    .bind(model.alwaysWith(view));
 
-simulation.frameSceneOn(orbital, {
-    padding: 0.7,
+simulation.frameSceneOn(view, {
+    padding: 0.8,
     translationY: 0,
     viewDirection: new Vec3(1, 0.8, 1)
 });
