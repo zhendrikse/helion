@@ -7,7 +7,6 @@ const N = 100;
 const spacing = 0.15;
 const springConstant = 0.05;
 
-
 class GaussianPotential extends Transformation {
     constructor() {
         super();
@@ -29,20 +28,17 @@ const solver = new SchrodingerEigenstateSolver({
     potential,
     spacing,
     states: 10,
-    hbar: 1,
-    mass: 1,
-    iterations: 900,
-    dt: 0.01
+    iterations: 900
 });
 potential.apply(new GaussianPotential());
-solver.initialize(psi);
+solver.initialize(psi, 0.01);
 
 const waveFunction = new WaveFunctionSurface3D({
     zScale: 3,
     brightness: 1.5
 });
 
-function showState(index = 0) {
+function showState(index = 8) {
     psi.real.set(solver.eigenstateAt(index));
     psi.imag.fill(0);
 }
@@ -51,17 +47,18 @@ showState();
 const simulation = Simulation
     .with({
         htmlDivId: 'qmsolveEigenstates',
-        viewport: {
-            aspectRatio: '4/3'
+        viewport: { aspectRatio: '4/3' },
+        infoPanel: {
+            text: '<strong>🫐 Stationary eigenstates</strong><br/>Visualization of the stationary ' +
+                'eigenstates of a quantum system. Each state reveals a characteristic pattern of amplitude ' +
+                'and phase, forming the familiar wave-like lobes of quantum mechanics.\n'
         },
-        headUpDisplay: {
-            enabled: false
-        }
+        headUpDisplay: { enabled: false }
     })
     .bind(psi.alwaysWith(waveFunction))
     .append(new Slider('🌀 Eigenstate')
         .withRange(new Range(0, solver.stateCount - 1, 1))
-        .withValue(0)
+        .withValue(8)
         .addEventListener('input', event => showState(Number(event.target.value)))
     )
     .append(new Slider('📐 Height scale')

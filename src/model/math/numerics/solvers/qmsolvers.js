@@ -15,8 +15,7 @@ export class SchrodingerEigenstateSolver extends Solver {
         hbar = 1,
         mass = 1,
         states = 4,
-        iterations = 1200,
-        dt = 0.01
+        iterations = 1200
     } = {}) {
         super();
         this._potential = potential;
@@ -25,7 +24,6 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._mass = mass;
         this._states = states;
         this._iterations = iterations;
-        this._dt = dt;
         this.reset();
     }
 
@@ -45,7 +43,7 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._eigenstates = [];
     }
 
-    _createEigenState(state, waveFunction, previousStates) {
+    _createEigenState(state, waveFunction, previousStates, dt) {
         const nx = waveFunction.nx;
         const ny = waveFunction.ny;
         const size = nx * ny;
@@ -67,7 +65,7 @@ export class SchrodingerEigenstateSolver extends Solver {
             const next = new Float64Array(size);
 
             for (let i = 0; i < size; i++)
-                next[i] = psi[i] - this._dt * hPsi[i];
+                next[i] = psi[i] - dt * hPsi[i];
 
             this._orthogonalize(next, previousStates);
             this._normalize(next);
@@ -84,7 +82,7 @@ export class SchrodingerEigenstateSolver extends Solver {
      * @param {DiscreteComplexField} psi
      * @param {number} dt
      */
-    initialize(psi) {
+    initialize(psi, dt=0.01) {
         this.reset();
         if (this._potential.nx !== psi.nx || this._potential.ny !== psi.ny)
             throw new Error(`Schrödinger potential (${this._potential.nx} x ${this._potential.nx}) ` +
@@ -92,7 +90,7 @@ export class SchrodingerEigenstateSolver extends Solver {
 
         const previousStates = [];
         for (let state = 0; state < this._states; state++)
-            this._createEigenState(state, psi, previousStates);
+            this._createEigenState(state, psi, previousStates, dt);
         return this;
     }
 
