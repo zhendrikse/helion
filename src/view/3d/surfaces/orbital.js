@@ -1,5 +1,5 @@
 import { Color, Points, BufferGeometry, BufferAttribute, ShaderMaterial, AdditiveBlending } from 'three';
-import { Renderable3D } from '../renderer.js';
+import {Renderable3D} from "../../renderer.js";
 
 export class WaveFunctionOrbital3D extends Renderable3D {
     static vertexShader = `
