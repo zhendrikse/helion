@@ -9,116 +9,13 @@ import {Solver} from "./solvers.js";
  * Also note that these are 1D arrays, with index i = y*xMax + x, for efficiency.
  */
  export class SchrodingerSolver extends Solver {
-     /** @param {DiscreteScalarField} potential */
-    constructor(potential) {
-        super();
-        this._potential = potential;
-
-        this._nextRe = null;
-        this._nextIm = null;
-    }
+     get states() { return this._states; }
+    get energies() { return this._eigenvalues; }
+    get eigenstates() { return this._eigenstates; }
 
     reset() {
-        this._nextRe?.fill(0);
-        this._nextIm?.fill(0);
-    }
-
-    /**
-     * Bump the imaginary part of psi back by one time step.
-     * @param {DiscreteComplexField} psi 
-     * @param {number} dt 
-     */
-    initialize(psi, dt) {
-        const re = psi.real;
-        const im = psi.imag;
-        const V = this._potential.data;
-        const w = psi.nx;
-
-        for (let x = 1; x < psi.nx - 1; x++)
-            for (let y = 1; y < psi.ny - 1; y++) {
-                const i = y * w + x;
-                im[i] += 0.5 * dt * (-re[i + 1] -re[i - 1] -re[i + w] -re[i - w] + 2 * (2 + V[i]) * re[i]);
-            }
-    }
-
-    /**
-     * Integrate the TDSE for a double time step (centered-difference time integration).
-     * (Remember that psi.im is one time step earlier than psi.re; same for psiNext.im and psiNext.re.)
-     * 
-     * @param {DiscreteComplexField} psi
-     * @param {number} dt
-     */
-    step(psi, dt) {
-        const w = psi.nx;
-        const re = psi.real;
-        const im = psi.imag;
-
-        this._nextRe = this._nextRe === null ? new Float32Array(psi.nx * psi.ny) : this._nextRe;
-        this._nextIm = this._nextIm === null ? new Float32Array(psi.nx * psi.ny) : this._nextIm;
-        const reNext = this._nextRe;
-        const imNext = this._nextIm;
-
-        const V = this._potential.data;
-        for (let x= 1; x < psi.nx - 1; x++)
-            for (let y = 1; y < psi.ny - 1; y++) {
-                const i = y * w + x;
-                imNext[i] = im[i] - dt * (-re[i+1] - re[i-1] - re[i+w] - re[i-w] + 2 * (2 + V[i]) * re[i]);
-            }
-
-        for (let x= 1; x < w - 1; x++)
-            for (let y = 1; y < w - 1; y++) {
-                const i = y * w + x;
-                reNext[i] = re[i] + dt * (-imNext[i+1] - imNext[i-1] - imNext[i+w] - imNext[i-w] + 2*(2+V[i])*imNext[i]);
-            }
-
-        [psi.real, this._nextRe] = [this._nextRe, psi.real];
-        [psi.imag, this._nextIm] = [this._nextIm, psi.imag];
-    }
-}
-
-/**
- * Eigenstate solver for a time-independent 2D Schrödinger Hamiltonian.
- *
- * It uses imaginary-time propagation with Gram-Schmidt deflation. This is
- * deliberately matrix-free: the Hamiltonian is applied directly to the
- * grid, just like the finite-difference Hamiltonian used by QMsolve.
- */
-export class SchrodingerEigenstateSolver extends Solver {
-    /**
-     * @param {{
-     *   potential?: DiscreteScalarField
-     *   states?: number
-     *   spacing?: number
-     *   hbar?: number
-     *   mass: number
-     *   iterations?: number
-     * }} param0
-     */
-    constructor({
-        potential = new DiscreteScalarField(),
-        states = 4,
-        spacing = 1,
-        hbar = 1,
-        mass = 1,
-        iterations = 1200
-    } = {}) {
-        super();
-        this._potential = potential;
-        this._states = states;
-        this._spacing = spacing;
-        this._hbar = hbar;
-        this._mass = mass;
-        this._iterations = iterations;
         this._eigenvalues = [];
         this._eigenstates = [];
-    }
-
-    /**
-     * @param {DiscreteComplexField} psi
-     * @param {number} dt
-     */
-    step(psi, dt = 0) {
-
     }
 
     _createEigenState(state, waveFunction, previousStates, dt) {
@@ -160,7 +57,8 @@ export class SchrodingerEigenstateSolver extends Solver {
      * @param {DiscreteComplexField} psi
      * @param {number} dt
      */
-    initialize(psi, dt=0.01) {
+    initialize(psi, dt = 0.01) {
+        this.reset();
         const previousStates = [];
         for (let state = 0; state < this._states; state++)
             this._createEigenState(state, psi, previousStates, dt);
