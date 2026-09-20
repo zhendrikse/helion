@@ -38,13 +38,15 @@ export class WaveFunctionOrbital3D extends Renderable3D {
         colorMapper = null,
         pointSize = 4,
         threshold = 0.015,
-        brightness = 1.5
+        brightness = 1.5,
+        spacing = 1
     } = {}) {
         super();
         this._colorMapper = colorMapper;
         this._pointSize = pointSize;
         this._threshold = threshold;
         this._brightness = brightness;
+        this._spacing = spacing;
         this._mesh = null;
         this._colors = null;
         this._alphas = null;
@@ -95,7 +97,7 @@ export class WaveFunctionOrbital3D extends Renderable3D {
         const xOffset = (field.nx - 1) / 2;
         const yOffset = (field.ny - 1) / 2;
         const zOffset = (field.nz - 1) / 2;
-        const scale = field.spacing ?? 1;
+        const scale = this._spacing;
 
         const positions = this._mesh.geometry.attributes.position;
         const colors = this._mesh.geometry.attributes.color;
