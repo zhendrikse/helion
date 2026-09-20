@@ -205,17 +205,18 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
         uniform float uBrightness;
         
         void main() {
-            float a = vAlpha * uBrightness;
-            if (a < 0.01) discard;
-            vec3 color = vColor;
-            float alpha = vAlpha * uBrightness;            
-            gl_FragColor = vec4(color, alpha);\n            #include <colorspace_fragment>
+            float alpha = vAlpha;
+            if (alpha < 0.01) discard;
+
+            vec3 color = min(vColor * uBrightness, 1.0);
+            gl_FragColor = vec4(color, alpha);
+            #include <colorspace_fragment>
         }
         `;
     constructor({
         zScale = 20,
         showPhaseColor = true,
-        brightness = 1,
+        brightness = 1.5,
         colorMapper = ComplexColorMappers.get(ComplexColorMappers.Domain),
         defaultResolution = new SurfaceResolution(400, 400)
     } = {}) {
@@ -235,6 +236,12 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
     set phaseColor(showPhaseColor) { this._showPhaseColor = showPhaseColor; }
     set zScale(value) { this._zScale = value; }
     get zScale() { return this._zScale; }
+    set brightness(value) {
+        this._brightness = value;
+        if (this._mesh)
+            this._mesh.material.uniforms.uBrightness.value = value;
+    }
+    get brightness() { return this._brightness; }
 
     initialize(field) {
         // ensure canBindTo has set _fieldIsDiscrete
@@ -273,26 +280,41 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
     }
 
     setValueRange(field) {
-        // Wave function uses fixed log/alpha mapping — no normalizer pass needed.
-        // Kept for symmetry with ComplexSurfaceView3D so synchronizeWith has same shape.
+        this._maximumModulus = 0;
+        const { width, height } = this.resolution(field);
+
+        for (let y = 0; y < height; y++)
+            for (let x = 0; x < width; x++) {
+                if (this._fieldIsDiscrete)
+                    field.valueAt(x, y, this._sample);
+                else
+                    field.sample(x / width, y / height, this._sample);
+
+                this._maximumModulus = Math.max(this._maximumModulus, this._sample.magnitude);
+            }
+
+        this._maximumModulus = Math.max(this._maximumModulus, Number.EPSILON);
     }
 
     updateMeshAt(index, x, y) {
         const sample = this._sample;
         const modulus = sample.magnitude;
-        const displayHeight = Math.log1p(20 * modulus);
+        const normalizedModulus = modulus / this._maximumModulus;
+        const displayHeight = Math.log1p(20 * normalizedModulus);
 
         this._positions.setXYZ(index, x, displayHeight * this._zScale, y);
 
         this._colorData.phase = this._showPhaseColor ? sample.phase : 0.65;
-        this._colorData.modulus = modulus;
+        this._colorData.modulus = normalizedModulus;
         this._colorMapper.map(this._colorData, this._rgb);
 
-        const lighting = 0.6 + 0.4 * Math.cos(sample.phase);
-        const intensity = Math.sqrt(modulus) * lighting;
-
-        this._mesh.geometry.attributes.color.setXYZ(index, this._rgb.r * intensity, this._rgb.g * intensity, this._rgb.b * intensity);
-        this._alphas[index] = Math.tanh(4.0 * modulus);
+        this._mesh.geometry.attributes.color.setXYZ(
+            index,
+            this._rgb.r,
+            this._rgb.g,
+            this._rgb.b
+        );
+        this._alphas[index] = Math.tanh(4.0 * normalizedModulus);
     }
 
     synchronizeWith(field) {
