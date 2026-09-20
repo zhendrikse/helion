@@ -34,7 +34,7 @@ export {
 } from './model/math/objects.js';
 
 export {
-    Domain, DiscreteScalarField, DiscreteComplexField, VectorField, ComplexFunction, MultivariateFunction,
+    Domain, DiscreteScalarField, DiscreteScalarField3D, DiscreteComplexField, DiscreteComplexField3D, VectorField, ComplexFunction, MultivariateFunction,
     ComplexFunctionSample, RealFunction
 } from './model/math/fields.js';
 
