@@ -1,4 +1,4 @@
-import { DiscreteComplexField, DiscreteScalarField, Field } from "../../fields.js";
+import { DiscreteComplexField, DiscreteScalarField } from "../../fields.js";
 import {Complex} from "../../math.js";
 import {Solver} from "./solvers.js";
 
@@ -39,13 +39,6 @@ export class SchrodingerEigenstateSolver extends Solver {
             throw new RangeError(`Eigenstate index out of range: ${index}`);
         return this._eigenstates[index];
     }
-
-    reset() {
-        this._eigenvalues = [];
-        this._eigenstates = [];
-    }
-
-    _createEigenState(state, waveFunction, previousStates) {
 
     reset() {
         this._eigenvalues = [];
@@ -160,6 +153,12 @@ export class SchrodingerEigenstateSolver extends Solver {
         return numerator / denominator;
     }
 }
+
+/**
+ * Backwards-compatible alias for the eigenstate solver.
+ * @deprecated Use SchrodingerEigenstateSolver.
+ */
+export class SchrodingerSolver extends SchrodingerEigenstateSolver {}
 
 export class WaveFunctionEigenStateSolver extends Solver {
     static hbar = 1;
