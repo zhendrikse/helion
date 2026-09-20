@@ -467,7 +467,7 @@ export class Box extends Renderable3D {
      *     opacity?: number,
      *     visible?: boolean,
      *     castShadow?: boolean,
-     *     material: Material,
+     *     material?: Material,
      * }} param0
      */
     constructor({

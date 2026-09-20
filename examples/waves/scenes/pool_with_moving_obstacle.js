@@ -1,24 +1,11 @@
 import {
     DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, Transformation,
-    SurfaceResolution, WaveEquationSolver, LaplaceOperator, Box, Block, GlyphLayer,
-    SurfaceVisualization, FixedIntervalNormalizer, RadioGroup, Checkbox, Slider, Range, ColorMappers, Colour,
+    SurfaceResolution, WaveEquationSolver, WaveEquation, Box, Block, GlyphLayer, Colour,
+    SurfaceVisualization, FixedIntervalNormalizer, RadioGroup, Checkbox, Slider, Range, ColorMappers 
 } from '../../../src/index.js';
 
 const RESOLUTION = 200;
 const NX = 200, NY = 200, POOL_SIZE = NX;
-
-export class PoolWaveEquation {
-    constructor({ velocity = 5, damping = 0.02 } = {}) {
-        this._velocity = velocity;
-        this._damping = damping;
-    }
-
-    get damping() { return this._damping; }
-
-    acceleration(field, i, j) {
-        return this._velocity * this._velocity * LaplaceOperator.at(field, i, j);
-    }
-}
 
 export class MovingObstacle extends Block {
     constructor({ poolSize = 200, speed = 5, start = -90 } = {}) {
@@ -67,6 +54,7 @@ export class MovingObstacle extends Block {
 }
 
 class ObstacleMask extends Transformation {
+    /** @param {MovingObstacle} obstacle */
     constructor(obstacle) { super(); this._obstacle = obstacle; }
     /** @param {DiscreteScalarField} field */
     applyTo(field) {
@@ -86,6 +74,7 @@ class ObstacleMask extends Transformation {
 }
 
 class BowWake extends Transformation {
+    /** @param {MovingObstacle} obstacle */
     constructor(obstacle, sigmaFactor = 0.04) { 
         super(); 
         this._obstacle = obstacle; 
@@ -134,7 +123,7 @@ poolWalls.push(new Block({
 })); // Right wall
 
 const field = new DiscreteScalarField({ nx: NX, ny: NY });
-const waveEquation = new PoolWaveEquation({ velocity: 5, damping: 0.02 });
+const waveEquation = new WaveEquation({ speed: 5, damping: 0.02 });
 const solver = new WaveEquationSolver(waveEquation);
 const surface = new DiscreteFieldSurface(field);
 
@@ -198,6 +187,7 @@ let simulation = Simulation
     .append(new Checkbox('Wireframe ').on(waterSurface.surfaceLayer).withProperty('wireframe'))
     .append(new Slider('Obstacle speed')
         .withRange(new Range(0, 10, 0.1))
+        // @ts-ignore
         .withValue(5).onInput(e => obstacle.speed = Number(e.target.value))
     );
 

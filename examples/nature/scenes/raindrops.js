@@ -1,24 +1,8 @@
 import {
-    DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, LaplaceOperator,
+    DiscreteScalarField, Interval, Simulation, Vec3, DiscreteFieldSurface, WaveEquation,
     SurfaceResolution, WaveEquationSolver, GaussianImpulse, SurfaceVisualization,
     FixedIntervalNormalizer, RadioGroup, Checkbox, ColorMappers
 } from '../../../src/index.js';
-
-export class WaveEquation {
-    constructor({
-        velocity = 1,
-        damping = 0.1
-    } = {}) {
-        this._velocity = velocity;
-        this._damping = damping;
-    }
-
-    get damping() { return this._damping; }
-
-    acceleration(field, i, j) {
-        return this._velocity * this._velocity * LaplaceOperator.at(field, i, j);
-    }
-}
 
 //
 // First, declare a (discrete) scalar field and a wave equation.
@@ -26,7 +10,7 @@ export class WaveEquation {
 // Finally, define a surface that can visualize the (scalar) field.
 //
 const field = new DiscreteScalarField({ nx: 256, ny: 256 });
-const solver = new WaveEquationSolver(new WaveEquation({ velocity: 5 }));
+const solver = new WaveEquationSolver(new WaveEquation({ speed: 5 }));
 const surface = new DiscreteFieldSurface(field);
 
 const resolution = 256;
@@ -69,11 +53,10 @@ Simulation
         }));
     })
     .append(waterSurface.ui())
-    .append(
-        new RadioGroup()
-            .add('Smooth', () => waterSurface.display(SurfaceVisualization.Display.Surface))
-            .add('Glyphs', () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
-            .checked(1)
+    .append(new RadioGroup()
+        .add('Smooth', () => waterSurface.display(SurfaceVisualization.Display.Surface))
+        .add('Glyphs', () => waterSurface.display(SurfaceVisualization.Display.Glyphs))
+        .checked(1)
     )
     .append(waterSurface.glyphLayer.ui())
     .append(new Checkbox('Wireframe ')

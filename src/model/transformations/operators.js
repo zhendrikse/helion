@@ -3,6 +3,7 @@ import { Range, Vec3} from '../math/math.js';
 import {CompoundControl, Slider} from '../../core/controls.js';
 import { Shapes, ShapesFactory} from '../math/shapes.js';
 import {Transformation} from '../../core/helion.js';
+import { DiscreteScalarField } from '../math/fields.js';
 
 export class DiamondSquareOperator extends Transformation {
     /**
@@ -404,6 +405,13 @@ export class SineImpulseOperator extends Transformation {
                 field.setValueAt(x, y, this._amplitude * Math.sin(2 * Math.PI * x / this._waveLength));
     }
 
+    /**
+     * @param {{
+     * wavelengthInPixelsRange?: Range
+     * amplitudeRange?: Range
+     * periodRange?: Range
+     * }} param0 
+     */
     ui({
          wavelengthInPixelsRange = new Range(5, 25, 1),
          amplitudeRange = new Range(0, 1, .01),

@@ -16,7 +16,7 @@ const field = new DiscreteScalarField({ nx: resolution, ny: resolution });
 const surface = new DiscreteFieldSurface(field);
 const obstacleField = new DiscreteScalarField({ nx: resolution, ny: resolution });
 const waveEquation = new BarrierWaveEquation({
-    velocity: 10,
+    speed: 10,
     damping: 0.01,
     obstacleField
 });

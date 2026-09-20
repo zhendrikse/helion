@@ -42,7 +42,7 @@ export { ElectricField } from './model/phys/fields.js';
 export { ComplexSurfaceView3D, WaveFunctionSurface3D } from './view/3d/surfaces/complex.js';
 export { ThreeJsScene } from './view/3d/scene.js';
 export { SphereSphereCollision } from './model/transformations/interactions.js';
-export { BarrierWaveEquation } from './model/math/equations.js';
+export { Equation, WaveEquation, BarrierWaveEquation } from './model/math/equations.js';
 export { Shapes, ShapeConfiguration } from './model/math/shapes.js';
 export { OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave } from './model/phys/waves.js';
 export { PointCloud, Gas } from './model/phys/clouds.js';

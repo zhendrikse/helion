@@ -1,6 +1,7 @@
 import { DiscreteScalarField, Field } from "../../fields.js";
 import { LaplaceOperator} from "../../../transformations/operators.js";
 import { DirichletBoundaryCondition } from "../boundaryconditions/dirichlet.js";
+import { Equation } from "../../equations.js";
 
 /**
  * A solver should be applied to a discrete scalar field.
@@ -64,6 +65,7 @@ export class JacobiSolver extends Solver {
 }
 
 export class WaveEquationSolver extends Solver {
+    /** @param {Equation} equation */
     constructor(equation) {
         super();
         this._equation = equation;
