@@ -1,6 +1,7 @@
 import { generateUUID, Range } from '../model/math/math.js';
 import { Axes } from '../view/3d/composite/backgrounds.js';
-import { Registry, Simulation } from './helion.js';
+import { Simulation } from './helion.js';
+import { Registry } from './utils.js';
 
 export class HtmlControl {
     /** @param {string} labelText */

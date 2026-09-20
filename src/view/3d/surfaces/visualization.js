@@ -1,12 +1,12 @@
-import {Renderable3D} from "../../renderer.js";
-import {Box3} from "three";
-import {CompoundControl, DropdownMenu, Slider} from "../../../core/controls.js";
-import {ColorMapper, ColorMappers} from "../../colormappers.js";
-import {Interval, Range} from "../../../model/math/math.js";
-import {GlyphLayer, Layer, SurfaceLayer} from "./layers.js";
-import {Registry} from "../../../core/helion.js";
-import { DiscreteFieldSurface } from "../../../model/math/surfaces.js";
-import { DifferentialFrame } from "../../../model/math/numerics/diffgeometry.js";
+import {Renderable3D} from '../../renderer.js';
+import {Box3} from 'three';
+import {CompoundControl, DropdownMenu, Slider} from '../../../core/controls.js';
+import {ColorMapper, ColorMappers} from '../../colormappers.js';
+import {Interval, Range} from '../../../model/math/math.js';
+import {GlyphLayer, Layer, SurfaceLayer} from './layers.js';
+import {Registry} from '../../../core/utils.js';
+import { DiscreteFieldSurface } from '../../../model/math/surfaces.js';
+import { DifferentialFrame } from '../../../model/math/numerics/diffgeometry.js';
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) { this.u = uSegments; this.v = vSegments; }
@@ -127,12 +127,12 @@ export class PrincipalCurvature2Layer extends ColorLayer {
 }
 
 export class ColorLayers extends Registry {
-    static Height = "Height";
-    static GaussianCurvature = "GaussianCurvature";
-    static MeanCurvature = "MeanCurvature";
-    static Curvedness = "Curvedness";
-    static ShapeIndex = "ShapeIndex";
-    constructor(label = "Color ") {
+    static Height = 'Height';
+    static GaussianCurvature = 'GaussianCurvature';
+    static MeanCurvature = 'MeanCurvature';
+    static Curvedness = 'Curvedness';
+    static ShapeIndex = 'ShapeIndex';
+    constructor(label = 'Color ') {
         super({ label, entries: {
             Height: () => new HeightLayer(),
             PrincipalCurvature1: () => new PrincipalCurvature1Layer(),
@@ -146,7 +146,7 @@ export class ColorLayers extends Registry {
 }
 
 export class SurfaceVisualization extends Renderable3D {
-    static Display = Object.freeze({ Surface: "surface", Glyphs: "glyphs", None: "none" });
+    static Display = Object.freeze({ Surface: 'surface', Glyphs: 'glyphs', None: 'none' });
     /**
      * @param {Object} [param0={}] 
      * @param {string} [param0.glyphType=GlyphLayer.GlyphTypes.BOXES]
@@ -209,7 +209,7 @@ export class SurfaceVisualization extends Renderable3D {
 
     /** @param {DiscreteFieldSurface} model */
     canBindTo(model) {
-        if (!model.frameAt) throw new Error("Surface visualization needs frameAt(), which is not supported by the current model.");
+        if (!model.frameAt) throw new Error('Surface visualization needs frameAt(), which is not supported by the current model.');
         return true;
     }
 
@@ -227,16 +227,16 @@ export class SurfaceVisualization extends Renderable3D {
         for (const layer of this._overlayLayers) layer.initialize(model);
     }
     ui() {
-        const colorMappers = new ColorMappers("🎨 Color map");
+        const colorMappers = new ColorMappers('🎨 Color map');
         return new CompoundControl()
-            .add(new DropdownMenu().for(colorMappers).addEventListener("change", event => {
+            .add(new DropdownMenu().for(colorMappers).addEventListener('change', event => {
                 // @ts-ignore
                 this._surfaceLayer.colorMapper = colorMappers.get(event.target.value)();
                 // @ts-ignore
                 this._glyphLayer.colorMapper = colorMappers.get(event.target.value)();
             }))
-            .add(new Slider("🪟 Opacity ").withRange(new Range(0, 1, 0.01)).withValue(this._options.opacity)
-                .addEventListener("input", event => {
+            .add(new Slider('🪟 Opacity ').withRange(new Range(0, 1, 0.01)).withValue(this._options.opacity)
+                .addEventListener('input', event => {
                     // @ts-ignore
                     this._surfaceLayer.opacity = Number(event.target.value);
                     // @ts-ignore
@@ -244,8 +244,8 @@ export class SurfaceVisualization extends Renderable3D {
                 }));
     }
     colorLayerUI() {
-        const colorLayers = new ColorLayers("🖌️ Color ");
-        return new DropdownMenu().for(colorLayers).addEventListener("change", event => {
+        const colorLayers = new ColorLayers('🖌️ Color ');
+        return new DropdownMenu().for(colorLayers).addEventListener('change', event => {
             // @ts-ignore
             const colorLayer = colorLayers.get(event.target.value)();
             this._surfaceLayer.colorLayer = colorLayer;

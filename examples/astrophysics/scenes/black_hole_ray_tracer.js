@@ -1,8 +1,8 @@
-import { MathUtils, PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh }  from "three";
-import vertexShader from "./black_hole_vertex_shader.glsl?raw";
-import fragmentShader from "./black_hole_fragment_shader.glsl?raw";
-import {Checkbox, Renderable3D, Simulation, ThreeJsScene} from "../../../src/index.js";
-import {MathPhysicsModelBehavior} from "../../../src/index.js";
+import { MathUtils, PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh }  from 'three';
+import vertexShader from './black_hole_vertex_shader.glsl?raw';
+import fragmentShader from './black_hole_fragment_shader.glsl?raw';
+import {Checkbox, Colour, Renderable3D, Simulation, ThreeJsScene} from '../../../src/index.js';
+import {MathPhysicsModelBehavior} from '../../../src/index.js';
 
 export class BlackHoleModel extends MathPhysicsModelBehavior {
     constructor({
@@ -51,18 +51,18 @@ export class ShaderView extends Renderable3D {
 
 const simulation = Simulation
     .with({
-        htmlDivId: "blackHoleRayTraceContainer",
+        htmlDivId: 'blackHoleRayTraceContainer',
         camera: {
-            position: new Vector3(0, 0, .6),
-            fieldOfView: 75
+            position: new Vector3(0, 0, .9),
+            fieldOfView: 60
         },
         viewport: {
-            aspectRatio: "16/9"
+            aspectRatio: '16/9'
         },
-        // scene: {
-        //     background: ThreeJsScene.Background.PLAIN,
-        //     backgroundColor: "black"
-        // }
+        scene: {
+            background: ThreeJsScene.Background.PLAIN,
+            backgroundColor: Colour.Black
+        }
     });
 
 // const scene = new Scene();
@@ -92,23 +92,24 @@ const blackHoleModel = new BlackHoleModel({
 let animate = true;
 simulation
     .bind(blackHoleModel.alwaysWith(view))
-    .onFrame(time => {
-        if (!animate) return;
-        blackHoleModel.uniforms.uTime.value= time * 0.001;
-    })
-    .append(new Checkbox("Animate ")
+    .maxOutCpu(clock => {
+        if (!animate) 
+            return;
+        blackHoleModel.uniforms.uTime.value= clock.clockTime * 0.001;
+    }, 30)
+    .append(new Checkbox('Animate ')
         .checked(true)
-        .addEventListener("change", () => animate = !animate))
+        .addEventListener('change', () => animate = !animate))
     .start();
 
-// const downloadButton = document.createElement("button");
-// downloadButton.textContent = "Download image";
+// const downloadButton = document.createElement('button');
+// downloadButton.textContent = 'Download image';
 // document.body.appendChild(downloadButton);
 //
-// downloadButton.addEventListener("click", () => {
+// downloadButton.addEventListener('click', () => {
 //     renderer.render(scene, camera); // laatste frame renderen
-//     const link = document.createElement("a");
-//     link.download = "blackhole.png";
-//     link.href = renderer.domElement.toDataURL("image/png");
+//     const link = document.createElement('a');
+//     link.download = 'blackhole.png';
+//     link.href = renderer.domElement.toDataURL('image/png');
 //     link.click();
 // });

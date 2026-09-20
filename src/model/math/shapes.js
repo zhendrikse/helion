@@ -1,6 +1,7 @@
-import { Registry } from '../../core/helion.js';
+import { Registry } from '../../core/utils.js';
 import { CompoundControl, DropdownMenu, Slider } from '../../core/controls.js';
 import {Range, Vec2} from './math.js';
+import { DiscreteScalarField } from './fields.js';
 
 class ShapeLike {
     /**
@@ -26,6 +27,12 @@ class ShapeLike {
 }
 
 class SingleSlit extends ShapeLike {
+    /**
+     * @param {number} x 
+     * @param {number} y 
+     * @param {DiscreteScalarField} field 
+     * @returns {boolean}
+     */
     sample(x, y, field) {
         const holeEdge = Math.round(field.ny / 2 + this._position.y - this._size / 2);
         if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth ||
@@ -37,6 +44,12 @@ class SingleSlit extends ShapeLike {
 }
 
 class DoubleSlit extends ShapeLike {
+    /**
+     * @param {number} x 
+     * @param {number} y 
+     * @param {DiscreteScalarField} field 
+     * @returns {boolean}
+     */
     sample(x, y, field) {
         if (x < Math.floor(field.nx / 2 + this._position.x) - this._lineWidth ||
             x > Math.floor(field.nx / 2 + this._position.x) + this._lineWidth)
@@ -49,6 +62,12 @@ class DoubleSlit extends ShapeLike {
 }
 
 class Grating extends ShapeLike {
+    /**
+     * @param {number} x 
+     * @param {number} y 
+     * @param {DiscreteScalarField} field 
+     * @returns {boolean}
+     */
     sample(x, y, field) {
         if (y < Math.floor(field.ny / 4 + this._position.y) ||
             y > Math.floor(3 * field.ny / 4 + this._position.y))
@@ -62,6 +81,12 @@ class Grating extends ShapeLike {
 }
 
 class Circle extends ShapeLike {
+    /**
+     * @param {number} x 
+     * @param {number} y 
+     * @param {DiscreteScalarField} field 
+     * @returns {boolean}
+     */
     sample(x, y, field) {
         const rSquared = this._size * this._size / 4.0;
         const xx = (x - (field.nx / 2 + this._position.x));
@@ -71,6 +96,12 @@ class Circle extends ShapeLike {
 }
 
 class Square extends ShapeLike {
+    /**
+     * @param {number} x 
+     * @param {number} y 
+     * @param {DiscreteScalarField} field 
+     * @returns {boolean}
+     */
     sample(x, y, field) {
         const xEdge = Math.round(field.nx / 2 + this._position.x - this._size / 2);
         const yEdge = Math.round(field.ny / 2 + this._position.y - this._size / 2);
@@ -81,6 +112,12 @@ class Square extends ShapeLike {
 }
 
 class Line extends ShapeLike {
+    /**
+     * @param {number} x 
+     * @param {number} y 
+     * @param {DiscreteScalarField} field 
+     * @returns {boolean}
+     */
     sample(x, y, field) {
         const gap = 30;
         const lineX = Math.floor(field.nx / 2 + this._position.x);
@@ -93,6 +130,12 @@ class Line extends ShapeLike {
 }
 
 class Step extends ShapeLike {
+    /**
+     * @param {number} x 
+     * @param {number} y 
+     * @param {DiscreteScalarField} field 
+     * @returns {boolean}
+     */
     sample(x, y, field) {
         return x >= Math.floor(field.nx / 2 + this._position.x);
     }
@@ -154,7 +197,7 @@ export class ShapeConfiguration {
         this._position = { ...defaultPosition };
         this._shape = defaultShape;
         this._defaultLineWidth = defaultLineWidth;
-        this._onChangeEventListener = () => {};
+        this._onChangeEventListener = (/** @type {Event} */ _event) => {};
     }
 
     get defaultLineThickness() { return this._defaultLineWidth; }

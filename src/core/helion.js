@@ -8,35 +8,7 @@ import { renderMath } from '../view/mathrenderer.js';
 import { Viewport } from './viewport.js';
 import { ThreeJsScene } from '../view/3d/scene.js';
 import { Renderable, Renderer } from '../view/renderer.js';
-
-export class Registry {
-    constructor({
-        id = generateUUID(),
-        label = 'registryLabel',
-        entries = {}
-    }) {
-        this._entries = entries;
-        this._label = label;
-        this._id = id;
-    }
-
-    /**
-     * @param {string} name
-     * @returns {any}
-     */
-    get(name) { return this._entries[name]; }
-
-    get label() { return this._label; }
-    get id() { return this._id; }
-    get names() { return Object.keys(this._entries); }
-
-    /**
-     * @param {string} name
-     * @param {any} value
-     * @returns {any}
-     */
-    add(name, value) { this._entries[name] = value; }
-}
+import { Colour } from '../view/colormappers.js';
 
 export class Transformation {
     /**
@@ -95,9 +67,8 @@ export class Binding {
         this.mode = mode;
     }
 
-    /** @param {number} atClockTime */
-    forceSynchronize(atClockTime) {
-        this.view.synchronizeWith(this.model, atClockTime);
+    forceSynchronize() {
+        this.view.synchronizeWith(this.model);
     }
 
     synchronize() {
@@ -209,7 +180,7 @@ export class Simulation {
          *   },
          *   scene?: {
          *     background?: number,
-         *     backgroundColor?: number,
+         *     backgroundColor?: Colour,
          *     scale?: number
          *   },
          *   lighting?: {
@@ -237,7 +208,7 @@ export class Simulation {
             },
             scene = {
                 background: ThreeJsScene.Background.TRANSPARENT,
-                backgroundColor: 0x0088ff,
+                backgroundColor: new Colour(0x0088ff),
                 scale: 1
             },
             lighting = {
@@ -498,11 +469,13 @@ export class Simulation {
 
     /** @param {number} timeStamp */
     _tuneIterationsPerFrame(timeStamp) {
-        if (this._framesPerSecond < this._minimumFrameRate)
-            this._iterationsPerFrame--;
+        if (this._framesPerSecond <= this._minimumFrameRate)
+            if (this._iterationsPerFrame > 5) // do not drop below 5 iterations per frame
+                this._iterationsPerFrame--;
         else
             this._iterationsPerFrame++;
-        // console.info(`${this._iterationsPerFrame} iterations/frame @${this._framesPerSecond} fps`)
+        this._viewport.bottomLeftText = `${this._iterationsPerFrame} iterations @${this._framesPerSecond} fps`;
+
         // start new measurement time interval
         this._framesPerSecond = 0;
         this._lastTime = timeStamp;
@@ -524,10 +497,9 @@ export class Simulation {
                 this._framesPerSecond++;
             }
 
-            if (this._stepFunction) {
-                this._clock.updateWith(timeStamp, this._timeScale);
+            this._clock.updateWith(timeStamp, this._timeScale);
+            if (this._stepFunction)
                 this._updatePhysics();
-            }
         }
 
         this._onFrame(timeStamp);
@@ -568,7 +540,7 @@ export class Simulation {
      * Every second the system tries to optimize the CPU/computation cycles
      * per animation frame, within the minimum required frame rate constraint.
      *
-     * @param {(clock: SimulationClock) => void} maxPerformanceFunction The function that is called.
+     * @param {(time: SimulationClock) => void} maxPerformanceFunction The function that is called.
      * @param {number} minimumFrameRate The number of times per second requestAnimationFrame() needs to be invoked.
      * @param {number} iterationsPerFrame The initial iterations per frame, that subsequently gets tuned every second!
      */
@@ -688,7 +660,7 @@ export class Simulation {
     /** @param {Event} _event */
     onUserInteraction(_event) {
         for (const binding of this._bindings)
-            binding.forceSynchronize(this._clock.clockTime);
+            binding.forceSynchronize();
     }
 
     /**

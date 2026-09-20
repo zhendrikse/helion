@@ -1,5 +1,5 @@
 import { Color, DataTexture, RGBFormat, LinearFilter } from 'three';
-import { Registry } from '../core/helion.js';
+import { Registry } from '../core/utils.js';
 
 export class Colour {
     static Red = new Colour(1, 0, 0);

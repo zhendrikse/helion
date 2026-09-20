@@ -68,7 +68,7 @@ float fbm(vec3 pos, const int numOctaves, const float iterScale, const float det
 }
 
 vec4 raytrace(vec3 rayDir, vec3 rayPos) {
-vec4 color = vec4(0);
+vec4 color = vec4(0, 0, 0, 1);
 vec3 h = cross(rayPos, rayDir);
 float h2 = dot(h, h);
 float deltaDiskRadius = outerDiskRadius - innerDiskRadius;

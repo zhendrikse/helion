@@ -105,6 +105,7 @@ export class Viewport {
 
         this.#createInfoPanel();
         this.#createFullScreenButton();
+        this.#createBottomLeftOverlay();
     }
 
     #createInfoPanel() {
@@ -136,7 +137,7 @@ export class Viewport {
 
         this._infoButton.addEventListener('click', event => {
             event.stopPropagation();
-            const visible = this._infoPanelDiv.style.visibility === 'visible';
+            const visible = this._infoPanelDiv?.style.visibility === 'visible';
             this._infoPanelDiv.style.visibility = visible ? 'hidden' : 'visible';
         });
 
@@ -185,6 +186,29 @@ export class Viewport {
         this._canvasWrapperDiv.appendChild(this._fullscreenButton);
     }
 
+    #createBottomLeftOverlay() {
+        this._bottomLeftDiv = document.createElement('div');
+        this._bottomLeftDiv.classList.add('helionBottomLeft');
+        Object.assign(this._bottomLeftDiv.style, {
+            position: 'absolute',
+            left: '8px',
+            bottom: '8px',
+            zIndex: '1000',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            background: 'rgba(0,0,0,0.35)',
+            color: '#d0d0d0',
+            fontSize: '11px',
+            fontFamily: 'monospace',
+            lineHeight: '1.2',
+            pointerEvents: 'none',
+            backdropFilter: 'blur(4px)',
+            whiteSpace: 'pre',
+            display: 'none'
+        });
+        this._canvasWrapperDiv.appendChild(this._bottomLeftDiv);
+    }
+
         // const downloadButton = document.createElement('button');
         // downloadButton.textContent = 'Download image';
         // document.body.appendChild(downloadButton);
@@ -202,9 +226,16 @@ export class Viewport {
     get controlsDiv() { return this._details; }
     get canvasWrapper() { return this._canvasWrapperDiv; }
     get canvas() { return this._canvas; }
+    get bottomLeftDiv() { return this._bottomLeftDiv; }
     get width() { return this._canvasWrapperDiv.clientWidth; }
     get height() { return this._canvasWrapperDiv.clientHeight; }
     get titleDiv() { return this._titleDiv; }
+
+    /** @param {string} text */
+    set bottomLeftText(text) {
+        this._bottomLeftDiv.style.display = text ? text : 'none';
+        this._bottomLeftDiv.textContent = text ? 'block' : '';
+    }
 
     /** @param {string} text */
     set infoPanelText(text) {

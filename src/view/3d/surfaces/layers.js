@@ -2,14 +2,14 @@ import {
     Box3, BoxGeometry, BufferAttribute, BufferGeometry, CapsuleGeometry, Color, ConeGeometry, CylinderGeometry,
     DoubleSide, DynamicDrawUsage, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Line,
     LineBasicMaterial, Material, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, SphereGeometry, Vector3
-} from "three";
-import {Renderable3D} from "../../renderer.js";
-import {DifferentialFrame} from "../../../model/math/numerics/diffgeometry.js";
-import {AdaptiveSymmetricNormalizer, ColorLayer, ColorLayers, HeightLayer, Normalizer, SurfaceResolution} from "./visualization.js";
-import {ColorMapper, ColorMappers} from "../../colormappers.js";
-import {Registry} from "../../../core/helion.js";
-import {Checkbox, DropdownMenu} from "../../../core/controls.js";
-import {Interval, Vec3} from "../../../model/math/math.js";
+} from 'three';
+import {Renderable3D} from '../../renderer.js';
+import {DifferentialFrame} from '../../../model/math/numerics/diffgeometry.js';
+import {AdaptiveSymmetricNormalizer, ColorLayer, ColorLayers, HeightLayer, Normalizer, SurfaceResolution} from './visualization.js';
+import {ColorMapper, ColorMappers} from '../../colormappers.js';
+import {Registry} from '../../../core/utils.js';
+import {Checkbox, DropdownMenu} from '../../../core/controls.js';
+import {Interval, Vec3} from '../../../model/math/math.js';
 
 export class Layer extends Renderable3D {
     static UP = new Vector3(0, 1, 0);
@@ -139,11 +139,11 @@ class MeshLayer extends Layer {
     get opacity() { return this._mesh.material.opacity; }
 
     signalRefresh() {
-        throw new Error("signalRefresh() must be implemented by subclass.");
+        throw new Error('signalRefresh() must be implemented by subclass.');
     }
 
     updateMesh(index) {
-        throw new Error("updateMesh() must be implemented by subclass.");
+        throw new Error('updateMesh() must be implemented by subclass.');
     }
 
     synchronizeWith(model) {
@@ -196,13 +196,13 @@ export class SurfaceLayer extends MeshLayer {
         this._mesh.material.opacity = opacity;
         this.add(this._mesh);
         this._positions = geometry.attributes.position.array;
-        geometry.setAttribute("color", new BufferAttribute(this._colorArray, 3));
+        geometry.setAttribute('color', new BufferAttribute(this._colorArray, 3));
     }
 
     ui() {
-        return new Checkbox("Wireframe ")
+        return new Checkbox('Wireframe ')
             .on(this)
-            .withProperty("wireframe");
+            .withProperty('wireframe');
     }
 
     set wireframe(value) { this._mesh.material.wireframe = value; }
@@ -241,17 +241,17 @@ export class SurfaceLayer extends MeshLayer {
 
 export class GlyphLayer extends MeshLayer {
     static GlyphTypes = Object.freeze({
-        BOXES: "Box",
-        CAPSULES: "Capsule",
-        CYLINDERS: "Cylinder",
-        CONES: "Cone",
-        ICOSAHEDRONS: "Icosahedron",
-        TILES: "Plane",
-        SPHERES: "Sphere"
+        BOXES: 'Box',
+        CAPSULES: 'Capsule',
+        CYLINDERS: 'Cylinder',
+        CONES: 'Cone',
+        ICOSAHEDRONS: 'Icosahedron',
+        TILES: 'Plane',
+        SPHERES: 'Sphere'
     });
 
     static Glyphs = new Registry({
-        label: "𓅓 Glyph ",
+        label: '𓅓 Glyph ',
         entries: Object.freeze({
             Box: {
                 geometry: new BoxGeometry(1, 1, 1),
@@ -342,7 +342,7 @@ export class GlyphLayer extends MeshLayer {
     ui() {
         return new DropdownMenu()
             .for(GlyphLayer.Glyphs)
-            .addEventListener("change", event => this.shape = event.target.value);
+            .addEventListener('change', event => this.shape = event.target.value);
     }
 
     initialize(model) {
@@ -369,8 +369,8 @@ export class GlyphLayer extends MeshLayer {
 
 export class PrincipalDirectionsLayer extends Layer {
     static ColorMode = Object.freeze({
-        Curvature: "curvature",
-        Direction: "direction"
+        Curvature: 'curvature',
+        Direction: 'direction'
     });
 
     constructor({
@@ -503,10 +503,10 @@ export class PrincipalDirectionsLayer extends Layer {
         const geometry = new BufferGeometry();
 
         const positions = new Float32Array(2 * 3);
-        geometry.setAttribute("position", new BufferAttribute(positions, 3));
+        geometry.setAttribute('position', new BufferAttribute(positions, 3));
 
         const colors = new Float32Array(2 * 3);
-        geometry.setAttribute("color", new BufferAttribute(colors, 3));
+        geometry.setAttribute('color', new BufferAttribute(colors, 3));
 
         return new Line(geometry, this._material);
     }
@@ -574,7 +574,7 @@ export class NormalsLayer extends Layer {
 
     #createLine() {
         const geometry = new BufferGeometry();
-        geometry.setAttribute("position", new BufferAttribute(new Float32Array(6), 3));
+        geometry.setAttribute('position', new BufferAttribute(new Float32Array(6), 3));
         return new Line(geometry, this._material);
     }
 
@@ -666,10 +666,10 @@ export class ContoursLayer extends Layer {
         const geometry = new BufferGeometry();
 
         const positions = new Float32Array((this._contourSegments + 1) * 3);
-        geometry.setAttribute("position", new BufferAttribute(positions, 3));
+        geometry.setAttribute('position', new BufferAttribute(positions, 3));
 
         const colors = new Float32Array((this._contourSegments + 1) * 3);
-        geometry.setAttribute("color", new BufferAttribute(colors, 3));
+        geometry.setAttribute('color', new BufferAttribute(colors, 3));
 
         return new Line(geometry, this._material);
     }

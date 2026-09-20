@@ -263,4 +263,5 @@ Simulation.with({
         .withValue(ColorMappers.Inferno)
         // @ts-ignore
         .onChange(event => curlView._colorMapper = ColorMappers.get(event.target.value)))
-    .append(configuration.ui());
+    .append(configuration.ui())
+    .start();
