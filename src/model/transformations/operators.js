@@ -1,9 +1,9 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { Range, Vec3} from '../math/math.js';
 import {CompoundControl, Slider} from '../../core/controls.js';
-import { Shapes, ShapesFactory} from '../math/shapes.js';
+import { ShapeConfiguration, Shapes, ShapesFactory} from '../math/shapes.js';
 import {Transformation} from '../../core/helion.js';
-import { DiscreteScalarField } from '../math/fields.js';
+import { DiscreteComplexField, DiscreteScalarField } from '../math/fields.js';
 
 export class DiamondSquareOperator extends Transformation {
     /**
@@ -276,10 +276,10 @@ export class DoubleSlitOperator extends Transformation {
 
 export class Potential extends Transformation {
     /**
-     * @param {ShapeConfiguration } shapeConfiguration
+     * @param {ShapeConfiguration} shapeConfiguration
      * @param {number} reflectionStrength
      */
-    constructor(shapeConfiguration = Shapes.DoubleSlit, reflectionStrength = 0.1) {
+    constructor(shapeConfiguration, reflectionStrength = 0.1) {
         super();
         this._shapeConfiguration = shapeConfiguration;
         this._reflectionStrength = reflectionStrength;
