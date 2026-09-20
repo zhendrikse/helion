@@ -2,6 +2,165 @@ import { DiscreteComplexField, DiscreteScalarField } from '../../fields.js';
 import {Complex} from '../../math.js';
 import {Solver} from './solvers.js';
 
+
+/**
+ * Matrix-free 3D finite-difference Schrödinger eigenstate solver.
+ *
+ * This is intentionally a small reference implementation for stationary
+ * quantum states. It uses imaginary-time propagation with Gram-Schmidt
+ * deflation, making it useful as a baseline before introducing Lanczos/LOBPCG.
+ */
+export class SchrodingerEigenstateSolver3D extends Solver {
+    constructor({
+        potential = new DiscreteScalarField3D(),
+        spacing = 1,
+        hbar = 1,
+        mass = 1,
+        states = 1,
+        iterations = 400,
+        dt = 0.002
+    } = {}) {
+        super();
+        this._potential = potential;
+        this._spacing = spacing;
+        this._hbar = hbar;
+        this._mass = mass;
+        this._states = states;
+        this._iterations = iterations;
+        this._dt = dt;
+        this.reset();
+    }
+
+    get stateCount() { return this._eigenstates.length; }
+    get energies() { return this._eigenvalues; }
+
+    eigenstateAt(index) {
+        if (index < 0 || index >= this._eigenstates.length)
+            throw new RangeError(`Eigenstate index out of range: ${index}`);
+        return this._eigenstates[index];
+    }
+
+    reset() {
+        this._eigenstates = [];
+        this._eigenvalues = [];
+    }
+
+    initialize(psi, dt = this._dt) {
+        this.reset();
+
+        if (this._potential.nx !== psi.nx ||
+            this._potential.ny !== psi.ny ||
+            this._potential.nz !== psi.nz)
+            throw new Error('Schrödinger 3D potential and wavefunction grids must have the same dimensions.');
+
+        for (let state = 0; state < this._states; state++)
+            this._createEigenState(state, psi, dt);
+
+        return this;
+    }
+
+    _createEigenState(state, psi, dt) {
+        const { nx, ny, nz } = psi;
+        const size = nx * ny * nz;
+        const psiState = new Float64Array(size);
+        const cx = (nx - 1) / 2;
+        const cy = (ny - 1) / 2;
+        const cz = (nz - 1) / 2;
+        const width = this._spacing * 2.0;
+
+        for (let z = 1; z < nz - 1; z++)
+            for (let y = 1; y < ny - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    const dx = (x - cx) * this._spacing;
+                    const dy = (y - cy) * this._spacing;
+                    const dz = (z - cz) * this._spacing;
+                    const r2 = dx * dx + dy * dy + dz * dz;
+                    psiState[this._index(x, y, z)] =
+                        Math.exp(-r2 / (2 * width * width));
+                }
+
+        this._orthogonalize(psiState);
+        this._normalize(psiState);
+
+        for (let iteration = 0; iteration < this._iterations; iteration++) {
+            const hPsi = this._applyHamiltonian(psiState);
+            for (let i = 0; i < size; i++)
+                psiState[i] -= dt * hPsi[i];
+
+            this._orthogonalize(psiState);
+            this._normalize(psiState);
+        }
+
+        this._eigenstates.push(psiState);
+        this._eigenvalues.push(this._rayleighQuotient(psiState));
+    }
+
+    _index(x, y, z) {
+        return z * this._potential.nx * this._potential.ny +
+            y * this._potential.nx + x;
+    }
+
+    _applyHamiltonian(psi) {
+        const { nx, ny, nz } = this._potential;
+        const h2 = this._spacing * this._spacing;
+        const kinetic = this._hbar * this._hbar / (2 * this._mass);
+        const hPsi = new Float64Array(psi.length);
+
+        for (let z = 1; z < nz - 1; z++)
+            for (let y = 1; y < ny - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    const i = this._index(x, y, z);
+                    const laplacian =
+                        (psi[i - 1] + psi[i + 1] +
+                         psi[i - nx] + psi[i + nx] +
+                         psi[i - nx * ny] + psi[i + nx * ny] -
+                         6 * psi[i]) / h2;
+
+                    hPsi[i] = -kinetic * laplacian +
+                        this._potential.data[i] * psi[i];
+                }
+
+        return hPsi;
+    }
+
+    _orthogonalize(psi) {
+        for (const state of this._eigenstates) {
+            let projection = 0;
+            for (let i = 0; i < psi.length; i++)
+                projection += psi[i] * state[i];
+
+            for (let i = 0; i < psi.length; i++)
+                psi[i] -= projection * state[i];
+        }
+    }
+
+    _normalize(psi) {
+        let normSquared = 0;
+        for (const value of psi)
+            normSquared += value * value;
+
+        const norm = Math.sqrt(normSquared);
+        if (norm === 0)
+            throw new Error('SchrodingerEigenstateSolver3D produced a zero state.');
+
+        for (let i = 0; i < psi.length; i++)
+            psi[i] /= norm;
+    }
+
+    _rayleighQuotient(psi) {
+        const hPsi = this._applyHamiltonian(psi);
+        let numerator = 0;
+        let denominator = 0;
+
+        for (let i = 0; i < psi.length; i++) {
+            numerator += psi[i] * hPsi[i];
+            denominator += psi[i] * psi[i];
+        }
+
+        return numerator / denominator;
+    }
+}
+
 /**
  * The solver works with the wavefunction arrays.
  * Note that times are staggered, with the imaginary parts always
