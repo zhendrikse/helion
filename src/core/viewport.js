@@ -233,8 +233,8 @@ export class Viewport {
 
     /** @param {string} text */
     set bottomLeftText(text) {
-        this._bottomLeftDiv.style.display = text ? text : 'none';
-        this._bottomLeftDiv.textContent = text ? 'block' : '';
+        this._bottomLeftDiv.style.display = text ? 'block' : '';
+        this._bottomLeftDiv.textContent = text ? text : 'none';
     }
 
     /** @param {string} text */
