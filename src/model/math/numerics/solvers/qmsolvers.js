@@ -40,6 +40,95 @@ export class SchrodingerEigenstateSolver3D extends Solver {
         return this._eigenstates[index];
     }
 
+    /**
+     * Measure how well an eigenstate satisfies Hψ = Eψ and how
+     * closely its amplitude follows spherical symmetry.
+     *
+     * @param {number} index
+     * @param {{ radialBins?: number }} [options]
+     * @returns {{ energy: number, residual: number, radialSymmetryError: number }}
+     */
+    diagnosticsFor(index, { radialBins = 24 } = {}) {
+        const psi = this.eigenstateAt(index);
+        const energy = this._eigenvalues[index];
+        const hPsi = this._applyHamiltonian(psi);
+        const { nx, ny, nz } = this._potential;
+        const cx = (nx - 1) / 2;
+        const cy = (ny - 1) / 2;
+        const cz = (nz - 1) / 2;
+
+        let residualSquared = 0;
+        let normSquared = 0;
+        let maximumRadius = 0;
+
+        for (let z = 1; z < nz - 1; z++)
+            for (let y = 1; y < ny - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    const i = this._index(x, y, z);
+                    const difference = hPsi[i] - energy * psi[i];
+                    residualSquared += difference * difference;
+                    normSquared += psi[i] * psi[i];
+
+                    const dx = (x - cx) * this._spacing;
+                    const dy = (y - cy) * this._spacing;
+                    const dz = (z - cz) * this._spacing;
+                    maximumRadius = Math.max(
+                        maximumRadius,
+                        Math.sqrt(dx * dx + dy * dy + dz * dz)
+                    );
+                }
+
+        const residual = Math.sqrt(residualSquared / normSquared);
+        const binWidth = maximumRadius / radialBins;
+        const sums = new Float64Array(radialBins);
+        const counts = new Uint32Array(radialBins);
+
+        for (let z = 1; z < nz - 1; z++)
+            for (let y = 1; y < ny - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    const i = this._index(x, y, z);
+                    const dx = (x - cx) * this._spacing;
+                    const dy = (y - cy) * this._spacing;
+                    const dz = (z - cz) * this._spacing;
+                    const radius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    const bin = Math.min(radialBins - 1, Math.floor(radius / binWidth));
+                    sums[bin] += Math.abs(psi[i]);
+                    counts[bin]++;
+                }
+
+        const means = new Float64Array(radialBins);
+        for (let bin = 0; bin < radialBins; bin++)
+            if (counts[bin] > 0)
+                means[bin] = sums[bin] / counts[bin];
+
+        let symmetrySquared = 0;
+        let symmetryCount = 0;
+
+        for (let z = 1; z < nz - 1; z++)
+            for (let y = 1; y < ny - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    const i = this._index(x, y, z);
+                    const dx = (x - cx) * this._spacing;
+                    const dy = (y - cy) * this._spacing;
+                    const dz = (z - cz) * this._spacing;
+                    const radius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    const bin = Math.min(radialBins - 1, Math.floor(radius / binWidth));
+                    if (counts[bin] === 0 || means[bin] === 0)
+                        continue;
+
+                    const difference = Math.abs(psi[i]) - means[bin];
+                    symmetrySquared += difference * difference;
+                    symmetryCount++;
+                }
+
+        const radialSymmetryError = symmetryCount === 0
+            ? 0
+            : Math.sqrt(symmetrySquared / symmetryCount) /
+              Math.max(means[0], 1e-12);
+
+        return { energy, residual, radialSymmetryError };
+    }
+
     reset() {
         this._eigenstates = [];
         this._eigenvalues = [];
