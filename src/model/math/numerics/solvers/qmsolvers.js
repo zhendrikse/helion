@@ -153,7 +153,14 @@ export class SchrodingerEigenstateSolver3D extends Solver {
                     const dy = (y - cy) * this._spacing;
                     const dz = (z - cz) * this._spacing;
                     const r2 = dx * dx + dy * dy + dz * dz;
-                    psiState[this._index(x, y, z)] = Math.exp(-r2 / (2 * width * width));
+                    const gaussian = Math.exp(-r2 / (2 * width * width));
+                    const angularFactor =
+                        state === 0 ? 1 :
+                        state === 1 ? dx :
+                        state === 2 ? dy :
+                        dz;
+
+                    psiState[this._index(x, y, z)] = gaussian * angularFactor;
                 }
 
         this._orthogonalize(psiState);
