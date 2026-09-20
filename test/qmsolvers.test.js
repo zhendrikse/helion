@@ -68,3 +68,29 @@ test('3D eigenstate diagnostics detect directional asymmetry', () => {
 
     assert.ok(diagnostics.radialSymmetryError > 0.01, 'RadiaSymmetryError >= 1e-2');
 });
+
+test('3D excited-state seeds preserve 2p nodal symmetry', () => {
+    const nx = 15;
+    const potential = new DiscreteScalarField3D({ nx, ny: nx, nz: nx });
+    const psi = new DiscreteComplexField3D({ nx, ny: nx, nz: nx });
+    const solver = new SchrodingerEigenstateSolver3D({
+        potential,
+        spacing: 1,
+        states: 2,
+        iterations: 180,
+        dt: 0.01
+    });
+
+    solver.initialize(psi);
+
+    const state = solver.eigenstateAt(1);
+    const center = (nx - 1) / 2;
+
+    for (let y = 3; y < nx - 3; y++)
+        for (let z = 3; z < nx - 3; z++)
+            for (let dx = 1; dx <= 3; dx++) {
+                const left = state[psi.index(center - dx, y, z)];
+                const right = state[psi.index(center + dx, y, z)];
+                assert.ok(Math.abs(left + right) < 1e-6);
+            }
+});
