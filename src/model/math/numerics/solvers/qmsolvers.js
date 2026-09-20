@@ -40,6 +40,87 @@ export class SchrodingerEigenstateSolver3D extends Solver {
         return this._eigenstates[index];
     }
 
+    /**
+     * Measure how well an eigenstate satisfies Hψ = Eψ and how
+     * closely its amplitude follows spherical symmetry.
+     *
+     * Spherical symmetry is measured on the discrete Cartesian grid by
+     * comparing points that have exactly the same distance from the grid
+     * centre. This avoids introducing an arbitrary radial bin width.
+     *
+     * @param {number} index
+     * @returns {{ energy: number, residual: number, radialSymmetryError: number }}
+     */
+    diagnosticsFor(index) {
+        const psi = this.eigenstateAt(index);
+        const energy = this._eigenvalues[index];
+        const hPsi = this._applyHamiltonian(psi);
+        const { nx, ny, nz } = this._potential;
+        const cx = (nx - 1) / 2;
+        const cy = (ny - 1) / 2;
+        const cz = (nz - 1) / 2;
+
+        let residualSquared = 0;
+        let normSquared = 0;
+
+        for (let z = 1; z < nz - 1; z++)
+            for (let y = 1; y < ny - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    const i = this._index(x, y, z);
+                    const difference = hPsi[i] - energy * psi[i];
+                    residualSquared += difference * difference;
+                    normSquared += psi[i] * psi[i];
+                }
+
+        const residual = Math.sqrt(residualSquared / normSquared);
+
+        const shellSums = new Map();
+        const shellCounts = new Map();
+
+        for (let z = 1; z < nz - 1; z++)
+            for (let y = 1; y < ny - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    const dx = x - cx;
+                    const dy = y - cy;
+                    const dz = z - cz;
+                    const radiusSquared = dx * dx + dy * dy + dz * dz;
+                    const amplitude = Math.abs(psi[this._index(x, y, z)]);
+
+                    shellSums.set(
+                        radiusSquared,
+                        (shellSums.get(radiusSquared) ?? 0) + amplitude
+                    );
+                    shellCounts.set(
+                        radiusSquared,
+                        (shellCounts.get(radiusSquared) ?? 0) + 1
+                    );
+                }
+
+        let symmetrySquared = 0;
+        let symmetryCount = 0;
+
+        for (let z = 1; z < nz - 1; z++)
+            for (let y = 1; y < ny - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    const dx = x - cx;
+                    const dy = y - cy;
+                    const dz = z - cz;
+                    const radiusSquared = dx * dx + dy * dy + dz * dz;
+                    const mean = shellSums.get(radiusSquared) / shellCounts.get(radiusSquared);
+                    const difference = Math.abs(psi[this._index(x, y, z)]) - mean;
+
+                    symmetrySquared += difference * difference;
+                    symmetryCount++;
+                }
+
+        const radialSymmetryError = symmetryCount === 0
+            ? 0
+            : Math.sqrt(symmetrySquared / symmetryCount) /
+              Math.max(Math.sqrt(normSquared / symmetryCount), 1e-12);
+
+        return { energy, residual, radialSymmetryError };
+    }
+
     reset() {
         this._eigenstates = [];
         this._eigenvalues = [];

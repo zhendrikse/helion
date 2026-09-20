@@ -55,7 +55,10 @@ const orbital = new WaveFunctionOrbital3D({
 psi.real.set(solver.eigenstateAt(0));
 psi.imag.fill(0);
 
-console.log('Hydrogen-like 1s energy:', solver.energies[0]);
+const diagnostics = solver.diagnosticsFor(0);
+console.log('Hydrogen-like 1s energy:', diagnostics.energy);
+console.log('1s eigenstate residual:', diagnostics.residual);
+console.log('1s radial symmetry error:', diagnostics.radialSymmetryError);
 
 const simulation = Simulation
     .with({
