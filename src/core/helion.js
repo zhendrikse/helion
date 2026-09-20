@@ -368,6 +368,20 @@ export class Simulation {
         this._hud.show('Click to start the simulation');
     }
 
+    /** Show a message over the simulation viewport. */
+    showHud(text, duration = -1) {
+        if (!this._hud)
+            this._initHud();
+        this._hud.show(text, duration);
+        return this;
+    }
+
+    /** Hide the message over the simulation viewport. */
+    hideHud() {
+        this._hud?.hide();
+        return this;
+    }
+
     /**
      * Influences how much simulation time passes per second.
      *

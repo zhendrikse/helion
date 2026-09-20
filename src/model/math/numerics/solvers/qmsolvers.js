@@ -129,10 +129,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
     initialize(psi, dt = 0.002) {
         this.reset();
 
-        if (this._potential.nx !== psi.nx ||
-            this._potential.ny !== psi.ny ||
-            this._potential.nz !== psi.nz)
-            throw new Error('Schrödinger 3D potential and wavefunction grids must have the same dimensions.');
+        this._validateWaveFunction(psi);
 
         for (let state = 0; state < this._states; state++)
             this._createEigenState(state, psi, dt);
@@ -140,10 +137,81 @@ export class SchrodingerEigenstateSolver3D extends Solver {
         return this;
     }
 
+    /**
+     * Compute eigenstates while periodically yielding to the browser, so a UI
+     * can render progress updates during long-running calculations.
+     *
+     * @param {DiscreteComplexField3D} psi
+     * @param {number} dt
+     * @param {{yieldEvery?: number, onProgress?: (progress: {completedIterations: number, totalIterations: number, percent: number}) => void}} options
+     */
+    async initializeAsync(psi, dt = 0.002, {
+        yieldEvery = 25,
+        onProgress = () => {}
+    } = {}) {
+        this.reset();
+        this._validateWaveFunction(psi);
+
+        const totalIterations = this._states * this._iterations;
+        let completedIterations = 0;
+        const reportProgress = () => onProgress({
+            completedIterations,
+            totalIterations,
+            percent: totalIterations === 0 ? 1 : completedIterations / totalIterations
+        });
+
+        reportProgress();
+        for (let state = 0; state < this._states; state++) {
+            const psiState = this._initialStateFor(state, psi);
+
+            for (let iteration = 0; iteration < this._iterations; iteration++) {
+                const hPsi = this._applyHamiltonian(psiState);
+                for (let i = 0; i < psiState.length; i++)
+                    psiState[i] -= dt * hPsi[i];
+
+                this._orthogonalize(psiState);
+                this._normalize(psiState);
+                completedIterations++;
+
+                if (completedIterations % yieldEvery === 0 || completedIterations === totalIterations) {
+                    reportProgress();
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+            }
+
+            this._eigenstates.push(psiState);
+            this._eigenvalues.push(this._rayleighQuotient(psiState));
+        }
+
+        return this;
+    }
+
     _createEigenState(state, psi, dt) {
+        const psiState = this._initialStateFor(state, psi);
+
+        for (let iteration = 0; iteration < this._iterations; iteration++) {
+            const hPsi = this._applyHamiltonian(psiState);
+            for (let i = 0; i < psiState.length; i++)
+                psiState[i] -= dt * hPsi[i];
+
+            this._orthogonalize(psiState);
+            this._normalize(psiState);
+        }
+
+        this._eigenstates.push(psiState);
+        this._eigenvalues.push(this._rayleighQuotient(psiState));
+    }
+
+    _validateWaveFunction(psi) {
+        if (this._potential.nx !== psi.nx ||
+            this._potential.ny !== psi.ny ||
+            this._potential.nz !== psi.nz)
+            throw new Error('Schrödinger 3D potential and wavefunction grids must have the same dimensions.');
+    }
+
+    _initialStateFor(state, psi) {
         const { nx, ny, nz } = psi;
-        const size = nx * ny * nz;
-        const psiState = new Float64Array(size);
+        const psiState = new Float64Array(nx * ny * nz);
         const cx = (nx - 1) / 2;
         const cy = (ny - 1) / 2;
         const cz = (nz - 1) / 2;
@@ -168,18 +236,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
 
         this._orthogonalize(psiState);
         this._normalize(psiState);
-
-        for (let iteration = 0; iteration < this._iterations; iteration++) {
-            const hPsi = this._applyHamiltonian(psiState);
-            for (let i = 0; i < size; i++)
-                psiState[i] -= dt * hPsi[i];
-
-            this._orthogonalize(psiState);
-            this._normalize(psiState);
-        }
-
-        this._eigenstates.push(psiState);
-        this._eigenvalues.push(this._rayleighQuotient(psiState));
+        return psiState;
     }
 
     _index(x, y, z) {
