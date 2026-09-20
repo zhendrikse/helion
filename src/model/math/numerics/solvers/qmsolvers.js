@@ -1,6 +1,6 @@
-import { DiscreteComplexField, DiscreteScalarField } from "../../fields.js";
-import {Complex} from "../../math.js";
-import {Solver} from "./solvers.js";
+import { DiscreteComplexField, DiscreteScalarField } from '../../fields.js';
+import {Complex} from '../../math.js';
+import {Solver} from './solvers.js';
 
 /**
  * The solver works with the wavefunction arrays.
@@ -9,6 +9,16 @@ import {Solver} from "./solvers.js";
  * Also note that these are 1D arrays, with index i = y*xMax + x, for efficiency.
  */
 export class SchrodingerEigenstateSolver extends Solver {
+    /**
+     * @param {{
+     * potential?: DiscreteScalarField
+     * spacing?: number
+     * hbar?: number
+     * mass?: number
+     * states?: number
+     * iterations?: number
+     * }} param0 
+     */
     constructor({
         potential = new DiscreteScalarField(),
         spacing = 1,
@@ -18,6 +28,10 @@ export class SchrodingerEigenstateSolver extends Solver {
         iterations = 1200
     } = {}) {
         super();
+        /**@type {Float64Array[]} */
+        this._eigenstates = [];
+        /**  @type {number[]} */
+        this._eigenvalues = [];
         this._potential = potential;
         this._spacing = spacing;
         this._hbar = hbar;
@@ -32,6 +46,7 @@ export class SchrodingerEigenstateSolver extends Solver {
     get energies() { return this._eigenvalues; }
     get eigenstates() { return this._eigenstates; }
 
+    /** @param {number} index */
     eigenstateAt(index) {
         if (index < 0 || index >= this._eigenstates.length)
             throw new RangeError(`Eigenstate index out of range: ${index}`);
@@ -43,6 +58,12 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._eigenstates = [];
     }
 
+    /**
+     * @param {number} state
+     * @param {DiscreteComplexField} waveFunction
+     * @param {Float64Array<ArrayBuffer>[]} previousStates
+     * @param {number} dt
+     */
     _createEigenState(state, waveFunction, previousStates, dt) {
         const nx = waveFunction.nx;
         const ny = waveFunction.ny;
@@ -88,12 +109,14 @@ export class SchrodingerEigenstateSolver extends Solver {
             throw new Error(`Schrödinger potential (${this._potential.nx} x ${this._potential.nx}) ` +
                 `and wavefunction psi (${psi.nx} x ${psi.ny}) grids must have the same dimensions.`);
 
+        /** @type {Float64Array<ArrayBuffer>[]} */
         const previousStates = [];
         for (let state = 0; state < this._states; state++)
             this._createEigenState(state, psi, previousStates, dt);
         return this;
     }
 
+    /**  @param {Float64Array<ArrayBuffer>} psi */
     _applyHamiltonian(psi) {
         const nx = this._potential.nx;
         const ny = this._potential.ny;
@@ -113,6 +136,10 @@ export class SchrodingerEigenstateSolver extends Solver {
         return hPsi;
     }
 
+    /**
+     * @param {Float64Array<ArrayBuffer>} psi
+     * @param {Float64Array<ArrayBuffer>[]} states
+     */
     _orthogonalize(psi, states) {
         for (const state of states) {
             let projection = 0;
@@ -125,6 +152,7 @@ export class SchrodingerEigenstateSolver extends Solver {
         }
     }
 
+    /**  @param {Float64Array<ArrayBuffer>} psi */
     _normalize(psi) {
         let normSquared = 0;
 
@@ -139,6 +167,7 @@ export class SchrodingerEigenstateSolver extends Solver {
             psi[i] /= norm;
     }
 
+    /** @param {Float64Array<ArrayBuffer>} psi */
     _rayleighQuotient(psi) {
         const hPsi = this._applyHamiltonian(psi);
         let numerator = 0;
@@ -153,7 +182,6 @@ export class SchrodingerEigenstateSolver extends Solver {
     }
 }
 
-
 /**
  * The solver works with the wavefunction arrays.
  * Note that times are staggered, with the imaginary parts always
@@ -161,6 +189,9 @@ export class SchrodingerEigenstateSolver extends Solver {
  * Also note that these are 1D arrays, with index i = y*xMax + x, for efficiency.
  */
 export class SchrodingerSolver extends Solver {
+    /**
+     * @param {{ potential?: DiscreteScalarField }} param0 
+     */
     constructor({
         potential = new DiscreteScalarField()
     }) {
@@ -233,13 +264,22 @@ export class WaveFunctionEigenStateSolver extends Solver {
     static hbar = 1;
     static mass = 1;
 
+    /**
+     * @param {{
+     * spacing?: number
+     * size?: number
+     * }} param0 
+     */
     constructor({
         size = 20,
         spacing = 10
     } = {}) {
         super();
+        /** @type {Object.<string, number[][]>} */
         this._eigenstates = {};
+        /** @type {Object.<string, number>} */
         this._coefs = {}
+        /** @type {Object.<string, number>} */
         this._omegas = {}
         this._omega0 = WaveFunctionEigenStateSolver.hbar * Math.PI * Math.PI /
             (2 * WaveFunctionEigenStateSolver.mass * spacing * spacing);
@@ -251,6 +291,11 @@ export class WaveFunctionEigenStateSolver extends Solver {
         this._computeCoefficients(this._computePsi0(NA2), NA2);
     }
 
+    /**
+     * @param {DiscreteComplexField} psi
+     * @param {number} i
+     * @param {number} j
+     */
     _updatePsiValueAt(psi, i, j) {
         let updatedPsi = new Complex(0, 0);
         for (let key in this._eigenstates) {
@@ -263,7 +308,9 @@ export class WaveFunctionEigenStateSolver extends Solver {
         psi.imag[psi.index(i, j)] = updatedPsi.im;
     }
 
+    /** @param {number} NA2 */
     _computePsi0(NA2) {
+        /** @type {number[][]} */
         const psi0 = [];
         let norm0 = 0;
 
@@ -280,9 +327,13 @@ export class WaveFunctionEigenStateSolver extends Solver {
         return psi0;
     }
 
+    /**
+     * @param {number[][]} psi0
+     * @param {number} NA2
+     */
     _computeCoefficients(psi0, NA2) {
         for (let key in this._eigenstates) {
-            const [nx, ny] = key.split(",").map(Number)
+            const [nx, ny] = key.split(',').map(Number)
             const basis = this._eigenstates[key]
 
             let c = 0
@@ -295,6 +346,10 @@ export class WaveFunctionEigenStateSolver extends Solver {
         }
     }
 
+    /**
+     * @param {number[][]} psi
+     * @param {number} norm
+     */
     _normalize(psi, norm) {
         const norm0 = Math.sqrt(norm)
         for (let i = 0; i < this._size; i++)
@@ -304,7 +359,13 @@ export class WaveFunctionEigenStateSolver extends Solver {
         return psi;
     }
 
+    /**
+     * @param {number} nx
+     * @param {number} ny
+     * @param {number} spacing
+     */
     _computeEigenstate(nx, ny, spacing) {
+        /** @type {number[][]} */
         const psi = [];
         let norm = 0;
 
@@ -324,10 +385,14 @@ export class WaveFunctionEigenStateSolver extends Solver {
         return psi;
     }
 
+    /**
+     * @param {number} spacing
+     * @param {number} NA2
+     */
     _computeEigenstates(spacing, NA2) {
         for (let nx = 1; nx <= NA2; nx++)
             for (let ny = 1; ny <= NA2; ny++)
-                this._eigenstates[nx + "," + ny] = this._computeEigenstate(nx, ny, spacing);
+                this._eigenstates[nx + ',' + ny] = this._computeEigenstate(nx, ny, spacing);
     }
 
     /**
