@@ -216,7 +216,7 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
     constructor({
         zScale = 20,
         showPhaseColor = true,
-        brightness = 1.5,
+        brightness = 1,
         colorMapper = ComplexColorMappers.get(ComplexColorMappers.Domain),
         defaultResolution = new SurfaceResolution(400, 400)
     } = {}) {

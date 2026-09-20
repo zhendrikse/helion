@@ -1,17 +1,16 @@
 import {
     WaveFunctionSurface3D, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
-    SchrodingerSolver, GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField,
-    ShapeConfiguration, Softness, Potential, ComplexSurfaceView2D, DiscreteFieldSurfaceView, SurfaceResolution,
+    GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField, SchrodingerSolver,
+    ShapeConfiguration, Softness, Potential, ComplexSurfaceView2D, DiscreteFieldSurfaceView
 } from '../../../src/index.js';
 
-let xMax = 400,
-    width = xMax,
-    height = xMax;
+const NX = 400;
+const NY = 400;
 const dt = 0.24;		// anything less than 0.25 seems to be stable
 
-const potential = new DiscreteScalarField({ nx: xMax, ny: xMax });
-const psi = new DiscreteComplexField({ nx: xMax, ny: xMax });
-const solver = new SchrodingerSolver(potential);
+const potential = new DiscreteScalarField({ nx: NX, ny: NY });
+const psi = new DiscreteComplexField({ nx: NX, ny: NY });
+const solver = new SchrodingerSolver({potential});
 const gaussianImpulse = new GaussianImpulseComplex2D();
 
 /**
@@ -31,7 +30,7 @@ function reset(shapeConfig, potentialStrength, softness) {
 }
 
 const waveFunctionSurface = new WaveFunctionSurface3D();
-const potentialBarrier = new DiscreteFieldBoxView({ width, height });
+const potentialBarrier = new DiscreteFieldBoxView({ width: NX, height: NY });
 
 const waveFunctionSurface2d = new ComplexSurfaceView2D();
 const potentialBarrier2d = new DiscreteFieldSurfaceView();

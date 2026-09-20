@@ -28,7 +28,7 @@ const psi = new DiscreteComplexField({ nx: N, ny: N });
 const solver = new SchrodingerEigenstateSolver({
     potential,
     spacing,
-    states: 6,
+    states: 10,
     hbar: 1,
     mass: 1,
     iterations: 900,
@@ -38,7 +38,7 @@ potential.apply(new GaussianPotential());
 solver.initialize(psi);
 
 const waveFunction = new WaveFunctionSurface3D({
-    zScale: 35,
+    zScale: 3,
     brightness: 1.5
 });
 
@@ -52,7 +52,7 @@ const simulation = Simulation
     .with({
         htmlDivId: 'qmsolveEigenstates',
         viewport: {
-            aspectRatio: '19/12'
+            aspectRatio: '4/3'
         },
         headUpDisplay: {
             enabled: false
@@ -65,7 +65,7 @@ const simulation = Simulation
         .addEventListener('input', event => showState(Number(event.target.value)))
     )
     .append(new Slider('📐 Height scale')
-        .withRange(new Range(5, 60, 1))
+        .withRange(new Range(1, 10, .1))
         .withValue(waveFunction.zScale)
         .on(waveFunction)
         .withProperty('zScale')

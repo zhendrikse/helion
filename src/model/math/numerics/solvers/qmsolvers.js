@@ -87,7 +87,8 @@ export class SchrodingerEigenstateSolver extends Solver {
     initialize(psi) {
         this.reset();
         if (this._potential.nx !== psi.nx || this._potential.ny !== psi.ny)
-            throw new Error("Schrödinger potential and wavefunction grids must have the same dimensions.");
+            throw new Error(`Schrödinger potential (${this._potential.nx} x ${this._potential.nx}) ` +
+                `and wavefunction psi (${psi.nx} x ${psi.ny}) grids must have the same dimensions.`);
 
         const previousStates = [];
         for (let state = 0; state < this._states; state++)
@@ -154,11 +155,81 @@ export class SchrodingerEigenstateSolver extends Solver {
     }
 }
 
+
 /**
- * Backwards-compatible alias for the eigenstate solver.
- * @deprecated Use SchrodingerEigenstateSolver.
+ * The solver works with the wavefunction arrays.
+ * Note that times are staggered, with the imaginary parts always
+ * one time step behind the corresponding real parts.  This is admittedly confusing.
+ * Also note that these are 1D arrays, with index i = y*xMax + x, for efficiency.
  */
-export class SchrodingerSolver extends SchrodingerEigenstateSolver {}
+export class SchrodingerSolver extends Solver {
+    constructor({
+        potential = new DiscreteScalarField()
+    }) {
+        super();
+        this._potential = potential;
+
+        this._nextRe = null;
+        this._nextIm = null;
+    }
+
+    reset() {
+        this._nextRe?.fill(0);
+        this._nextIm?.fill(0);
+    }
+
+    /**
+     * Bump the imaginary part of psi back by one time step.
+     * @param {DiscreteComplexField} psi
+     * @param {number} dt
+     */
+    initialize(psi, dt) {
+        const re = psi.real;
+        const im = psi.imag;
+        const V = this._potential.data;
+        const w = psi.nx;
+
+        for (let x = 1; x < psi.nx - 1; x++)
+            for (let y = 1; y < psi.ny - 1; y++) {
+                const i = y * w + x;
+                im[i] += 0.5 * dt * (-re[i + 1] -re[i - 1] -re[i + w] -re[i - w] + 2 * (2 + V[i]) * re[i]);
+            }
+    }
+
+    /**
+     * Integrate the TDSE for a double time step (centered-difference time integration).
+     * (Remember that psi.im is one time step earlier than psi.re; same for psiNext.im and psiNext.re.)
+     *
+     * @param {DiscreteComplexField} psi
+     * @param {number} dt
+     */
+    step(psi, dt) {
+        const w = psi.nx;
+        const re = psi.real;
+        const im = psi.imag;
+
+        this._nextRe = this._nextRe === null ? new Float32Array(psi.nx * psi.ny) : this._nextRe;
+        this._nextIm = this._nextIm === null ? new Float32Array(psi.nx * psi.ny) : this._nextIm;
+        const reNext = this._nextRe;
+        const imNext = this._nextIm;
+
+        const V = this._potential.data;
+        for (let x= 1; x < psi.nx - 1; x++)
+            for (let y = 1; y < psi.ny - 1; y++) {
+                const i = y * w + x;
+                imNext[i] = im[i] - dt * (-re[i+1] - re[i-1] - re[i+w] - re[i-w] + 2 * (2 + V[i]) * re[i]);
+            }
+
+        for (let x= 1; x < w - 1; x++)
+            for (let y = 1; y < w - 1; y++) {
+                const i = y * w + x;
+                reNext[i] = re[i] + dt * (-imNext[i+1] - imNext[i-1] - imNext[i+w] - imNext[i-w] + 2*(2+V[i])*imNext[i]);
+            }
+
+        [psi.real, this._nextRe] = [this._nextRe, psi.real];
+        [psi.imag, this._nextIm] = [this._nextIm, psi.imag];
+    }
+}
 
 export class WaveFunctionEigenStateSolver extends Solver {
     static hbar = 1;
