@@ -194,7 +194,7 @@ export class Aquarium extends Mesh {
         size = new Vec3(1, 1, 1),
         opacity = 0.35,
         contentColor = new Colour(.1, .3, .78),
-        frameColor = Colour.fromHex(0xaa9900)
+        frameColor = new Colour(0xaa9900)
     } = {}) {
         const geometry = new BoxGeometry(1, 1, 1);
         const material = new MeshStandardMaterial({

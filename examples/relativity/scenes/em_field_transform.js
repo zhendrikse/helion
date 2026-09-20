@@ -135,17 +135,17 @@ const simulation = Simulation
     .bind(wireSp.onceWith(new Cylinder({ color: Colour.White })))
     .bind(chargeS.alwaysWith(new Sphere({ color: Colour.Red })))
     .bind(chargeSp.alwaysWith(new Sphere({ color: Colour.Red })))
-    .bind(chargeS.alwaysWith(new Trail({ color: Colour.fromHex(0xff4444), maxPoints: 400 })))
-    .bind(chargeSp.alwaysWith(new Trail({ color: Colour.fromHex(0xff8888), maxPoints: 400 })));
+    .bind(chargeS.alwaysWith(new Trail({ color: new Colour(0xff4444), maxPoints: 400 })))
+    .bind(chargeSp.alwaysWith(new Trail({ color: new Colour(0xff8888), maxPoints: 400 })));
 
 /** @param {number} y0 */
 function addRingsAndArrows(y0) {
     const xs = [-6, -2, 2, 6];
     for (const x of xs) {
-        const ring = new Ring({ color: Colour.fromHex(0xffa500), thickness: 0.04 });
+        const ring = new Ring({ color: new Colour(0xffa500), thickness: 0.04 });
         simulation.bind(new AxialSymmetricBody({ position: new Vec3(x, y0, 0), axis: new Vec3(1, 0, 0), radius: 2.2 }).onceWith(ring));
-        const a1 = new Arrow({ color: Colour.fromHex(0xffa500), size: 0.35 });
-        const a2 = new Arrow({ color: Colour.fromHex(0xffa500), size: 0.35 });
+        const a1 = new Arrow({ color: new Colour(0xffa500), size: 0.35 });
+        const a2 = new Arrow({ color: new Colour(0xffa500), size: 0.35 });
         // B is azimutaal: boven draad +z, onder -z (bij y-offset)
         const b1 = new AxialSymmetricBody({ position: new Vec3(x, y0 + 2.2, 0), axis: new Vec3(0, 0, 1.2) });
         const b2 = new AxialSymmetricBody({ position: new Vec3(x, y0 - 2.2, 0), axis: new Vec3(0, 0, -1.2) });

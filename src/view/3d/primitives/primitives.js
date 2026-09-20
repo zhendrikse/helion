@@ -26,8 +26,7 @@ class TrailLine {
         /** @type {Vec3[]} */
         this._positions = [];
         this._geometry = new BufferGeometry();
-        this._material = new LineBasicMaterial({ linewidth });
-        color.asThreeJsColor(this._material.color);
+        this._material = new LineBasicMaterial({ color: color.asThreeJsColor(), linewidth });
         this._line = new Line(this._geometry, this._material);
     }
 
@@ -134,7 +133,7 @@ export class Trail extends Renderable3D {
         this._color = value;
 
         if (this._trail?._line?.material)
-            value.asThreeJsColor(this._trail._line.material.color);
+            this._trail._line.material.color.copy(value.asThreeJsColor());
     }
 
     dispose() {
@@ -186,7 +185,7 @@ export class Sphere extends Renderable3D {
                 metalness: 0.8
             });
         }
-        color.asThreeJsColor(material.color);
+        material.color.copy(color.asThreeJsColor());
         this._mesh = new Mesh(new SphereGeometry(1, segments, segments), material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
@@ -209,7 +208,7 @@ export class Sphere extends Renderable3D {
     get color() { return Colour.fromThreeJsColor(this._mesh.material.color); }
     /** @param {Colour} newColor */
     set color(newColor) {
-        newColor.asThreeJsColor(this._mesh.material.color);
+        this._mesh.material.color.copy(newColor.asThreeJsColor());
     }
 }
 
@@ -279,7 +278,7 @@ export class Arrow extends Renderable3D {
             ? Arrow.HeadGeometryRound
             : Arrow.HeadGeometrySquare;
 
-        color.asThreeJsColor(material.color);
+        material.color.copy(color.asThreeJsColor());
         this._material = material;
         this._material.opacity = opacity;
         this._shaft = new Mesh(shaftGeometry, this._material);
@@ -430,7 +429,7 @@ export class Cylinder extends Renderable3D {
     } = {}) {
         super();
         const geometry = new CylinderGeometry(1, 1, 1, segments);
-        color.asThreeJsColor(material.color);
+        material.color.copy(color.asThreeJsColor());
         this._mesh = new Mesh(geometry, material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
@@ -483,7 +482,7 @@ export class Box extends Renderable3D {
     } = {}) {
         super();
         material.opacity = opacity;
-        color.asThreeJsColor(material.color);
+        material.color.copy(color.asThreeJsColor());
         this._mesh = new Mesh(new BoxGeometry(1, 1, 1), material);
         this.add(this._mesh);
         this._mesh.castShadow = castShadow;
@@ -530,7 +529,7 @@ export class Ring extends Renderable3D {
     } = {}) {
         super();
         const geometry = new TorusGeometry(1, thickness, radialSegments, tubularSegments);
-        color.asThreeJsColor(material.color);
+        material.color.copy(color.asThreeJsColor());
         this._mesh = new Mesh(geometry, material);
         this.add(this._mesh);
         this._direction = new Vector3();
@@ -593,8 +592,21 @@ class Coils extends Curve {
 
 export class Helix extends Renderable3D {
     static up = new Vector3(0, 0, 1);
+    /**
+     * @param {{
+     *     color?: Colour,
+     *     coils?: number,
+     *     tubularSegments?: number,
+     *     longitudinalOscillation?: boolean,
+     *     radialSegments: number,
+     *     thickness?: number,
+     *     visible?: boolean,
+     *     castShadow: boolean,
+     *     radiusFunction?: (body: BodyPair) => number,
+     * }} param0
+     */
     constructor({
-        color = 0x00ffff,
+        color = Colour.Yellow,
         coils = 20,
         longitudinalOscillation = false,
         tubularSegments = 400,

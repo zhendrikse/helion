@@ -135,7 +135,7 @@ const labelEigenVector1 = new Label({
         .normalize()
         .multiplyScalar(originalCircleRadius - 0.3),
     fontSize: "24px",
-    color: Colour.fromHex(0xff4444)
+    color: new Colour(0xff4444)
 });
 
 const labelEigenVector2 = new Label({
@@ -144,7 +144,7 @@ const labelEigenVector2 = new Label({
         .normalize()
         .multiplyScalar(originalCircleRadius - 0.3),
     fontSize: "24px",
-    color: Colour.fromHex(0x44dd88)
+    color: new Colour(0x44dd88)
 });
 
 // Update everything that depends on the matrix.
@@ -173,8 +173,8 @@ simulation
         lineWidth: 2,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0x44aaff })
     })))
-    .bind(eigenvector1.onceWith(new Arrow2D({ color: Colour.fromHex(0xff4444), size: 0.5 })))
-    .bind(eigenvector2.onceWith(new Arrow2D({ color: Colour.fromHex(0x44dd88), size: 0.5 })))
+    .bind(eigenvector1.onceWith(new Arrow2D({ color: new Colour(0xff4444), size: 0.5 })))
+    .bind(eigenvector2.onceWith(new Arrow2D({ color: new Colour(0x44dd88), size: 0.5 })))
     .bind(eigenvector1.onceWith(labelEigenVector1))
     .bind(eigenvector2.onceWith(labelEigenVector2))
     .append(new Slider("a")

@@ -214,7 +214,7 @@ const simulation = Simulation
             return;
         graph.push([timestep, chain.endBall.acceleration.y, g]);
     })
-    .bind(table.onceWith(new Box({ color: Colour.fromHex(0x888888), opacity: 0.3 })))
+    .bind(table.onceWith(new Box({ color: new Colour(0x888888), opacity: 0.3 })))
     .addGraph(graph)
     .append(
         new Slider('Spring force ')
@@ -241,7 +241,7 @@ for (const bond of chain.bonds)
             coils: 15,
             thickness: 0.04,
             tubularSegments: 400,
-            color: Colour.fromHex(0xffff66)
+            color: new Colour(0xffff66)
         }))
     );
 

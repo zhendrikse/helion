@@ -14,25 +14,17 @@ export class Colour {
 
     static fromThreeJsColor = (/** @type {Color} */ threeJsColor) => new Colour(threeJsColor.r, threeJsColor.g, threeJsColor.b);
 
-    static fromHex = (/** @type {number} */ hexValue) => {
-        const r = ((hexValue >> 16) & 0xff) / 255;
-        const g = ((hexValue >> 8)  & 0xff) / 255;
-        const b = (hexValue & 0xff) / 255;
-        return new Colour(r, g, b);
-    };
-
     static toHex = (/** @type {number} */ value) => 
         Math.round(value * 255).toString(16).padStart(2, '0');
 
     /**
-     * @param {number} r 0 <= red <= 1
+     * @param {number} rOrHexValue hex value or 0 <= red <= 1
      * @param {number} g 0 <= green <= 1
      * @param {number} b 0 <= blue <=1
      */
-    constructor(r = 0, g = 0, b = 0) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
+    constructor(rOrHexValue = 0, g = -1, b = -1) {
+        this._color = new Color();
+        (g < 0 || b < 0) ? this._color.setHex(rOrHexValue) : this._color.setRGB(rOrHexValue, g, b);
     }
 
     /**
@@ -41,25 +33,27 @@ export class Colour {
      * @param {number} b 0 <= blue <=1
      */
     setRGB(r, g, b) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
+        this._color.r = r;
+        this._color.g = g;
+        this._color.b = b;
         return this;
     }
 
+    get r() { return this._color.r; }
+    get g() { return this._color.g; }
+    get b() { return this._color.b; }
+
     /** @param {Colour} otherColour */
     copy(otherColour) {
-        this.r = otherColour.r;
-        this.g = otherColour.g;
-        this.b = otherColour.b;
+        this._color.r = otherColour.r;
+        this._color.g = otherColour.g;
+        this._color.b = otherColour.b;
         return this;
     }
 
     /** @param {number} hexValue */
     setHex(hexValue) {
-        this.r = ((hexValue >> 16) & 0xff) / 255;
-        this.g = ((hexValue >> 8)  & 0xff) / 255;
-        this.b = (hexValue & 0xff) / 255;
+        this._color.setHex(hexValue);
         return this;
     }
 
@@ -69,14 +63,12 @@ export class Colour {
      * @param {number} v value
      */
     setHSL(h, s, v) {
-        hsvToRgb(h, s, v, this);
+        this._color.setHSL(h, s, v);
         return this;
     }
 
-    /** @param {Color} targetColor */
-    asThreeJsColor(targetColor = new Color()) {
-        targetColor.setRGB(this.r, this.g, this.b);
-        return targetColor;
+    asThreeJsColor() {
+        return this._color;
     }
 
     asHexString() {
@@ -84,7 +76,7 @@ export class Colour {
     }
 
     asHexValue() {
-        return (Math.round(this.r * 255) << 16) | (Math.round(this.g * 255) << 8) | (Math.round(this.b * 255));
+        return this._color.getHex();
     }
 }
 

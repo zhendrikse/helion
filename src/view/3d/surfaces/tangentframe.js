@@ -25,7 +25,7 @@ export class TangentFrameView extends Renderable3D {
         wireframe = false,
         scale = 0.7,
         opacity = 0.5,
-        color = Colour.fromHex(0x8888ff),
+        color = new Colour(0x8888ff),
         visible = true,
     } = {}) {
         super();
@@ -52,12 +52,12 @@ export class TangentFrameView extends Renderable3D {
         this._axes = {
             uArrow: new Arrow(arrowOpts(Colour.Red)),
             vArrow: new Arrow(arrowOpts(Colour.Green)),
-            normalArrow: new Arrow(arrowOpts(Colour.fromHex(0x00aaff)))
+            normalArrow: new Arrow(arrowOpts(new Colour(0x00aaff)))
         };
 
         this._principals = {
-            k1Arrow: new Arrow(arrowOpts(Colour.fromHex(0xffaa00))),
-            k2Arrow: new Arrow(arrowOpts(Colour.fromHex(0xaa00ff)))
+            k1Arrow: new Arrow(arrowOpts(new Colour(0xffaa00))),
+            k2Arrow: new Arrow(arrowOpts(new Colour(0xaa00ff)))
         };
 
         this._tangentPlane = new Mesh(

@@ -25,7 +25,7 @@ const latticeView = LatticeView.from({
     bondArgs: {
         thickness: 0.075,
         coils: 6,
-        color: Colour.fromHex(0xffff99),
+        color: new Colour(0xffff99),
         castShadow: true,
         radiusFunction: pair => .4 * (pair.body1.radius + pair.body2.radius)
     }
@@ -71,8 +71,8 @@ Simulation
             .integrate(dt);
     })
     .bind(chain.alwaysWith(latticeView))
-    .bind(pole1.onceWith(new Box({ color: Colour.fromHex(0x855E42) })))
-    .bind(pole2.onceWith(new Box({ color: Colour.fromHex(0x855E42) })))
+    .bind(pole1.onceWith(new Box({ color: new Colour(0x855E42) })))
+    .bind(pole2.onceWith(new Box({ color: new Colour(0x855E42) })))
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
         position: new Vec3(0, -2.75, 0),

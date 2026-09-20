@@ -48,7 +48,7 @@ class FloatingForce extends Force {
 
 const woodenBlock = new WoodenBlock({ size: new Vec3(0.4, 0.4, 0.1) });
 const water = new Aquarium({
-    contentColor: Colour.fromHex(0x1e90ff),
+    contentColor: new Colour(0x1e90ff),
     size: new Vec3(2, 2, 0.75),
     frameColor: Colour.Yellow
 });
@@ -79,7 +79,7 @@ const simulation = Simulation
     .runsEvery(2e-3)
     .advancesBy(1e-3)
     .substeps(4)
-    .bind(woodenBlock.alwaysWith(new Box({ color: Colour.fromHex(0xdeb887) })))
+    .bind(woodenBlock.alwaysWith(new Box({ color: new Colour(0xdeb887) })))
     .onStep((clock, dt) => {
         woodenBlock
             .apply(gravitationalForce)

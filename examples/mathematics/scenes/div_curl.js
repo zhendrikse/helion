@@ -139,7 +139,7 @@ const sourceLabel = new Label({
     text: () => 'Source',
     fontSize: '30px',
     visible: false,
-    color: Colour.fromHex(0xaaaaaa)
+    color: new Colour(0xaaaaaa)
 });
 const sink = new RadialSymmetricBody({
     position:  new Vec3(-1, -0.5, 0),
@@ -149,7 +149,7 @@ const sinkLabel = new Label({
     text: () => 'Sink',
     fontSize: '30px',
     visible: false,
-    color: Colour.fromHex(0xaaaaaa)
+    color: new Colour(0xaaaaaa)
 });
 const curl = new RadialSymmetricBody({
     position:  new Vec3(1, 0.5, 0),
@@ -160,7 +160,7 @@ const curlLabel = new Label({
     offset: () => new Vec3(0, -1.25, 0),
     fontSize: '30px',
     visible: false,
-    color: Colour.fromHex(0xaaaaaa)
+    color: new Colour(0xaaaaaa)
 });
 
 let vectorField = new OriginalDemoVectorField(source.position, sink.position, curl.position);

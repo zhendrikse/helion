@@ -119,7 +119,7 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .bind(sun.alwaysWith(new SunView()))
     .bind(planet.alwaysWith(new Sphere({ color: Colour.Cyan })))
-    .bind(planet.alwaysWith(new Trail({ color: Colour.fromHex(0xff4444), maxPoints: 600 })))
+    .bind(planet.alwaysWith(new Trail({ color: new Colour(0xff4444), maxPoints: 600 })))
     .advancesBy(0.025)
     .runsEvery(0.02)
     .onReset(() => {

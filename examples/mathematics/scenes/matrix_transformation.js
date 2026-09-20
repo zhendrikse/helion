@@ -94,14 +94,14 @@ const labelEigenVector1 = new Label({
     text: () => 'e₁',
     offset: model => model.axis.clone().add(new Vec2(0, -0.25)),
     fontSize: '25px',
-    color: Colour.fromHex(0xff4444)
+    color: new Colour(0xff4444)
 });
 
 const labelEigenVector2 = new Label({
     text: () => 'e₂',
     offset: model => model.axis.clone().add(new Vec2(0, 0.25)),
     fontSize: '25px',
-    color: Colour.fromHex(0x44dd88)
+    color: new Colour(0x44dd88)
 });
 
 const labelOriginalVector = new Label({
@@ -115,7 +115,7 @@ const labelTransformedVector = new Label({
     text: () => 'v₂=Av₁',
     offset: model => model.axis.clone().multiplyScalar(1.2),
     fontSize: '20px',
-    color: Colour.fromHex(0x44aaff)
+    color: new Colour(0x44aaff)
 });
 
 const labelTransformedEigenVector1 = new Label({
@@ -170,7 +170,7 @@ simulation
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffffff })
     })))
     .bind(originalVector.onceWith(new Arrow2D({
-        color: Colour.fromHex(0xff991c),
+        color: new Colour(0xff991c),
         size: 0.5,
         headStyle: Arrow2D.HeadStyle.Filled
     })))
@@ -179,12 +179,12 @@ simulation
         size: 0.3,
     })))
     .bind(eigenvector1.onceWith(new Arrow2D({
-        color: Colour.fromHex(0xff4444),
+        color: new Colour(0xff4444),
         size: 0.5,
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(eigenvector2.onceWith(new Arrow2D({
-        color: Colour.fromHex(0x44dd88),
+        color: new Colour(0x44dd88),
         size: 0.3,
         headStyle: Arrow2D.HeadStyle.Filled
     })))

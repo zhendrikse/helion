@@ -60,7 +60,7 @@ const movingCharge = new RadialSymmetricBody({
     charge: 5e-42 * EC
 });
 
-const sphere = new Sphere({ color: Colour.fromHex(0x44ff44) });
+const sphere = new Sphere({ color: new Colour(0x44ff44) });
 const arrowField = new ArrowField({
     xRange: new Range(-18 / scale, 18 / scale, 8 / scale),
     yRange: new Range(-9 / scale, 9 / scale, 4 / scale),
@@ -125,6 +125,6 @@ const simulation = Simulation
 
 for (const charge of capacitor)
     simulation.bind(charge.onceWith(new Sphere({
-        color: charge.charge > 0 ? Colour.fromHex(0x4444ff) : Colour.Red
+        color: charge.charge > 0 ? new Colour(0x4444ff) : Colour.Red
     })));
 

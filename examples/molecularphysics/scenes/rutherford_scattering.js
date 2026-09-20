@@ -11,7 +11,7 @@ const GOLD_RADIUS  = 6e-15;
 const ALPHA_RADIUS = 4e-15;
 const SOURCE_RADIUS = 6e-14;
 const MAX_DISTANCE = 1.8e-13;
-const ALPHA_COLOR = Colour.fromHex(0x33ffff);
+const ALPHA_COLOR = new Colour(0x33ffff);
 
 class AlphaSource extends AxialSymmetricBody {
     constructor({
@@ -66,7 +66,7 @@ function createAlphaParticle() {
         color: ALPHA_COLOR
     });
 
-    const departureMarker = new Sphere({ color: Colour.fromHex(0x33ffff) });
+    const departureMarker = new Sphere({ color: new Colour(0x33ffff) });
     departureMarkers.push(departureMarker);
     simulation
         .bind(alpha.alwaysWith(alphaSphere))
@@ -95,7 +95,7 @@ const simulation = Simulation
         }
     })
     .withMouseClickEventListener()
-    .bind(source.onceWith(new Cylinder({segments: 48, color: Colour.fromHex(0x999999) })))
+    .bind(source.onceWith(new Cylinder({segments: 48, color: new Colour(0x999999) })))
     .bind(gold.alwaysWith(new Sphere({ color: Colour.Yellow, segments: 36 })))
     .maxOutCpu(() => {
         if (!alpha)

@@ -172,7 +172,7 @@ let simulation = Simulation
             position: new Vec3(0, -4, 0),
             size: new Vec3(POOL_SIZE, 4, POOL_SIZE),
             fixed: true
-        }).onceWith(new Box({color: Colour.fromHex(0x0a3bbd), opacity: 0.8})))
+        }).onceWith(new Box({color: new Colour(0x0a3bbd), opacity: 0.8})))
     .withMouseClickEventListener()
     .onReset(() => {
         field.reset();
@@ -201,4 +201,4 @@ let simulation = Simulation
         .withValue(5).onInput(e => obstacle.speed = Number(e.target.value))
     );
 
-poolWalls.forEach(wall => simulation.bind(wall.onceWith(new Box({ color: Colour.fromHex(0xccaa00) }))));
+poolWalls.forEach(wall => simulation.bind(wall.onceWith(new Box({ color: new Colour(0xccaa00) }))));

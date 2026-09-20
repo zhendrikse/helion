@@ -44,7 +44,7 @@ const spring = new Spring({
 const helix = new Helix({
     coils: 15,
     thickness: 0.075,
-    color: 0xffff00,
+    color: Colour.Yellow,
     radiusFunction: () => 0.1
 });
 const sphere = new Sphere({ color: Colour.Orange });

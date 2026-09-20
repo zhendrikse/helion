@@ -107,19 +107,19 @@ Simulation
     .bind(pythagoras.ab.onceWith(new Label({
         text: model => 'a=' + pythagoras.a,
         offset: model => new Vec2(0, -.5),
-        color: Colour.fromHex(0x44aaff),
+        color: new Colour(0x44aaff),
         fontSize: '30px'
     })))
     .bind(pythagoras.ac.onceWith(new Label({
         text: model => 'b=' + pythagoras.b,
         offset: model => new Vec2(-.90, 0),
-        color: Colour.fromHex(0x44dd88),
+        color: new Colour(0x44dd88),
         fontSize: '30px'
     })))
     .bind(pythagoras.bc.onceWith(new Label({
         text: model => 'c=' + pythagoras.c.toFixed(2),
         offset: model => new Vec2(.75, .75),
-        color: Colour.fromHex(0xffaa44),
+        color: new Colour(0xffaa44),
         fontSize: '30px'
     })))
     .frameSceneOn(segmentsView, {

@@ -65,14 +65,14 @@ const labelPoint = new Label({
     text: () => 'x',
     offset: model => model.axis.clone().multiplyScalar(1.15),
     fontSize: '22px',
-    color: Colour.fromHex(0xff991c)
+    color: new Colour(0xff991c)
 });
 
 const labelTransformedPoint = new Label({
     text: () => 'gₜₕₑₜₐ · x',
     offset: model => model.axis.clone().multiplyScalar(1.15),
     fontSize: '20px',
-    color: Colour.fromHex(0x44aaff)
+    color: new Colour(0x44aaff)
 });
 
 simulation
@@ -85,24 +85,24 @@ simulation
     })))
     .bind(xAxis.onceWith(new Arrow2D({
         size: .2,
-        color: Colour.fromHex(0xbbbbbb),
+        color: new Colour(0xbbbbbb),
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(yAxis.onceWith(new Arrow2D({
         size: .2,
-        color: Colour.fromHex(0xbbbbbb),
+        color: new Colour(0xbbbbbb),
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(xAxis.onceWith(new Label({
         text: () => 'X',
         fontSize: '20px',
-        color: Colour.fromHex(0xbbbbbb),
+        color: new Colour(0xbbbbbb),
         offset: () => new Vec2(1.2 * size, 0)
     })))
     .bind(yAxis.onceWith(new Label({
         text: () => 'Y',
         fontSize: '20px',
-        color: Colour.fromHex(0xbbbbbb),
+        color: new Colour(0xbbbbbb),
         offset: () => new Vec2(0, 1.2 * size)
     })))
     .bind(orbit.alwaysWith(new CurveView({
@@ -111,12 +111,12 @@ simulation
         colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0x44dd88})
     })))
     .bind(point.onceWith(new Arrow2D({
-        color: Colour.fromHex(0xff991c),
+        color: new Colour(0xff991c),
         size: .35,
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(transformedPoint.alwaysWith(new Arrow2D({
-        color: Colour.fromHex(0x44aaff),
+        color: new Colour(0x44aaff),
         size: .3,
         headStyle: Arrow2D.HeadStyle.Filled
     })))

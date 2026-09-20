@@ -40,12 +40,12 @@ export class Arrow2D extends Renderable3D {
         this._headWidth = headWidth;
 
         this._material = new LineMaterial({
-            color: color.asThreeJsColor(new Color()),
+            color: color.asThreeJsColor(),
             linewidth: lineWidth,
             resolution: new Vec2(window.innerWidth, window.innerHeight)
         });
         this._headMaterial = new MeshBasicMaterial({
-            color: color.asThreeJsColor(new Color()),
+            color: color.asThreeJsColor(),
             side: DoubleSide
         });
 

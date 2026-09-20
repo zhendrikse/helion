@@ -14,7 +14,7 @@ const gas = new Gas({
 });
 /** @type {ParticleView2D[]} */
 const particleViews = [];
-const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: Colour.fromHex(0xBF40BF) });
+const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: new Colour(0xBF40BF) });
 /** @type {number[][]} */
 const histogramBuffer = [];
 const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SPEED / BIN_COUNT);

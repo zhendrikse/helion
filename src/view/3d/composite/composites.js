@@ -555,7 +555,7 @@ export class ArrowField extends Renderable3D {
 export class DiatomicMolecule extends Renderable3D {
     constructor({
         bondType = SwitchableBondView.Type.Cylinder,
-        bondColor = Colour.fromHex(0xffffaa),
+        bondColor = new Colour(0xffffaa),
         atom1Color = Colour.Red,
         atom1Segments = 24,
         atom2Color = Colour.Blue,

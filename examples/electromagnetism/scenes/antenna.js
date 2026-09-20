@@ -38,7 +38,7 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .runsEvery(1e-2)
     .advancesBy(lambda / OneDimensionalPlaneWave.c / 100.0)
-    .bind(antenna.onceWith(new Cylinder({color: Colour.fromHex(0xcccc77) })))
+    .bind(antenna.onceWith(new Cylinder({color: new Colour(0xcccc77) })))
     .onStep((clock, _) => {
         for (let wave of planeWaves)
             wave.propagate(clock.simulatedTime);

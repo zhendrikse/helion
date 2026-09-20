@@ -83,8 +83,8 @@ const arrowField = new ArrowField({
     magnitudeMap: magnitude => Math.sqrt(1 + magnitude * 1e-3),
     colorMap: (axis) =>
         axis.z > 0
-            ? Colour.fromHex(0xff4444)
-            : Colour.fromHex(0x4444ff),
+            ? new Colour(0xff4444)
+            : new Colour(0x4444ff),
     round: true
 });
 

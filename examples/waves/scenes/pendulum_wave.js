@@ -16,13 +16,14 @@ class Pendulum extends AxialSymmetricBody {
         mass = 1,
         pivotY = -2
     } = {}) {
+        const length = (T * T * 9.8) / (4 * Math.PI * Math.PI);
         super({
-            position: new Vec3(position, pivotY, 0),
+            position: new Vec3(position, pivotY - length * Math.cos(theta0), length * Math.sin(theta0)),
             axis: new Vec3(),
             radius: 0.01
         });
         this._xPosition = position;
-        this._length = (T * T * 9.8) / (4 * Math.PI * Math.PI);
+        this._length = length;
 
         this._ball = new RadialSymmetricBody({
             position: this.position,
@@ -111,27 +112,28 @@ const simulation = Simulation
             axis: new Vec3(3, 0 , 0),
             position: new Vec3(-1.5, -2, 0),
             radius: 0.04
-        }).alwaysWith(new Cylinder({ color: Colour.fromHex(0xDEB887) })))
+        }).alwaysWith(new Cylinder({ color: new Colour(0xDEB887) })))
     .bind(new AxialSymmetricBody({
             axis: new Vec3(0, -3 - 0.04 , 2),
             position: new Vec3(-1.5, -2, 0),
             radius: 0.04
-        }).alwaysWith(new Cylinder({ color: Colour.fromHex(0x855E42) })))
+        }).alwaysWith(new Cylinder({ color: new Colour(0x855E42) })))
     .bind(new AxialSymmetricBody({
             axis: new Vec3(0, -3 - 0.04 , -2),
             position: new Vec3(-1.5, -2, 0),
             radius: 0.04
-        }).alwaysWith(new Cylinder({ color: Colour.fromHex(0x855E42) })))
+        }).alwaysWith(new Cylinder({ color: new Colour(0x855E42) })))
     .bind(new AxialSymmetricBody({
             axis: new Vec3(0, -3 - 0.04 , 2),
             position: new Vec3(1.5, -2, 0),
             radius: 0.04
-    }).alwaysWith(new Cylinder({ color: Colour.fromHex(0x855E42) })))
+        }).alwaysWith(new Cylinder({ color: new Colour(0x855E42) })))
     .bind(new AxialSymmetricBody({
             axis: new Vec3(0, -3 - 0.04 , -2),
             position: new Vec3(1.5, -2, 0),
             radius: 0.04
-        }).alwaysWith(new Cylinder({ color: Colour.fromHex(0x855E42) })))
+        }).alwaysWith(new Cylinder({ color: new Colour(0x855E42) })))
+    .onReset(() => pendulums.forEach(pendulum => pendulum.reset()))
     .onStep((clock, dt) => {
         for (const pendulum of pendulums)
          pendulum.update(dt);
@@ -149,7 +151,7 @@ pendulums.forEach((pendulum, i) =>
 pendulums.forEach(pendulum =>
     simulation.bind(pendulum.alwaysWith(
         new Cylinder({
-            color: Colour.fromHex(0xBB8F68),
+            color: new Colour(0xBB8F68),
             material: new MeshStandardMaterial({
                 roughness: 0.8,
                 metalness: 0.2

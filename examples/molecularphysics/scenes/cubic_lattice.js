@@ -43,13 +43,13 @@ const latticeView = LatticeView.from({
     bodyView: Sphere,
     bondView: SwitchableBondView,
     bodyArgs: {
-        color: Colour.fromHex(0x44eeee),
+        color: new Colour(0x44eeee),
         castShadow: true
     },
     bondArgs: {
         thickness: 0.05,
         coils: 20,
-        color: Colour.fromHex(0xffffaa),
+        color: new Colour(0xffffaa),
         castShadow: true,
         tubularSegments: 400,
         bondType: SwitchableBondView.Type.Cylinder

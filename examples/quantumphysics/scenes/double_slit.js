@@ -88,5 +88,5 @@ function spawnParticleFromSlit(slitPos) {
         radius: .06 * resolution
     });
     particles.push(particle);
-    simulation.bind(particle.alwaysWith(new Sphere({ color: Colour.fromHex(0xffffff)})));
+    simulation.bind(particle.alwaysWith(new Sphere({ color: new Colour(0xffffff)})));
 }

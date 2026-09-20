@@ -91,10 +91,10 @@ Simulation
             .integrate(dt);
     })
     .addObject3D(new Aquarium({
-        contentColor: Colour.fromHex(0x1e90ff),
+        contentColor: new Colour(0x1e90ff),
         opacity: 0.1,
         size: new Vec3(boxSize, boxSize, boxSize).multiplyScalar(2.1),
-        frameColor: Colour.fromHex(0x779977)
+        frameColor: new Colour(0x779977)
     }))
     .append(new Slider('🪫 Charge: ')
         .withRange(new Range(.25, 5, .1))

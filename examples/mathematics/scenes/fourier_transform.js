@@ -117,12 +117,12 @@ simulation
     })))
     .bind(xAxis.onceWith(new Arrow2D({
         size: .25,
-        color: Colour.fromHex(0xbbbbbb),
+        color: new Colour(0xbbbbbb),
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(yAxis.onceWith(new Arrow2D({
         size: .25,
-        color: Colour.fromHex(0xbbbbbb),
+        color: new Colour(0xbbbbbb),
         headStyle: Arrow2D.HeadStyle.Filled
     })))
     .bind(xAxis.onceWith(new Label({

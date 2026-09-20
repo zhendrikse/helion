@@ -118,7 +118,7 @@ const electricArrowField = new ArrowField({
     scaleFactor: 2.5e-12,
     magnitudeMap: magnitude => Math.log(magnitude + 1),
     //colorMap: (axis, magnitude) => new Color().setHSL(0.15, 1, Math.min(Math.log(magnitude + 1), 0.6)),
-    colorMap: (_axis, _magnitude) => Colour.fromHex(0xbbbb55),
+    colorMap: (_axis, _magnitude) => new Colour(0xbbbb55),
     round: true
 });
 

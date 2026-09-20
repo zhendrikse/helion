@@ -13,11 +13,11 @@ const Axis = Object.freeze({ x: "x",  y: "y", z: "z" })
 
 const Colors = Object.freeze({
     right:  Colour.Red,
-    left:   Colour.fromHex(0xff8800),
+    left:   new Colour(0xff8800),
     back:   Colour.Yellow,
-    up:     Colour.fromHex(0x3333cc),
+    up:     new Colour(0x3333cc),
     front:  Colour.White,
-    down:   Colour.fromHex(0x33cc33)
+    down:   new Colour(0x33cc33)
 });
 
 const StickerData = Object.freeze({
@@ -244,7 +244,7 @@ const simulation = Simulation.with({
 
 // Bind view to model
 for (const cubie of cube) {
-    simulation.bind(cubie.alwaysWith(new Box({ color: Colour.fromHex(0x111111) })));
+    simulation.bind(cubie.alwaysWith(new Box({ color: new Colour(0x111111) })));
     cubie.stickers.forEach(sticker => simulation.bind(sticker.alwaysWith(
         new Box({
             color: Colors[sticker.side],

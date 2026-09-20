@@ -97,24 +97,24 @@ simulation
     })))
     .bind(xAxis.onceWith(new Arrow2D({
         size: .2,
-        color: Colour.fromHex(0xbbbbbb),
+        color: new Colour(0xbbbbbb),
         headStyle: Arrow2D.HeadStyle.Filled
     } )))
     .bind(yAxis.onceWith(new Arrow2D({
         size: .2,
-        color: Colour.fromHex(0xbbbbbb),
+        color: new Colour(0xbbbbbb),
         headStyle: Arrow2D.HeadStyle.Filled
     } )))
     .bind(xAxis.onceWith(new Label({
         text: () => "X",
         fontSize: "20px",
-        color: Colour.fromHex(0xbbbbbb),
+        color: new Colour(0xbbbbbb),
         offset: () => new Vec2(2.1 * size, 0)
     })))
     .bind(yAxis.onceWith(new Label({
         text: () => "Y",
         fontSize: "20px",
-        color: Colour.fromHex(0xbbbbbb),
+        color: new Colour(0xbbbbbb),
         offset: () => new Vec2(0.1, 2.1 * size)
     })))
     .bind(exactFunction.onceWith(new CurveView({

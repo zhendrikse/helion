@@ -562,7 +562,7 @@ export class ParticleView2D extends Renderable2D {
         this._hasBorder = hasBorder;
         this._color = new Colour();
         this._borderGeometry = new CircleGeometry(1.15, segments);
-        this._borderMaterial = new MeshBasicMaterial({ color: borderColor.asThreeJsColor(new Color()) });
+        this._borderMaterial = new MeshBasicMaterial({ color: borderColor.asThreeJsColor() });
         
         this._borderMesh = new Mesh(this._borderGeometry, this._borderMaterial);
         this.add(this._borderMesh);
