@@ -67,7 +67,7 @@ export { ArrowField2D } from './view/2d/composite/composites.js';
 export { WaveEquationSolver, JacobiSolver } from './model/math/numerics/solvers/solvers.js';
 
 export {
-    SchrodingerSolver, SchrodingerEigenstateSolver, WaveFunctionEigenStateSolver
+    SchrodingerSolver, SchrodingerEigenstateSolver, SchrodingerEigenstateSolver3D, WaveFunctionEigenStateSolver
 } from './model/math/numerics/solvers/qmsolvers.js'
 
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
