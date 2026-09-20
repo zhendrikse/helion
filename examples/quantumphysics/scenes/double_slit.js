@@ -1,7 +1,8 @@
 import {
     AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider, Sphere, Vec3,
     DiscreteScalarField, WavelengthColorMapper, DiscreteFieldSurfaceView, DoubleSlitOperator,
-    FieldEdgeIntensityPixelRaster, Colour} from '../../../src/index.js';
+    FieldEdgeIntensityPixelRaster, Colour, FixedIntervalNormalizer
+} from '../../../src/index.js';
 
 const resolution = 50;
 const xMax = 4;
@@ -44,7 +45,10 @@ const simulation = Simulation
         edgeHeight: .6 * xMax * resolution,
         colorMapper: wavelengthColorMapper
     })))
-    .bind(field.onceWith(new DiscreteFieldSurfaceView({ colorMapper: wavelengthColorMapper })))
+    .bind(field.onceWith(new DiscreteFieldSurfaceView({
+        colorMapper: wavelengthColorMapper,
+        normalizer: new FixedIntervalNormalizer()
+    })))
     .withMouseClickEventListener()
     .onReset(() => particles.length = 0)
     .onStep((_) => {
@@ -88,5 +92,5 @@ function spawnParticleFromSlit(slitPos) {
         radius: .06 * resolution
     });
     particles.push(particle);
-    simulation.bind(particle.alwaysWith(new Sphere({ color: new Colour(0xffffff)})));
+    simulation.bind(particle.alwaysWith(new Sphere({ color: Colour.White})));
 }

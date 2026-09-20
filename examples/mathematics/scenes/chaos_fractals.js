@@ -1,6 +1,6 @@
 import {
     Simulation, Vec3, Slider, Range, Button, ColorMappers, DiscreteFieldSurfaceView,
-    DiscreteScalarField, ColorMapper, Transformation
+    DiscreteScalarField, ColorMapper, Transformation, FixedIntervalNormalizer
 } from '../../../src/index.js';
 
 const NX = 1000;
@@ -41,7 +41,8 @@ const colorMapper = new HitCountColorMapper({
 const field = new DiscreteScalarField({ nx: NX, ny: NY });
 const view = new DiscreteFieldSurfaceView({
     colorMapper,
-    opacityFunction: intensity => intensity === 0 ? 0 : .8
+    opacityFunction: intensity => intensity === 0 ? 0 : .8,
+    normalizer: new FixedIntervalNormalizer()
 });
 
 class SierpinskiTriangle extends Transformation {

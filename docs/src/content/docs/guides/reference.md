@@ -406,7 +406,6 @@ view3D.colorMapper = view2D.colorMapper = ComplexColorMappers.get(ComplexColorMa
 new PixelRasterView({ width=512, height=512, transparent }) // DataTexture + PlaneGeometry, canBindTo: pixelAt/pixels
 new DiscreteFieldSurfaceView({ colorMapper:new WavelengthColorMapper(525), opacityFunction:v=>Math.sqrt(v) })
 new FieldEdgeIntensityPixelRaster({ edgeHeight:100, colorMapper, opacityFunction })
-new TiledPlane({ colorMapper:new HexValueColorMapper(), normalizer:new AdaptiveSymmetricNormalizer(), opacity:1, cellSize:1 }) // Instanced PlaneGeometry, per-texel color + instanceOpacity
 new ComplexSurfaceView2D({ showPhaseColour, brightnessFunction:m=>m>1?1:m, colorMapper:ComplexColorMappers.get(ComplexColorMappers.Hsv) })
 new ParticleView2D({ segments:16, colorFunction:p=>number, colorMapper:new HueColorMapper(), hasBorder:false, borderColor:Colour.Yellow, visible:true })
 // ParticleView2D replaces the legacy InstancedMesh ParticleCloudView; visibility via particle.visible (model) keeps Binding.synchronize() active; hasBorder adds CircleGeometry(1.15) outline

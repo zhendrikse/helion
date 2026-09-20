@@ -1,6 +1,7 @@
 import { Color} from 'three';
 import {
-    Simulation, Vec3, DiscreteScalarField, TiledPlane, ColorMapper, Interval, FixedIntervalNormalizer
+    Simulation, Vec3, DiscreteScalarField, ColorMapper, Interval, FixedIntervalNormalizer,
+    DiscreteFieldSurfaceView, ThreeJsScene, Colour
 } from '../../../src/index.js';
 
 export class FireColorMapper extends ColorMapper {
@@ -76,11 +77,11 @@ const cellSize = 2;
 
 const field = new Fire({ nx: NX, ny: NY });
 const solver = new FireSolver();
-const view = new TiledPlane({
+const view = new DiscreteFieldSurfaceView({
     cellSize: cellSize,
     normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
     colorMapper: new FireColorMapper(),
-    opacity: 1
+    scale: cellSize
 });
 
 // Seed bottom row like VPython init()
@@ -90,11 +91,15 @@ Simulation
     .with({
         htmlDivId: 'fireContainer',
         viewport: {
-            aspectRatio: NX / NY
+            aspectRatio: NX / NY,
         },
         camera: {
             position: new Vec3(0, 0, NX * cellSize * .7),
             orthographic: true
+        },
+        scene: {
+            background: ThreeJsScene.Background.PLAIN,
+            backgroundColor: Colour.Black
         },
         headUpDisplay: { enabled: false },
         infoPanel: {

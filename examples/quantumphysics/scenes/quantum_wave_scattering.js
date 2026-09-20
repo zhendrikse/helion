@@ -1,7 +1,7 @@
 import {
     WaveFunctionSurface3D, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
     GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField, SchrodingerSolver,
-    ShapeConfiguration, Softness, Potential, ComplexSurfaceView2D, DiscreteFieldSurfaceView
+    ShapeConfiguration, Softness, Potential, ComplexSurfaceView2D, DiscreteFieldSurfaceView, FixedIntervalNormalizer
 } from '../../../src/index.js';
 
 const NX = 400;
@@ -33,7 +33,9 @@ const waveFunctionSurface = new WaveFunctionSurface3D();
 const potentialBarrier = new DiscreteFieldBoxView({ width: NX, height: NY });
 
 const waveFunctionSurface2d = new ComplexSurfaceView2D();
-const potentialBarrier2d = new DiscreteFieldSurfaceView();
+const potentialBarrier2d = new DiscreteFieldSurfaceView({
+    normalizer: new FixedIntervalNormalizer()
+});
 waveFunctionSurface2d.visible = false;
 potentialBarrier2d.visible = false;
 

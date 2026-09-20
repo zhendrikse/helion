@@ -1,6 +1,7 @@
 import {
-    AdaptiveSymmetricNormalizer, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
-    Interval, ShapeConfiguration, ShapeMask, Simulation, TiledPlane, Vec3, DiscreteScalarField, Vec2, Shapes
+    ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
+    Interval, ShapeConfiguration, ShapeMask, Simulation, Vec3, DiscreteScalarField, Vec2, Shapes,
+    DiscreteFieldSurfaceView
 } from '../../../src/index.js';
 import { Solver } from '../../../src/model/math/numerics/solvers/solvers.js';
 
@@ -221,14 +222,14 @@ function reset() {
 configuration.onChangeEventListener = reset;
 reset();
 
-const curlView = new TiledPlane({
-    cellSize: CELL_SIZE,
+const curlView = new DiscreteFieldSurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Inferno),
-    normalizer: new AdaptiveSymmetricNormalizer(0.06),
+    scale: CELL_SIZE
+    //opacityFunction: v => Math.min(1, Math.abs(v - 0.5) * 5),
 });
 
-const barrierView = new TiledPlane({
-    cellSize: CELL_SIZE,
+const barrierView = new DiscreteFieldSurfaceView({
+    scale: CELL_SIZE,
     colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: Colour.Black.asHexValue() }),
     normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
     opacityFunction: value => value

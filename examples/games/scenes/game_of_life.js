@@ -1,8 +1,5 @@
 import {
-    MathPhysicsModelBehavior, Simulation, Slider, Vec3, Range, TiledPlane,
-    FixedIntervalNormalizer, Interval,
-    ColorMappers,
-    ColorMapper
+    MathPhysicsModelBehavior, Simulation, Slider, Vec3, Range, Interval, ColorMapper, DiscreteFieldSurfaceView
 } from "../../../src/index.js";
 
 class Game {
@@ -159,16 +156,16 @@ const simulation = Simulation.with({
         }
     })
     .withMouseClickEventListener()
-    .bind(gameOfLife.alwaysWith(new TiledPlane({
+    .bind(gameOfLife.alwaysWith(new DiscreteFieldSurfaceView({
         colorMapper: new CellColorMapper(),
-        cellSize
+        scale: cellSize
     })))
-    .runsEvery(.5)
+    .runsEvery(.1)
     .onStep(() => gameOfLife.nextGeneration())
     .onReset(() => gameOfLife.newGame())
     .append(new Slider("🏃 Frame rate")
         .withRange(new Range(1, 30, 1))
-        .withValue(2)
+        .withValue(10)
         .onChange(event => simulation.runsEvery(1 / Number(event.target.value)))
     );
 

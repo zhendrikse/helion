@@ -19,8 +19,7 @@ export {
 } from './model/transformations/operators.js';
 
 export {
-    DiscreteFieldSurfaceView, ComplexSurfaceView2D, ParticleView2D,
-    FieldEdgeIntensityPixelRaster, TiledPlane
+    DiscreteFieldSurfaceView, ComplexSurfaceView2D, ParticleView2D, FieldEdgeIntensityPixelRaster
 } from './view/2d/views.js';
 
 export {

@@ -1,14 +1,14 @@
 import {
-    linspace, meshgrid, DiscreteFieldSurfaceView, WavelengthColorMapper, Vec3,
+    linspace, meshgrid, DiscreteFieldSurfaceView, WavelengthColorMapper, Vec3, FixedIntervalNormalizer,
     DiscreteScalarField, Simulation, Slider, Checkbox, Range, RadioGroup, SurfaceResolution
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const initialLambda = 550;
 
 class Aperture {
     static Type = Object.freeze({
-        CIRCULAR: "circular",
-        SQUARE: "square"
+        CIRCULAR: 'circular',
+        SQUARE: 'square'
     });
     static circularAperture = (x, y, diameter) => x * x + y * y < (.5 * diameter) * (.5 * diameter);
     static squareAperture = (x, y, size) => Math.abs(x) <= size * .5 && Math.abs(y) <= size * .5;
@@ -128,12 +128,13 @@ fraunhoferSimulation.lambdaInNanos = initialLambda;
 //
 const intensityPixelRaster = new DiscreteFieldSurfaceView({
     resolution: new SurfaceResolution(resolution, resolution),
-    colorMapper: fraunhoferSimulation.colorMapper
+    colorMapper: fraunhoferSimulation.colorMapper,
+    normalizer: new FixedIntervalNormalizer()
 });
 
 Simulation
     .with({
-        htmlDivId: "fraunhoferContainer",
+        htmlDivId: 'fraunhoferContainer',
         camera: {
             position: new Vec3(2, .5, .75).multiplyScalar(50)
         },
@@ -143,17 +144,17 @@ Simulation
     })
     .bind(intensityField.alwaysWith(intensityPixelRaster))
     .append(new RadioGroup()
-        .add("🟩 Square", () => fraunhoferSimulation.apertureType = Aperture.Type.SQUARE)
-        .add("🟢 Circle", () => fraunhoferSimulation.apertureType = Aperture.Type.CIRCULAR)
+        .add('🟩 Square', () => fraunhoferSimulation.apertureType = Aperture.Type.SQUARE)
+        .add('🟢 Circle', () => fraunhoferSimulation.apertureType = Aperture.Type.CIRCULAR)
         .checked(1))
-    .append(new Slider("Size: ")
+    .append(new Slider('Size: ')
         .withValue(200)
         .withRange(new Range(50, 300, 1))
-        .addEventListener("change", event => fraunhoferSimulation.diameterInMicroMeter = event.target.value))
-    .append(new Slider("Color: ")
+        .addEventListener('change', event => fraunhoferSimulation.diameterInMicroMeter = event.target.value))
+    .append(new Slider('Color: ')
         .withValue(initialLambda)
         .withRange(new Range(380, 700, 1))
-        // .addEventListener("input", (event) => {
+        // .addEventListener('input', (event) => {
         //     const wavelength = Number(event.target.value);
         //     const color = wavelengthToRGBNormalized(wavelength);
         //     const intensity = 1;
@@ -162,10 +163,10 @@ Simulation
         //          ${color.g * intensity * 255},
         //          ${color.b * intensity * 255})`;
         // })
-        .addEventListener("change", event => fraunhoferSimulation.lambdaInNanos = event.target.value)
-        .togetherWith(new Checkbox("🎨 ")
+        .addEventListener('change', event => fraunhoferSimulation.lambdaInNanos = event.target.value)
+        .togetherWith(new Checkbox('🎨 ')
             .on(fraunhoferSimulation)
-            .withProperty("showSpectralColor")
+            .withProperty('showSpectralColor')
             .checked(true))
     )
     .start();

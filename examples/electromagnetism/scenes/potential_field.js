@@ -1,8 +1,8 @@
 import { Color } from 'three/src/Three.Core.js';
 import {
-    Simulation, Vec3, DiscreteScalarField, TiledPlane, ArrowField2D,
+    Simulation, Vec3, DiscreteScalarField, ArrowField2D,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
-    JacobiSolver, ColorMapper, Checkbox, Arrow2D, Button, ElectricField
+    JacobiSolver, ColorMapper, Checkbox, Arrow2D, Button, ElectricField, DiscreteFieldSurfaceView
 } from '../../../src/index.js';
 
 const N = 201;
@@ -74,8 +74,8 @@ const electricField = new ElectricField({
     derivativeSpacing: h
 });
 
-const view = new TiledPlane({
-    cellSize,
+const view = new DiscreteFieldSurfaceView({
+    scale: cellSize,
     colorMapper: new PotentialColorMapper(),
     normalizer: new FixedIntervalNormalizer(potentialRangeInterval),
     opacity: 1,

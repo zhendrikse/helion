@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, Slider, Range, Button, ColorMapper, Interval, TiledPlane, DiscreteScalarField
+    Simulation, Vec3, Slider, Range, Button, ColorMapper, Interval, DiscreteScalarField, DiscreteFieldSurfaceView
 } from '../../../src/index.js';
 
 class IsingField extends DiscreteScalarField {
@@ -64,8 +64,8 @@ let latticeSize = 200;
 let stepsPerFrame = 10000;
 
 const field = new IsingField(latticeSize);
-const view = new TiledPlane({
-    cellSize: 0.1,
+const view = new DiscreteFieldSurfaceView({
+    scale: 0.1,
     colorMapper: new IsingColorMapper(),
     opacityFunction: v => v > 0.5 ? 1 : 0.1,
 });
