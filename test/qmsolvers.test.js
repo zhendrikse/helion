@@ -1,11 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import {
-    DiscreteScalarField3D,
-    DiscreteComplexField3D,
-    SchrodingerEigenstateSolver3D
-} from '../src/index.js';
+import { DiscreteScalarField3D, DiscreteComplexField3D } from '../src/model/math/fields.js';
+import { SchrodingerEigenstateSolver3D } from '../src/model/math/numerics/solvers/qmsolvers.js';
 
 test('3D eigenstate diagnostics report spherical symmetry', () => {
     const nx = 17;
