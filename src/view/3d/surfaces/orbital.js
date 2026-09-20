@@ -3,17 +3,17 @@ import {Renderable3D} from "../../renderer.js";
 
 export class WaveFunctionOrbital3D extends Renderable3D {
     static vertexShader = `
-        attribute vec3 color;
-        attribute float alpha;
-        attribute float size;
+        attribute vec3 orbitalColor;
+        attribute float orbitalAlpha;
+        attribute float orbitalSize;
         varying vec3 vColor;
         varying float vAlpha;
 
         void main() {
-            vColor = color;
-            vAlpha = alpha;
+            vColor = orbitalColor;
+            vAlpha = orbitalAlpha;
             vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-            gl_PointSize = size * (300.0 / max(1.0, length(mvPosition.xyz)));
+            gl_PointSize = orbitalSize * (300.0 / max(1.0, length(mvPosition.xyz)));
             gl_Position = projectionMatrix * mvPosition;
         }
     `;
@@ -69,9 +69,9 @@ export class WaveFunctionOrbital3D extends Renderable3D {
         this._colors = new Float32Array(count * 3);
         this._alphas = new Float32Array(count);
 
-        geometry.setAttribute('color', new BufferAttribute(this._colors, 3));
-        geometry.setAttribute('alpha', new BufferAttribute(this._alphas, 1));
-        geometry.setAttribute('size', new BufferAttribute(new Float32Array(count).fill(this._pointSize), 1));
+        geometry.setAttribute('orbitalColor', new BufferAttribute(this._colors, 3));
+        geometry.setAttribute('orbitalAlpha', new BufferAttribute(this._alphas, 1));
+        geometry.setAttribute('orbitalSize', new BufferAttribute(new Float32Array(count).fill(this._pointSize), 1));
 
         const material = new ShaderMaterial({
             vertexShader: WaveFunctionOrbital3D.vertexShader,
@@ -100,8 +100,8 @@ export class WaveFunctionOrbital3D extends Renderable3D {
         const scale = this._spacing;
 
         const positions = this._mesh.geometry.attributes.position;
-        const colors = this._mesh.geometry.attributes.color;
-        const alphas = this._mesh.geometry.attributes.alpha;
+        const colors = this._mesh.geometry.attributes.orbitalColor;
+        const alphas = this._mesh.geometry.attributes.orbitalAlpha;
 
         let index = 0;
         const color = new Color();
