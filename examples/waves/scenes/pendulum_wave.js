@@ -55,6 +55,7 @@ class Pendulum extends AxialSymmetricBody {
         const pivot = new Vec3(this._xPosition, this._pivotY, 0);
         this.axis.copy(newPos.clone().sub(pivot).negate());
         this.state.position.copy(newPos);
+        this._ball.position.copy(newPos);
     }
 
     reset() {
@@ -62,6 +63,8 @@ class Pendulum extends AxialSymmetricBody {
         this._omega = 0;
         this._theta = Math.PI / 6;
         this.updatePosition();
+        this._ball.reset();
+        this._ball.position.copy(this.position);
     }
 }
 
