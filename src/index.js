@@ -40,6 +40,7 @@ export {
 
 export { ElectricField } from './model/phys/fields.js';
 export { ComplexSurfaceView3D, WaveFunctionSurface3D } from './view/3d/surfaces/complex.js';
+export { WaveFunctionOrbital3D } from './view/3d/surfaces/orbital.js';
 export { ThreeJsScene } from './view/3d/scene.js';
 export { SphereSphereCollision } from './model/transformations/interactions.js';
 export { Equation, WaveEquation, BarrierWaveEquation } from './model/math/equations.js';
