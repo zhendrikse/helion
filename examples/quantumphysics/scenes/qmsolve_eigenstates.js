@@ -35,15 +35,15 @@ const solver = new SchrodingerEigenstateSolver({
     dt: 0.01
 });
 potential.apply(new GaussianPotential());
-solver.initialize(psi, 0.01);
+solver.initialize(psi);
 
 const waveFunction = new WaveFunctionSurface3D({
     zScale: 35,
-    brightness: 25
+    brightness: 1.5
 });
 
 function showState(index = 0) {
-    psi.real.set(solver._eigenstates[index]);
+    psi.real.set(solver.eigenstateAt(index));
     psi.imag.fill(0);
 }
 showState();
@@ -60,7 +60,7 @@ const simulation = Simulation
     })
     .bind(psi.alwaysWith(waveFunction))
     .append(new Slider('🌀 Eigenstate')
-        .withRange(new Range(0, solver._states - 1, 1))
+        .withRange(new Range(0, solver.stateCount - 1, 1))
         .withValue(0)
         .addEventListener('input', event => showState(Number(event.target.value)))
     )
