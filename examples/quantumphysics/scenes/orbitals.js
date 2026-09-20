@@ -117,7 +117,8 @@ const phaseLayer = new PhaseLayer(orbitals['3d_z²'].Y);
 const surfaceView = new SurfaceVisualization({
     resolution: new SurfaceResolution(100, 100),
     colorLayer: phaseLayer,
-    opacity: 1
+    opacity: 0.8,
+    colorMapper: ColorMappers.get(ColorMappers.Seismic)
 });
 
 const simulation = Simulation
