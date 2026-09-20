@@ -74,7 +74,7 @@ Simulation
         position: new Vec3(0, -3.5 * L0 + shiftUp, 0),
         planeSizeXy: new Vec2(L0 * 6 , L0 * 4),
         type: Floor.Type.GRASS,
-        color: 0x008800
+        color: new Colour(0x008800)
     }))
     .addObject3D(sun)
     .addObject3D(new AmbientLight(0xffffff, .3))

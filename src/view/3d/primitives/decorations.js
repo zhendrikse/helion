@@ -25,19 +25,19 @@ class Grid extends Group {
      * size?: number,
      * granularity?: number
      * y?: number
-     * color?: number
+     * color?: Colour
      * }} param0 
      */
     constructor({
         size = 1,
         granularity = 20,
         y = 0,
-        color = 0x00ff00
+        color = Colour.Green
     } = {}) {
         super();
 
         const step = (size * 2) / granularity;
-        const material = new LineBasicMaterial({ color: color });
+        const material = new LineBasicMaterial({ color: color.asThreeJsColor() });
         for (let i = 0; i <= granularity; i++) {
             const x = -size + i * step;
             this.add(new Line(this.#verticalLine(x, y, size), material));
@@ -79,7 +79,7 @@ export class Floor extends Group {
      * position?: Vec3
      * planeSizeXy?: Vec2
      * granularity?: number
-     * color?: number
+     * color?: Colour
      * opacity?: number
      * receiveShadow?: boolean
      * }} param0 
@@ -89,7 +89,7 @@ export class Floor extends Group {
         position = new Vec3(),
         planeSizeXy = new Vec2(2, 2),
         granularity = 1,
-        color = 0x00ff00,
+        color = Colour.Green,
         opacity = 1,
         receiveShadow = true
     } = {}) {
@@ -163,11 +163,11 @@ export class Ceiling extends Mesh {
         position = new Vector3(0, 0, 0),
         size = 12,
         thickness = 0.75,
-        color = 0x8a8a8a
+        color = new Colour(0x8a8a8a)
     } = {}) {
         const ceilingGeometry = new BoxGeometry(size, size, thickness);
         const ceilingMaterial = new MeshStandardMaterial({
-            color: color,
+            color: color.asThreeJsColor(),
             metalness: 0.05,
             roughness: 0.95,
             side: DoubleSide
