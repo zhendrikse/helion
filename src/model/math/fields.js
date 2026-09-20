@@ -1,7 +1,5 @@
-import { MathPhysicsModelBehavior } from '../../core/helion.js';
-import { SurfaceResolution } from '../../view/3d/surfaces/visualization.js';
+import { MathPhysicsModelBehavior } from '../behavior.js';
 import { Complex, Interval, Vec2, Vec3 } from './math.js';
-import { Solver } from './numerics/solvers/solvers.js';
 
 export class Domain {
     /**

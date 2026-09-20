@@ -83,7 +83,7 @@ export function factorial(n) {
  * @param {number} start 
  * @param {number} stop 
  * @param {number} num 
- * @returns 
+ * @returns {number[]}
  */
 export function linspace(start, stop, num) {
     const linSpace = [];

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+/** !! D O   N O T   S H O R T E N   T H E S E   I M P O R T S  !! */
 import { DiscreteScalarField3D, DiscreteComplexField3D } from '../src/model/math/fields.js';
 import { SchrodingerEigenstateSolver3D } from '../src/model/math/numerics/solvers/qmsolvers.js';
 
@@ -32,9 +33,9 @@ test('3D eigenstate diagnostics report spherical symmetry', () => {
 
     const diagnostics = solver.diagnosticsFor(0, { radialBins: 64 });
 
-    assert.equal(diagnostics.energy, 0);
-    assert.equal(diagnostics.residual > 0, true);
-    assert.ok(diagnostics.radialSymmetryError < 1e-12);
+    assert.equal(diagnostics.energy, 0, 'Energy eigenvalue not 0');
+    assert.equal(diagnostics.residual > 0, true, 'Residual <= 0');
+    assert.ok(diagnostics.radialSymmetryError < 1e-12, 'RadiaSymmetryError >= 1e-12');
 });
 
 test('3D eigenstate diagnostics detect directional asymmetry', () => {
@@ -65,5 +66,5 @@ test('3D eigenstate diagnostics detect directional asymmetry', () => {
 
     const diagnostics = solver.diagnosticsFor(0, { radialBins: 64 });
 
-    assert.ok(diagnostics.radialSymmetryError > 0.01);
+    assert.ok(diagnostics.radialSymmetryError > 0.01, 'RadiaSymmetryError >= 1e-2');
 });

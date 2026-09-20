@@ -1,5 +1,5 @@
 import uPlot from 'uplot';
-import { Interval } from '../model/math/math';
+import { Interval } from '../model/math/math.js';
 
 export class UPlotGraph {
     /**

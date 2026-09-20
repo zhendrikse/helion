@@ -1,4 +1,4 @@
-import { PhysicsState } from "../../../phys/bodies";
+import { PhysicsState } from "../../../phys/bodies.js";
 
 export class Integrators {
     /**

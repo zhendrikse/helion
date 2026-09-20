@@ -1,5 +1,5 @@
 import { Object3D, Box3 } from 'three';
-import { Viewport } from '../core/viewport';
+import { Viewport } from '../core/viewport.js';
 
 /**
  * Base class for all view objects that are to be coupled with a model and rendered in the scene. 

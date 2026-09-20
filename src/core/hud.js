@@ -3,7 +3,7 @@
  * e.g. "Click to start the simulation".
  */
 
-import { Viewport } from "./viewport";
+import { Viewport } from "./viewport.js";
 
 export class Hud {
     constructor() {

@@ -1,7 +1,6 @@
 import { DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D } from '../../fields.js';
 import {Complex} from '../../math.js';
-import {Solver} from './solvers.js';
-
+import { Solver } from './solver.js';
 
 /**
  * Matrix-free 3D finite-difference Schrödinger eigenstate solver.
@@ -17,8 +16,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
         hbar = 1,
         mass = 1,
         states = 1,
-        iterations = 400,
-        dt = 0.002
+        iterations = 400
     } = {}) {
         super();
         this._potential = potential;
@@ -27,7 +25,6 @@ export class SchrodingerEigenstateSolver3D extends Solver {
         this._mass = mass;
         this._states = states;
         this._iterations = iterations;
-        this._dt = dt;
         this.reset();
     }
 
@@ -126,7 +123,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
         this._eigenvalues = [];
     }
 
-    initialize(psi, dt = this._dt) {
+    initialize(psi, dt = 0.002) {
         this.reset();
 
         if (this._potential.nx !== psi.nx ||
@@ -156,8 +153,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
                     const dy = (y - cy) * this._spacing;
                     const dz = (z - cz) * this._spacing;
                     const r2 = dx * dx + dy * dy + dz * dz;
-                    psiState[this._index(x, y, z)] =
-                        Math.exp(-r2 / (2 * width * width));
+                    psiState[this._index(x, y, z)] = Math.exp(-r2 / (2 * width * width));
                 }
 
         this._orthogonalize(psiState);
