@@ -1,27 +1,41 @@
 import {
-    DiscreteComplexField3D, DiscreteScalarField3D, SchrodingerEigenstateSolver3D, Simulation, Vec3,
+    DiscreteComplexField3D, DiscreteScalarField3D, SchrodingerEigenstateSolver3D, Simulation, Transformation, Vec3,
     WaveFunctionOrbital3D
 } from '../../../src/index.js';
 
 const N = 64;
 const spacing = 0.16;
-const coupling = 1;
-const softening = 0.12;
+
+class HydrogenPotential extends Transformation {
+    constructor({
+        coupling = 1,
+        softening = 0.12,
+    } = {}) {
+        super();
+        this._softening = softening;
+        this._coupling = coupling;
+    }
+
+    applyTo(field) {
+        const coupling = this._coupling;
+        const softening = this._softening;
+        const center = (N - 1) / 2;
+        for (let z = 0; z < N; z++)
+            for (let y = 0; y < N; y++)
+                for (let x = 0; x < N; x++) {
+                    const dx = (x - center) * spacing;
+                    const dy = (y - center) * spacing;
+                    const dz = (z - center) * spacing;
+                    const radius = Math.sqrt(dx * dx + dy * dy + dz * dz + softening * softening);
+
+                    field.setValueAt(x, y, z, -coupling / radius);
+                }
+    }
+}
 
 const potential = new DiscreteScalarField3D({ nx: N, ny: N, nz: N });
 const psi = new DiscreteComplexField3D({ nx: N, ny: N, nz: N});
-
-const center = (N - 1) / 2;
-for (let z = 0; z < N; z++)
-    for (let y = 0; y < N; y++)
-        for (let x = 0; x < N; x++) {
-            const dx = (x - center) * spacing;
-            const dy = (y - center) * spacing;
-            const dz = (z - center) * spacing;
-            const radius = Math.sqrt(dx * dx + dy * dy + dz * dz + softening * softening);
-
-            potential.setValueAt(x, y, z, -coupling / radius);
-        }
+potential.apply(new HydrogenPotential());
 
 const solver = new SchrodingerEigenstateSolver3D({
     potential,

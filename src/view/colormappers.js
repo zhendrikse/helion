@@ -445,7 +445,7 @@ class ComplexBlackZeroColorMapper extends ColorMapper {
      */
     map(value, targetColor) {
         const hue = value.phase + 0.5;
-        const t = Math.sqrt(value.modulus - .55);
+        const t = Math.sqrt(Math.max(0, value.modulus - .55));
         targetColor.setHSL(hue, 1, 0.05 + 0.45 * t);
     }
 }
