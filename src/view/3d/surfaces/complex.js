@@ -209,7 +209,7 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
             if (a < 0.01) discard;
             vec3 color = vColor;
             float alpha = vAlpha * uBrightness;            
-            gl_FragColor = vec4(color, alpha);
+            gl_FragColor = vec4(color, alpha);\n            #include <colorspace_fragment>
         }
         `;
     constructor({
