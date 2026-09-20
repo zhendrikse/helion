@@ -33,35 +33,42 @@ export class Domain {
  */
 export class Field extends MathPhysicsModelBehavior {
     /**
-     * @param {number} _u normalized coordinate one.
-     * @param {number} _v normalized coordinate two.
-     * @param {ComplexFunctionSample} _target
+     * @abstract
+     * @param {number} u normalized coordinate one.
+     * @param {number} v normalized coordinate two.
+     * @param {any} target
      */
-    sample(_u, _v, _target) {}
+    sample(u, v, target) {}
 }
 
 export class ScalarField extends Field {
     /**
-     * @param {number} _u normalized coordinate one.
-     * @param {number} _v normalized coordinate two.
+     * @abstract
+     * @param {number} u normalized coordinate one.
+     * @param {number} v normalized coordinate two.
      */
-    sample(_u, _v) {
+    sample(u, v) {
         return 0;
     }
 
-    /** @param {SurfaceResolution} _resolution */
-    rangeAt(_resolution) {
+    /**
+     * @abstract
+     * @param {SurfaceResolution} resolution
+     * @param {number} time
+     */
+    rangeAt(resolution, time=0) {
         return new Interval();
     }
 }
 
 export class ComplexField extends Field {
     /**
-     * @param {number} _u normalized coordinate one.
-     * @param {number} _v normalized coordinate two.
+     * @abstract
+     * @param {number} u normalized coordinate one.
+     * @param {number} v normalized coordinate two.
      * @param {ComplexFunctionSample} _target
      */
-    sample(_u, _v, _target) {
+    sample(u, v, _target) {
     }
 }
 
@@ -78,7 +85,8 @@ export class VectorField extends MathPhysicsModelBehavior {
 }
 
 export class MultivariateFunction extends ScalarField {
-    /** @param {{
+    /**
+     * @param {{
      *  domain?: Domain
      *  func?: (x: number, y: number, t: number) => number
      * }} [options] 
