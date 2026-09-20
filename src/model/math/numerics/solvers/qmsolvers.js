@@ -43,8 +43,6 @@ export class SchrodingerEigenstateSolver extends Solver {
 
     get states() { return this._states; }
     get stateCount() { return this._eigenstates.length; }
-    get energies() { return this._eigenvalues; }
-    get eigenstates() { return this._eigenstates; }
 
     /** @param {number} index */
     eigenstateAt(index) {
@@ -61,10 +59,9 @@ export class SchrodingerEigenstateSolver extends Solver {
     /**
      * @param {number} state
      * @param {DiscreteComplexField} waveFunction
-     * @param {Float64Array<ArrayBuffer>[]} previousStates
      * @param {number} dt
      */
-    _createEigenState(state, waveFunction, previousStates, dt) {
+    _createEigenState(state, waveFunction, dt) {
         const nx = waveFunction.nx;
         const ny = waveFunction.ny;
         const size = nx * ny;
@@ -78,7 +75,7 @@ export class SchrodingerEigenstateSolver extends Solver {
             }
         }
 
-        this._orthogonalize(psi, previousStates);
+        this._orthogonalize(psi);
         this._normalize(psi);
 
         for (let iteration = 0; iteration < this._iterations; iteration++) {
@@ -88,13 +85,12 @@ export class SchrodingerEigenstateSolver extends Solver {
             for (let i = 0; i < size; i++)
                 next[i] = psi[i] - dt * hPsi[i];
 
-            this._orthogonalize(next, previousStates);
+            this._orthogonalize(next);
             this._normalize(next);
             psi = next;
         }
 
         const energy = this._rayleighQuotient(psi);
-        previousStates.push(psi);
         this._eigenvalues.push(energy);
         this._eigenstates.push(psi);
     }
@@ -109,10 +105,8 @@ export class SchrodingerEigenstateSolver extends Solver {
             throw new Error(`Schrödinger potential (${this._potential.nx} x ${this._potential.nx}) ` +
                 `and wavefunction psi (${psi.nx} x ${psi.ny}) grids must have the same dimensions.`);
 
-        /** @type {Float64Array<ArrayBuffer>[]} */
-        const previousStates = [];
         for (let state = 0; state < this._states; state++)
-            this._createEigenState(state, psi, previousStates, dt);
+            this._createEigenState(state, psi, dt);
         return this;
     }
 
@@ -136,12 +130,9 @@ export class SchrodingerEigenstateSolver extends Solver {
         return hPsi;
     }
 
-    /**
-     * @param {Float64Array<ArrayBuffer>} psi
-     * @param {Float64Array<ArrayBuffer>[]} states
-     */
-    _orthogonalize(psi, states) {
-        for (const state of states) {
+    /** @param {Float64Array<ArrayBuffer>} psi */
+    _orthogonalize(psi) {
+        for (const state of this._eigenstates) {
             let projection = 0;
 
             for (let i = 0; i < psi.length; i++)
