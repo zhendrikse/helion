@@ -1,6 +1,5 @@
 import { Color, Points, BufferGeometry, BufferAttribute, ShaderMaterial, AdditiveBlending } from 'three';
-import { Renderable3D } from '../../renderer.js';
-import { ComplexColorMappers } from '../../colormappers.js';
+import {Renderable3D} from "../../renderer.js";
 
 export class WaveFunctionOrbital3D extends Renderable3D {
     static vertexShader = `
@@ -22,7 +21,6 @@ export class WaveFunctionOrbital3D extends Renderable3D {
     static fragmentShader = `
         varying vec3 vColor;
         varying float vAlpha;
-        uniform float uBrightness;
 
         void main() {
             float distanceToCenter = length(gl_PointCoord - vec2(0.5));
@@ -32,17 +30,17 @@ export class WaveFunctionOrbital3D extends Renderable3D {
             if (alpha < 0.01)
                 discard;
 
-            gl_FragColor = vec4(min(vColor * uBrightness, 1.0), alpha);
+            gl_FragColor = vec4(vColor, alpha);
         }
     `;
 
     constructor({
-        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Domain),
-        pointSize = 4,
-        threshold = 0.015,
-        brightness = 1.5,
-        spacing = 1
-    } = {}) {
+                    colorMapper = null,
+                    pointSize = 4,
+                    threshold = 0.015,
+                    brightness = 1.5,
+                    spacing = 1
+                } = {}) {
         super();
         this._colorMapper = colorMapper;
         this._pointSize = pointSize;
@@ -52,7 +50,6 @@ export class WaveFunctionOrbital3D extends Renderable3D {
         this._mesh = null;
         this._colors = null;
         this._alphas = null;
-        this._colorData = { phase: 0, modulus: 0 };
     }
 
     canBindTo(field) {
@@ -83,23 +80,11 @@ export class WaveFunctionOrbital3D extends Renderable3D {
             transparent: true,
             depthWrite: false,
             blending: AdditiveBlending,
-            uniforms: {
-                uBrightness: { value: this._brightness }
-            }
+            uniforms: {}
         });
 
         this._mesh = new Points(geometry, material);
         this.add(this._mesh);
-    }
-
-    set brightness(value) {
-        this._brightness = value;
-        if (this._mesh)
-            this._mesh.material.uniforms.uBrightness.value = value;
-    }
-
-    get brightness() {
-        return this._brightness;
     }
 
     synchronizeWith(field) {
@@ -119,6 +104,7 @@ export class WaveFunctionOrbital3D extends Renderable3D {
         const alphas = this._mesh.geometry.attributes.orbitalAlpha;
 
         let index = 0;
+        const color = new Color();
 
         for (let z = 0; z < field.nz; z++)
             for (let y = 0; y < field.ny; y++)
@@ -136,11 +122,10 @@ export class WaveFunctionOrbital3D extends Renderable3D {
                         (z - zOffset) * scale
                     );
 
-                    this._colorData.phase = Math.atan2(imag, real) / (2 * Math.PI);
-                    this._colorData.modulus = normalized;
-                    this._colorMapper.map(this._colorData, this._colorData.color ??= new Color());
-
-                    const color = this._colorData.color;
+                    // Phase: positive and negative real lobes naturally get different hues.
+                    const phase = Math.atan2(imag, real) / (2 * Math.PI);
+                    const hue = (phase + 0.65) % 1;
+                    color.setHSL(hue, 1, 0.5);
                     colors.setXYZ(index, color.r, color.g, color.b);
 
                     alphas.setX(
