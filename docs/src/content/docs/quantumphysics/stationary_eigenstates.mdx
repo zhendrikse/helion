@@ -18,11 +18,21 @@ layout: ../../../layouts/DocsLayout.astro
 This demo visualizes the stationary eigenstates of a 2D isotropic harmonic oscillator:
 
 $$
-V(x,y)=\dfrac{1}{2}k(x^2+y^2)
+i\hbar \frac{\partial \psi (x,y,t)}{\partial t}=
+-\frac{\hbar ^{2}}{2m}\left(\frac{\partial ^{2}}{\partial x^{2}}+\frac{\partial ^{2}}{\partial y^{2}}\right)\psi (x,y,t)+V(x,y)\psi (x,y,t)
 $$
 
-Select different eigenstates to explore how their amplitude and phase form distinct
-wave-like patterns, including the characteristic lobes and nodes of quantum wavefunctions.
+Where: 
+
+- $\psi(x, y, t)$ is the wave function of the system.
+- $\frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} = \nabla^2$ is the 2D Laplacian operator (spatial second derivatives).
+- $\hbar$ is the reduced Planck's constant, set to $1$ in the code.
+- $m$ is the mass of the particle, set to $1$ in the code.
+- $V(x, y)$ is the potential energy function, here the harmonic oscillator potential:
+
+$$
+V(x,y)=\dfrac{1}{2}k(x^2+y^2)
+$$
 
 ### Demo
 <div class="header_line"></div>
@@ -32,6 +42,9 @@ wave-like patterns, including the characteristic lobes and nodes of quantum wave
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=qmsolve_eigenstates.js"/>
     </a>
 </div>
+
+Select different eigenstates to explore how their amplitude and phase form distinct
+wave-like patterns, including the characteristic lobes and nodes of quantum wavefunctions.
 
 <div id="qmsolveEigenstates" ></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/qmsolve_eigenstates.js"}></script>

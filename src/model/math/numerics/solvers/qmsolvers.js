@@ -1,6 +1,6 @@
 import { DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D } from '../../fields.js';
 import {Complex} from '../../math.js';
-import { Solver } from './solver.js';
+import { Solver } from './solvers.js';
 
 /**
  * Matrix-free 3D finite-difference Schrödinger eigenstate solver.
