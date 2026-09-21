@@ -513,13 +513,23 @@ export class SchrodingerSolver extends Solver {
         const imNext = this._nextIm;
 
         const hRe = this._hamiltonian.apply(re);
-        const hIm = this._hamiltonian.apply(im);
 
+        // Keep the original centered-difference/leapfrog scheme:
+        // Im(n+1) = Im(n) - dt H Re(n)
+        // Re(n+1) = Re(n) + dt H Im(n+1)
+        // The second line is intentionally based on imNext, not im.
         for (let x = 1; x < psi.nx - 1; x++)
             for (let y = 1; y < psi.ny - 1; y++) {
                 const i = y * w + x;
                 imNext[i] = im[i] - dt * hRe[i];
-                reNext[i] = re[i] + dt * hIm[i];
+            }
+
+        const hImNext = this._hamiltonian.apply(imNext);
+
+        for (let x = 1; x < psi.nx - 1; x++)
+            for (let y = 1; y < psi.ny - 1; y++) {
+                const i = y * w + x;
+                reNext[i] = re[i] + dt * hImNext[i];
             }
 
         [psi.real, this._nextRe] = [this._nextRe, psi.real];
