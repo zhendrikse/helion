@@ -221,9 +221,10 @@ export class SchrodingerEigenstateSolver3D extends Solver {
         for (let z = 1; z < nz - 1; z++)
             for (let y = 1; y < ny - 1; y++)
                 for (let x = 1; x < nx - 1; x++) {
-                    const dx = (x - cx) * this._spacing;
-                    const dy = (y - cy) * this._spacing;
-                    const dz = (z - cz) * this._spacing;
+                    const spacing = this._hamiltonian.spacing;
+                    const dx = (x - cx) * spacing;
+                    const dy = (y - cy) * spacing;
+                    const dz = (z - cz) * spacing;
                     const r2 = dx * dx + dy * dy + dz * dz;
                     const gaussian = Math.exp(-r2 / (2 * width * width));
                     const angularFactor =
