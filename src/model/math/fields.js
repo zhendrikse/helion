@@ -1,4 +1,4 @@
-import { MathPhysicsModelBehavior } from '../../core/helion.js';
+import { MathPhysicsModelBehavior } from '../behavior.js';
 import { Complex, Interval, Vec2, Vec3 } from './math.js';
 
 export class Domain {

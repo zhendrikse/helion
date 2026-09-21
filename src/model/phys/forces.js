@@ -1,5 +1,5 @@
 import { Vec3 } from '../math/math.js';
-import { Transformation} from '../../core/helion.js';
+import { Transformation} from '../behavior.js';
 import { BodyPair, BodyPairs } from './bodies.js';
 import { VectorField } from '../math/fields.js';
 

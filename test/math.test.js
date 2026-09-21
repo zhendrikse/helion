@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 /** !! D O   N O T   S H O R T E N   T H E S E   I M P O R T S  !! */
-import { generateUUID, factorial, linspace } from '../src/model/math/math.js';
+import {generateUUID, factorial, linspace, meshgrid} from '../src/model/math/math.js';
 
 test('UUID generation', () => {
     assert.equal(generateUUID().length, 36, 'UUID must have length 36');
@@ -17,5 +17,13 @@ test('Factorial generation', () => {
 });
 
 test('Linspace generation', () => {
-    assert.notStrictEqual(linspace(1, 4, 4), [1, 2, 3, 4], 'linspace(1, 4, 4)');
+    const linSpace = linspace(1, 4, 4);
+    const exptectedResult = [1, 2, 3, 4];
+    assert.deepEqual(linSpace, exptectedResult, 'linspace(1, 4, 4) incorrect');
+})
+
+test('Meshgrid generation', () => {
+    const xy = meshgrid(linspace(1, 3, 3), linspace(1, 2, 2));
+    const expectedResult = [ [ [ 1, 2, 3 ], [ 1, 2, 3 ] ], [ [ 1, 1, 1 ], [ 2, 2, 2 ] ] ];
+    assert.deepEqual(xy, expectedResult, 'meshgrid incorrectly generated');
 })

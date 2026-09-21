@@ -1,4 +1,4 @@
-import { MathPhysicsModelBehavior } from '../../core/helion.js';
+import { MathPhysicsModelBehavior } from '../behavior.js';
 import { PhysicsState, RadialSymmetricBody } from './bodies.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
 import { SphereSphereCollision } from '../transformations/interactions.js';

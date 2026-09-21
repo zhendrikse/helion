@@ -2,7 +2,7 @@ import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { Range, Vec3} from '../math/math.js';
 import {CompoundControl, Slider} from '../../core/controls.js';
 import { ShapeConfiguration, Shapes, ShapesFactory} from '../math/shapes.js';
-import {Transformation} from '../../core/helion.js';
+import {Transformation} from '../behavior.js';
 import { DiscreteComplexField, DiscreteScalarField } from '../math/fields.js';
 
 export class DiamondSquareOperator extends Transformation {

@@ -1,6 +1,6 @@
 import { Vec3, Vec2 } from '../math/math.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
-import { MathPhysicsModelBehavior, Transformation } from '../../core/helion.js';
+import { MathPhysicsModelBehavior, Transformation } from '../behavior.js';
 import { SpringForce} from './forces.js';
 
 export class PhysicsState {

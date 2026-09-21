@@ -1,7 +1,7 @@
 import { DiscreteScalarField, Domain, MultivariateFunction } from './fields.js';
 import {Interval, Vec2, Vec3, } from './math.js';
 import { DifferentialFrame, DifferentialGeometry} from './numerics/diffgeometry.js';
-import {MathPhysicsModelBehavior} from '../../core/helion.js';
+import {MathPhysicsModelBehavior} from '../behavior.js';
 import { SurfaceResolution } from '../../view/3d/surfaces/visualization.js';
 
 /**

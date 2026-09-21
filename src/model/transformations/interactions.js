@@ -1,4 +1,4 @@
-import {Transformation} from '../../core/helion.js';
+import {Transformation} from '../behavior.js';
 
 export class SphereSphereCollision extends Transformation {
     applyTo(bodyPair) {

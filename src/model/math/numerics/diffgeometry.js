@@ -1,4 +1,4 @@
-import { MathPhysicsModelBehavior } from '../../../core/helion.js';
+import { MathPhysicsModelBehavior } from '../../behavior.js';
 import {Vec3} from '../math.js';
 import { DifferentiableSurface } from '../surfaces.js';
 

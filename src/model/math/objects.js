@@ -1,4 +1,4 @@
-import {MathPhysicsModelBehavior, Transformation} from '../../core/helion.js';
+import {MathPhysicsModelBehavior, Transformation} from '../behavior.js';
 import { Matrix2D } from '../transformations/matrices.js';
 import { Interval, degToRad, Vec2, Vec3} from './math.js';
 import {Integrators} from './numerics/integrators/integrators.js';
