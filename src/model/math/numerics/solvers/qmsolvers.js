@@ -1,4 +1,5 @@
 import { DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D } from '../../fields.js';
+import { Hamiltonian } from '../../quantum/hamiltonian.js';
 import {Complex} from '../../math.js';
 import { Solver } from './solvers.js';
 
@@ -11,6 +12,7 @@ import { Solver } from './solvers.js';
  */
 export class SchrodingerEigenstateSolver3D extends Solver {
     constructor({
+        hamiltonian = null,
         potential = new DiscreteScalarField3D(),
         spacing = 1,
         hbar = 1,
@@ -19,10 +21,8 @@ export class SchrodingerEigenstateSolver3D extends Solver {
         iterations = 400
     } = {}) {
         super();
-        this._potential = potential;
-        this._spacing = spacing;
-        this._hbar = hbar;
-        this._mass = mass;
+        this._hamiltonian = hamiltonian ?? new Hamiltonian({ potential, spacing, hbar, mass });
+        this._potential = this._hamiltonian.potential;
         this._states = states;
         this._iterations = iterations;
         this.reset();
@@ -51,7 +51,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
     diagnosticsFor(index) {
         const psi = this.eigenstateAt(index);
         const energy = this._eigenvalues[index];
-        const hPsi = this._applyHamiltonian(psi);
+        const hPsi = this._hamiltonian.apply(psi);
         const { nx, ny, nz } = this._potential;
         const cx = (nx - 1) / 2;
         const cy = (ny - 1) / 2;
@@ -215,7 +215,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
         const cx = (nx - 1) / 2;
         const cy = (ny - 1) / 2;
         const cz = (nz - 1) / 2;
-        const width = this._spacing * 2.0;
+        const width = this._hamiltonian.spacing * 2.0;
 
         for (let z = 1; z < nz - 1; z++)
             for (let y = 1; y < ny - 1; y++)
@@ -245,26 +245,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
     }
 
     _applyHamiltonian(psi) {
-        const { nx, ny, nz } = this._potential;
-        const h2 = this._spacing * this._spacing;
-        const kinetic = this._hbar * this._hbar / (2 * this._mass);
-        const hPsi = new Float64Array(psi.length);
-
-        for (let z = 1; z < nz - 1; z++)
-            for (let y = 1; y < ny - 1; y++)
-                for (let x = 1; x < nx - 1; x++) {
-                    const i = this._index(x, y, z);
-                    const laplacian =
-                        (psi[i - 1] + psi[i + 1] +
-                         psi[i - nx] + psi[i + nx] +
-                         psi[i - nx * ny] + psi[i + nx * ny] -
-                         6 * psi[i]) / h2;
-
-                    hPsi[i] = -kinetic * laplacian +
-                        this._potential.data[i] * psi[i];
-                }
-
-        return hPsi;
+        return this._hamiltonian.apply(psi);
     }
 
     _orthogonalize(psi) {
@@ -323,6 +304,7 @@ export class SchrodingerEigenstateSolver extends Solver {
      * }} param0 
      */
     constructor({
+        hamiltonian = null,
         potential = new DiscreteScalarField(),
         spacing = 1,
         hbar = 1,
@@ -335,10 +317,8 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._eigenstates = [];
         /**  @type {number[]} */
         this._eigenvalues = [];
-        this._potential = potential;
-        this._spacing = spacing;
-        this._hbar = hbar;
-        this._mass = mass;
+        this._hamiltonian = hamiltonian ?? new Hamiltonian({ potential, spacing, hbar, mass });
+        this._potential = this._hamiltonian.potential;
         this._states = states;
         this._iterations = iterations;
         this.reset();
@@ -415,22 +395,7 @@ export class SchrodingerEigenstateSolver extends Solver {
 
     /**  @param {Float64Array<ArrayBuffer>} psi */
     _applyHamiltonian(psi) {
-        const nx = this._potential.nx;
-        const ny = this._potential.ny;
-        const h2 = this._spacing * this._spacing;
-        const kinetic = this._hbar * this._hbar / (2 * this._mass);
-        const hPsi = new Float64Array(nx * ny);
-
-        for (let y = 1; y < ny - 1; y++)
-            for (let x = 1; x < nx - 1; x++) {
-                const i = y * nx + x;
-                const laplacian =
-                    (psi[i - 1] + psi[i + 1] + psi[i - nx] + psi[i + nx] - 4 * psi[i]) / h2;
-
-                hPsi[i] = -kinetic * laplacian + this._potential.data[i] * psi[i];
-            }
-
-        return hPsi;
+        return this._hamiltonian.apply(psi);
     }
 
     /** @param {Float64Array<ArrayBuffer>} psi */
@@ -484,13 +449,21 @@ export class SchrodingerEigenstateSolver extends Solver {
  */
 export class SchrodingerSolver extends Solver {
     /**
-     * @param {{ potential?: DiscreteScalarField }} param0 
+     * @param {{ potential?: DiscreteScalarField, hamiltonian?: Hamiltonian }} param0 
      */
     constructor({
+        hamiltonian = null,
         potential = new DiscreteScalarField()
-    }) {
+    } = {}) {
         super();
-        this._potential = potential;
+        // Preserve the historical dimensionless realtime discretization while
+        // routing the operator through the shared Hamiltonian abstraction.
+        this._hamiltonian = hamiltonian ?? new Hamiltonian({
+            potential,
+            hbar: Math.sqrt(2),
+            mass: 1,
+            potentialScale: 2
+        });
 
         this._nextRe = null;
         this._nextIm = null;
@@ -508,14 +481,13 @@ export class SchrodingerSolver extends Solver {
      */
     initialize(psi, dt) {
         const re = psi.real;
-        const im = psi.imag;
-        const V = this._potential.data;
+        const hRe = this._hamiltonian.apply(re);
         const w = psi.nx;
 
         for (let x = 1; x < psi.nx - 1; x++)
             for (let y = 1; y < psi.ny - 1; y++) {
                 const i = y * w + x;
-                im[i] += 0.5 * dt * (-re[i + 1] -re[i - 1] -re[i + w] -re[i - w] + 2 * (2 + V[i]) * re[i]);
+                psi.imag[i] += 0.5 * dt * hRe[i];
             }
     }
 
@@ -536,17 +508,14 @@ export class SchrodingerSolver extends Solver {
         const reNext = this._nextRe;
         const imNext = this._nextIm;
 
-        const V = this._potential.data;
-        for (let x= 1; x < psi.nx - 1; x++)
+        const hRe = this._hamiltonian.apply(re);
+        const hIm = this._hamiltonian.apply(im);
+
+        for (let x = 1; x < psi.nx - 1; x++)
             for (let y = 1; y < psi.ny - 1; y++) {
                 const i = y * w + x;
-                imNext[i] = im[i] - dt * (-re[i+1] - re[i-1] - re[i+w] - re[i-w] + 2 * (2 + V[i]) * re[i]);
-            }
-
-        for (let x= 1; x < w - 1; x++)
-            for (let y = 1; y < w - 1; y++) {
-                const i = y * w + x;
-                reNext[i] = re[i] + dt * (-imNext[i+1] - imNext[i-1] - imNext[i+w] - imNext[i-w] + 2*(2+V[i])*imNext[i]);
+                imNext[i] = im[i] - dt * hRe[i];
+                reNext[i] = re[i] + dt * hIm[i];
             }
 
         [psi.real, this._nextRe] = [this._nextRe, psi.real];
