@@ -57,9 +57,7 @@ class Aperture {
         this.diameterInMicroMeter = this._diameterInMicroMeter; // Force update of mask!!
     }
 
-    //
     // De facto, this amounts to a numerical version of the Fraunhofer diffraction integral
-    //
     sumRaysAt(i, j, k) {
         let field = 0;
         const kx = k * this._kX[i][j];
@@ -76,52 +74,59 @@ class Aperture {
 // Physics
 //
 class FraunhoferSimulation {
-    constructor(aperture, intensityField) {
+    constructor(simulation, aperture, intensityField) {
         this._aperture = aperture;
         this._intensityField = intensityField;
         this._colorMapper = new WavelengthColorMapper();
-        this.recompute();
+        this._simulation = simulation;
     }
 
     set diameterInMicroMeter(diameterInMicroMeter) {
         this._aperture.diameterInMicroMeter = diameterInMicroMeter;
-        this.recompute();
     }
 
     set lambdaInNanos(value) {
         this._lambdaInNanos = value;
         this._colorMapper.lambdaInNanos = value;
-        this.recompute();
     }
 
     set apertureType(type) {
         this._aperture.type = type;
-        this.recompute();
     }
 
     set showSpectralColor(value) {
         this._colorMapper.showSpectralColor = value;
-        this.recompute();
     }
 
-    recompute() {
+    async recompute() {
         const k = 2 * Math.PI / (this._lambdaInNanos * 1e-9);
-        for (let i = 0; i < this._intensityField.nx; i++)
-            for (let j = 0; j < this._intensityField.ny; j++) {
+        const nx = this._intensityField.nx;
+        const ny = this._intensityField.ny;
+        for (let i = 0; i < nx; i++) {
+            await new Promise(resolve => setTimeout(resolve, 0));
+            this._simulation.showHud(`Calculating diffraction: ${Math.round(i * 100 / nx)}%`);
+            for (let j = 0; j < ny; j++) {
                 const field = this._aperture.sumRaysAt(i, j, k) / R;
                 this._intensityField.setValueAt(i, j, field * field);
             }
+        }
     }
 
     get colorMapper() { return this._colorMapper; }
 }
 
+const simulation = Simulation
+    .with({
+        htmlDivId: 'fraunhoferContainer',
+        camera: { position: new Vec3(2, .5, .75).multiplyScalar(50) }
+    });
 const resolution = 128;
 const R = 1.0;
 const aperture = new Aperture(200, resolution);
 const intensityField = new DiscreteScalarField({nx: resolution, ny: resolution});
-const fraunhoferSimulation = new FraunhoferSimulation(aperture, intensityField);
+const fraunhoferSimulation = new FraunhoferSimulation(simulation, aperture, intensityField);
 fraunhoferSimulation.lambdaInNanos = initialLambda;
+fraunhoferSimulation.recompute().then(_ => simulation.hideHud());
 
 //
 // View for 2D canvas
@@ -132,25 +137,25 @@ const intensityPixelRaster = new DiscreteFieldSurfaceView({
     normalizer: new FixedIntervalNormalizer()
 });
 
-Simulation
-    .with({
-        htmlDivId: 'fraunhoferContainer',
-        camera: {
-            position: new Vec3(2, .5, .75).multiplyScalar(50)
-        },
-        headUpDisplay: {
-            enabled: false
-        }
-    })
+simulation
     .bind(intensityField.alwaysWith(intensityPixelRaster))
     .append(new RadioGroup()
-        .add('🟩 Square', () => fraunhoferSimulation.apertureType = Aperture.Type.SQUARE)
-        .add('🟢 Circle', () => fraunhoferSimulation.apertureType = Aperture.Type.CIRCULAR)
+        .add('🟩 Square', () => {
+            fraunhoferSimulation.apertureType = Aperture.Type.SQUARE;
+            fraunhoferSimulation.recompute().then(r => simulation.hideHud());
+        })
+        .add('🟢 Circle', () => {
+            fraunhoferSimulation.apertureType = Aperture.Type.CIRCULAR;
+            fraunhoferSimulation.recompute().then(r => simulation.hideHud());
+        })
         .checked(1))
     .append(new Slider('Size: ')
         .withValue(200)
         .withRange(new Range(50, 300, 1))
-        .addEventListener('change', event => fraunhoferSimulation.diameterInMicroMeter = event.target.value))
+        .onChange(event => {
+            fraunhoferSimulation.diameterInMicroMeter = event.target.value;
+            fraunhoferSimulation.recompute().then(_ => simulation.hideHud());
+        }))
     .append(new Slider('Color: ')
         .withValue(initialLambda)
         .withRange(new Range(380, 700, 1))
@@ -163,10 +168,12 @@ Simulation
         //          ${color.g * intensity * 255},
         //          ${color.b * intensity * 255})`;
         // })
-        .addEventListener('change', event => fraunhoferSimulation.lambdaInNanos = event.target.value)
+        .onChange(event => {
+            fraunhoferSimulation.lambdaInNanos = event.target.value;
+            fraunhoferSimulation.recompute().then(r => simulation.hideHud());
+        })
         .togetherWith(new Checkbox('🎨 ')
             .on(fraunhoferSimulation)
             .withProperty('showSpectralColor')
             .checked(true))
-    )
-    .start();
+    );
