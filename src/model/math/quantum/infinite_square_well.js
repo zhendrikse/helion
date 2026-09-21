@@ -1,6 +1,4 @@
 import { Complex } from '../math.js';
-import { Solver } from '../numerics/solvers/solvers.js';
-
 /**
  * Analytic time evolution for a particle in a two-dimensional infinite square well.
  *
@@ -13,7 +11,7 @@ import { Solver } from '../numerics/solvers/solvers.js';
  * This is a physical model for a specific system, rather than a general
  * Schrödinger solver.
  */
-export class InfiniteSquareWell2D extends Solver {
+export class InfiniteSquareWell2D {
     /**
      * @param {{
      *   width?: number,
