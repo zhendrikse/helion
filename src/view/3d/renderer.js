@@ -1,5 +1,5 @@
 import { WebGLRenderer, DirectionalLight, PCFShadowMap, AmbientLight } from 'three';
-import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer';
+import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 import { Renderable, Renderer } from '../renderer.js'
 import { Axes } from './composite/backgrounds.js';
 import { ThreeJsCamera } from './camera.js';

@@ -3,7 +3,7 @@ import {
     BufferAttribute, Vector3, BufferGeometry, Box3, AxesHelper, GridHelper, MeshPhongMaterial,
     DoubleSide
 } from "three";
-import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer";
+import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 
 export class SkyDome extends Group {
     constructor({

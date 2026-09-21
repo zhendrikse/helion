@@ -1,5 +1,7 @@
 import katex from 'katex';
-import 'katex/dist/katex.min.css';
+if (typeof document !== 'undefined') {
+    import('katex/dist/katex.min.css').catch(() => {});
+}
 
 /**
  * @param {HTMLElement} element
