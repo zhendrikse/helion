@@ -1,5 +1,5 @@
 import {
-    ComplexFunctionSample, Cylinder, DiscreteComplexField, Renderable3D, Simulation, Vec3, WaveFunctionEigenStateSolver
+    ComplexFunctionSample, Cylinder, DiscreteComplexField, InfiniteSquareWell2D, Renderable3D, Simulation, Vec3
 } from '../../../src/index.js';
 
 class DiscreteComplexFieldCylinderView extends Renderable3D {
@@ -63,7 +63,8 @@ class DiscreteComplexFieldCylinderView extends Renderable3D {
 
 const waveFunctionView = new DiscreteComplexFieldCylinderView({ spacing: 10 });
 const waveFunctionPsi = new DiscreteComplexField({ nx: 20, ny: 20 });
-const solver = new WaveFunctionEigenStateSolver();
+const solver = new InfiniteSquareWell2D({ width: 10, height: 10, maxMode: 10 });
+solver.initialize(waveFunctionPsi);
 waveFunctionPsi.evolve(solver, 0.01);
 
 Simulation.with({
