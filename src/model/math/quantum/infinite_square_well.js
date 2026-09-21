@@ -1,3 +1,4 @@
+import { DiscreteComplexField } from '../fields.js';
 import { Complex } from '../math.js';
 /**
  * Analytic time evolution for a particle in a two-dimensional infinite square well.
@@ -28,15 +29,17 @@ export class InfiniteSquareWell2D {
         mass = 1,
         maxMode = 10
     } = {}) {
-        super();
         this._width = width;
         this._height = height;
         this._hbar = hbar;
         this._mass = mass;
         this._maxMode = maxMode;
         this._time = 0;
+        /** @type {Float64Array<ArrayBuffer>[]} */
         this._eigenstates = [];
+        /** @type {number[]} */
         this._coefficients = [];
+        /** @type {number[]} */
         this._energies = [];
     }
 
@@ -92,15 +95,26 @@ export class InfiniteSquareWell2D {
             }
     }
 
+    /** @param {DiscreteComplexField} psi */
     _validateWaveFunction(psi) {
         if (psi.nx < 2 || psi.ny < 2)
             throw new Error('InfiniteSquareWell2D requires a wavefunction grid with at least 2 x 2 samples.');
     }
 
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} nx
+     */
     _index(x, y, nx) {
         return y * nx + x;
     }
 
+    /**
+     * @param {number} nx
+     * @param {number} ny
+     * @param {DiscreteComplexField} psi
+     */
     _addEigenstate(nx, ny, psi) {
         const state = new Float64Array(psi.nx * psi.ny);
         let normSquared = 0;
@@ -130,6 +144,7 @@ export class InfiniteSquareWell2D {
         );
     }
 
+    /** @param {DiscreteComplexField} psi */
     _initialState(psi) {
         const state = new Float64Array(psi.nx * psi.ny);
         let normSquared = 0;
@@ -150,6 +165,10 @@ export class InfiniteSquareWell2D {
         return state;
     }
 
+    /**
+     * @param {Float64Array<ArrayBuffer>} left
+     * @param {Float64Array<ArrayBuffer>} right
+     */
     _innerProduct(left, right) {
         let result = 0;
         for (let i = 0; i < left.length; i++)

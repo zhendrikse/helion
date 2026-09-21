@@ -130,7 +130,7 @@ const surface = new DiscreteFieldSurface(field);
 const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(RESOLUTION, RESOLUTION),
     colorMapper: new ColorMappers().get(ColorMappers.Water)(),
-    normalizer: new FixedIntervalNormalizer(new Interval(-0.3, 2)),
+    normalizer: new FixedIntervalNormalizer(new Interval(-1, 1)),
     opacity: 0.85,
     display: SurfaceVisualization.Display.Glyphs,
     glyphType: GlyphLayer.GlyphTypes.BOXES

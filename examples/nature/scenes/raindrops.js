@@ -17,7 +17,7 @@ const resolution = 256;
 const waterSurface = new SurfaceVisualization({
     resolution: new SurfaceResolution(resolution, resolution),
     colorMapper: new ColorMappers().get(ColorMappers.Water)(),
-    normalizer: new FixedIntervalNormalizer(new Interval(-.3, 2)),
+    normalizer: new FixedIntervalNormalizer(new Interval(-.3, 1)),
     opacity: 0.8,
     display: SurfaceVisualization.Display.Glyphs
 });

@@ -30,11 +30,25 @@ export class FixedIntervalNormalizer extends Normalizer {
     constructor(interval = new Interval(0, 1)) {
         super();
         this._interval = interval;
+
+
+        this._min = Infinity;
+        this._max = -Infinity;
     }
 
-    /** @param {Interval} rangeInterval */
-    adaptTo(rangeInterval) {
-        this._interval = rangeInterval;
+    /** @param {Interval} _rangeInterval */
+    adaptTo(_rangeInterval) {
+        // if (_rangeInterval.from < this._min ) {
+        //     this._min = _rangeInterval.from;
+        //     console.log(this._min);
+        // }
+        // if (_rangeInterval.to < this._max ) {
+        //     this._max = _rangeInterval.to;
+        //     console.log(this._max);
+        // }
+        // if (_rangeInterval.from !== 0)
+        //     console.log(_rangeInterval)
+        // Interval is fixed (nomen est omen), so we intentionally do nothing here
     }
 
     /** @param {number} value */

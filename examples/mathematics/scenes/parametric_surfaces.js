@@ -1,9 +1,8 @@
 import {
     Simulation, ParametricSurface, Domain, DropdownMenu, Registry, SurfaceVisualization,
-    ContoursLayer, SurfaceResolution, ColorLayers, PrincipalDirectionsLayer, Checkbox, ColorMappers,
+    ContoursLayer, SurfaceResolution, ColorLayers, PrincipalDirectionsLayer, Checkbox,
     FixedIntervalNormalizer
 } from '../../../src/index.js';
-import {DoubleSide, MeshStandardMaterial} from 'three';
 
 const sin = Math.sin, cos = Math.cos, tan = Math.tan, log = Math.log, PI = Math.PI;
 const surfaces = {
@@ -74,7 +73,6 @@ principalLayer.visible = false;
 
 const surfaceView = new SurfaceVisualization({
     resolution: new SurfaceResolution(200, 200),
-    normalizer: new FixedIntervalNormalizer(),
     colorLayer: new ColorLayers().get(ColorLayers.GaussianCurvature)(),
     opacity: 0.85
 })
