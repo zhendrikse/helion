@@ -1,4 +1,4 @@
-import { Color, DataTexture, RGBFormat, LinearFilter } from 'three';
+import { Color, DataTexture, RGBFormat, LinearFilter, SRGBColorSpace } from 'three';
 import { Registry } from '../core/utils.js';
 
 export class Colour {
@@ -24,7 +24,7 @@ export class Colour {
      */
     constructor(rOrHexValue = 0, g = -1, b = -1) {
         this._color = new Color();
-        (g < 0 || b < 0) ? this._color.setHex(rOrHexValue) : this._color.setRGB(rOrHexValue, g, b);
+        (g < 0 || b < 0) ? this._color.setHex(rOrHexValue) : this._color.setRGB(rOrHexValue, g, b, SRGBColorSpace);
     }
 
     /**
@@ -33,9 +33,7 @@ export class Colour {
      * @param {number} b 0 <= blue <=1
      */
     setRGB(r, g, b) {
-        this._color.r = r;
-        this._color.g = g;
-        this._color.b = b;
+        this._color.setRGB(r, g, b, SRGBColorSpace);
         return this;
     }
 
@@ -67,8 +65,8 @@ export class Colour {
         return this;
     }
 
-    asThreeJsColor() {
-        return this._color;
+    asThreeJsColor(target = new Color()) {
+        return target.copy(this._color);
     }
 
     asHexString() {
@@ -105,7 +103,7 @@ export function hsvToRgb(h, s = 1, v = 0.5, targetColor= new Color()) {
         case 5: r = v, g = p, b = q; break;
     }
 
-    targetColor.setRGB(r, g, b);
+    targetColor.setRGB(r, g, b, SRGBColorSpace);
     return targetColor;
 }
 
@@ -195,7 +193,7 @@ export class WavelengthColorMapper extends ColorMapper {
         if (this._showSpectralColor)
             wavelengthColor(this._lambdaInNanos, targetColor);
         else
-            targetColor.setRGB(1, 1, 0);
+            targetColor.setRGB(1, 1, 0, SRGBColorSpace);
     }
 
     /** @param {boolean} value */
@@ -215,16 +213,16 @@ class ScientificColorMapper extends ColorMapper {
 
         switch (num) {
             case 0 :
-                targetColor.setRGB(0, s, 1);
+                targetColor.setRGB(0, s, 1, SRGBColorSpace);
                 return 1;
             case 1 :
-                targetColor.setRGB(0, 1, 1 - s);
+                targetColor.setRGB(0, 1, 1 - s, SRGBColorSpace);
                 return 1;
             case 2 :
-                targetColor.setRGB(s, 1, 0);
+                targetColor.setRGB(s, 1, 0, SRGBColorSpace);
                 return 1;
             case 3 :
-                targetColor.setRGB(1, 1 - s, 0);
+                targetColor.setRGB(1, 1 - s, 0, SRGBColorSpace);
                 return 1;
         }
     }
@@ -236,7 +234,7 @@ class RdYlBuColorMapper extends ColorMapper {
     map(value, targetColor) {
         const idx = Math.max(0, Math.min(255, Math.floor(value * 255)));
         const c = RdYlBuColorMapper.RdYlBucMap[idx];
-        targetColor.setRGB(c[0], c[1], c[2]);
+        targetColor.setRGB(c[0], c[1], c[2], SRGBColorSpace);
     }
 }
 
@@ -250,7 +248,7 @@ class ViridisColorMapper extends ColorMapper {
     map(value, targetColor) {
         const idx = Math.max(0, Math.min(255, Math.floor(value * 255)));
         const c = ViridisColorMapper.viridiscMap[idx];
-        targetColor.setRGB(c[0], c[1], c[2]);
+        targetColor.setRGB(c[0], c[1], c[2], SRGBColorSpace);
     }
 }
 
@@ -264,7 +262,7 @@ class SeismicColorMapper extends ColorMapper {
     map(value, targetColor) {
         const idx = Math.max(0, Math.min(255, Math.floor(value * 255)));
         const c = SeismicColorMapper.siesmiccMap[idx];
-        targetColor.setRGB(c[0], c[1], c[2]);
+        targetColor.setRGB(c[0], c[1], c[2], SRGBColorSpace);
     }
 }
 
@@ -278,7 +276,7 @@ class InfernoColorMapper extends ColorMapper {
     map(value, targetColor) {
         const idx = Math.max(0, Math.min(255, Math.floor(value * 255)));
         const c = InfernoColorMapper.infernocMap[idx];
-        targetColor.setRGB(c[0], c[1], c[2]);
+        targetColor.setRGB(c[0], c[1], c[2], SRGBColorSpace);
     }
 }
 
@@ -288,7 +286,7 @@ class WaterColorMapper extends ColorMapper {
      * @param {Color} targetColor
      */
     map(value, targetColor) {
-        targetColor.setRGB(value * 0.15, value * 0.3, value);
+        targetColor.setRGB(value * 0.15, value * 0.3, value, SRGBColorSpace);
     }
 }
 
@@ -298,7 +296,7 @@ class GradientColorMapper extends ColorMapper {
      * @param {Color} targetColor
      */
     map(value, targetColor) {
-        targetColor.setRGB(value, 0.2, 1.0 - value);
+        targetColor.setRGB(value, 0.2, 1.0 - value, SRGBColorSpace);
     }
 }
 
@@ -399,7 +397,7 @@ class ComplexHsvColorMapper extends ColorMapper {
     map(value, targetColor) {
         const hue = (value.phase+ .5) % 1;  // phase is in [-.5, .5]
 
-        let r, g, b;
+        let r=0, g=0, b=0;
         const i = Math.floor(hue * 6);
         const f = hue * 6 - i;
         const p = this._v * (1 - this._s);
@@ -417,7 +415,7 @@ class ComplexHsvColorMapper extends ColorMapper {
 
         // Modulus is part of the complex-color mapping:
         const brightness = Math.min(1, value.modulus);
-        targetColor.setRGB(r * brightness, g * brightness, b * brightness);
+        targetColor.setRGB(r * brightness, g * brightness, b * brightness, SRGBColorSpace);
     }
 }
 

@@ -44,7 +44,12 @@ export class FixedIntervalNormalizer extends Normalizer {
 }
 
 export class AdaptiveSymmetricNormalizer extends Normalizer {
-    constructor(smoothing = 0.05) { super(); this._smoothing = smoothing; this._maxAbs = 1; }
+    constructor(smoothing = 0.05) { 
+        super(); 
+        this._smoothing = smoothing; 
+        this._maxAbs = 1; 
+    }
+    
     /** @param {Interval} rangeInterval */
     adaptTo(rangeInterval) {
         if (!Number.isFinite(rangeInterval.from) || !Number.isFinite(rangeInterval.to))
@@ -223,14 +228,14 @@ export class SurfaceVisualization extends Renderable3D {
     static Display = Object.freeze({ Surface: 'surface', Glyphs: 'glyphs', None: 'none' });
     /**
      * @param {Object} [param0={}] 
+     * @param {SurfaceResolution} [param0.resolution=new SurfaceResolution(100, 100)] 
      * @param {string} [param0.glyphType=GlyphLayer.GlyphTypes.BOXES]
      * @param {number} [param0.glyphScale=0.8]
-     * @param {string} [param0.display=SurfaceVisualization.Display.Surface]
-     * @param {number} [param0.opacity=1]
-     * @param {SurfaceResolution} [param0.resolution=new SurfaceResolution(100, 100)] 
      * @param {ColorLayer} [param0.colorLayer=new HeightLayer()] 
      * @param {ColorMapper} [param0.colorMapper=new ColorMappers().get(ColorMappers.Gradient)()] 
      * @param {Normalizer} [param0.normalizer=new AdaptiveSymmetricNormalizer()] 
+     * @param {number} [param0.opacity=1]
+     * @param {string} [param0.display=SurfaceVisualization.Display.Surface]
      */
     constructor({
         resolution = new SurfaceResolution(100, 100),
