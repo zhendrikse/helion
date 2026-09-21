@@ -18,14 +18,15 @@ layout: ../../../layouts/DocsLayout.astro
 This demo visualizes the stationary eigenstates of a 2D isotropic harmonic oscillator:
 
 $$
-i\hbar \frac{\partial \psi (x,y,t)}{\partial t}=
--\frac{\hbar ^{2}}{2m}\left(\frac{\partial ^{2}}{\partial x^{2}}+\frac{\partial ^{2}}{\partial y^{2}}\right)\psi (x,y,t)+V(x,y)\psi (x,y,t)
+i\hbar \frac{\partial \psi (x,y,t)}{\partial t}=\left[
+-\frac{\hbar ^{2}}{2m}\left(\frac{\partial ^{2}}{\partial x^{2}}+\frac{\partial ^{2}}{\partial y^{2}}\right)+V(x,y)
+\right]\psi (x,y,t)
 $$
 
-Where: 
+Where:
 
 - $\psi(x, y, t)$ is the wave function of the system.
-- $\frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} = \nabla^2$ is the 2D Laplacian operator (spatial second derivatives).
+- $\partial^2/\partial x^2 + \partial^2/\partial y^2 = \nabla^2$ is the 2D Laplacian operator.
 - $\hbar$ is the reduced Planck's constant, set to $1$ in the code.
 - $m$ is the mass of the particle, set to $1$ in the code.
 - $V(x, y)$ is the potential energy function, here the harmonic oscillator potential:
