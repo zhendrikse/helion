@@ -1,6 +1,5 @@
 import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Vec3, Range,
-    Cylinder, ElectromagneticWave, Slider,
-    Colour
+    Cylinder, ElectromagneticWave, Slider, Colour
 } from '../../../src/index.js';
 
 //

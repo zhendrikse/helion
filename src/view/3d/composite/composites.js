@@ -177,9 +177,20 @@ export class PointCloudView extends Points {
 // Plane waves
 //
 export class ElectromagneticWave extends Renderable3D {
+    /**
+     *
+     * @param {{
+     *     electricFieldColor?: Colour
+     *     magneticFieldColor?: Colour
+     *     arrowSize?: number
+     *     numArrows?: number
+     *     scalingFunction?: (position: Vec3, lambda: number) => number
+     * }}
+     * options
+     */
     constructor({
-        electricFieldColor = new Color("orange"),
-        magneticFieldColor = new Color("cyan"),
+        electricFieldColor = Colour.Orange,
+        magneticFieldColor = Colour.Cyan,
         arrowSize = 1,
         numArrows = 100,
         scalingFunction = (position, lambda) => .5, // default: fixed scaling with increasing distance
