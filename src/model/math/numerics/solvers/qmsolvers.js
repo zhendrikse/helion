@@ -28,6 +28,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
         this.reset();
     }
 
+    get hamiltonian() { return this._hamiltonian; }
     get stateCount() { return this._eigenstates.length; }
     get energies() { return this._eigenvalues; }
 
@@ -324,6 +325,7 @@ export class SchrodingerEigenstateSolver extends Solver {
         this.reset();
     }
 
+    get hamiltonian() { return this._hamiltonian; }
     get states() { return this._states; }
     get stateCount() { return this._eigenstates.length; }
 
@@ -468,6 +470,8 @@ export class SchrodingerSolver extends Solver {
         this._nextRe = null;
         this._nextIm = null;
     }
+
+    get hamiltonian() { return this._hamiltonian; }
 
     reset() {
         this._nextRe?.fill(0);
