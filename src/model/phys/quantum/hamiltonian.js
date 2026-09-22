@@ -147,7 +147,7 @@ export class Hamiltonian {
      * @param {number | {maxStates?: number, iterations?: number, dt?: number}} options
      * @returns {{states: Float64Array[], energies: number[]}} eigenstates and eigenvalues
      */
-    solve(options = {}) {
+    async solve(options = {}) {
         const config = typeof options === 'number'
             ? { maxStates: options }
             : options;
@@ -159,7 +159,7 @@ export class Hamiltonian {
             dt: config.dt ?? 0.01
         });
 
-        return solver.solve();
+        await solver.solve(config.progressReportCallback);
     }
 
     /**

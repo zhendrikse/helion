@@ -147,13 +147,15 @@ export class SchrodingerEigenstateSolver extends Solver {
         this.reset();
     }
 
-    /** 
+    /**
+     * @param {(percent: number) => void} progressReportCallback
      * @returns {{states: Float64Array[], energies: number[]}} eigenstates and eigenvalues
      */
-    solve() {
+    async solve(progressReportCallback = (_percent) => {}) {
         this.reset();
+
         for (let state = 0; state < this._statesCount; state++)
-            this._createEigenState(state);
+            await this._createEigenState(state, progressReportCallback);
 
         const states = this._eigenstates.slice();
         const energies = this._eigenvalues.slice();
@@ -165,8 +167,11 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._eigenvalues = [];
     }
 
-    /** @param {number} state */
-    _createEigenState(state) {
+    /**
+     * @param {number} state
+     * @param {(percent: number) => void} progressReportCallback
+     */
+    async _createEigenState(state, progressReportCallback = (_percent) => {}) {
         const n = this._hamiltonian.N;
         const psiSize = n * n;
         let psi = new Float64Array(psiSize);
@@ -184,7 +189,12 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._orthogonalize(psi);
         this._normalize(psi);
 
+        const total = this._iterations * this._statesCount;
         for (let iteration = 0; iteration < this._iterations; iteration++) {
+            if (iteration % 200 === 0) {
+                progressReportCallback(100 * (state * this._iterations + iteration) / total);
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
             const hPsi = this._hamiltonian.apply(psi);
             const next = new Float64Array(psiSize);
 

@@ -7,6 +7,20 @@ const N = 120;
 const extent = 0.15 * (N - 1);
 const springConstant = 0.05;
 
+const simulation = Simulation
+    .with({
+        htmlDivId: 'qmsolveEigenstates',
+        viewport: { aspectRatio: '4/3' },
+        infoPanel: {
+            text: '<strong>🫐 Stationary eigenstates</strong><br/>Stationary ' +
+                'eigenstates of a 2D isotropic harmonic oscillator:' +
+                '$$\nV(x,y)=\\frac{1}{2}k(x^2+y^2)\n$$' +
+                'Each state reveals a characteristic pattern of amplitude ' +
+                'and phase, forming the familiar wave-like lobes of quantum mechanics.\n'
+        },
+        headUpDisplay: { enabled: false }
+    });
+
 // 2D isotropic harmonic oscillator: V(x, y) = 0.5 * k * (x^2 + y^2)
 const harmonicOscillator = (/** @type {SingleParticle} */ particle) =>
     0.5 * springConstant * (particle.x ** 2 + particle.y ** 2);
@@ -22,8 +36,9 @@ const H = new Hamiltonian({
 const {states, energies} = H.solve({
     maxStates: 10,
     iterations: 900,
-    dt: 0.01
-});
+    dt: 0.01,
+    progressReportCallback: percent => simulation.showHud(`Solving Hamiltonian: ${Math.round(percent)}%`)
+}).then(() => simulation.hideHud());
 
 const psi = new DiscreteComplexField({ nx: N, ny: N });
 const waveFunction = new WaveFunctionSurface3D({
@@ -40,19 +55,7 @@ function showState(index = 8) {
 showState();
 
 let staticView = true;
-Simulation
-    .with({
-        htmlDivId: 'qmsolveEigenstates',
-        viewport: { aspectRatio: '4/3' },
-        infoPanel: {
-            text: '<strong>🫐 Stationary eigenstates</strong><br/>Stationary ' +
-                'eigenstates of a 2D isotropic harmonic oscillator:' +
-                '$$\nV(x,y)=\\frac{1}{2}k(x^2+y^2)\n$$' +
-                'Each state reveals a characteristic pattern of amplitude ' +
-                'and phase, forming the familiar wave-like lobes of quantum mechanics.\n'
-        },
-        headUpDisplay: { enabled: false }
-    })
+simulation
     .bind(psi.alwaysWith(waveFunction))
     .runsEvery(0.02)
     .onStep((clock, dt) => {
