@@ -329,12 +329,7 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
         this._colorData.modulus = normalizedModulus;
         this._colorMapper.map(this._colorData, this._rgb);
 
-        this._mesh.geometry.attributes.color.setXYZ(
-            index,
-            this._rgb.r,
-            this._rgb.g,
-            this._rgb.b
-        );
+        this._mesh.geometry.attributes.color.setXYZ(index, this._rgb.r, this._rgb.g, this._rgb.b);
         this._alphas[index] = Math.tanh(4.0 * normalizedModulus);
     }
 

@@ -8,19 +8,17 @@ const NX = 400;
 const NY = 400;
 const dt = 0.24;		// anything less than 0.25 seems to be stable
 
+const gaussianImpulse = new GaussianImpulseComplex2D();
 const potential = new DiscreteScalarField({ nx: NX, ny: NY });
 const psi = new DiscreteComplexField({ nx: NX, ny: NY });
 const hamiltonian = new Hamiltonian({
     potential,
-    spatialNdim: 2,
     N: NX,
     extent: 20,
     spacing: 1,
     hbar: Math.sqrt(2),
-    mass: 1,
     potentialScale: 2
 });
-const gaussianImpulse = new GaussianImpulseComplex2D();
 
 /**
  * @param {ShapeConfiguration} shapeConfig
@@ -57,12 +55,8 @@ reset(shapeConfiguration, potentialStrength, softness);
 const simulation = Simulation
     .with({
         htmlDivId: 'quantumScattering',
-        viewport: {
-            aspectRatio: '19/12'
-        },
-        headUpDisplay: {
-            enabled: false
-        }
+        viewport: { aspectRatio: '19/12' },
+        headUpDisplay: { enabled: false }
     })
     .appendStartStopResetUI()
     .bind(psi.alwaysWith(waveFunctionSurface))
