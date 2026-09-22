@@ -198,12 +198,12 @@ export class Aquarium extends Mesh {
     } = {}) {
         const geometry = new BoxGeometry(1, 1, 1);
         const material = new MeshStandardMaterial({
-            color: new Color(contentColor.r, contentColor.g, contentColor.b),
             transparent: true,
             opacity: opacity,
             depthWrite: false,
             depthTest: true,
         });
+        contentColor.asThreeJsColor(material.color);
 
         super(geometry, material);
         this.position.copy(position);
@@ -212,9 +212,9 @@ export class Aquarium extends Mesh {
         // --- Edges ---
         const edges = new EdgesGeometry(geometry);
         const lineMaterial = new LineBasicMaterial({
-            color: new Color(frameColor.r, frameColor.g, frameColor.b),
             depthTest: true
         });
+        frameColor.asThreeJsColor(lineMaterial.color);
 
         const wireframe = new LineSegments(edges, lineMaterial);
         this.add(wireframe); // make it an integral part of the cube

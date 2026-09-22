@@ -421,7 +421,7 @@ export class ArrowField extends Renderable3D {
      * scaleFactor?: number,
      * round?: boolean,
      * magnitudeMap?: (value: number) => number,
-     * colorMap?: (dir: Vec3, mag: number) => Colour,
+     * colorMap?: (dir: Vec3, mag: number) => Color,
      * shaftWidth?: number,
      * headLength?: number,
      * headWidth?: number,
@@ -435,7 +435,7 @@ export class ArrowField extends Renderable3D {
         scaleFactor = 1,
         round = false,
         magnitudeMap = mag => Math.log(1 + mag),
-        colorMap = (dir, mag) => hsvToRgb(Math.min(Math.log(1 + mag) / 5, 1), 0.7, 0.5),
+        colorMap = (dir, mag) => hsvToRgb(Math.min(Math.log(1 + mag) / 5, 1), 0.7, 0.75),
         shaftWidth = 0.08,
         headWidth = 2.0,
         headLength = 4.0,
@@ -453,7 +453,7 @@ export class ArrowField extends Renderable3D {
         this._scaleFactor = scaleFactor;
         this._matrixMagnitudeMap = magnitudeMap;
         this._colorMap = colorMap;
-        this._color = new Colour();
+        this._color = new Color();
 
         this._shaftWidth = shaftWidth;
         this._headWidth = headWidth;

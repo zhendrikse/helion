@@ -67,7 +67,7 @@ const arrowField = new ArrowField({
     round: true,
     magnitudeMap: m => Math.sqrt(1e-7 * m),
     scaleFactor: 1e-16,
-    colorMap: (axis, magnitude) => hsvToRgb(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.5)
+    colorMap: (axis, magnitude) => hsvToRgb(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.75)
 });
 
 const simulation = Simulation

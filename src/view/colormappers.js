@@ -1,6 +1,23 @@
-import { Color, DataTexture, RGBFormat, LinearFilter, SRGBColorSpace } from 'three';
+import {Color, DataTexture, RGBFormat, LinearFilter, SRGBColorSpace, LinearSRGBColorSpace} from 'three';
 import { Registry } from '../core/utils.js';
 
+/**
+ *  ┌── RGB input ────────┐
+ *  │                     │
+ *  ├── Hex ──────────────┤
+ *  │                     ↓
+ *  ├── HSL/HSV ───→  Linear RGB
+ *  │                     │
+ *  │                Colour object
+ *  │                     │
+ *  │                     ↓
+ *  │               Three.js
+ *  │                     │
+ *  │              lighting/shading
+ *  │                     │
+ *  │                     ↓
+ *  └────────────── sRGB output
+ */
 export class Colour {
     static Red = new Colour(1, 0, 0);
     static Green = new Colour(0, 1, 0);
@@ -12,7 +29,11 @@ export class Colour {
     static Black = new Colour(0, 0, 0);
     static Purple = new Colour(0.5, 0, 0.5);
 
-    static fromThreeJsColor = (/** @type {Color} */ threeJsColor) => new Colour(threeJsColor.r, threeJsColor.g, threeJsColor.b);
+    static fromThreeJsColor = (/** @type {Color} */ threeJsColor) => {
+        const c = new Colour();
+        c._color.copy(threeJsColor);
+        return c;
+    };
 
     static toHex = (/** @type {number} */ value) => 
         Math.round(value * 255).toString(16).padStart(2, '0');
@@ -37,31 +58,38 @@ export class Colour {
         return this;
     }
 
+    /**
+     * Linear (!!!) RGB component. Meant for internal Helion usage only.
+     *
+     * @returns {number}
+     */
     get r() { return this._color.r; }
+    /**
+     * Linear (!!!) RGB component. Meant for internal Helion usage only.
+     *
+     * @returns {number}
+     */
     get g() { return this._color.g; }
+    /**
+     * Linear (!!!) RGB component. Meant for internal Helion usage only.
+     *
+     * @returns {number}
+     */
     get b() { return this._color.b; }
 
     /** @param {Colour} otherColour */
     copy(otherColour) {
-        this._color.r = otherColour.r;
-        this._color.g = otherColour.g;
-        this._color.b = otherColour.b;
-        return this;
-    }
-
-    /** @param {number} hexValue */
-    setHex(hexValue) {
-        this._color.setHex(hexValue);
+        this._color.copy(otherColour._color);
         return this;
     }
 
     /**
      * @param {number} h hue
      * @param {number} s saturation
-     * @param {number} v value
+     * @param {number} l value
      */
-    setHSL(h, s, v) {
-        this._color.setHSL(h, s, v);
+    setHSL(h, s, l) {
+        this._color.setHSL(h, s, l, SRGBColorSpace);
         return this;
     }
 
@@ -70,8 +98,12 @@ export class Colour {
     }
 
     asHexString() {
-        return `#${Colour.toHex(this.r)}${Colour.toHex(this.g)}${Colour.toHex(this.b)}`;
+        const c = new Color();
+        this._color.getRGB(c, SRGBColorSpace);
+
+        return `#${Colour.toHex(c.r)}${Colour.toHex(c.g)}${Colour.toHex(c.b)}`;
     }
+
 
     asHexValue() {
         return this._color.getHex();
@@ -545,6 +577,7 @@ export function createColorMapTexture(colorArray) {
     }
 
     const texture = new DataTexture(data, 256, 1, RGBFormat);
+    texture.colorSpace = LinearSRGBColorSpace;
     texture.needsUpdate = true;
     texture.magFilter = LinearFilter;
     texture.minFilter = LinearFilter;

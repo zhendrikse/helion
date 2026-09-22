@@ -1,4 +1,4 @@
-import { WebGLRenderer, DirectionalLight, PCFShadowMap, AmbientLight } from 'three';
+import { WebGLRenderer, DirectionalLight, PCFShadowMap, AmbientLight, SRGBColorSpace } from 'three';
 import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 import { Renderable, Renderer } from '../renderer.js'
 import { Axes } from './composite/backgrounds.js';
@@ -73,6 +73,7 @@ export class ThreeJsRenderer extends Renderer {
             this._renderer.shadowMap.enabled = true;
             this._renderer.shadowMap.type = PCFShadowMap;
         }
+        this._renderer.outputColorSpace = SRGBColorSpace
 
         this.#createLabelRenderer(viewport);
         this._camera = new ThreeJsCamera(viewport, this._options.camera)

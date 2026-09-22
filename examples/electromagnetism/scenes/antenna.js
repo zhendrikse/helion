@@ -56,6 +56,6 @@ const slit = new Vec3(0, 0, lambda);
 for (let wave of planeWaves)
     simulation.bind(wave.alwaysWith(new ElectromagneticWave({
         numArrows: 120,
-        arrowSize: 0.2,
+        arrowSize: 0.125,
         scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)
     })));
