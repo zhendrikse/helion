@@ -204,7 +204,3 @@ export class Hamiltonian {
     }
 }
 
-/**
- * Kept here temporarily so Hamiltonian.createWaveFunction() does not need
- * callers to know about the field implementation.
- */
