@@ -140,7 +140,7 @@ export class Hamiltonian {
      * Solve for the lowest stationary states.
      *
      * @param {number | {maxStates?: number, iterations?: number, dt?: number}} options
-     * @returns {{states: Float64Array[], energies: number[]}}
+     * @returns {Float64Array[] & {energies: number[]}}
      */
     solve(options = {}) {
         const config = typeof options === 'number'
