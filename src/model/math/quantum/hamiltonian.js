@@ -177,7 +177,10 @@ export class Hamiltonian {
         if (!this._evolutionSolver)
             this._evolutionSolver = new SchrodingerSolver({ hamiltonian: this });
 
-        this._evolutionSolver.step(psi, dt);
+        if (!this._evolutionSolver.initialized)
+            this._evolutionSolver.initialize(psi, dt);
+        else
+            this._evolutionSolver.step(psi, dt);
         return psi;
     }
 
