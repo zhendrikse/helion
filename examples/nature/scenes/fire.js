@@ -46,7 +46,7 @@ export class FireSolver {
             return;
         } 
 
-        const intensity = 4.1 + 0.3 * (Math.abs(col - field.nx / 2) / (field.nx / 2));
+        const intensity = 4.1 + 0.5 * (Math.abs(col - field.nx / 2) / (field.nx / 2));
         const a = (col > 0 && row > 0) ? old[(col - 1) + (row - 1) * field.nx] : 0;
         const b = (row > 0) ? old[col + (row - 1) * field.nx] : 0;
         const c = (col + 1 < field.nx && row > 0) ? old[(col + 1) + (row - 1) * field.nx] : 0;
@@ -68,8 +68,8 @@ class Fire extends DiscreteScalarField {
     }
 }
 
-const NX = 400;
-const NY = 280;
+const NX = 360;
+const NY = 240;
 const cellSize = 2;
 
 const field = new Fire({ nx: NX, ny: NY });
@@ -86,9 +86,9 @@ for (let c = 0; c < NX; c++) field.setValueAt(c, 0, Math.random());
 Simulation
     .with({
         htmlDivId: 'fireContainer',
-        viewport: { aspectRatio: '20/7'},
+        viewport: { aspectRatio: '19/12'},
         camera: {
-            position: new Vec3(0, 0, NX*.8),
+            position: new Vec3(0, 0, NX),
             target: new Vec3(0, -100, 0),
             orthographic: true
         },
