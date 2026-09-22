@@ -18,7 +18,6 @@ test('Hamiltonian samples a coordinate-based potential function', () => {
     assert.equal(H.potential.valueAt(2, 2), 0);
     assert.equal(H.potential.valueAt(4, 2), 4);
     assert.equal(H.potential.valueAt(2, 4), 4);
-    assert.equal(H.spacing, 1);
 });
 
 test('Hamiltonian solve returns stationary states and energies', () => {

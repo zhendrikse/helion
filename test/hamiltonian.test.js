@@ -7,7 +7,7 @@ import { Hamiltonian } from '../src/model/math/quantum/hamiltonian.js';
 test('Hamiltonian applies the 2D finite-difference operator', () => {
     const nx = 5;
     const potential = new DiscreteScalarField({ nx, ny: nx });
-    const hamiltonian = new Hamiltonian({ potential, spacing: 1, hbar: 1, mass: 1 });
+    const hamiltonian = new Hamiltonian({ potential, N: nx, spacing: 1, hbar: 1, mass: 1 });
     const psi = new Float64Array(nx * nx);
 
     psi[2 * nx + 2] = 1;
@@ -23,7 +23,7 @@ test('Hamiltonian applies the 2D finite-difference operator', () => {
 test('Hamiltonian applies the 3D finite-difference operator', () => {
     const n = 5;
     const potential = new DiscreteScalarField3D({ nx: n, ny: n, nz: n });
-    const hamiltonian = new Hamiltonian({ potential, spacing: 1, hbar: 1, mass: 1 });
+    const hamiltonian = new Hamiltonian({ potential, N: n, spacing: 1, hbar: 1, mass: 1 });
     const psi = new Float64Array(n * n * n);
     const center = potential.index(2, 2, 2);
 
@@ -42,7 +42,7 @@ test('Hamiltonian applies the 3D finite-difference operator', () => {
 test('Hamiltonian energy uses the Rayleigh quotient', () => {
     const potential = new DiscreteScalarField({ nx: 5, ny: 5 });
     potential.setValueAt(2, 2, 4);
-    const hamiltonian = new Hamiltonian({ potential });
+    const hamiltonian = new Hamiltonian({ potential, N: 5 });
     const psi = new Float64Array(25);
     psi[12] = 1;
 

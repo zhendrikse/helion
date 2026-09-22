@@ -1,4 +1,4 @@
-import { DiscreteComplexField, DiscreteScalarField } from '../fields.js';
+import {DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D} from '../fields.js';
 import { SingleParticle } from './particles.js';
 import { SchrodingerEigenstateSolver, SchrodingerSolver } from './schrodinger.js';
 
@@ -24,6 +24,19 @@ import { SchrodingerEigenstateSolver, SchrodingerSolver } from './schrodinger.js
  * sampled potential.
  */
 export class Hamiltonian {
+    /**
+     * @param {{
+     *     particle?: SingleParticle
+     *     potential?: DiscreteScalarField | DiscreteScalarField3D | function
+     *     spatialDim?: number
+     *     N?: number
+     *     extent?: number
+     *     spacing?: number | null
+     *     hbar?: number
+     *     mass?: number
+     *     potentialScale?: number
+     * }} [options]
+     */
     constructor({
         particle = SingleParticle,
         potential = _particle => 0,
@@ -60,29 +73,22 @@ export class Hamiltonian {
         if (this._spacing <= 0)
             throw new RangeError('Hamiltonian spacing must be greater than zero.');
 
-        if (potential instanceof DiscreteScalarField) {
+        if ((potential instanceof DiscreteScalarField) || (potential instanceof DiscreteScalarField3D)) {
             if (potential.nx !== N || potential.ny !== N)
                 throw new Error('Hamiltonian potential and N must describe the same grid dimensions.');
             this._potential = potential;
-        } else if (this._potentialFunction) {
+        } else if (this._potentialFunction)
             this._potential = this._samplePotential(this._potentialFunction);
-        } else {
+        else
             throw new TypeError('Hamiltonian potential must be a function or DiscreteScalarField.');
-        }
 
         this._evolutionSolver = null;
     }
 
     get potential() { return this._potential; }
-    get potentialFunction() { return this._potentialFunction; }
     get particle() { return this._particleType; }
-    get spatialNdim() { return this._spatialNdim; }
     get N() { return this._N; }
-    get extent() { return this._extent; }
-    get spacing() { return this._spacing; }
-    get hbar() { return this._hbar; }
     get mass() { return this._mass; }
-    get dimension() { return this._spatialNdim; }
 
     /**
      * Apply H to a real-valued grid function.
