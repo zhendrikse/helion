@@ -32,7 +32,7 @@ const H = new Hamiltonian({
     extent
 });
 
-const {states, energies} = H.solve({
+const {states, energies} = await H.solveAsync({
     maxStates: 10,
     iterations: 900,
     dt: 0.01,
