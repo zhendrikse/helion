@@ -1,6 +1,6 @@
 import { Color } from 'three/src/Three.Core.js';
 import {
-    Simulation, Vec3, DiscreteScalarField, ArrowField2D,
+    Simulation, Vec3, DiscreteScalarField, ArrowField2D, Colour,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
     JacobiSolver, ColorMapper, Checkbox, Arrow2D, Button, ElectricField, DiscreteFieldSurfaceView
 } from '../../../src/index.js';
@@ -22,14 +22,12 @@ class PotentialColorMapper extends ColorMapper {
      * @param {Color} target
      */
     map(value, target) {
-        if (value < 0.5)
-            target.setRGB(1, 2 * value, 0);
-        else
-            target.setRGB(1 - 2 * (value - 0.5), 1, 0);
+        value < 0.5 ? target.setRGB(1, 2 * value, 0): target.setRGB(1 - 2 * (value - 0.5), 1, 0);
     }
 }
 
 class DipoleBoundaryCondition extends DirichletBoundaryCondition {
+    /** @param {number} separation */
     constructor(separation = d) {
         const cx = Math.floor(N / 2);
         const cy = Math.floor(N / 2);
@@ -78,7 +76,6 @@ const view = new DiscreteFieldSurfaceView({
     scale: cellSize,
     colorMapper: new PotentialColorMapper(),
     normalizer: new FixedIntervalNormalizer(potentialRangeInterval),
-    opacity: 1,
     opacityFunction: value => 2 * Math.abs(value - 0.5)
 });
 
@@ -93,7 +90,7 @@ const arrows = new ArrowField2D({
     size: 0.25,
     headLength: 0.5,
     headWidth: 0.4,
-    colorMap: (_dir, _mag) => 0x333333,
+    colorMap: (_dir, _mag) => new Colour(0x666666),
     headStyle: Arrow2D.HeadStyle.Filled,
     visible: false
 });

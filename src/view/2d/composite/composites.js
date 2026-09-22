@@ -1,24 +1,23 @@
 import {
     BoxGeometry, ConeGeometry, DoubleSide, InstancedBufferAttribute, InstancedMesh,
-    Matrix4, MeshBasicMaterial, Quaternion, Vector3, Color,
-    TimestampQuery
+    Matrix4, MeshBasicMaterial, Quaternion, Vector3
 } from "three";
 import { Range, Vec2, Vec3 } from "../../../model/math/math.js";
 import { Arrow2D } from "../primitives.js";
 import { Renderable2D } from "../../renderer.js";
 import { VectorField } from "../../../model/math/fields.js";
+import { Colour } from "../../colormappers.js";
 
 const UP = new Vector3(0, 1, 0);
 
 export class ArrowField2D extends Renderable2D {
-
     /**
      * @param {{
      * xRange?: Range,
      * yRange?: Range,
      * scaleFactor?: number,
      * magnitudeMap?: (value: number) => number,
-     * colorMap?: (dir: Vec3, mag: number) => number | Color,
+     * colorMap?: (dir: Vec3, mag: number) => Colour,
      * size?: number,
      * visible?: boolean,
      * shaftWidth?: number,
@@ -32,7 +31,7 @@ export class ArrowField2D extends Renderable2D {
         yRange,
         scaleFactor = 1,
         magnitudeMap = m => Math.log(1 + m),
-        colorMap = (dir, mag) => 0xffff00,
+        colorMap = (dir, mag) => Colour.Yellow,
         size = 0.1,
         visible = true,
         shaftWidth = size * 0.35,
@@ -66,23 +65,19 @@ export class ArrowField2D extends Renderable2D {
         this._shaftMesh.instanceColor = new InstancedBufferAttribute(colors, 3);
 
         this._headMesh = null;
-        if (headStyle === Arrow2D.HeadStyle.Filled) {
-            const headGeometry = new ConeGeometry(0.5, 1, 4);
-            const headMaterial = new MeshBasicMaterial({ side: DoubleSide });
+        const headMaterial = new MeshBasicMaterial({ side: DoubleSide });
+        const headGeometry = headStyle === Arrow2D.HeadStyle.Filled ? new ConeGeometry(0.5, 1, 4) : new BoxGeometry(1, 1, 1);
+        this._headMesh = new InstancedMesh(headGeometry,headMaterial, count);
+        this._headMesh.instanceColor = this._shaftMesh.instanceColor;
+        this._headLeftMesh = new InstancedMesh(headGeometry,headMaterial, count);
+        this._headRightMesh = new InstancedMesh(headGeometry,headMaterial, count);
+        this._headLeftMesh.instanceColor = this._shaftMesh.instanceColor;
+        this._headRightMesh.instanceColor = this._shaftMesh.instanceColor;
 
-            this._headMesh = new InstancedMesh(headGeometry,headMaterial, count);
-            this._headMesh.instanceColor = this._shaftMesh.instanceColor;
+        if (headStyle === Arrow2D.HeadStyle.Filled) 
             this.add(this._shaftMesh, this._headMesh);
-        } else {
-            const headGeometry = new BoxGeometry(1, 1, 1);
-            const headMaterial = new MeshBasicMaterial({ side: DoubleSide });
-
-            this._headLeftMesh = new InstancedMesh(headGeometry,headMaterial, count);
-            this._headRightMesh = new InstancedMesh(headGeometry,headMaterial, count);
-            this._headLeftMesh.instanceColor = this._shaftMesh.instanceColor;
-            this._headRightMesh.instanceColor = this._shaftMesh.instanceColor;
+        else 
             this.add(this._shaftMesh, this._headLeftMesh, this._headRightMesh);
-        }
 
         this._matrix = new Matrix4();
         this._q = new Quaternion();
@@ -107,7 +102,11 @@ export class ArrowField2D extends Renderable2D {
         return true;
     }
 
-    /** @param {number} index  @param {number} positionX @param {number} positionY */
+    /** 
+     * @param {number} index  
+     * @param {number} positionX 
+     * @param {number} positionY 
+     */
     _updateVectorAt(index, positionX, positionY) {
         const x = -this._target.x;
         const y = -this._target.y;
@@ -140,11 +139,7 @@ export class ArrowField2D extends Renderable2D {
         this._matrix.compose(this._shaftCenter, this._q, this._shape);
         this._shaftMesh.setMatrixAt(index, this._matrix);
 
-        this._tip.set(
-            positionX + this._dir.x * visualMagnitude,
-            positionY + this._dir.y * visualMagnitude,
-            0
-        );
+        this._tip.set( positionX + this._dir.x * visualMagnitude,  positionY + this._dir.y * visualMagnitude, 0);
 
         if (this._headMesh) {
             this._headCenter.set(
@@ -162,7 +157,7 @@ export class ArrowField2D extends Renderable2D {
         }
 
         const color = this._colorMap(new Vec3(this._dir.x, this._dir.y, 0), magnitude);
-        this._setInstanceColor(index, color);
+        this._shaftMesh.instanceColor.setXYZ(index, color.r, color.g, color.b);
     }
 
     /** @param {VectorField} vectorField */
@@ -187,22 +182,14 @@ export class ArrowField2D extends Renderable2D {
         this._headRightMesh.instanceMatrix.needsUpdate = true;
     }
 
-    _setInstanceColor(index, color) {
-        if (typeof color === "number") {
-            // Accept the same hexadecimal color representation as Arrow2D,
-            // e.g. 0xffffff, rather than interpreting 255 as a red-channel value.
-            this._shaftMesh.instanceColor.setXYZ(
-                index,
-                ((color >> 16) & 0xff) / 255,
-                ((color >> 8) & 0xff) / 255,
-                (color & 0xff) / 255
-            );
-            return;
-        }
-
-        this._shaftMesh.instanceColor.setXYZ(index, color.r, color.g, color.b);
-    }
-
+    /**
+     * @param {InstancedMesh} mesh
+     * @param {number} index
+     * @param {Vector3} tip
+     * @param {Vector3} direction
+     * @param {number} length
+     * @param {number} side
+     */
     _setHeadSegment(mesh, index, tip, direction, length, side) {
         this._perpendicular.set(-direction.y, direction.x, 0);
         this._base.set(tip.x - direction.x * length, tip.y - direction.y * length, 0);
@@ -229,6 +216,10 @@ export class ArrowField2D extends Renderable2D {
         mesh.setMatrixAt(index, this._matrix);
     }
 
+    /**
+     * @param {InstancedMesh} mesh
+     * @param {number} index
+     */
     _hideInstance(mesh, index) {
         this._matrix.makeScale(0, 0, 0);
         mesh.setMatrixAt(index, this._matrix);
@@ -237,18 +228,13 @@ export class ArrowField2D extends Renderable2D {
     dispose() {
         this._shaftMesh.geometry.dispose();
         this._shaftMesh.material.dispose();
-
-        if (this._headMesh) {
-            this._headMesh.geometry.dispose();
-            this._headMesh.material.dispose();
-        } else {
-            this._headLeftMesh.geometry.dispose();
-            this._headLeftMesh.material.dispose();
-            this._headRightMesh.geometry.dispose();
-            this._headRightMesh.material.dispose();
-        }
+        this._headMesh.geometry.dispose();
+        this._headMesh.material.dispose();
+        this._headLeftMesh.geometry.dispose();
+        this._headLeftMesh.material.dispose();
+        this._headRightMesh.geometry.dispose();
+        this._headRightMesh.material.dispose();
 
         this.clear();
-        this._positions.length = 0;
     }
 }

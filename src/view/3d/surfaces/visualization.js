@@ -38,16 +38,6 @@ export class FixedIntervalNormalizer extends Normalizer {
 
     /** @param {Interval} _rangeInterval */
     adaptTo(_rangeInterval) {
-        // if (_rangeInterval.from < this._min ) {
-        //     this._min = _rangeInterval.from;
-        //     console.log(this._min);
-        // }
-        // if (_rangeInterval.to < this._max ) {
-        //     this._max = _rangeInterval.to;
-        //     console.log(this._max);
-        // }
-        // if (_rangeInterval.from !== 0)
-        //     console.log(_rangeInterval)
         // Interval is fixed (nomen est omen), so we intentionally do nothing here
     }
 
