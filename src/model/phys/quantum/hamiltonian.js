@@ -160,7 +160,29 @@ export class Hamiltonian {
             dt: config.dt ?? 0.01
         });
 
-        return solver.solve(options.progressReportCallback);
+        return solver.solve(config.progressReportCallback);
+    }
+
+    /**
+     * Solve for the lowest stationary states while yielding to the browser
+     * between batches of iterations so progress can be rendered.
+     *
+     * @param {number | {maxStates?: number, iterations?: number, dt?: number, progressReportCallback?: (percent: number) => void}} options
+     * @returns {Promise<{states: Float64Array[], energies: number[]}>}
+     */
+    async solveAsync(options = {}) {
+        const config = typeof options === 'number'
+            ? { maxStates: options }
+            : options;
+
+        const solver = new SchrodingerEigenstateSolver({
+            hamiltonian: this,
+            states: config.maxStates ?? 1,
+            iterations: config.iterations ?? 1200,
+            dt: config.dt ?? 0.01
+        });
+
+        return solver.solveAsync(config.progressReportCallback);
     }
 
     /**
