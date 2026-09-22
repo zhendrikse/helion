@@ -161,12 +161,34 @@ export class SchrodingerEigenstateSolver extends Solver {
         return {states, energies};
     }
 
+    /**
+     * Asynchronous variant of solve(). The numerical work remains sequential,
+     * but the solver periodically yields to the browser so DOM updates such
+     * as HUD progress can be rendered before continuing.
+     *
+     * @param {(percent: number) => void} [progressReportCallback]
+     * @returns {Promise<{states: Float64Array[], energies: number[]}>}
+     */
+    async solveAsync(progressReportCallback) {
+        this.reset();
+
+        for (let state = 0; state < this._statesCount; state++)
+            await this._createEigenStateAsync(state, progressReportCallback);
+
+        const states = this._eigenstates.slice();
+        const energies = this._eigenvalues.slice();
+        return {states, energies};
+    }
+
     reset() {
         this._eigenstates = [];
         this._eigenvalues = [];
     }
 
-    /** @param {number} state */
+    /**
+     * @param {number} state
+     * @param {(percent: number) => void} [progressReportCallback]
+     */
     _createEigenState(state, progressReportCallback) {
         const n = this._hamiltonian.N;
         const psiSize = n * n;
@@ -188,8 +210,57 @@ export class SchrodingerEigenstateSolver extends Solver {
         const total = this._iterations * this._statesCount;
         for (let iteration = 0; iteration < this._iterations; iteration++) {
             if (iteration % 200 === 0) {
-                progressReportCallback(100 * (state * this._iterations + iteration) / total);
+                progressReportCallback?.(100 * (state * this._iterations + iteration) / total);
             }
+            const hPsi = this._hamiltonian.apply(psi);
+            const next = new Float64Array(psiSize);
+
+            for (let i = 0; i < psiSize; i++)
+                next[i] = psi[i] - this._dt * hPsi[i];
+
+            this._orthogonalize(next);
+            this._normalize(next);
+            psi = next;
+        }
+
+        this._eigenstates.push(psi);
+        this._eigenvalues.push(this._hamiltonian.energyOf(psi));
+    }
+
+    /**
+     * @param {number} state
+     * @param {(percent: number) => void} [progressReportCallback]
+     */
+    async _createEigenStateAsync(state, progressReportCallback) {
+        const n = this._hamiltonian.N;
+        const psiSize = n * n;
+        let psi = new Float64Array(psiSize);
+
+        // Keep the same deterministic seed and numerical algorithm as the
+        // synchronous solver; only the scheduling is different.
+        for (let y = 1; y < n - 1; y++) {
+            const v = y / (n - 1);
+            for (let x = 1; x < n - 1; x++) {
+                const u = x / (n - 1);
+                psi[y * n + x] = Math.sin((state + 1) * Math.PI * u) * Math.sin(Math.PI * v);
+            }
+        }
+
+        this._orthogonalize(psi);
+        this._normalize(psi);
+
+        const total = this._iterations * this._statesCount;
+        const yieldEvery = 20;
+
+        for (let iteration = 0; iteration < this._iterations; iteration++) {
+            if (iteration % yieldEvery === 0) {
+                progressReportCallback?.(100 * (state * this._iterations + iteration) / total);
+
+                // Let the browser process pending DOM/layout/paint work before
+                // the next batch of numerical iterations continues.
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+
             const hPsi = this._hamiltonian.apply(psi);
             const next = new Float64Array(psiSize);
 
