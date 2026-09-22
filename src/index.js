@@ -71,7 +71,7 @@ export {
     SchrodingerSolver, SchrodingerEigenstateSolver, SchrodingerEigenstateSolver3D
 } from './model/math/numerics/solvers/qmsolvers.js'
 
-export { Hamiltonian } from './model/math/quantum/hamiltonian.js';
+export { Hamiltonian } from './model/math/quantum/hamiltonian.js';\nexport { SingleParticle } from './model/math/quantum/particles.js';
 export { InfiniteSquareWell2D } from './model/math/quantum/infinite_square_well.js';
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
 
