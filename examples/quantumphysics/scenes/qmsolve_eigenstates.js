@@ -10,7 +10,7 @@ const extent = 0.15 * (N - 1);
 const simulation = Simulation
     .with({
         htmlDivId: 'qmsolveEigenstates',
-        viewport: { aspectRatio: '4/3' },
+        viewport: { aspectRatio: '19/12' },
         infoPanel: {
             text: '<strong>🫐 Stationary eigenstates</strong><br/>Stationary ' +
                 'eigenstates for various potentials.\n\n' +
@@ -55,7 +55,7 @@ function showState(index = 8) {
 }
 showState();
 
-let staticView = true;
+let staticView = false;
 simulation
     .bind(psi.alwaysWith(waveFunction))
     .runsEvery(0.02)
@@ -71,7 +71,7 @@ simulation
         }
     })
     .append(new Checkbox("Static")
-        .checked(true)
+        .checked(staticView)
         // @ts-ignore
         .onChange(event => staticView = event.target.checked)
     )
@@ -88,8 +88,7 @@ simulation
         .withProperty('zScale')
     )
     .frameSceneOn(waveFunction, {
-        padding: 0.5,
-        translationY: 0,
-        viewDirection: new Vec3(-1, 0.8, 0.9)
+        padding: 0.425,
+        viewDirection: new Vec3(-1, .5, 0.9)
     })
     .start();
