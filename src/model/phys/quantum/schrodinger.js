@@ -147,18 +147,6 @@ export class SchrodingerEigenstateSolver extends Solver {
         this.reset();
     }
 
-    get hamiltonian() { return this._hamiltonian; }
-    get stateCount() { return this._eigenstates.length; }
-    get energies() { return this._eigenvalues; }
-    get eigenstates() { return this._eigenstates; }
-
-    /** @param {number} index */
-    eigenstateAt(index) {
-        if (index < 0 || index >= this._eigenstates.length)
-            throw new RangeError(`Eigenstate index out of range: ${index}`);
-        return this._eigenstates[index];
-    }
-
     /** 
      * @returns {{states: Float64Array[], energies: number[]}} eigenstates and eigenvalues
      */

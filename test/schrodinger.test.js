@@ -29,7 +29,7 @@ test('Hamiltonian solve returns stationary states and energies', () => {
 
     const result = H.solve({ maxStates: 2, iterations: 80, dt: 0.01 });
 
-    assert.equal(result.length, 2);
+    assert.equal(result.states.length, 2);
     assert.equal(result.energies.length, 2);
     assert.ok(Number.isFinite(result.energies[0]));
     assert.ok(Number.isFinite(result.energies[1]));
