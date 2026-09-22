@@ -44,16 +44,21 @@ test('SchrodingerSolver preserves the staggered leapfrog update', () => {
     psi.real[12] = 1;
     psi.imag[12] = 0.25;
 
+    // Solver does a half-step init on first step: imag += 0.5*dt*H(re)
+    solver.initialize(psi, dt);
+    const psiRealBeforeStep = new Float64Array(psi.real);
+    const psiImagBeforeStep = new Float64Array(psi.imag);
+
     // Calculate the two staggered updates independently. This is the
     // regression guard for the bug where the second line accidentally used
     // H(Im(n)) instead of H(Im(n+1)).
-    const hRe = H.apply(psi.real);
-    const expectedIm = new Float64Array(psi.imag);
+    const hRe = H.apply(psiRealBeforeStep);
+    const expectedIm = new Float64Array(psiImagBeforeStep);
     for (let i = 0; i < expectedIm.length; i++)
         expectedIm[i] -= dt * hRe[i];
 
     const hImNext = H.apply(expectedIm);
-    const expectedRe = new Float64Array(psi.real);
+    const expectedRe = new Float64Array(psiRealBeforeStep);
     for (let i = 0; i < expectedRe.length; i++)
         expectedRe[i] += dt * hImNext[i];
 
