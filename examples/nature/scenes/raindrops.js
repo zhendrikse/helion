@@ -30,12 +30,8 @@ Simulation
             position: new Vec3(4, 2, 4.2).multiplyScalar(75),
             fieldOfView: 19
         },
-        viewport: {
-            aspectRatio: '19/12'
-        },
-        headUpDisplay: {
-            enabled: false
-        }
+        viewport: { aspectRatio: '19/12' },
+        headUpDisplay: { enabled: false }
     })
     .bind(surface.alwaysWith(waterSurface))
     .runsEvery(0.01)

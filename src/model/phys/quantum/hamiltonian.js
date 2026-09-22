@@ -91,7 +91,7 @@ export class Hamiltonian {
     get mass() { return this._mass; }
 
     /**
-     * Apply H to a real-valued grid function.
+     * Apply this Hamiltonian to a real-valued grid function.
      *
      * @param {Float64Array} psi
      * @returns {Float64Array}
@@ -195,6 +195,7 @@ export class Hamiltonian {
         return this;
     }
 
+    /** @param {particle:SingleParticle => number} potentialFunction */
     _samplePotential(potentialFunction) {
         const field = new DiscreteScalarField({ nx: this._N, ny: this._N });
         const particle = new this._particleType();

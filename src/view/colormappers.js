@@ -318,7 +318,7 @@ class WaterColorMapper extends ColorMapper {
      * @param {Color} targetColor
      */
     map(value, targetColor) {
-        targetColor.setRGB(value * 0.15, value * 0.3, value, SRGBColorSpace);
+        targetColor.setRGB(value * 0.3, value * 0.6, value, SRGBColorSpace);
     }
 }
 
