@@ -133,10 +133,9 @@ export class SchrodingerEigenstateSolver extends Solver {
         for (let state = 0; state < this._states; state++)
             this._createEigenState(state);
 
-        return {
-            states: this._eigenstates,
-            energies: this._eigenvalues
-        };
+        const states = this._eigenstates.slice();
+        states.energies = this._eigenvalues.slice();
+        return states;
     }
 
     reset() {
