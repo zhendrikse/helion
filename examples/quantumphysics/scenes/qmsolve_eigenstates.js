@@ -1,5 +1,5 @@
 import {
-    DiscreteComplexField, Hamiltonian, Range, Simulation, SingleParticle,
+    Checkbox, DiscreteComplexField, Hamiltonian, Range, Simulation, SingleParticle,
     Slider, Vec3, WaveFunctionSurface3D
 } from '../../../src/index.js';
 
@@ -22,7 +22,7 @@ const H = new Hamiltonian({
     extent
 });
 
-const eigenstates = H.solve({
+const {states, energies} = H.solve({
     maxStates: 10,
     iterations: 900,
     dt: 0.01
@@ -34,12 +34,15 @@ const waveFunction = new WaveFunctionSurface3D({
     brightness: 1.5
 });
 
+let currentIndex = 8;
 function showState(index = 8) {
-    psi.real.set(eigenstates[index]);
+    currentIndex = index;
+    psi.real.set(states[index]);
     psi.imag.fill(0);
 }
 showState();
 
+let staticView = false;
 const simulation = Simulation
     .with({
         htmlDivId: 'qmsolveEigenstates',
@@ -54,10 +57,28 @@ const simulation = Simulation
         headUpDisplay: { enabled: false }
     })
     .bind(psi.alwaysWith(waveFunction))
+    .runsEvery(0.02)
+    .onStep((clock, dt) => {
+        if (staticView)
+            return;
+
+        const E = energies[currentIndex];
+        const state = states[currentIndex];
+        for (let i = 0; i < psi.real.length; i++) {
+            psi.real[i] =  state[i] * Math.cos(E * clock.simulatedTime);
+            psi.imag[i] = -state[i] * Math.sin(E * clock.simulatedTime);
+        }
+    })
     .append(new Slider('🌀 Eigenstate')
-        .withRange(new Range(0, eigenstates.length - 1, 1))
+        .withRange(new Range(0, states.length - 1, 1))
         .withValue(8)
+        // @ts-ignore
         .addEventListener('input', event => showState(Number(event.target.value)))
+    )
+    // @ts-ignore
+    .append(new Checkbox("Static")
+        // @ts-ignore
+        .onChange(event => staticView = event.target.checked)
     )
     .append(new Slider('📐 Height scale')
         .withRange(new Range(1, 10, .1))
@@ -71,3 +92,4 @@ simulation.frameSceneOn(waveFunction, {
     translationY: 0,
     viewDirection: new Vec3(-1, 0.8, 0.9)
 });
+simulation.start();

@@ -1,5 +1,6 @@
 import { DiscreteComplexField } from '../../math/fields.js';
 import { Solver } from '../../math/numerics/solvers/solvers.js';
+import { Hamiltonian } from './hamiltonian.js';
 
 /**
  * Time-dependent Schrödinger solver for a two-dimensional Hamiltonian.
@@ -8,14 +9,21 @@ import { Solver } from '../../math/numerics/solvers/solvers.js';
  * It only asks the Hamiltonian to apply itself to a real-valued component.
  */
 export class SchrodingerSolver extends Solver {
+    /**
+     * @param {{
+     *     hamiltonian?: Hamiltonian
+     * }} param0 
+     */
     constructor({ hamiltonian } = {}) {
         super();
         if (!hamiltonian)
             throw new TypeError('SchrodingerSolver requires a Hamiltonian.');
 
         this._hamiltonian = hamiltonian;
-        this._nextRe = null;
-        this._nextIm = null;
+        /** @type {Float64Array<ArrayBufferLike>} */
+        this._nextRe = new Float64Array();
+        /** @type {Float64Array<ArrayBufferLike>} */
+        this._nextIm = new Float64Array();
         this._initialized = false;
     }
 
@@ -28,6 +36,10 @@ export class SchrodingerSolver extends Solver {
         this._nextIm?.fill(0);
     }
 
+    /** 
+     * @param {DiscreteComplexField} psi
+     * @param {number} dt 
+     */
     initialize(psi, dt) {
         this._validateWaveFunction(psi);
         this._ensureBuffers(psi);
@@ -48,6 +60,10 @@ export class SchrodingerSolver extends Solver {
         return this;
     }
 
+    /** 
+     * @param {DiscreteComplexField} psi
+     * @param {number} dt 
+     */
     step(psi, dt) {
         this._validateWaveFunction(psi);
         this._ensureBuffers(psi);
@@ -82,6 +98,7 @@ export class SchrodingerSolver extends Solver {
         [psi.imag, this._nextIm] = [this._nextIm, psi.imag];
     }
 
+    /** @param {DiscreteComplexField} psi */
     _ensureBuffers(psi) {
         const size = psi.nx * psi.ny;
         if (!this._nextRe || this._nextRe.length !== size) {
@@ -90,6 +107,7 @@ export class SchrodingerSolver extends Solver {
         }
     }
 
+    /** @param {DiscreteComplexField} psi */
     _validateWaveFunction(psi) {
         if (!(psi instanceof DiscreteComplexField))
             throw new TypeError('SchrodingerSolver requires a DiscreteComplexField.');
@@ -106,12 +124,24 @@ export class SchrodingerSolver extends Solver {
  * public solve() API; this class contains the numerical implementation.
  */
 export class SchrodingerEigenstateSolver extends Solver {
+    /**
+     * @param {{
+     *     hamiltonian?: Hamiltonian
+     *     states?: number
+     *     iterations?: number
+     *     dt?: number
+     * }} param0 
+     */
     constructor({ hamiltonian, states = 4, iterations = 1200, dt = 0.01 } = {}) {
         super();
         if (!hamiltonian)
             throw new TypeError('SchrodingerEigenstateSolver requires a Hamiltonian.');
         this._hamiltonian = hamiltonian;
-        this._states = states;
+        /** @type Float64Array[] */
+        this._eigenstates = [];
+        /** @type number[] */
+        this._eigenvalues = [];
+        this._statesCount = states;
         this._iterations = iterations;
         this._dt = dt;
         this.reset();
@@ -122,20 +152,24 @@ export class SchrodingerEigenstateSolver extends Solver {
     get energies() { return this._eigenvalues; }
     get eigenstates() { return this._eigenstates; }
 
+    /** @param {number} index */
     eigenstateAt(index) {
         if (index < 0 || index >= this._eigenstates.length)
             throw new RangeError(`Eigenstate index out of range: ${index}`);
         return this._eigenstates[index];
     }
 
+    /** 
+     * @returns {{states: Float64Array[], energies: number[]}} eigenstates and eigenvalues
+     */
     solve() {
         this.reset();
-        for (let state = 0; state < this._states; state++)
+        for (let state = 0; state < this._statesCount; state++)
             this._createEigenState(state);
 
         const states = this._eigenstates.slice();
-        states.energies = this._eigenvalues.slice();
-        return states;
+        const energies = this._eigenvalues.slice();
+        return {states, energies};
     }
 
     reset() {
@@ -143,6 +177,7 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._eigenvalues = [];
     }
 
+    /** @param {number} state */
     _createEigenState(state) {
         const n = this._hamiltonian.N;
         const psiSize = n * n;
@@ -177,6 +212,7 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._eigenvalues.push(this._hamiltonian.energyOf(psi));
     }
 
+    /** @param {Float64Array<ArrayBuffer>} psi */
     _orthogonalize(psi) {
         for (const state of this._eigenstates) {
             let projection = 0;
@@ -187,6 +223,7 @@ export class SchrodingerEigenstateSolver extends Solver {
         }
     }
 
+    /** @param {Float64Array<ArrayBuffer>} psi */
     _normalize(psi) {
         let normSquared = 0;
         for (const value of psi)

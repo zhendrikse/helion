@@ -28,7 +28,7 @@ export class Hamiltonian {
      * @param {{
      *     particle?: SingleParticle
      *     potential?: DiscreteScalarField | DiscreteScalarField3D | function
-     *     spatialDim?: number
+     *     spatialNdim?: number
      *     N?: number
      *     extent?: number
      *     spacing?: number | null
@@ -125,6 +125,7 @@ export class Hamiltonian {
      * Rayleigh quotient <psi|H|psi>/<psi|psi>.
      *
      * @param {Float64Array} psi
+     * @returns {number}
      */
     energyOf(psi) {
         const hPsi = this.apply(psi);
@@ -146,7 +147,7 @@ export class Hamiltonian {
      * Solve for the lowest stationary states.
      *
      * @param {number | {maxStates?: number, iterations?: number, dt?: number}} options
-     * @returns {Float64Array[] & {energies: number[]}}
+     * @returns {{states: Float64Array[], energies: number[]}} eigenstates and eigenvalues
      */
     solve(options = {}) {
         const config = typeof options === 'number'
@@ -195,7 +196,7 @@ export class Hamiltonian {
         return this;
     }
 
-    /** @param {particle:SingleParticle => number} potentialFunction */
+    /** @param {(particle:SingleParticle) => number} potentialFunction */
     _samplePotential(potentialFunction) {
         const field = new DiscreteScalarField({ nx: this._N, ny: this._N });
         const particle = new this._particleType();
