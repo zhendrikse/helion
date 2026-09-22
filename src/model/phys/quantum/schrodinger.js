@@ -1,5 +1,5 @@
-import { DiscreteComplexField } from '../fields.js';
-import { Solver } from '../numerics/solvers/solvers.js';
+import { DiscreteComplexField } from '../../math/fields.js';
+import { Solver } from '../../math/numerics/solvers/solvers.js';
 
 /**
  * Time-dependent Schrödinger solver for a two-dimensional Hamiltonian.

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { DiscreteScalarField, DiscreteScalarField3D } from '../src/model/math/fields.js';
-import { Hamiltonian } from '../src/model/math/quantum/hamiltonian.js';
+import { Hamiltonian } from '../src/model/phys/quantum/hamiltonian.js';
 
 test('Hamiltonian applies the 2D finite-difference operator', () => {
     const nx = 5;

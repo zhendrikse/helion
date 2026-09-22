@@ -1,4 +1,4 @@
-import {DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D} from '../fields.js';
+import {DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D} from '../../math/fields.js';
 import { SingleParticle } from './particles.js';
 import { SchrodingerEigenstateSolver, SchrodingerSolver } from './schrodinger.js';
 

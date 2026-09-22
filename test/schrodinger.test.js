@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { DiscreteComplexField } from '../src/model/math/fields.js';
-import { Hamiltonian } from '../src/model/math/quantum/hamiltonian.js';
-import { SingleParticle } from '../src/model/math/quantum/particles.js';
-import { SchrodingerEigenstateSolver, SchrodingerSolver } from '../src/model/math/quantum/schrodinger.js';
+import { Hamiltonian } from '../src/model/phys/quantum/hamiltonian.js';
+import { SingleParticle } from '../src/model/phys/quantum/particles.js';
+import { SchrodingerSolver } from '../src/model/phys/quantum/schrodinger.js';
 
 test('Hamiltonian samples a coordinate-based potential function', () => {
     const H = new Hamiltonian({
