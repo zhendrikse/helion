@@ -20,6 +20,7 @@ export class SchrodingerSolver extends Solver {
     }
 
     get hamiltonian() { return this._hamiltonian; }
+    get initialized() { return this._initialized; }
 
     reset() {
         this._initialized = false;
