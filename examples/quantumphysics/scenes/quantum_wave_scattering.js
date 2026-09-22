@@ -1,6 +1,6 @@
 import {
     WaveFunctionSurface3D, DiscreteComplexField, Simulation, Vec3, Slider, Range, RadioGroup,
-    GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField, SchrodingerSolver,
+    GaussianImpulseComplex2D, Checkbox, DiscreteFieldBoxView, DiscreteScalarField, Hamiltonian,
     ShapeConfiguration, Softness, Potential, ComplexSurfaceView2D, DiscreteFieldSurfaceView, FixedIntervalNormalizer
 } from '../../../src/index.js';
 
@@ -10,7 +10,7 @@ const dt = 0.24;		// anything less than 0.25 seems to be stable
 
 const potential = new DiscreteScalarField({ nx: NX, ny: NY });
 const psi = new DiscreteComplexField({ nx: NX, ny: NY });
-const solver = new SchrodingerSolver({potential});
+const hamiltonian = new Hamiltonian({\n    potential,\n    spatialNdim: 2,\n    N: NX,\n    extent: 20,\n    hbar: Math.sqrt(2),\n    mass: 1,\n    potentialScale: 2\n});
 const gaussianImpulse = new GaussianImpulseComplex2D();
 
 /**
@@ -19,7 +19,7 @@ const gaussianImpulse = new GaussianImpulseComplex2D();
  * @param {number} softness
  */
 function reset(shapeConfig, potentialStrength, softness) {
-    solver.initialize(psi, dt);
+    hamiltonian.resetEvolution();
     psi
         .reset()
         .apply(gaussianImpulse);
@@ -61,7 +61,7 @@ const simulation = Simulation
     .bind(potential.onceWith(potentialBarrier))
     .bind(potential.onceWith(potentialBarrier2d))
     .onReset(() => reset(shapeConfiguration, potentialStrength, softness))
-    .maxOutCpu(() => psi.evolve(solver, dt), 20, 10)
+    .maxOutCpu(() => hamiltonian.evolve(psi, dt), 20, 10)
     .append(new RadioGroup()
         .add('2D', _ => setDimension(false))
         .add('3D', _ => setDimension(true))
