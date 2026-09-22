@@ -75,7 +75,6 @@ const simulation = Simulation
         // @ts-ignore
         .addEventListener('input', event => showState(Number(event.target.value)))
     )
-    // @ts-ignore
     .append(new Checkbox("Static")
         // @ts-ignore
         .onChange(event => staticView = event.target.checked)
