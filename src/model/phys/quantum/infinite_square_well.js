@@ -1,5 +1,5 @@
 import { DiscreteComplexField } from '../../math/fields.js';
-import { Complex } from '../math.js';
+import { Complex } from '../../math/math.js';
 /**
  * Analytic time evolution for a particle in a two-dimensional infinite square well.
  *
