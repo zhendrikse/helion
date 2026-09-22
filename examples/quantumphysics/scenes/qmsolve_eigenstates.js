@@ -3,7 +3,7 @@ import {
     Slider, Vec3, WaveFunctionSurface3D
 } from '../../../src/index.js';
 
-const N = 100;
+const N = 120;
 const extent = 0.15 * (N - 1);
 const springConstant = 0.05;
 
@@ -11,7 +11,7 @@ const springConstant = 0.05;
  * 2D isotropic harmonic oscillator:
  * V(x, y) = 0.5 * k * (x^2 + y^2)
  */
-const harmonicOscillator = particle =>
+const harmonicOscillator = (/** @type {SingleParticle} */ particle) =>
     0.5 * springConstant * (particle.x ** 2 + particle.y ** 2);
 
 const H = new Hamiltonian({

@@ -25,21 +25,20 @@ import { SchrodingerEigenstateSolver, SchrodingerSolver } from './schrodinger.js
  */
 export class Hamiltonian {
     /**
-     * @param {{
-     *     particle?: SingleParticle
-     *     potential?: DiscreteScalarField | DiscreteScalarField3D | function
-     *     spatialNdim?: number
-     *     N?: number
-     *     extent?: number
-     *     spacing?: number | null
-     *     hbar?: number
-     *     mass?: number
-     *     potentialScale?: number
-     * }} [options]
+     * @typedef {Object} SimulationOptions
+     * @property {SingleParticle} [particle] - The particle for which the simulation is executed.
+     * @property {DiscreteScalarField | DiscreteScalarField3D | function} [potential] - The potential field.
+     * @property {number} [spatialNdim] - Number of spatial dimensions.
+     * @property {number} [N] - The number of lattice points per dimensiion.
+     * @property {number} [extent] - The physical size of the lattice.
+     * @property {number | null} [spacing] - Lattice spacing.
+     * @property {number} [hbar] - Reducedd Planck constant.
+     * @property {number} [mass] - Particle mass.
+     * @property {number} [potentialScale] - Scale factor for the potential.
      */
     constructor({
         particle = SingleParticle,
-        potential = _particle => 0,
+        potential = (/** @type {SingleParticle} */ _particle) => 0,
         spatialNdim = 2,
         N = 100,
         extent = 10,
