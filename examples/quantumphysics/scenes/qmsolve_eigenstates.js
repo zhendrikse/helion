@@ -42,7 +42,7 @@ function showState(index = 8) {
 }
 showState();
 
-let staticView = false;
+let staticView = true;
 const simulation = Simulation
     .with({
         htmlDivId: 'qmsolveEigenstates',
@@ -69,15 +69,16 @@ const simulation = Simulation
             psi.imag[i] = -state[i] * Math.sin(E * clock.simulatedTime);
         }
     })
+    .append(new Checkbox("Static")
+        .checked(true)
+        // @ts-ignore
+        .onChange(event => staticView = event.target.checked)
+    )
     .append(new Slider('🌀 Eigenstate')
         .withRange(new Range(0, states.length - 1, 1))
         .withValue(8)
         // @ts-ignore
         .addEventListener('input', event => showState(Number(event.target.value)))
-    )
-    .append(new Checkbox("Static")
-        // @ts-ignore
-        .onChange(event => staticView = event.target.checked)
     )
     .append(new Slider('📐 Height scale')
         .withRange(new Range(1, 10, .1))
