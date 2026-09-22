@@ -1,5 +1,4 @@
 import { DiscreteComplexField3D, DiscreteScalarField3D } from '../../fields.js';
-import { Hamiltonian } from '../../quantum/hamiltonian.js';
 import { Solver } from './solvers.js';
 
 /**
