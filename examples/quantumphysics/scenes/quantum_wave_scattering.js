@@ -15,6 +15,7 @@ const hamiltonian = new Hamiltonian({
     spatialNdim: 2,
     N: NX,
     extent: 20,
+    spacing: 1,
     hbar: Math.sqrt(2),
     mass: 1,
     potentialScale: 2
