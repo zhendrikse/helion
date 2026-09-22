@@ -7,10 +7,7 @@ const N = 120;
 const extent = 0.15 * (N - 1);
 const springConstant = 0.05;
 
-/**
- * 2D isotropic harmonic oscillator:
- * V(x, y) = 0.5 * k * (x^2 + y^2)
- */
+// 2D isotropic harmonic oscillator: V(x, y) = 0.5 * k * (x^2 + y^2)
 const harmonicOscillator = (/** @type {SingleParticle} */ particle) =>
     0.5 * springConstant * (particle.x ** 2 + particle.y ** 2);
 
@@ -43,7 +40,7 @@ function showState(index = 8) {
 showState();
 
 let staticView = true;
-const simulation = Simulation
+Simulation
     .with({
         htmlDivId: 'qmsolveEigenstates',
         viewport: { aspectRatio: '4/3' },
@@ -85,11 +82,10 @@ const simulation = Simulation
         .withValue(waveFunction.zScale)
         .on(waveFunction)
         .withProperty('zScale')
-    );
-
-simulation.frameSceneOn(waveFunction, {
-    padding: 0.5,
-    translationY: 0,
-    viewDirection: new Vec3(-1, 0.8, 0.9)
-});
-simulation.start();
+    )
+    .frameSceneOn(waveFunction, {
+        padding: 0.5,
+        translationY: 0,
+        viewDirection: new Vec3(-1, 0.8, 0.9)
+    })
+    .start();
