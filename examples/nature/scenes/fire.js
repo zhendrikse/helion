@@ -12,31 +12,33 @@ export class FireColorMapper extends ColorMapper {
         this._p3 = new Color(0xffff80); // yellowish
     }
 
-    // intensity from DiscreteScalarField (0..1, clamped), as in VPython fire.py
-    // VPython palette: p1(0,0,0) -> p2(80,0,0) -> p3(255,255,128) over 256 steps
-    // Here we map intensity 0..1 directly via lerp
+    /**
+     * @param {number} intensity
+     * @param {Color} targetColor
+     */
     map(intensity, targetColor) {
         const t = Math.max(0, Math.min(1, intensity));
-        // Use same piecewise as palette: 0..0.5 -> p1->p2, 0.5..1 -> p2->p3
-        if (t < 0.5) 
-            targetColor.copy(this._p1).lerp(this._p2, t * 2);
-        else
-            targetColor.copy(this._p2).lerp(this._p3, (t - 0.5) * 2);
+        t < 0.5 ? 
+            targetColor.copy(this._p1).lerpHSL(this._p2, t * 2) :
+            targetColor.copy(this._p2).lerpHSL(this._p3, (t - 0.5) * 2);
     }
 }
 
 export class FireSolver {
-    // Fire diffusion as in VPython fire.py / Beltoforion
-    // Works on DiscreteScalarField Float32Array (intensity 0..1)
+    /** @param { DiscreteScalarField } field */
     step(field) {
-        // double buffer like VPython old[][] copy
         const old = new Float32Array(field.data);
-
         for (let row = 0; row < field.ny; row++)
             for (let col = 0; col < field.nx; col++) 
                 this._doStep(field, row, col, old);
     }
 
+    /**
+     * @param { DiscreteScalarField } field
+     * @param {number} row
+     * @param {number} col
+     * @param {any[] | Float32Array<any>} old
+     */
     _doStep(field, row, col, old) {
         if (row === 0 && col > 5 && col < field.nx - 5) {
             const below = old[col + 1 * field.nx] ?? 0;
@@ -51,19 +53,14 @@ export class FireSolver {
         const d = (row > 1) ? old[col + (row - 2) * field.nx] : 0;
         field.setValueAt(col, row, (a + b + c + d) / intensity);
     }
-
-    reset() {}
 }
 
 class Fire extends DiscreteScalarField {
-    constructor({ nx = 200, ny = 140 } = {}) {
-        super({ nx, ny });
-    }
-
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
     valueAt(x, y) {
-        if (x < 0 || x >= this.nx || y < 0 || y >= this.ny) 
-            return 0;
-        
         if (y <= 2) // Bottom 3 rows are fuel, not flame — keep black like VPython `*(r>2)`
             return 0;
             
@@ -71,14 +68,13 @@ class Fire extends DiscreteScalarField {
     }
 }
 
-const NX = 200;
-const NY = 140;
+const NX = 400;
+const NY = 280;
 const cellSize = 2;
 
 const field = new Fire({ nx: NX, ny: NY });
 const solver = new FireSolver();
 const view = new DiscreteFieldSurfaceView({
-    cellSize: cellSize,
     normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
     colorMapper: new FireColorMapper(),
     scale: cellSize
@@ -90,16 +86,11 @@ for (let c = 0; c < NX; c++) field.setValueAt(c, 0, Math.random());
 Simulation
     .with({
         htmlDivId: 'fireContainer',
-        viewport: {
-            aspectRatio: NX / NY,
-        },
+        viewport: { aspectRatio: '20/7'},
         camera: {
-            position: new Vec3(0, 0, NX * cellSize * .7),
+            position: new Vec3(0, 0, NX*.8),
+            target: new Vec3(0, -100, 0),
             orthographic: true
-        },
-        scene: {
-            background: ThreeJsScene.Background.PLAIN,
-            backgroundColor: Colour.Black
         },
         headUpDisplay: { enabled: false },
         infoPanel: {
