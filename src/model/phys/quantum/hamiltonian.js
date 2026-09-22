@@ -67,6 +67,7 @@ export class Hamiltonian {
         this._hbar = hbar;
         this._mass = mass;
         this._potentialScale = potentialScale;
+        this._potentialFunction = typeof potential === 'function' ? potential : null;
 
         if (this._spacing <= 0)
             throw new RangeError('Hamiltonian spacing must be greater than zero.');
@@ -75,8 +76,8 @@ export class Hamiltonian {
             if (potential.nx !== N || potential.ny !== N)
                 throw new Error('Hamiltonian potential and N must describe the same grid dimensions.');
             this._potential = potential;
-        } else if (potential)
-            this._potential = this._samplePotential(potential);
+        } else if (this._potentialFunction)
+            this._potential = this._samplePotential(this._potentialFunction);
         else
             throw new TypeError('Hamiltonian potential must be a function or DiscreteScalarField.');
 
@@ -147,7 +148,7 @@ export class Hamiltonian {
      * @param {number | {maxStates?: number, iterations?: number, dt?: number}} options
      * @returns {{states: Float64Array[], energies: number[]}} eigenstates and eigenvalues
      */
-    async solve(options = {}) {
+    solve(options = {}) {
         const config = typeof options === 'number'
             ? { maxStates: options }
             : options;
@@ -159,7 +160,7 @@ export class Hamiltonian {
             dt: config.dt ?? 0.01
         });
 
-        await solver.solve(config.progressReportCallback);
+        return solver.solve(options.progressReportCallback);
     }
 
     /**
