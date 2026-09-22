@@ -209,7 +209,7 @@ export class SchrodingerEigenstateSolver extends Solver {
 
         const total = this._iterations * this._statesCount;
         for (let iteration = 0; iteration < this._iterations; iteration++) {
-            if (iteration % 200 === 0) {
+            if (iteration % 250 === 0) {
                 progressReportCallback?.(100 * (state * this._iterations + iteration) / total);
             }
             const hPsi = this._hamiltonian.apply(psi);
@@ -250,7 +250,7 @@ export class SchrodingerEigenstateSolver extends Solver {
         this._normalize(psi);
 
         const total = this._iterations * this._statesCount;
-        const yieldEvery = 20;
+        const yieldEvery = 200;
 
         for (let iteration = 0; iteration < this._iterations; iteration++) {
             if (iteration % yieldEvery === 0) {

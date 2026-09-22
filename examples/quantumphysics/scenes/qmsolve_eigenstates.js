@@ -17,7 +17,8 @@ const simulation = Simulation
                 '$$\nV(x,y)=\\frac{1}{2}k(x^2+y^2)\n$$' +
                 'Each state reveals a characteristic pattern of amplitude ' +
                 'and phase, forming the familiar wave-like lobes of quantum mechanics.\n'
-        }
+        },
+        parameterMenuCollapsed: false
     });
 
 // 2D isotropic harmonic oscillator: V(x, y) = 0.5 * k * (x^2 + y^2)
@@ -34,12 +35,9 @@ const H = new Hamiltonian({
 
 const {states, energies} = await H.solveAsync({
     maxStates: 10,
-    iterations: 900,
+    iterations: 1000,
     dt: 0.01,
-    progressReportCallback: percent => {
-        simulation.showHud(`Solving Hamiltonian: ${Math.round(percent)}%`);
-        console.log(percent);
-    }
+    progressReportCallback: percent => simulation.showHud(`Solving Hamiltonian: ${Math.round(percent)}%`)
 });
 
 const psi = new DiscreteComplexField({ nx: N, ny: N });
