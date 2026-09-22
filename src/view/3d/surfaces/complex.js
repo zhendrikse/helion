@@ -1,10 +1,12 @@
-import { Mesh, DoubleSide, MeshStandardMaterial, PlaneGeometry, Color, BufferAttribute, ShaderMaterial } from 'three';
+import {
+    Mesh, DoubleSide, MeshStandardMaterial, PlaneGeometry, Color, BufferAttribute, ShaderMaterial, Box3
+} from 'three';
 import { Renderable3D } from "../../renderer.js";
 import { AdaptiveSymmetricNormalizer, SurfaceResolution } from "./visualization.js";
 import { Interval, Range} from "../../../model/math/math.js";
-import {ComplexColorMappers} from "../../colormappers.js";
+import { ComplexColorMappers} from "../../colormappers.js";
 import { CompoundControl, DropdownMenu, Slider } from "../../../core/controls.js";
-import {ComplexFunctionSample} from "../../../model/math/fields.js";
+import { ComplexFunctionSample, DiscreteComplexField} from "../../../model/math/fields.js";
 
 /**
  * Base for all complex-field surface views.
@@ -213,6 +215,16 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
             #include <colorspace_fragment>
         }
         `;
+
+    /**
+     * @param {{
+     *     zScale?: number
+     *     showPhaseColor?: boolean
+     *     brightness?: number
+     *     colorMapper?: ColorMapper
+     *     defaultResolution?: SurfaceResolution
+     * }} [options]
+     */
     constructor({
         zScale = 20,
         showPhaseColor = true,
@@ -233,7 +245,9 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
         this._alphas = null; // managed alongside base _mesh/_positions/_colors
     }
 
+    /** @param {boolean} showPhaseColor */
     set phaseColor(showPhaseColor) { this._showPhaseColor = showPhaseColor; }
+    /** @param {number} value */
     set zScale(value) { this._zScale = value; }
     get zScale() { return this._zScale; }
     set brightness(value) {
@@ -243,6 +257,7 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
     }
     get brightness() { return this._brightness; }
 
+    /** @param {DiscreteComplexField} field */
     initialize(field) {
         // ensure canBindTo has set _fieldIsDiscrete
         if (this._fieldIsDiscrete === undefined) this.canBindTo(field);
@@ -279,6 +294,7 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
         this._alphas = null;
     }
 
+    /** @param {DiscreteComplexField} field */
     setValueRange(field) {
         this._maximumModulus = 0;
         const { width, height } = this.resolution(field);
@@ -296,6 +312,11 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
         this._maximumModulus = Math.max(this._maximumModulus, Number.EPSILON);
     }
 
+    /**
+     * @param {number} index
+     * @param {number} x
+     * @param {number} y
+     */
     updateMeshAt(index, x, y) {
         const sample = this._sample;
         const modulus = sample.magnitude;
@@ -317,6 +338,7 @@ export class WaveFunctionSurface3D extends ComplexFieldViewable {
         this._alphas[index] = Math.tanh(4.0 * normalizedModulus);
     }
 
+    /** @param {DiscreteComplexField} field */
     synchronizeWith(field) {
         this.setValueRange(field);
         const { width, height } = this.resolution(field);
