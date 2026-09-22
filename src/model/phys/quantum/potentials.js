@@ -17,17 +17,16 @@ export class InfiniteSquareWell {
 }
 
 /**
- * Two-dimensional isotropic harmonic oscillator.
- * V = 1/2 k (x² + y²)
+ * Two-dimensional isotropic harmonic oscillator: V = 1/2 k (x² + y²)
  */
 export class HarmonicOscillator {
+    static latex = 'V(x,y)=\\frac{1}{2}k(x^2+y^2)';
     static withSpringConstant = k => /** @type {SingleParticle} */ particle =>
         0.5 * k * (particle.x * particle.x + particle.y * particle.y);
 }
 
 /**
- * Two-dimensional anisotropic harmonic oscillator.
- * V = 1/2 (kx x² + ky y²)
+ * Two-dimensional anisotropic harmonic oscillator: V = 1/2 (kx x² + ky y²)
  */
 export class AnisotropicHarmonicOscillator {
     static withSpringConstants = (kx, ky) => /** @type {SingleParticle} */ particle =>
@@ -35,8 +34,7 @@ export class AnisotropicHarmonicOscillator {
 }
 
 /**
- * Two-dimensional double well with harmonic confinement in y.
- * V = a (x² - b²)² + 1/2 ky y²
+ * Two-dimensional double well with harmonic confinement in y: V = a (x² - b²)² + 1/2 ky y²
  */
 export class DoubleWell {
     static withConstants = (a, b, ky) => /** @type {SingleParticle} */ particle=>
@@ -54,8 +52,7 @@ export class CircularWell {
 }
 
 /**
- * Two-dimensional quartic oscillator.
- * V = a (x⁴ + y⁴)
+ * Two-dimensional quartic oscillator: V = a (x⁴ + y⁴)
  */
 export class Quartic {
     static withConstant = a => /** @type {SingleParticle} */ particle => a * (particle.x ** 4 + particle.y ** 4);

@@ -13,8 +13,7 @@ const simulation = Simulation
         viewport: { aspectRatio: '4/3' },
         infoPanel: {
             text: '<strong>🫐 Stationary eigenstates</strong><br/>Stationary ' +
-                'eigenstates of a 2D isotropic harmonic oscillator:' +
-                '$$\nV(x,y)=\\frac{1}{2}k(x^2+y^2)\n$$' +
+                'eigenstates for various potentials.\n\n' +
                 'Each state reveals a characteristic pattern of amplitude ' +
                 'and phase, forming the familiar wave-like lobes of quantum mechanics.\n'
         },
@@ -23,12 +22,12 @@ const simulation = Simulation
 
 const H = new Hamiltonian({
     particle: SingleParticle,
-    //potential: HarmonicOscillator.withSpringConstant(0.05),
+    potential: HarmonicOscillator.withSpringConstant(0.05),
     //potential: AnisotropicHarmonicOscillator.withSpringConstants(.1, .05),
-    //potential: DoubleWell.withConstants(.001, .001, .05),
-    //potential: CircularWell.withRadiusAndBarrier(.001, 12),
+    //potential: DoubleWell.withConstants(100, 100, .1),
+    //potential: CircularWell.withRadiusAndBarrier(5, 100),
     //potential: Quartic.withConstant(1e-3),
-    potential: InfiniteSquareWell.withoutParameters(),
+    //potential: InfiniteSquareWell.withoutParameters(),
     spatialNdim: 2,
     N,
     extent
@@ -52,6 +51,7 @@ function showState(index = 8) {
     currentIndex = index;
     psi.real.set(states[index]);
     psi.imag.fill(0);
+    simulation.setLatexTitle(`\\text{Eigenstate ${index + 1} of}\\ ` + HarmonicOscillator.latex)
 }
 showState();
 
