@@ -42,7 +42,7 @@ const {states, energies} = await H.solveAsync({
 
 const psi = new DiscreteComplexField({ nx: N, ny: N });
 const waveFunction = new WaveFunctionSurface3D({
-    zScale: 3,
+    zScale: 5,
     brightness: 1.5
 });
 
