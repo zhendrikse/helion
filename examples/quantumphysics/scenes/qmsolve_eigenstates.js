@@ -35,7 +35,7 @@ const waveFunction = new WaveFunctionSurface3D({
 });
 
 function showState(index = 8) {
-    psi.real.set(eigenstates.states[index]);
+    psi.real.set(eigenstates[index]);
     psi.imag.fill(0);
 }
 showState();
@@ -55,7 +55,7 @@ const simulation = Simulation
     })
     .bind(psi.alwaysWith(waveFunction))
     .append(new Slider('🌀 Eigenstate')
-        .withRange(new Range(0, eigenstates.states.length - 1, 1))
+        .withRange(new Range(0, eigenstates.length - 1, 1))
         .withValue(8)
         .addEventListener('input', event => showState(Number(event.target.value)))
     )
