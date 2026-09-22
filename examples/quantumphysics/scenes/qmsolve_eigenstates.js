@@ -1,14 +1,11 @@
 import {
-    Checkbox, DiscreteComplexField, Hamiltonian, Range, Simulation, Potentials,
-    Slider, Vec3, WaveFunctionSurface3D
+    Checkbox, DiscreteComplexField, Hamiltonian, Range, Simulation, SingleParticle,
+    Slider, Vec3, WaveFunctionSurface3D, HarmonicOscillator, AnisotropicHarmonicOscillator, DoubleWell, CircularWell,
+    Quartic, InfiniteSquareWell
 } from '../../../src/index.js';
 
-const N = 120;
+const N = 150;
 const extent = 0.15 * (N - 1);
-const springConstant = 0.05;
-
-// Change this one line to test another potential from Potentials.
-const selectedPotential = Potentials.harmonicOscillator;
 
 const simulation = Simulation
     .with({
@@ -24,10 +21,14 @@ const simulation = Simulation
         parameterMenuCollapsed: false
     });
 
-// 2D isotropic harmonic oscillator: V(x, y) = 0.5 * k * (x^2 + y^2)
 const H = new Hamiltonian({
     particle: SingleParticle,
-    potential: selectedPotential,
+    //potential: HarmonicOscillator.withSpringConstant(0.05),
+    //potential: AnisotropicHarmonicOscillator.withSpringConstants(.1, .05),
+    //potential: DoubleWell.withConstants(.001, .001, .05),
+    //potential: CircularWell.withRadiusAndBarrier(.001, 12),
+    //potential: Quartic.withConstant(1e-3),
+    potential: InfiniteSquareWell.withoutParameters(),
     spatialNdim: 2,
     N,
     extent

@@ -69,15 +69,18 @@ export { WaveEquationSolver, JacobiSolver } from './model/math/numerics/solvers/
 
 export { SchrodingerEigenstateSolver3D } from './model/math/numerics/solvers/qmsolvers.js';
 export { SchrodingerSolver, SchrodingerEigenstateSolver } from './model/phys/quantum/schrodinger.js';
-export { Hamiltonian } from './model/phys/quantum/hamiltonian.js';
-export { Potentials, infiniteSquareWell, harmonicOscillator, anisotropicHarmonicOscillator, doubleWell, circularWell, quartic } from './model/phys/quantum/potentials.js';
-export { SingleParticle } from './model/phys/quantum/particles.js';
+export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js';
 export { InfiniteSquareWell2D } from './model/phys/quantum/infinite_square_well.js';
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
 
 export {
     CylinderSegmentsView, BoxSegmentsView, LineSegmentsView, LineSegmentView, CurveView
 } from './view/3d/composite/segmentviews.js';
+
+export {
+    InfiniteSquareWell, HarmonicOscillator, AnisotropicHarmonicOscillator,
+    DoubleWell, CircularWell, Quartic
+} from './model/phys/quantum/potentials.js';
 
 export {
     Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail, VectorView, Label
