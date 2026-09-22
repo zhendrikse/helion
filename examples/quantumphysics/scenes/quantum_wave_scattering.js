@@ -10,7 +10,15 @@ const dt = 0.24;		// anything less than 0.25 seems to be stable
 
 const potential = new DiscreteScalarField({ nx: NX, ny: NY });
 const psi = new DiscreteComplexField({ nx: NX, ny: NY });
-const hamiltonian = new Hamiltonian({\n    potential,\n    spatialNdim: 2,\n    N: NX,\n    extent: 20,\n    hbar: Math.sqrt(2),\n    mass: 1,\n    potentialScale: 2\n});
+const hamiltonian = new Hamiltonian({
+    potential,
+    spatialNdim: 2,
+    N: NX,
+    extent: 20,
+    hbar: Math.sqrt(2),
+    mass: 1,
+    potentialScale: 2
+});
 const gaussianImpulse = new GaussianImpulseComplex2D();
 
 /**
