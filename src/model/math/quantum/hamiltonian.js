@@ -1,4 +1,4 @@
-import { DiscreteScalarField, DiscreteScalarField3D } from '../fields.js';
+import { DiscreteComplexField, DiscreteScalarField } from '../fields.js';
 import { SingleParticle } from './particles.js';
 import { SchrodingerEigenstateSolver, SchrodingerSolver } from './schrodinger.js';
 
@@ -205,4 +205,3 @@ export class Hamiltonian {
  * Kept here temporarily so Hamiltonian.createWaveFunction() does not need
  * callers to know about the field implementation.
  */
-import { DiscreteComplexField } from '../fields.js';
