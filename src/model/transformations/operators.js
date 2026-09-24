@@ -448,6 +448,8 @@ class FFT {
     constructor(size) {
         this._size = size | 0;
         if (this._size <= 1) throw new Error('Size must be > 1');
+        if ((this._size & (this._size - 1)) !== 0) 
+            throw new Error(`FFT size must be power of two, got ${this._size}`);
 
         this._twiddles = new Array(this._size);
         for (let i = 0; i < this._size; i++) {
@@ -532,7 +534,6 @@ export class FFTShift2D extends Transformation {
 
         const real = new Float64Array(N * N);
         const imag = new Float64Array(N * N);
-
         for (let j = 0; j < N; j++)
             for (let i = 0; i < N; i++) {
                 const src = ((j + half) % N) * N + ((i + half) % N);
