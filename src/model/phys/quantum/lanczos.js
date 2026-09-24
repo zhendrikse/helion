@@ -1,4 +1,5 @@
 import { Solver } from '../../math/numerics/solvers/solvers.js';
+import { Hamiltonian } from './hamiltonian.js';
 
 /**
  * Matrix-free Lanczos eigensolver for a real symmetric Hamiltonian.
@@ -10,7 +11,7 @@ import { Solver } from '../../math/numerics/solvers/solvers.js';
 export class LanczosEigenstateSolver extends Solver {
     /**
      * @param {{
-     *     hamiltonian?: { N: number, apply: (psi: Float64Array) => Float64Array, energyOf: (psi: Float64Array) => number },
+     *     hamiltonian?: Hamiltonian,
      *     states?: number,
      *     iterations?: number
      * }} param0
@@ -37,15 +38,13 @@ export class LanczosEigenstateSolver extends Solver {
     /**
      * Cooperative asynchronous variant of solve().
      *
-     * @param {(percent: number) => void} [progressReportCallback]
+     * @param {(percent: number) => void} progressReportCallback
      * @returns {Promise<{states: Float64Array[], energies: number[]}>}
      */
     async solveAsync(progressReportCallback) {
         this.reset();
 
-        const { basis, diagonal, offDiagonal } =
-            await this._buildKrylovSubspace(progressReportCallback);
-
+        const { basis, diagonal, offDiagonal } = await this._buildKrylovSubspaceAsync(progressReportCallback);
         const { values, vectors } = this._diagonalizeTridiagonal(diagonal, offDiagonal);
 
         const count = Math.min(this._states, values.length);
@@ -63,6 +62,10 @@ export class LanczosEigenstateSolver extends Solver {
             .map((psi, index) => ({ psi, energy: energies[index] }))
             .sort((a, b) => a.energy - b.energy);
 
+        /** @type {Float64Array[]} */
+        this._eigenstates = [];
+        /** @type {number[]} */
+        this._eigenvalues = [];
         this._eigenstates = ordered.map(item => item.psi);
         this._eigenvalues = ordered.map(item => item.energy);
 
@@ -74,7 +77,6 @@ export class LanczosEigenstateSolver extends Solver {
     }
 
     reset() {
-        /** @type [{Float}] */
         this._eigenstates = [];
         this._eigenvalues = [];
     }
@@ -86,7 +88,8 @@ export class LanczosEigenstateSolver extends Solver {
         return Math.min(Math.max(this._states + 2, requested), dimension);
     }
 
-    async _buildKrylovSubspace(progressReportCallback) {
+    /** @param {((percent: number) => void)} progressReportCallback */
+    async _buildKrylovSubspaceAsync(progressReportCallback) {
         const size = this._hamiltonian.N * this._hamiltonian.N;
         const count = this._iterationCount();
         const basis = [];
@@ -157,6 +160,11 @@ export class LanczosEigenstateSolver extends Solver {
         return psi;
     }
 
+    /**
+     * @param {string | any[]} basis
+     * @param {Float64Array<any>[]} eigenvectors
+     * @param {number} column
+     */
     _ritzVector(basis, eigenvectors, column) {
         const size = basis[0].length;
         const psi = new Float64Array(size);
@@ -176,6 +184,8 @@ export class LanczosEigenstateSolver extends Solver {
      * Jacobi diagonalization of the small symmetric tridiagonal matrix.
      * The Krylov matrix is at most O(states) in size, so this dense step is
      * inexpensive compared with the Hamiltonian applications.
+     * @param {number[]} diagonal
+     * @param {number[]} offDiagonal
      */
     _diagonalizeTridiagonal(diagonal, offDiagonal) {
         const n = diagonal.length;
@@ -280,6 +290,10 @@ export class LanczosEigenstateSolver extends Solver {
         };
     }
 
+    /**
+     * @param {Float64Array<ArrayBufferLike>} vector
+     * @param {Float64Array<ArrayBuffer>[]} basis
+     */
     _reorthogonalize(vector, basis) {
         for (const q of basis) {
             const projection = this._dot(q, vector);
@@ -288,6 +302,10 @@ export class LanczosEigenstateSolver extends Solver {
         }
     }
 
+    /**
+     * @param {string | any[] | Float64Array<ArrayBuffer>} a
+     * @param {number[] | Float64Array<ArrayBufferLike>} b
+     */
     _dot(a, b) {
         let sum = 0;
         for (let i = 0; i < a.length; i++)
@@ -295,10 +313,12 @@ export class LanczosEigenstateSolver extends Solver {
         return sum;
     }
 
+    /** @param {Float64Array<ArrayBuffer>} vector */
     _norm(vector) {
         return Math.sqrt(this._dot(vector, vector));
     }
 
+    /** @param {Float64Array<ArrayBuffer>} vector */
     _normalize(vector) {
         const norm = this._norm(vector);
         if (norm === 0)
@@ -307,6 +327,10 @@ export class LanczosEigenstateSolver extends Solver {
         this._scale(vector, 1 / norm);
     }
 
+    /** 
+     * @param {Float64Array<ArrayBuffer>} vector 
+     * @param {number} factor
+     */
     _scale(vector, factor) {
         for (let i = 0; i < vector.length; i++)
             vector[i] *= factor;
