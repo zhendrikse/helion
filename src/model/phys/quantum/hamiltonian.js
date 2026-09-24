@@ -109,19 +109,23 @@ export class Hamiltonian {
      * Apply this Hamiltonian to a real-valued grid function.
      *
      * @param {Float64Array} psi
+     * @param {Float64Array | null} out
      * @returns {Float64Array}
      */
-    apply(psi) {
+    apply(psi, out = null) {
         if (psi.length !== this._potential.data.length)
             throw new Error(
                 `Hamiltonian and wavefunction sizes must match (${this._potential.data.length} samples expected).`
             );
 
+        const hPsi = out ?? new Float64Array(psi.length);
+        if (out) 
+            hPsi.fill(0);
+        
         const nx = this._potential.nx;
         const ny = this._potential.ny;
         const h2 = this._spacing * this._spacing;
         const kinetic = this._hbar * this._hbar / (2 * this._mass);
-        const hPsi = new Float64Array(psi.length);
 
         for (let y = 1; y < ny - 1; y++)
             for (let x = 1; x < nx - 1; x++) {
