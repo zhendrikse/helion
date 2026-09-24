@@ -190,13 +190,54 @@ export class SchrodingerEigenstateSolver extends Solver {
         const psiSize = n * n;
         let psi = new Float64Array(psiSize);
 
-        // Keep the same deterministic seed and numerical algorithm as the
-        // synchronous solver; only the scheduling is different.
+        const alpha = Math.sqrt(0.05);
+
+
         for (let y = 1; y < n - 1; y++) {
-            const v = y / (n - 1);
+            const yy = (y / (n - 1) - 0.5) * this._hamiltonian._extent;
+
             for (let x = 1; x < n - 1; x++) {
-                const u = x / (n - 1);
-                psi[y * n + x] = Math.sin((state + 1) * Math.PI * u) * Math.sin(Math.PI * v);
+                const xx = (x / (n - 1) - 0.5) * this._hamiltonian._extent;
+                const gaussian =
+                    Math.exp(-0.5 * alpha * (xx * xx + yy * yy));
+
+                switch (state) {
+                    case 0:
+                        // |0,0>
+                        psi[y * n + x] = gaussian;
+                        break;
+                    case 1:
+                        // |1,0>
+                        psi[y * n + x] = xx * gaussian;
+                        break;
+
+                    case 2:
+                        // |0,1>
+                        psi[y * n + x] = yy * gaussian;
+                        break;
+
+                    case 3:
+                        // |2,0>
+                        psi[y * n + x] = (xx * xx - 1 / alpha) * gaussian;
+                        break;
+
+                    case 4:
+                        // |1,1>
+                        psi[y * n + x] = xx * yy * gaussian;
+                        break;
+
+                    case 5:
+                        // |0,2>
+                        psi[y * n + x] = (yy * yy - 1 / alpha) * gaussian;
+                        break;
+
+                    default:
+                        // tijdelijke seed voor hogere states
+                        psi[y * n + x] =
+                            Math.sin((state + 1) * Math.PI * x / (n - 1)) *
+                            Math.sin(Math.PI * y / (n - 1));
+                        break;
+                }
             }
         }
 

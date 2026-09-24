@@ -164,16 +164,19 @@ export class Hamiltonian {
      * @param {{maxStates?: number, iterations?: number, dt?: number, progressReportCallback?: (percent: number) => void}} config
      * @returns {Promise<{states: Float64Array[], energies: number[]}>}
      */
-    async solveAsync(config = {}) {
-        const solver = new SchrodingerEigenstateSolver({
-            hamiltonian: this,
-            states: config.maxStates ?? 1,
-            iterations: config.iterations ?? 1200,
-            dt: config.dt ?? 0.01
-        });
+async solveAsync(config = {}) {
+    const solver = new SchrodingerEigenstateSolver({
+        hamiltonian: this,
+        states: config.maxStates ?? 1,
+        lanczosSteps: config.lanczosSteps ?? 60,
+        tolerance: config.tolerance ?? 1e-12
+    });
 
-        return solver.solveAsync(config.progressReportCallback);
-    }
+    return solver.solveAsync(
+        config.progressReportCallback
+    );
+}
+
 
     /**
      * Create a wavefunction matching this Hamiltonian's grid.
