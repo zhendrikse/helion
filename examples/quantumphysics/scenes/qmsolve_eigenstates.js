@@ -36,12 +36,12 @@ const H = new Hamiltonian({
 
 const { states, energies } = await H.solveAsync({
     maxStates: 15,
-    iterations: 900,
-    progressReportCallback: percent => simulation.showHud(`Solving Hamiltonian: ${Math.round(percent)}%`)
+    iterations: 1000,
+    progressReportCallback: (text, percent) => simulation.showHud(text + `: ${Math.round(percent)}%`)
 });
 
-// for (const energy of energies)
-//     console.log(energy);
+for (const energy of energies)
+    console.log(energy);
 
 const psi = new DiscreteComplexField({ nx: N, ny: N });
 const waveFunction = new WaveFunctionSurface3D({

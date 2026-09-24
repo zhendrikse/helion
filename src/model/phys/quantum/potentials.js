@@ -13,6 +13,7 @@ import { SingleParticle } from "./hamiltonian.js";
 
 /** Infinite square well: zero potential inside the computational domain. */
 export class InfiniteSquareWell {
+    /** @returns {number} */
     static withoutParameters = () => /** @type {SingleParticle} */ particle => 0;
 }
 

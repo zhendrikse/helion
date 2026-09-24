@@ -44,7 +44,7 @@ export class InfiniteSquareWell2D {
     }
 
     /**
-     * @param {import('../fields.js').DiscreteComplexField} psi
+     * @param {DiscreteComplexField} psi
      */
     initialize(psi) {
         this._validateWaveFunction(psi);
@@ -65,7 +65,7 @@ export class InfiniteSquareWell2D {
     }
 
     /**
-     * @param {import('../fields.js').DiscreteComplexField} psi
+     * @param {DiscreteComplexField} psi
      * @param {number} dt
      */
     step(psi, dt) {

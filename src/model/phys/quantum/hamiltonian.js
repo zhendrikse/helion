@@ -169,7 +169,7 @@ export class Hamiltonian {
      * @param {{
      *   maxStates?: number, 
      *   iterations?: number, 
-     *   progressReportCallback?: (percent: number) => void
+     *   progressReportCallback?: (text: string, percent: number) => void
      * }} config
      * 
      * @returns {Promise<{states: Float64Array[], energies: number[]}>}

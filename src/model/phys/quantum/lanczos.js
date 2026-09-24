@@ -38,14 +38,14 @@ export class LanczosEigenstateSolver extends Solver {
     /**
      * Cooperative asynchronous variant of solve().
      *
-     * @param {(percent: number) => void} progressReportCallback
+     * @param {(text: string, percent: number) => void} progressReportCallback
      * @returns {Promise<{states: Float64Array[], energies: number[]}>}
      */
     async solveAsync(progressReportCallback) {
         this.reset();
 
         const { basis, diagonal, offDiagonal } = await this._buildKrylovSubspaceAsync(progressReportCallback);
-        const { values, vectors } = this._diagonalizeTridiagonal(diagonal, offDiagonal);
+        const { values, vectors } = await this._diagonalizeTridiagonal(diagonal, offDiagonal, progressReportCallback);
 
         const count = Math.min(this._states, values.length);
         const states = new Array(count);
@@ -69,7 +69,6 @@ export class LanczosEigenstateSolver extends Solver {
         this._eigenstates = ordered.map(item => item.psi);
         this._eigenvalues = ordered.map(item => item.energy);
 
-        progressReportCallback?.(100);
         return {
             states: this._eigenstates.slice(),
             energies: this._eigenvalues.slice()
@@ -88,7 +87,7 @@ export class LanczosEigenstateSolver extends Solver {
         return Math.min(Math.max(this._states + 2, requested), dimension);
     }
 
-    /** @param {((percent: number) => void)} progressReportCallback */
+    /** @param {((text: string, percent: number) => void)} progressReportCallback */
     async _buildKrylovSubspaceAsync(progressReportCallback) {
         const size = this._hamiltonian.N * this._hamiltonian.N;
         const count = this._iterationCount();
@@ -130,8 +129,10 @@ export class LanczosEigenstateSolver extends Solver {
                 this._scale(q, 1 / beta);
             }
 
-            progressReportCallback?.(100 * (step + 1) / count);
-            if (step % 5 === 4) await new Promise(r => setTimeout(r, 0));
+            if (step % 50 === 0) {
+                progressReportCallback?.('Solving Hamiltonian', 100 * (step + 1) / count);
+                await new Promise(r => setTimeout(r, 0));
+            }
         }
 
         return { basis, diagonal, offDiagonal };
@@ -187,8 +188,9 @@ export class LanczosEigenstateSolver extends Solver {
      * inexpensive compared with the Hamiltonian applications.
      * @param {number[]} diagonal
      * @param {number[]} offDiagonal
+     * @param {(text: string, percent: number) => void} progressReportCallback
      */
-    _diagonalizeTridiagonal(diagonal, offDiagonal) {
+    async _diagonalizeTridiagonal(diagonal, offDiagonal, progressReportCallback) {
         const n = diagonal.length;
         const d = Float64Array.from(diagonal);
         const e = new Float64Array(n);
@@ -209,6 +211,10 @@ export class LanczosEigenstateSolver extends Solver {
         );
 
         for (let l = 0; l < n; l++) {
+            if (l % 50 === 0) {
+                progressReportCallback?.('Final diagonalization', 100 * (l + 1) / n);
+                await new Promise(r => setTimeout(r, 0));
+            }
             let iteration = 0;
 
             while (true) {
