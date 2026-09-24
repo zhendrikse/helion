@@ -148,7 +148,8 @@ export class SchrodingerEigenstateSolver extends Solver {
     }
 
     /**
-     * @returns {{states: Float64Array[], energies: number[]}} eigenstates and eigenvalues
+     * @param {(percent: number) => void} [progressReportCallback]
+     * @returns {{states: Float64Array[], energies: number[]}}
      */
     solve(progressReportCallback) {
         this.reset();
@@ -156,9 +157,22 @@ export class SchrodingerEigenstateSolver extends Solver {
         for (let state = 0; state < this._statesCount; state++)
             this._createEigenState(state, progressReportCallback);
 
+        // Sorteer op energie zodat degeneratie (isotrope oscillator) niet door elkaar gehusseld lijkt
+        const paired = this._eigenstates.map((s, i) => ({ s, e: this._eigenvalues[i] }));
+        paired.sort((a, b) => a.e - b.e);
+        this._eigenstates = paired.map(p => p.s);
+        this._eigenvalues = paired.map(p => p.e);
+
         const states = this._eigenstates.slice();
         const energies = this._eigenvalues.slice();
         return {states, energies};
+    }
+
+    _sortByAscendingEnergy() {
+        const paired = this._eigenstates.map((s, i) => ({ s, e: this._eigenvalues[i] }));
+        paired.sort((a, b) => a.e - b.e);
+        this._eigenstates = paired.map(p => p.s);
+        this._eigenvalues = paired.map(p => p.e);
     }
 
     /**
@@ -174,6 +188,9 @@ export class SchrodingerEigenstateSolver extends Solver {
 
         for (let state = 0; state < this._statesCount; state++)
             await this._createEigenStateAsync(state, progressReportCallback);
+
+        // Sort energies ascending
+        this._sortByAscendingEnergy();
 
         const states = this._eigenstates.slice();
         const energies = this._eigenvalues.slice();

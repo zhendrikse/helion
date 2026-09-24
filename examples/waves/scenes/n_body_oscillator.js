@@ -49,11 +49,11 @@ latticeView.position.y = 4;
 const graph = new UPlotGraph({
     dataDefinition: [
         { label: 't' },
-        { label: 'left', color: 'blue' },
-        { label: 'right', color: 'red' },
-        { label: 'ball3', color: 'red' },
-        { label: 'ball4', color: 'red' },
-        { label: 'ball5', color: 'blue' },
+        { label: 'left', color: Colour.Blue },
+        { label: 'right', color: Colour.Red },
+        { label: 'ball3', color: Colour.Red },
+        { label: 'ball4', color: Colour.Red },
+        { label: 'ball5', color: Colour.Blue }
     ],
     title: 'Kinetic Energy vs Time',
     xLabel: 'Time [s]',

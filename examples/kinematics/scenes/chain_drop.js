@@ -181,15 +181,16 @@ const table = new Block({
 
 const graph = new UPlotGraph({
     dataDefinition: [
-        { label: 't', color: 'yellow' },
-        { label: 'a (chain end)', color: 'white' },
-        { label: 'g', color: 'red' }
+        { label: 't', color: Colour.Yellow },
+        { label: 'a (chain end)', color: Colour.White },
+        { label: 'g', color: Colour.Red }
     ],
     title: 'Acceleration of chain end',
     xLabel: 'Time [s]',
     yLabel: 'Acceleration [m/s²]',
     maxPoints: 500,
-    labelColor: 'yellow'
+    labelColor: Colour.Yellow,
+    yRange: null
 });
 
 const simulation = Simulation

@@ -54,7 +54,7 @@ export { DropdownMenu, Checkbox, Button, Slider, RadioGroup, TextInput } from '.
 export { Simulation } from './core/helion.js';
 export { MathPhysicsModelBehavior, Transformation } from './model/behavior.js';
 export { Registry } from './core/utils.js';
-export { UPlotGraph } from './core/uplot.js';
+export { UPlotGraph, UPlotBarGraph } from './core/uplot.js';
 export { Floor, Aquarium, Ceiling } from './view/3d/primitives/decorations.js';
 export { OneDimensionalComplexPlaneWave2D } from './view/2d/composite/quantum.js';
 export { Renderable3D } from './view/renderer.js';
@@ -66,7 +66,6 @@ export { Matrix2D, RotationMatrix2D } from './model/transformations/matrices.js'
 export { Arrow2D } from './view/2d/primitives.js';
 export { ArrowField2D } from './view/2d/composite/composites.js';
 export { WaveEquationSolver, JacobiSolver } from './model/math/numerics/solvers/solvers.js';
-
 export { SchrodingerEigenstateSolver3D } from './model/math/numerics/solvers/qmsolvers.js';
 export { SchrodingerSolver, SchrodingerEigenstateSolver } from './model/phys/quantum/schrodinger.js';
 export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js';

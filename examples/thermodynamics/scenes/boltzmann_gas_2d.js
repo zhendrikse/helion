@@ -28,8 +28,8 @@ const temperatureSlider = new Slider('Temperature')
 const graph = new UPlotGraph({
     dataDefinition: [
         {},
-        { label: 'Simulation', color: 'cyan', fill: 'rgba(0, 255, 255, 0.2)' },
-        { label: 'Maxwell (2D)', color: 'orange' }
+        { label: 'Simulation', color: Colour.Cyan, fill: 'rgba(0, 255, 255, 0.2)' },
+        { label: 'Maxwell (2D)', color: Colour.Orange }
     ],
     height: 250,
     title: 'Speed Distribution (averaged)',

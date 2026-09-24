@@ -49,10 +49,10 @@ const sphere = new Sphere({ color: Colour.Cyan });
 const graph = new UPlotGraph({
     dataDefinition: [
         { label: 't' },
-        { label: 'ball1', color: 'blue' },
-        { label: 'Y-position', color: 'cyan' },
-        { label: 'Kinetic Energy', color: 'red' },
-        { label: 'Potential Energy', color: 'green' }
+        { label: 'ball1', color: Colour.Blue },
+        { label: 'Y-position', color: Colour.Cyan },
+        { label: 'Kinetic Energy', color: Colour.Red },
+        { label: 'Potential Energy', color: Colour.Green }
     ],
     title: 'Bouncing ball',
     xLabel: 'Simulation time',

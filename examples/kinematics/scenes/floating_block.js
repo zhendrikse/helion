@@ -58,9 +58,9 @@ const dragForce = new DragForce();
 
 const graph = new UPlotGraph({
     dataDefinition: [
-        { label: 't [s]', color: 'yellow' },
-        { label: 'buoyancy', color: 'magenta' },
-        { label: 'drag', color: 'blue' }
+        { label: 't [s]', color: Colour.Yellow },
+        { label: 'buoyancy', color: Colour.Magenta },
+        { label: 'drag', color: Colour.Blue }
     ],
     title: 'Buoyancy & drag forces',
     xLabel: 'Simulation time',

@@ -28,6 +28,7 @@ export class Colour {
     static White = new Colour(1, 1, 1);
     static Black = new Colour(0, 0, 0);
     static Purple = new Colour(0.5, 0, 0.5);
+    static Magenta = new Colour(1, 0, 1);
 
     static fromThreeJsColor = (/** @type {Color} */ threeJsColor) => {
         const c = new Colour();
@@ -98,10 +99,7 @@ export class Colour {
     }
 
     asHexString() {
-        const c = new Color();
-        this._color.getRGB(c, SRGBColorSpace);
-
-        return `#${Colour.toHex(c.r)}${Colour.toHex(c.g)}${Colour.toHex(c.b)}`;
+        return `#${Colour.toHex(this._color.r)}${Colour.toHex(this._color.g)}${Colour.toHex(this._color.b)}`;
     }
 
 

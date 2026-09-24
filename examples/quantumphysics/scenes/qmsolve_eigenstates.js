@@ -1,7 +1,8 @@
 import {
     Checkbox, DiscreteComplexField, Hamiltonian, Range, Simulation, SingleParticle,
-    Slider, Vec3, WaveFunctionSurface3D, HarmonicOscillator, AnisotropicHarmonicOscillator, DoubleWell, CircularWell,
-    Quartic, InfiniteSquareWell
+    Slider, Vec3, WaveFunctionSurface3D, HarmonicOscillator, AnisotropicHarmonicOscillator, 
+    DoubleWell, CircularWell, Quartic, InfiniteSquareWell, UPlotBarGraph,
+    Colour
 } from '../../../src/index.js';
 
 const N = 150;
@@ -46,8 +47,8 @@ const waveFunction = new WaveFunctionSurface3D({
     brightness: 1.5
 });
 
-let currentIndex = 8;
-function showState(index = 8) {
+let currentIndex = 7;
+function showState(index = 7) {
     currentIndex = index;
     psi.real.set(states[index]);
     psi.imag.fill(0);
@@ -87,6 +88,13 @@ simulation
         .on(waveFunction)
         .withProperty('zScale')
     )
+    .addGraph(new UPlotBarGraph({
+        values: energies,
+        title: 'Eigenstate energies',
+        xLabel: 'Eigenstate',
+        yLabel: 'Energy',
+        color: new Colour(0.6, 0.6, 1)
+    }))
     .frameSceneOn(waveFunction, {
         padding: 0.425,
         viewDirection: new Vec3(-1, .5, 0.9)

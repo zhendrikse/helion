@@ -158,23 +158,6 @@ export class Hamiltonian {
     }
 
     /**
-     * Solve for the lowest stationary states.
-     *
-     * @param {{maxStates?: number, iterations?: number, dt?: number, progressReportCallback?: (percent: number) => void}} config
-     * @returns {{states: Float64Array[], energies: number[]}} eigenstates and eigenvalues
-     */
-    solve(config = {}) {
-        const solver = new SchrodingerEigenstateSolver({
-            hamiltonian: this,
-            states: config.maxStates ?? 1,
-            iterations: config.iterations ?? 1200,
-            dt: config.dt ?? 0.01
-        });
-
-        return solver.solve(config.progressReportCallback);
-    }
-
-    /**
      * Solve for the lowest stationary states while yielding to the browser
      * between batches of iterations so progress can be rendered.
      *

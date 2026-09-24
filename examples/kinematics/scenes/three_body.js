@@ -42,8 +42,8 @@ Simulation
     .bind(bodyA.alwaysWith(new Trail({ maxPoints: 500, color: Colour.Yellow })))
     .bind(bodyB.alwaysWith(new Sphere({ color: Colour.Cyan })))
     .bind(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: Colour.Cyan })))
-    .bind(bodyC.alwaysWith(new Sphere({ color: Colour.Purple })))
-    .bind(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: Colour.Purple })))
+    .bind(bodyC.alwaysWith(new Sphere({ color: Colour.Magenta })))
+    .bind(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: Colour.Magenta })))
     .maxOutCpu(_ => {
         bodyA.and(bodyB).apply(gravitationalForce);
         bodyA.and(bodyC).apply(gravitationalForce);

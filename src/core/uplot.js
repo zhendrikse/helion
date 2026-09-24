@@ -1,30 +1,32 @@
 import uPlot from 'uplot';
 import { Interval } from '../model/math/math.js';
+import { Colour } from '../view/colormappers.js';
 
 export class UPlotGraph {
     /**
-     * @param {Object} options
-     * @param {any} options.dataDefinition,
-     * @param {number | null} options.width = null,
-     * @param {number | null} options.height = null,
-     * @param {string} options.title = '',
-     * @param {string} options.xLabel = '',
-     * @param {string} options.yLabel = '',
-     * @param {number} options.maxPoints = 500,
-     * @param {string} options.labelColor = 'green',
-     * @param {Interval | null} options.yRange = null no range means auto range
+     * @param {{
+     *   width?: number
+     *   dataDefinition?: any
+     *   height?: number 
+     *   title?: string
+     *   xLabel?: string
+     *   yLabel?: string
+     *   maxPoints?: number
+     *   labelColor?: Colour
+     *   yRange?: Interval | null 
+     * }} param0 
      */
     constructor({
         dataDefinition,
-        width = null,
-        height = null,
+        width = 0,
+        height = 0,
         title = '',
         xLabel = '',
         yLabel = '',
         maxPoints = 500,
-        labelColor = 'green',
+        labelColor = Colour.Green,
         yRange = null,
-    } = /** @type {any} */ ({})) {
+    } = {}) {
         this._maxPoints = maxPoints;
         /** @type {number[][]} */
         this._graphData = [];
@@ -32,10 +34,12 @@ export class UPlotGraph {
 
         const series = [{}];
         dataDefinition.slice(1).forEach(dataPoint => {
+            const stroke = dataPoint.color?.asHexString ? dataPoint.color.asHexString() : dataPoint.color;
+            const fill = dataPoint.fill?.asHexString ? dataPoint.fill.asHexString() : dataPoint.fill;
             series.push({
                 label: dataPoint.label,
-                stroke: dataPoint.color,
-                fill: dataPoint.fill
+                stroke,
+                fill
             });
         });
 
@@ -54,12 +58,12 @@ export class UPlotGraph {
             return this;
         
         let [title, width, height, labelColor, xLabel, yLabel, series, yRange] = this._uPlotOptionsArgs;
-        if (width == null) 
+        if (!width) 
             width = parentDiv.clientWidth || parentDiv.getBoundingClientRect?.().width || 600;
         
         if (!width) // fallback if still 0 (before layout)
             width = 600;
-        if (height == null) 
+        if (!height) 
             height = Math.round(width * 0.5);
         const uPlotOptions = this._uplotOptions(title, width, height, labelColor, xLabel, yLabel, series, yRange);
         const plotDiv = document.createElement('div');
@@ -73,7 +77,7 @@ export class UPlotGraph {
      * @param {string} title
      * @param {number} width
      * @param {number} height
-     * @param {string} labelColor
+     * @param {Colour} labelColor
      * @param {string} xLabel
      * @param {string} yLabel
      * @param {{}[]} series
@@ -87,12 +91,12 @@ export class UPlotGraph {
                 ? { x: { auto: true }, y: { auto: false, range: yRange } }
                 : { x: { auto: true }, y: { auto: true } },
             axes: [{
-                stroke: labelColor,
+                stroke: labelColor?.asHexString ? labelColor.asHexString() : labelColor,
                 font: '12px Arial',
                 grid: { stroke: 'rgba(255, 255, 255, 0.2)', width: 1 },
                 label: xLabel,
             }, {
-                stroke: labelColor,
+                stroke: labelColor?.asHexString ? labelColor.asHexString() : labelColor,
                 font: '12px Arial',
                 grid: { stroke: 'rgba(255, 255, 255, 0.2)', width: 1 },
                 label: yLabel
@@ -125,6 +129,76 @@ export class UPlotGraph {
     reset() {
         this._graphData.forEach(arr => arr.length = 0);
         this.update();
+        return this;
+    }
+}
+
+export class UPlotBarGraph extends UPlotGraph {
+    /**
+     * @param {{
+     *   values?: number[]
+     *   width?: number
+     *   height?: number 
+     *   title?: string
+     *   xLabel?: string
+     *   yLabel?: string
+     *   color?: Colour
+     *   labelColor?: Colour
+     *   yRange?: Interval | null 
+     * }} param0 
+     */
+    constructor({
+        values, 
+        width = 0, 
+        height = 0, 
+        title = '', 
+        xLabel = '', 
+        yLabel = '', 
+        labelColor = Colour.Green, 
+        color = Colour.Green, 
+        yRange = null
+    } = {}) {
+        super({
+            dataDefinition: [{label: 'Index'}, {label: yLabel || 'Value', color, fill: color}],
+            width, height, title, xLabel, yLabel, labelColor, yRange
+        });
+        this._values = values ?? [];
+        this._graphData = [this._values.map((_, index) => index), this._values.slice()];
+    }
+
+    /** @param {HTMLDivElement} parentDiv */
+    attach(parentDiv) {
+        if (this._uplotChart)
+            return this;
+
+        let [title, width, height, labelColor, xLabel, yLabel, series, yRange] = this._uPlotOptionsArgs;
+        if (!width)
+            width = parentDiv.clientWidth || parentDiv.getBoundingClientRect?.().width || 600;
+        if (!width)
+            width = 600;
+        if (!height)
+            height = Math.round(width * 0.5);
+
+        series[1].paths = uPlot.paths.bars({size: [0.7, Infinity]});
+        const uPlotOptions = this._uplotOptions(title, width, height, labelColor, xLabel, yLabel, series, yRange);
+        uPlotOptions.scales.x = {
+            time: false,
+            auto: false,
+            range: [-0.5, Math.max(0.5, this._values.length - 0.5)]
+        };
+
+        const plotDiv = document.createElement('div');
+        parentDiv.appendChild(plotDiv);
+        this._plotDiv = plotDiv;
+        this._uplotChart = new uPlot(uPlotOptions, this._graphData, plotDiv);
+        return this;
+    }
+
+    /** @param {number[]} values */
+    updateValues(values) {
+        this._values = values.slice();
+        this._graphData = [this._values.map((_, index) => index), this._values.slice()];
+        this._uplotChart?.setData(this._graphData);
         return this;
     }
 }
