@@ -190,56 +190,11 @@ export class SchrodingerEigenstateSolver extends Solver {
         const psiSize = n * n;
         let psi = new Float64Array(psiSize);
 
-        const alpha = Math.sqrt(0.05);
-
-
-        for (let y = 1; y < n - 1; y++) {
-            const yy = (y / (n - 1) - 0.5) * this._hamiltonian._extent;
-
-            for (let x = 1; x < n - 1; x++) {
-                const xx = (x / (n - 1) - 0.5) * this._hamiltonian._extent;
-                const gaussian =
-                    Math.exp(-0.5 * alpha * (xx * xx + yy * yy));
-
-                switch (state) {
-                    case 0:
-                        // |0,0>
-                        psi[y * n + x] = gaussian;
-                        break;
-                    case 1:
-                        // |1,0>
-                        psi[y * n + x] = xx * gaussian;
-                        break;
-
-                    case 2:
-                        // |0,1>
-                        psi[y * n + x] = yy * gaussian;
-                        break;
-
-                    case 3:
-                        // |2,0>
-                        psi[y * n + x] = (xx * xx - 1 / alpha) * gaussian;
-                        break;
-
-                    case 4:
-                        // |1,1>
-                        psi[y * n + x] = xx * yy * gaussian;
-                        break;
-
-                    case 5:
-                        // |0,2>
-                        psi[y * n + x] = (yy * yy - 1 / alpha) * gaussian;
-                        break;
-
-                    default:
-                        // tijdelijke seed voor hogere states
-                        psi[y * n + x] =
-                            Math.sin((state + 1) * Math.PI * x / (n - 1)) *
-                            Math.sin(Math.PI * y / (n - 1));
-                        break;
-                }
-            }
-        }
+        // Use a deterministic, potential-agnostic smooth seed.  A small
+        // sine basis keeps the initial state free of boundary values and,
+        // unlike hand-written harmonic-oscillator states, does not assume
+        // anything about the potential.
+        this._seedFromSineBasis(psi, n, state);
 
         this._orthogonalize(psi);
         this._normalize(psi);
@@ -269,6 +224,51 @@ export class SchrodingerEigenstateSolver extends Solver {
 
         this._eigenstates.push(psi);
         this._eigenvalues.push(this._hamiltonian.energyOf(psi));
+    }
+
+    /**
+     * Fill a state with a deterministic smooth combination of sine modes.
+     *
+     * The seed is different for every requested state, but contains no
+     * knowledge of the potential.  This gives the imaginary-time solver a
+     * reproducible starting vector while avoiding hard-coded eigenfunctions.
+     *
+     * @param {Float64Array} psi
+     * @param {number} n
+     * @param {number} state
+     */
+    _seedFromSineBasis(psi, n, state) {
+        const modes = 6;
+        let randomState = (state + 1) * 0x9e3779b9;
+
+        const random = () => {
+            randomState ^= randomState << 13;
+            randomState ^= randomState >>> 17;
+            randomState ^= randomState << 5;
+            return (randomState >>> 0) / 0x100000000 * 2 - 1;
+        };
+
+        const coefficients = Array.from(
+            { length: modes * modes },
+            () => random()
+        );
+
+        for (let y = 1; y < n - 1; y++) {
+            const yCoordinate = Math.PI * y / (n - 1);
+
+            for (let x = 1; x < n - 1; x++) {
+                const xCoordinate = Math.PI * x / (n - 1);
+                let value = 0;
+
+                for (let ky = 1; ky <= modes; ky++)
+                    for (let kx = 1; kx <= modes; kx++)
+                        value += coefficients[(ky - 1) * modes + kx - 1] *
+                            Math.sin(kx * xCoordinate) *
+                            Math.sin(ky * yCoordinate);
+
+                psi[y * n + x] = value;
+            }
+        }
     }
 
     /** @param {Float64Array<ArrayBuffer>} psi */
