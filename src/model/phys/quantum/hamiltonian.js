@@ -43,7 +43,7 @@ export class Hamiltonian {
     /**
      * @typedef {Object} SimulationOptions
      * @property {SingleParticle} [particle] - The particle for which the simulation is executed.
-     * @property {DiscreteScalarField | DiscreteScalarField3D | function} [potential] - The potential field.
+     * @property {(particle: SingleParticle)=> number} [potential] - The potential field.
      * @property {number} [spatialNdim] - Number of spatial dimensions.
      * @property {number} [N] - The number of lattice points per dimensiion.
      * @property {number} [extent] - The physical size of the lattice.
@@ -54,7 +54,7 @@ export class Hamiltonian {
      */
     constructor({
         particle = SingleParticle,
-        potential = (/** @type {SingleParticle} */ _particle) => 0,
+        potential = /** @type (particle: SingleParticle) => number */ _particle => 0,
         spatialNdim = 2,
         N = 100,
         extent = 10,
@@ -168,20 +168,27 @@ export class Hamiltonian {
      *
      * @param {{
      *   maxStates?: number, 
-     *   iterations?: number, 
+     *   iterations?: number,
+     *   calculateResiduals?: boolean, 
      *   progressReportCallback?: (text: string, percent: number) => void
      * }} config
      * 
-     * @returns {Promise<{states: Float64Array[], energies: number[]}>}
+     * @returns {Promise<{states: Float64Array[], energies: number[], residuals: number[]}>}
      */
-    async solveAsync(config = {}) {
+    async solveAsync({
+        maxStates = 4,
+        iterations = 100,
+        calculateResiduals = false,
+        progressReportCallback = (_text, _percent) => {}
+    } = {}) {
         const solver = new LanczosEigenstateSolver({
             hamiltonian: this,
-            states: config.maxStates ?? 1,
-            iterations: config.iterations
+            states: maxStates,
+            iterations,
+            calculateResiduals
         });
 
-        return solver.solveAsync(config.progressReportCallback);
+        return solver.solveAsync(progressReportCallback);
     }
 
 

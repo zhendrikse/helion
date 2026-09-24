@@ -5,7 +5,7 @@ import {
     Colour
 } from '../../../src/index.js';
 
-const N = 150;
+const N = 110;
 const extent = 0.15 * (N - 1);
 
 const simulation = Simulation
@@ -34,14 +34,15 @@ const H = new Hamiltonian({
     extent
 });
 
-const { states, energies } = await H.solveAsync({
+const { states, energies, residuals } = await H.solveAsync({
     maxStates: 15,
-    iterations: 1000,
+    iterations: 800,
+    calculateResiduals: true,
     progressReportCallback: (text, percent) => simulation.showHud(text + `: ${Math.round(percent)}%`)
 });
 
-for (const energy of energies)
-    console.log(energy);
+for (const residual of residuals)
+    console.log(residual);
 
 const psi = new DiscreteComplexField({ nx: N, ny: N });
 const waveFunction = new WaveFunctionSurface3D({
@@ -95,7 +96,8 @@ simulation
         title: 'Eigenstate energies',
         xLabel: 'Eigenstate',
         yLabel: 'Energy',
-        color: new Colour(0.6, 0.6, 1)
+        labelColor: Colour.Yellow,
+        color: new Colour(0.5, 0.5, 1)
     }))
     .frameSceneOn(waveFunction, {
         padding: 0.425,

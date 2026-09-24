@@ -13,13 +13,15 @@ export class LanczosEigenstateSolver extends Solver {
      * @param {{
      *     hamiltonian?: Hamiltonian,
      *     states?: number,
-     *     iterations?: number
+     *     iterations?: number,
+     *     calculateResiduals?: boolean
      * }} param0
      */
     constructor({
         hamiltonian,
         states = 4,
-        iterations = 100
+        iterations = 100,
+        calculateResiduals = false
     } = {}) {
         super();
 
@@ -32,14 +34,41 @@ export class LanczosEigenstateSolver extends Solver {
         this._hamiltonian = hamiltonian;
         this._states = states;
         this._iterations = iterations;
+        this._calculateResiduals = calculateResiduals;
         this.reset();
+    }
+
+    /**
+     * @param {Float64Array<ArrayBufferLike>} psi
+     * @param {number} state
+     * @param {number[]} residuals
+     */
+    _calculateResidualsFor(psi, state, residuals) {
+        const hPsi = this._hamiltonian.apply(psi);
+        let numerator = 0;
+        let denominator = 0;
+
+        for (let i = 0; i < psi.length; i++) {
+            numerator += psi[i] * hPsi[i];
+            denominator += psi[i] * psi[i];
+        }
+
+        const energy = numerator / denominator;
+        let residualSquared = 0;
+
+        for (let i = 0; i < psi.length; i++) {
+            const residual = hPsi[i] - energy * psi[i];
+            residualSquared += residual * residual;
+        }
+
+        residuals[state] = Math.sqrt(residualSquared / denominator);
     }
 
     /**
      * Cooperative asynchronous variant of solve().
      *
      * @param {(text: string, percent: number) => void} progressReportCallback
-     * @returns {Promise<{states: Float64Array[], energies: number[]}>}
+     * @returns {Promise<{states: Float64Array[], energies: number[], residuals: number[]}>}
      */
     async solveAsync(progressReportCallback) {
         this.reset();
@@ -50,10 +79,13 @@ export class LanczosEigenstateSolver extends Solver {
         const count = Math.min(this._states, values.length);
         const states = new Array(count);
         const energies = new Array(count);
+        const residuals = new Array(count)
 
         for (let state = 0; state < count; state++) {
             const psi = this._ritzVector(basis, vectors, state);
             this._normalize(psi);
+            if (this._calculateResiduals)
+                this._calculateResidualsFor(psi, state, residuals);
             states[state] = psi;
             energies[state] = this._hamiltonian.energyOf(psi);
         }
@@ -71,7 +103,8 @@ export class LanczosEigenstateSolver extends Solver {
 
         return {
             states: this._eigenstates.slice(),
-            energies: this._eigenvalues.slice()
+            energies: this._eigenvalues.slice(),
+            residuals
         };
     }
 

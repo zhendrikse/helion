@@ -13,8 +13,8 @@ import { SingleParticle } from "./hamiltonian.js";
 
 /** Infinite square well: zero potential inside the computational domain. */
 export class InfiniteSquareWell {
-    /** @returns {number} */
-    static withoutParameters = () => /** @type {SingleParticle} */ particle => 0;
+    static withoutParameters = () =>
+        (/** @type {SingleParticle} */ particle) => 0;
 }
 
 /**
@@ -22,24 +22,27 @@ export class InfiniteSquareWell {
  */
 export class HarmonicOscillator {
     static latex = 'V(x,y)=\\frac{1}{2}k(x^2+y^2)';
-    static withSpringConstant = k => /** @type {SingleParticle} */ particle =>
-        0.5 * k * (particle.x * particle.x + particle.y * particle.y);
+    static withSpringConstant = (/** @type {number} */ k) => 
+        (/** @type {SingleParticle} */ particle) =>
+            0.5 * k * (particle.x * particle.x + particle.y * particle.y);
 }
 
 /**
  * Two-dimensional anisotropic harmonic oscillator: V = 1/2 (kx x² + ky y²)
  */
 export class AnisotropicHarmonicOscillator {
-    static withSpringConstants = (kx, ky) => /** @type {SingleParticle} */ particle =>
-        0.5 * (kx * particle.x * particle.x + ky * particle.y * particle.y);
+    static withSpringConstants = (/** @type {number} */ kx, /** @type {number} */ ky) => 
+        (/** @type {SingleParticle} */ particle) =>
+            0.5 * (kx * particle.x * particle.x + ky * particle.y * particle.y);
 }
 
 /**
  * Two-dimensional double well with harmonic confinement in y: V = a (x² - b²)² + 1/2 ky y²
  */
 export class DoubleWell {
-    static withConstants = (a, b, ky) => /** @type {SingleParticle} */ particle=>
-        a * (particle.x * particle.x - b *b) ** 2 + 0.5 * ky * particle.y * particle.y;
+    static withConstants = (/** @type {number} */ a, /** @type {number} */ b, /** @type {number} */ ky) => 
+        (/** @type {SingleParticle} */ particle)=>
+            a * (particle.x * particle.x - b *b) ** 2 + 0.5 * ky * particle.y * particle.y;
 }
 
 /**
@@ -48,13 +51,16 @@ export class DoubleWell {
  * convenient for the finite-difference Hamiltonian.
  */
 export class CircularWell {
-    static withRadiusAndBarrier = (radius, barrier) => /** @type {SingleParticle} */ particle =>
-        particle.x *particle.x + particle.y * particle.y <= radius * radius ? 0 : barrier;
+    static withRadiusAndBarrier = (/** @type {number} */ radius, /** @type {any} */ barrier) => 
+        (/** @type {SingleParticle} */ particle) =>
+            particle.x *particle.x + particle.y * particle.y <= radius * radius ? 0 : barrier;
 }
 
 /**
  * Two-dimensional quartic oscillator: V = a (x⁴ + y⁴)
  */
 export class Quartic {
-    static withConstant = a => /** @type {SingleParticle} */ particle => a * (particle.x ** 4 + particle.y ** 4);
+    static withConstant = (/** @type {number} */ a) => 
+        (/** @type {SingleParticle} */ particle) => 
+            a * (particle.x ** 4 + particle.y ** 4);
 }
