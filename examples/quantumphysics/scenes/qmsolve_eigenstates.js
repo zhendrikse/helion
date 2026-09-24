@@ -35,12 +35,9 @@ const H = new Hamiltonian({
 });
 
 const { states, energies } = await H.solveAsync({
-    maxStates: 25,
+    maxStates: 15,
     iterations: 900,
-    progressReportCallback: percent =>
-        simulation.showHud(
-            `Solving Hamiltonian: ${Math.round(percent)}%`
-        )
+    progressReportCallback: percent => simulation.showHud(`Solving Hamiltonian: ${Math.round(percent)}%`)
 });
 
 // for (const energy of energies)
@@ -52,8 +49,8 @@ const waveFunction = new WaveFunctionSurface3D({
     brightness: 1.5
 });
 
-let currentIndex = 0;
-function showState(index = 0) {
+let currentIndex = 10;
+function showState(index = 10) {
     currentIndex = index;
     psi.real.set(states[index]);
     psi.imag.fill(0);
@@ -64,7 +61,7 @@ showState();
 let staticView = false;
 simulation
     .bind(psi.alwaysWith(waveFunction))
-    .runsEvery(0.02)
+    .runsEvery(0.01)
     .onStep((clock, dt) => {
         if (staticView)
             return;
@@ -83,7 +80,7 @@ simulation
     )
     .append(new Slider('🌀 Eigenstate')
         .withRange(new Range(0, states.length - 1, 1))
-        .withValue(8)
+        .withValue(currentIndex)
         // @ts-ignore
         .addEventListener('input', event => showState(Number(event.target.value)))
     )

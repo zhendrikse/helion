@@ -15,7 +15,11 @@ export class LanczosEigenstateSolver extends Solver {
      *     iterations?: number
      * }} param0
      */
-    constructor({ hamiltonian, states = 4, iterations = null } = {}) {
+    constructor({
+        hamiltonian,
+        states = 4,
+        iterations = 100
+    } = {}) {
         super();
 
         if (!hamiltonian)
@@ -30,63 +34,6 @@ export class LanczosEigenstateSolver extends Solver {
         this.reset();
     }
 
-    get hamiltonian() { return this._hamiltonian; }
-    get stateCount() { return this._eigenstates.length; }
-    get energies() { return this._eigenvalues; }
-
-    eigenstateAt(index) {
-        if (index < 0 || index >= this._eigenstates.length)
-            throw new RangeError(`Eigenstate index out of range: ${index}`);
-        return this._eigenstates[index];
-    }
-
-    /**
-     * Solve for the lowest eigenstates.
-     *
-     * The optional iterations value controls the size of the Krylov
-     * subspace. If omitted, a modest multiple of the requested state count
-     * is used. More Lanczos steps give the Ritz values more opportunity to
-     * converge, at the cost of storing more basis vectors.
-     *
-     * @param {(percent: number) => void} [progressReportCallback]
-     * @returns {{states: Float64Array[], energies: number[]}}
-     */
-    solve(progressReportCallback) {
-        this.reset();
-
-        const { basis, diagonal, offDiagonal } =
-            this._buildKrylovSubspace(progressReportCallback);
-
-        const { values, vectors } =
-            this._diagonalizeTridiagonal(diagonal, offDiagonal);
-
-        const count = Math.min(this._states, values.length);
-        const states = new Array(count);
-        const energies = new Array(count);
-
-        for (let state = 0; state < count; state++) {
-            const psi = this._ritzVector(basis, vectors, state);
-            this._normalize(psi);
-            states[state] = psi;
-            energies[state] = this._hamiltonian.energyOf(psi);
-        }
-
-        // The tridiagonal eigenvalues are Ritz approximations. Recompute the
-        // Rayleigh quotients after forming the actual grid-space vectors.
-        const ordered = states
-            .map((psi, index) => ({ psi, energy: energies[index] }))
-            .sort((a, b) => a.energy - b.energy);
-
-        this._eigenstates = ordered.map(item => item.psi);
-        this._eigenvalues = ordered.map(item => item.energy);
-
-        progressReportCallback?.(100);
-        return {
-            states: this._eigenstates.slice(),
-            energies: this._eigenvalues.slice()
-        };
-    }
-
     /**
      * Cooperative asynchronous variant of solve().
      *
@@ -99,8 +46,7 @@ export class LanczosEigenstateSolver extends Solver {
         const { basis, diagonal, offDiagonal } =
             await this._buildKrylovSubspaceAsync(progressReportCallback);
 
-        const { values, vectors } =
-            this._diagonalizeTridiagonal(diagonal, offDiagonal);
+        const { values, vectors } = this._diagonalizeTridiagonal(diagonal, offDiagonal);
 
         const count = Math.min(this._states, values.length);
         const states = new Array(count);
@@ -137,55 +83,6 @@ export class LanczosEigenstateSolver extends Solver {
         const defaultIterations = Math.max(30, this._states * 4 + 20);
         const requested = this._iterations ?? defaultIterations;
         return Math.min(Math.max(this._states + 2, requested), dimension);
-    }
-
-    _buildKrylovSubspace(progressReportCallback) {
-        const size = this._hamiltonian.N * this._hamiltonian.N;
-        const count = this._iterationCount();
-        const basis = [];
-        const diagonal = [];
-        const offDiagonal = [];
-
-        let q = this._initialVector(size);
-        this._normalize(q);
-
-        let previous = null;
-        let beta = 0;
-
-        for (let step = 0; step < count; step++) {
-            const z = this._hamiltonian.apply(q);
-
-            if (previous)
-                for (let i = 0; i < size; i++)
-                    z[i] -= beta * previous[i];
-
-            const alpha = this._dot(q, z);
-            diagonal.push(alpha);
-
-            for (let i = 0; i < size; i++)
-                z[i] -= alpha * q[i];
-
-            // Full reorthogonalization keeps the Lanczos basis numerically
-            // orthogonal. This is especially useful for degenerate states.
-            this._reorthogonalize(z, basis);
-
-            basis.push(q);
-
-            beta = this._norm(z);
-            if (step < count - 1) {
-                if (beta < 1e-12)
-                    break;
-
-                offDiagonal.push(beta);
-                previous = q;
-                q = z;
-                this._scale(q, 1 / beta);
-            }
-
-            progressReportCallback?.(100 * (step + 1) / count);
-        }
-
-        return { basis, diagonal, offDiagonal };
     }
 
     async _buildKrylovSubspaceAsync(progressReportCallback) {
@@ -235,6 +132,7 @@ export class LanczosEigenstateSolver extends Solver {
         return { basis, diagonal, offDiagonal };
     }
 
+    /** @param {number} size */
     _initialVector(size) {
         // A deterministic, non-symmetric seed prevents the initial Krylov
         // vector from accidentally excluding parts of degenerate eigenspaces.

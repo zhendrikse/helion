@@ -19,19 +19,23 @@ test('Hamiltonian samples a coordinate-based potential function', () => {
     assert.equal(H.potential.valueAt(2, 4), 4);
 });
 
-test('Hamiltonian solve returns stationary states and energies', () => {
+test('Hamiltonian solve returns stationary states and energies', async () => {
     const H = new Hamiltonian({
         potential: particle => 0.02 * particle.x * particle.x,
         N: 25,
         extent: 10
     });
 
-    const result = H.solve({ maxStates: 2, iterations: 80, dt: 0.01 });
+    const { states, energies } = await H.solveAsync({
+        maxStates: 2,
+        iterations: 80,
+        dt: 0.01
+    });
 
-    assert.equal(result.states.length, 2);
-    assert.equal(result.energies.length, 2);
-    assert.ok(Number.isFinite(result.energies[0]));
-    assert.ok(Number.isFinite(result.energies[1]));
+    assert.equal(states.length, 2);
+    assert.equal(energies.length, 2);
+    assert.ok(Number.isFinite(energies[0]));
+    assert.ok(Number.isFinite(energies[1]));
 });
 
 test('SchrodingerSolver preserves the staggered leapfrog update', () => {
