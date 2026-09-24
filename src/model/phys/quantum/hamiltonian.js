@@ -1,5 +1,6 @@
 import { DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D} from '../../math/fields.js';
-import { SchrodingerEigenstateSolver, SchrodingerSolver } from './schrodinger.js';
+import { SchrodingerSolver } from './schrodinger.js';
+import { LanczosEigenstateSolver } from './lanczos.js';
 
 /**
  * Single non-relativistic particle used by quantum potential functions.
@@ -165,17 +166,14 @@ export class Hamiltonian {
      * @returns {Promise<{states: Float64Array[], energies: number[]}>}
      */
 async solveAsync(config = {}) {
-    const solver = new SchrodingerEigenstateSolver({
-        hamiltonian: this,
-        states: config.maxStates ?? 1,
-        lanczosSteps: config.lanczosSteps ?? 60,
-        tolerance: config.tolerance ?? 1e-12
-    });
+        const solver = new LanczosEigenstateSolver({
+            hamiltonian: this,
+            states: config.maxStates ?? 1,
+            iterations: config.iterations
+        });
 
-    return solver.solveAsync(
-        config.progressReportCallback
-    );
-}
+        return solver.solveAsync(config.progressReportCallback);
+    }
 
 
     /**
