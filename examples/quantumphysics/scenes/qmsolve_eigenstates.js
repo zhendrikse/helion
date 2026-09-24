@@ -35,9 +35,8 @@ const H = new Hamiltonian({
 });
 
 const { states, energies } = await H.solveAsync({
-    maxStates: 6,
-    iterations: 1000,
-    dt: 0.001,
+    maxStates: 25,
+    iterations: 900,
     progressReportCallback: percent =>
         simulation.showHud(
             `Solving Hamiltonian: ${Math.round(percent)}%`
