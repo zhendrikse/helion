@@ -68,6 +68,7 @@ export { ArrowField2D } from './view/2d/composite/composites.js';
 export { WaveEquationSolver, JacobiSolver } from './model/math/numerics/solvers/solvers.js';
 export { SchrodingerEigenstateSolver3D } from './model/math/numerics/solvers/qmsolvers.js';
 export { SchrodingerSolver, SchrodingerEigenstateSolver } from './model/phys/quantum/schrodinger.js';
+export { LanczosEigenstateSolver } from './model/phys/quantum/lanczos.js';
 export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js';
 export { InfiniteSquareWell2D } from './model/phys/quantum/infinite_square_well.js';
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
