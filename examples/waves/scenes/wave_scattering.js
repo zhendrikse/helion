@@ -43,17 +43,13 @@ reset(configuration);
 Simulation
     .with({
         htmlDivId: 'waveScatteringContainer',
-        viewport: {
-            aspectRatio: '19 / 12'
-        },
+        viewport: { aspectRatio: '19 / 12' },
         camera: {
             position: new Vec3(2, 1, 2.1).multiplyScalar(resolution * .75),
             aspectRatio: '19/12',
             fieldOfView: 20
         },
-        headUpDisplay: {
-            enabled: false
-        }
+        headUpDisplay: { enabled: false }
     })
     .bind(surface.alwaysWith(waterSurface))
     .bind(obstacleField.onceWith(new DiscreteFieldBoxView({
@@ -79,6 +75,6 @@ Simulation
     )
     .append(waterSurface.glyphLayer.ui())
     .append(new Checkbox('Wireframe ')
-            .on(waterSurface.surfaceLayer)
-            .withProperty('wireframe')
+        .on(waterSurface.surfaceLayer)
+        .withProperty('wireframe')
     );

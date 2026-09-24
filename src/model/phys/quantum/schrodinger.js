@@ -147,27 +147,6 @@ export class SchrodingerEigenstateSolver extends Solver {
         this.reset();
     }
 
-    /**
-     * @param {(percent: number) => void} [progressReportCallback]
-     * @returns {{states: Float64Array[], energies: number[]}}
-     */
-    solve(progressReportCallback) {
-        this.reset();
-
-        for (let state = 0; state < this._statesCount; state++)
-            this._createEigenState(state, progressReportCallback);
-
-        // Sorteer op energie zodat degeneratie (isotrope oscillator) niet door elkaar gehusseld lijkt
-        const paired = this._eigenstates.map((s, i) => ({ s, e: this._eigenvalues[i] }));
-        paired.sort((a, b) => a.e - b.e);
-        this._eigenstates = paired.map(p => p.s);
-        this._eigenvalues = paired.map(p => p.e);
-
-        const states = this._eigenstates.slice();
-        const energies = this._eigenvalues.slice();
-        return {states, energies};
-    }
-
     _sortByAscendingEnergy() {
         const paired = this._eigenstates.map((s, i) => ({ s, e: this._eigenvalues[i] }));
         paired.sort((a, b) => a.e - b.e);
@@ -200,48 +179,6 @@ export class SchrodingerEigenstateSolver extends Solver {
     reset() {
         this._eigenstates = [];
         this._eigenvalues = [];
-    }
-
-    /**
-     * @param {number} state
-     * @param {(percent: number) => void} [progressReportCallback]
-     */
-    _createEigenState(state, progressReportCallback) {
-        const n = this._hamiltonian.N;
-        const psiSize = n * n;
-        let psi = new Float64Array(psiSize);
-
-        // Smooth deterministic seeds. Deflation then drives each seed towards
-        // the next available low-energy eigenstate.
-        for (let y = 1; y < n - 1; y++) {
-            const v = y / (n - 1);
-            for (let x = 1; x < n - 1; x++) {
-                const u = x / (n - 1);
-                psi[y * n + x] = Math.sin((state + 1) * Math.PI * u) * Math.sin(Math.PI * v);
-            }
-        }
-
-        this._orthogonalize(psi);
-        this._normalize(psi);
-
-        const total = this._iterations * this._statesCount;
-        for (let iteration = 0; iteration < this._iterations; iteration++) {
-            if (iteration % 250 === 0) {
-                progressReportCallback?.(100 * (state * this._iterations + iteration) / total);
-            }
-            const hPsi = this._hamiltonian.apply(psi);
-            const next = new Float64Array(psiSize);
-
-            for (let i = 0; i < psiSize; i++)
-                next[i] = psi[i] - this._dt * hPsi[i];
-
-            this._orthogonalize(next);
-            this._normalize(next);
-            psi = next;
-        }
-
-        this._eigenstates.push(psi);
-        this._eigenvalues.push(this._hamiltonian.energyOf(psi));
     }
 
     /**
