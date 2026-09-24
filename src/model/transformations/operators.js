@@ -553,12 +553,14 @@ export class FFT2D extends Transformation {
         const fft = new FFT(N);
 
         // rows
+        const outRe = new Float64Array(N);
+        const outIm = new Float64Array(N);
         for (let row = 0; row < N; row++) {
             const offset = row * N;
             const inRe = field.real.slice(offset, offset + N);
             const inIm = field.imag.slice(offset, offset + N);
-            const outRe = new Float64Array(N);
-            const outIm = new Float64Array(N);
+            outRe.fill(0);
+            outIm.fill(0);
 
             fft.transform(outRe, outIm, inRe, inIm);
 
@@ -567,19 +569,65 @@ export class FFT2D extends Transformation {
         }
 
         // columns
+        const colRe = new Float64Array(N);
+        const colIm = new Float64Array(N);
         for (let j = 0; j < N; j++) {
-            const colRe = new Float64Array(N);
-            const colIm = new Float64Array(N);
+            colRe.fill(0);
+            colIm.fill(0);
 
             for (let i = 0; i < N; i++) {
                 colRe[i] = field.real[i * N + j];
                 colIm[i] = field.imag[i * N + j];
             }
 
-            const outRe = new Float64Array(N);
-            const outIm = new Float64Array(N);
-
+            outRe.fill(0);
+            outIm.fill(0);
             fft.transform(outRe, outIm, colRe, colIm);
+
+            for (let i = 0; i < N; i++) {
+                field.real[i * N + j] = outRe[i];
+                field.imag[i * N + j] = outIm[i];
+            }
+        }
+    }
+    
+    /** @param {DiscreteComplexField} field */
+    inverseTransform(field) {
+        const N = field.size;
+        const fft = new FFT(N);
+        const outRe = new Float64Array(N);
+        const outIm = new Float64Array(N);
+
+        // Rows
+        for (let row = 0; row < N; row++) {
+            const offset = row * N;
+
+            const inRe = field.real.slice(offset, offset + N);
+            const inIm = field.imag.slice(offset, offset + N);
+
+            outRe.fill(0);
+            outIm.fill(0);
+            fft.inverseTransform(outRe, outIm, inRe, inIm);
+
+            field.real.set(outRe, offset);
+            field.imag.set(outIm, offset);
+        }
+
+        // Columns
+        const colRe = new Float64Array(N);
+        const colIm = new Float64Array(N);
+        for (let j = 0; j < N; j++) {
+            colRe.fill(0);
+            colIm.fill(0);
+
+            for (let i = 0; i < N; i++) {
+                colRe[i] = field.real[i * N + j];
+                colIm[i] = field.imag[i * N + j];
+            }
+
+            outRe.fill(0);
+            outIm.fill(0);
+            fft.inverseTransform(outRe, outIm, colRe, colIm);
 
             for (let i = 0; i < N; i++) {
                 field.real[i * N + j] = outRe[i];
