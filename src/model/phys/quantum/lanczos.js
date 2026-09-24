@@ -280,89 +280,98 @@ export class LanczosEigenstateSolver extends Solver {
      */
     _diagonalizeTridiagonal(diagonal, offDiagonal) {
         const n = diagonal.length;
-        const matrix = Array.from({ length: n }, (_, row) => {
-            const values = new Float64Array(n);
-            values[row] = diagonal[row];
-            if (row > 0)
-                values[row - 1] = offDiagonal[row - 1];
-            if (row < n - 1)
-                values[row + 1] = offDiagonal[row];
-            return values;
-        });
+        const d = Float64Array.from(diagonal);
+        const e = new Float64Array(n);
 
-        const vectors = Array.from({ length: n }, (_, row) => {
-            const values = new Float64Array(n);
-            values[row] = 1;
-            return values;
-        });
+        for (let i = 0; i < n - 1; i++)
+            e[i] = offDiagonal[i];
 
-        const maxIterations = Math.max(100, 20 * n * n);
+        // QL algorithm for a symmetric tridiagonal matrix.
+        // Unlike the previous dense Jacobi implementation, this works
+        // directly on the tridiagonal representation and costs O(n²).
+        const vectors = Array.from(
+            { length: n },
+            (_, row) => {
+                const values = new Float64Array(n);
+                values[row] = 1;
+                return values;
+            }
+        );
 
-        for (let iteration = 0; iteration < maxIterations; iteration++) {
-            let p = 0;
-            let q = 1;
-            let largest = 0;
+        for (let l = 0; l < n; l++) {
+            let iteration = 0;
 
-            for (let row = 0; row < n; row++)
-                for (let col = row + 1; col < n; col++) {
-                    const value = Math.abs(matrix[row][col]);
-                    if (value > largest) {
-                        largest = value;
-                        p = row;
-                        q = col;
+            while (true) {
+                let m = l;
+                while (m < n - 1) {
+                    const dd = Math.abs(d[m]) + Math.abs(d[m + 1]);
+                    if (Math.abs(e[m]) <= Number.EPSILON * dd)
+                        break;
+                    m++;
+                }
+
+                if (m === l)
+                    break;
+
+                if (++iteration > 100)
+                    throw new Error('Lanczos tridiagonal eigensolver did not converge.');
+
+                let g = (d[l + 1] - d[l]) / (2 * e[l]);
+                let r = Math.hypot(g, 1);
+                g = d[m] - d[l] + e[l] / (g + Math.sign(g || 1) * r);
+
+                let s = 1;
+                let c = 1;
+                let p = 0;
+
+                for (let i = m - 1; i >= l; i--) {
+                    const f = s * e[i];
+                    const b = c * e[i];
+                    r = Math.hypot(f, g);
+                    e[i + 1] = r;
+
+                    if (r === 0) {
+                        d[i + 1] -= p;
+                        e[m] = 0;
+                        break;
+                    }
+
+                    s = f / r;
+                    c = g / r;
+                    g = d[i + 1] - p;
+                    r = (d[i] - g) * s + 2 * c * b;
+                    p = s * r;
+                    d[i + 1] = g + p;
+                    g = c * r - b;
+
+                    for (let row = 0; row < n; row++) {
+                        const z1 = vectors[row][i + 1];
+                        const z2 = vectors[row][i];
+                        vectors[row][i + 1] = s * z2 + c * z1;
+                        vectors[row][i] = c * z2 - s * z1;
                     }
                 }
 
-            if (largest < 1e-12)
-                break;
-
-            const app = matrix[p][p];
-            const aqq = matrix[q][q];
-            const apq = matrix[p][q];
-            const phi = 0.5 * Math.atan2(2 * apq, aqq - app);
-            const c = Math.cos(phi);
-            const s = Math.sin(phi);
-
-            for (let row = 0; row < n; row++) {
-                if (row === p || row === q)
+                if (r === 0 && e[m] === 0)
                     continue;
 
-                const arp = matrix[row][p];
-                const arq = matrix[row][q];
-                matrix[row][p] = c * arp - s * arq;
-                matrix[p][row] = matrix[row][p];
-                matrix[row][q] = s * arp + c * arq;
-                matrix[q][row] = matrix[row][q];
-            }
-
-            matrix[p][p] = c * c * app - 2 * s * c * apq + s * s * aqq;
-            matrix[q][q] = s * s * app + 2 * s * c * apq + c * c * aqq;
-            matrix[p][q] = 0;
-            matrix[q][p] = 0;
-
-            for (let row = 0; row < n; row++) {
-                const vrp = vectors[row][p];
-                const vrq = vectors[row][q];
-                vectors[row][p] = c * vrp - s * vrq;
-                vectors[row][q] = s * vrp + c * vrq;
+                d[l] -= p;
+                e[l] = g;
+                e[m] = 0;
             }
         }
 
-        const eigenpairs = diagonal.map((_, index) => ({
-            value: matrix[index][index],
+        const eigenpairs = Array.from({ length: n }, (_, index) => ({
+            value: d[index],
             vector: vectors.map(row => row[index])
         })).sort((a, b) => a.value - b.value);
 
-        // Return eigenvectors in the same row/column layout as the Jacobi
-        // accumulator: vectors[basisIndex][eigenstateIndex]. The previous
-        // implementation returned the transpose, which mixed up the Ritz
-        // vectors even though the Ritz eigenvalues themselves were sorted.
         const sortedVectors = Array.from(
             { length: n },
-            () => new Float64Array(eigenpairs.length)
+            () => new Float64Array(n)
         );
 
-        for (let state = 0; state < eigenpairs.length; state++)
+        for (let state = 0; state < n; state++)
             for (let basisIndex = 0; basisIndex < n; basisIndex++)
                 sortedVectors[basisIndex][state] = eigenpairs[state].vector[basisIndex];
 
