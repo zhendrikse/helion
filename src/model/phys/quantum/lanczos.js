@@ -10,7 +10,7 @@ import { Solver } from '../../math/numerics/solvers/solvers.js';
 export class LanczosEigenstateSolver extends Solver {
     /**
      * @param {{
-     *     hamiltonian?: { N: number, apply: (psi: Float64Array) => Float64Array },
+     *     hamiltonian?: { N: number, apply: (psi: Float64Array) => Float64Array, energyOf: (psi: Float64Array) => number },
      *     states?: number,
      *     iterations?: number
      * }} param0
@@ -44,7 +44,7 @@ export class LanczosEigenstateSolver extends Solver {
         this.reset();
 
         const { basis, diagonal, offDiagonal } =
-            await this._buildKrylovSubspaceAsync(progressReportCallback);
+            await this._buildKrylovSubspace(progressReportCallback);
 
         const { values, vectors } = this._diagonalizeTridiagonal(diagonal, offDiagonal);
 
@@ -74,6 +74,7 @@ export class LanczosEigenstateSolver extends Solver {
     }
 
     reset() {
+        /** @type [{Float}] */
         this._eigenstates = [];
         this._eigenvalues = [];
     }
@@ -85,7 +86,7 @@ export class LanczosEigenstateSolver extends Solver {
         return Math.min(Math.max(this._states + 2, requested), dimension);
     }
 
-    async _buildKrylovSubspaceAsync(progressReportCallback) {
+    async _buildKrylovSubspace(progressReportCallback) {
         const size = this._hamiltonian.N * this._hamiltonian.N;
         const count = this._iterationCount();
         const basis = [];
@@ -126,7 +127,7 @@ export class LanczosEigenstateSolver extends Solver {
             }
 
             progressReportCallback?.(100 * (step + 1) / count);
-            await new Promise(resolve => setTimeout(resolve, 0));
+            if (step % 5 === 4) await new Promise(r => setTimeout(r, 0));
         }
 
         return { basis, diagonal, offDiagonal };

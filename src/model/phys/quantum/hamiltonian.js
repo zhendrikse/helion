@@ -162,7 +162,12 @@ export class Hamiltonian {
      * Solve for the lowest stationary states while yielding to the browser
      * between batches of iterations so progress can be rendered.
      *
-     * @param {{maxStates?: number, iterations?: number, progressReportCallback?: (percent: number) => void}} config
+     * @param {{
+     *   maxStates?: number, 
+     *   iterations?: number, 
+     *   progressReportCallback?: (percent: number) => void
+     * }} config
+     * 
      * @returns {Promise<{states: Float64Array[], energies: number[]}>}
      */
     async solveAsync(config = {}) {
