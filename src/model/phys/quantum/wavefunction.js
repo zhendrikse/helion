@@ -1,11 +1,8 @@
 import {DiscreteComplexField} from "../../math/fields.js";
 
 export class WaveFunction2D {
-    /**
-     * @param {number} resolution
-     * @param {number} eigenstatesCount
-     */
-    constructor(resolution = 100, eigenstatesCount=15) {
+    /** @param {number} resolution */
+    constructor(resolution = 100) {
         /** @type {DiscreteComplexField[]} */
         this._eigenstates = [];
         /** @type {number[]} */

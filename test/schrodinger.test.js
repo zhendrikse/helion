@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { DiscreteComplexField } from '../src/model/math/fields.js';
 import { Hamiltonian, SingleParticle } from '../src/model/phys/quantum/hamiltonian.js';
 import { SchrodingerSolver } from '../src/model/phys/quantum/schrodinger.js';
+import {WaveFunction2D} from '../src/model/phys/quantum/wavefunction.js';
 
 test('Hamiltonian samples a coordinate-based potential function', () => {
     const H = new Hamiltonian({
@@ -26,16 +27,18 @@ test('Hamiltonian solve returns stationary states and energies', async () => {
         extent: 10
     });
 
-    const { states, energies } = await H.solveAsync({
+    const psi = new WaveFunction2D(25);
+    const residuals = await H.solveAsync(psi,{
         maxStates: 2,
         iterations: 80,
         dt: 0.01
     });
 
-    assert.equal(states.length, 2);
-    assert.equal(energies.length, 2);
-    assert.ok(Number.isFinite(energies[0]));
-    assert.ok(Number.isFinite(energies[1]));
+    assert.equal(psi.spectrum.length, 2);
+    assert.ok(Number.isFinite(psi.spectrum[0]));
+    assert.ok(Number.isFinite(psi.spectrum[1]));
+    assert.ok(Math.abs(psi.spectrum[0] - 0.1521374170243828) < 1e-10);
+    assert.ok(Math.abs(psi.spectrum[1] - 0.2991270610196482) < 1e-10);
 });
 
 test('SchrodingerSolver preserves the staggered leapfrog update', () => {

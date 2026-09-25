@@ -31,7 +31,7 @@ const hamiltonian = new Hamiltonian({
     N
 });
 
-const psi = new WaveFunction2D(N, 15);
+const psi = new WaveFunction2D(N);
 const residuals = await psi.apply(hamiltonian);
 // for (const residual of residuals)
 //     console.log(residual);
