@@ -1,12 +1,10 @@
 import {
-    Checkbox, DiscreteComplexField, Hamiltonian, Range, Simulation, SingleParticle,
-    Slider, Vec3, WaveFunctionSurface3D, HarmonicOscillator, AnisotropicHarmonicOscillator, 
-    DoubleWell, CircularWell, Quartic, InfiniteSquareWell, UPlotBarGraph,
-    Colour
+    Checkbox, DiscreteComplexField, Hamiltonian, Range, Simulation, Colour,
+    Slider, Vec3, WaveFunctionSurface3D, HarmonicOscillator, AnisotropicHarmonicOscillator,
+    DoubleWell, CircularWell, Quartic, InfiniteSquareWell, UPlotBarGraph, WaveFunction2D
 } from '../../../src/index.js';
 
 const N = 110;
-const extent = 0.15 * (N - 1);
 
 const simulation = Simulation
     .with({
@@ -21,30 +19,24 @@ const simulation = Simulation
         parameterMenuCollapsed: false
     });
 
-const H = new Hamiltonian({
-    particle: SingleParticle,
+const hamiltonian = new Hamiltonian({
     potential: HarmonicOscillator.withSpringConstant(0.05),
+    progressCallback: (text, percent) => simulation.showHud(text + `: ${Math.round(percent)}%`),
     //potential: AnisotropicHarmonicOscillator.withSpringConstants(.1, .05),
     //potential: DoubleWell.withConstants(100, 100, .1),
     //potential: CircularWell.withRadiusAndBarrier(5, 100),
     //potential: Quartic.withConstant(1e-3),
     //potential: InfiniteSquareWell.withoutParameters(),
     spatialNdim: 2,
-    N,
-    extent
+    N
 });
 
-const { states, energies, residuals } = await H.solveAsync({
-    maxStates: 15,
-    iterations: 800,
-    calculateResiduals: true,
-    progressReportCallback: (text, percent) => simulation.showHud(text + `: ${Math.round(percent)}%`)
-});
+const psi = new WaveFunction2D(N, 15);
+const residuals = await psi.apply(hamiltonian);
+// for (const residual of residuals)
+//     console.log(residual);
 
-for (const residual of residuals)
-    console.log(residual);
-
-const psi = new DiscreteComplexField({ nx: N, ny: N });
+const eigenstate = new DiscreteComplexField({ nx: N, ny: N });
 const waveFunction = new WaveFunctionSurface3D({
     zScale: 5,
     brightness: 1.5
@@ -53,25 +45,25 @@ const waveFunction = new WaveFunctionSurface3D({
 let currentIndex = 10;
 function showState(index = 10) {
     currentIndex = index;
-    psi.real.set(states[index]);
-    psi.imag.fill(0);
+    eigenstate.real.set(psi.eigenstateAt(index).real);
+    eigenstate.imag.set(psi.eigenstateAt(index).imag);
     simulation.setLatexTitle(`\\text{Eigenstate ${index + 1} of}\\ ` + HarmonicOscillator.latex)
 }
 showState();
 
 let staticView = false;
 simulation
-    .bind(psi.alwaysWith(waveFunction))
+    .bind(eigenstate.alwaysWith(waveFunction))
     .runsEvery(0.01)
     .onStep((clock, dt) => {
         if (staticView)
             return;
 
-        const E = energies[currentIndex];
-        const state = states[currentIndex];
-        for (let i = 0; i < psi.real.length; i++) {
-            psi.real[i] =  state[i] * Math.cos(E * clock.simulatedTime);
-            psi.imag[i] = -state[i] * Math.sin(E * clock.simulatedTime);
+        const E = psi.spectrum[currentIndex];
+        const state = psi.eigenstateAt(currentIndex).real;
+        for (let i = 0; i < state.length; i++) {
+            eigenstate.real[i] =  state[i] * Math.cos(E * clock.simulatedTime);
+            eigenstate.imag[i] = -state[i] * Math.sin(E * clock.simulatedTime);
         }
     })
     .append(new Checkbox("Static")
@@ -80,7 +72,7 @@ simulation
         .onChange(event => staticView = event.target.checked)
     )
     .append(new Slider('🌀 Eigenstate')
-        .withRange(new Range(0, states.length - 1, 1))
+        .withRange(new Range(0, psi.eigenstatesCount - 1, 1))
         .withValue(currentIndex)
         // @ts-ignore
         .addEventListener('input', event => showState(Number(event.target.value)))
@@ -92,7 +84,7 @@ simulation
         .withProperty('zScale')
     )
     .addGraph(new UPlotBarGraph({
-        values: energies,
+        values: psi.spectrum,
         title: 'Eigenstate energies',
         xLabel: 'Eigenstate',
         yLabel: 'Energy',

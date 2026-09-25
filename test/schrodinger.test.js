@@ -76,7 +76,7 @@ test('SchrodingerSolver preserves the staggered leapfrog update', () => {
 
 test('Hamiltonian-backed time evolution remains bounded for a stable timestep', () => {
     const H = new Hamiltonian({ N: 25, extent: 10, potential: () => 0 });
-    const psi = H.createWaveFunction();
+    const psi = new DiscreteComplexField({ nx: 25, ny: 25 })
 
     for (let y = 1; y < psi.ny - 1; y++)
         for (let x = 1; x < psi.nx - 1; x++) {

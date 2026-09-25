@@ -43,21 +43,23 @@ export class Hamiltonian {
     /**
      * @typedef {Object} SimulationOptions
      * @property {SingleParticle} [particle] - The particle for which the simulation is executed.
+     * @property {(text:string, percent: number) => void} [progressCallback]
      * @property {(particle: SingleParticle)=> number} [potential] - The potential field.
      * @property {number} [spatialNdim] - Number of spatial dimensions.
      * @property {number} [N] - The number of lattice points per dimensiion.
      * @property {number} [extent] - The physical size of the lattice.
      * @property {number | null} [spacing] - Lattice spacing.
-     * @property {number} [hbar] - Reducedd Planck constant.
+     * @property {number} [hbar] - Reduced Planck constant.
      * @property {number} [mass] - Particle mass.
      * @property {number} [potentialScale] - Scale factor for the potential.
      */
     constructor({
         particle = SingleParticle,
-        potential = /** @type (particle: SingleParticle) => number */ _particle => 0,
+        potential = /** @type (_particle: SingleParticle) => number */ _particle => 0,
+        progressCallback = (_text, _percent) => {},
         spatialNdim = 2,
         N = 100,
-        extent = 10,
+        extent = 0.15 * (N - 1),
         spacing = null,
         hbar = 1,
         mass = 1,
@@ -76,7 +78,7 @@ export class Hamiltonian {
             throw new RangeError('Hamiltonian mass must be greater than zero.');
 
         this._particleType = particle;
-        this._spatialNdim = spatialNdim;
+        this._progressCallback = progressCallback;
         this._N = N;
         this._extent = extent;
         this._spacing = spacing ?? extent / (N - 1);
@@ -166,20 +168,19 @@ export class Hamiltonian {
      * Solve for the lowest stationary states while yielding to the browser
      * between batches of iterations so progress can be rendered.
      *
+     * @param {WaveFunction2D} waveFunction2D
      * @param {{
      *   maxStates?: number, 
      *   iterations?: number,
      *   calculateResiduals?: boolean, 
-     *   progressReportCallback?: (text: string, percent: number) => void
      * }} config
-     * 
-     * @returns {Promise<{states: Float64Array[], energies: number[], residuals: number[]}>}
+     *
+     * @returns {Promise<number[]>} residuals
      */
-    async solveAsync({
+    async solveAsync(waveFunction2D, {
         maxStates = 4,
         iterations = 100,
         calculateResiduals = false,
-        progressReportCallback = (_text, _percent) => {}
     } = {}) {
         const solver = new LanczosEigenstateSolver({
             hamiltonian: this,
@@ -188,15 +189,7 @@ export class Hamiltonian {
             calculateResiduals
         });
 
-        return solver.solveAsync(progressReportCallback);
-    }
-
-
-    /**
-     * Create a wavefunction matching this Hamiltonian's grid.
-     */
-    createWaveFunction() {
-        return new DiscreteComplexField({ nx: this._N, ny: this._N });
+        return solver.solveAsync(waveFunction2D, this._progressCallback);
     }
 
     /**
