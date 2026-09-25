@@ -3,8 +3,35 @@ import assert from 'node:assert/strict';
 
 /** !! D O   N O T   S H O R T E N   T H E S E   I M P O R T S  !! */
 import {
-    degToRad, generateUUID, factorial, linspace, meshgrid, Interval, Complex}
+    degToRad, generateUUID, factorial, linspace, meshgrid, Interval, Complex,
+    VecN}
 from '../src/model/math/math.js';
+import { RGBA_ASTC_10x10_Format, RGBA_ASTC_4x4_Format } from 'three/src/constants.js';
+
+test('VecN dot product', () => {
+    const vec1  = new Float64Array([1, 2, 3, 4]);
+    const vec2 = new Float64Array([2, 2, 2, 2]);
+    assert.equal(VecN.dot(vec1, vec2), 2 * 1 + 2 * 2 + 2 * 3 + 2 * 4, 'Dot product')
+});
+
+test('VecN normalization', () => {
+    const vec1  = new Float64Array([1, 2, 3, 4]);
+    VecN.normalize(vec1);
+    const norm = 1 / Math.sqrt(30);
+    assert.equal(vec1[0], 1 * norm);
+    assert.equal(vec1[1], 2 * norm);
+    assert.equal(vec1[2], 3 * norm);
+    assert.equal(vec1[3], 4 * norm);
+});
+
+test('VecN scaling', () => {
+    const vec1  = new Float64Array([1, 2, 3, 4]);
+    VecN.scale(vec1, 3);
+    assert.equal(vec1[0], 1 * 3);
+    assert.equal(vec1[1], 2 * 3);
+    assert.equal(vec1[2], 3 * 3);
+    assert.equal(vec1[3], 4 * 3);
+});
 
 test('Degrees to radians', () => {
     assert.equal(degToRad(0), 0, 'degToRad(0)');

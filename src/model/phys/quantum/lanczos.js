@@ -1,6 +1,8 @@
 import { Solver } from '../../math/numerics/solvers/solvers.js';
 import { Hamiltonian } from './hamiltonian.js';
-
+import { WaveFunction2D } from './wavefunction.js';
+import { VecN } from '../../math/math.js';
+ 
 /**
  * Matrix-free Lanczos eigensolver for a real symmetric Hamiltonian.
  *
@@ -78,7 +80,7 @@ export class LanczosEigenstateSolver extends Solver {
 
         for (let state = 0; state < count; state++) {
             const psi = this._ritzVector(basis, vectors, state);
-            this._normalize(psi);
+            VecN.normalize(psi);
             if (this._calculateResiduals)
                 this._calculateResidualsFor(psi, state, residuals);
             waveFunction2D.addEigenstate(psi, new Float64Array(count), this._hamiltonian.energyOf(psi));
@@ -106,7 +108,7 @@ export class LanczosEigenstateSolver extends Solver {
         const offDiagonal = [];
 
         let q = this._initialVector(size);
-        this._normalize(q);
+        VecN.normalize(q);
 
         let previous = null;
         let beta = 0;
@@ -119,16 +121,16 @@ export class LanczosEigenstateSolver extends Solver {
                 for (let i = 0; i < size; i++)
                     z[i] -= beta * previous[i];
 
-            const alpha = this._dot(q, z);
+            const alpha = VecN.dot(q, z);
             diagonal.push(alpha);
 
             for (let i = 0; i < size; i++)
                 z[i] -= alpha * q[i];
 
-            this._reorthogonalize(z, basis);
+            VecN.reorthogonalize(z, basis);
             basis.push(q);
 
-            beta = this._norm(z);
+            beta = VecN.norm(z);
             if (step < count - 1) {
                 if (beta < 1e-12)
                     break;
@@ -136,7 +138,7 @@ export class LanczosEigenstateSolver extends Solver {
                 offDiagonal.push(beta);
                 previous = q;
                 q = z.slice();
-                this._scale(q, 1 / beta);
+                VecN.scale(q, 1 / beta);
             }
 
             if (step % 50 === 0) {
@@ -305,55 +307,5 @@ export class LanczosEigenstateSolver extends Solver {
             values: eigenpairs.map(pair => pair.value),
             vectors: sortedVectors
         };
-    }
-
-    /**
-     * @param {Float64Array<ArrayBuffer>} vector
-     * @param {Float64Array<ArrayBuffer>[]} basis
-     */
-    _reorthogonalize(vector, basis) {
-        for (const q of basis) {
-            const projection = this._dot(q, vector);
-            for (let i = 0; i < vector.length; i++)
-                vector[i] -= projection * q[i];
-        }
-    }
-
-    /**
-     * @param {string | any[] | Float64Array<ArrayBuffer>} a
-     * @param {number[] | Float64Array<ArrayBufferLike>} b
-     * @returns {number}
-     */
-    _dot(a, b) {
-        let sum = 0;
-        for (let i = 0; i < a.length; i++)
-            sum += a[i] * b[i];
-        return sum;
-    }
-
-    /**
-     * @param {Float64Array<ArrayBuffer>} vector
-     * @returns {number}
-     */
-    _norm(vector) {
-        return Math.sqrt(this._dot(vector, vector));
-    }
-
-    /** @param {Float64Array<ArrayBuffer>} vector */
-    _normalize(vector) {
-        const norm = this._norm(vector);
-        if (norm === 0)
-            throw new Error('LanczosEigenstateSolver produced a zero state.');
-
-        this._scale(vector, 1 / norm);
-    }
-
-    /** 
-     * @param {Float64Array<ArrayBuffer>} vector 
-     * @param {number} factor
-     */
-    _scale(vector, factor) {
-        for (let i = 0; i < vector.length; i++)
-            vector[i] *= factor;
     }
 }

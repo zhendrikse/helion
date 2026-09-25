@@ -1,6 +1,7 @@
 import { DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D} from '../../math/fields.js';
 import { SchrodingerSolver } from './schrodinger.js';
 import { LanczosEigenstateSolver } from './lanczos.js';
+import { WaveFunction2D } from './wavefunction.js';
 
 /**
  * Single non-relativistic particle used by quantum potential functions.
@@ -56,7 +57,7 @@ export class Hamiltonian {
     constructor({
         particle = SingleParticle,
         potential = /** @type (_particle: SingleParticle) => number */ _particle => 0,
-        progressCallback = (_text, _percent) => {},
+        progressCallback = (/** @type {string} */ _text, /** @type {number} */ _percent) => {},
         spatialNdim = 2,
         N = 100,
         extent = 0.15 * (N - 1),
@@ -110,9 +111,9 @@ export class Hamiltonian {
     /**
      * Apply this Hamiltonian to a real-valued grid function.
      *
-     * @param {Float64Array} psi
-     * @param {Float64Array | null} out
-     * @returns {Float64Array}
+     * @param {Float64Array<ArrayBuffer>} psi
+     * @param {Float64Array<ArrayBuffer> | null} out
+     * @returns {Float64Array<ArrayBuffer>}
      */
     apply(psi, out = null) {
         if (psi.length !== this._potential.data.length)
@@ -145,7 +146,7 @@ export class Hamiltonian {
     /**
      * Rayleigh quotient <psi|H|psi>/<psi|psi>.
      *
-     * @param {Float64Array} psi
+     * @param {Float64Array<ArrayBuffer>} psi
      * @returns {number}
      */
     energyOf(psi) {

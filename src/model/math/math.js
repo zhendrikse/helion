@@ -339,6 +339,58 @@ export class Vec2 extends Vec3 {
     }
 }
 
+export class VecN {
+    /**
+     * @param {Float64Array<ArrayBuffer>} vector
+     * @param {Float64Array<ArrayBuffer>[]} basis
+     */
+    static reorthogonalize(vector, basis) {
+        for (const q of basis) {
+            const projection = VecN.dot(q, vector);
+            for (let i = 0; i < vector.length; i++)
+                vector[i] -= projection * q[i];
+        }
+    }
+
+    /**
+     * @param {Float64Array<ArrayBuffer>} a
+     * @param {Float64Array<ArrayBuffer>} b
+     * @returns {number}
+     */
+    static dot(a, b) {
+        let sum = 0;
+        for (let i = 0; i < a.length; i++)
+            sum += a[i] * b[i];
+        return sum;
+    }
+
+    /**
+     * @param {Float64Array<ArrayBuffer>} vector
+     * @returns {number}
+     */
+    static norm(vector) {
+        return Math.sqrt(VecN.dot(vector, vector));
+    }
+
+    /** @param {Float64Array<ArrayBuffer>} vector */
+    static normalize(vector) {
+        const norm = VecN.norm(vector);
+        if (norm === 0)
+            throw new Error('LanczosEigenstateSolver produced a zero state.');
+
+        VecN.scale(vector, 1 / norm);
+    }
+
+    /** 
+     * @param {Float64Array<ArrayBuffer>} vector 
+     * @param {number} factor
+     */
+    static scale(vector, factor) {
+        for (let i = 0; i < vector.length; i++)
+            vector[i] *= factor;
+    }
+}
+
 export class Range {
     /**
      * @param {number} from
