@@ -6,7 +6,6 @@ import {
     degToRad, generateUUID, factorial, linspace, meshgrid, Interval, Complex,
     VecN}
 from '../src/model/math/math.js';
-import { RGBA_ASTC_10x10_Format, RGBA_ASTC_4x4_Format } from 'three/src/constants.js';
 
 test('VecN dot product', () => {
     const vec1  = new Float64Array([1, 2, 3, 4]);
