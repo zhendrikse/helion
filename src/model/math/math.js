@@ -160,7 +160,24 @@ export class Vec3 {
 
         return this;
     }
-    
+
+    randomDirection() {
+        // https://mathworld.wolfram.com/SpherePointPicking.html
+        const theta = Math.random() * Math.PI * 2;
+        const u = Math.random() * 2 - 1;
+        const c = Math.sqrt( 1 - u * u );
+
+        this.x = c * Math.cos( theta );
+        this.y = u;
+        this.z = c * Math.sin( theta );
+
+        return this;
+    }
+
+    setLength( length ) {
+        return this.normalize().multiplyScalar( length );
+    }
+
     /**
      * @param {Vec2 | Vec3} v
      * @param {number} alpha

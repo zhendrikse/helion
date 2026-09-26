@@ -3,6 +3,7 @@ import { PhysicsState, RadialSymmetricBody } from './bodies.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
 import { SphereSphereCollision } from '../transformations/interactions.js';
 import { Vec2, Vec3 } from '../math/math.js';
+import {Colour} from "../../view/colormappers.js";
 
 export class PointCloud extends MathPhysicsModelBehavior {
     /**
@@ -10,7 +11,7 @@ export class PointCloud extends MathPhysicsModelBehavior {
      *     positions?: Vec3[],
      *     velocities?: Vec3[],
      *     masses?: number[],
-     *     colors?: number[],
+     *     colors?: Colour[],
      *     sizes?: number[]
      * }} param0
      */
@@ -27,7 +28,6 @@ export class PointCloud extends MathPhysicsModelBehavior {
         this._sizes = sizes;
         this._masses = masses;
         this._velocities = velocities;
-
         this._particleState = new PhysicsState();
     }
 

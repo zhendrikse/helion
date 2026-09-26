@@ -102,7 +102,7 @@ export class Colour {
         return `#${Colour.toHex(this._color.r)}${Colour.toHex(this._color.g)}${Colour.toHex(this._color.b)}`;
     }
 
-
+    /** @returns {number} */
     asHexValue() {
         return this._color.getHex();
     }
