@@ -1,4 +1,5 @@
 import {DiscreteComplexField} from "../../math/fields.js";
+import { Hamiltonian } from "./hamiltonian.js";
 
 export class WaveFunction2D {
     /** @param {number} resolution */
@@ -8,6 +9,11 @@ export class WaveFunction2D {
         /** @type {number[]} */
         this._eigenvalues = [];
         this._resolution = resolution;
+    }
+
+    reset() {
+        this._eigenstates = [];
+        this._eigenvalues = [];
     }
 
     get eigenstatesCount() { return this._eigenstates.length; }
@@ -44,7 +50,7 @@ export class WaveFunction2D {
      */
     async apply(hamiltonian, {
         maxStates = 15,
-        iterations = 800,
+        iterations = 900,
         calculateResiduals = true,
     } = {}) {
         return hamiltonian.solveAsync(this, { maxStates, iterations, calculateResiduals });
