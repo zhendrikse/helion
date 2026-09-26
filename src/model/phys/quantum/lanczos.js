@@ -113,9 +113,9 @@ export class LanczosEigenstateSolver extends Solver {
         let previous = null;
         let beta = 0;
 
-        const zBuf = new Float64Array(size);
+        const z = new Float64Array(size);
         for (let step = 0; step < count; step++) {
-            const z = this._hamiltonian.apply(q, zBuf);
+            this._hamiltonian.apply(q, z);
 
             if (previous)
                 for (let i = 0; i < size; i++)
