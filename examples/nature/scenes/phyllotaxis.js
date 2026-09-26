@@ -61,10 +61,10 @@ const resetParticleViews = () => particleViews.forEach(view => view.visible = fa
 const simulation = Simulation
     .with({
         htmlDivId: 'flowerContainer',
+        viewport: { parameterMenuCollapsed: false },
         camera: { controls: false, position: new Vec3(0, 0, 750), orthographic: true },
-        infoPanel: { text: '' },
-        parameterMenuCollapsed: false
-    })
+        infoPanel: { text: '' }
+        })
     .withMouseClickEventListener()
     .onReset(() => {
         n = 0;

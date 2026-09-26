@@ -208,8 +208,8 @@ const configuration = new ShapeConfiguration({
 const solver = new LatticeBoltzmannSolver({
     barrierField,
     viscosity: 0.02,
-    flowSpeed: 0.10,
-});
+    flowSpeed: 0.10
+        });
 
 function reset() {
     barrierField
@@ -225,8 +225,8 @@ reset();
 const curlView = new DiscreteFieldSurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Inferno),
     scale: CELL_SIZE
-    //opacityFunction: v => Math.min(1, Math.abs(v - 0.5) * 5),
-});
+    //opacityFunction: v => Math.min(1, Math.abs(v - 0.5) * 5)
+        });
 
 const barrierView = new DiscreteFieldSurfaceView({
     scale: CELL_SIZE,
@@ -237,7 +237,7 @@ const barrierView = new DiscreteFieldSurfaceView({
 
 Simulation.with({
     htmlDivId: 'latticeBoltzmann2dContainer',
-    viewport: { aspectRatio: '19/12' },
+    viewport: {aspectRatio: '19/12', parameterMenuCollapsed: false },
     camera: {
         position: new Vec3(0, 0, 9),
         orthographic: true,
@@ -245,7 +245,6 @@ Simulation.with({
     },
     headUpDisplay: true,
     lighting: { enabled: false },
-    parameterMenuCollapsed: false,
     infoPanel: {
         text:
             '<strong>🫗 Lattice Boltzmann</strong><br/>' +

@@ -19,7 +19,8 @@ class HitCountColorMapper extends ColorMapper {
         this._log = log;
     }
 
-    set scale(v) { this._scale = v; }
+    /** @param {number} value */
+    set scale(value) { this._scale = value; }
 
     map(normalized, targetColor) {
         // Gamma correction for low hit-count visibility: scale controls gamma
@@ -46,6 +47,7 @@ const view = new DiscreteFieldSurfaceView({
 });
 
 class SierpinskiTriangle extends Transformation {
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         const scale = field.nx;
         const jump = [[-0.5, -0.433], [0.5, -0.433], [0, 0.3]];
@@ -64,6 +66,7 @@ class SierpinskiTriangle extends Transformation {
 }
 
 class VicsekFractal extends Transformation {
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         const scale = field.nx / 2;
         const jump = [[-1, -1], [-1, 1], [1, 1], [1, -1], [0, 0]];
@@ -82,6 +85,7 @@ class VicsekFractal extends Transformation {
 }
 
 class BarnsleyFern extends Transformation {
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         let x = 0, y = 0;
         const w = field.nx, h = field.ny;
@@ -103,6 +107,7 @@ class BarnsleyFern extends Transformation {
 }
 
 class CantorDust extends Transformation {
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         const scale = field.nx / 2;
         const jumps = [[-1, -1], [-1, 1], [1, 1], [1, -1]];
@@ -121,6 +126,7 @@ class CantorDust extends Transformation {
 
 class Fractal1 extends Transformation {
     // chaos game on square, never pick same vertex twice consecutively
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         const scale = field.nx / 2;
         const jumps = [[-1, -1], [-1, 1], [1, 1], [1, -1]];
@@ -142,6 +148,7 @@ class Fractal1 extends Transformation {
 
 class Fractal2 extends Transformation {
     // pentagon chaos game, 5 vertices on unit pentagon
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         const w = 1;
         const theta = 2 * Math.PI / 5;
@@ -169,6 +176,7 @@ class Fractal2 extends Transformation {
 }
 
 class SierpinskiCarpet extends Transformation {
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         const scale = field.nx / 2;
         const jumps = [[-1, -1], [-1, 1], [1, 1], [1, -1], [-1, 0], [1, 0], [0, -1], [0, 1]];
@@ -188,6 +196,7 @@ class SierpinskiCarpet extends Transformation {
 
 class TSquare extends Transformation {
     // T-square: square, no opposite vertex twice
+    /** @param {DiscreteScalarField} field */
     applyTo(field) {
         const scale = field.nx / 2;
         const jumps = [[-1, -1], [-1, 1], [1, 1], [1, -1]];
@@ -226,10 +235,10 @@ let currentFractal = fractals.Sierpinski;
 Simulation
     .with({
         htmlDivId: 'chaosFractalsContainer',
+        viewport: { parameterMenuCollapsed: false },
         camera: { orthographic: true },
-        headUpDisplay: { enabled: false },
-        parameterMenuCollapsed: false
-    })
+        headUpDisplay: { enabled: false }
+        })
     .bind(field.alwaysWith(view))
     .runsEvery(0.1)
     .onStep(() => field.apply(currentFractal))

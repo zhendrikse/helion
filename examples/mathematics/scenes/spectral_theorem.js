@@ -1,7 +1,7 @@
 import {
     SegmentedCircle, LineSegmentsView, Simulation, Vec3, Slider, Range, Arrow2D, Label, Matrix2D,
     VectorModel, ColorMappers, Vec2, Colour
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const size = 5;
 const originalCircleRadius = 3;
@@ -47,13 +47,11 @@ const eigenvector2 = new VectorModel(new Vec2(), new Vec2());
 
 const simulation = Simulation
     .with({
-        htmlDivId: "spectralTheoremContainer",
-        headUpDisplay: {
-            enabled: false
-        },
+        htmlDivId: 'spectralTheoremContainer',
+        viewport: { parameterMenuCollapsed: false },
+        headUpDisplay: { enabled: false },
         camera: {
             position: new Vec3(0, 0, 4 * (size + 0.1)),
-            parameterMenuCollapsed: false,
             controls: false
         }
     });
@@ -80,6 +78,7 @@ function updateEigenVectors() {
 }
 
 // Construct the live mathematical expression A = Q Λ Qᵀ showing the actual numerical matrices.
+/** @param {{value: number, vector: Vec3}[]} eigenvectors */
 function updateTitle(eigenvectors) {
     if (eigenvectors.length !== 2)
         return;
@@ -99,30 +98,30 @@ function updateTitle(eigenvectors) {
     const lambda2 = e2.value.toFixed(2);
 
     const latex =
-        "\\underbrace{" +
-        "\\begin{pmatrix}" +
+        '\\underbrace{' +
+        '\\begin{pmatrix}' +
         `${a} & ${b} \\\\` +
         `${b} & ${d}` +
-        "\\end{pmatrix}" +
-        "}_{A}" +
+        '\\end{pmatrix}' +
+        '}_{A}' +
 
-        " = " +
+        ' = ' +
 
-        "\\underbrace{" +
-        "\\begin{pmatrix}" +
+        '\\underbrace{' +
+        '\\begin{pmatrix}' +
         `${q11} & ${q12} \\\\` +
         `${q21} & ${q22}` +
-        "\\end{pmatrix}" +
-        "}_{Q}" +
+        '\\end{pmatrix}' +
+        '}_{Q}' +
 
-        "\\underbrace{" +
-        "\\begin{pmatrix}" +
+        '\\underbrace{' +
+        '\\begin{pmatrix}' +
         `${lambda1} & 0 \\\\` +
         `0 & ${lambda2}` +
-        "\\end{pmatrix}" +
-        "}_{\\Lambda}" +
+        '\\end{pmatrix}' +
+        '}_{\\Lambda}' +
 
-        "Q^T";
+        'Q^T';
 
     simulation.setLatexTitle(latex);
 }
@@ -130,20 +129,20 @@ function updateTitle(eigenvectors) {
 // Labels for the eigenvectors.
 // The label is placed along the eigenvector direction.
 const labelEigenVector1 = new Label({
-    text: () => "λ₁e₁",
+    text: () => 'λ₁e₁',
     offset: model => model.axis.clone()
         .normalize()
         .multiplyScalar(originalCircleRadius - 0.3),
-    fontSize: "24px",
+    fontSize: '24px',
     color: new Colour(0xff4444)
 });
 
 const labelEigenVector2 = new Label({
-    text: () => "λ₂e₂",
+    text: () => 'λ₂e₂',
     offset: model => model.axis.clone()
         .normalize()
         .multiplyScalar(originalCircleRadius - 0.3),
-    fontSize: "24px",
+    fontSize: '24px',
     color: new Colour(0x44dd88)
 });
 
@@ -152,7 +151,7 @@ function onMatrixModified(property, value) {
     transformation[property] = value;
 
     // A symmetric matrix has the same values at (1,2) and (2,1).
-    if (property === "b")
+    if (property === 'b')
         transformation.c = value;
 
     transformedCircle.apply(transformation);
@@ -177,18 +176,21 @@ simulation
     .bind(eigenvector2.onceWith(new Arrow2D({ color: new Colour(0x44dd88), size: 0.5 })))
     .bind(eigenvector1.onceWith(labelEigenVector1))
     .bind(eigenvector2.onceWith(labelEigenVector2))
-    .append(new Slider("a")
+    .append(new Slider('a')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(2)
-        .onInput(event => onMatrixModified("a", Number(event.target.value)))
+        // @ts-ignore
+        .onInput(event => onMatrixModified('a', Number(event.target.value)))
     )
-    .append(new Slider("b")
+    .append(new Slider('b')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(1)
-        .onInput(event => onMatrixModified("b", Number(event.target.value)))
+        // @ts-ignore
+        .onInput(event => onMatrixModified('b', Number(event.target.value)))
     )
-    .append(new Slider("d")
+    .append(new Slider('d')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(2)
-        .onInput(event => onMatrixModified("d", Number(event.target.value)))
+        // @ts-ignore
+        .onInput(event => onMatrixModified('d', Number(event.target.value)))
     );

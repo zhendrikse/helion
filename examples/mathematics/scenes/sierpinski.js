@@ -124,11 +124,8 @@ Simulation
         camera: {
             fieldOfView: 30
         },
-        viewport: {
-            aspectRatio: "3/4"
-        },
-        parameterMenuCollapsed: false,
-    })
+        viewport: {aspectRatio: "3/4", parameterMenuCollapsed: false }
+        })
     .bind(fractal.alwaysWith(fractalView))
     .frameSceneOn(fractalView, {padding: 1, translationY: -1})
     .append(new RadioGroup()

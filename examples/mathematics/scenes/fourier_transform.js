@@ -10,50 +10,35 @@ const integrationSamples = 2000;
 const interval = new Interval(xMin, xMax);
 const halfPeriod = interval.range / 2;
 
-/**
- * Numerical integration using the midpoint rule.
- */
-function integrate(func, interval, samples = 1000) {
-    const dx = interval.range / samples;
-
-    let sum = 0;
-
-    for (let i = 0; i < samples; i++) {
-        const x = interval.from + (i + 0.5) * dx;
-        sum += func(x);
-    }
-
-    return sum * dx;
-}
-
 // Implementation of Fourier coefficients:
-const frequency = (n) => n * Math.PI / halfPeriod;
+const frequency = (/** @type {number} */ n) => n * Math.PI / halfPeriod;
 
-const cosineCoefficient = (func, n) => integrate(
-    x => func(x) * Math.cos(frequency(n) * x),
-    interval,
-    integrationSamples
-) / halfPeriod;
+const cosineCoefficient = (/** @type {(x: number) => number} */ func, /** @type {number} */ n) => 
+    new RealFunction({ 
+        domain: interval, 
+        func: x => func(x) * Math.cos(frequency(n) * x)
+    }).integrate(integrationSamples) / halfPeriod;
 
-const sineCoefficient= (func, n) => integrate(
-        x => func(x) * Math.sin(frequency(n) * x),
-        interval,
-        integrationSamples
-    ) / halfPeriod;
+const sineCoefficient = (/** @type {(x: number) => number} */ func, /** @type {number} */ n) => 
+    new RealFunction({
+        domain: interval, 
+        func: x => func(x) * Math.sin(frequency(n) * x)
+    }).integrate(integrationSamples) / halfPeriod;
 
-const constantCoefficient = (func) => integrate(
+const constantCoefficient = (/** @type {(x: number) => number} */ func, /** @type {number} */ n) => 
+    new RealFunction({
+        domain: interval,    
         func,
-        interval,
-        integrationSamples
-    ) / (2 * halfPeriod);
+    }).integrate(integrationSamples) / (2 * halfPeriod);
 
 // Example function: f(x) = 2 cos(x) + 0.7 sin(x) + 3 cos(2x) - 1.2 sin(3x)
+/** @param {number} x */
 function functionToExpand(x) {
     return 2 * Math.cos(x / 2) + 0.7 * Math.sin(x / 2) + 3 * Math.cos(x) - 1.2 * Math.sin(3 * x / 2);
 }
 
 const maximumFrequency = 3;
-const basis = [x => 1];
+const basis = [(/** @type {number} */ _x) => 1];
 const coefficients = [constantCoefficient(functionToExpand)];
 const terms = ['a_0/2'];
 
@@ -65,10 +50,12 @@ for (let n = 1; n <= maximumFrequency; n++) {
 
 const fourierExpansion = new LinearCombination({basis, coefficients});
 
+/** @param {number} frequency */
 function numberOfTermsForFrequency(frequency) {
     return 1 + 2 * frequency;
 }
 
+/** @param {number} frequency */
 function fourierLatex(frequency) {
     if (frequency === 0)
         return 'f(x) \\approx \\dfrac{a_0}{2}';
@@ -81,15 +68,15 @@ function fourierLatex(frequency) {
 const simulation = Simulation
     .with({
         htmlDivId: 'fourierTransformContainer',
+        viewport: { parameterMenuCollapsed: false },
         camera: {
             position: new Vec3(0, 0, 17.5),
             controls: false
         },
         headUpDisplay: {
             enabled: false
-        },
-        parameterMenuCollapsed: false
-    });
+        }
+        });
 
 const size = .5 * interval.range;
 const grid = new Grid({size, stepSize: Math.PI / 3});

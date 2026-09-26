@@ -1,7 +1,8 @@
 import {
     Vec3, Simulation, Sphere, SwitchableBondView, VectorView, RadioGroup, RadialSymmetricBody,
     MathPhysicsModelBehavior, VectorField, CoulombForce, SpringForce, Force, EC,
-    BodyPairs, Colour} from '../../../src/index.js';
+    BodyPairs, Colour
+} from '../../../src/index.js';
 
 const BOND_LENGTH   = 1.0E-10;
 const BOND_CONSTANT = 5.0E-6;       // Spring constant
@@ -233,16 +234,13 @@ Simulation
         htmlDivId: 'waterMoleculeContainer',
         camera: {
             position: new Vec3(3, 0, 3),
-            fieldOfView: 40,
+            fieldOfView: 40
         },
         scene: {
             scale: SCALE
         },
-        viewport: {
-            aspectRatio: '4/3'
-        },
-        parameterMenuCollapsed: false
-    })
+        viewport: {aspectRatio: '4/3', parameterMenuCollapsed: false }
+        })
     .withMouseClickEventListener()
     .runsEvery(2.5e-3)
     .substeps(5)

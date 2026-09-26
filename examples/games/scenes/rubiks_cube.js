@@ -1,5 +1,5 @@
 import { MeshStandardMaterial } from 'three';
-import {Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation, Colour} from "../../../src/index.js";
+import {Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation, Colour} from '../../../src/index.js';
 
 const SIZE = 1;
 const GAP = 0.06;
@@ -9,7 +9,7 @@ const STICKER_OFFSET = 0.515;
 const vec = (x, y, z) => new Vec3(x, y, z);
 
 const Direction = Object.freeze({ forward: 1, backward: -1});
-const Axis = Object.freeze({ x: "x",  y: "y", z: "z" })
+const Axis = Object.freeze({ x: 'x',  y: 'y', z: 'z' })
 
 const Colors = Object.freeze({
     right:  Colour.Red,
@@ -30,15 +30,20 @@ const StickerData = Object.freeze({
 });
 
 const Face = Object.freeze({
-    right:  "right",
-    left:   "left",
-    up:     "up",
-    down:   "down",
-    front:  "front",
-    back:   "back"
+    right:  'right',
+    left:   'left',
+    up:     'up',
+    down:   'down',
+    front:  'front',
+    back:   'back'
 });
 
 class Sticker extends Block {
+    /**
+     * @param {Vec3} position
+     * @param {string} side
+     * @param {{ orientation: any; offset: any; }} stickerData
+     */
     constructor(position, side, stickerData) {
         super({
             size: new Vec3(0.85, 0.85, 0.035),
@@ -53,6 +58,11 @@ class Sticker extends Block {
 }
 
 class Cubie extends Block {
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} z
+     */
     constructor(x, y, z) {
         super({
             position: vec(x, y, z).multiplyScalar(STEP),
@@ -80,10 +90,11 @@ class Cubie extends Block {
             this.add(new Sticker(this.position, Face.down, StickerData.down));
     }
 
-    isPartOfMove = (move) => this._grid[move.axis] === move.layer;
+    isPartOfMove = (/** @type {Move} */ move) => this._grid[move.axis] === move.layer;
 
     get stickers() { return this._children; }
 
+    /** @param {Move} move */
     commit(move) {
         this._grid.rotate(move.axis, move.angle);
         this._grid.set(Math.round(this._grid.x), Math.round(this._grid.y), Math.round(this._grid.z));
@@ -102,6 +113,7 @@ class Move extends Transformation {
         b: { axis: Axis.z, layer: -1, direction: Direction.forward  }
     });
 
+    /** @param {string} key */
     constructor(key, reverse=false) {
         super();
         const data = Move.MovesGroup[key.toLowerCase()];
@@ -116,6 +128,7 @@ class Move extends Transformation {
         Object.freeze(this);
     }
 
+    /** @param {Cube} cube */
     applyTo(cube) {
         cube.addToQueue(this);
         cube.processQueue();
@@ -123,16 +136,21 @@ class Move extends Transformation {
 }
 
 class Rotation {
+    /** @param {any[]} cubies */
     constructor(cubies) {
         this._cubies = cubies;
         this._snapshot = cubies.map(cubie => cubie.getConfiguration());
         Object.freeze(this);
     }
 
-    commit = move => this._cubies.forEach(cubie => cubie.commit(move));
+    commit = (/** @type {Move} */ move) => this._cubies.forEach(cubie => cubie.commit(move));
 
     reset = () => this._cubies.forEach((cubie, index) => cubie.reorient(this._snapshot[index]));
 
+    /**
+     * @param {number} progress
+     * @param {Move} move
+     */
     animate(progress, move) {
         this.reset();
         const smoothAngle = move.angle * progress * progress * (3 - 2 * progress);
@@ -148,6 +166,7 @@ class Cube {
                 for (let z = -1; z <= 1; z++)
                     this._cubies.push(new Cubie(x, y, z));
 
+        /** @type {Move[]} */
         this._queue = [];
         this._currentMove = null;
         this._rotation = null;
@@ -155,18 +174,16 @@ class Cube {
         this._rotationStartTime = 0;
     }
 
-    apply = move => move.applyTo(this);
+    apply = (/** @type {Move} */ move) => move.applyTo(this);
 
-    addToQueue = move => this._queue.push(move);
+    addToQueue = (/** @type {Move} */ move) => this._queue.push(move);
 
-    /**
-     * @returns {ArrayIterator<Cubie>}
-     */
+    /** @returns {ArrayIterator<Cubie>} */
     [Symbol.iterator]() {
         return this._cubies[Symbol.iterator]();
     }
 
-    #cubiesFor = move => this._cubies.filter(cubie => cubie.isPartOfMove(move));
+    #cubiesFor = (/** @type {Move} */ move) => this._cubies.filter(cubie => cubie.isPartOfMove(move));
 
     processQueue() {
         if (this._currentMove || this._queue.length === 0) // We cannot process a new move when a move is ongoing
@@ -177,6 +194,7 @@ class Cube {
         this._rotation = new Rotation(this.#cubiesFor(move));
     }
 
+    /** @param {number} timeStamp */
     evolve(timeStamp) {
         if (!this._rotation)
             return;
@@ -192,11 +210,12 @@ class Cube {
             this.finishRotation();
     }
 
+    /** @param {number} value */
     set duration(value) { this._duration = value; }
 
     finishRotation() {
-        this._rotation.reset();
-        this._rotation.commit(this._currentMove);
+        this._rotation?.reset();
+        this._rotation?.commit(this._currentMove);
         this._rotation = null;
         this._currentMove = null;
         this._rotationStartTime = 0;
@@ -207,37 +226,37 @@ class Cube {
 const cube = new Cube();
 
 const simulation = Simulation.with({
-        htmlDivId: "rubiksCubeContainer",
+        htmlDivId: 'rubiksCubeContainer',
+        viewport: { parameterMenuCollapsed: false },
         infoPanel: {
-            text: "<strong>Rubik's cube 🧊</strong><br>\n" +
-                "R L B U F D = turn forward<br>\n" +
-                "Shift + key = opposite direction"
+            text: '<strong>Rubik\'s cube 🧊</strong><br>\n' +
+                'R L B U F D = turn forward<br>\n' +
+                'Shift + key = opposite direction'
         },
         camera: {
             position: new Vec3(9, 8, 11).multiplyScalar(.5),
             fieldOfView: 45
         },
-        headUpDisplay: false,
-        parameterMenuCollapsed: false
-    })
+        headUpDisplay: false
+        })
     .onFrame(timeStamp => cube.evolve(timeStamp))
-    .append(new Button("Forward: ").withText("F").addEventListener("click", () => cube.apply(new Move("f")))
-        .togetherWith(new Button().withText("B").addEventListener("click", () => cube.apply(new Move("b")))
-            .togetherWith(new Button().withText("U").addEventListener("click", () => cube.apply(new Move("u")))
-                .togetherWith(new Button().withText("D").addEventListener("click", () => cube.apply(new Move("d")))
-                    .togetherWith(new Button().withText("R").addEventListener("click", () => cube.apply(new Move("r")))
-                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.apply(new Move("l"))))))))
+    .append(new Button('Forward: ').withText('F').addEventListener('click', () => cube.apply(new Move('f')))
+        .togetherWith(new Button().withText('B').addEventListener('click', () => cube.apply(new Move('b')))
+            .togetherWith(new Button().withText('U').addEventListener('click', () => cube.apply(new Move('u')))
+                .togetherWith(new Button().withText('D').addEventListener('click', () => cube.apply(new Move('d')))
+                    .togetherWith(new Button().withText('R').addEventListener('click', () => cube.apply(new Move('r')))
+                        .togetherWith(new Button().withText('L').addEventListener('click', () => cube.apply(new Move('l'))))))))
     )
-    .append(new Button("Backward: ").withText("F").addEventListener("click", () => cube.apply(new Move("f", true)))
-        .togetherWith(new Button().withText("B").addEventListener("click", () => cube.apply(new Move("b", true)))
-            .togetherWith(new Button().withText("U").addEventListener("click", () => cube.apply(new Move("u", true)))
-                .togetherWith(new Button().withText("D").addEventListener("click", () => cube.apply(new Move("d", true)))
-                    .togetherWith(new Button().withText("R").addEventListener("click", () => cube.apply(new Move("r", true)))
-                        .togetherWith(new Button().withText("L").addEventListener("click", () => cube.apply(new Move("l", true))))))))
+    .append(new Button('Backward: ').withText('F').addEventListener('click', () => cube.apply(new Move('f', true)))
+        .togetherWith(new Button().withText('B').addEventListener('click', () => cube.apply(new Move('b', true)))
+            .togetherWith(new Button().withText('U').addEventListener('click', () => cube.apply(new Move('u', true)))
+                .togetherWith(new Button().withText('D').addEventListener('click', () => cube.apply(new Move('d', true)))
+                    .togetherWith(new Button().withText('R').addEventListener('click', () => cube.apply(new Move('r', true)))
+                        .togetherWith(new Button().withText('L').addEventListener('click', () => cube.apply(new Move('l', true))))))))
     )
-    .append(new Slider("Rotation speed")
+    .append(new Slider('Rotation speed')
         .on(cube)
-        .withProperty("duration")
+        .withProperty('duration')
         .withValue(500)
         .withRange(new Range(10, 1000, 1))
     );
@@ -256,8 +275,8 @@ for (const cubie of cube) {
     )));
 }
 
-const validKeys = new Set(["r", "l", "u", "d", "f", "b"]);
-window.addEventListener("keydown", event => {
+const validKeys = new Set(['r', 'l', 'u', 'd', 'f', 'b']);
+window.addEventListener('keydown', event => {
     const key = event.key.toLowerCase();
     if (!validKeys.has(key))
         return;

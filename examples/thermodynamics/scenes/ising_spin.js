@@ -56,7 +56,7 @@ class IsingColorMapper extends ColorMapper {
     map(normalized, target) {
         // normalized 0 => -1 (dark), 1 => +1 (purple #8000ff)
         if (normalized > 0.5) 
-            target.setRGB(0x80 / 255, 0, 1);
+            target.setHex(0x8000ff);
     }
 }
 
@@ -75,7 +75,7 @@ const simulation = Simulation
     .with({
         htmlDivId: 'isingSpinContainer',
         camera: { position: new Vec3(0, 0, 15), orthographic: true, controls: false },
-        parameterMenuCollapsed: false
+        viewport: {parameterMenuCollapsed: false },
     })
     .bind(field.alwaysWith(view))
     .runsEvery(0.01)
@@ -83,10 +83,12 @@ const simulation = Simulation
     .append(new Slider('Temperature')
         .withRange(new Range(0.1, 4, 0.01))
         .withValue(T)
+        // @ts-ignore
         .onInput(event => T = Number(event.target.value)))
     .append(new Slider('Steps / frame')
         .withRange(new Range(1000, 50000, 1000))
         .withValue(stepsPerFrame)
+        // @ts-ignore
         .onInput(event => stepsPerFrame = Number(event.target.value)))
     .append(new Button()
         .withText('Pause')

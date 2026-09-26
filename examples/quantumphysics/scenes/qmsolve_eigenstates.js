@@ -42,15 +42,14 @@ const potentialsRegistry = new Registry({
 const simulation = Simulation
     .with({
         htmlDivId: 'qmsolveEigenstates',
-        viewport: { aspectRatio: '4/3' },
+        viewport: {aspectRatio: '4/3', parameterMenuCollapsed: false },
         infoPanel: {
             text: '<strong>🫐 Stationary eigenstates</strong><br/>Stationary ' +
                 'eigenstates for various potentials.\n\n' +
                 'Each state reveals a characteristic pattern of amplitude ' +
                 'and phase, forming the familiar wave-like lobes of quantum mechanics.\n'
-        },
-        parameterMenuCollapsed: false
-    });
+        }
+        });
 
 let potentialType = 'Harmonic oscillator';
 const psi = new WaveFunction2D(N);

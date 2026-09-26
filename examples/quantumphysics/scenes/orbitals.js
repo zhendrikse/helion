@@ -108,8 +108,8 @@ const orbitals = {
     '4f_y(3x²-y²)': { 
         Y: (/** @type {number} */ theta, /** @type {number} */ phi) => sin(theta) ** 3 * sin(3 * phi), 
         latex: '4f_{y(3x^2-y^2)}' 
-    },
-};
+    }
+        };
 
 const orbitalRegistry = new Registry({ label: 'Orbital ', entries: orbitals });
 
@@ -124,6 +124,7 @@ const surfaceView = new SurfaceVisualization({
 const simulation = Simulation
     .with({
         htmlDivId: 'orbitalsContainer',
+        viewport: { parameterMenuCollapsed: false },
         infoPanel: {
             text: '<strong>⚛️ Atomic orbitals</strong><br/>Polar plots $r=|Y_l^m(θ,φ)|$ of real spherical harmonics.<br/>' +
                 'Shape from $|Y|$ (e.g. two lobes for $p$), color (RdYlBu) = sign → phase ±.<br/>' +
@@ -131,9 +132,8 @@ const simulation = Simulation
                 'scale $∝n^2a_0$ not to scale.'
         },
         headUpDisplay: { enabled: false },
-        camera: { fieldOfView: 20 },
-        parameterMenuCollapsed: false
-    })
+        camera: { fieldOfView: 20 }
+        })
     .append(new DropdownMenu()
         .for(orbitalRegistry)
         .withValue('3d_z²')

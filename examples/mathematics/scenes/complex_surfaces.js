@@ -79,12 +79,14 @@ const functionsRegistry = new Registry({
 });
 
 class SurfaceController {
+    /** @param {Simulation} simulation */
     constructor(simulation) {
         this._simulation = simulation;
         this._dimension3d = true;
         this._currentSurfaceId = '';
     }
 
+    /** @param {string} surfaceId */
     changeSurface(surfaceId) {
         this._currentSurfaceId = surfaceId;
         const func = functionsRegistry.get(surfaceId).function;
@@ -99,6 +101,7 @@ class SurfaceController {
         this._simulation.setLatexTitle('\\Large{f(z) = ' + functionsRegistry.get(surfaceId).latex + '}');
     }
 
+    /** @param {boolean} value */
     set dimension3d(value) { this._dimension3d = value; }
     get currentSurfaceId() { return this._currentSurfaceId; }
 }
@@ -111,6 +114,7 @@ const surfaceView2D = new ComplexSurfaceView2D({
 const simulation = Simulation
     .with({
         htmlDivId: 'complexSurfacesContainer',
+        viewport: { parameterMenuCollapsed: false },
         headUpDisplay: {
             enabled: false
         },
@@ -123,9 +127,8 @@ const simulation = Simulation
         },
         camera: {
             fieldOfView: 20
-        },
-        parameterMenuCollapsed: false
-    });
+        }
+        });
 
 function setDimension(dimension3d = true) {
     surfaceController.dimension3d = dimension3d;
@@ -142,6 +145,7 @@ const surfaceController = new SurfaceController(simulation);
 const sharedColorControl = new DropdownMenu()
     .for(new ComplexColorMappers())
     .addEventListener('change', event => {
+        // @ts-ignore
         const mapper = ComplexColorMappers.get(event.target.value);
         surfaceView.colorMapper = mapper;
         surfaceView2D.colorMapper = mapper;
@@ -150,6 +154,7 @@ const sharedColorControl = new DropdownMenu()
 simulation
     .append(new DropdownMenu()
         .for(functionsRegistry)
+        // @ts-ignore
         .addEventListener('change', event => surfaceController.changeSurface(event.target.value)))
     .append(new RadioGroup()
         .add('2D', event => setDimension(false))
@@ -159,6 +164,7 @@ simulation
     .append(new Slider('🪟 Opacity ')
         .withRange(new Range(0, 1, 0.01))
         .withValue(1)
+        // @ts-ignore
         .addEventListener('input', event => surfaceView._mesh.material.opacity = Number(event.target.value)))
     .append(new Slider('Maximum height: ')
         .on(surfaceView)

@@ -9,6 +9,7 @@ import { Viewport } from './viewport.js';
 import { ThreeJsScene } from '../view/3d/scene.js';
 import { Renderable, Renderer } from '../view/renderer.js';
 import { Colour } from '../view/colormappers.js';
+import { Object3D } from 'three/src/Three.js';
 
 class SimulationClock {
     /**
@@ -88,7 +89,7 @@ export class Simulation {
         /**
          * @param {{
          *   htmlDivId?: string,
-         *   viewport?: { aspectRatio?: string },
+         *   viewport?: { aspectRatio?: string, parameterMenuCollapsed?: boolean },
          *   camera?: {
          *     position?: Vec3,
          *     target?: Vec3,
@@ -107,15 +108,15 @@ export class Simulation {
          *     shadows?: boolean
          *   },
          *   headUpDisplay?: { enabled?: boolean },
-         *   infoPanel?: { text?: string },
-         *   parameterMenuCollapsed?: boolean
+         *   infoPanel?: { text?: string }
          * }} [options]
          */
         {
             // @ts-ignore htmlDivId is part of the documented options object.
             htmlDivId,
             viewport = {
-                aspectRatio: '1 / 1'
+                aspectRatio: '1 / 1',
+                parameterMenuCollapsed: true
             },
             camera = {
                 position: new Vec3(3, 3, 3),
@@ -139,10 +140,9 @@ export class Simulation {
             },
             infoPanel = {
                 text: ''
-            },
-            parameterMenuCollapsed = true
+            }
         } = {htmlDivId: '', camera: {}, viewport: {}, scene: {}, lighting: {}, headUpDisplay: {}, infoPanel: {}}) {
-        const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, parameterMenuCollapsed, viewport.aspectRatio);
+        const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, viewport.parameterMenuCollapsed ?? true, viewport.aspectRatio ?? '1 / 1');
         const renderer = new ThreeJsRenderer({ camera, viewport, lighting, scene });
         renderer.attach(viewPort);
         return new Simulation(viewPort, renderer, headUpDisplay.enabled, infoPanel);

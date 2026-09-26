@@ -1,5 +1,6 @@
 import { MathPhysicsModelBehavior } from '../behavior.js';
 import { Complex, Interval, Vec2, Vec3 } from './math.js';
+import { Solver } from './numerics/solvers/solvers.js';
 
 export class Domain {
     /**
@@ -149,11 +150,22 @@ export class RealFunction extends MathPhysicsModelBehavior {
         this._func = func;
     }
 
+    integrate(samples = 1000) {
+        const dx = this.domain.range / samples;
+        let sum = 0;
+        for (let i = 0; i < samples; i++) {
+            const x = this.domain.from + (i + 0.5) * dx;
+            sum += this._func(x);
+        }
+    
+        return sum * dx;
+    }
+
     /** @param {number} intervalResolution */
     rangeAt(intervalResolution) {
         const interval = new Interval();
         for (let i = 0; i < intervalResolution; i++)
-            interval.include(this._func(this.domain.scaleUnitParameter(i)));
+            interval.include(this._func(this.domain.scaleUnitParameter(i / intervalResolution)));
         return interval;
     }
 
@@ -166,7 +178,9 @@ export class RealFunction extends MathPhysicsModelBehavior {
      */
     sample(u, target = new Vec2()) {
         const x = this.domain.scaleUnitParameter(u);
-        target.set(x, this._func(x));
+        const value = this._func(x);
+        target.set(x, value);
+        return value;
     }
 }
 
@@ -292,8 +306,8 @@ export class DiscreteComplexField extends ComplexField {
      * @param {{
      *  nx?: number,
      *  ny?: number,
-     *  real?: Float64Array,
-     *  imag?: Float64Array
+     *  real?: Float64Array<ArrayBuffer>,
+     *  imag?: Float64Array<ArrayBuffer>
      * }} [options] 
      */
     constructor({
@@ -403,14 +417,33 @@ export class DiscreteScalarField3D extends ScalarField {
     get data() { return this._data; }
 
     index(x, y, z) {
+        // Backward compat: index(Vec3) en index(x,y,z)
+        if (x !== null && typeof x === 'object' && 'x' in x) {
+            const p = x;
+            return p.z * this._nx * this._ny + p.y * this._nx + p.x;
+        }
         return z * this._nx * this._ny + y * this._nx + x;
     }
 
     valueAt(x, y, z) {
+        if (x !== null && typeof x === 'object' && 'x' in x) {
+            return this._data[this.index(x)];
+        }
         return this._data[this.index(x, y, z)];
     }
 
     setValueAt(x, y, z, value) {
+        if (typeof y === 'object' || (x !== null && typeof x === 'object' && 'x' in x && z === undefined)) {
+            // setValueAt(Vec3, value)
+            const p = x; const v = y;
+            this._data[this.index(p)] = v;
+            return;
+        }
+        if (z === undefined && typeof value === 'undefined') {
+            // setValueAt(x,y, value) where y is actually value? Should not happen for 3D
+            return;
+        }
+        // setValueAt(x,y,z,value)
         this._data[this.index(x, y, z)] = value;
     }
 
@@ -442,6 +475,10 @@ export class DiscreteComplexField3D extends ComplexField {
     get size() { return this.real.length; }
 
     index(x, y, z) {
+        if (x !== null && typeof x === 'object' && 'x' in x) {
+            const p = x;
+            return p.z * this.nx * this.ny + p.y * this.nx + p.x;
+        }
         return z * this.nx * this.ny + y * this.nx + x;
     }
 
@@ -451,6 +488,10 @@ export class DiscreteComplexField3D extends ComplexField {
         return this;
     }
 
+    /**
+     * @param {Solver} solver 
+     * @param {number} dt 
+     */
     evolve(solver, dt) {
         solver.step(this, dt);
         return this;

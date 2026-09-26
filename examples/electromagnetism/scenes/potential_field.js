@@ -107,9 +107,8 @@ const simulation = Simulation
     .with({
         htmlDivId: 'potentialFieldContainer',
         camera: { orthographic: true },
-        viewport: { aspectRatio: '1/1'  },
+        viewport: {aspectRatio: '1/1', parameterMenuCollapsed: false },
         headUpDisplay: { enabled: false },
-        parameterMenuCollapsed: false,
         infoPanel: {
             text: '<strong>💪 Potential fields</strong><br/>' +
             'Laplace solver for potentials, charges ±100V.<br/>' + 

@@ -23,6 +23,7 @@ const orbit = new ParametricCurve({
 const simulation = Simulation
     .with({
         htmlDivId: 'orbitsContainer',
+        viewport: { parameterMenuCollapsed: false },
         camera: {
             position: new Vec3(0, 0, 2.5 * size),
             orthographic: true
@@ -36,9 +37,8 @@ const simulation = Simulation
                 '<li>Modify rotation matrix $g_\\theta\\in G$</li>' +
                 '<li>Action $g_\\theta\\cdot x$</li>' +
                 '<li>Orbit $G\\cdot x$ is a circle: $r = ∥x∥$</li></ul>'
-        },
-        parameterMenuCollapsed: false
-    });
+        }
+        });
 
 const grid = new Grid({size, stepSize: 1});
 const xAxis = new LineSegment(new Vec2(-size *.55, 0), new Vec2(size * .55, 0));

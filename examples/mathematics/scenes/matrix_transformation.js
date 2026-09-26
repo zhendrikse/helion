@@ -34,11 +34,8 @@ const simulation = Simulation
         headUpDisplay: {
             enabled: false
         },
-        viewport: {
-            aspectRatio: '19/12'
-        },
-        parameterMenuCollapsed: false,
-    })
+        viewport: {aspectRatio: '19/12', parameterMenuCollapsed: false }
+        })
 
 function updateVectors() {
     transformedVector.copy(originalVector.clone().apply(transformation));
@@ -176,8 +173,8 @@ simulation
     })))
     .bind(transformedVector.onceWith(new Arrow2D({
         color: Colour.Yellow,
-        size: 0.3,
-    })))
+        size: 0.3
+        })))
     .bind(eigenvector1.onceWith(new Arrow2D({
         color: new Colour(0xff4444),
         size: 0.5,
@@ -190,12 +187,12 @@ simulation
     })))
     .bind(transformedEigenvector1.onceWith(new Arrow2D({
         color: Colour.Red,
-        size: 0.3,
-    })))
+        size: 0.3
+        })))
     .bind(transformedEigenvector2.onceWith(new Arrow2D({
         color: Colour.Green,
-        size: 0.3,
-    })))
+        size: 0.3
+        })))
     .bind(originalVector.onceWith(labelOriginalVector))
     .bind(transformedVector.onceWith(labelTransformedVector))
     .bind(eigenvector1.onceWith(labelEigenVector1))

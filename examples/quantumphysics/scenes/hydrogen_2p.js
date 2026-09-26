@@ -16,9 +16,10 @@ class HydrogenPotential extends Transformation {
         this._coupling = coupling;
     }
 
+    /** @param {DiscreteScalarField3D} field */
     applyTo(field) {
         const center = (N - 1) / 2;
-
+        const position = new Vec3();
         for (let z = 0; z < N; z++)
             for (let y = 0; y < N; y++)
                 for (let x = 0; x < N; x++) {
@@ -28,8 +29,8 @@ class HydrogenPotential extends Transformation {
                     const radius = Math.sqrt(
                         dx * dx + dy * dy + dz * dz + this._softening * this._softening
                     );
-
-                    field.setValueAt(x, y, z, -this._coupling / radius);
+                    position.set(x, y, z);
+                    field.setValueAt(position, -this._coupling / radius);
                 }
     }
 }

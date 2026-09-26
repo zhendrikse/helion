@@ -1,6 +1,7 @@
 import {
     Vec3, Simulation, Sphere, SwitchableBondView, EC, SpringForce, Force, VectorView,
-    RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField, CoulombForce, Colour} from "../../../src/index.js";
+    RadioGroup, RadialSymmetricBody, MathPhysicsModelBehavior, VectorField, CoulombForce, Colour, BodyPairs
+} from '../../../src/index.js';
 
 const BOND_LENGTH     = 1.0E-10;
 const BOND_CONSTANT   = 8.0E-4;
@@ -188,19 +189,16 @@ const electricArrow = new VectorView({
 
 Simulation
     .with({
-        htmlDivId: "carbonDioxideContainer",
+        htmlDivId: 'carbonDioxideContainer',
         camera: {
             cameraPosition: new Vec3(3, 0, 3),
-            fieldOfView: 40,
+            fieldOfView: 40
         },
         scene: {
-            scale: SCALE,
+            scale: SCALE
         },
-        viewport: {
-            aspectRatio: "4/3"
-        },
-        parameterMenuCollapsed: false,
-    })
+        viewport: {aspectRatio: '4/3', parameterMenuCollapsed: false }
+        })
     .withMouseClickEventListener()
     .runsEvery(1e-2)
     .substeps(2)
@@ -225,18 +223,18 @@ Simulation
     .bind(co2.oxygen2.and(co2.carbon).alwaysWith(bondView2))
     .bind(electricField.alwaysWith(electricArrow))
     .append(new RadioGroup()
-        .add("8 ", () => electricField.frequency = 8.0)
-        .add("5.291 ", () => electricField.frequency = 5.291)
-        .add("1.5 ", () => electricField.frequency = 1.5)
-        .add("2.76 ", () => electricField.frequency = 2.76)
+        .add('8 ', () => electricField.frequency = 8.0)
+        .add('5.291 ', () => electricField.frequency = 5.291)
+        .add('1.5 ', () => electricField.frequency = 1.5)
+        .add('2.76 ', () => electricField.frequency = 2.76)
         .checked(0)
     )
     .append(new RadioGroup()
-        .add("Springs", () => {
+        .add('Springs', () => {
             bondView1.bondType = SwitchableBondView.Type.Spring;
             bondView2.bondType = SwitchableBondView.Type.Spring;
         })
-        .add("Cylinders", () => {
+        .add('Cylinders', () => {
             bondView1.bondType = SwitchableBondView.Type.Cylinder;
             bondView2.bondType = SwitchableBondView.Type.Cylinder;
         })

@@ -20,9 +20,9 @@ export class SchrodingerSolver extends Solver {
             throw new TypeError('SchrodingerSolver requires a Hamiltonian.');
 
         this._hamiltonian = hamiltonian;
-        /** @type {Float64Array<ArrayBufferLike>} */
+        /** @type {Float64Array<ArrayBuffer>} */
         this._nextRe = new Float64Array();
-        /** @type {Float64Array<ArrayBufferLike>} */
+        /** @type {Float64Array<ArrayBuffer>} */
         this._nextIm = new Float64Array();
         this._initialized = false;
     }

@@ -1,8 +1,8 @@
-import { Color } from "three";
+import { Color } from 'three';
 import {
     Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Label,
     VectorModel, ColorMappers, SegmentedCircle, LineSegmentView, Arrow2D, Vec2
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const range = 12;
 const unitCircleRadius = 1;
@@ -30,6 +30,7 @@ class Roots extends Segments {
         this.update(initialRootCount);
     }
 
+    /** @param {number} rootCount */
     update(rootCount) {}
 }
 
@@ -43,6 +44,7 @@ class RootsOfUnity extends Roots {
         super({maxN, radius, initialRootCount});
     }
 
+    /** @param {number} n */
     update(n) {
         for (let k = 0; k < this._maxN; k++) {
             const line = this._rootLines[k];
@@ -69,6 +71,7 @@ class RootPolygon extends Roots {
         super({maxN, radius, initialRootCount});
     }
 
+    /** @param {number} n */
     update(n) {
         for (let k = 0; k < this._maxN; k++) {
             const line = this._rootLines[k];
@@ -99,14 +102,20 @@ const xAxis = new LineSegment(new Vec2(0, 0), new Vec2(1.25, 0), 0xd0d0d0);
 const yAxis = new LineSegment(new Vec2(0,  0), new Vec2(0, 1.25), 0xd0d0d0);
 
 // Root vectors: the actual points z_k on the unit circle.
+/** @type {VectorModel[]} */
 const rootVectors = [];
 for (let i = 0; i < range; i++)
     rootVectors.push(new VectorModel(new Vec2(), new Vec2()));
 
+/** @type {Arrow2D[]} */
 const rootVectorViews = [];
 for (let i = 0; i < rootVectors.length; i++)
     rootVectorViews.push(new Arrow2D({ size: 0.13, lineWidth: 4, headStyle: Arrow2D.HeadStyle.Filled }));
 
+/**
+ * @param {Simulation} simulation
+ * @param {number} n
+ */
 function updateRoots(simulation, n) {
     for (let k = 0; k < rootVectors.length; k++) {
         const vector = rootVectors[k];
@@ -126,16 +135,16 @@ function updateRoots(simulation, n) {
 
 const simulation = Simulation
     .with({
-        htmlDivId: "rootsOfUnityContainer",
+        htmlDivId: 'rootsOfUnityContainer',
+        viewport: { parameterMenuCollapsed: false },
         headUpDisplay: {
             enabled: false
         },
-        parameterMenuCollapsed: false,
         camera: {
             position: new Vec3(0, 0, 3),
             controls: false
-        },
-    })
+        }
+        })
     .bind(unitCircle.onceWith(new LineSegmentsView({
         lineWidth: 3,
         dashed: true,
@@ -150,19 +159,20 @@ const simulation = Simulation
     .bind(xAxis.onceWith(new LineSegmentView({ lineWidth: 2 })))
     .bind(yAxis.onceWith(new LineSegmentView({ lineWidth: 2 })))
     .bind(xAxis.onceWith(new Label({
-        text: () => "Re(z)",
+        text: () => 'Re(z)',
         offset: () => new Vec2(0.55, 0.1),
-        fontSize: "20px"
+        fontSize: '20px'
     })))
     .bind(xAxis.onceWith(new Label({
-        text: () => "Im(z)",
+        text: () => 'Im(z)',
         offset: () => new Vec2(-.46, 1.2),
-        fontSize: "20px"
+        fontSize: '20px'
     })))
-    .append(new Slider("n")
+    .append(new Slider('n')
         .withRange(new Range(1, range, 1))
         .withValue(3)
         .onInput(event => {
+            // @ts-ignore
             const n = Number(event.target.value);
             updateRoots(simulation, n);
             roots.update(n);

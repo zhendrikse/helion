@@ -1,7 +1,8 @@
-import { Vector2, BufferGeometry, LineBasicMaterial, Line } from "three";
+import { Vector2, BufferGeometry, LineBasicMaterial, Line } from 'three';
 import {
     Floor, Sphere, Trail, Vec3, Simulation, RadialSymmetricBody, Sun, Checkbox, Slider, Range,
-    SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene, Colour} from "../../../src/index.js";
+    SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene, Colour,
+    Vec2} from '../../../src/index.js';
 
 let initialCometDistance = 33;
 let currentIsRingOrbitValue = false;
@@ -102,13 +103,17 @@ class Comet extends RadialSymmetricBody {
         this._startStateVector = stateVector ? stateVector.clone() : null;
     }
 
+    /**
+     * @param {StateVector} state 
+     * @param {number} M 
+     */
     _derivativeSurface(state, M) {
         const bracket = state.r - 2 * M;
 
         if (bracket <= 0.01)
             return new StateVector(0, 0, 0, 0, 0, 0);
 
-        // This is the "embedding dynamics"
+        // This is the 'embedding dynamics'
         return new StateVector(
             0,
             state.rDot,
@@ -120,6 +125,10 @@ class Comet extends RadialSymmetricBody {
         );
     }
 
+    /**
+     * @param {StateVector} state 
+     * @param {number} M 
+     */
     _derivativeGeodesic(state, M) {
         const bracket = state.r - 2 * M;
 
@@ -162,6 +171,10 @@ class Comet extends RadialSymmetricBody {
         return state;
     }
 
+    /**
+     * @param {number} M
+     * @param {number} dt
+     */
     updateRealMotion(M, dt) {
         if (this._stateVector.r <= 2 * M + 0.01) {
             this.stop();
@@ -172,6 +185,10 @@ class Comet extends RadialSymmetricBody {
         this._stateVector = this._rk4Step(this._stateVector, this._derivativeGeodesic, M, dt);
     }
 
+    /**
+     * @param {number} M
+     * @param {number} dt
+     */
     update(M, dt) {
         this._stateVector = this._rk4Step(this._stateVector, this._derivativeSurface, M, dt);
     }
@@ -227,6 +244,7 @@ function createPhotonSphere(M, segments = 300) {
 const photonRing = createPhotonSphere(sun.mass);
 photonRing.visible = false;
 
+/** @param {number} clockTime */
 function timeStep(clockTime) {
     for (let substep = 0; substep < subSteps(currentIsRingOrbitValue); substep++) {
         if (cometInsideCone())
@@ -252,7 +270,7 @@ const cometInsideCone = () =>
 const grid = new Floor({
     position: new Vec3(0, SchwarzschildSurface.yOffset, 0),
     type: Floor.Type.GRID,
-    planeSizeXy: new Vector2(185, 185),
+    planeSizeXy: new Vec2(185, 185),
     opacity: 0.05,
     granularity: 20
 });
@@ -271,16 +289,16 @@ const flatCometTrail = new Trail({ color: new Colour(0xff0000) });
 const cometTrail = new Trail({ color: new Colour(0x00ffff) });
 const simulation = Simulation
     .with({
-        htmlDivId: "spaceTimeContainer",
+        htmlDivId: 'spaceTimeContainer',
+        viewport: { parameterMenuCollapsed: false },
         camera: {
             position: new Vec3(5, 7.5, 15).multiplyScalar(13),
-            fieldOfView: 45,
+            fieldOfView: 45
         },
         scene: {
-            background: ThreeJsScene.Background.STARS,
-        },
-        parameterMenuCollapsed: false
-    })
+            background: ThreeJsScene.Background.STARS
+        }
+        })
     .addObject3D(grid)
     .addObject3D(photonRing)
     .bind(coneGeometry.onceWith(spaceTimeCone))
@@ -298,23 +316,24 @@ const simulation = Simulation
         photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1)
     })
     .appendStartStopResetUI()
-    .append(new Checkbox("Grid: ")
+    .append(new Checkbox('Grid: ')
         .on(grid)
-        .withProperty("visible")
+        .withProperty('visible')
         .checked(true)
-        .togetherWith(new Checkbox("Paraboloid: ")
+        .togetherWith(new Checkbox('Paraboloid: ')
             .on(spaceTimeCone)
-            .withProperty("visible")
+            .withProperty('visible')
             .checked(true)
         )
     );
 
 // TODO Mass slider
 
-const distanceSlider = new Slider("Distance: ")
+const distanceSlider = new Slider('Distance: ')
     .withRange(new Range(25.1, 64, .1))
     .withValue(33)
-    .addEventListener("input", event => {
+    .addEventListener('input', event => {
+        // @ts-ignore
         initialCometDistance = Number(event.target.value);
         realComet._stateVector = StateVector.initial(currentIsRingOrbitValue);
         comet.reset();
@@ -329,17 +348,20 @@ const distanceSlider = new Slider("Distance: ")
     });
 
 simulation
-    .append(new Checkbox("Photon sphere: ")
+    .append(new Checkbox('Photon sphere: ')
         .on(photonRing)
-        .withProperty("visible")
+        .withProperty('visible')
         .checked(false)
-        .togetherWith(new Checkbox("Orbit: ")
+        .togetherWith(new Checkbox('Orbit: ')
             .addEventListener('click', event => {
                 realComet.reset();
+                // @ts-ignore
                 realComet._stateVector = StateVector.initial(event.target.checked);
                 comet.reset();
+                // @ts-ignore
                 comet._stateVector = StateVector.initial(event.target.checked);
                 flatComet.reset();
+                // @ts-ignore
                 currentIsRingOrbitValue = event.target.checked;
             })
         )
@@ -370,14 +392,14 @@ simulation
 //
 
 //
-// canvas.addEventListener("click", () => {
+// canvas.addEventListener('click', () => {
 //     if (comet.isMoving) {
 //         realComet.stop();
 //         comet.stop();
-//         ThreeJsUtils.showOverlayMessage(overlay, "Stopped", 500);
+//         ThreeJsUtils.showOverlayMessage(overlay, 'Stopped', 500);
 //     } else {
 //         realComet.start();
 //         comet.start();
-//         ThreeJsUtils.showOverlayMessage(overlay, "Started", 500);
+//         ThreeJsUtils.showOverlayMessage(overlay, 'Started', 500);
 //     }
 // });

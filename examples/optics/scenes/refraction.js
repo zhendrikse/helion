@@ -1,9 +1,9 @@
 import {
     Block, Box, Checkbox, degToRad, LineSegment, LineSegmentView,
     RadialSymmetricBody, Range, Simulation, Slider, Sphere, Trail, Vec3, Vec2, wavelengthColor, Colour
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
-import {MeshBasicMaterial} from "three";
+import {MeshBasicMaterial} from 'three';
 
 class RayBundle {
     constructor({
@@ -42,6 +42,7 @@ class RayBundle {
         return this._rays.entries();
     }
 
+    /** @param {number} angle */
     rayShifts(angle) {
         const first = -Math.floor((this._rayCount - 1) / 2);
         const last = Math.floor(this._rayCount / 2);
@@ -53,6 +54,7 @@ class RayBundle {
         return shifts;
     }
 
+    /** @param {number} angleInDegrees */
     initialize(angleInDegrees) {
         const angle = degToRad(angleInDegrees);
         const shifts = this.rayShifts(angle);
@@ -76,6 +78,10 @@ class RayBundle {
         return rayXMaxIndex;
     }
 
+    /**
+     * @param {number} angleInDegrees
+     * @param {number} dt
+     */
     advance(angleInDegrees, dt) {
         const angle = degToRad(angleInDegrees);
         const direction = new Vec2(Math.cos(angle), Math.sin(angle));
@@ -87,6 +93,7 @@ class RayBundle {
         }
     }
 
+    /** @param {number} index */
     positionOfRay(index) {
         return this._rays[index].position;
     }
@@ -149,9 +156,10 @@ const wavefrontView = new LineSegmentView({
     }
 });
 
-const wavelengthSlider = new Slider("Wavelength")
+const wavelengthSlider = new Slider('Wavelength')
     .withRange(new Range(LAMBDA_BLUE, LAMBDA_RED, 1))
     .withValue(550)
+    // @ts-ignore
     .onInput(event => updateLightColor(false, Number(event.target.value)));
 
 let incidentAngle = INITIAL_ANGLE;
@@ -160,19 +168,18 @@ let ang2 = 0;
 
 const simulation = Simulation
     .with({
-        htmlDivId: "refractionRaysAndWavefrontContainer",
+        htmlDivId: 'refractionRaysAndWavefrontContainer',
         camera: {
             position: new Vec3(0, 0, 10),
             orthographic: true,
             controls: false
         },
-        viewport: { aspectRatio: "2 / 1" },
+        viewport: {aspectRatio: '2 / 1', parameterMenuCollapsed: false },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
-        parameterMenuCollapsed: false,
         infoPanel: {
-            text: "<strong>🌈 Refraction</strong><br/>" +
-                "Rays and wavefronts at a boundary between two media."
+            text: '<strong>🌈 Refraction</strong><br/>' +
+                'Rays and wavefronts at a boundary between two media.'
         }
     })
     .bind(medium.alwaysWith(new Box({
@@ -186,28 +193,30 @@ const simulation = Simulation
         wavefront.to.copy(rays.positionOfRay(5));
     })
     .appendStartStopResetUI()
-    .append(new Slider("Incident angle")
+    .append(new Slider('Incident angle')
         .withValue(INITIAL_ANGLE)
         .withRange(new Range(-89, 89, 1))
         .onInput(event => {
+            // @ts-ignore
             incidentAngle = Number(event.target.value);
             initializeRays();
         }))
-    .append(new Slider("Animation speed")
+    .append(new Slider('Animation speed')
         .withValue(INITIAL_RATE)
         .withRange(new Range(0, INITIAL_RATE * 5, 1))
         .onInput(event => {
+            // @ts-ignore
             animationRate = Number(event.target.value);
             simulation.atSpeed(animationRate / INITIAL_RATE);
         }))
     .append(wavelengthSlider)
-    .append(new Checkbox("White")
+    .append(new Checkbox('White')
         .checked(0)
         .onChange(() => updateLightColor(true)))
-    .append(new Checkbox("Wavefront")
+    .append(new Checkbox('Wavefront')
         .checked(true)
         .on(wavefrontView)
-        .withProperty("visible"))
+        .withProperty('visible'))
     .onReset(() => {
         incidentAngle = INITIAL_ANGLE;
         initializeRays();
@@ -230,6 +239,10 @@ function initializeRays(angle = incidentAngle) {
 initializeRays();
 
 const color = new Colour();
+/**
+ * @param {boolean} isWhite
+ * @param {number} wavelength
+ */
 function updateLightColor(isWhite, wavelength = 550) {
     wavelengthColor(wavelength, color);
     const colour = isWhite ? new Colour(0xffffff) : color;

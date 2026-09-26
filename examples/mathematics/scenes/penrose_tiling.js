@@ -97,14 +97,14 @@ drawPenrose(turtle);
 Simulation
     .with({
         htmlDivId: "penroseTilingContainer",
+        viewport: { parameterMenuCollapsed: false },
         camera: {
             fieldOfView: 30,
             position: new Vec3(0, 0, 1100),
             controls: false
         },
-        headUpDisplay: { enabled: false },
-        parameterMenuCollapsed: false
-    })
+        headUpDisplay: { enabled: false }
+        })
     .bind(turtle.alwaysWith(turtleView))
     .append(new Button()
         .withText("Penrose tiling ⟡")

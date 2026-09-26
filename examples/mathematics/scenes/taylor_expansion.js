@@ -1,8 +1,7 @@
-import { MeshBasicMaterial, Color } from "three";
 import {
     LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Grid, Interval, Label,
     Arrow2D, ColorMappers, RealFunction, CurveView, LinearCombination, Vec2, Colour
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const xMin = -4;
 const xMax = 4;
@@ -37,36 +36,37 @@ const taylorExpansion = new LinearCombination({
 });
 
 const taylorTerms = [
-    "1",
-    "+x",
-    "+\\dfrac{x^2}{2!}",
-    "+\\dfrac{x^3}{3!}",
-    "+\\dfrac{x^4}{4!}",
-    "+\\dfrac{x^5}{5!}",
-    "+\\dfrac{x^6}{6!}",
-    "+\\dfrac{x^7}{7!}",
-    "+\\dfrac{x^8}{8!}",
-    "+\\dfrac{x^9}{9!}"
+    '1',
+    '+x',
+    '+\\dfrac{x^2}{2!}',
+    '+\\dfrac{x^3}{3!}',
+    '+\\dfrac{x^4}{4!}',
+    '+\\dfrac{x^5}{5!}',
+    '+\\dfrac{x^6}{6!}',
+    '+\\dfrac{x^7}{7!}',
+    '+\\dfrac{x^8}{8!}',
+    '+\\dfrac{x^9}{9!}'
 ];
 
+/** @param {number} terms */
 function taylorLatex(terms) {
-    let result = "e^x = ";
+    let result = 'e^x = ';
 
     for (let n = 0; n < terms; n++)
         result += taylorTerms[n];
 
-    return result + "+\\cdots";
+    return result + '+\\cdots';
 }
 
 const simulation = Simulation
     .with({
-        htmlDivId: "taylorSeriesContainer",
+        htmlDivId: 'taylorSeriesContainer',
+        viewport: { parameterMenuCollapsed: false },
         headUpDisplay: {
             enabled: false
         },
         camera: {
             position: new Vec3(0, 0, 10),
-            parameterMenuCollapsed: false,
             controls: false
         }
     });
@@ -87,7 +87,7 @@ const approximatedFunction = new RealFunction({
 });
 
 simulation
-    .setLatexTitle("e^x = 1 + \\cdots")
+    .setLatexTitle('e^x = 1 + \\cdots')
     .bind(grid.onceWith(new LineSegmentsView({
         lineWidth: 1,
         dashed: true,
@@ -106,14 +106,14 @@ simulation
         headStyle: Arrow2D.HeadStyle.Filled
     } )))
     .bind(xAxis.onceWith(new Label({
-        text: () => "X",
-        fontSize: "20px",
+        text: () => 'X',
+        fontSize: '20px',
         color: new Colour(0xbbbbbb),
         offset: () => new Vec2(2.1 * size, 0)
     })))
     .bind(yAxis.onceWith(new Label({
-        text: () => "Y",
-        fontSize: "20px",
+        text: () => 'Y',
+        fontSize: '20px',
         color: new Colour(0xbbbbbb),
         offset: () => new Vec2(0.1, 2.1 * size)
     })))
@@ -127,12 +127,13 @@ simulation
         lineWidth: 2,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0xff0000})
     })))
-    .append(new Slider("Terms")
+    .append(new Slider('Terms')
         .withRange(new Range(1, 10, 1))
         .withValue(1)
         .onInput(event => {
+            // @ts-ignore
             const terms = Number(event.target.value);
             approximatedFunction.setFunction(x => taylorExpansion.evaluate(x, terms) - size);
-            simulation.setLatexTitle("e^x = " + taylorLatex(terms));
+            simulation.setLatexTitle('e^x = ' + taylorLatex(terms));
         })
     );

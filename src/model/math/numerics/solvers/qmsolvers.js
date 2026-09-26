@@ -162,8 +162,7 @@ export class SchrodingerEigenstateSolver3D extends Solver {
     }
 
     _index(x, y, z) {
-        return z * this._potential.nx * this._potential.ny +
-            y * this._potential.nx + x;
+        return z * this._potential.nx * this._potential.ny + y * this._potential.nx + x;
     }
 
     _orthogonalize(psi) {

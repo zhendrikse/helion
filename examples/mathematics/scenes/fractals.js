@@ -202,6 +202,7 @@ drawDragonCurve(turtle);
 Simulation
     .with({
         htmlDivId: "fractalsContainer",
+        viewport: { parameterMenuCollapsed: false },
         camera: {
             fieldOfView: 30,
             position: new Vec3(0, 0, 1100),
@@ -209,9 +210,8 @@ Simulation
         },
         headUpDisplay: {
             enabled: false
-        },
-        parameterMenuCollapsed: false
-    })
+        }
+        })
     .bind(turtle.alwaysWith(turtleView))
     .append(new Button()
         .withText("T-square fractal 🔶")
