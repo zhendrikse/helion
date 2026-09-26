@@ -29,7 +29,7 @@ const potentials = /** @type {Record<string, { func: (particle: SingleParticle) 
         latex: Quartic.latex
     },
     'Circular well': {
-        func: CircularWell.withRadiusAndBarrier(5, 100),
+        func: CircularWell.withRadiusAndBarrier(8, 100),
         latex: CircularWell.latex
     }
 });
@@ -55,27 +55,32 @@ const simulation = Simulation
 let potentialType = 'Harmonic oscillator';
 const psi = new WaveFunction2D(N);
 let currentEigenstate = 10;
-const eigenstate = new DiscreteComplexField({ nx: N, ny: N });
-function showState(index = 10) {
+function changeState(index = 10) {
     currentEigenstate = index;
-    eigenstate.real.set(psi.eigenstateAt(index).real);
-    eigenstate.imag.set(psi.eigenstateAt(index).imag);
+    psi.collapseToEigenstate(index);
     simulation.setLatexTitle(`\\text{Eigenstate ${index + 1} of}\\ ` + potentials[potentialType].latex)
 }
 
 let hamiltonian;
-let isSolving = true;
+let isSolving = false;
+const barGraph = new UPlotBarGraph({
+    values: [],
+    title: 'Eigenstate energies',
+    xLabel: 'Eigenstate',
+    yLabel: 'Energy',
+    labelColor: Colour.Yellow,
+    color: new Colour(0.5, 0.5, 1)
+});
+
 async function solveFor(potential = potentialType) {
     potentialType = potential;
-    isSolving = true;
     hamiltonian = new Hamiltonian({
         progressCallback: (text, percent) => simulation.showHud(text + `: ${Math.round(percent)}%`),
         potential: potentials[potential].func,
-        //potential: AnisotropicHarmonicOscillator.withSpringConstants(.1, .05),
-        //potential: CircularWell.withRadiusAndBarrier(5, 100),
         spatialNdim: 2,
         N
     });
+    isSolving = true;
 
     psi.reset();
     const residuals = await psi.apply(hamiltonian, {
@@ -83,15 +88,17 @@ async function solveFor(potential = potentialType) {
         iterations: 850,
         calculateResiduals: false
     });
-    isSolving = false;
-    simulation.hideHud();
     // for (const residual of residuals)
     //     console.log(residual);
     // for (const energy of psi.spectrum)
     //     console.log(energy);
+    simulation.hideHud();
+    barGraph.updateValues(psi.spectrum);
+    changeState(currentEigenstate);
+
+    isSolving = false;
 }
 await solveFor(potentialType);
-showState(currentEigenstate);
 
 const waveFunction = new WaveFunctionSurface3D({
     zScale: 5,
@@ -100,34 +107,24 @@ const waveFunction = new WaveFunctionSurface3D({
 
 let staticView = false;
 simulation
-    .bind(eigenstate.alwaysWith(waveFunction))
+    .bind(psi.state.alwaysWith(waveFunction))
     .runsEvery(0.01)
     .onStep((clock, dt) => {
         if (staticView || isSolving)
             return;
 
-        const E = psi.spectrum[currentEigenstate];
-        const state = psi.eigenstateAt(currentEigenstate).real;
-        for (let i = 0; i < state.length; i++) {
-            eigenstate.real[i] =  state[i] * Math.cos(E * clock.simulatedTime);
-            eigenstate.imag[i] = -state[i] * Math.sin(E * clock.simulatedTime);
-        }
+        psi.time = clock.simulatedTime;
     })
     .append(new DropdownMenu()
         .for(potentialsRegistry)
         // @ts-ignore
         .onChange(event => solveFor(event.target.value))
     )    
-    .append(new Checkbox("Static")
-        .checked(staticView)
-        // @ts-ignore
-        .onChange(event => staticView = event.target.checked)
-    )
     .append(new Slider('🌀 Eigenstate')
         .withRange(new Range(0, psi.eigenstatesCount - 1, 1))
         .withValue(currentEigenstate)
         // @ts-ignore
-        .addEventListener('input', event => showState(Number(event.target.value)))
+        .addEventListener('input', event => changeState(Number(event.target.value)))
     )
     .append(new Slider('📐 Height scale')
         .withRange(new Range(1, 10, .1))
@@ -135,14 +132,12 @@ simulation
         .on(waveFunction)
         .withProperty('zScale')
     )
-    .addGraph(new UPlotBarGraph({
-        values: psi.spectrum,
-        title: 'Eigenstate energies',
-        xLabel: 'Eigenstate',
-        yLabel: 'Energy',
-        labelColor: Colour.Yellow,
-        color: new Colour(0.5, 0.5, 1)
-    }))
+    .append(new Checkbox("Static")
+        .checked(staticView)
+        // @ts-ignore
+        .onChange(event => staticView = event.target.checked)
+    )
+    .addGraph(barGraph)
     .frameSceneOn(waveFunction, {
         padding: 0.55,
         viewDirection: new Vec3(1, .75, 0)

@@ -54,7 +54,7 @@ export class DoubleWell {
  * convenient for the finite-difference Hamiltonian.
  */
 export class CircularWell {
-    static latex = 'V(x,y)=\\begin{cases} 0\\quad(x^2 + y^2) <= r^2 \\\\ a \\quad(x^2 + y^2) > r^2 \\end{cases}';
+    static latex = 'V(x,y)=\\begin{cases} 0:\\quad(x^2 + y^2) \\leq r^2 \\\\ a: \\quad(x^2 + y^2) > r^2 \\end{cases}';
     static withRadiusAndBarrier = (/** @type {number} */ radius, /** @type {any} */ barrier) => 
         (/** @type {SingleParticle} */ particle) =>
             particle.x *particle.x + particle.y * particle.y <= radius * radius ? 0 : barrier;
