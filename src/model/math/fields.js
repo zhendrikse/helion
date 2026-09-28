@@ -8,6 +8,8 @@ export class Domain {
      * @param {number[]} yRange 
      */
     constructor(xRange=[-0.5, 0.5], yRange=[-0.5, 0.5]) {
+        if (xRange[0] === xRange[1] || yRange[0] === xRange[1])
+            throw new Error(`Invalid domain [${xRange[0]}, ${xRange[1]}] to [${yRange[0]}, ${yRange[1]}]`);
         this.xRange = new Interval(xRange[0], xRange[1]);
         this.yRange = new Interval(yRange[0], yRange[1]);
     }
@@ -54,10 +56,9 @@ export class ScalarField extends Field {
      * @abstract
      * @param {SurfaceResolution} resolution
      * @param {number} time
+     * @returns {Interval}
      */
-    rangeAt(resolution, time=0) {
-        return new Interval();
-    }
+    rangeAt(resolution, time=0) {}
 }
 
 export class ComplexField extends Field {
@@ -101,19 +102,23 @@ export class MultivariateFunction extends ScalarField {
     }
 
     /**
-     * @param {SurfaceResolution} surfaceResolution 
-     * @param {number} time 
+     * @param {SurfaceResolution} surfaceResolution
+     * @param {number} time
      * @returns {Interval}
      */
     rangeAt(surfaceResolution, time = 0) {
-        const interval = new Interval();
-        for (let i = 0; i < surfaceResolution.u; i++)
-            for (let j = 0; j < surfaceResolution.v; j++)
+        const interval = new Interval(Infinity, -Infinity);
+        const uSteps = surfaceResolution.u;
+        const vSteps = surfaceResolution.v;
+        for (let i = 0; i < uSteps; i++) {
+            for (let j = 0; j < vSteps; j++) {
                 interval.include(this._func(
-                    this.domain.xRange.scaleUnitParameter(i / surfaceResolution.u),
-                    this.domain.yRange.scaleUnitParameter(j / surfaceResolution.v),
+                    this.domain.xRange.scaleUnitParameter(i / (uSteps - 1)),
+                    this.domain.yRange.scaleUnitParameter(j / (vSteps - 1)),
                     time
                 ));
+            }
+        }
         return interval;
     }
 
@@ -163,9 +168,9 @@ export class RealFunction extends MathPhysicsModelBehavior {
 
     /** @param {number} intervalResolution */
     rangeAt(intervalResolution) {
-        const interval = new Interval();
+        const interval = new Interval(Infinity, -Infinity);
         for (let i = 0; i < intervalResolution; i++)
-            interval.include(this._func(this.domain.scaleUnitParameter(i / intervalResolution)));
+            interval.include(this._func(this.domain.scaleUnitParameter(i / (intervalResolution - 1))));
         return interval;
     }
 
@@ -281,7 +286,7 @@ export class DiscreteScalarField extends ScalarField {
     }
 
     rangeAt() {
-        const interval = new Interval();
+        const interval = new Interval(Infinity, -Infinity);
         for (let i = 0; i < this.nx; i++)
             for (let j = 0; j < this.ny; j++)
                 interval.include(this.valueAt(i, j));

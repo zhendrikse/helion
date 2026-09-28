@@ -28,9 +28,9 @@ export class ParametricCurve extends MathPhysicsModelBehavior {
 
     /** @param {number} intervalResolution */
     rangeAt(intervalResolution) {
-        const interval = new Interval();
+        const interval = new Interval(Infinity, -Infinity);
         for (let i = 0; i < intervalResolution; i++) {
-            const point = this._func(this.domain.scaleUnitParameter(i / intervalResolution));
+            const point = this._func(this.domain.scaleUnitParameter(i / (intervalResolution - 1)));
             interval.include(point.y);
         }
         return interval;

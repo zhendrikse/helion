@@ -1,6 +1,7 @@
 import {
     Simulation, Vec3, Sun, SunView, RadialSymmetricBody, Sphere, Trail, Renderable3D,
-    LineSegment, Label, ThreeJsScene, LineSegmentView, HexValueColorMapper, Colour} from '../../../src/index.js';
+    LineSegment, Label, ThreeJsScene, LineSegmentView, HexValueColorMapper, Colour
+} from '../../../src/index.js';
 
 const randomColour = () => new Colour(Math.random(), Math.random(), Math.random());
 const randomVelocity = () => new Vec3(-(0.7 + 0.5 * Math.random()), 0, 0);

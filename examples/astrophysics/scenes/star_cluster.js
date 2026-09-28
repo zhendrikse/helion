@@ -1,13 +1,13 @@
-import { Color, Vector3 } from "three";
 import {ImprovedNoise} from 'three/addons/math/ImprovedNoise.js';
-import {Simulation, Vec3, PointCloud, PointCloudView, PointCloudMaterial, ThreeJsScene} from "../../../src/index.js";
+import {
+    Simulation, Vec3, PointCloud, PointCloudView, PointCloudMaterial, ThreeJsScene, Colour
+} from '../../../src/index.js';
 
 class StarCluster extends PointCloud {
     constructor(N=40000) {
         super({});
 
         const perlin = new ImprovedNoise();
-
         while (this._positions.length < N) {
             const star = this.createStar(perlin);
 
@@ -20,8 +20,9 @@ class StarCluster extends PointCloud {
         }
     }
 
+    /** @param {ImprovedNoise} perlin */
     createStar(perlin) {
-        const pos = new Vector3()
+        const pos = new Vec3()
             .randomDirection()
             .setLength(5 * Math.pow(Math.random(), 1 / 3));
 
@@ -37,7 +38,7 @@ class StarCluster extends PointCloud {
         if (noise < 0.5)
             return null;
 
-        const color = new Color().setHSL(
+        const color = new Colour().setHSL(
             0.5 + 0.15 * Math.random(),
             0.5 + 0.5 * Math.random(),
             Math.random()
@@ -51,17 +52,13 @@ const starCluster = new StarCluster();
 const cloud = new PointCloudView({ material: PointCloudMaterial.stars() });
 Simulation
     .with({
-        htmlDivId: "starClusterContainer",
+        htmlDivId: 'starClusterContainer',
         camera: {
             fieldOfView: 35,
             position: new Vec3(7, 14, 21).multiplyScalar(1.25)
         },
-        scene: {
-            background: ThreeJsScene.Background.STARS
-        },
-        lighting: {
-            enabled: false
-        }
+        scene: { background: ThreeJsScene.Background.STARS },
+        lighting: { enabled: false }
     })
     .runsEvery(0.02)
     .bind(starCluster.onceWith(cloud))

@@ -132,7 +132,7 @@ export class ComplexSurfaceView3D extends ComplexFieldViewable {
     setValueRange(field) {
         this._normalizer.reset();
         const { width, height } = this.resolution(field);
-        const interval = new Interval();
+        const interval = new Interval(Infinity, -Infinity);
         for (let i = 0; i <= width; i++)
             for (let j = 0; j <= height; j++) {
                 if (this._fieldIsDiscrete)

@@ -1,8 +1,7 @@
-import { Vector3, Color } from "three";
 import {
     normalDistribution, uniform, randomInt, Vec3, Simulation, PointCloud,
-    PointCloudMaterial, PointCloudView, ThreeJsScene
-} from "../../../src/index.js";
+    PointCloudMaterial, PointCloudView, ThreeJsScene, Colour
+} from '../../../src/index.js';
 
 class SpiralGalaxy extends PointCloud {
     // Set the radius of the galactic disc (scaling factor):
@@ -36,6 +35,10 @@ class SpiralGalaxy extends PointCloud {
         this.add(outerHaze, 2);
     }
 
+    /**
+     * @param {Vec3[]} starPositions
+     * @param {number} starRadius
+     */
     add(starPositions, starRadius) {
         for (let i = 0, n = starPositions.length; i < n; i++) {
             this._positions.push(starPositions[i]);
@@ -44,16 +47,18 @@ class SpiralGalaxy extends PointCloud {
         }
     }
 
+    /** @param {Vec3} position */
     static colorAt(position) {
         const distance = Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2);
         const t = Math.min(distance / SpiralGalaxy.ScaleFactor, 1.0); // 0 at center, 1 at border
-        return new Color().setHSL(0.65 - 0.5 * t, 1.0, 0.6); // from yellow (t=0) to blue (t=1)
+        return new Colour().setHSL(0.65 - 0.5 * t, 1.0, 0.6); // from yellow (t=0) to blue (t=1)
     }
 
     static createCoreStars(numRimStars, coreRadius) {
+        /** @type {Vec3[]} */
         const coreStars = [];
         for (let i = 0; i < numRimStars; i++)
-            coreStars.push(new Vector3(
+            coreStars.push(new Vec3(
                 normalDistribution(0, 1),
                 normalDistribution(0, 1),
                 normalDistribution(0, 1)).multiplyScalar(coreRadius));
@@ -63,13 +68,14 @@ class SpiralGalaxy extends PointCloud {
     /**
      * Return list of (x,y,z) points for a logarithmic spiral.
      *
-     * @param b constant for spiral direction and "openess"
-     * @param rScale factor (galactic disc radius)
-     * @param rot_fac factor to rotate each spiral arm
-     * @param fuz_fac random shift in star position in arm, applied to 'fuzz' variable
+     * @param {number} b constant for spiral direction and 'openess'
+     * @param {number} rScale factor (galactic disc radius)
+     * @param {number} rot_fac factor to rotate each spiral arm
+     * @param {number} fuz_fac random shift in star position in arm, applied to 'fuzz' variable
      */
     static buildSpiralStars(b, rScale, rot_fac, fuz_fac) {
         const fuzz = Math.trunc(0.030 * Math.abs(rScale));  // Scalable initial amount to shift locations.
+        /** @type {Vec3[]} */
         const spiral_stars = [];
         const SCALE = SpiralGalaxy.ScaleFactor;
         for (let i = 0; i < SpiralGalaxy.NumSpiralStars; i++) {
@@ -77,7 +83,7 @@ class SpiralGalaxy extends PointCloud {
             const x = rScale * Math.exp(b * theta) * Math.cos(theta - Math.PI * rot_fac) - randomInt(-fuzz, fuzz) * fuz_fac;
             const y = rScale * Math.exp(b * theta) * Math.sin(theta - Math.PI * rot_fac) - randomInt(-fuzz, fuzz) * fuz_fac;
             const z = uniform((-SCALE / (SCALE * 3)), (SCALE / (SCALE * 3)));
-            spiral_stars.push(new Vector3(x, y, z));
+            spiral_stars.push(new Vec3(x, y, z));
         }
         return spiral_stars;
     }
@@ -85,11 +91,13 @@ class SpiralGalaxy extends PointCloud {
     /**
      * Return lists of point coordinates for galactic spiral arms.
      *
-     * b = constant for spiral direction and "openess"
-     * arms_info = list of scale, rotation, and fuzz factors
+     * @param {number} b = constant for spiral direction and 'openess'
+     * @param {number[[]]} arms_info = list of scale, rotation, and fuzz factors
      */
     static buildSpiralArms(b, arms_info) {
+        /** @type {Vec3[]} */
         let leading_arms = [];
+        /** @type {Vec3[]} */
         let trailing_arms = [];
         for (let i = 0; i < arms_info.length; i++) {
             const arm = SpiralGalaxy.buildSpiralStars(b, arms_info[i][0], arms_info[i][1], arms_info[i][2]);
@@ -104,12 +112,13 @@ class SpiralGalaxy extends PointCloud {
     /**
      * Generate uniform random (x,y,z) points within a disc for 2-D display.
      *
-     * @param scale_factor galactic disc radius
-     * @param r_mult scalar for radius of disc
-     * @param z_mult scalar for z values
-     * @param density multiplier to vary the number of stars posted
+     * @param {number} scale_factor galactic disc radius
+     * @param {number} r_mult scalar for radius of disc
+     * @param {number} z_mult scalar for z values
+     * @param {number} density multiplier to vary the number of stars posted
      */
     static haze(scale_factor, r_mult, z_mult, density) {
+        /** @type {Vec3[]} */
         const haze_coordinates = [];
         for (let i = 0; i < scale_factor * density; i++) {
             const n = Math.random();
@@ -117,7 +126,7 @@ class SpiralGalaxy extends PointCloud {
             const x = Math.round(Math.sqrt(n) * Math.cos(theta) * scale_factor) / r_mult;
             const y = Math.round(Math.sqrt(n) * Math.sin(theta) * scale_factor) / r_mult;
             const z = uniform(-1, 1) * z_mult;
-            haze_coordinates.push(new Vector3(x, y, z));
+            haze_coordinates.push(new Vec3(x, y, z));
         }
         return haze_coordinates;
     }
@@ -127,23 +136,15 @@ const spiralGalaxy = new SpiralGalaxy();
 const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() });
 Simulation
     .with({
-        htmlDivId: "galaxyContainer",
-        viewport: {
-            aspectRatio: "4/3"
-        },
-        headUpDisplay: {
-            enabled: false
-        },
+        htmlDivId: 'galaxyContainer',
+        viewport: { aspectRatio: '4/3' },
+        headUpDisplay: { enabled: false },
         camera: {
             position: new Vec3(1, -12, 4).multiplyScalar(100),
             fieldOfView: 30
         },
-        scene: {
-            background: ThreeJsScene.Background.STARS,
-        },
-        lighting: {
-            enabled: false
-        }
+        scene: { background: ThreeJsScene.Background.STARS },
+        lighting: { enabled: false }
     })
     .runsEvery(0.02)
     .bind(spiralGalaxy.onceWith(pointCloud))
