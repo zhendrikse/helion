@@ -1,6 +1,7 @@
 import { MathPhysicsModelBehavior } from '../behavior.js';
 import { Complex, Interval, Vec2, Vec3 } from './math.js';
 import { Solver } from './numerics/solvers/solvers.js';
+import { SurfaceResolution } from '../../view/3d/surfaces/visualization.js'
 
 export class Domain {
     /**
@@ -421,34 +422,31 @@ export class DiscreteScalarField3D extends ScalarField {
     get nz() { return this._nz; }
     get data() { return this._data; }
 
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} z
+     */
     index(x, y, z) {
-        // Backward compat: index(Vec3) en index(x,y,z)
-        if (x !== null && typeof x === 'object' && 'x' in x) {
-            const p = x;
-            return p.z * this._nx * this._ny + p.y * this._nx + p.x;
-        }
         return z * this._nx * this._ny + y * this._nx + x;
     }
 
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} z
+     */
     valueAt(x, y, z) {
-        if (x !== null && typeof x === 'object' && 'x' in x) {
-            return this._data[this.index(x)];
-        }
         return this._data[this.index(x, y, z)];
     }
 
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} z
+     * @param {number} value
+     */
     setValueAt(x, y, z, value) {
-        if (typeof y === 'object' || (x !== null && typeof x === 'object' && 'x' in x && z === undefined)) {
-            // setValueAt(Vec3, value)
-            const p = x; const v = y;
-            this._data[this.index(p)] = v;
-            return;
-        }
-        if (z === undefined && typeof value === 'undefined') {
-            // setValueAt(x,y, value) where y is actually value? Should not happen for 3D
-            return;
-        }
-        // setValueAt(x,y,z,value)
         this._data[this.index(x, y, z)] = value;
     }
 
@@ -479,11 +477,12 @@ export class DiscreteComplexField3D extends ComplexField {
 
     get size() { return this.real.length; }
 
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} z
+     */
     index(x, y, z) {
-        if (x !== null && typeof x === 'object' && 'x' in x) {
-            const p = x;
-            return p.z * this.nx * this.ny + p.y * this.nx + p.x;
-        }
         return z * this.nx * this.ny + y * this.nx + x;
     }
 
