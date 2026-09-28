@@ -151,8 +151,8 @@ function setDimension(dimension3d = true) {
     waveFunction2d.visible = !dimension3d;
     simulation.orthographic = !dimension3d;
     if (dimension3d)
-        simulation.frameSceneOn(waveFunction2d, {padding: .6, translationY: 0, viewDirection: new Vec3(-1, .7, .75)});
+        simulation.frameSceneOn(waveFunction3d, {padding: .6, viewDirection: new Vec3(-1, .7, .75)});
     else
-        simulation.frameSceneOn(waveFunction3d, {padding: 1.0, translationY: 0, viewDirection: new Vec3(0, 0, 1)});
+        simulation.frameSceneOn(waveFunction2d, {padding: 1.0, viewDirection: new Vec3(0, 0, 1)});
 }
 setDimension();
