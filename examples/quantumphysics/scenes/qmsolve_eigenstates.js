@@ -1,6 +1,6 @@
 import {
     Checkbox, DiscreteComplexField, Hamiltonian, Range, Simulation, Colour, Registry,
-    Slider, Vec3, WaveFunctionSurface3D, HarmonicOscillator, AnisotropicHarmonicOscillator,
+    Slider, Vec3, RadioGroup, WaveFunctionSurface3D, ComplexSurfaceView2D, HarmonicOscillator,
     DoubleWell, CircularWell, Quartic, InfiniteSquareWell, UPlotBarGraph, WaveFunction2D, 
     DropdownMenu, SingleParticle
 } from '../../../src/index.js';
@@ -103,6 +103,8 @@ const waveFunction = new WaveFunctionSurface3D({
     zScale: 5,
     brightness: 1.5
 });
+const waveFunction2d = new ComplexSurfaceView2D();
+waveFunction2d.visible = false;
 
 let staticView = false;
 simulation
@@ -131,6 +133,10 @@ simulation
         .on(waveFunction)
         .withProperty('zScale')
     )
+    .append(new RadioGroup()
+        .add('2D', _ => setDimension(false))
+        .add('3D', _ => setDimension(true))
+        .checked(1))
     .append(new Checkbox("Static")
         .checked(staticView)
         // @ts-ignore
@@ -142,3 +148,5 @@ simulation
         viewDirection: new Vec3(1, .75, 0)
     })
     .start();
+
+setDimension();
