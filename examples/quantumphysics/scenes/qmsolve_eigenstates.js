@@ -103,13 +103,10 @@ const waveFunction3d = new WaveFunctionSurface3D({
     zScale: 5,
     brightness: 1.5
 });
-const waveFunction2d = new ComplexSurfaceView2D();
-waveFunction2d.visible = false;
 
 let staticView = false;
 simulation
     .bind(psi.state.alwaysWith(waveFunction3d))
-    .bind(psi.state.alwaysWith(waveFunction2d))
     .runsEvery(0.01)
     .onStep((clock, dt) => {
         if (staticView || isSolving)
@@ -146,13 +143,11 @@ simulation
     .addGraph(barGraph)
     .start();
 
-function setDimension(dimension3d = true) {
-    waveFunction3d.visible = dimension3d;
-    waveFunction2d.visible = !dimension3d;
-    simulation.orthographic = !dimension3d;
-    if (dimension3d)
-        simulation.frameSceneOn(waveFunction3d, {padding: .6, viewDirection: new Vec3(-1, .7, .75)});
-    else
-        simulation.frameSceneOn(waveFunction2d, {padding: 1.0, viewDirection: new Vec3(0, 0, 1)});
+/** @param {boolean} dimension3d */
+const setDimension = (dimension3d = true)=> {
+    simulation.frameSceneOn(waveFunction3d, {
+        padding: .5, 
+        viewDirection: dimension3d ? new Vec3(-1.25, .7 , .75) : new Vec3(0, 1, 0)
+    });
 }
 setDimension();

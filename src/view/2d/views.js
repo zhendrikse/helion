@@ -6,7 +6,7 @@ import { Renderable2D } from '../renderer.js';
 import { CompoundControl, DropdownMenu } from '../../core/controls.js';
 import { ColorMapper, Colour, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from '../colormappers.js';
 import { AdaptiveSymmetricNormalizer, SurfaceResolution} from '../3d/surfaces/visualization.js';
-import { ComplexFunctionSample, DiscreteScalarField} from '../../model/math/fields.js';
+import { ComplexFunctionSample, DiscreteScalarField, DiscreteComplexField} from '../../model/math/fields.js';
 import { Normalizer} from '../3d/surfaces/visualization.js';
 import { RadialSymmetricBody } from '../../model/phys/bodies.js';
 
@@ -169,6 +169,7 @@ export class ComplexFieldViewable2D extends Renderable2D {
         this._texture = null;
     }
 
+    /** @param {DiscreteComplexField} field */
     resolution(field) {
         return {
             width: this._fieldIsDiscrete ? field.nx : this._resolution.u,
@@ -176,6 +177,7 @@ export class ComplexFieldViewable2D extends Renderable2D {
         };
     }
 
+    /** @param {DiscreteComplexField} field */
     canBindTo(field) {
         this._fieldIsDiscrete = field.nx !== undefined && field.ny !== undefined;
         if (this._fieldIsDiscrete) {
@@ -195,7 +197,7 @@ export class ComplexFieldViewable2D extends Renderable2D {
         this._mesh.material.dispose();
         if (this._texture) this._texture.dispose();
         this._mesh = null;
-        this._pixels = null;
+        this._pixels = new Uint8Array();
         this._texture = null;
     }
 
@@ -231,6 +233,7 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
     /** @param {ColorMapper} mapper */
     set colorMapper(mapper) { this._colorMapper = mapper; }
 
+    /** @param {DiscreteComplexField} field */
     initialize(field) {
         this.dispose();
         const { width, height } = this.resolution(field);
@@ -261,6 +264,7 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
     /** @param {boolean} showPhaseColour */
     set phaseColor(showPhaseColour) { this._phaseColor = showPhaseColour; }
 
+    /** @param {DiscreteComplexField} field */
     synchronizeWith(field) {
         const { width, height } = this.resolution(field);
         const sample = this._sample;
