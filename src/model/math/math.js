@@ -438,7 +438,9 @@ export class Range {
 }
 
 export class Interval {
-    constructor(from = 0, to = 0) {
+    constructor(from, to) {
+        if (from == null || to == null || from === to)
+            throw new Error(`Invalid construction of interval [${from}, ${to}]`);
         this.from = from;
         this.to = to;
     }
@@ -464,6 +466,11 @@ export class Interval {
     get range() { return this.to - this.from; }
     get min() { return this.from; }
     get max() { return this.to; }
+
+    /** @param {Interval} other */
+    equals(other) {
+        return this.from === other.from && this.to === other.to;
+    }
 
     /**
      * Scale a unit parameter [0, 1] up to this interval
@@ -583,6 +590,11 @@ export class Complex {
         this.re *= scalar;
         this.im *= scalar;
         return this;
+    }
+
+    /** @param {Complex} other */
+    equals(other) {
+        return this.re === other.re && this.im === other.im;
     }
 }
 

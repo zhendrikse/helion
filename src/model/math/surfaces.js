@@ -30,9 +30,12 @@ export class DifferentiableSurface extends Surface {
         return this._differentialGeometry.differentialFrame(u, v, target);
     }
 
-    /** @param {SurfaceResolution} _resolution */
+    /**
+     * @abstract
+     * @param {SurfaceResolution} _resolution
+     * @returns {Interval}
+     */
     rangeAt(_resolution) {
-        return new Interval();
     }
 
     /** 
@@ -98,12 +101,14 @@ export class ParametricSurface extends DifferentiableSurface {
 
     /** @param {SurfaceResolution} surfaceResolution */
     rangeAt(surfaceResolution) {
-        const interval = new Interval();
-        for (let i = 0; i < surfaceResolution.u; i++)
-            for (let j = 0; j < surfaceResolution.v; j++)
+        const interval = new Interval(Infinity, -Infinity);
+        const uSteps = surfaceResolution.u;
+        const vSteps = surfaceResolution.v;
+        for (let i = 0; i < uSteps; i++)
+            for (let j = 0; j < vSteps; j++)
                 interval.include(this._z(
-                    this._domain.xRange.scaleUnitParameter(i / surfaceResolution.u),
-                    this._domain.yRange.scaleUnitParameter(j / surfaceResolution.v)
+                    this._domain.xRange.scaleUnitParameter(i / (uSteps - 1)),
+                    this._domain.yRange.scaleUnitParameter(j / (vSteps - 1))
                 ));
         return interval;
     }

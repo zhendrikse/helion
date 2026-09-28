@@ -86,7 +86,7 @@ export class Layer extends Renderable3D {
     }
 
     rangeAt(model) {
-        const range = new Interval();
+        const range = new Interval(Infinity, -Infinity);
         for (let i = 0; i <= this._resolution.u; i++) {
             const u = i / this._resolution.u;
             for (let j = 0; j <= this._resolution.v; j++) {
