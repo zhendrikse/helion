@@ -83,7 +83,7 @@ export class LanczosEigenstateSolver extends Solver {
             VecN.normalize(psi);
             if (this._calculateResiduals)
                 this._calculateResidualsFor(psi, state, residuals);
-            waveFunction2D.addEigenstate(psi, new Float64Array(count), this._hamiltonian.energyOf(psi));
+            waveFunction2D.addEigenstate(psi, new Float64Array(psi.length), this._hamiltonian.energyOf(psi));
         }
 
         return residuals;

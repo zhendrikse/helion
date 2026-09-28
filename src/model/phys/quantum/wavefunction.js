@@ -15,11 +15,14 @@ export class WaveFunction2D {
     }
 
     /** @param {number} time */
-    set time(time) { 
+    set time(time) {
+        const phase = this._energy * time;
         const n = this._state.real.length;
         for (let i = 0; i < n; i++) {
-            this._calulatedState.real[i] =  this._state.real[i] * Math.cos(this._energy * time);
-            this._calulatedState.imag[i] = -this._state.real[i] * Math.sin(this._energy * time);
+            const real = this._state.real[i];
+            const imag = this._state.imag[i];
+            this._calulatedState.real[i] = real * Math.cos(phase) - imag * Math.sin(phase);
+            this._calulatedState.imag[i] = real * Math.sin(phase) + imag * Math.cos(phase);
         }
     }
 

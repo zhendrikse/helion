@@ -77,6 +77,23 @@ test('SchrodingerSolver preserves the staggered leapfrog update', () => {
         assert.ok(Math.abs(psi.real[i] - expectedRe[i]) < 1e-12);
 });
 
+test('WaveFunction2D rotates eigenstates with both real and imaginary components', () => {
+    const psi = new WaveFunction2D(5);
+    const state = new DiscreteComplexField({ nx: 5, ny: 5 });
+    state.real.fill(1);
+    state.imag.fill(2);
+    psi._state = state;
+    psi._eigenvalues = [0.75];
+    psi._energy = 0.75;
+
+    psi.time = 0.5;
+
+    const expectedReal = 1 * Math.cos(0.375) - 2 * Math.sin(0.375);
+    const expectedImag = 1 * Math.sin(0.375) + 2 * Math.cos(0.375);
+    assert.ok(Math.abs(psi.state.real[0] - expectedReal) < 1e-12);
+    assert.ok(Math.abs(psi.state.imag[0] - expectedImag) < 1e-12);
+});
+
 test('Hamiltonian-backed time evolution remains bounded for a stable timestep', () => {
     const H = new Hamiltonian({ N: 25, extent: 10, potential: () => 0 });
     const psi = new DiscreteComplexField({ nx: 25, ny: 25 })
