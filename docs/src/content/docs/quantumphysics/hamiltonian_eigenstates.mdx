@@ -53,6 +53,11 @@ wave-like patterns, including the characteristic lobes and nodes of quantum wave
 ## Validation of solver
 <div class="header_line"></div>
 
+The solver implements the so-called [Lanczos algorithm](https://en.wikipedia.org/wiki/Lanczos_algorithm)
+featuring full reorthogonalization, matrix-free Hamiltonian application,
+[Ritz vectors](https://en.wikipedia.org/wiki/Rayleigh%E2%80%93Ritz_method), eigenvalue ordering,
+residual checks and QL-diagonalization.
+
 ### Isotropic harmonic oscillator
 
 For the isotropic harmonic oscillator, the analytic energies are given by $\sqrt{k}(n_x +n_y+1)$ with $k=0.05$:
