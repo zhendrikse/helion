@@ -38,6 +38,7 @@ export class WaveFunction2D {
     get eigenstatesCount() { return this._eigenstates.length; }
     get resolution() { return this._resolution; }
     get spectrum() { return this._eigenvalues; }
+    /** @returns {DiscreteComplexField} */
     get state() { return this._calulatedState; }
 
     /**
