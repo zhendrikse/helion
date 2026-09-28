@@ -1,5 +1,5 @@
 import {
-    Checkbox, DiscreteComplexField, Hamiltonian, Range, Simulation, Colour, Registry,
+    Checkbox, AnisotropicHarmonicOscillator, Hamiltonian, Range, Simulation, Colour, Registry,
     Slider, Vec3, RadioGroup, WaveFunctionSurface3D, ComplexSurfaceView2D, HarmonicOscillator,
     DoubleWell, CircularWell, Quartic, InfiniteSquareWell, UPlotBarGraph, WaveFunction2D, 
     DropdownMenu, SingleParticle
@@ -99,7 +99,7 @@ async function solveFor(potential = potentialType) {
 }
 await solveFor(potentialType);
 
-const waveFunction = new WaveFunctionSurface3D({
+const waveFunction3d = new WaveFunctionSurface3D({
     zScale: 5,
     brightness: 1.5
 });
@@ -108,7 +108,8 @@ waveFunction2d.visible = false;
 
 let staticView = false;
 simulation
-    .bind(psi.state.alwaysWith(waveFunction))
+    .bind(psi.state.alwaysWith(waveFunction3d))
+    .bind(psi.state.alwaysWith(waveFunction2d))
     .runsEvery(0.01)
     .onStep((clock, dt) => {
         if (staticView || isSolving)
@@ -129,8 +130,8 @@ simulation
     )
     .append(new Slider('📐 Height scale')
         .withRange(new Range(1, 10, .1))
-        .withValue(waveFunction.zScale)
-        .on(waveFunction)
+        .withValue(waveFunction3d.zScale)
+        .on(waveFunction3d)
         .withProperty('zScale')
     )
     .append(new RadioGroup()
@@ -143,10 +144,15 @@ simulation
         .onChange(event => staticView = event.target.checked)
     )
     .addGraph(barGraph)
-    .frameSceneOn(waveFunction, {
-        padding: 0.55,
-        viewDirection: new Vec3(1, .75, 0)
-    })
     .start();
 
+function setDimension(dimension3d = true) {
+    waveFunction3d.visible = dimension3d;
+    waveFunction2d.visible = !dimension3d;
+    simulation.orthographic = !dimension3d;
+    if (dimension3d)
+        simulation.frameSceneOn(waveFunction2d, {padding: .6, translationY: 0, viewDirection: new Vec3(-1, .7, .75)});
+    else
+        simulation.frameSceneOn(waveFunction3d, {padding: 1.0, translationY: 0, viewDirection: new Vec3(0, 0, 1)});
+}
 setDimension();
