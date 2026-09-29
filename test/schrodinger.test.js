@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import { DiscreteComplexField } from '../src/model/math/fields.js';
 import { Hamiltonian, SingleParticle } from '../src/model/phys/quantum/hamiltonian.js';
 import { SchrodingerSolver } from '../src/model/phys/quantum/schrodinger.js';
-import {WaveFunction2D} from '../src/model/phys/quantum/wavefunction.js';
+import { WaveFunction2D } from '../src/model/phys/quantum/wavefunction.js';
+import { LanczosEigenstateSolver } from "../src/model/phys/quantum/lanczos.js";
 
 test('Hamiltonian samples a coordinate-based potential function', () => {
     const H = new Hamiltonian({
@@ -28,11 +29,16 @@ test('Hamiltonian solve returns stationary states and energies', async () => {
     });
 
     const psi = new WaveFunction2D(25);
-    const residuals = await H.solveAsync(psi,{
-        maxStates: 2,
+    const solver = new LanczosEigenstateSolver({
+        hamiltonian: H,
+        states: 2,
         iterations: 80,
-        dt: 0.01
+        calculateResiduals: false
     });
+    const residuals = await solver.solveAsync(
+        psi,
+        (_text, _percent) => {}
+    );
 
     assert.equal(psi.spectrum.length, 2);
     assert.ok(Number.isFinite(psi.spectrum[0]));
