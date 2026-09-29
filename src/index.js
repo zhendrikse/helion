@@ -70,6 +70,7 @@ export { SchrodingerEigenstateSolver3D } from './model/math/numerics/solvers/qms
 export { SchrodingerSolver } from './model/phys/quantum/schrodinger.js';
 export { WaveFunction2D } from './model/phys/quantum/wavefunction.js';
 export { LanczosEigenstateSolver } from './model/phys/quantum/lanczos.js';
+export { RelaxationEigenstateSolver } from './model/phys/quantum/relaxation.js';
 export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js';
 export { InfiniteSquareWell2D } from './model/phys/quantum/infinite_square_well.js';
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
