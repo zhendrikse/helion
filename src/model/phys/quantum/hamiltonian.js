@@ -32,7 +32,6 @@ export class SingleParticle {
  *       extent: 15
  *   });
  *
- *   const eigenstates = H.solve({ maxStates: 30 });
  *
  * A potential function is sampled once onto the Hamiltonian grid. A
  * DiscreteScalarField can also be supplied when a caller already has a
@@ -40,9 +39,8 @@ export class SingleParticle {
  */
 export class Hamiltonian {
     /**
-     * @typedef {Object} SimulationOptions
+     * @typedef {Object} HamiltonianOptions
      * @property {SingleParticle} [particle] - The particle for which the simulation is executed.
-     * @property {(text:string, percent: number) => void} [progressCallback]
      * @property {(particle: SingleParticle)=> number} [potential] - The potential field.
      * @property {number} [spatialNdim] - Number of spatial dimensions.
      * @property {number} [N] - The number of lattice points per dimensiion.
