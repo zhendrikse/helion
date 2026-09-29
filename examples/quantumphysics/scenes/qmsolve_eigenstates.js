@@ -2,7 +2,7 @@ import {
     Checkbox, AnisotropicHarmonicOscillator, Hamiltonian, Range, Simulation, Colour, Registry,
     Slider, Vec3, RadioGroup, WaveFunctionSurface3D, ComplexSurfaceView2D, HarmonicOscillator,
     DoubleWell, CircularWell, Quartic, InfiniteSquareWell, UPlotBarGraph, WaveFunction2D, 
-    DropdownMenu, SingleParticle
+    DropdownMenu, SingleParticle, LanczosEigenstateSolver
 } from '../../../src/index.js';
 
 const N = 110;
@@ -74,7 +74,6 @@ const barGraph = new UPlotBarGraph({
 async function solveFor(potential = potentialType) {
     potentialType = potential;
     hamiltonian = new Hamiltonian({
-        progressCallback: (text, percent) => simulation.showHud(text + `: ${Math.round(percent)}%`),
         potential: potentials[potential].func,
         spatialNdim: 2,
         N
@@ -82,11 +81,16 @@ async function solveFor(potential = potentialType) {
     isSolving = true;
 
     psi.reset();
-    const residuals = await psi.apply(hamiltonian, {
-        maxStates: 15,
+    const solver = new LanczosEigenstateSolver({
+        hamiltonian,
+        states: 15,
         iterations: 850,
         calculateResiduals: false
     });
+    const residuals = await solver.solveAsync(
+        psi,
+        (text, percent) => simulation.showHud(text + `: ${Math.round(percent)}%`)
+    );
     // for (const residual of residuals)
     //     console.log(residual);
     // for (const energy of psi.spectrum)
