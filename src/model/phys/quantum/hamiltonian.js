@@ -1,7 +1,5 @@
 import { DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D} from '../../math/fields.js';
 import { SchrodingerSolver } from './schrodinger.js';
-import { LanczosEigenstateSolver } from './lanczos.js';
-import { WaveFunction2D } from './wavefunction.js';
 
 /**
  * Single non-relativistic particle used by quantum potential functions.
@@ -57,7 +55,6 @@ export class Hamiltonian {
     constructor({
         particle = SingleParticle,
         potential = /** @type (_particle: SingleParticle) => number */ _particle => 0,
-        progressCallback = (/** @type {string} */ _text, /** @type {number} */ _percent) => {},
         spatialNdim = 2,
         N = 100,
         extent = 0.15 * (N - 1),
@@ -79,7 +76,6 @@ export class Hamiltonian {
             throw new RangeError('Hamiltonian mass must be greater than zero.');
 
         this._particleType = particle;
-        this._progressCallback = progressCallback;
         this._N = N;
         this._extent = extent;
         this._spacing = spacing ?? extent / (N - 1);
@@ -163,34 +159,6 @@ export class Hamiltonian {
             throw new Error('Cannot calculate Hamiltonian energy for a zero state.');
 
         return numerator / denominator;
-    }
-
-    /**
-     * Solve for the lowest stationary states while yielding to the browser
-     * between batches of iterations so progress can be rendered.
-     *
-     * @param {WaveFunction2D} waveFunction2D
-     * @param {{
-     *   maxStates?: number, 
-     *   iterations?: number,
-     *   calculateResiduals?: boolean, 
-     * }} config
-     *
-     * @returns {Promise<number[]>} residuals
-     */
-    async solveAsync(waveFunction2D, {
-        maxStates = 4,
-        iterations = 100,
-        calculateResiduals = false,
-    } = {}) {
-        const solver = new LanczosEigenstateSolver({
-            hamiltonian: this,
-            states: maxStates,
-            iterations,
-            calculateResiduals
-        });
-
-        return solver.solveAsync(waveFunction2D, this._progressCallback);
     }
 
     /**
