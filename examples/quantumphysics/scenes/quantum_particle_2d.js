@@ -1,8 +1,8 @@
 import {
     Checkbox, AnisotropicHarmonicOscillator, Hamiltonian, Range, Simulation, Colour, Registry,
     Slider, Vec3, RadioGroup, WaveFunctionSurface3D, HarmonicOscillator,
-    DoubleWell, CircularWell, Quartic, Coulomb, InfiniteSquareWell, UPlotBarGraph, WaveFunction2D, 
-    DropdownMenu, SingleParticle, LanczosEigenstateSolver
+    DoubleWell, CircularWell, Quartic, Coulomb, InfiniteSquareWell, UPlotBarGraph, WaveFunction2D,
+    DropdownMenu, SingleParticle, LanczosEigenstateSolver, ProbabilityDensityView2D
 } from '../../../src/index.js';
 
 const N = 110;
@@ -55,7 +55,6 @@ const simulation = Simulation
         }
         });
 
-let potentialType = 'Coulomb (hydrogen-like)';
 const psi = new WaveFunction2D(N);
 let currentEigenstate = 8;
 function changeState(index = 8) {
@@ -64,8 +63,6 @@ function changeState(index = 8) {
     simulation.setLatexTitle(`\\text{Eigenstate ${index + 1} of}\\ ` + potentials[potentialType].latex)
 }
 
-let hamiltonian;
-let isSolving = false;
 const barGraph = new UPlotBarGraph({
     values: [],
     title: 'Eigenstate energies',
@@ -75,6 +72,11 @@ const barGraph = new UPlotBarGraph({
     color: new Colour(0.5, 0.5, 1)
 });
 
+let hamiltonian;
+let potentialType = 'Coulomb (hydrogen-like)';
+let isSolving = false;
+let showProbabilityCloud = false;
+/** @param {string} potential */
 async function solveFor(potential = potentialType) {
     potentialType = potential;
     hamiltonian = new Hamiltonian({
@@ -107,14 +109,28 @@ async function solveFor(potential = potentialType) {
 }
 await solveFor(potentialType);
 
+//
+// Views
+//
 const waveFunctionSurface = new WaveFunctionSurface3D({
     zScale: 5,
     brightness: .5
 });
 
+const probabilityDensityView = new ProbabilityDensityView2D({
+    pointCount: 30000,
+    pointSize: 0.1,
+    color: Colour.Yellow
+});
+
+//
+// Simulation
+//
 let staticView = false;
+let is3d = true;
 simulation
     .bind(psi.state.alwaysWith(waveFunctionSurface))
+    .bind(psi.state.onceWith(probabilityDensityView))
     .runsEvery(0.01)
     .onStep((clock, dt) => {
         if (staticView || isSolving)
@@ -125,14 +141,12 @@ simulation
     .append(new DropdownMenu()
         .for(potentialsRegistry)
         .withValue('Coulomb (hydrogen-like)')
-        // @ts-ignore
-        .onChange(event => solveFor(event.target.value))
+        .onChange(event => solveFor(String(/** @type {HTMLInputElement} */ (event.target).value)))
     )    
     .append(new Slider('🌀 Eigenstate')
         .withRange(new Range(0, psi.eigenstatesCount - 1, 1))
         .withValue(currentEigenstate)
-        // @ts-ignore
-        .addEventListener('input', event => changeState(Number(event.target.value)))
+        .addEventListener('input', event => changeState(Number(/** @type {HTMLInputElement} */(event.target).value)))
     )
     .append(new Slider('📐 Height scale')
         .withRange(new Range(1, 10, .1))
@@ -141,22 +155,33 @@ simulation
         .withProperty('zScale')
     )
     .append(new RadioGroup()
-        .add('2D', _ => setDimension(false))
-        .add('3D', _ => setDimension(true))
+        .add('2D', _ => updateView(false, showProbabilityCloud))
+        .add('3D', _ => updateView(true, showProbabilityCloud))
         .checked(1))
+    .append(new Checkbox("Probability cloud")
+        .checked(showProbabilityCloud)
+        .onChange(event =>
+            updateView(is3d, Boolean(/** @type {HTMLInputElement} */(event.target.checked))))
+    )
     .append(new Checkbox("Static")
         .checked(staticView)
-        // @ts-ignore
-        .onChange(event => staticView = event.target.checked)
+        .onChange(event => staticView = Boolean(/** @type {HTMLInputElement} */(event.target.checked)))
     )
     .addGraph(barGraph)
     .start();
 
-/** @param {boolean} dimension3d */
-const setDimension = (dimension3d = true)=> {
+/**
+ * @param {boolean} dimension3d
+ * @param {boolean} showPointCloud
+ */
+const updateView = (dimension3d, showPointCloud)=> {
+    is3d = dimension3d
+    showProbabilityCloud = showPointCloud;
+    probabilityDensityView.visible = showProbabilityCloud && !is3d;
+    waveFunctionSurface.visible = !showProbabilityCloud || (showProbabilityCloud && is3d);
     simulation.frameSceneOn(waveFunctionSurface, {
         padding: .5, 
         viewDirection: dimension3d ? new Vec3(-1.25, .7 , .75) : new Vec3(0, 1, 0)
     });
 }
-setDimension();
+updateView(is3d, showProbabilityCloud);

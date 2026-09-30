@@ -309,21 +309,24 @@ export class ProbabilityDensityView2D extends Renderable2D {
      * Visualizes a discrete complex field as a Monte-Carlo probability cloud.
      * Samples are drawn directly from the numerical |psi(x,y)|^2 distribution.
      *
-     * @param {{pointCount?: number, pointSize?: number, color?: number}} [param0]
+     * @param {{pointCount?: number, pointSize?: number, color?: Colour}} [param0]
      */
-    constructor({ pointCount = 30000, pointSize = 0.09, color = 0xffffff } = {}) {
+    constructor({
+        pointCount = 30000,
+        pointSize = 0.09,
+        color = Colour.White
+    } = {}) {
         super();
         this._pointCount = pointCount;
         this._material = new PointsMaterial({
-            color,
             size: pointSize,
             transparent: true,
             opacity: 0.55,
             depthWrite: false
         });
+        color.asThreeJsColor(this._material.color);
         this._points = null;
         this._geometry = null;
-        this._lastSignature = null;
     }
 
     /** @param {DiscreteComplexField} field */
@@ -340,22 +343,7 @@ export class ProbabilityDensityView2D extends Renderable2D {
 
     /** @param {DiscreteComplexField} field */
     synchronizeWith(field) {
-        const signature = this._densitySignature(field);
-        if (signature !== this._lastSignature)
-            this._rebuild(field);
-    }
-
-    /** @param {DiscreteComplexField} field */
-    _densitySignature(field) {
-        let sum = 0;
-        let weighted = 0;
-        const n = field.real.length;
-        for (let i = 0; i < n; i++) {
-            const density = field.real[i] * field.real[i] + field.imag[i] * field.imag[i];
-            sum += density;
-            weighted += density * (i + 1);
-        }
-        return `${sum.toPrecision(12)}:${weighted.toPrecision(12)}`;
+        this._rebuild(field);
     }
 
     /** @param {DiscreteComplexField} field */
@@ -393,8 +381,8 @@ export class ProbabilityDensityView2D extends Renderable2D {
             const offset = p * 3;
 
             positions[offset] = x + Math.random() - width * 0.5;
-            positions[offset + 1] = y + Math.random() - height * 0.5;
-            positions[offset + 2] = 0;
+            positions[offset + 1] = 0;
+            positions[offset + 2] = y + Math.random() - height * 0.5;
         }
 
         this._geometry?.dispose();
@@ -407,8 +395,6 @@ export class ProbabilityDensityView2D extends Renderable2D {
         } else {
             this._points.geometry = this._geometry;
         }
-
-        this._lastSignature = this._densitySignature(field);
     }
 
     dispose() {
