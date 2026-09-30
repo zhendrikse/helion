@@ -33,8 +33,8 @@ export {
 } from './model/math/objects.js';
 
 export {
-    Domain, DiscreteScalarField, DiscreteScalarField3D, DiscreteComplexField, DiscreteComplexField3D, VectorField, ComplexFunction, MultivariateFunction,
-    ComplexFunctionSample, RealFunction
+    Domain, DiscreteScalarField, DiscreteScalarField3D, DiscreteComplexField, DiscreteComplexField3D,
+    VectorField, ComplexFunction, MultivariateFunction, ComplexFunctionSample, RealFunction
 } from './model/math/fields.js';
 
 export { ElectricField } from './model/phys/fields.js';
@@ -69,8 +69,7 @@ export { WaveEquationSolver, JacobiSolver } from './model/math/numerics/solvers/
 export { SchrodingerEigenstateSolver3D } from './model/math/numerics/solvers/qmsolvers.js';
 export { SchrodingerSolver } from './model/phys/quantum/schrodinger.js';
 export { WaveFunction2D } from './model/phys/quantum/wavefunction.js';
-export { LanczosEigenstateSolver } from './model/phys/quantum/lanczos.js';
-export { RelaxationEigenstateSolver } from './model/phys/quantum/relaxation.js';
+export { LanczosEigenstateSolver, RelaxationEigenstateSolver } from './model/phys/quantum/solvers.js';
 export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js';
 export { InfiniteSquareWell2D } from './model/phys/quantum/infinite_square_well.js';
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
