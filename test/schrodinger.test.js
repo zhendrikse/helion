@@ -6,6 +6,7 @@ import { Hamiltonian, SingleParticle } from '../src/model/phys/quantum/hamiltoni
 import { SchrodingerSolver } from '../src/model/phys/quantum/schrodinger.js';
 import { WaveFunction2D } from '../src/model/phys/quantum/wavefunction.js';
 import { LanczosEigenstateSolver } from "../src/model/phys/quantum/lanczos.js";
+import { RelaxationEigenstateSolver } from "../src/model/phys/quantum/relaxation.js";
 
 test('Hamiltonian samples a coordinate-based potential function', () => {
     const H = new Hamiltonian({
@@ -36,6 +37,34 @@ test('Hamiltonian solve returns stationary states and energies', async () => {
         calculateResiduals: false
     });
     const residuals = await solver.solveAsync(
+        psi,
+        (_text, _percent) => {}
+    );
+
+    assert.equal(psi.spectrum.length, 2);
+    assert.ok(Number.isFinite(psi.spectrum[0]));
+    assert.ok(Number.isFinite(psi.spectrum[1]));
+    assert.ok(Math.abs(psi.spectrum[0] - 0.1521374170243828) < 1e-10);
+    assert.ok(Math.abs(psi.spectrum[1] - 0.2991270610196482) < 1e-10);
+});
+
+test('RelaxationEigenstateSolver returns the validated stationary-state energies', async () => {
+    const H = new Hamiltonian({
+        potential: particle => 0.02 * particle.x * particle.x,
+        N: 25,
+        extent: 10
+    });
+
+    const psi = new WaveFunction2D(25);
+    const solver = new RelaxationEigenstateSolver({
+        hamiltonian: H,
+        states: 2,
+        iterations: 20000,
+        stepSize: 0.01,
+        tolerance: 1e-10,
+        calculateResiduals: false
+    });
+    await solver.solveAsync(
         psi,
         (_text, _percent) => {}
     );
