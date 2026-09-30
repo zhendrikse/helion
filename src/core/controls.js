@@ -305,6 +305,8 @@ export class RadioGroup extends HtmlControl {
         this._buttons = [];
         this._groupName = generateUUID();
 
+        this._label.style.display = 'none';
+
         this._inputControl = document.createElement('div');
         this._inputControl.style.display = 'flex';
         this._inputControl.style.gap = '8px';
