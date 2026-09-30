@@ -139,13 +139,13 @@ const dimensionRadioGroup = new RadioGroup()
     .add('2D', _ => {
         is3d = false;
         probabilityCheckbox.disabled = false;
-        updateView(false, showProbabilityCloud);
+        updateView();
     })
     .add('3D', _ => {
         is3d = true;
         showProbabilityCloud = false;
         probabilityCheckbox.disabled = true;
-        updateView(true, showProbabilityCloud);
+        updateView();
     })
     .checked(1);
 
@@ -154,15 +154,16 @@ let is3d = true;
 const probabilityCheckbox = new Checkbox("Probability cloud")
     .checked(showProbabilityCloud)
     .onChange(event => {
-        showProbabilityCloud = Boolean(/** @type {HTMLInputElement} */(event.target.checked));
         is3d = false;
         dimensionRadioGroup.checked(0);
-        dimensionRadioGroup.disabled = showProbabilityCloud;
+        // @ts-ignore
+        dimensionRadioGroup.disabled = event.target.checked;
         updateView();
     })
     .togetherWith(new Checkbox("Static")
         .checked(staticView)
-        .onChange(event => staticView = Boolean(/** @type {HTMLInputElement} */(event.target.checked)))
+        // @ts-ignore
+        .onChange(event => staticView = event.target.checked)
     );
 probabilityCheckbox.disabled = is3d;
 
