@@ -13,10 +13,12 @@
   },
   "scripts": {
     "test": "node --test",
-    "coverage": "npx c8 --reporter=lcov --reporter=text npm test",
-    "build": "vite build",
+    "test:coverage": "npx c8 --reporter=lcov --reporter=text npm test",
+    "prebuild": "npm test",
+    "build": "npm run build:all",
     "build:lib": "vite build --config vite.lib.config.js",
     "build:examples": "vite build --config vite.examples.config.js",
+    "build:all": "npm test && npm run build:lib && npm run build:examples",
     "docs:build": "cd docs && npm install && npm run build"
   },
   "files": [

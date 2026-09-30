@@ -1,5 +1,6 @@
 node_modules/
 dist/
+coverage/
 docs/.vscode/
 docs/.astro/
 docs/public/examples/

@@ -22,16 +22,19 @@ jobs:
       # 3. Install dependencies
       - run: npm ci
 
-      # 4. Build Helion library
+      # 4. Run tests (fail build if tests fail)
+      - run: npm test
+
+      # 5. Build Helion library
       - run: npm run build:lib
 
-      # 5. Make a copy of the examples dir in public for the Astro GitHub pages site
+      # 6. Make a copy of the examples dir in public for the Astro GitHub pages site
       - run: npm run build:examples
 
-      # 6. Build Astro docs
+      # 7. Build Astro docs
       - run: npm run docs:build
 
-      # 7. Deploy to GitHub Pages (root or docs folder)
+      # 8. Deploy to GitHub Pages (root or docs folder)
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4.1.0
         with:
