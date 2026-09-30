@@ -4,7 +4,7 @@ export {
 } from './model/phys/bodies.js';
 
 export {
-    Range, factorial, Interval, generateUUID, degToRad,
+    Range, factorial, Interval, generateUUID, degToRad, BESSEL_ZEROS, besselJ,
     normalDistribution, uniform, randomInt, Complex, toCartesian
 } from './model/math/math.js';
 

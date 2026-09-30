@@ -75,4 +75,4 @@ Simulation
             .checked(0)
     )
     .append(surfaceView.glyphLayer.ui())
-    .start();
+    .appendStartStopResetUI();

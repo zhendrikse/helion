@@ -1,3 +1,41 @@
+import { Vec3 } from './objects.js'
+
+/**
+ * Bessel J_m (integer m) via series: J_m(x)= sum (-1)^k (x/2)^(2k+m)/(k! (k+m)!)
+ * 
+ * @param {number} m 
+ * @param {number} x 
+ * @returns {number}
+ */
+export function besselJ(m, x) {
+    if (x === 0) return m === 0 ? 1 : 0;
+    // voor x <0 : J_m(-x)=(-1)^m J_m(x)
+    if (x < 0) return (m % 2 === 0 ? 1 : -1) * besselJ(m, -x);
+    let term = Math.pow(x / 2, m);
+    let factM = 1;
+    for (let i = 2; i <= m; i++) factM *= i;
+    term /= factM;
+    let sum = term;
+    for (let k = 1; k < 40; k++) {
+        term *= - (x * x / 4) / (k * (k + m));
+        sum += term;
+        if (Math.abs(term) < 1e-12) break;
+    }
+    return sum;
+}
+
+/**
+ * Zero points alpha_{m,n} of J_m (m=0..4, n=1..4) — first 4 per m 
+ * @type {Record<number, number[]>} 
+ */
+export const BESSEL_ZEROS = {
+    0: [2.404825558, 5.520078110, 8.653727913, 11.79153444],
+    1: [3.831705970, 7.015586670, 10.17346814, 13.32369194],
+    2: [5.135622302, 8.417244140, 11.61984117, 14.79595178],
+    3: [6.380161895, 9.761023130, 13.01520072, 16.22346616],
+    4: [7.588342434, 11.06470933, 14.37253667, 17.61624782],
+};
+
 /** @param {number} angle */
 export function degToRad(angle) {
     return angle * Math.PI / 180;
