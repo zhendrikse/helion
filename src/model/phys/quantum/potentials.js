@@ -69,3 +69,20 @@ export class Quartic {
         (/** @type {SingleParticle} */ particle) => 
             a * (particle.x ** 4 + particle.y ** 4);
 }
+
+/**
+ * Two-dimensional Coulomb potential for a hydrogen-like nucleus.
+ * In atomic units, V = -Z / r.
+ *
+ * A small softening parameter can optionally be used to avoid the singularity
+ * at the origin on coarse grids: V = -Z / sqrt(r² + softening²).
+ */
+export class Coulomb {
+    static latex = 'V(x,y)=-\\frac{Z}{\\sqrt{x^2+y^2}}';
+
+    static withNuclearCharge = (/** @type {number} */ Z = 1, /** @type {number} */ softening = 0) =>
+        (/** @type {SingleParticle} */ particle) => {
+            const radius = Math.hypot(particle.x, particle.y);
+            return -Z / Math.sqrt(radius * radius + softening * softening);
+        };
+}
