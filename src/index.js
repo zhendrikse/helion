@@ -80,7 +80,7 @@ export {
 
 export {
     InfiniteSquareWell, HarmonicOscillator, AnisotropicHarmonicOscillator,
-    DoubleWell, CircularWell, Quartic
+    DoubleWell, CircularWell, Quartic, Coulomb
 } from './model/phys/quantum/potentials.js';
 
 export {
