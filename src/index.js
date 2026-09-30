@@ -4,8 +4,8 @@ export {
 } from './model/phys/bodies.js';
 
 export {
-    Range, Vec3, factorial, linspace, Interval, generateUUID, Vec2, degToRad,
-    normalDistribution, uniform, randomInt, meshgrid, Complex, toCartesian
+    Range, factorial, Interval, generateUUID, degToRad,
+    normalDistribution, uniform, randomInt, Complex, toCartesian
 } from './model/math/math.js';
 
 export {
@@ -29,7 +29,7 @@ export {
 
 export {
     Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid, LinearCombination,
-    SegmentedCircle, ParametricCurve
+    SegmentedCircle, ParametricCurve, Vec2, Vec3
 } from './model/math/objects.js';
 
 export {
@@ -62,7 +62,7 @@ export { DiscreteFieldBoxView } from './view/3d/views.js';
 export { ContoursLayer, PrincipalDirectionsLayer, GlyphLayer } from './view/3d/surfaces/layers.js';
 export { TangentFrameView } from './view/3d/surfaces/tangentframe.js';
 export { DifferentialGeometry, DifferentialFrame } from './model/math/numerics/diffgeometry.js';
-export { Matrix2D, RotationMatrix2D } from './model/transformations/matrices.js';
+export { Matrix2D, RotationMatrix2D, linspace, meshgrid } from './model/math/linearalgebra.js';
 export { Arrow2D } from './view/2d/primitives.js';
 export { ArrowField2D } from './view/2d/composite/composites.js';
 export { WaveEquationSolver, JacobiSolver } from './model/math/numerics/solvers/solvers.js';

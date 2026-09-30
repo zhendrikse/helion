@@ -1,6 +1,7 @@
 import { Registry } from '../../core/utils.js';
 import { CompoundControl, DropdownMenu, Slider } from '../../core/controls.js';
-import {Range, Vec2} from './math.js';
+import { Vec2} from './objects.js';
+import { Range } from './math.js';
 import { DiscreteScalarField } from './fields.js';
 
 class ShapeLike {

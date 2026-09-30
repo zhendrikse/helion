@@ -1,12 +1,11 @@
 import {
     Vector3, BufferAttribute, TorusGeometry, LineBasicMaterial, Line, TubeGeometry,
     MeshStandardMaterial, SphereGeometry, Mesh, BufferGeometry,
-    CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion,
-    Material
+    CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion, Material
 } from 'three';
 import { Renderable3D } from '../../renderer.js';
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-import { Vec2, Vec3 } from '../../../model/math/math.js';
+import { Vec2, Vec3 } from '../../../model/math/objects.js';
 import { Body } from '../../../model/phys/bodies.js';
 import {Colour} from '../../colormappers.js';
 

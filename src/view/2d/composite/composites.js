@@ -2,7 +2,8 @@ import {
     BoxGeometry, ConeGeometry, DoubleSide, InstancedBufferAttribute, InstancedMesh,
     Matrix4, MeshBasicMaterial, Quaternion, Vector3
 } from "three";
-import { Range, Vec2, Vec3 } from "../../../model/math/math.js";
+import { Range } from "../../../model/math/math.js";
+import { Vec2, Vec3 } from "../../../model/math/objects.js";
 import { Arrow2D } from "../primitives.js";
 import { Renderable2D } from "../../renderer.js";
 import { VectorField } from "../../../model/math/fields.js";

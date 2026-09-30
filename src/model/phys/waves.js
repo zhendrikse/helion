@@ -1,9 +1,18 @@
-import {MathPhysicsModelBehavior} from '../behavior.js';
-import {Complex, Vec3} from '../math/math.js';
+import { MathPhysicsModelBehavior } from '../behavior.js';
+import { Complex } from '../math/math.js';
+import { Vec3 } from '../math/objects.js';
 
 export class OneDimensionalPlaneWave extends MathPhysicsModelBehavior {
     static c = 3e8;
 
+    /**
+     * @param {{
+     *     position?: Vec3,
+     *     amplitude?: number
+     *     lambda?: number
+     *     omega?: number
+     * }} options
+     */
     constructor({
         position = new Vec3(),
         amplitude = 1,
@@ -32,6 +41,14 @@ export class OneDimensionalPlaneWave extends MathPhysicsModelBehavior {
 }
 
 export class OneDimensionalComplexPlaneWave extends OneDimensionalPlaneWave {
+    /**
+     * @param {{
+     *     position?: Vec3,
+     *     amplitude?: number
+     *     lambda?: number
+     *     omega?: number
+     * }} options
+     */
     constructor({
         position = new Vec3(),
         amplitude = 1,

@@ -1,4 +1,4 @@
-import { Vec3 } from '../math/math.js';
+import { Vec3 } from '../math/objects.js';
 import { Transformation} from '../behavior.js';
 import { BodyPair, BodyPairs } from './bodies.js';
 import { VectorField } from '../math/fields.js';

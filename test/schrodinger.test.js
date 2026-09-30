@@ -43,7 +43,6 @@ test('Hamiltonian solve returns stationary states and energies', async () => {
     assert.equal(psi.spectrum.length, 2);
     assert.ok(Number.isFinite(psi.spectrum[0]));
     assert.ok(Number.isFinite(psi.spectrum[1]));
-    console.log(psi.spectrum[0], psi.spectrum[1]);
     assert.ok(Math.abs(psi.spectrum[0] - 0.1521374170) < 1e-10);
     assert.ok(Math.abs(psi.spectrum[1] - 0.2991270610) < 1e-10);
 });
@@ -72,7 +71,6 @@ test('RelaxationEigenstateSolver returns the validated stationary-state energies
     assert.equal(psi.spectrum.length, 2);
     assert.ok(Number.isFinite(psi.spectrum[0]));
     assert.ok(Number.isFinite(psi.spectrum[1]));
-    console.log(psi.spectrum[0], psi.spectrum[1]);
     assert.ok(Math.abs(psi.spectrum[0] - 0.15) < 1e-2);
     assert.ok(Math.abs(psi.spectrum[1] - 0.30) < 1e-2);
 });

@@ -1,5 +1,5 @@
 import { MathPhysicsModelBehavior } from '../../behavior.js';
-import {Vec3} from '../math.js';
+import { Vec3 } from '../objects.js';
 import { DifferentiableSurface } from '../surfaces.js';
 
 export class DifferentialFrame extends MathPhysicsModelBehavior {

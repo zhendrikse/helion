@@ -1,5 +1,36 @@
-import {Transformation} from '../behavior.js';
-import {Vec3} from '../math/math.js';
+import { Transformation } from '../behavior.js';
+import { Vec2, Vec3 } from './objects.js';
+
+/**
+ * @param {number} start
+ * @param {number} stop
+ * @param {number} num
+ * @returns {number[]}
+ */
+export function linspace(start, stop, num) {
+    const linSpace = [];
+    const step = (stop - start) / (num - 1);
+    for (let i = 0; i < num; i++)
+        linSpace.push(start + i * step);
+    return linSpace;
+}
+
+/**
+ * @param {number[]} x
+ * @param {number[]} y
+ * @returns {number[][]}
+ */
+export function meshgrid(x, y) {
+    const X = [];
+    const Y = [];
+
+    for (let i = 0; i < y.length; i++) {
+        X.push(x.slice());
+        Y.push(Array(x.length).fill(y[i]));
+    }
+
+    return [X, Y];
+}
 
 export class Matrix2D extends Transformation {
     static Identity = new Matrix2D(1, 0, 0, 1);
@@ -42,8 +73,8 @@ export class Matrix2D extends Transformation {
      * @param {number} scaleFactor
      * @returns
      * [
-     *     { value: lambda1, vector: Vec3 },
-     *     { value: lambda2, vector: Vec3 }
+     *     { value: lambda1, vector: Vec2 },
+     *     { value: lambda2, vector: Vec2 }
      * ]
      */
     eigenvectors(scaleFactor = 1) {
@@ -112,6 +143,5 @@ export class RotationMatrix2D extends Matrix2D {
         this.b = -Math.sin(angle);
         this.c =  Math.sin(angle);
         this.d =  Math.cos(angle);
-        console.log(this.a, this.b, this.c, this.d);
     }
 }

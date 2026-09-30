@@ -1,16 +1,24 @@
 import {
     Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
-    BoxGeometry, Object3D, Vector2
+    BoxGeometry, Object3D, Vector2, Material
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 import { Renderable3D } from "../../renderer.js";
-import { Interval, Vec2, Vec3 } from "../../../model/math/math.js";
+import { Interval } from "../../../model/math/math.js";
+import { Vec2, Vec3 } from "../../../model/math/objects.js";
 import { LineSegment, Segments } from "../../../model/math/objects.js";
-import { ColorMapper, ColorMappers } from "../../colormappers.js";
+import { ColorMappers } from "../../colormappers.js";
 
 class InstancedSegmentsView extends Renderable3D {
+    /**
+     * @param {{
+     *     opacity?: number
+     *     material?: Material
+     *     colorMapper?: (segment: number, index: number, targetColor: Color) => Color
+     * }} options
+     */
     constructor({
         material,
         colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, 1, 1),

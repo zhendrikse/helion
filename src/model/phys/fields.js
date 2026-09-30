@@ -1,5 +1,5 @@
-import { DiscreteScalarField, VectorField } from '../math/fields.js';
-import { Vec2, Vec3 } from '../math/math.js';
+import { VectorField } from '../math/fields.js';
+import { Vec2, Vec3 } from '../math/objects.js';
 import { ScalarFieldCalculus } from '../math/numerics/discretecalc.js';
 
 /**

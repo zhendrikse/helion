@@ -5,7 +5,7 @@ import {
 } from "three";
 
 import { Arrow, Cylinder, Helix, Sphere } from "../primitives/primitives.js";
-import { Vec3 } from "../../../model/math/math.js";
+import { Vec3 } from "../../../model/math/objects.js";
 import { Renderable3D } from "../../renderer.js";
 import { Checkbox, CompoundControl, RadioGroup } from "../../../core/controls.js";
 import { BodyPair, Lattice } from "../../../model/phys/bodies.js";
@@ -14,7 +14,7 @@ import { VectorField } from "../../../model/math/fields.js";
 import { OneDimensionalComplexPlaneWave, OneDimensionalPlaneWave } from "../../../model/phys/waves.js";
 import { VectorModel } from "../../../model/math/objects.js";
 import { PointCloud } from "../../../model/phys/clouds.js";
-import {Colour, hsvToRgb} from "../../colormappers.js";
+import { Colour, hsvToRgb} from "../../colormappers.js";
 //
 // Point cloud
 //

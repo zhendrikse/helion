@@ -1,15 +1,16 @@
 import {
     Box3, BoxGeometry, BufferAttribute, BufferGeometry, CapsuleGeometry, Color, ConeGeometry, CylinderGeometry,
     DoubleSide, DynamicDrawUsage, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Line,
-    LineBasicMaterial, Material, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, SphereGeometry, Vector3
+    LineBasicMaterial, Mesh, MeshStandardMaterial, Object3D, PlaneGeometry, SphereGeometry, Vector3
 } from 'three';
 import {Renderable3D} from '../../renderer.js';
 import {DifferentialFrame} from '../../../model/math/numerics/diffgeometry.js';
-import {AdaptiveSymmetricNormalizer, ColorLayer, ColorLayers, HeightLayer, Normalizer, SurfaceResolution} from './visualization.js';
+import {AdaptiveSymmetricNormalizer, ColorLayer, HeightLayer, Normalizer, SurfaceResolution} from './visualization.js';
 import {ColorMapper, ColorMappers} from '../../colormappers.js';
 import {Registry} from '../../../core/utils.js';
 import {Checkbox, DropdownMenu} from '../../../core/controls.js';
-import {Interval, Vec3} from '../../../model/math/math.js';
+import {Interval} from '../../../model/math/math.js';
+import {Vec3} from '../../../model/math/objects.js';
 
 export class Layer extends Renderable3D {
     static UP = new Vector3(0, 1, 0);

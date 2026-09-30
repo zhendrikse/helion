@@ -1,5 +1,6 @@
 import { MathPhysicsModelBehavior } from '../behavior.js';
-import { Complex, Interval, Vec2, Vec3 } from './math.js';
+import { Complex, Interval } from './math.js';
+import { Vec2, Vec3 } from './objects.js';
 import { Solver } from './numerics/solvers/solvers.js';
 import { SurfaceResolution } from '../../view/3d/surfaces/visualization.js'
 

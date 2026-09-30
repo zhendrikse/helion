@@ -1,8 +1,9 @@
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
-import { Range, Vec3} from '../math/math.js';
-import {CompoundControl, Slider} from '../../core/controls.js';
-import { ShapeConfiguration, Shapes, ShapesFactory} from '../math/shapes.js';
-import {Transformation} from '../behavior.js';
+import { Range } from '../math/math.js';
+import { Vec3 } from '../math/objects.js';
+import { CompoundControl, Slider} from '../../core/controls.js';
+import { ShapeConfiguration, ShapesFactory} from '../math/shapes.js';
+import { Transformation} from '../behavior.js';
 import { DiscreteComplexField, DiscreteScalarField } from '../math/fields.js';
 
 export class DiamondSquareOperator extends Transformation {

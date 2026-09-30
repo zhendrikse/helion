@@ -1,5 +1,5 @@
-import {RadialSymmetricBody} from './bodies.js';
-import {Vec3} from '../math/math.js';
+import { RadialSymmetricBody } from './bodies.js';
+import { Vec3 } from '../math/objects.js';
 
 export class Sun extends RadialSymmetricBody {
     constructor({

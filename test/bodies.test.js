@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 /** !! D O   N O T   S H O R T E N   T H E S E   I M P O R T S  !! */
 import { Body } from '../src/model/phys/bodies.js';
-import { Vec3, degToRad } from '../src/model/math/math.js';
+import { Vec3 } from '../src/model/math/objects.js';
 
 
 // H E L P E R  F U N C T I O N S  F O R  R O T A T I O N  T E S T S

@@ -4,7 +4,7 @@ import { Renderable, Renderer } from '../renderer.js'
 import { Axes } from './composite/backgrounds.js';
 import { ThreeJsCamera } from './camera.js';
 import { ThreeJsScene } from './scene.js';
-import { Vec3 } from '../../model/math/math.js';
+import { Vec3 } from '../../model/math/objects.js';
 
 export class Lighting {
     constructor(scene, {

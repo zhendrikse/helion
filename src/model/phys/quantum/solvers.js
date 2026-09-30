@@ -1,7 +1,7 @@
 import { Solver } from '../../math/numerics/solvers/solvers.js';
 import { Hamiltonian } from './hamiltonian.js';
 import { WaveFunction2D } from './wavefunction.js';
-import { VecN } from '../../math/math.js';
+import { VecN } from '../../math/objects.js';
  
 /**
  * Matrix-free Lanczos eigensolver for a real symmetric Hamiltonian.

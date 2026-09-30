@@ -1,8 +1,6 @@
-import {
-    Scene, Group, Fog, Color, Object3D
-} from "three";
+import { Scene, Group, Fog, Object3D } from "three";
 import { SkyDome } from "./composite/backgrounds.js";
-import { Vec3 } from "../../model/math/math.js";
+import { Vec3 } from "../../model/math/objects.js";
 import { Renderable } from "../renderer.js";
 import { Colour } from "../colormappers.js";
 
@@ -16,6 +14,11 @@ export class ThreeJsScene {
 
     /**
      * @param {Vec3} cameraPosition
+     * @param {{
+     *     background?: string
+     *     backgroundColor?: Colour
+     *     scale?: number
+     * }} options
      */
     constructor(cameraPosition, {
         background = ThreeJsScene.Background.TRANSPARENT,

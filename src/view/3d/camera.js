@@ -1,8 +1,20 @@
-import { PerspectiveCamera, OrthographicCamera, Vector3 } from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { Vec3 } from "../../model/math/math.js";
+import { PerspectiveCamera, OrthographicCamera, Vector3 } from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Vec3 } from '../../model/math/objects.js';
+import { Viewport } from '../../core/viewport.js';
 
 export class ThreeJsCamera {
+    /**
+     * @param {Viewport} viewport
+     * @param {{
+     *     position?: Vec3
+     *     target?: Vec3
+     *     fieldOfView?: number
+     *     orthographic?: boolean
+     *     controls?: boolean
+     *     autoRotate?: boolean
+     * }}
+     */
     constructor(viewport, {
         position = new Vec3(3, 3, 3),
         target = new Vec3(0, 0, 0),
@@ -19,7 +31,6 @@ export class ThreeJsCamera {
         this._autoRotate = autoRotate;
         this._autoRotateTheta = Math.PI / 2;
         this._autoRotatePhi = 0;
-
         if (controls) {
             this._controls = new OrbitControls(this._camera, viewport.canvas);
             this._controls.target.copy(target);

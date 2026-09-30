@@ -1,16 +1,16 @@
-import { Renderable3D } from "../renderer.js";
-import { LineMaterial } from "three/addons/lines/LineMaterial.js";
-import { LineSegments2 } from "three/addons/lines/LineSegments2.js";
-import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
-import { Vec2 } from "../../model/math/math.js";
-import { Body } from "../../model/phys/bodies.js"
-import { Float32BufferAttribute, DoubleSide, MeshBasicMaterial, BufferGeometry, Mesh, Color } from "three";
-import {Colour} from "../colormappers.js";
+import { Renderable3D } from '../renderer.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
+import { Vec2 } from '../../model/math/objects.js';
+import { Body } from '../../model/phys/bodies.js'
+import { Float32BufferAttribute, DoubleSide, MeshBasicMaterial, BufferGeometry, Mesh, Color } from 'three';
+import {Colour} from '../colormappers.js';
 
 export class Arrow2D extends Renderable3D {
     static HeadStyle = Object.freeze({
-        Open: "open",
-        Filled: "filled"
+        Open: 'open',
+        Filled: 'filled'
     });
     /**
      * @typedef {Object} Arrow2DOptions
@@ -51,7 +51,7 @@ export class Arrow2D extends Renderable3D {
 
         this._headStyle = headStyle;
         this._headGeometry = new BufferGeometry();
-        this._headGeometry.setAttribute("position", new Float32BufferAttribute(9, 3));
+        this._headGeometry.setAttribute('position', new Float32BufferAttribute(9, 3));
         this._head = new Mesh(this._headGeometry, this._headMaterial);
 
 
@@ -69,7 +69,7 @@ export class Arrow2D extends Renderable3D {
     /** @param {Body} model */
     canBindTo(model) {
         if (!model.position || !model.axis)
-            throw new Error("Arrow2D can only bind to models with a position and an axis.");
+            throw new Error('Arrow2D can only bind to models with a position and an axis.');
 
         return true;
     }

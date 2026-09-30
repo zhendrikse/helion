@@ -1,7 +1,306 @@
-import {MathPhysicsModelBehavior, Transformation} from '../behavior.js';
-import { Matrix2D } from '../transformations/matrices.js';
-import { Interval, degToRad, Vec2, Vec3} from './math.js';
-import {Integrators} from './numerics/integrators/integrators.js';
+import { MathPhysicsModelBehavior, Transformation} from '../behavior.js';
+import { Matrix2D } from './linearalgebra.js';
+import { Interval, degToRad} from './math.js';
+import { Integrators} from './numerics/integrators/integrators.js';
+
+export class Vec3 {
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} z
+     */
+    constructor(x=0, y=0, z=0) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    clone() {
+        return new Vec3(this.x, this.y, this.z);
+    }
+
+    /**
+     * Rotates the body around a world-space axis.
+     *
+     * @param {'x'|'y'|'z'} axis
+     * @param {number} angle Angle in radians.
+     * @returns {this}
+     */
+    rotate(axis, angle) {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+
+        const { x, y, z } = this;
+
+        switch (axis) {
+            case 'x':
+                this.y = cos * y - sin * z;
+                this.z = sin * y + cos * z;
+                break;
+
+            case 'y':
+                this.x = cos * x + sin * z;
+                this.z = -sin * x + cos * z;
+                break;
+
+            case 'z':
+                this.x = cos * x - sin * y;
+                this.y = sin * x + cos * y;
+                break;
+
+            default:
+                throw new Error(`Unknown rotation axis: ${axis}`);
+        }
+
+        return this;
+    }
+
+    randomDirection() {
+        // https://mathworld.wolfram.com/SpherePointPicking.html
+        const theta = Math.random() * Math.PI * 2;
+        const u = Math.random() * 2 - 1;
+        const c = Math.sqrt( 1 - u * u );
+
+        this.x = c * Math.cos( theta );
+        this.y = u;
+        this.z = c * Math.sin( theta );
+
+        return this;
+    }
+
+    setLength( length ) {
+        return this.normalize().multiplyScalar( length );
+    }
+
+    /**
+     * @param {Vec2 | Vec3} v
+     * @param {number} alpha
+     */
+    lerp(v, alpha) {
+        this.x += (v.x - this.x) * alpha;
+        this.y += (v.y - this.y) * alpha;
+        this.z += (v.z - this.z) * alpha;
+
+        return this;
+    }
+
+    /** @param {Vec3} v */
+    cross(v) {
+        const x = this.y * v.z - this.z * v.y;
+        const y = this.z * v.x - this.x * v.z;
+        const z = this.x * v.y - this.y * v.x;
+
+        this.x = x;
+        this.y = y;
+        this.z = z;
+
+        return this;
+    }
+
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @oaram {number} z
+     */
+    set(x,y, z=0) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        return this;
+    }
+
+    /** @param {Vec2 | Vec3} v */
+    copy(v) {
+        this.x = v.x;
+        this.y = v.y;
+        this.z = v.z;
+        return this;
+    }
+
+    /** @param {Vec2 | Vec3} v */
+    add(v) {
+        this.x += v.x;
+        this.y += v.y;
+        this.z += v.z;
+        return this;
+    }
+
+    negate() {
+        this.x = -this.x;
+        this.y = -this.y;
+        this.z = -this.z;
+        return this;
+    }
+
+    /**
+     * @param {Vec2 | Vec3} v
+     * @param {number} scalar
+     */
+    addScaledVector(v, scalar) {
+        this.x += v.x * scalar;
+        this.y += v.y * scalar;
+        this.z += v.z * scalar;
+        return this;
+    }
+
+    /**
+     * @param {Vec2 | Vec3} v
+     */
+    sub(v) {
+        this.x -= v.x;
+        this.y -= v.y;
+        this.z -= v.z;
+        return this;
+    }
+
+    /**
+     * @param {Vec2 | Vec3} a
+     * @param {Vec3} b
+     */
+    subVectors(a, b) {
+        this.x = a.x - b.x;
+        this.y = a.y - b.y;
+        this.z = a.z - b.z;
+        return this;
+    }
+
+    /** @param {number} scalar */
+    divideScalar(scalar) {
+        this.x /= scalar;
+        this.y /= scalar;
+        this.z /= scalar;
+        return this;
+    }
+
+    /** @param {number} scalar */
+    multiplyScalar(scalar) {
+        this.x *= scalar;
+        this.y *= scalar;
+        this.z *= scalar;
+        return this;
+    }
+
+    lengthSq() {
+        return this.x * this.x + this.y * this.y + this.z * this.z;
+    }
+
+    length() {
+        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    }
+
+    /** @param {Vec2 | Vec3} v */
+    dot(v) {
+        return this.x * v.x + this.y * v.y + this.z * v.z;
+    }
+
+    /** @param {Vec2 | Vec3} v */
+    projectOnVector(v) {
+        const denominator = v.lengthSq();
+
+        if (denominator === 0) {
+            return this.set(0, 0, 0);
+        }
+
+        const scalar = this.dot(v) / denominator;
+
+        this.x = v.x * scalar;
+        this.y = v.y * scalar;
+        this.z = v.z * scalar;
+
+        return this;
+    }
+
+    normalize() {
+        const inv = 1 / this.length();
+
+        this.x *= inv;
+        this.y *= inv;
+        this.z *= inv;
+
+        return this;
+    }
+
+    random() {
+        this.x = Math.random();
+        this.y = Math.random();
+        this.z = Math.random();
+        return this;
+    }
+
+    /** @param {Vec2 | Vec3} position */
+    distanceSquaredTo(position) {
+        return (position.x - this.x) * (position.x - this.x) +
+            (position.y - this.y) * (position.y - this.y) +
+            (position.z - this.z) * (position.z - this.z);
+    }
+
+    /** @param {Vec2 | Vec3} position */
+    distanceTo(position) {
+        return Math.sqrt(this.distanceSquaredTo(position));
+    }
+}
+
+export class Vec2 extends Vec3 {
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
+    constructor(x=0, y=0) {
+        super(x, y, 0);
+    }
+}
+
+export class VecN {
+    /**
+     * @param {Float64Array<ArrayBuffer>} vector
+     * @param {Float64Array<ArrayBuffer>[]} basis
+     */
+    static reorthogonalize(vector, basis) {
+        for (const q of basis) {
+            const projection = VecN.dot(q, vector);
+            for (let i = 0; i < vector.length; i++)
+                vector[i] -= projection * q[i];
+        }
+    }
+
+    /**
+     * @param {Float64Array<ArrayBuffer>} a
+     * @param {Float64Array<ArrayBuffer>} b
+     * @returns {number}
+     */
+    static dot(a, b) {
+        let sum = 0;
+        for (let i = 0; i < a.length; i++)
+            sum += a[i] * b[i];
+        return sum;
+    }
+
+    /**
+     * @param {Float64Array<ArrayBuffer>} vector
+     * @returns {number}
+     */
+    static norm(vector) {
+        return Math.sqrt(VecN.dot(vector, vector));
+    }
+
+    /** @param {Float64Array<ArrayBuffer>} vector */
+    static normalize(vector) {
+        const norm = VecN.norm(vector);
+        if (norm === 0)
+            throw new Error('LanczosEigenstateSolver produced a zero state.');
+
+        VecN.scale(vector, 1 / norm);
+    }
+
+    /**
+     * @param {Float64Array<ArrayBuffer>} vector
+     * @param {number} factor
+     */
+    static scale(vector, factor) {
+        for (let i = 0; i < vector.length; i++)
+            vector[i] *= factor;
+    }
+}
 
 /**
  * Mathematical definition of a parametrically defined curve.

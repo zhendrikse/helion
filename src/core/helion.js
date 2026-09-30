@@ -1,7 +1,8 @@
 import { Hud } from './hud.js';
 import { ThreeJsRenderer} from '../view/3d/renderer.js';
 import { Axes } from '../view/3d/composite/backgrounds.js';
-import { generateUUID, Vec3 } from '../model/math/math.js';
+import { generateUUID } from '../model/math/math.js';
+import { Vec3 } from '../model/math/objects.js';
 import { UPlotGraph } from './uplot.js';
 import { AxesUI, Button, HtmlControl } from './controls.js';
 import { renderMath } from '../view/mathrenderer.js';
