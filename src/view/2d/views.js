@@ -1,5 +1,6 @@
 import {
-    Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, Color, Box3, CircleGeometry, DoubleSide
+    Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, Color, Box3, CircleGeometry, DoubleSide,
+    Points, PointsMaterial, BufferGeometry, Float32BufferAttribute
 } from 'three';
 
 import { Renderable2D } from '../renderer.js';
@@ -300,6 +301,122 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
 
         this._texture.needsUpdate = true;
         this._mesh.material.map.needsUpdate = true;
+    }
+}
+
+export class ProbabilityDensityView2D extends Renderable2D {
+    /**
+     * Visualizes a discrete complex field as a Monte-Carlo probability cloud.
+     * Samples are drawn directly from the numerical |psi(x,y)|^2 distribution.
+     *
+     * @param {{pointCount?: number, pointSize?: number, color?: number}} [param0]
+     */
+    constructor({ pointCount = 30000, pointSize = 0.09, color = 0xffffff } = {}) {
+        super();
+        this._pointCount = pointCount;
+        this._material = new PointsMaterial({
+            color,
+            size: pointSize,
+            transparent: true,
+            opacity: 0.55,
+            depthWrite: false
+        });
+        this._points = null;
+        this._geometry = null;
+        this._lastSignature = null;
+    }
+
+    /** @param {DiscreteComplexField} field */
+    canBindTo(field) {
+        if (field.nx === undefined || field.ny === undefined || !field.valueAt)
+            throw new Error('ProbabilityDensityView2D needs a discrete complex field.');
+        return true;
+    }
+
+    /** @param {DiscreteComplexField} field */
+    initialize(field) {
+        this._rebuild(field);
+    }
+
+    /** @param {DiscreteComplexField} field */
+    synchronizeWith(field) {
+        const signature = this._densitySignature(field);
+        if (signature !== this._lastSignature)
+            this._rebuild(field);
+    }
+
+    /** @param {DiscreteComplexField} field */
+    _densitySignature(field) {
+        let sum = 0;
+        let weighted = 0;
+        const n = field.real.length;
+        for (let i = 0; i < n; i++) {
+            const density = field.real[i] * field.real[i] + field.imag[i] * field.imag[i];
+            sum += density;
+            weighted += density * (i + 1);
+        }
+        return `${sum.toPrecision(12)}:${weighted.toPrecision(12)}`;
+    }
+
+    /** @param {DiscreteComplexField} field */
+    _rebuild(field) {
+        const width = field.nx;
+        const height = field.ny;
+        const cellCount = width * height;
+        const cumulative = new Float64Array(cellCount);
+
+        let total = 0;
+        for (let i = 0; i < cellCount; i++) {
+            const density = field.real[i] * field.real[i] + field.imag[i] * field.imag[i];
+            total += density;
+            cumulative[i] = total;
+        }
+
+        if (total === 0) return;
+
+        const positions = new Float32Array(this._pointCount * 3);
+
+        for (let p = 0; p < this._pointCount; p++) {
+            const target = Math.random() * total;
+            let low = 0;
+            let high = cellCount - 1;
+
+            while (low < high) {
+                const middle = (low + high) >> 1;
+                if (cumulative[middle] < target) low = middle + 1;
+                else high = middle;
+            }
+
+            const index = low;
+            const x = index % width;
+            const y = Math.floor(index / width);
+            const offset = p * 3;
+
+            positions[offset] = x + Math.random() - width * 0.5;
+            positions[offset + 1] = y + Math.random() - height * 0.5;
+            positions[offset + 2] = 0;
+        }
+
+        this._geometry?.dispose();
+        this._geometry = new BufferGeometry();
+        this._geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+
+        if (!this._points) {
+            this._points = new Points(this._geometry, this._material);
+            this.add(this._points);
+        } else {
+            this._points.geometry = this._geometry;
+        }
+
+        this._lastSignature = this._densitySignature(field);
+    }
+
+    dispose() {
+        this._geometry?.dispose();
+        this._material.dispose();
+        this._points && this.remove(this._points);
+        this._points = null;
+        this._geometry = null;
     }
 }
 
