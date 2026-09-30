@@ -70,6 +70,7 @@ export class LanczosEigenstateSolver extends Solver {
      *
      * @param {WaveFunction2D} waveFunction2D
      * @param {(text: string, percent: number) => void} progressCallback
+     * @returns {number[]} an array with residuals for each eigenvalue
      */
     async solveAsync(waveFunction2D, progressCallback) {
         const { basis, diagonal, offDiagonal } = await this._buildKrylovSubspaceAsync(progressCallback);

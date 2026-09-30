@@ -1,6 +1,6 @@
 import {
     Checkbox, AnisotropicHarmonicOscillator, Hamiltonian, Range, Simulation, Colour, Registry,
-    Slider, Vec3, RadioGroup, WaveFunctionSurface3D, ComplexSurfaceView2D, HarmonicOscillator,
+    Slider, Vec3, RadioGroup, WaveFunctionSurface3D, HarmonicOscillator,
     DoubleWell, CircularWell, Quartic, Coulomb, InfiniteSquareWell, UPlotBarGraph, WaveFunction2D, 
     DropdownMenu, SingleParticle, LanczosEigenstateSolver
 } from '../../../src/index.js';
@@ -33,7 +33,7 @@ const potentials = /** @type {Record<string, { func: (particle: SingleParticle) 
         latex: CircularWell.latex
     },
     'Coulomb (hydrogen-like)': {
-        func: Coulomb.withNuclearCharge(1),
+        func: Coulomb.withNuclearCharge(1, .2),
         latex: Coulomb.latex
     }
 });
@@ -48,17 +48,17 @@ const simulation = Simulation
         htmlDivId: 'qmsolveEigenstates',
         viewport: {aspectRatio: '4/3', parameterMenuCollapsed: false },
         infoPanel: {
-            text: '<strong>🫐 Stationary eigenstates</strong><br/>Stationary ' +
-                'eigenstates for various potentials.\n\n' +
+            text: '<strong>🫐 Quantum particle eigenstates</strong><br/>This demo calculates ' +
+                'the eigenstates for a two-dimensional particle and various potentials.\n\n' +
                 'Each state reveals a characteristic pattern of amplitude ' +
                 'and phase, forming the familiar wave-like lobes of quantum mechanics.\n'
         }
         });
 
-let potentialType = 'Harmonic oscillator';
+let potentialType = 'Coulomb (hydrogen-like)';
 const psi = new WaveFunction2D(N);
-let currentEigenstate = 10;
-function changeState(index = 10) {
+let currentEigenstate = 8;
+function changeState(index = 8) {
     currentEigenstate = index;
     psi.collapseToEigenstate(index);
     simulation.setLatexTitle(`\\text{Eigenstate ${index + 1} of}\\ ` + potentials[potentialType].latex)
@@ -107,14 +107,14 @@ async function solveFor(potential = potentialType) {
 }
 await solveFor(potentialType);
 
-const waveFunction3d = new WaveFunctionSurface3D({
+const waveFunctionSurface = new WaveFunctionSurface3D({
     zScale: 5,
-    brightness: 1.5
+    brightness: .5
 });
 
 let staticView = false;
 simulation
-    .bind(psi.state.alwaysWith(waveFunction3d))
+    .bind(psi.state.alwaysWith(waveFunctionSurface))
     .runsEvery(0.01)
     .onStep((clock, dt) => {
         if (staticView || isSolving)
@@ -124,6 +124,7 @@ simulation
     })
     .append(new DropdownMenu()
         .for(potentialsRegistry)
+        .withValue('Coulomb (hydrogen-like)')
         // @ts-ignore
         .onChange(event => solveFor(event.target.value))
     )    
@@ -135,8 +136,8 @@ simulation
     )
     .append(new Slider('📐 Height scale')
         .withRange(new Range(1, 10, .1))
-        .withValue(waveFunction3d.zScale)
-        .on(waveFunction3d)
+        .withValue(waveFunctionSurface.zScale)
+        .on(waveFunctionSurface)
         .withProperty('zScale')
     )
     .append(new RadioGroup()
@@ -153,7 +154,7 @@ simulation
 
 /** @param {boolean} dimension3d */
 const setDimension = (dimension3d = true)=> {
-    simulation.frameSceneOn(waveFunction3d, {
+    simulation.frameSceneOn(waveFunctionSurface, {
         padding: .5, 
         viewDirection: dimension3d ? new Vec3(-1.25, .7 , .75) : new Vec3(0, 1, 0)
     });
