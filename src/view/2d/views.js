@@ -325,8 +325,11 @@ export class ProbabilityDensityView2D extends Renderable2D {
             depthWrite: false
         });
         color.asThreeJsColor(this._material.color);
-        this._points = null;
-        this._geometry = null;
+        this._geometry = new BufferGeometry();
+        this._points = new Points(this._geometry, this._material);
+        this.add(this._points);
+
+        this._positions = new Float32Array(this._pointCount * 3);
     }
 
     /** @param {DiscreteComplexField} field */
@@ -337,17 +340,7 @@ export class ProbabilityDensityView2D extends Renderable2D {
     }
 
     /** @param {DiscreteComplexField} field */
-    initialize(field) {
-        this._rebuild(field);
-    }
-
-    /** @param {DiscreteComplexField} field */
     synchronizeWith(field) {
-        this._rebuild(field);
-    }
-
-    /** @param {DiscreteComplexField} field */
-    _rebuild(field) {
         const width = field.nx;
         const height = field.ny;
         const cellCount = width * height;
@@ -360,9 +353,8 @@ export class ProbabilityDensityView2D extends Renderable2D {
             cumulative[i] = total;
         }
 
-        if (total === 0) return;
-
-        const positions = new Float32Array(this._pointCount * 3);
+        if (total === 0)
+            return;
 
         for (let p = 0; p < this._pointCount; p++) {
             const target = Math.random() * total;
@@ -371,8 +363,10 @@ export class ProbabilityDensityView2D extends Renderable2D {
 
             while (low < high) {
                 const middle = (low + high) >> 1;
-                if (cumulative[middle] < target) low = middle + 1;
-                else high = middle;
+                if (cumulative[middle] < target)
+                    low = middle + 1;
+                else
+                    high = middle;
             }
 
             const index = low;
@@ -380,21 +374,12 @@ export class ProbabilityDensityView2D extends Renderable2D {
             const y = Math.floor(index / width);
             const offset = p * 3;
 
-            positions[offset] = x + Math.random() - width * 0.5;
-            positions[offset + 1] = 0;
-            positions[offset + 2] = y + Math.random() - height * 0.5;
+            this._positions[offset] = x + Math.random() - width * 0.5;
+            this._positions[offset + 1] = 0;
+            this._positions[offset + 2] = y + Math.random() - height * 0.5;
         }
-
-        this._geometry?.dispose();
-        this._geometry = new BufferGeometry();
-        this._geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
-
-        if (!this._points) {
-            this._points = new Points(this._geometry, this._material);
-            this.add(this._points);
-        } else {
-            this._points.geometry = this._geometry;
-        }
+        this._geometry.setAttribute('position', new Float32BufferAttribute(this._positions, 3));
+        this._geometry.attributes.position.needsUpdate = true;
     }
 
     dispose() {
@@ -414,7 +399,7 @@ export class ParticleView2D extends Renderable2D {
      * colorMapper?: ColorMapper
      * hasBorder?: boolean
      * borderColor?: Colour
-     * }} param0 
+     * }} [param0]
      */
     constructor({
         segments = 16,

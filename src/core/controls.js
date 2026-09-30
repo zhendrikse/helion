@@ -310,6 +310,11 @@ export class RadioGroup extends HtmlControl {
         this._inputControl.style.gap = '8px';
     }
 
+    /** @param {boolean} value */
+    set disabled(value) {
+        this._buttons.forEach(button => button.disabled = value);
+    }
+
     /** 
      * @param {string} label
      * @param {(event: Event) => void} callback
