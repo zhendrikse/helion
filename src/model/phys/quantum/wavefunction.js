@@ -9,11 +9,13 @@ export class WaveFunction2D {
         this._resolution = resolution;
         this._state = new DiscreteComplexField({ nx: resolution, ny: resolution})
         this._energy = 0;
+        this._time = 0;
         this._calulatedState = new DiscreteComplexField( { nx: resolution, ny: resolution });
     }
 
     /** @param {number} time */
     set time(time) {
+        this._time = time;
         const phase = this._energy * time;
         const n = this._state.real.length;
         for (let i = 0; i < n; i++) {
@@ -34,6 +36,7 @@ export class WaveFunction2D {
         this._state.real.set(this._eigenstates[eigenstateNumber].real);
         this._state.imag.set(this._eigenstates[eigenstateNumber].imag);
         this._energy = this._eigenvalues[eigenstateNumber];
+        this.time = this._time;
     }
 
     get eigenstatesCount() { return this._eigenstates.length; }
