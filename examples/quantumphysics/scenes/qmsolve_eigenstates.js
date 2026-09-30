@@ -1,7 +1,7 @@
 import {
     Checkbox, AnisotropicHarmonicOscillator, Hamiltonian, Range, Simulation, Colour, Registry,
     Slider, Vec3, RadioGroup, WaveFunctionSurface3D, ComplexSurfaceView2D, HarmonicOscillator,
-    DoubleWell, CircularWell, Quartic, InfiniteSquareWell, UPlotBarGraph, WaveFunction2D, 
+    DoubleWell, CircularWell, Quartic, Coulomb, InfiniteSquareWell, UPlotBarGraph, WaveFunction2D, 
     DropdownMenu, SingleParticle, LanczosEigenstateSolver
 } from '../../../src/index.js';
 
@@ -31,6 +31,10 @@ const potentials = /** @type {Record<string, { func: (particle: SingleParticle) 
     'Circular well': {
         func: CircularWell.withRadiusAndBarrier(8, 100),
         latex: CircularWell.latex
+    },
+    'Coulomb (hydrogen-like)': {
+        func: Coulomb.withNuclearCharge(1),
+        latex: Coulomb.latex
     }
 });
 
