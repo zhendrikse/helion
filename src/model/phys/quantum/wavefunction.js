@@ -10,14 +10,16 @@ export class WaveFunction extends DiscreteComplexField{
     constructor({
         nx = 100,
         ny = 100
-    } = {}) { 
-        super({ nx, ny})
+    } = {}) {
+        super({ nx, ny });
         /** @type {DiscreteComplexField[]} */
         this._eigenstates = [];
         /** @type {number[]} */
         this._eigenvalues = [];
+        /** @type {DiscreteComplexField} */
         this._state = new DiscreteComplexField({ nx, ny });
-        this._energy = 0;
+        /** @type {{ eigenstate: number, coefficient: number | { real: number, imag: number }}[]} */
+        this._superposition = [];
     }
 
     reset() {
@@ -25,26 +27,63 @@ export class WaveFunction extends DiscreteComplexField{
         this._eigenstates = [];
         this._eigenvalues = [];
         this._state.reset();
-        this._energy = 0;
+        this._superposition = [];
     }
 
     /** @param {number} time */
     set time(time) {
-        const phase = this._energy * time;
-        for (let i = 0; i < this.nx * this.ny; i++) {
-            this.real[i] = this._state.real[i] * Math.cos(phase) - this._state.imag[i] * Math.sin(phase);
-            this.imag[i] = this._state.real[i] * Math.sin(phase) + this._state.imag[i] * Math.cos(phase);
+        this.real.fill(0);
+        this.imag.fill(0);
+
+        for (const { eigenstate, coefficient } of this._superposition) {
+            const energy = this._eigenvalues[eigenstate];
+            const coefficientReal = typeof coefficient === 'number' ? coefficient : coefficient.real;
+            const coefficientImag = typeof coefficient === 'number' ? 0 : coefficient.imag;
+            const phase = -energy * time;
+            const phaseReal = Math.cos(phase);
+            const phaseImag = Math.sin(phase);
+            const real = coefficientReal * phaseReal - coefficientImag * phaseImag;
+            const imag = coefficientReal * phaseImag + coefficientImag * phaseReal;
+            const state = this._eigenstates[eigenstate];
+
+            for (let i = 0; i < this.nx * this.ny; i++) {
+                this.real[i] += state.real[i] * real - state.imag[i] * imag;
+                this.imag[i] += state.real[i] * imag + state.imag[i] * real;
+            }
         }
+    }
+
+    /**
+     * @param {number} eigenstateNumber
+     * @param {number | { real: number, imag: number }} coefficient
+     */
+    setSuperposition([{ eigenstate, coefficient }]) {
+        this._superposition = arguments[0].map(({ eigenstate, coefficient }) => ({
+            eigenstate,
+            coefficient
+        }));
+
+        this._state.real.fill(0);
+        this._state.imag.fill(0);
+
+        for (const { eigenstate, coefficient } of this._superposition) {
+            const coefficientReal = typeof coefficient === 'number' ? coefficient : coefficient.real;
+            const coefficientImag = typeof coefficient === 'number' ? 0 : coefficient.imag;
+            const state = this._eigenstates[eigenstate];
+
+            for (let i = 0; i < this.nx * this.ny; i++) {
+                this._state.real[i] += state.real[i] * coefficientReal - state.imag[i] * coefficientImag;
+                this._state.imag[i] += state.real[i] * coefficientImag + state.imag[i] * coefficientReal;
+            }
+        }
+
+        this.real.set(this._state.real);
+        this.imag.set(this._state.imag);
     }
 
     /** @param {number} eigenstateNumber */
     collapseToEigenstate(eigenstateNumber) {
-        this._state.real.set(this._eigenstates[eigenstateNumber].real);
-        this._state.imag.set(this._eigenstates[eigenstateNumber].imag);
-        this._energy = this._eigenvalues[eigenstateNumber];
-
-        this.real.set(this._state.real);
-        this.imag.set(this._state.imag);
+        this.setSuperposition([{ eigenstate: eigenstateNumber, coefficient: 1 }]);
     }
 
     get eigenstatesCount() { return this._eigenstates.length; }
