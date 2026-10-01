@@ -2,7 +2,7 @@ import {DiscreteComplexField} from "../../math/fields.js";
 import { Complex } from "../../math/math.js";
 
 export class WaveFunction extends DiscreteComplexField{
-    static realCoefficient = real => new Complex(real, 0);
+    static realCoefficient = (/** @type {number} */ real) => new Complex(real, 0);
 
     /**
      * @param {{
@@ -22,12 +22,10 @@ export class WaveFunction extends DiscreteComplexField{
         /** @type {DiscreteComplexField} */
         this._state = new DiscreteComplexField({ nx, ny });
         /**
-         * @typedef {{
+         * @type {{
          *     eigenstate: number,
          *     coefficient: Complex
-         * }} SuperpositionComponent
-         *
-         * @type {SuperpositionComponent[]}
+         * }[]}
          */
         this._superposition = [];
     }
@@ -62,7 +60,10 @@ export class WaveFunction extends DiscreteComplexField{
     }
 
     /**
-     * @param {SuperpositionComponent[]} components
+     * @param {{
+     *     eigenstate: number,
+     *     coefficient: Complex
+     * }[]} components
      */
     setSuperposition(components) {
         this._superposition = components.map(({ eigenstate, coefficient }) => ({
