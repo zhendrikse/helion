@@ -138,14 +138,13 @@ const probabilityDensityView = new ProbabilityDensityView2D({
 const dimensionRadioGroup = new RadioGroup()
     .add('2D', _ => {
         is3d = false;
-        probabilityCheckbox.disabled = false;
-        updateView(false, showProbabilityCloud);
+        updateView();
     })
     .add('3D', _ => {
         is3d = true;
         showProbabilityCloud = false;
-        probabilityCheckbox.disabled = true;
-        updateView(true, showProbabilityCloud);
+        probabilityCheckbox.checked(showProbabilityCloud);
+        updateView();
     })
     .checked(1);
 
@@ -154,17 +153,12 @@ let is3d = true;
 const probabilityCheckbox = new Checkbox("Probability cloud")
     .checked(showProbabilityCloud)
     .onChange(event => {
-        showProbabilityCloud = Boolean(/** @type {HTMLInputElement} */(event.target.checked));
-        is3d = false;
-        dimensionRadioGroup.checked(0);
-        dimensionRadioGroup.disabled = showProbabilityCloud;
+        // @ts-ignore
+        showProbabilityCloud = event.target.checked;
+        is3d = showProbabilityCloud ? false : is3d;
+        dimensionRadioGroup.checked(is3d ? 1 : 0);
         updateView();
-    })
-    .togetherWith(new Checkbox("Static")
-        .checked(staticView)
-        .onChange(event => staticView = Boolean(/** @type {HTMLInputElement} */(event.target.checked)))
-    );
-probabilityCheckbox.disabled = is3d;
+    });
 
 simulation
     .bind(psi.alwaysWith(waveFunctionSurface))
@@ -191,7 +185,11 @@ simulation
         .withProperty('zScale')
     )
     .append(dimensionRadioGroup)
-    .append(probabilityCheckbox)
+    .append(probabilityCheckbox.togetherWith(new Checkbox("Static")
+        .checked(staticView)
+        // @ts-ignore
+        .onChange(event => staticView = event.target.checked)
+    ))
     .addGraph(barGraph)
     .start();
 
