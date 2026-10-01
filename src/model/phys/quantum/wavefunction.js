@@ -54,11 +54,10 @@ export class WaveFunction extends DiscreteComplexField{
     }
 
     /**
-     * @param {number} eigenstateNumber
-     * @param {number | { real: number, imag: number }} coefficient
+     * @param {{ eigenstate: number, coefficient: number | { real: number, imag: number }}[]} components
      */
-    setSuperposition([{ eigenstate, coefficient }]) {
-        this._superposition = arguments[0].map(({ eigenstate, coefficient }) => ({
+    setSuperposition(components) {
+        this._superposition = components.map(({ eigenstate, coefficient }) => ({
             eigenstate,
             coefficient
         }));
