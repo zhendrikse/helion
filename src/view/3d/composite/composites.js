@@ -11,10 +11,12 @@ import { Checkbox, CompoundControl, RadioGroup } from "../../../core/controls.js
 import { BodyPair, Lattice } from "../../../model/phys/bodies.js";
 import { Range } from "../../../model/math/math.js";
 import { VectorField } from "../../../model/math/fields.js";
-import { OneDimensionalComplexPlaneWave, OneDimensionalPlaneWave } from "../../../model/phys/waves.js";
 import { VectorModel } from "../../../model/math/objects.js";
 import { PointCloud } from "../../../model/phys/clouds.js";
 import { Colour, hsvToRgb} from "../../colormappers.js";
+import { WaveFunction1D } from "../../../model/phys/quantum/wavefunction.js";
+import { RealFunction } from "../../../model/math/fields.js";
+
 //
 // Point cloud
 //
@@ -178,20 +180,23 @@ export class PointCloudView extends Points {
 //
 export class ElectromagneticWave extends Renderable3D {
     /**
-     *
      * @param {{
+     *     position?: Vec3
      *     electricFieldColor?: Colour
      *     magneticFieldColor?: Colour
      *     arrowSize?: number
+     *     arrowDistance?: number
      *     numArrows?: number
      *     scalingFunction?: (position: Vec3, lambda: number) => number
      * }}
      * options
      */
     constructor({
+        position,
         electricFieldColor = Colour.Orange,
         magneticFieldColor = Colour.Cyan,
         arrowSize = 1,
+        arrowDistance = 1,
         numArrows = 100,
         scalingFunction = (position, lambda) => .5, // default: fixed scaling with increasing distance
     } = {}) {
@@ -209,39 +214,35 @@ export class ElectromagneticWave extends Renderable3D {
         this._eletricFieldColor = electricFieldColor;
         this._magneticFieldColor = magneticFieldColor;
         this._arrowSize = arrowSize;
+        this._arrowDistance = arrowDistance;
         this._scalingFunction = scalingFunction;
+        this._position = position;
 
         // Optimization for vector calculations
-        this._tempPosition = new Vector3();
-        this._tempAxis = new Vector3();
-        this._tempPosition = new Vector3();
-        this._i_hat = new Vector3(1, 0, 0);
+        this._sample = new Vec3();
+        this._i_hat = new Vec3(1, 0, 0);
     }
 
-    /** @param {OneDimensionalPlaneWave} planeWave */
+    /** @param {RealFunction} planeWave */
     canBindTo(planeWave) {
-        if (planeWave.valueAt === undefined) 
+        if (planeWave.sample === undefined)
             throw new Error("This view requires valueAt() method to be implemented");
         return true;
     }
 
-    /** @param {number} index @param {OneDimensionalPlaneWave} wave */
+    /**
+     * @param {number} index
+     * @param {RealFunction} wave
+     */
     _updateFieldVectorsAt(index, wave) {
         const fieldVector = this._electricFieldVectors[index];
-
-        // x = distance along wave
-        const x = this._tempPosition.copy(fieldVector.position)
-            .sub(wave.position)
-            .length();
-
-        const scaling = this._scalingFunction(fieldVector.position);
-        fieldVector.axis.y = scaling * wave.valueAt(x);
+        fieldVector.axis.y = this._scalingFunction(fieldVector.position) * wave.sample(this._arrowDistance * index);
 
         // Magnetic field B = k × E / c (k along x) — was E×k met geïnverteerde cross
         this._magneticFieldVectors[index].axis.copy(this._i_hat).cross(fieldVector.axis);
     }
 
-    /** @param {OneDimensionalPlaneWave} wave */
+    /** @param {RealFunction} wave */
     synchronizeWith(wave) {
         for (let index = 0; index < this._numArrows; index++)
             this._updateFieldVectorsAt(index, wave);
@@ -251,11 +252,10 @@ export class ElectromagneticWave extends Renderable3D {
             this._magneticFieldArrows[index].synchronizeWith(this._magneticFieldVectors[index]);
     }
 
-    /** @param {OneDimensionalPlaneWave} planeWave */
+    /** @param {RealFunction} planeWave */
     initialize(planeWave) {
-        const ds = planeWave.lambda / 10.0;
-        const dr1 = planeWave.position.clone().normalize().multiplyScalar(ds);
-        const position = planeWave.position.clone();
+        const dr1 = this._position.clone().normalize().multiplyScalar(this._arrowDistance);
+        const position = this._position.clone();
         for (let ct = 0; ct < this._numArrows; ct++) {
             const electricFieldArrow = new Arrow({
                 color: this._eletricFieldColor,
@@ -278,7 +278,14 @@ export class ElectromagneticWave extends Renderable3D {
     }
 }
 
-export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
+export class OneDimensionalComplexPlaneWave extends Renderable3D {
+    /**
+     * @param {{
+     *     size?: number,
+     *     numArrows?: number,
+     *     round?: boolean
+     * }} [options]
+     */
     constructor({
         size = 1,
         numArrows = 70,
@@ -294,14 +301,14 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
         this._color = new Color();
     }
 
-    /** @param {OneDimensionalComplexPlaneWave} complexPlaneWave */
+    /** @param {WaveFunction1D} complexPlaneWave */
     canBindTo(complexPlaneWave) {
-        if (complexPlaneWave.valueAt === undefined)
+        if (complexPlaneWave.sample === undefined)
             throw new Error("This view needs valueAt() method to be present");
         return true;
     }
 
-    /** @param {OneDimensionalComplexPlaneWave} complexPlaneWave */
+    /** @param {WaveFunction1D} complexPlaneWave */
     initialize(complexPlaneWave) {
         for (let i = 0; i < this._numArrows; i++)
             this._createArrow();
@@ -318,12 +325,12 @@ export class OneDimensionalComplexPlaneWave3D extends Renderable3D {
         this.add(arrow);
     }
 
-    /** @param {OneDimensionalComplexPlaneWave} complexPlaneWave */
+    /** @param {WaveFunction1D} complexPlaneWave */
     synchronizeWith(complexPlaneWave) {
         for (let i = 0; i < this._numArrows; i++) {
-            const x = complexPlaneWave.position.x + i * 2;
-            const value = complexPlaneWave.valueAt(x);
-            this._valueVector.position.set(x, complexPlaneWave.position.y, complexPlaneWave.position.z);
+            const x = this.position.x + i * 2;
+            const value = complexPlaneWave.sample(x);
+            this._valueVector.position.set(x, this.position.y, this.position.z);
             this._valueVector.axis.set(0, value.re, value.im);
             this._arrows[i].synchronizeWith(this._valueVector);
 

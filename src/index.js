@@ -37,14 +37,13 @@ export {
     VectorField, ComplexFunction, MultivariateFunction, ComplexFunctionSample, RealFunction
 } from './model/math/fields.js';
 
-export { ElectricField } from './model/phys/fields.js';
+export { ElectricField, PlaneWave1D } from './model/phys/fields.js';
 export { ComplexSurfaceView3D, WaveFunctionSurface3D } from './view/3d/surfaces/complex.js';
 export { WaveFunctionOrbital3D } from './view/3d/surfaces/orbital.js';
 export { ThreeJsScene } from './view/3d/scene.js';
 export { SphereSphereCollision } from './model/transformations/interactions.js';
 export { Equation, WaveEquation, BarrierWaveEquation } from './model/math/equations.js';
 export { Shapes, ShapeConfiguration } from './model/math/shapes.js';
-export { OneDimensionalPlaneWave, OneDimensionalComplexPlaneWave } from './model/phys/waves.js';
 export { PointCloud, Gas } from './model/phys/clouds.js';
 export { Integrators } from './model/math/numerics/integrators/integrators.js';
 export { SunView } from './view/3d/astro/sun.js';
@@ -68,7 +67,7 @@ export { ArrowField2D } from './view/2d/composite/composites.js';
 export { WaveEquationSolver, JacobiSolver } from './model/math/numerics/solvers/solvers.js';
 export { SchrodingerEigenstateSolver3D } from './model/math/numerics/solvers/qmsolvers.js';
 export { SchrodingerSolver } from './model/phys/quantum/schrodinger.js';
-export { WaveFunction2D } from './model/phys/quantum/wavefunction.js';
+export { WaveFunction1D, WaveFunction2D } from './model/phys/quantum/wavefunction.js';
 export { LanczosEigenstateSolver, RelaxationEigenstateSolver } from './model/phys/quantum/solvers.js';
 export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js';
 export { InfiniteSquareWell2D } from './model/phys/quantum/infinite_square_well.js';
@@ -93,7 +92,7 @@ export {
 } from './view/3d/surfaces/visualization.js';
 
 export {
-    OneDimensionalComplexPlaneWave3D, ElectromagneticWave, PointCloudView, PointCloudMaterial,
+    OneDimensionalComplexPlaneWave, ElectromagneticWave, PointCloudView, PointCloudMaterial,
     ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule
 } from './view/3d/composite/composites.js';
 

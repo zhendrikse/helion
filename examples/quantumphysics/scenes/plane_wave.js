@@ -1,17 +1,18 @@
 import {
-    Simulation, OneDimensionalComplexPlaneWave, OneDimensionalComplexPlaneWave3D,
-    Vec3, Button, Slider, Range
+    Simulation, OneDimensionalComplexPlaneWave, Vec3, Slider, Range, WaveFunction1D
 } from '../../../src/index.js';
 
 //
 // Physics model
 //
-const planeWave = new OneDimensionalComplexPlaneWave({
-    position: new Vec3(-100, 0, 0),
-    amplitude: 10,
+const planeWave = new WaveFunction1D({
+    amplitude: 20,
     omega: 1.5 * Math.PI,
     lambda: 15 * Math.PI
 });
+
+const arrowView = new OneDimensionalComplexPlaneWave({ numArrows: 100 });
+arrowView.position.set(-.5 * 100, 0, 0);
 
 //
 // View for 2D canvas
@@ -34,12 +35,8 @@ Simulation
             position: new Vec3(100, 100, 200),
             fieldOfView: 20
         },
-        headUpDisplay: {
-            enabled: false
-        },
-        viewport: {
-            aspectRatio: '2/1'
-        },
+        headUpDisplay: { enabled: false },
+        viewport: { aspectRatio: '2/1' },
         infoPanel: {
             text: '<strong>Complex plane wave Ψ</strong><br/>' +
                 'Each arrow represents the complex value of the wave function at a fixed position $x$.<br/>' +
@@ -51,14 +48,14 @@ Simulation
         }
     })
     // .synchronize(planeWave.alwaysWith(waveView2d))
-    .bind(planeWave.alwaysWith(new OneDimensionalComplexPlaneWave3D({ numArrows: 100 })))
+    .bind(planeWave.alwaysWith(arrowView))
     .runsEvery(0.01)
-    .onStep((clock, _) => planeWave.propagate(clock.simulatedTime))
+    .onStep((clock, _) => planeWave.time = clock.simulatedTime)
     .append(new Slider('Amplitude: ')
         .on(planeWave)
         .withProperty('amplitude')
-        .withValue(10)
-        .withRange(new Range(0.5, 20, .1)))
+        .withValue(20)
+        .withRange(new Range(0.5, 25, .1)))
     .append(new Slider('Omega: ')
         .on(planeWave)
         .withProperty('omega')

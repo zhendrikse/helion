@@ -1,4 +1,34 @@
 import {DiscreteComplexField} from "../../math/fields.js";
+import {MathPhysicsModelBehavior} from "../../behavior.js";
+import {Complex} from "../../math/math.js";
+
+export class WaveFunction1D extends MathPhysicsModelBehavior {
+    /**
+     * @param {{
+     *     amplitude?: number
+     *     lambda?: number
+     *     omega?: number
+     * }} options
+     */
+    constructor({
+        amplitude = 1,
+        lambda = 2,
+        omega = 3 * Math.PI
+    } = {}) {
+        super();
+        this.amplitude = amplitude;
+        this._time = 0;
+        const k = 2 * Math.PI / lambda;
+        this._phase = (x, t) => k * x - omega * t;
+    }
+
+    set time(time) { this._time = time; }
+
+    sample(x) {
+        const phase = this._phase(x, this._time);
+        return new Complex( Math.cos(phase) * this.amplitude, Math.sin(phase) * this.amplitude);
+    }
+}
 
 export class WaveFunction2D extends DiscreteComplexField{
     /** @param {number} resolution */

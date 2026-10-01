@@ -1,24 +1,21 @@
-import { AxialSymmetricBody, OneDimensionalPlaneWave, Simulation, Vec3, Range,
-    Cylinder, ElectromagneticWave, Slider, Colour
+import {
+    AxialSymmetricBody, Simulation, Vec3, Range, Cylinder, ElectromagneticWave, Slider, Colour, PlaneWave1D
 } from '../../../src/index.js';
 
 //
 // Physics model
 //
 const lambda = 2.0;  // 1e-10
+const c = 3e8;
 
+/** @type {Vec3[]} */
 const range = [];
-for (let theta = 0; theta < 2 * Math.PI; theta += Math.PI / 3)
-    range.push(new Vec3(Math.cos(theta), 0, Math.sin(theta)).multiplyScalar(lambda));
-
-/** @type {OneDimensionalPlaneWave[]} */
+/** @type {PlaneWave1D[]} */
 const planeWaves = [];
-for (let position of range)
-    planeWaves.push(new OneDimensionalPlaneWave({
-        position,
-        lambda,
-        amplitude: 7.5
-    }));
+for (let theta = 0; theta < 2 * Math.PI; theta += Math.PI / 3) {
+    range.push(new Vec3(Math.cos(theta), 0, Math.sin(theta)).multiplyScalar(lambda));
+    planeWaves.push(new PlaneWave1D(7.5, lambda, 2 * Math.PI * c / lambda));
+}
 
 const antenna = new AxialSymmetricBody({
     position: new Vec3(0, -lambda, 0),
@@ -36,11 +33,11 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .runsEvery(1e-2)
-    .advancesBy(lambda / OneDimensionalPlaneWave.c / 100.0)
+    .advancesBy(lambda / c / 100.0)
     .bind(antenna.onceWith(new Cylinder({color: new Colour(0xcccc77) })))
     .onStep((clock, _) => {
         for (let wave of planeWaves)
-            wave.propagate(clock.simulatedTime);
+            wave.time = clock.simulatedTime;
     })
     .append(new Slider('🧲 Field strength: ')
         .withValue(10)
@@ -53,9 +50,11 @@ const simulation = Simulation
     );
 
 const slit = new Vec3(0, 0, lambda);
-for (let wave of planeWaves)
+planeWaves.forEach((wave, index) =>
     simulation.bind(wave.alwaysWith(new ElectromagneticWave({
+        position: range[index],
         numArrows: 120,
         arrowSize: 0.125,
-        scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda / 10)
-    })));
+        arrowDistance: lambda * 0.1,
+        scalingFunction: position => 1 / (position.clone().sub(slit).length() + lambda * .1)
+    }))));

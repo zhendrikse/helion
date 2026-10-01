@@ -1,6 +1,28 @@
 import { VectorField } from '../math/fields.js';
 import { Vec2, Vec3 } from '../math/objects.js';
 import { ScalarFieldCalculus } from '../math/numerics/discretecalc.js';
+import { MathPhysicsModelBehavior } from "../behavior.js";
+
+export class PlaneWave1D extends MathPhysicsModelBehavior {
+    /**
+     * @param {number} amplitude
+     * @param {number} lambda
+     * @param {number} omega
+     */
+    constructor(amplitude, lambda, omega) {
+        super();
+        this._time = 0;
+        const k = 2 * Math.PI / lambda;
+        this._func = (x, t) => amplitude * Math.cos(k * x - omega * t);
+    }
+
+    set time(t) { this._time = t; }
+
+    /** @param {number} x */
+    sample(x) {
+        return this._func(x, this._time);
+    }
+}
 
 /**
  * Electric field derived from a scalar potential field.
