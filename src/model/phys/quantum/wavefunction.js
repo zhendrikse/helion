@@ -42,6 +42,9 @@ export class WaveFunction extends DiscreteComplexField{
         this._state.real.set(this._eigenstates[eigenstateNumber].real);
         this._state.imag.set(this._eigenstates[eigenstateNumber].imag);
         this._energy = this._eigenvalues[eigenstateNumber];
+
+        this.real.set(this._state.real);
+        this.imag.set(this._state.imag);
     }
 
     get eigenstatesCount() { return this._eigenstates.length; }
