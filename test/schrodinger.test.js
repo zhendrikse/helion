@@ -124,8 +124,8 @@ test('WaveFunction2D rotates eigenstates with both real and imaginary components
 
     const expectedReal = 1 * Math.cos(0.375) - 2 * Math.sin(0.375);
     const expectedImag = 1 * Math.sin(0.375) + 2 * Math.cos(0.375);
-    assert.ok(Math.abs(psi.state.real[0] - expectedReal) < 1e-12);
-    assert.ok(Math.abs(psi.state.imag[0] - expectedImag) < 1e-12);
+    assert.ok(Math.abs(psi.real[0] - expectedReal) < 1e-12);
+    assert.ok(Math.abs(psi.imag[0] - expectedImag) < 1e-12);
 });
 
 test('Hamiltonian-backed time evolution remains bounded for a stable timestep', () => {

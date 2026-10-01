@@ -167,8 +167,8 @@ const probabilityCheckbox = new Checkbox("Probability cloud")
 probabilityCheckbox.disabled = is3d;
 
 simulation
-    .bind(psi.state.alwaysWith(waveFunctionSurface))
-    .bind(psi.state.onceWith(probabilityDensityView))
+    .bind(psi.alwaysWith(waveFunctionSurface))
+    .bind(psi.onceWith(probabilityDensityView))
     .runsEvery(0.01)
     .onStep((clock, dt) => {
         if (!staticView && !isSolving)
