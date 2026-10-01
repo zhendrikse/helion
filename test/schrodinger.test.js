@@ -111,19 +111,22 @@ test('SchrodingerSolver preserves the staggered leapfrog update', () => {
         assert.ok(Math.abs(psi.real[i] - expectedRe[i]) < 1e-12);
 });
 
-test('WaveFunction2D rotates eigenstates with both real and imaginary components', () => {
+test('WaveFunction rotates eigenstates with both real and imaginary components', () => {
     const psi = new WaveFunction({ nx: 5, ny: 5 });
     const state = new DiscreteComplexField({ nx: 5, ny: 5 });
     state.real.fill(1);
     state.imag.fill(2);
-    psi._state = state;
-    psi._eigenvalues = [0.75];
-    psi._energy = 0.75;
+    psi.addEigenstate(state.real, state.imag, 0.75);
+    psi.setSuperposition([{ eigenstate: 0, coefficient: { re: 1, im: 0 } }]);
 
     psi.time = 0.5;
 
-    const expectedReal = 1 * Math.cos(0.375) - 2 * Math.sin(0.375);
-    const expectedImag = 1 * Math.sin(0.375) + 2 * Math.cos(0.375);
+    // Correct quantum mechanics: psi(t) = psi(0) * e^(-iEt)
+    // psi(0) = 1 + 2i, E=0.75, t=0.5, Et=0.375
+    // psi(t) = (1+2i)(cos(0.375) - i*sin(0.375))
+    //        = cos(0.375) + 2*sin(0.375) + i*(2*cos(0.375) - sin(0.375))
+    const expectedReal = Math.cos(0.375) + 2 * Math.sin(0.375);
+    const expectedImag = 2 * Math.cos(0.375) - Math.sin(0.375);
     assert.ok(Math.abs(psi.real[0] - expectedReal) < 1e-12);
     assert.ok(Math.abs(psi.imag[0] - expectedImag) < 1e-12);
 });
