@@ -6,12 +6,13 @@ import {
 // Physics model
 //
 const planeWave = new WaveFunction1D({
+    resolution: 100,
     amplitude: 20,
-    omega: 1.5 * Math.PI,
+    omega: Math.PI,
     lambda: 15 * Math.PI
 });
 
-const arrowView = new OneDimensionalComplexPlaneWave({ numArrows: 100 });
+const arrowView = new OneDimensionalComplexPlaneWave();
 arrowView.position.set(-.5 * 100, 0, 0);
 
 //
@@ -32,7 +33,7 @@ Simulation
     .with({
         htmlDivId: 'planeWaveContainer3d',
         camera: {
-            position: new Vec3(100, 100, 200),
+            position: new Vec3(0, 0, 300),
             fieldOfView: 20
         },
         headUpDisplay: { enabled: false },
@@ -49,7 +50,7 @@ Simulation
     })
     // .synchronize(planeWave.alwaysWith(waveView2d))
     .bind(planeWave.alwaysWith(arrowView))
-    .runsEvery(0.01)
+    .runsEvery(0.02)
     .onStep((clock, _) => planeWave.time = clock.simulatedTime)
     .append(new Slider('Amplitude: ')
         .on(planeWave)
@@ -59,12 +60,12 @@ Simulation
     .append(new Slider('Omega: ')
         .on(planeWave)
         .withProperty('omega')
-        .withValue(1.5)
+        .withValue(1)
         .withRange(new Range(0, 4, .01)))
     .append(new Slider('Wave number: ')
         .on(planeWave)
         .withProperty('k')
-        .withRange(new Range(-.2, .2, .01))
+        .withRange(new Range(-.4, .4, .01))
         .withValue(0.1))
     .start();
 

@@ -5,33 +5,58 @@ import {Complex} from "../../math/math.js";
 export class WaveFunction1D extends MathPhysicsModelBehavior {
     /**
      * @param {{
+     *     resolution?: number
      *     amplitude?: number
      *     lambda?: number
      *     omega?: number
      * }} options
      */
     constructor({
+        resolution = 100,
         amplitude = 1,
         lambda = 2,
         omega = 3 * Math.PI
     } = {}) {
         super();
-        this.amplitude = amplitude;
+        this._amplitude = amplitude;
+        this._k = 2 * Math.PI  / lambda;
+        this._omega = omega;
+        this._resolution = resolution;
+        /** @type {number[]} */
+        this._amplitudes = [];
+        this._phases = [];
         this._time = 0;
-        const k = 2 * Math.PI / lambda;
-        this._phase = (x, t) => k * x - omega * t;
+        this._calculateValues();
     }
 
+    _calculateValues() {
+        this._amplitudes.length = 0;
+        this._phases.length = 0;
+        for (let i = 0; i < this._resolution; i++) {
+            this._amplitudes.push(this._amplitude);
+            this._phases.push(t => this._k * i + this._omega * t);
+        }
+    }
+
+    get resolution() { return this._resolution; }
+    /** @param {number} time */
     set time(time) { this._time = time; }
+    /** @param {number} omega */
+    set omega(omega) { this._omega = omega; this._calculateValues(); }
+    /** @param {number} amplitude */
+    set amplitude(amplitude) { this._amplitude= amplitude; this._calculateValues(); }
+    /** @param {number} value */
+    set k(value) { this._k = value; this._calculateValues(); }
 
     /**
      * @param {number} x
      * @param {Complex} target
      */
     sample(x, target) {
-        const phase = this._phase(x, this._time);
-        target.re = Math.cos(phase) * this.amplitude;
-        target.im = Math.sin(phase) * this.amplitude
+        target.set(
+            Math.cos(this._phases[x](this._time)) * this._amplitudes[x],
+            Math.sin(this._phases[x](this._time)) * this._amplitudes[x]
+        );
         return target;
     }
 }

@@ -281,20 +281,21 @@ export class ElectromagneticWave extends Renderable3D {
 export class OneDimensionalComplexPlaneWave extends Renderable3D {
     /**
      * @param {{
+     *     arrowDistance?: number,
      *     size?: number,
-     *     numArrows?: number,
      *     round?: boolean
      * }} [options]
      */
     constructor({
+        arrowDistance = 2,
         size = 1,
-        numArrows = 70,
         round = true
     } = {}) {
         super();
+        this._arrowDistance = arrowDistance;
         /** @type {Arrow[]} */
         this._arrows = [];
-        this._numArrows = numArrows;
+        this._numArrows = 0;
         this._round = round;
         this._size = size;
         this._valueVector = new VectorModel(new Vec3(), new Vec3());
@@ -304,13 +305,14 @@ export class OneDimensionalComplexPlaneWave extends Renderable3D {
 
     /** @param {WaveFunction1D} complexPlaneWave */
     canBindTo(complexPlaneWave) {
-        if (complexPlaneWave.sample === undefined)
+        if (complexPlaneWave.sample === undefined || complexPlaneWave.resolution === undefined)
             throw new Error("This view needs valueAt() method to be present");
         return true;
     }
 
     /** @param {WaveFunction1D} complexPlaneWave */
     initialize(complexPlaneWave) {
+        this._numArrows = complexPlaneWave.resolution;
         for (let i = 0; i < this._numArrows; i++)
             this._createArrow();
     }
@@ -329,8 +331,9 @@ export class OneDimensionalComplexPlaneWave extends Renderable3D {
     /** @param {WaveFunction1D} complexPlaneWave */
     synchronizeWith(complexPlaneWave) {
         for (let i = 0; i < this._numArrows; i++) {
-            const x = this.position.x + i * 2;
-            complexPlaneWave.sample(x, this._value);
+            const x = this.position.x + i * this._arrowDistance;
+            complexPlaneWave.sample(i, this._value);
+
             this._valueVector.position.set(x, this.position.y, this.position.z);
             this._valueVector.axis.set(0, this._value.re, this._value.im);
             this._arrows[i].synchronizeWith(this._valueVector);
