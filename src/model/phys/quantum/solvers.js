@@ -113,12 +113,12 @@ export class LanczosEigenstateSolver extends Solver {
 
         let previous = null;
         let beta = 0;
-
         const z = new Float64Array(size);
+
         for (let step = 0; step < count; step++) {
             this._hamiltonian.apply(q, z);
 
-            if (previous)
+            if (step !== 0)
                 for (let i = 0; i < size; i++)
                     z[i] -= beta * previous[i];
 
@@ -132,15 +132,13 @@ export class LanczosEigenstateSolver extends Solver {
             basis.push(q);
 
             beta = VecN.norm(z);
-            if (step < count - 1) {
-                if (beta < 1e-12)
-                    break;
+            if (beta < 1e-12 || step === count - 1)
+                break;
 
-                offDiagonal.push(beta);
-                previous = q;
-                q = z.slice();
-                VecN.scale(q, 1 / beta);
-            }
+            offDiagonal.push(beta);
+            previous = q;
+            q = z.slice();
+            VecN.scale(q, 1 / beta);
 
             if (step % 50 === 0) {
                 progressCallback?.('Solving Hamiltonian', 100 * (step + 1) / count);
