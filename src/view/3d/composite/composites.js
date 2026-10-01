@@ -14,7 +14,7 @@ import { VectorField } from "../../../model/math/fields.js";
 import { VectorModel } from "../../../model/math/objects.js";
 import { PointCloud } from "../../../model/phys/clouds.js";
 import { Colour, hsvToRgb} from "../../colormappers.js";
-import { WaveFunction1D } from "../../../model/phys/quantum/wavefunction.js";
+import { WaveFunction } from "../../../model/phys/quantum/wavefunction.js";
 import { RealFunction } from "../../../model/math/fields.js";
 
 //
@@ -283,12 +283,14 @@ export class OneDimensionalComplexPlaneWave extends Renderable3D {
      * @param {{
      *     arrowDistance?: number,
      *     size?: number,
+     *     amplitude?: number,
      *     round?: boolean
      * }} [options]
      */
     constructor({
         arrowDistance = 2,
         size = 1,
+        amplitude = 1,
         round = true
     } = {}) {
         super();
@@ -298,21 +300,25 @@ export class OneDimensionalComplexPlaneWave extends Renderable3D {
         this._numArrows = 0;
         this._round = round;
         this._size = size;
+        this._amplitude = amplitude;
         this._valueVector = new VectorModel(new Vec3(), new Vec3());
         this._color = new Color();
         this._value = new Complex();
     }
 
-    /** @param {WaveFunction1D} complexPlaneWave */
+    /** @param {number} amplitude */
+    set amplitude(amplitude) { this._amplitude = amplitude; }
+
+    /** @param {WaveFunction} complexPlaneWave */
     canBindTo(complexPlaneWave) {
-        if (complexPlaneWave.sample === undefined || complexPlaneWave.resolution === undefined)
-            throw new Error("This view needs valueAt() method to be present");
+        if (complexPlaneWave.nx === undefined || complexPlaneWave.ny === undefined)
+            throw new Error("This view needs nx and ny to be present");
         return true;
     }
 
-    /** @param {WaveFunction1D} complexPlaneWave */
+    /** @param {WaveFunction} complexPlaneWave */
     initialize(complexPlaneWave) {
-        this._numArrows = complexPlaneWave.resolution;
+        this._numArrows = complexPlaneWave.nx;
         for (let i = 0; i < this._numArrows; i++)
             this._createArrow();
     }
@@ -328,14 +334,13 @@ export class OneDimensionalComplexPlaneWave extends Renderable3D {
         this.add(arrow);
     }
 
-    /** @param {WaveFunction1D} complexPlaneWave */
+    /** @param {WaveFunction} complexPlaneWave */
     synchronizeWith(complexPlaneWave) {
         for (let i = 0; i < this._numArrows; i++) {
             const x = this.position.x + i * this._arrowDistance;
-            complexPlaneWave.sample(i, this._value);
-
+            this._value.set(complexPlaneWave.real[i], complexPlaneWave.imag[i]);
             this._valueVector.position.set(x, this.position.y, this.position.z);
-            this._valueVector.axis.set(0, this._value.re, this._value.im);
+            this._valueVector.axis.set(0, this._value.re, this._value.im).multiplyScalar(this._amplitude);
             this._arrows[i].synchronizeWith(this._valueVector);
 
             this._color.setHSL(1.0 - this._value.phase, 1, 0.5);

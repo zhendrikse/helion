@@ -1,18 +1,29 @@
 import {
-    Simulation, OneDimensionalComplexPlaneWave, Vec3, Slider, Range, WaveFunction1D
+    Simulation, OneDimensionalComplexPlaneWave, Vec3, Slider, Range, WaveFunction
 } from '../../../src/index.js';
 
 //
 // Physics model
 //
-const planeWave = new WaveFunction1D({
-    resolution: 100,
-    amplitude: 20,
-    omega: Math.PI,
-    lambda: 15 * Math.PI
-});
+const lambda = 15 * Math.PI;
+const planeWave = new WaveFunction({ nx: 100, ny: 1 });
 
-const arrowView = new OneDimensionalComplexPlaneWave();
+let k = 2 * Math.PI / lambda;
+let omega = -Math.PI;
+function updateEigenstate() {
+    planeWave.reset();
+    const eigenstateReal = new Float64Array(planeWave.nx);
+    const eigenstateImag = new Float64Array(planeWave.nx);
+    for (let x = 0; x < planeWave.nx; x++) {
+        eigenstateReal[x] = Math.cos(k * x);   
+        eigenstateImag[x] = Math.sin(k * x);
+    }
+    planeWave.addEigenstate(eigenstateReal, eigenstateImag, omega);
+    planeWave.collapseToEigenstate(0);
+}
+updateEigenstate();
+
+const arrowView = new OneDimensionalComplexPlaneWave({ amplitude: 20 });
 arrowView.position.set(-.5 * 100, 0, 0);
 
 //
@@ -53,20 +64,24 @@ Simulation
     .runsEvery(0.02)
     .onStep((clock, _) => planeWave.time = clock.simulatedTime)
     .append(new Slider('Amplitude: ')
-        .on(planeWave)
+        .on(arrowView)
         .withProperty('amplitude')
         .withValue(20)
         .withRange(new Range(0.5, 25, .1)))
     .append(new Slider('Omega: ')
-        .on(planeWave)
-        .withProperty('omega')
-        .withValue(1)
-        .withRange(new Range(0, 4, .01)))
+        .withRange(new Range(0, 10, .1))
+        .withValue(Math.PI)
+        .onInput(event => {
+            omega = -Number(/** @type {HTMLInputElement} */ (event.target).value);
+            updateEigenstate();
+        }))
     .append(new Slider('Wave number: ')
-        .on(planeWave)
-        .withProperty('k')
         .withRange(new Range(-.4, .4, .01))
-        .withValue(0.1))
+        .withValue(0.1)
+        .onInput(event => {
+            k = Number(/** @type {HTMLInputElement} */ (event.target).value);
+            updateEigenstate();
+        }))
     .start();
 
 // const startStopButton = new Button(htmlDiv2d)

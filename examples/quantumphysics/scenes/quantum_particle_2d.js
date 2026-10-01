@@ -1,7 +1,7 @@
 import {
     Checkbox, AnisotropicHarmonicOscillator, Hamiltonian, Range, Simulation, Colour, Registry,
     Slider, Vec3, RadioGroup, WaveFunctionSurface3D, HarmonicOscillator,
-    DoubleWell, CircularWell, Quartic, Coulomb, InfiniteSquareWell, UPlotBarGraph, WaveFunction2D,
+    DoubleWell, CircularWell, Quartic, Coulomb, InfiniteSquareWell, UPlotBarGraph, WaveFunction,
     DropdownMenu, SingleParticle, LanczosEigenstateSolver, ProbabilityDensityView2D
 } from '../../../src/index.js';
 
@@ -64,7 +64,7 @@ const barGraph = new UPlotBarGraph({
     color: new Colour(0.5, 0.5, 1)
 });
 
-const psi = new WaveFunction2D(N);
+const psi = new WaveFunction({ nx: N, ny: N });
 let currentEigenstate = 8;
 function changeState(index = 8) {
     currentEigenstate = index;

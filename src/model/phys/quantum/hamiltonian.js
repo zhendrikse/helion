@@ -127,11 +127,8 @@ export class Hamiltonian {
         for (let y = 1; y < ny - 1; y++)
             for (let x = 1; x < nx - 1; x++) {
                 const i = y * nx + x;
-                const laplacian =
-                    (psi[i - 1] + psi[i + 1] + psi[i - nx] + psi[i + nx] - 4 * psi[i]) / h2;
-
-                hPsi[i] = -kinetic * laplacian +
-                    this._potentialScale * this._potential.data[i] * psi[i];
+                const laplacian = (psi[i - 1] + psi[i + 1] + psi[i - nx] + psi[i + nx] - 4 * psi[i]) / h2;
+                hPsi[i] = -kinetic * laplacian + this._potentialScale * this._potential.data[i] * psi[i];
             }
 
         return hPsi;

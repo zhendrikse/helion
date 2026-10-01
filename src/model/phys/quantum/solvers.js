@@ -1,6 +1,6 @@
 import { Solver } from '../../math/numerics/solvers/solvers.js';
 import { Hamiltonian } from './hamiltonian.js';
-import { WaveFunction2D } from './wavefunction.js';
+import { WaveFunction } from './wavefunction.js';
 import { VecN } from '../../math/objects.js';
  
 /**
@@ -68,11 +68,11 @@ export class LanczosEigenstateSolver extends Solver {
     /**
      * Cooperative asynchronous variant of solve().
      *
-     * @param {WaveFunction2D} waveFunction2D
+     * @param {WaveFunction} waveFunction
      * @param {(text: string, percent: number) => void} progressCallback
-     * @returns {number[]} an array with residuals for each eigenvalue
+     * @returns {Promise<number[]>} an array with residuals for each eigenvalue
      */
-    async solveAsync(waveFunction2D, progressCallback) {
+    async solveAsync(waveFunction, progressCallback) {
         const { basis, diagonal, offDiagonal } = await this._buildKrylovSubspaceAsync(progressCallback);
         const { values, vectors } = await this._diagonalizeTridiagonal(diagonal, offDiagonal, progressCallback);
 
@@ -84,7 +84,7 @@ export class LanczosEigenstateSolver extends Solver {
             VecN.normalize(psi);
             if (this._calculateResiduals)
                 this._calculateResidualsFor(psi, state, residuals);
-            waveFunction2D.addEigenstate(psi, new Float64Array(psi.length), this._hamiltonian.energyOf(psi));
+            waveFunction.addEigenstate(psi, new Float64Array(psi.length), this._hamiltonian.energyOf(psi));
         }
 
         return residuals;
@@ -357,10 +357,10 @@ export class RelaxationEigenstateSolver extends Solver {
     }
 
     /**
-     * @param {WaveFunction2D} waveFunction2D
+     * @param {WaveFunction} waveFunction
      * @param {(text:string, percent:number)=>void} [progressCallback]
      */
-    async solveAsync(waveFunction2D, progressCallback) {
+    async solveAsync(waveFunction, progressCallback) {
         const size = this._hamiltonian.N * this._hamiltonian.N;
         const count = Math.min(this._states, size);
         const residuals = new Array(count);
@@ -379,13 +379,20 @@ export class RelaxationEigenstateSolver extends Solver {
             if (this._calculateResiduals)
                 residuals[state] = this._residual(psi, energy);
 
-            waveFunction2D.addEigenstate(psi, new Float64Array(size), energy);
+            waveFunction.addEigenstate(psi, new Float64Array(size), energy);
             progressCallback?.(`Relaxing eigenstate ${state + 1}/${count}`, 100 * (state + 1) / count);
             await new Promise(resolve => setTimeout(resolve, 0));
         }
         return residuals;
     }
 
+    /**
+     * @param {Float64Array<any>} psi
+     * @param {Float64Array<ArrayBuffer>[]} previousStates
+     * @param {(text: string, percent: number) => void} progressCallback
+     * @param {number} state
+     * @param {number} stateCount
+     */
     async _relax(psi, previousStates, progressCallback, state, stateCount) {
         const hPsi = new Float64Array(psi.length);
         const gradient = new Float64Array(psi.length);
@@ -420,6 +427,10 @@ export class RelaxationEigenstateSolver extends Solver {
         return this._iterations;
     }
 
+    /**
+     * @param {Float64Array<ArrayBuffer>} vector
+     * @param {Float64Array<ArrayBuffer>[]} states
+     */
     _removeComponents(vector, states) {
         for (const state of states) {
             const projection = VecN.dot(vector, state);
@@ -428,6 +439,10 @@ export class RelaxationEigenstateSolver extends Solver {
         }
     }
 
+    /**
+     * @param {number} size
+     * @param {number} state
+     */
     _initialVector(size, state) {
         const psi = new Float64Array(size);
         let seed = (0x12345678 + state * 0x9e3779b9) >>> 0;
@@ -447,6 +462,10 @@ export class RelaxationEigenstateSolver extends Solver {
         return psi;
     }
 
+    /**
+     * @param {Float64Array<ArrayBuffer>} psi
+     * @param {number} energy
+     */
     _residual(psi, energy) {
         const hPsi = this._hamiltonian.apply(psi);
         let squared = 0;
