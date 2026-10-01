@@ -1,6 +1,9 @@
 import {DiscreteComplexField} from "../../math/fields.js";
+import { Complex } from "../../math/math.js";
 
 export class WaveFunction extends DiscreteComplexField{
+    static realCoefficient = real => new Complex(real, 0);
+
     /**
      * @param {{
      *     nx?: number
@@ -9,7 +12,7 @@ export class WaveFunction extends DiscreteComplexField{
      */
     constructor({
         nx = 100,
-        ny = 100
+        ny = 1
     } = {}) {
         super({ nx, ny });
         /** @type {DiscreteComplexField[]} */
@@ -18,7 +21,14 @@ export class WaveFunction extends DiscreteComplexField{
         this._eigenvalues = [];
         /** @type {DiscreteComplexField} */
         this._state = new DiscreteComplexField({ nx, ny });
-        /** @type {{ eigenstate: number, coefficient: number | { real: number, imag: number }}[]} */
+        /**
+         * @typedef {{
+         *     eigenstate: number,
+         *     coefficient: Complex
+         * }} SuperpositionComponent
+         *
+         * @type {SuperpositionComponent[]}
+         */
         this._superposition = [];
     }
 
@@ -37,13 +47,11 @@ export class WaveFunction extends DiscreteComplexField{
 
         for (const { eigenstate, coefficient } of this._superposition) {
             const energy = this._eigenvalues[eigenstate];
-            const coefficientReal = typeof coefficient === 'number' ? coefficient : coefficient.real;
-            const coefficientImag = typeof coefficient === 'number' ? 0 : coefficient.imag;
             const phase = -energy * time;
             const phaseReal = Math.cos(phase);
             const phaseImag = Math.sin(phase);
-            const real = coefficientReal * phaseReal - coefficientImag * phaseImag;
-            const imag = coefficientReal * phaseImag + coefficientImag * phaseReal;
+            const real = coefficient.re * phaseReal - coefficient.im * phaseImag;
+            const imag = coefficient.re * phaseImag + coefficient.im * phaseReal;
             const state = this._eigenstates[eigenstate];
 
             for (let i = 0; i < this.nx * this.ny; i++) {
@@ -54,7 +62,7 @@ export class WaveFunction extends DiscreteComplexField{
     }
 
     /**
-     * @param {{ eigenstate: number, coefficient: number | { real: number, imag: number }}[]} components
+     * @param {SuperpositionComponent[]} components
      */
     setSuperposition(components) {
         this._superposition = components.map(({ eigenstate, coefficient }) => ({
@@ -66,13 +74,11 @@ export class WaveFunction extends DiscreteComplexField{
         this._state.imag.fill(0);
 
         for (const { eigenstate, coefficient } of this._superposition) {
-            const coefficientReal = typeof coefficient === 'number' ? coefficient : coefficient.real;
-            const coefficientImag = typeof coefficient === 'number' ? 0 : coefficient.imag;
             const state = this._eigenstates[eigenstate];
 
             for (let i = 0; i < this.nx * this.ny; i++) {
-                this._state.real[i] += state.real[i] * coefficientReal - state.imag[i] * coefficientImag;
-                this._state.imag[i] += state.real[i] * coefficientImag + state.imag[i] * coefficientReal;
+                this._state.real[i] += state.real[i] * coefficient.re - state.imag[i] * coefficient.im;
+                this._state.imag[i] += state.real[i] * coefficient.im + state.imag[i] * coefficient.re;
             }
         }
 
@@ -82,7 +88,7 @@ export class WaveFunction extends DiscreteComplexField{
 
     /** @param {number} eigenstateNumber */
     collapseToEigenstate(eigenstateNumber) {
-        this.setSuperposition([{ eigenstate: eigenstateNumber, coefficient: 1 }]);
+        this.setSuperposition([{ eigenstate: eigenstateNumber, coefficient: WaveFunction.realCoefficient(1) }]);
     }
 
     get eigenstatesCount() { return this._eigenstates.length; }

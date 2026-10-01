@@ -1,11 +1,10 @@
 import {
-    Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalComplexPlaneWave,
-    RadioGroup, Checkbox
+    Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalComplexPlaneWave, RadioGroup
 } from '../../../src/index.js';
 
 const L = 20;
 const resolution = 80;
-const infiniteWell = new WaveFunction({ nx: resolution, ny: 1 });
+const infiniteWell = new WaveFunction({ nx: resolution });
 const Lx = L / resolution;
 
 for (let n = 1; n <= 4; n++) {
@@ -20,6 +19,7 @@ for (let n = 1; n <= 4; n++) {
     }
     infiniteWell.addEigenstate(real, imag, energy);
 }
+infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]);
 
 const arrowView = new OneDimensionalComplexPlaneWave({
     arrowDistance: Lx,
@@ -28,23 +28,16 @@ const arrowView = new OneDimensionalComplexPlaneWave({
 });
 arrowView.position.set(-.25 * L, 0, 0);
 
-const weights = { ground: 1, first: 0, second: 0, third: 0 };
+const weights = {ground: 1, first: 0, second: 0, third: 0}
+
 function updateSuperposition() {
-    const state = new Float64Array(resolution);
-    const energies = infiniteWell.spectrum;
-    const w = [weights.ground, weights.first, weights.second, weights.third];
-    for (let n = 0; n < 4; n++) {
-        if (w[n] === 0) continue;
-        const eigenstate = infiniteWell._eigenstates[n];
-        for (let i = 0; i < resolution; i++) 
-            state[i] += w[n] * eigenstate.real[i];
-    }
-    infiniteWell._state.real.set(state);
-    infiniteWell._state.imag.fill(0);
-    infiniteWell._energy = w.reduce((sum, w, i) => sum + w * energies[i], 0);
-    infiniteWell.time = 0;
+    infiniteWell.setSuperposition([
+        {eigenstate: 0, coefficient: WaveFunction.realCoefficient(weights.ground) },
+        {eigenstate: 1, coefficient: WaveFunction.realCoefficient(weights.first) },
+        {eigenstate: 2, coefficient: WaveFunction.realCoefficient(weights.second) },
+        {eigenstate: 3, coefficient: WaveFunction.realCoefficient(weights.third) }
+    ])
 }
-updateSuperposition();
 
 Simulation
     .with({
@@ -54,14 +47,15 @@ Simulation
             fieldOfView: 20
         },
         headUpDisplay: { enabled: false },
-        viewport: { aspectRatio: '2/1' },
+        viewport: { aspectRatio: '2/1', parameterMenuCollapsed: false },
         infoPanel: {
             text: '<strong>Particle in an infinite square well</strong><br/>' +
-                'The arrows show the complex wave function Ψ(x) = Re(Ψ) + i·Im(Ψ).<br/>' +
-                '- <b>z-direction</b>: Re(Ψ)<br/>' +
-                '- <b>y-direction</b>: Im(Ψ)<br/>' +
-                '- <b>color</b>: phase(Ψ)<br/>' +
-                'The arrow length represents |Ψ|. Use the controls to mix eigenstates.'
+                'The arrows show the complex wave function<br/>' +
+                '$\\psi(x)$ = Re$(\\psi)$ + $i\\cdot$Im$(\\psi)$.<br/>' +
+                '- <b>z-direction</b>: Re($\\psi$)<br/>' +
+                '- <b>y-direction</b>: Im($\\psi$)<br/>' +
+                '- <b>color</b>: phase($\\psi$)<br/>' +
+                'The arrow length represents $\\|\\psi\\|$. Use the controls to mix eigenstates.'
         }
     })
     .bind(infiniteWell.alwaysWith(arrowView))
@@ -69,10 +63,10 @@ Simulation
     .advancesBy(.5 *Math.PI)
     .onStep((clock, _) => infiniteWell.time = clock.simulatedTime)
     .append(new RadioGroup()
-        .add('Ground state (n=1)', () => { weights.ground = 1; weights.first = weights.second = weights.third = 0; updateSuperposition(); })
-        .add('1st excited (n=2)', () => { weights.first = 1; weights.ground = weights.second = weights.third = 0; updateSuperposition(); })
-        .add('2nd excited (n=3)', () => { weights.second = 1; weights.ground = weights.first = weights.third = 0; updateSuperposition(); })
-        .add('3rd excited (n=4)', () => { weights.third = 1; weights.ground = weights.first = weights.second = 0; updateSuperposition(); })
+        .add('Ground state (n=1)', () => infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]))
+        .add('1st excited (n=2)', () =>  infiniteWell.setSuperposition([{ eigenstate: 1, coefficient: WaveFunction.realCoefficient(1) }]))
+        .add('2nd excited (n=3)', () =>  infiniteWell.setSuperposition([{ eigenstate: 2, coefficient: WaveFunction.realCoefficient(1) }]))
+        .add('3rd excited (n=4)', () =>  infiniteWell.setSuperposition([{ eigenstate: 3, coefficient: WaveFunction.realCoefficient(1) }]))
         .checked(0)
     )
     .append(new Slider('n=1 (ground): ')

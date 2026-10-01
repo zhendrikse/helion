@@ -6,9 +6,9 @@ import {
 // Physics model
 //
 const lambda = 15 * Math.PI;
-const planeWave = new WaveFunction({ nx: 100, ny: 1 });
+const planeWave = new WaveFunction({ nx: 100 });
 
-let k = 2 * Math.PI / lambda;
+let k = -2 * Math.PI / lambda;
 let omega = -Math.PI;
 function updateEigenstate() {
     planeWave.reset();
@@ -48,7 +48,7 @@ Simulation
             fieldOfView: 20
         },
         headUpDisplay: { enabled: false },
-        viewport: { aspectRatio: '2/1' },
+        viewport: { aspectRatio: '2/1', parameterMenuCollapsed: false },
         infoPanel: {
             text: '<strong>Complex plane wave Ψ</strong><br/>' +
                 'Each arrow represents the complex value of the wave function at a fixed position $x$.<br/>' +
@@ -79,7 +79,7 @@ Simulation
         .withRange(new Range(-.4, .4, .01))
         .withValue(0.1)
         .onInput(event => {
-            k = Number(/** @type {HTMLInputElement} */ (event.target).value);
+            k = -Number(/** @type {HTMLInputElement} */ (event.target).value);
             updateEigenstate();
         }))
     .start();
