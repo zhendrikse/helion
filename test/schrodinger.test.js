@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { DiscreteComplexField } from '../src/model/math/fields.js';
 import { Hamiltonian, SingleParticle } from '../src/model/phys/quantum/hamiltonian.js';
 import { SchrodingerSolver } from '../src/model/phys/quantum/schrodinger.js';
-import { WaveFunction2D } from '../src/model/phys/quantum/wavefunction.js';
+import { WaveFunction } from '../src/model/phys/quantum/wavefunction.js';
 import { LanczosEigenstateSolver, RelaxationEigenstateSolver } from "../src/model/phys/quantum/solvers.js";
 
 test('Hamiltonian samples a coordinate-based potential function', () => {
@@ -28,7 +28,7 @@ test('Hamiltonian solve returns stationary states and energies', async () => {
         extent: 10
     });
 
-    const psi = new WaveFunction2D(25);
+    const psi = new WaveFunction({ nx: 25, ny: 25 });
     const solver = new LanczosEigenstateSolver({
         hamiltonian: H,
         states: 2,
@@ -54,7 +54,7 @@ test('RelaxationEigenstateSolver returns the validated stationary-state energies
         extent: 10
     });
 
-    const psi = new WaveFunction2D(25);
+    const psi = new WaveFunction({ nx: 25, ny: 25 });
     const solver = new RelaxationEigenstateSolver({
         hamiltonian: H,
         states: 2,
@@ -112,7 +112,7 @@ test('SchrodingerSolver preserves the staggered leapfrog update', () => {
 });
 
 test('WaveFunction2D rotates eigenstates with both real and imaginary components', () => {
-    const psi = new WaveFunction2D(5);
+    const psi = new WaveFunction({ nx: 5, ny: 5 });
     const state = new DiscreteComplexField({ nx: 5, ny: 5 });
     state.real.fill(1);
     state.imag.fill(2);

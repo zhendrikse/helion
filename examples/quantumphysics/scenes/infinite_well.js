@@ -1,6 +1,6 @@
 import {
     Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalComplexPlaneWave,
-    RadioGroup, Checkbox, Button
+    RadioGroup, Checkbox
 } from '../../../src/index.js';
 
 const L = 20;
@@ -23,9 +23,10 @@ for (let n = 1; n <= 4; n++) {
 
 const arrowView = new OneDimensionalComplexPlaneWave({
     arrowDistance: Lx,
-    size: 0.5
+    size: 0.1,
+    amplitude: 20,
 });
-arrowView.position.set(-L / 2, 0, 0);
+arrowView.position.set(-.25 * L, 0, 0);
 
 const weights = { ground: 1, first: 0, second: 0, third: 0 };
 function updateSuperposition() {
@@ -38,9 +39,10 @@ function updateSuperposition() {
         for (let i = 0; i < resolution; i++) 
             state[i] += w[n] * eigenstate.real[i];
     }
-    infiniteWell.real.set(state);
-    infiniteWell.imag.fill(0);
+    infiniteWell._state.real.set(state);
+    infiniteWell._state.imag.fill(0);
     infiniteWell._energy = w.reduce((sum, w, i) => sum + w * energies[i], 0);
+    infiniteWell.time = 0;
 }
 updateSuperposition();
 
@@ -48,7 +50,7 @@ Simulation
     .with({
         htmlDivId: 'infiniteWellContainer',
         camera: {
-            position: new Vec3(0, 0, 50),
+            position: new Vec3(0, 0, 40),
             fieldOfView: 20
         },
         headUpDisplay: { enabled: false },
@@ -64,6 +66,7 @@ Simulation
     })
     .bind(infiniteWell.alwaysWith(arrowView))
     .runsEvery(0.02)
+    .advancesBy(.5 *Math.PI)
     .onStep((clock, _) => infiniteWell.time = clock.simulatedTime)
     .append(new RadioGroup()
         .add('Ground state (n=1)', () => { weights.ground = 1; weights.first = weights.second = weights.third = 0; updateSuperposition(); })
@@ -84,10 +87,5 @@ Simulation
                 )
             )
         )
-    )
-    .append(new Slider('Time evolution: ')
-        .withRange(new Range(0, 1, 0.01))
-        .withValue(0)
-        .onChange(event => { infiniteWell.time = event.target.value; })
     )
     .start();
