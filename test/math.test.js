@@ -45,6 +45,119 @@ test('Complex multiplication', () => {
     assert.ok(z1.equals(new Complex(-11, 2)));
 });
 
+test('Complex addition', () => {
+    const z1 = new Complex(3, 4);
+    const z2 = new Complex(-1, 2);
+    z1.add(z2);
+    assert.equal(z1.re, 2, 'Complex addition real part');
+    assert.equal(z1.im, 6, 'Complex addition imag part');
+});
+
+test('Complex subtraction', () => {
+    const z1 = new Complex(3, 4);
+    const z2 = new Complex(-1, 2);
+    z1.subtract(z2);
+    assert.equal(z1.re, 4, 'Complex subtraction real part');
+    assert.equal(z1.im, 2, 'Complex subtraction imag part');
+});
+
+test('Complex division', () => {
+    const z1 = new Complex(3, 4);
+    const z2 = new Complex(-1, 2);
+    z1.divide(z2);
+    // (3+4i)/(-1+2i) = (3+4i)(-1-2i)/5 = (-3-6i-4i+8)/5 = (5-10i)/5 = 1-2i
+    assert.equal(z1.re, 1, 'Complex division real part');
+    assert.equal(z1.im, -2, 'Complex division imag part');
+});
+
+test('Complex multiplyScalar', () => {
+    const z = new Complex(3, 4);
+    z.multiplyScalar(2);
+    assert.equal(z.re, 6, 'Complex multiplyScalar real part');
+    assert.equal(z.im, 8, 'Complex multiplyScalar imag part');
+});
+
+test('Complex clone', () => {
+    const z1 = new Complex(3, 4);
+    const z2 = z1.clone();
+    assert.ok(z2.equals(z1));
+    assert.notEqual(z1, z2, 'clone should return new instance');
+});
+
+test('Complex set and copy', () => {
+    const z1 = new Complex(3, 4);
+    const z2 = new Complex();
+    z2.set(5, 6);
+    assert.equal(z2.re, 5);
+    assert.equal(z2.im, 6);
+    z2.copy(z1);
+    assert.ok(z2.equals(z1));
+});
+
+test('Complex equals', () => {
+    const z1 = new Complex(3, 4);
+    const z2 = new Complex(3, 4);
+    const z3 = new Complex(3, 5);
+    assert.ok(z1.equals(z2));
+    assert.ok(!z1.equals(z3));
+});
+
+test('Complex static fromPhase', () => {
+    const z = Complex.fromPhase(Math.PI / 2);
+    assert.ok(Math.abs(z.re) < 1e-12);
+    assert.ok(Math.abs(z.im - 1) < 1e-12);
+    const z2 = Complex.fromPhase(Math.PI);
+    assert.ok(Math.abs(z2.re + 1) < 1e-12);
+    assert.ok(Math.abs(z2.im) < 1e-12);
+});
+
+test('Complex phase', () => {
+    const z = new Complex(1, 1);
+    assert.ok(Math.abs(z.phase - 0.125) < 1e-12, 'phase of 1+i should be 1/8');
+    const z2 = new Complex(-1, 0);
+    assert.ok(Math.abs(z2.phase - 0.5) < 1e-12, 'phase of -1 should be 1/2');
+});
+
+test('Complex exp', () => {
+    const z = new Complex(0, Math.PI);
+    z.exp();
+    // e^(i*pi) = -1
+    assert.ok(Math.abs(z.re + 1) < 1e-12);
+    assert.ok(Math.abs(z.im) < 1e-12);
+    const z2 = new Complex(1, 0);
+    z2.exp();
+    assert.ok(Math.abs(z2.re - Math.E) < 1e-12);
+});
+
+test('Complex log', () => {
+    const z = new Complex(-1, 0);
+    z.log();
+    // ln(-1) = i*pi
+    assert.ok(Math.abs(z.re) < 1e-12);
+    assert.ok(Math.abs(z.im - Math.PI) < 1e-12);
+});
+
+test('Complex sqrt', () => {
+    const z = new Complex(-1, 0);
+    z.sqrt();
+    // sqrt(-1) = i
+    assert.ok(Math.abs(z.re) < 1e-12);
+    assert.ok(Math.abs(z.im - 1) < 1e-12);
+    const z2 = new Complex(4, 0);
+    z2.sqrt();
+    assert.equal(z2.re, 2);
+});
+
+test('Complex sin', () => {
+    const z = new Complex(0, 0);
+    z.sin();
+    assert.equal(z.re, 0);
+    assert.equal(z.im, 0);
+    const z2 = new Complex(Math.PI / 2, 0);
+    z2.sin();
+    assert.ok(Math.abs(z2.re - 1) < 1e-12);
+});
+
 test('besselJ: edge at zero', () => {
     assert.equal(besselJ(0, 0), 1, 'J0(0)=1');
     assert.equal(besselJ(1, 0), 0, 'J1(0)=0');
