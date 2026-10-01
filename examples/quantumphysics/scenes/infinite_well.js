@@ -50,7 +50,7 @@ Simulation
     .with({
         htmlDivId: 'infiniteWellContainer',
         camera: {
-            position: new Vec3(0, 0, 40),
+            position: new Vec3(0, 0, 50),
             fieldOfView: 20
         },
         headUpDisplay: { enabled: false },
@@ -75,17 +75,24 @@ Simulation
         .add('3rd excited (n=4)', () => { weights.third = 1; weights.ground = weights.first = weights.second = 0; updateSuperposition(); })
         .checked(0)
     )
-    .append(new Checkbox('Ground state (n=1)')
-        .checked(true)
-        .onChange(event => { weights.ground = event.target.checked ? 1 : 0; updateSuperposition(); })
-        .togetherWith(new Checkbox('1st excited (n=2)')
-            .onChange(event => { weights.first = event.target.checked ? 1 : 0; updateSuperposition(); })
-            .togetherWith(new Checkbox('2nd excited (n=3)')
-                .onChange(event => { weights.second = event.target.checked ? 1 : 0; updateSuperposition(); })
-                .togetherWith(new Checkbox('3rd excited (n=4)')
-                    .onChange(event => { weights.third = event.target.checked ? 1 : 0; updateSuperposition(); })
-                )
-            )
-        )
+    .append(new Slider('n=1 (ground): ')
+        .withRange(new Range(0, 1, 0.01))
+        .withValue(1)
+        .onInput(event => { weights.ground = parseFloat(event.target.value); updateSuperposition(); })
+    )
+    .append(new Slider('n=2 (1st excited): ')
+        .withRange(new Range(0, 1, 0.01))
+        .withValue(0)
+        .onInput(event => { weights.first = parseFloat(event.target.value); updateSuperposition(); })
+    )
+    .append(new Slider('n=3 (2nd excited): ')
+        .withRange(new Range(0, 1, 0.01))
+        .withValue(0)
+        .onInput(event => { weights.second = parseFloat(event.target.value); updateSuperposition(); }) 
+    )
+    .append(new Slider('n=4 (3rd excited): ')
+        .withRange(new Range(0, 1, 0.01))
+        .withValue(0)
+        .onInput(event => { weights.third = parseFloat(event.target.value); updateSuperposition(); })
     )
     .start();
