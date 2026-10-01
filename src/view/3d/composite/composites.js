@@ -9,7 +9,7 @@ import { Vec3 } from "../../../model/math/objects.js";
 import { Renderable3D } from "../../renderer.js";
 import { Checkbox, CompoundControl, RadioGroup } from "../../../core/controls.js";
 import { BodyPair, Lattice } from "../../../model/phys/bodies.js";
-import { Range } from "../../../model/math/math.js";
+import {Complex, Range} from "../../../model/math/math.js";
 import { VectorField } from "../../../model/math/fields.js";
 import { VectorModel } from "../../../model/math/objects.js";
 import { PointCloud } from "../../../model/phys/clouds.js";
@@ -299,6 +299,7 @@ export class OneDimensionalComplexPlaneWave extends Renderable3D {
         this._size = size;
         this._valueVector = new VectorModel(new Vec3(), new Vec3());
         this._color = new Color();
+        this._value = new Complex();
     }
 
     /** @param {WaveFunction1D} complexPlaneWave */
@@ -329,12 +330,12 @@ export class OneDimensionalComplexPlaneWave extends Renderable3D {
     synchronizeWith(complexPlaneWave) {
         for (let i = 0; i < this._numArrows; i++) {
             const x = this.position.x + i * 2;
-            const value = complexPlaneWave.sample(x);
+            complexPlaneWave.sample(x, this._value);
             this._valueVector.position.set(x, this.position.y, this.position.z);
-            this._valueVector.axis.set(0, value.re, value.im);
+            this._valueVector.axis.set(0, this._value.re, this._value.im);
             this._arrows[i].synchronizeWith(this._valueVector);
 
-            this._color.setHSL(1.0 - Math.atan2(value.im, value.re) / (2 * Math.PI), 1, 0.5);
+            this._color.setHSL(1.0 - this._value.phase, 1, 0.5);
             this._arrows[i].color = this._color;
         }
     }

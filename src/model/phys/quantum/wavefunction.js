@@ -24,9 +24,15 @@ export class WaveFunction1D extends MathPhysicsModelBehavior {
 
     set time(time) { this._time = time; }
 
-    sample(x) {
+    /**
+     * @param {number} x
+     * @param {Complex} target
+     */
+    sample(x, target) {
         const phase = this._phase(x, this._time);
-        return new Complex( Math.cos(phase) * this.amplitude, Math.sin(phase) * this.amplitude);
+        target.re = Math.cos(phase) * this.amplitude;
+        target.im = Math.sin(phase) * this.amplitude
+        return target;
     }
 }
 

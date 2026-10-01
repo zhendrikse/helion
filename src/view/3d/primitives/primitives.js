@@ -350,7 +350,7 @@ export class Arrow extends Renderable3D {
 
     /** @param {number} opacity */
     set opacity(opacity) { this._material.opacity = opacity; }
-    /** @param {number} color */
+    /** @param {Color} color */
     set color(color) { this._material.color.set(color); }
 }
 
