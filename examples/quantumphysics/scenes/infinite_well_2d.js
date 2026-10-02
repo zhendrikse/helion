@@ -117,11 +117,8 @@ function initializePsi() {
 
     const components = [];
     for (let state = 0; state < psi._eigenstates.length; state++) {
-        const eigenstate = psi._eigenstates[state];
-        let coeff = 0;
-        for (let i = 0; i < nx * ny; i++)
-            coeff += initial[i] * eigenstate.real[i];
-        if (Math.abs(coeff) > 1e-12) 
+        const coeff = VecN.dot(initial, psi._eigenstates[state].real);
+        if (Math.abs(coeff) > 1e-12)
             components.push({ eigenstate: state, coefficient: WaveFunction.realCoefficient(coeff) });
     }
 
@@ -129,11 +126,8 @@ function initializePsi() {
     return psi;
 }
 
-
 const waveFunctionView = new DiscreteComplexFieldCylinderView({ spacing: 10 });
-const waveFunctionPsi = initializePsi({
-    nx: 20, ny: 20, width: 10, height: 10, maxMode: 5
-});
+const waveFunctionPsi = initializePsi();
 
 Simulation.with({
         htmlDivId: 'infiniteSquareWell2D',
