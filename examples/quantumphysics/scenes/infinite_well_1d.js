@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalComplexPlaneWave, RadioGroup
+    Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalWaveFunctionArrows, RadioGroup
 } from '../../../src/index.js';
 
 const L = 20;
@@ -21,7 +21,7 @@ for (let n = 1; n <= 4; n++) {
 }
 infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]);
 
-const arrowView = new OneDimensionalComplexPlaneWave({
+const arrowView = new OneDimensionalWaveFunctionArrows({
     arrowDistance: Lx,
     size: 0.1,
     amplitude: 20,

@@ -92,7 +92,7 @@ export {
 } from './view/3d/surfaces/visualization.js';
 
 export {
-    OneDimensionalComplexPlaneWave, ElectromagneticWave, PointCloudView, PointCloudMaterial,
+    OneDimensionalWaveFunctionArrows, ElectromagneticWave, PointCloudView, PointCloudMaterial,
     ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule
 } from './view/3d/composite/composites.js';
 

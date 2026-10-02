@@ -1,5 +1,5 @@
 import {
-    Simulation, OneDimensionalComplexPlaneWave, Vec3, Slider, Range, WaveFunction
+    Simulation, OneDimensionalWaveFunctionArrows, Vec3, Slider, Range, WaveFunction
 } from '../../../src/index.js';
 
 //
@@ -23,7 +23,7 @@ function updateEigenstate() {
 }
 updateEigenstate();
 
-const arrowView = new OneDimensionalComplexPlaneWave({ amplitude: 20 });
+const arrowView = new OneDimensionalWaveFunctionArrows({ amplitude: 20 });
 arrowView.position.set(-.5 * 100, 0, 0);
 
 //
