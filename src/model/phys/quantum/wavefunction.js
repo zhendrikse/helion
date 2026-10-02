@@ -66,9 +66,18 @@ export class WaveFunction extends DiscreteComplexField{
      * }[]} components
      */
     setSuperposition(components) {
+        const norm = Math.sqrt(components.reduce(
+            (sum, { coefficient }) => sum + coefficient.re * coefficient.re + coefficient.im * coefficient.im,
+            0
+        ));
+        const normalization = norm > 0 ? 1 / norm : 0;
+
         this._superposition = components.map(({ eigenstate, coefficient }) => ({
             eigenstate,
-            coefficient
+            coefficient: new Complex(
+                coefficient.re * normalization,
+                coefficient.im * normalization
+            )
         }));
 
         this._state.real.fill(0);
