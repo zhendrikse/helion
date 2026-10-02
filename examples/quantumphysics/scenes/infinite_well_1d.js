@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalWaveFunctionArrows, RadioGroup
+    Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalWaveFunctionArrows, RadioGroup, OneDimensionalWaveFunctionPlot
 } from '../../../src/index.js';
 
 const L = 20;
@@ -36,7 +36,7 @@ function updateSuperposition() {
 initEigenstates(infiniteWell);
 infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]);
 
-const arrowView = new OneDimensionalWaveFunctionArrows({
+const arrowView = new OneDimensionalWaveFunctionPlot({
     arrowDistance: Lx,
     size: 0.1,
     amplitude: 20,
