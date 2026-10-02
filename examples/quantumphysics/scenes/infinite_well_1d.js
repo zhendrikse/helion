@@ -2,6 +2,7 @@ import {
     Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalWaveFunctionArrows, RadioGroup, OneDimensionalWaveFunctionPlot
 } from '../../../src/index.js';
 
+const PI = Math.PI;
 const L = 20;
 const resolution = 80;
 const infiniteWell = new WaveFunction({ nx: resolution });
@@ -9,11 +10,11 @@ const Lx = L / resolution;
 
 /** @param {WaveFunction} infiniteWell */
 function initEigenstates(infiniteWell) {
-    for (let n = 1; n <= 4; n++) {
+    for (let eigenstate = 1; eigenstate <= 4; eigenstate++) {
         const real = new Float64Array(resolution);
         const imag = new Float64Array(resolution);
-        const k = n * Math.PI / L;
-        const energy = n * n * Math.PI * Math.PI / (2 * L * L);
+        const k = eigenstate * PI / L;
+        const energy = eigenstate * eigenstate * PI * PI / (2 * L * L);
         for (let i = 0; i < resolution; i++) {
             const x = i * Lx;
             real[i] = Math.sqrt(2 / L) * Math.sin(k * x);
@@ -33,20 +34,48 @@ function updateSuperposition() {
     ])
 }
 
-initEigenstates(infiniteWell);
-infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]);
-
 const arrowView = new OneDimensionalWaveFunctionArrows({
     arrowDistance: Lx,
     size: 0.1,
     amplitude: 20,
 });
+
 const plotView = new OneDimensionalWaveFunctionPlot({
     mode: OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,
     densityScale: 50
 }); 
 
+const groundStateSlider = new Slider('n=1 (ground): ')
+        .withRange(new Range(0, 1, 0.01))
+        // @ts-ignore
+        .onInput(event => { weights.ground = parseFloat(event.target.value); updateSuperposition(); });
+const firstExcitedSlider = new Slider('n=2 (1st excited): ')
+        .withRange(new Range(0, 1, 0.01))
+        // @ts-ignore
+        .onInput(event => { weights.first = parseFloat(event.target.value); updateSuperposition(); });
+const secondExcitedSlider = new Slider('n=3 (2nd excited): ')
+        .withRange(new Range(0, 1, 0.01))
+        // @ts-ignore
+        .onInput(event => { weights.second = parseFloat(event.target.value); updateSuperposition(); });
+const thirdExcitedSlider = new Slider('n=4 (3rd excited): ')
+        .withRange(new Range(0, 1, 0.01))
+        // @ts-ignore
+        .onInput(event => { weights.third = parseFloat(event.target.value); updateSuperposition(); });
+
+/** @param {number} n */
+function setEigenstate(n) {
+    infiniteWell.setSuperposition([{ eigenstate: n, coefficient: WaveFunction.realCoefficient(1) }]);
+    groundStateSlider.withValue(n === 0 ? 1 : 0);
+    firstExcitedSlider.withValue(n === 1 ? 1 : 0);
+    secondExcitedSlider.withValue(n === 2 ? 1 : 0);
+    thirdExcitedSlider.withValue(n === 3 ? 1 : 0); 
+}
+
+initEigenstates(infiniteWell);
+infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]);
+setEigenstate(0);
 arrowView.position.set(-.25 * L, 0, 0);
+plotView.visible = false;
 
 Simulation
     .with({
@@ -67,39 +96,37 @@ Simulation
                 'The arrow length represents $\\|\\psi\\|$. Use the controls to mix eigenstates.'
         }
     })
+    .bind(infiniteWell.alwaysWith(arrowView))
     .bind(infiniteWell.alwaysWith(plotView))
     .runsEvery(0.02)
-    .advancesBy(.5 *Math.PI)
+    .advancesBy(.5 *PI)
     .onStep((clock, _) => infiniteWell.time = clock.simulatedTime)
     .append(new RadioGroup()
-        .add('Ground state (n=1)', () => 
-            infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]))
-        .add('1st excited (n=2)', () =>  
-            infiniteWell.setSuperposition([{ eigenstate: 1, coefficient: WaveFunction.realCoefficient(1) }]))
-        .add('2nd excited (n=3)', () =>  
-            infiniteWell.setSuperposition([{ eigenstate: 2, coefficient: WaveFunction.realCoefficient(1) }]))
-        .add('3rd excited (n=4)', () =>  
-            infiniteWell.setSuperposition([{ eigenstate: 3, coefficient: WaveFunction.realCoefficient(1) }]))
+        .add('Arrows', () => {
+            arrowView.visible = true;
+            plotView.visible = false;
+        })
+        .add('Density/phase', () => {
+            arrowView.visible = false;
+            plotView.visible = true;
+            plotView.mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE;
+        })
+        .add('Real/imag', () => {
+            arrowView.visible = false;
+            plotView.visible = true;
+            plotView.mode = OneDimensionalWaveFunctionPlot.Mode.REAL_IMAG;
+        })
         .checked(0)
     )
-    .append(new Slider('n=1 (ground): ')
-        .withRange(new Range(0, 1, 0.01))
-        .withValue(1)
-        .onInput(event => { weights.ground = parseFloat(event.target.value); updateSuperposition(); })
+    .append(new RadioGroup()
+        .add('Ground state (n=1)', () => setEigenstate(0))
+        .add('1st excited (n=2)', () => setEigenstate(1)) 
+        .add('2nd excited (n=3)', () => setEigenstate(2))
+        .add('3rd excited (n=4)', () => setEigenstate(3))
+        .checked(0)
     )
-    .append(new Slider('n=2 (1st excited): ')
-        .withRange(new Range(0, 1, 0.01))
-        .withValue(0)
-        .onInput(event => { weights.first = parseFloat(event.target.value); updateSuperposition(); })
-    )
-    .append(new Slider('n=3 (2nd excited): ')
-        .withRange(new Range(0, 1, 0.01))
-        .withValue(0)
-        .onInput(event => { weights.second = parseFloat(event.target.value); updateSuperposition(); }) 
-    )
-    .append(new Slider('n=4 (3rd excited): ')
-        .withRange(new Range(0, 1, 0.01))
-        .withValue(0)
-        .onInput(event => { weights.third = parseFloat(event.target.value); updateSuperposition(); })
-    )
+    .append(groundStateSlider)
+    .append(firstExcitedSlider)
+    .append(secondExcitedSlider)
+    .append(thirdExcitedSlider)
     .start();

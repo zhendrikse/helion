@@ -291,12 +291,9 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
     }
 
     _createStaticGeometry() {
-        const halfWidth = this._worldWidth * 0.5;
-        const halfHeight = this._worldHeight * 0.5;
-
         this._axis.geometry.setAttribute("position", new Float32BufferAttribute([
-            -halfWidth, 0, 0,
-             halfHeight, 0, 0
+            -this._worldWidth * 0.5, 0, 0,
+             this._worldWidth * 0.5, 0, 0
         ], 3));
     }
 
@@ -325,35 +322,6 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         this._imag.geometry = new BufferGeometry();
         this._phase.geometry = new BufferGeometry();
         this._createWaveGeometry(waveFunction.nx);
-    }
-
-    /** @param {WaveFunction} waveFunction */
-    _sampleWaveFunction(waveFunction) {
-        const realPositions = this._real.geometry.attributes.position.array;
-        const imagPositions = this._imag.geometry.attributes.position.array;
-
-        const halfWidth = this._worldWidth * 0.5;
-        const centerY = 0;
-        const amplitudeScale = this._amplitudeScale;
-
-        for (let x = 0; x < waveFunction.nx; x++) {
-            const normalizedX = x / (waveFunction.nx - 1);
-            waveFunction.sample(normalizedX, 0, this._sample);
-
-            const worldX = -halfWidth + normalizedX * this._worldWidth;
-            const offset = x * 3;
-
-            realPositions[offset] = worldX;
-            realPositions[offset + 1] = centerY + this._sample.output.re * amplitudeScale;
-            realPositions[offset + 2] = 0.01;
-
-            imagPositions[offset] = worldX;
-            imagPositions[offset + 1] = centerY + this._sample.output.im * amplitudeScale;
-            imagPositions[offset + 2] = 0.01;
-        }
-
-        this._real.geometry.attributes.position.needsUpdate = true;
-        this._imag.geometry.attributes.position.needsUpdate = true;
     }
 
     /**
@@ -419,13 +387,46 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
     }
 
     /** @param {WaveFunction} waveFunction */
+    initializeWith(waveFunction) {
+        this._updateVisibility();
+    }
+
+    /**
+     * @param {number} x
+     * @param {WaveFunction} waveFunction
+     * @param {import("three").TypedArray} realPositions
+     * @param {import("three").TypedArray} imagPositions
+     */
+    _updatePosition(x, waveFunction, realPositions, imagPositions) {
+        const centerY = 0;
+        const normalizedX = x / (waveFunction.nx - 1);
+        waveFunction.sample(normalizedX, 0, this._sample);
+
+        const worldX = -this._worldWidth * 0.5 + normalizedX * this._worldWidth;
+        const offset = x * 3;
+
+        realPositions[offset] = worldX;
+        realPositions[offset + 1] = centerY + this._sample.output.re * this._amplitudeScale;
+        realPositions[offset + 2] = 0.01;
+
+        imagPositions[offset] = worldX;
+        imagPositions[offset + 1] = centerY + this._sample.output.im * this._amplitudeScale;
+        imagPositions[offset + 2] = 0.01;
+    }
+
+    /** @param {WaveFunction} waveFunction */
     synchronizeWith(waveFunction) {
-        this._sampleWaveFunction(waveFunction);
+        const realPositions = this._real.geometry.attributes.position.array;
+        const imagPositions = this._imag.geometry.attributes.position.array;
+
+        for (let x = 0; x < waveFunction.nx; x++)
+            this._updatePosition(x, waveFunction, realPositions, imagPositions);
+
+        this._real.geometry.attributes.position.needsUpdate = true;
+        this._imag.geometry.attributes.position.needsUpdate = true;
 
         if (this._mode === OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE)
             this._updatePhaseGeometry(waveFunction);
-
-        this._updateVisibility();
     }
 
     dispose() {
