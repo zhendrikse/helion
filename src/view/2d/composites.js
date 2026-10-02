@@ -1,6 +1,7 @@
 import {
     BoxGeometry, ConeGeometry, DoubleSide, InstancedBufferAttribute, InstancedMesh,
-    Matrix4, MeshBasicMaterial, Quaternion, Vector3, Color
+    Matrix4, MeshBasicMaterial, Quaternion, Vector3, Color, BufferGeometry,
+    LineBasicMaterial, Line, Mesh, Float32BufferAttribute
 } from "three";
 import { Range } from "../../model/math/math.js";
 import { Vec2, Vec3 } from "../../model/math/objects.js";
@@ -273,32 +274,14 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
             new Color().copy(hsvToRgb(index / nColors, 1, 0.5))
         );
 
-        this._axis = new Line(
-            new BufferGeometry(),
-            new LineBasicMaterial({ color: 0x808080 })
-        );
-        this.add(this._axis);
-
-        this._real = new Line(
-            new BufferGeometry(),
-            new LineBasicMaterial({ color: 0xffc000 })
-        );
-        this.add(this._real);
-
-        this._imag = new Line(
-            new BufferGeometry(),
-            new LineBasicMaterial({ color: 0x00d0ff })
-        );
-        this.add(this._imag);
-
-        this._phase = new Mesh(
-            new BufferGeometry(),
-            new MeshBasicMaterial({
-                vertexColors: true,
-                side: DoubleSide
-            })
-        );
-        this.add(this._phase);
+        this._axis = new Line(new BufferGeometry(), new LineBasicMaterial({ color: 0x808080 }));
+        this._real = new Line(new BufferGeometry(), new LineBasicMaterial({ color: 0xffc000 }));
+        this._imag = new Line(new BufferGeometry(), new LineBasicMaterial({ color: 0x00d0ff }));
+        this._phase = new Mesh(new BufferGeometry(), new MeshBasicMaterial({
+            vertexColors: true,
+            side: DoubleSide
+        }));
+        this.add(this._axis, this._real, this._imag, this._phase);
 
         this._createStaticGeometry();
         this._createWaveGeometry();
@@ -338,14 +321,8 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         const phasePositions = new Float32Array(segmentCount * 6 * 3);
         const phaseColors = new Float32Array(segmentCount * 6 * 3);
 
-        this._phase.geometry.setAttribute(
-            "position",
-            new Float32BufferAttribute(phasePositions, 3)
-        );
-        this._phase.geometry.setAttribute(
-            "color",
-            new Float32BufferAttribute(phaseColors, 3)
-        );
+        this._phase.geometry.setAttribute("position", new Float32BufferAttribute(phasePositions, 3));
+        this._phase.geometry.setAttribute("color", new Float32BufferAttribute(phaseColors, 3));
     }
 
     /** @param {WaveFunction} waveFunction */

@@ -36,7 +36,7 @@ function updateSuperposition() {
 initEigenstates(infiniteWell);
 infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]);
 
-const arrowView = new OneDimensionalWaveFunctionPlot({
+const arrowView = new OneDimensionalWaveFunctionArrows({
     arrowDistance: Lx,
     size: 0.1,
     amplitude: 20,
