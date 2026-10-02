@@ -41,6 +41,10 @@ const arrowView = new OneDimensionalWaveFunctionArrows({
     size: 0.1,
     amplitude: 20,
 });
+const plotView = new OneDimensionalWaveFunctionPlot({
+    mode: OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE
+}); 
+
 arrowView.position.set(-.25 * L, 0, 0);
 
 Simulation
@@ -62,7 +66,7 @@ Simulation
                 'The arrow length represents $\\|\\psi\\|$. Use the controls to mix eigenstates.'
         }
     })
-    .bind(infiniteWell.alwaysWith(arrowView))
+    .bind(infiniteWell.alwaysWith(plotView))
     .runsEvery(0.02)
     .advancesBy(.5 *Math.PI)
     .onStep((clock, _) => infiniteWell.time = clock.simulatedTime)

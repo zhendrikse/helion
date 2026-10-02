@@ -248,6 +248,18 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         REAL_IMAG: "realImag"
     });
 
+    /**
+     * @param {{
+     *  width?: number,
+     *  height?: number,
+     *  worldWidth?: number,
+     *  worldHeight?: number,
+     *  scaleY?: number,
+     *  showImaginary?: boolean,
+     *  mode?: string,
+     *  nColors?: number
+     * }} [options]
+     */
     constructor({
         width = 800,
         height = 400,
