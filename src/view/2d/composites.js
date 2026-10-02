@@ -246,7 +246,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
     constructor({
         worldWidth = 20,
         worldHeight = 10,
-        scaleY = 100,
+        scaleY = 20,
         densityScale = 55,
         showImaginary = true,
         mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,

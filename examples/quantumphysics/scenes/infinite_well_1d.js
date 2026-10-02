@@ -45,19 +45,19 @@ const plotView = new OneDimensionalWaveFunctionPlot({
     densityScale: 50
 }); 
 
-const groundStateSlider = new Slider('n=1 (ground): ')
+const groundStateSlider = new Slider('n=1: ')
         .withRange(new Range(0, 1, 0.01))
         // @ts-ignore
         .onInput(event => { weights.ground = parseFloat(event.target.value); updateSuperposition(); });
-const firstExcitedSlider = new Slider('n=2 (1st excited): ')
+const firstExcitedSlider = new Slider('n=2: ')
         .withRange(new Range(0, 1, 0.01))
         // @ts-ignore
         .onInput(event => { weights.first = parseFloat(event.target.value); updateSuperposition(); });
-const secondExcitedSlider = new Slider('n=3 (2nd excited): ')
+const secondExcitedSlider = new Slider('n=3: ')
         .withRange(new Range(0, 1, 0.01))
         // @ts-ignore
         .onInput(event => { weights.second = parseFloat(event.target.value); updateSuperposition(); });
-const thirdExcitedSlider = new Slider('n=4 (3rd excited): ')
+const thirdExcitedSlider = new Slider('n=4: ')
         .withRange(new Range(0, 1, 0.01))
         // @ts-ignore
         .onInput(event => { weights.third = parseFloat(event.target.value); updateSuperposition(); });
@@ -88,12 +88,12 @@ Simulation
         viewport: { aspectRatio: '19/12', parameterMenuCollapsed: false },
         infoPanel: {
             text: '<strong>Particle in an infinite square well</strong><br/>' +
-                'The arrows show the complex wave function<br/>' +
-                '$\\psi(x)$ = Re$(\\psi)$ + $i\\cdot$Im$(\\psi)$.<br/>' +
-                '- <b>z-direction</b>: Re($\\psi$)<br/>' +
-                '- <b>y-direction</b>: Im($\\psi$)<br/>' +
-                '- <b>color</b>: phase($\\psi$)<br/>' +
-                'The arrow length represents $\\|\\psi\\|$. Use the controls to mix eigenstates.'
+                'Use radio buttons to switch view:<br/>' +
+                '- <b><span style=\"color: #ff4444;\">Arrows</span></b>: 3D complex $\\psi$ (Re=z, Im=y, color=phase)<br/>' +
+                '- <b><span style=\"color: #4444ff;\">Density/phase</span></b>: 2D plot (height=$\\|\\psi\\|^2$, color=phase)<br/>' +
+                '- <b><span style=\"color: #ffc000;\">Real</span>/<span style=\"color: #00d0ff;\">Imag</span></b>: 2D plot' + 
+                ' (<span style=\"color: #ffc000;\">yellow=Re</span>, <span style=\"color: #00d0ff;\">cyan=Im</span>)<br/>' +
+                'Use sliders to mix eigenstates.'
         }
     })
     .bind(infiniteWell.alwaysWith(arrowView))
@@ -118,11 +118,11 @@ Simulation
         })
         .checked(0)
     )
-    .append(new RadioGroup()
-        .add('Ground state (n=1)', () => setEigenstate(0))
-        .add('1st excited (n=2)', () => setEigenstate(1)) 
-        .add('2nd excited (n=3)', () => setEigenstate(2))
-        .add('3rd excited (n=4)', () => setEigenstate(3))
+    .append(new RadioGroup("Eigenstates:")
+        .add('n=1', () => setEigenstate(0))
+        .add('n=2', () => setEigenstate(1)) 
+        .add('n=3', () => setEigenstate(2))
+        .add('n=4', () => setEigenstate(3))
         .checked(0)
     )
     .append(groundStateSlider)

@@ -298,14 +298,15 @@ export class Checkbox extends HtmlControl {
 }
 
 export class RadioGroup extends HtmlControl {
-    constructor() {
-        super('');
+    constructor(label = '') {
+        super(label);
 
         /** @type {HTMLInputElement[]} */
         this._buttons = [];
         this._groupName = generateUUID();
 
-        this._label.style.display = 'none';
+        this._label.style.fontWeight = 'bold';
+        this._label.style.display = 'block';
 
         this._inputControl = document.createElement('div');
         this._inputControl.style.display = 'flex';
