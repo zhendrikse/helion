@@ -293,7 +293,6 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         }));
         this.add(this._axis, this._real, this._imag, this._phase);
 
-        this._sampleCount = 0;
         this._createStaticGeometry();
     }
 
@@ -316,10 +315,11 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
 
         this._axis.geometry.setAttribute("position", new Float32BufferAttribute([
             -halfWidth, 0, 0,
-             halfWidth, 0, 0
+             halfHeight, 0, 0
         ], 3));
     }
 
+    /** @param {number} sampleCount */
     _createWaveGeometry(sampleCount) {
         const positions = new Float32Array(sampleCount * 3);
         const positionAttribute = new Float32BufferAttribute(positions, 3);
@@ -336,19 +336,18 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
     }
 
     /** @param {WaveFunction} waveFunction */
-    _sampleWaveFunction(waveFunction) {
-        const sampleCount = waveFunction.nx;
-        if (this._sampleCount !== sampleCount) {
-            this._sampleCount = sampleCount;
-            this._real.geometry.dispose();
-            this._imag.geometry.dispose();
-            this._phase.geometry.dispose();
-            this._real.geometry = new BufferGeometry();
-            this._imag.geometry = new BufferGeometry();
-            this._phase.geometry = new BufferGeometry();
-            this._createWaveGeometry(sampleCount);
-        }
+    initialize(waveFunction) {
+        this._real.geometry.dispose();
+        this._imag.geometry.dispose();
+        this._phase.geometry.dispose();
+        this._real.geometry = new BufferGeometry();
+        this._imag.geometry = new BufferGeometry();
+        this._phase.geometry = new BufferGeometry();
+        this._createWaveGeometry(waveFunction.nx);
+    }
 
+    /** @param {WaveFunction} waveFunction */
+    _sampleWaveFunction(waveFunction) {
         const realPositions = this._real.geometry.attributes.position.array;
         const imagPositions = this._imag.geometry.attributes.position.array;
 
@@ -356,8 +355,8 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         const centerY = 0;
         const amplitudeScale = this._amplitudeScale;
 
-        for (let x = 0; x < sampleCount; x++) {
-            const normalizedX = x / (sampleCount - 1);
+        for (let x = 0; x < waveFunction.nx; x++) {
+            const normalizedX = x / (waveFunction.nx - 1);
             waveFunction.sample(normalizedX, 0, this._sample);
 
             const worldX = -halfWidth + normalizedX * this._worldWidth;
@@ -376,48 +375,47 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         this._imag.geometry.attributes.position.needsUpdate = true;
     }
 
+    /**
+     * @param {number} x
+     * @param {WaveFunction} waveFunction
+     */
+    _densityPhaseColor(x, waveFunction) {
+        waveFunction.sample(x, 0, this._sample);
+        const phase = (this._sample.phase % 1 + 1) % 1;
+        return {
+            density: this._sample.absSquared * this._densityScale,
+            phase: phase,
+            color: this._colors[Math.floor(phase * this._nColors)],
+            x0: (x - 0.5) * this._worldWidth
+        }
+    }
+
     /** @param {WaveFunction} waveFunction */
     _updatePhaseGeometry(waveFunction) {
         const positions = this._phase.geometry.attributes.position.array;
         const colors = this._phase.geometry.attributes.color.array;
-        const halfWidth = this._worldWidth * 0.5;
-        const densityScale = this._densityScale;
         const baseline = this._densityBaseline;
 
-        const sampleCount = waveFunction.nx;
-        for (let x = 0; x < sampleCount - 1; x++) {
-            const normalizedX0 = x / (sampleCount - 1);
-            const normalizedX1 = (x + 1) / (sampleCount - 1);
+        const sampleCount = waveFunction.nx - 1;
+        for (let x = 0; x < sampleCount; x++) {
+            const densityPhaseColor0 = this._densityPhaseColor(x / sampleCount, waveFunction);
+            const densityPhaseColor1 = this._densityPhaseColor((x + 1) / sampleCount, waveFunction);
 
-            waveFunction.sample(normalizedX0, 0, this._sample);
-            const density0 = this._sample.absSquared * densityScale;
-            const phase0 = (this._sample.phase % 1 + 1) % 1;
-            const color0 = this._colors[Math.floor(phase0 * this._nColors)];
-
-            waveFunction.sample(normalizedX1, 0, this._sample);
-            const density1 = this._sample.absSquared * densityScale;
-            const phase1 = (this._sample.phase % 1 + 1) % 1;
-            const color1 = this._colors[Math.floor(phase1 * this._nColors)];
-
-            const x0 = -halfWidth + normalizedX0 * this._worldWidth;
-            const x1 = -halfWidth + normalizedX1 * this._worldWidth;
-
+            const y0 = baseline + densityPhaseColor0.density;
+            const y1 = baseline + densityPhaseColor1.density;
             const vertexOffset = x * 18;
-            const y0 = baseline + density0;
-            const y1 = baseline + density1;
-
             positions.set([
-                x0, baseline, -0.01,
-                x1, baseline, -0.01,
-                x1, y1, -0.01,
+                densityPhaseColor0.x0, baseline, -0.01,
+                densityPhaseColor1.x0, baseline, -0.01,
+                densityPhaseColor1.x0, y1, -0.01,
 
-                x0, baseline, -0.01,
-                x1, y1, -0.01,
-                x0, y0, -0.01
+                densityPhaseColor0.x0, baseline, -0.01,
+                densityPhaseColor1.x0, y1, -0.01,
+                densityPhaseColor0.x0, y0, -0.01
             ], vertexOffset);
 
             for (let vertex = 0; vertex < 6; vertex++) {
-                const color = vertex === 0 || vertex === 3 || vertex === 5 ? color0 : color1;
+                const color = vertex === 0 || vertex === 3 || vertex === 5 ? densityPhaseColor0.color : densityPhaseColor1.color;
                 const colorOffset = (x * 6 + vertex) * 3;
                 colors[colorOffset    ] = color.r;
                 colors[colorOffset + 1] = color.g;
