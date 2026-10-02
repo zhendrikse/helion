@@ -47,7 +47,7 @@ Simulation
             fieldOfView: 20
         },
         headUpDisplay: { enabled: false },
-        viewport: { aspectRatio: '2/1', parameterMenuCollapsed: false },
+        viewport: { aspectRatio: '19/12', parameterMenuCollapsed: false },
         infoPanel: {
             text: '<strong>Particle in an infinite square well</strong><br/>' +
                 'The arrows show the complex wave function<br/>' +
