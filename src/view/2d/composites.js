@@ -293,8 +293,8 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         }));
         this.add(this._axis, this._real, this._imag, this._phase);
 
+        this._sampleCount = 0;
         this._createStaticGeometry();
-        this._createWaveGeometry();
     }
 
     /** @param {WaveFunction} waveFunction */
