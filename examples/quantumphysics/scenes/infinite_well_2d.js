@@ -139,11 +139,16 @@ Simulation.with({
                 '- Height $\\propto Re(\\Psi)$<br/>' +
                 '- Radius $\\propto Im(\\Psi)$<br/>' +
                 '- Color represents the value of the phase factor<br/>' +
-                '- System evolves by summing the Fourier coefficients times the eigenstates.'
+                '- System evolves by summing the Fourier coefficients times the eigenstates.<br/>' +
+                '- Click: Run → Pause → Reset → Run'
         }
     })
     .bind(waveFunctionPsi.alwaysWith(waveFunctionView))
     .withMouseClickEventListener()
+    .onReset(() => {
+        // Reinitialize the wavefunction on reset
+        Object.assign(waveFunctionPsi, initializePsi());
+    })
     .runsEvery(5e-3)
     .advancesBy(0.02)
     .onStep((clock, _) => waveFunctionPsi.time = clock.simulatedTime);
