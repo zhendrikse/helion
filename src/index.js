@@ -29,7 +29,7 @@ export {
 
 export {
     Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid, LinearCombination,
-    SegmentedCircle, ParametricCurve, Vec2, Vec3
+    SegmentedCircle, ParametricCurve, Vec2, Vec3, VecN
 } from './model/math/objects.js';
 
 export {
@@ -69,7 +69,6 @@ export { SchrodingerSolver } from './model/phys/quantum/schrodinger.js';
 export { WaveFunction } from './model/phys/quantum/wavefunction.js';
 export { LanczosEigenstateSolver, RelaxationEigenstateSolver } from './model/phys/quantum/solvers.js';
 export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js';
-export { InfiniteSquareWell2D } from './model/phys/quantum/infinite_square_well.js';
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
 
 export {
