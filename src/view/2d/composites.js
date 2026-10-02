@@ -322,7 +322,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
 
         this._axis.geometry.setAttribute("position", new Float32BufferAttribute([
             -halfWidth, 0, 0,
-             halfWidth, 0, 0
+             halfHeight, 0, 0
         ], 3));
     }
 
@@ -412,7 +412,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
             for (let vertex = 0; vertex < 6; vertex++) {
                 const color = vertex === 0 || vertex === 3 || vertex === 5 ? color0 : color1;
                 const colorOffset = (x * 6 + vertex) * 3;
-                colors[colorOffset] = color.r;
+                colors[colorOffset    ] = color.r;
                 colors[colorOffset + 1] = color.g;
                 colors[colorOffset + 2] = color.b;
             }

@@ -42,7 +42,8 @@ const arrowView = new OneDimensionalWaveFunctionArrows({
     amplitude: 20,
 });
 const plotView = new OneDimensionalWaveFunctionPlot({
-    mode: OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE
+    mode: OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,
+    densityScale: 50
 }); 
 
 arrowView.position.set(-.25 * L, 0, 0);
