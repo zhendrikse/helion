@@ -255,6 +255,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
      *  worldWidth?: number,
      *  worldHeight?: number,
      *  scaleY?: number,
+     *  densityScale?: number,
      *  showImaginary?: boolean,
      *  mode?: string,
      *  nColors?: number
@@ -266,6 +267,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         worldWidth = 20,
         worldHeight = 10,
         scaleY = 100,
+        densityScale = 55,
         showImaginary = true,
         mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,
         nColors = 360
@@ -276,7 +278,9 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         this._height = height;
         this._worldWidth = worldWidth;
         this._worldHeight = worldHeight;
-        this._scaleY = scaleY * worldHeight / height;
+        this._amplitudeScale = scaleY * worldHeight / height;
+        this._densityScale = densityScale;
+        this._densityBaseline = -worldHeight * 0.4;
         this._showImaginary = showImaginary;
         this._mode = mode;
         this._nColors = nColors;
@@ -344,7 +348,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
 
         const halfWidth = this._worldWidth * 0.5;
         const centerY = 0;
-        const amplitudeScale = this._scaleY;
+        const amplitudeScale = this._amplitudeScale;
 
         for (let x = 0; x < this._width; x++) {
             const normalizedX = x / (this._width - 1);
@@ -371,7 +375,8 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         const positions = this._phase.geometry.attributes.position.array;
         const colors = this._phase.geometry.attributes.color.array;
         const halfWidth = this._worldWidth * 0.5;
-        const densityScale = this._scaleY;
+        const densityScale = this._densityScale;
+        const baseline = this._densityBaseline;
 
         for (let x = 0; x < this._width - 1; x++) {
             const normalizedX0 = x / (this._width - 1);
@@ -391,14 +396,17 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
             const x1 = -halfWidth + normalizedX1 * this._worldWidth;
 
             const vertexOffset = x * 18;
-            positions.set([
-                x0, 0, -0.01,
-                x1, 0, -0.01,
-                x1, density1, -0.01,
+            const y0 = baseline + density0;
+            const y1 = baseline + density1;
 
-                x0, 0, -0.01,
-                x1, density1, -0.01,
-                x0, density0, -0.01
+            positions.set([
+                x0, baseline, -0.01,
+                x1, baseline, -0.01,
+                x1, y1, -0.01,
+
+                x0, baseline, -0.01,
+                x1, y1, -0.01,
+                x0, y0, -0.01
             ], vertexOffset);
 
             for (let vertex = 0; vertex < 6; vertex++) {
