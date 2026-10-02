@@ -250,133 +250,204 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
     constructor({
         width = 800,
         height = 400,
+        worldWidth = 20,
+        worldHeight = 10,
         scaleY = 100,
         showImaginary = true,
         mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,
         nColors = 360
     } = {}) {
         super();
+
         this._width = width;
         this._height = height;
-        this._scaleY = scaleY;
+        this._worldWidth = worldWidth;
+        this._worldHeight = worldHeight;
+        this._scaleY = scaleY * worldHeight / height;
         this._showImaginary = showImaginary;
         this._mode = mode;
-
-        this._phaseColors = new Array(nColors + 1);
-        const color = new Color();
-        for (let c = 0; c <= nColors; c++) {
-            hsvToRgb(c / nColors, 1, 0.5, color);
-            const colour = new Colour(color.r, color.g, color.b);
-            this._phaseColors[c] = colour.asHexString();
-        }
-
         this._nColors = nColors;
-        this._context = null;
-        this._sample = new ComplexFunctionSample();
-    }
 
-    set context(context) { this._context = context; }
+        this._sample = new ComplexFunctionSample();
+        this._colors = Array.from({ length: nColors + 1 }, (_, index) =>
+            new Color().copy(hsvToRgb(index / nColors, 1, 0.5))
+        );
+
+        this._axis = new Line(
+            new BufferGeometry(),
+            new LineBasicMaterial({ color: 0x808080 })
+        );
+        this.add(this._axis);
+
+        this._real = new Line(
+            new BufferGeometry(),
+            new LineBasicMaterial({ color: 0xffc000 })
+        );
+        this.add(this._real);
+
+        this._imag = new Line(
+            new BufferGeometry(),
+            new LineBasicMaterial({ color: 0x00d0ff })
+        );
+        this.add(this._imag);
+
+        this._phase = new Mesh(
+            new BufferGeometry(),
+            new MeshBasicMaterial({
+                vertexColors: true,
+                side: DoubleSide
+            })
+        );
+        this.add(this._phase);
+
+        this._createStaticGeometry();
+        this._createWaveGeometry();
+    }
 
     /** @param {WaveFunction} waveFunction */
     canBindTo(waveFunction) {
         if (waveFunction.ny !== 1 || typeof waveFunction.sample !== "function")
-            throw new Error('OneDimensionalWaveFunctionPlot needs a one-dimensional complex field.');
+            throw new Error("OneDimensionalWaveFunctionPlot needs a one-dimensional complex field.");
         return true;
     }
 
     /** @param {string} mode */
-    set mode(mode) { this._mode = mode; }
+    set mode(mode) {
+        this._mode = mode;
+        this._updateVisibility();
+    }
+
+    _createStaticGeometry() {
+        const halfWidth = this._worldWidth * 0.5;
+        const halfHeight = this._worldHeight * 0.5;
+
+        this._axis.geometry.setAttribute("position", new Float32BufferAttribute([
+            -halfWidth, 0, 0,
+             halfWidth, 0, 0
+        ], 3));
+    }
+
+    _createWaveGeometry() {
+        const positions = new Float32Array(this._width * 3);
+        const positionAttribute = new Float32BufferAttribute(positions, 3);
+
+        this._real.geometry.setAttribute("position", positionAttribute.clone());
+        this._imag.geometry.setAttribute("position", positionAttribute.clone());
+
+        const segmentCount = this._width - 1;
+        const phasePositions = new Float32Array(segmentCount * 6 * 3);
+        const phaseColors = new Float32Array(segmentCount * 6 * 3);
+
+        this._phase.geometry.setAttribute(
+            "position",
+            new Float32BufferAttribute(phasePositions, 3)
+        );
+        this._phase.geometry.setAttribute(
+            "color",
+            new Float32BufferAttribute(phaseColors, 3)
+        );
+    }
 
     /** @param {WaveFunction} waveFunction */
-    _plotDensityPhase(waveFunction) {
-        for (let x = 0; x < this._width; x++) {
-            const normalizedX = x / (this._width - 1);
-            waveFunction.sample(normalizedX, 0, this._sample);
+    _sampleWaveFunction(waveFunction) {
+        const realPositions = this._real.geometry.attributes.position.array;
+        const imagPositions = this._imag.geometry.attributes.position.array;
 
-            // ComplexFunctionSample.phase is normalized to one full turn.
-            const normalizedPhase = (this._sample.phase % 1 + 1) % 1;
-            const colorIndex = Math.floor(normalizedPhase * this._nColors);
-
-            this._context.strokeStyle = this._phaseColors[colorIndex];
-            this._context.beginPath();
-            this._context.moveTo(x, 0);
-            this._context.lineTo(x, this._height);
-            this._context.stroke();
-        }
-    }
-    
-    /** @param {number} centerY */
-    _plotAxis(centerY) {
-        this._context.strokeStyle = "gray";
-        this._context.beginPath();
-        this._context.moveTo(0, centerY);
-        this._context.lineTo(this._width, centerY);
-        this._context.stroke();
-    }
-
-    /** 
-     * @param {WaveFunction} waveFunction 
-     * @param {number} centerY 
-     */
-    _plotReal(waveFunction, centerY) {
-        this._context.strokeStyle = "#ffc000";
-        this._context.beginPath();
+        const halfWidth = this._worldWidth * 0.5;
+        const centerY = 0;
+        const amplitudeScale = this._scaleY;
 
         for (let x = 0; x < this._width; x++) {
             const normalizedX = x / (this._width - 1);
             waveFunction.sample(normalizedX, 0, this._sample);
-            const y = centerY - this._sample.output.re * this._scaleY;
 
-            if (x === 0) this._context.moveTo(x, y);
-            else this._context.lineTo(x, y);
+            const worldX = -halfWidth + normalizedX * this._worldWidth;
+            const offset = x * 3;
+
+            realPositions[offset] = worldX;
+            realPositions[offset + 1] = centerY + this._sample.output.re * amplitudeScale;
+            realPositions[offset + 2] = 0.01;
+
+            imagPositions[offset] = worldX;
+            imagPositions[offset + 1] = centerY + this._sample.output.im * amplitudeScale;
+            imagPositions[offset + 2] = 0.01;
         }
 
-        this._context.stroke();
+        this._real.geometry.attributes.position.needsUpdate = true;
+        this._imag.geometry.attributes.position.needsUpdate = true;
     }
 
-    /**
-     * @param {WaveFunction} waveFunction 
-     * @param {number} centerY
-     */
-    _plotImag(waveFunction, centerY) {
-        this._context.strokeStyle = "#00d0ff";
-        this._context.beginPath();
+    /** @param {WaveFunction} waveFunction */
+    _updatePhaseGeometry(waveFunction) {
+        const positions = this._phase.geometry.attributes.position.array;
+        const colors = this._phase.geometry.attributes.color.array;
+        const halfWidth = this._worldWidth * 0.5;
+        const halfHeight = this._worldHeight * 0.5;
 
-        for (let x = 0; x < this._width; x++) {
-            const normalizedX = x / (this._width - 1);
-            waveFunction.sample(normalizedX, 0, this._sample);
-            const y = centerY - this._sample.output.im * this._scaleY;
+        for (let x = 0; x < this._width - 1; x++) {
+            const normalizedX0 = x / (this._width - 1);
+            const normalizedX1 = (x + 1) / (this._width - 1);
 
-            if (x === 0) this._context.moveTo(x, y);
-            else this._context.lineTo(x, y);
+            waveFunction.sample(normalizedX0, 0, this._sample);
+            const phase0 = (this._sample.phase % 1 + 1) % 1;
+            const color0 = this._colors[Math.floor(phase0 * this._nColors)];
+
+            waveFunction.sample(normalizedX1, 0, this._sample);
+            const phase1 = (this._sample.phase % 1 + 1) % 1;
+            const color1 = this._colors[Math.floor(phase1 * this._nColors)];
+
+            const x0 = -halfWidth + normalizedX0 * this._worldWidth;
+            const x1 = -halfWidth + normalizedX1 * this._worldWidth;
+
+            const vertexOffset = x * 18;
+            positions.set([
+                x0, -halfHeight, -0.01,
+                x1, -halfHeight, -0.01,
+                x1,  halfHeight, -0.01,
+                x0, -halfHeight, -0.01,
+                x1,  halfHeight, -0.01,
+                x0,  halfHeight, -0.01
+            ], vertexOffset);
+
+            for (let vertex = 0; vertex < 6; vertex++) {
+                const color = vertex === 0 || vertex === 3 || vertex === 5 ? color0 : color1;
+                const colorOffset = (x * 6 + vertex) * 3;
+                colors[colorOffset] = color.r;
+                colors[colorOffset + 1] = color.g;
+                colors[colorOffset + 2] = color.b;
+            }
         }
 
-        this._context.stroke();
+        this._phase.geometry.attributes.position.needsUpdate = true;
+        this._phase.geometry.attributes.color.needsUpdate = true;
     }
 
-    /**
-     * @param {WaveFunction} waveFunction 
-     * @param {number} centerY
-     */
-    _plotRealImag(waveFunction, centerY) {
-        this._plotReal(waveFunction, centerY);
+    _updateVisibility() {
+        const realImag = this._mode === OneDimensionalWaveFunctionPlot.Mode.REAL_IMAG;
+        const densityPhase = this._mode === OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE;
 
-        if (this._showImaginary)
-            this._plotImag(waveFunction, centerY);
+        this._axis.visible = true;
+        this._real.visible = realImag;
+        this._imag.visible = realImag && this._showImaginary;
+        this._phase.visible = densityPhase;
     }
 
     /** @param {WaveFunction} waveFunction */
     synchronizeWith(waveFunction) {
-        const centerY = this._height / 2;
+        this._sampleWaveFunction(waveFunction);
 
-        this._context.fillStyle = "black";
-        this._context.fillRect(0, 0, this._width, this._height);
+        if (this._mode === OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE)
+            this._updatePhaseGeometry(waveFunction);
 
-        this._plotAxis(centerY);
+        this._updateVisibility();
+    }
 
-        if (this._mode === OneDimensionalWaveFunctionPlot.Mode.REAL_IMAG)
-            this._plotRealImag(waveFunction, centerY);
-        else if (this._mode === OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE)
-            this._plotDensityPhase(waveFunction);
+    dispose() {
+        for (const object of [this._axis, this._real, this._imag, this._phase]) {
+            object.geometry.dispose();
+            object.material.dispose();
+        }
+
+        this.clear();
     }
 }
