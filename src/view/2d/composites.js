@@ -250,8 +250,6 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
 
     /**
      * @param {{
-     *  width?: number,
-     *  height?: number,
      *  worldWidth?: number,
      *  worldHeight?: number,
      *  scaleY?: number,
@@ -262,8 +260,6 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
      * }} [options]
      */
     constructor({
-        width = 800,
-        height = 400,
         worldWidth = 20,
         worldHeight = 10,
         scaleY = 100,
@@ -274,11 +270,9 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
     } = {}) {
         super();
 
-        this._width = width;
-        this._height = height;
         this._worldWidth = worldWidth;
         this._worldHeight = worldHeight;
-        this._amplitudeScale = scaleY * worldHeight / height;
+        this._amplitudeScale = scaleY;
         this._densityScale = densityScale;
         this._densityBaseline = -worldHeight * 0.4;
         this._showImaginary = showImaginary;
@@ -322,18 +316,18 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
 
         this._axis.geometry.setAttribute("position", new Float32BufferAttribute([
             -halfWidth, 0, 0,
-             halfHeight, 0, 0
+             halfWidth, 0, 0
         ], 3));
     }
 
-    _createWaveGeometry() {
-        const positions = new Float32Array(this._width * 3);
+    _createWaveGeometry(sampleCount) {
+        const positions = new Float32Array(sampleCount * 3);
         const positionAttribute = new Float32BufferAttribute(positions, 3);
 
         this._real.geometry.setAttribute("position", positionAttribute.clone());
         this._imag.geometry.setAttribute("position", positionAttribute.clone());
 
-        const segmentCount = this._width - 1;
+        const segmentCount = sampleCount - 1;
         const phasePositions = new Float32Array(segmentCount * 6 * 3);
         const phaseColors = new Float32Array(segmentCount * 6 * 3);
 
@@ -343,6 +337,18 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
 
     /** @param {WaveFunction} waveFunction */
     _sampleWaveFunction(waveFunction) {
+        const sampleCount = waveFunction.nx;
+        if (this._sampleCount !== sampleCount) {
+            this._sampleCount = sampleCount;
+            this._real.geometry.dispose();
+            this._imag.geometry.dispose();
+            this._phase.geometry.dispose();
+            this._real.geometry = new BufferGeometry();
+            this._imag.geometry = new BufferGeometry();
+            this._phase.geometry = new BufferGeometry();
+            this._createWaveGeometry(sampleCount);
+        }
+
         const realPositions = this._real.geometry.attributes.position.array;
         const imagPositions = this._imag.geometry.attributes.position.array;
 
@@ -350,8 +356,8 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         const centerY = 0;
         const amplitudeScale = this._amplitudeScale;
 
-        for (let x = 0; x < this._width; x++) {
-            const normalizedX = x / (this._width - 1);
+        for (let x = 0; x < sampleCount; x++) {
+            const normalizedX = x / (sampleCount - 1);
             waveFunction.sample(normalizedX, 0, this._sample);
 
             const worldX = -halfWidth + normalizedX * this._worldWidth;
@@ -378,9 +384,10 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         const densityScale = this._densityScale;
         const baseline = this._densityBaseline;
 
-        for (let x = 0; x < this._width - 1; x++) {
-            const normalizedX0 = x / (this._width - 1);
-            const normalizedX1 = (x + 1) / (this._width - 1);
+        const sampleCount = waveFunction.nx;
+        for (let x = 0; x < sampleCount - 1; x++) {
+            const normalizedX0 = x / (sampleCount - 1);
+            const normalizedX1 = (x + 1) / (sampleCount - 1);
 
             waveFunction.sample(normalizedX0, 0, this._sample);
             const density0 = this._sample.absSquared * densityScale;
@@ -426,7 +433,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         const realImag = this._mode === OneDimensionalWaveFunctionPlot.Mode.REAL_IMAG;
         const densityPhase = this._mode === OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE;
 
-        this._axis.visible = true;
+        this._axis.visible = realImag;
         this._real.visible = realImag;
         this._imag.visible = realImag && this._showImaginary;
         this._phase.visible = densityPhase;
