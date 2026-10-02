@@ -278,7 +278,7 @@ export class ElectromagneticWave extends Renderable3D {
     }
 }
 
-export class OneDimensionalComplexPlaneWave extends Renderable3D {
+export class OneDimensionalWaveFunctionArrows extends Renderable3D {
     /**
      * @param {{
      *     arrowDistance?: number,

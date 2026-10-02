@@ -1,5 +1,5 @@
 ---
-title: "📦 Infinite square well"
+title: "📦 Particle in a box"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
@@ -12,10 +12,33 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-### About
+> The Infinite Square Well (ISW) is an idealization of a physical system that strictly prohibits
+> the particle from straying beyond a certain range of x-values, but exerts no influence over
+> the particle within those limits. So the particle is “free” to roam, but only over a prescribed
+> range on the x-axis. &mdash; [Visualizing Quantum Mechanics with Python](https://www.amazon.com/Visualizing-Quantum-Mechanics-Python-Spicklemire/dp/1032569247)
+
+### One-dimensional case
 <div class="header_line"></div>
 
-The infinite square well is also known as the infinite potential well or the infinite square well.
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/quantumphysics/scenes/infinite_well_1d.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=infinite_well_1d.js"/>
+    </a>
+</div>
+
+🧠 Idea taken from the book [Visualizing Quantum Mechanics with Python](https://www.amazon.com/Visualizing-Quantum-Mechanics-Python-Spicklemire/dp/1032569247)<br/>
+📌 **Highly recommended background information**: [Simulating quantum mechanics with Python](https://ben.land/post/2022/03/09/quantum-mechanics-simulation/)<br/>
+🐍 A [VPython demo](https://glowscript.org/#/user/zeger.hendrikse/folder/Quantum/program/InfiniteSquarewell) is available as well, see [infinite_squarewell.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/infinite_squarewell.py)
+
+<div id="infiniteWellContainer" ></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/infinite_well_1d.js"}></script>
+
+👉 Note that the energy of the eigenstates go like $n^2$.<br/> 
+👉 For example, we observe that the $n = 2$
+state has four times the energy, and therefore four times the frequency of the ground state $n = 1$!
+
+### Two-dimensional case
+<div class="header_line"></div>
 
 > A 2D Infinite Square Well (ISW) is a potential well that has zero potential energy over
 > a finite domain in two directions, say the $x$- and $y$-directions, and is infinite outside that
@@ -27,17 +50,7 @@ The infinite square well is also known as the infinite potential well or the inf
 > form $\psi_{nm}(x, y) = A \sin(n\pi x/L_x) \sin(n\pi y/L_y )$.
 > &mdash; [Visualizing Quantum Mechanics with Python](https://www.amazon.com/Visualizing-Quantum-Mechanics-Python-Spicklemire/dp/1032569247)
 
-### What am I looking at?
-<div class="header_line"></div>
-
-📌 Analytic time evolution for a particle in a two-dimensional infinite square well.<br/>
-📌 The well is represented by the stationary basis $\psi(n,m) = sin(n*\pi*x/L_x) sin(m*\pi*y/L_y)$.<br/>
-📌 The wavefunction evolves by applying the corresponding phase factors.<br/>
-
-🧠 Idea taken from the book [Visualizing Quantum Mechanics with Python](https://www.amazon.com/Visualizing-Quantum-Mechanics-Python-Spicklemire/dp/1032569247)<br/>
-👉 **Highly recommended background information**: [Visualizing complex numbers and wavefunctions in one and two dimensions](https://ben.land/post/2022/03/17/complex-wavefunction-visualization/)<br/>
-
-### Simulation
+#### What am I looking at?
 <div class="header_line"></div>
 
 <div class="badgeRow">
@@ -46,6 +59,12 @@ The infinite square well is also known as the infinite potential well or the inf
     </a>
 </div>
 
+🧠 Idea taken from the book [Visualizing Quantum Mechanics with Python](https://www.amazon.com/Visualizing-Quantum-Mechanics-Python-Spicklemire/dp/1032569247)<br/>
+👉 **Highly recommended background information**: [Visualizing complex numbers and wavefunctions in one and two dimensions](https://ben.land/post/2022/03/17/complex-wavefunction-visualization/)<br/>
+
 <div id="infiniteSquareWell2D" ></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/two_dim_infinite_square_well.js"}></script>
 
+📌 Analytic time evolution for a particle in a two-dimensional infinite square well.<br/>
+📌 The well is represented by the stationary basis $\psi(n,m) = sin(n\pi x/L_x) sin(m \pi y/L_y)$.<br/>
+📌 The wavefunction evolves by applying the corresponding phase factors.<br/>

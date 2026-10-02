@@ -1,13 +1,15 @@
 import {
     BoxGeometry, ConeGeometry, DoubleSide, InstancedBufferAttribute, InstancedMesh,
-    Matrix4, MeshBasicMaterial, Quaternion, Vector3
+    Matrix4, MeshBasicMaterial, Quaternion, Vector3, Color, BufferGeometry,
+    LineBasicMaterial, Line, Mesh, Float32BufferAttribute
 } from "three";
-import { Range } from "../../../model/math/math.js";
-import { Vec2, Vec3 } from "../../../model/math/objects.js";
-import { Arrow2D } from "../primitives.js";
-import { Renderable2D } from "../../renderer.js";
-import { VectorField } from "../../../model/math/fields.js";
-import { Colour } from "../../colormappers.js";
+import { Range } from "../../model/math/math.js";
+import { Vec2, Vec3 } from "../../model/math/objects.js";
+import { Arrow2D } from "./primitives.js";
+import { Renderable2D } from "../renderer.js";
+import { VectorField, ComplexFunctionSample } from "../../model/math/fields.js";
+import { Colour, hsvToRgb } from "../colormappers.js";
+import { WaveFunction } from "../../model/phys/quantum/wavefunction.js";
 
 const UP = new Vector3(0, 1, 0);
 
@@ -235,6 +237,193 @@ export class ArrowField2D extends Renderable2D {
         this._headLeftMesh.material.dispose();
         this._headRightMesh.geometry.dispose();
         this._headRightMesh.material.dispose();
+
+        this.clear();
+    }
+}
+
+export class OneDimensionalWaveFunctionPlot extends Renderable2D {
+    static Mode = Object.freeze({
+        DENSITY_PHASE: "densityPhase",
+        REAL_IMAG: "realImag"
+    });
+
+    constructor({
+        width = 800,
+        height = 400,
+        worldWidth = 20,
+        worldHeight = 10,
+        scaleY = 100,
+        showImaginary = true,
+        mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,
+        nColors = 360
+    } = {}) {
+        super();
+
+        this._width = width;
+        this._height = height;
+        this._worldWidth = worldWidth;
+        this._worldHeight = worldHeight;
+        this._scaleY = scaleY * worldHeight / height;
+        this._showImaginary = showImaginary;
+        this._mode = mode;
+        this._nColors = nColors;
+
+        this._sample = new ComplexFunctionSample();
+        this._colors = Array.from({ length: nColors + 1 }, (_, index) =>
+            new Color().copy(hsvToRgb(index / nColors, 1, 0.5))
+        );
+
+        this._axis = new Line(new BufferGeometry(), new LineBasicMaterial({ color: 0x808080 }));
+        this._real = new Line(new BufferGeometry(), new LineBasicMaterial({ color: 0xffc000 }));
+        this._imag = new Line(new BufferGeometry(), new LineBasicMaterial({ color: 0x00d0ff }));
+        this._phase = new Mesh(new BufferGeometry(), new MeshBasicMaterial({
+            vertexColors: true,
+            side: DoubleSide
+        }));
+        this.add(this._axis, this._real, this._imag, this._phase);
+
+        this._createStaticGeometry();
+        this._createWaveGeometry();
+    }
+
+    /** @param {WaveFunction} waveFunction */
+    canBindTo(waveFunction) {
+        if (waveFunction.ny !== 1 || typeof waveFunction.sample !== "function")
+            throw new Error("OneDimensionalWaveFunctionPlot needs a one-dimensional complex field.");
+        return true;
+    }
+
+    /** @param {string} mode */
+    set mode(mode) {
+        this._mode = mode;
+        this._updateVisibility();
+    }
+
+    _createStaticGeometry() {
+        const halfWidth = this._worldWidth * 0.5;
+        const halfHeight = this._worldHeight * 0.5;
+
+        this._axis.geometry.setAttribute("position", new Float32BufferAttribute([
+            -halfWidth, 0, 0,
+             halfWidth, 0, 0
+        ], 3));
+    }
+
+    _createWaveGeometry() {
+        const positions = new Float32Array(this._width * 3);
+        const positionAttribute = new Float32BufferAttribute(positions, 3);
+
+        this._real.geometry.setAttribute("position", positionAttribute.clone());
+        this._imag.geometry.setAttribute("position", positionAttribute.clone());
+
+        const segmentCount = this._width - 1;
+        const phasePositions = new Float32Array(segmentCount * 6 * 3);
+        const phaseColors = new Float32Array(segmentCount * 6 * 3);
+
+        this._phase.geometry.setAttribute("position", new Float32BufferAttribute(phasePositions, 3));
+        this._phase.geometry.setAttribute("color", new Float32BufferAttribute(phaseColors, 3));
+    }
+
+    /** @param {WaveFunction} waveFunction */
+    _sampleWaveFunction(waveFunction) {
+        const realPositions = this._real.geometry.attributes.position.array;
+        const imagPositions = this._imag.geometry.attributes.position.array;
+
+        const halfWidth = this._worldWidth * 0.5;
+        const centerY = 0;
+        const amplitudeScale = this._scaleY;
+
+        for (let x = 0; x < this._width; x++) {
+            const normalizedX = x / (this._width - 1);
+            waveFunction.sample(normalizedX, 0, this._sample);
+
+            const worldX = -halfWidth + normalizedX * this._worldWidth;
+            const offset = x * 3;
+
+            realPositions[offset] = worldX;
+            realPositions[offset + 1] = centerY + this._sample.output.re * amplitudeScale;
+            realPositions[offset + 2] = 0.01;
+
+            imagPositions[offset] = worldX;
+            imagPositions[offset + 1] = centerY + this._sample.output.im * amplitudeScale;
+            imagPositions[offset + 2] = 0.01;
+        }
+
+        this._real.geometry.attributes.position.needsUpdate = true;
+        this._imag.geometry.attributes.position.needsUpdate = true;
+    }
+
+    /** @param {WaveFunction} waveFunction */
+    _updatePhaseGeometry(waveFunction) {
+        const positions = this._phase.geometry.attributes.position.array;
+        const colors = this._phase.geometry.attributes.color.array;
+        const halfWidth = this._worldWidth * 0.5;
+        const halfHeight = this._worldHeight * 0.5;
+
+        for (let x = 0; x < this._width - 1; x++) {
+            const normalizedX0 = x / (this._width - 1);
+            const normalizedX1 = (x + 1) / (this._width - 1);
+
+            waveFunction.sample(normalizedX0, 0, this._sample);
+            const phase0 = (this._sample.phase % 1 + 1) % 1;
+            const color0 = this._colors[Math.floor(phase0 * this._nColors)];
+
+            waveFunction.sample(normalizedX1, 0, this._sample);
+            const phase1 = (this._sample.phase % 1 + 1) % 1;
+            const color1 = this._colors[Math.floor(phase1 * this._nColors)];
+
+            const x0 = -halfWidth + normalizedX0 * this._worldWidth;
+            const x1 = -halfWidth + normalizedX1 * this._worldWidth;
+
+            const vertexOffset = x * 18;
+            positions.set([
+                x0, -halfHeight, -0.01,
+                x1, -halfHeight, -0.01,
+                x1,  halfHeight, -0.01,
+                x0, -halfHeight, -0.01,
+                x1,  halfHeight, -0.01,
+                x0,  halfHeight, -0.01
+            ], vertexOffset);
+
+            for (let vertex = 0; vertex < 6; vertex++) {
+                const color = vertex === 0 || vertex === 3 || vertex === 5 ? color0 : color1;
+                const colorOffset = (x * 6 + vertex) * 3;
+                colors[colorOffset] = color.r;
+                colors[colorOffset + 1] = color.g;
+                colors[colorOffset + 2] = color.b;
+            }
+        }
+
+        this._phase.geometry.attributes.position.needsUpdate = true;
+        this._phase.geometry.attributes.color.needsUpdate = true;
+    }
+
+    _updateVisibility() {
+        const realImag = this._mode === OneDimensionalWaveFunctionPlot.Mode.REAL_IMAG;
+        const densityPhase = this._mode === OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE;
+
+        this._axis.visible = true;
+        this._real.visible = realImag;
+        this._imag.visible = realImag && this._showImaginary;
+        this._phase.visible = densityPhase;
+    }
+
+    /** @param {WaveFunction} waveFunction */
+    synchronizeWith(waveFunction) {
+        this._sampleWaveFunction(waveFunction);
+
+        if (this._mode === OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE)
+            this._updatePhaseGeometry(waveFunction);
+
+        this._updateVisibility();
+    }
+
+    dispose() {
+        for (const object of [this._axis, this._real, this._imag, this._phase]) {
+            object.geometry.dispose();
+            object.material.dispose();
+        }
 
         this.clear();
     }
