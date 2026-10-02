@@ -1,5 +1,6 @@
 import {Renderable3D} from "../../renderer.js";
 import {hsvToRgb} from "../../colormappers.js";
+import {ComplexFunctionSample} from "../../../model/math/fields.js";
 
 export class OneDimensionalComplexPlaneWave2D extends Renderable3D {
     static Mode = Object.freeze({
