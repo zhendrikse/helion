@@ -359,17 +359,19 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         const positions = this._phase.geometry.attributes.position.array;
         const colors = this._phase.geometry.attributes.color.array;
         const halfWidth = this._worldWidth * 0.5;
-        const halfHeight = this._worldHeight * 0.5;
+        const densityScale = this._scaleY;
 
         for (let x = 0; x < this._width - 1; x++) {
             const normalizedX0 = x / (this._width - 1);
             const normalizedX1 = (x + 1) / (this._width - 1);
 
             waveFunction.sample(normalizedX0, 0, this._sample);
+            const density0 = this._sample.absSquared * densityScale;
             const phase0 = (this._sample.phase % 1 + 1) % 1;
             const color0 = this._colors[Math.floor(phase0 * this._nColors)];
 
             waveFunction.sample(normalizedX1, 0, this._sample);
+            const density1 = this._sample.absSquared * densityScale;
             const phase1 = (this._sample.phase % 1 + 1) % 1;
             const color1 = this._colors[Math.floor(phase1 * this._nColors)];
 
@@ -378,12 +380,13 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
 
             const vertexOffset = x * 18;
             positions.set([
-                x0, -halfHeight, -0.01,
-                x1, -halfHeight, -0.01,
-                x1,  halfHeight, -0.01,
-                x0, -halfHeight, -0.01,
-                x1,  halfHeight, -0.01,
-                x0,  halfHeight, -0.01
+                x0, 0, -0.01,
+                x1, 0, -0.01,
+                x1, density1, -0.01,
+
+                x0, 0, -0.01,
+                x1, density1, -0.01,
+                x0, density0, -0.01
             ], vertexOffset);
 
             for (let vertex = 0; vertex < 6; vertex++) {
