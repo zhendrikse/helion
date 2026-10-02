@@ -1,6 +1,6 @@
 import {
     BoxGeometry, ConeGeometry, DoubleSide, InstancedBufferAttribute, InstancedMesh,
-    Matrix4, MeshBasicMaterial, Quaternion, Vector3, Color, BufferGeometry,
+    Matrix4, MeshBasicMaterial, Quaternion, Color, BufferGeometry,
     LineBasicMaterial, Line, Mesh, Float32BufferAttribute
 } from "three";
 import { Range } from "../../model/math/math.js";
@@ -11,7 +11,7 @@ import { VectorField, ComplexFunctionSample } from "../../model/math/fields.js";
 import { Colour, hsvToRgb } from "../colormappers.js";
 import { WaveFunction } from "../../model/phys/quantum/wavefunction.js";
 
-const UP = new Vector3(0, 1, 0);
+const UP = new Vec3(0, 1, 0);
 
 export class ArrowField2D extends Renderable2D {
     /**
@@ -84,17 +84,17 @@ export class ArrowField2D extends Renderable2D {
 
         this._matrix = new Matrix4();
         this._q = new Quaternion();
-        this._dir = new Vector3();
-        this._segmentDir = new Vector3();
-        this._shape = new Vector3();
+        this._dir = new Vec3();
+        this._segmentDir = new Vec3();
+        this._shape = new Vec3();
         this._position = new Vec2();
         this._target = new Vec3();
-        this._shaftCenter = new Vector3();
-        this._tip = new Vector3();
-        this._base = new Vector3();
-        this._end = new Vector3();
-        this._headCenter = new Vector3();
-        this._perpendicular = new Vector3();
+        this._shaftCenter = new Vec3();
+        this._tip = new Vec3();
+        this._base = new Vec3();
+        this._end = new Vec3();
+        this._headCenter = new Vec3();
+        this._perpendicular = new Vec3();
     }
 
     /** @param {VectorField} vectorField */
@@ -131,25 +131,17 @@ export class ArrowField2D extends Renderable2D {
         const headLength = Math.min(this._headLength, visualMagnitude * 0.4);
         const shaftLength = Math.max(visualMagnitude - headLength, 0);
 
-        this._shaftCenter.set(
-            positionX + this._dir.x * shaftLength * 0.5,
-            positionY + this._dir.y * shaftLength * 0.5,
-            0
-        );
+        this._shaftCenter.copy(new Vec3(positionX, positionY, 0).addScaledVector(this._dir, shaftLength * 0.5));
 
         this._q.setFromUnitVectors(UP, this._dir);
         this._shape.set(this._shaftWidth, shaftLength, this._shaftWidth);
         this._matrix.compose(this._shaftCenter, this._q, this._shape);
         this._shaftMesh.setMatrixAt(index, this._matrix);
 
-        this._tip.set( positionX + this._dir.x * visualMagnitude,  positionY + this._dir.y * visualMagnitude, 0);
+        this._tip.copy(new Vec3(positionX, positionY, 0).addScaledVector(this._dir, visualMagnitude));
 
         if (this._headMesh) {
-            this._headCenter.set(
-                this._tip.x - this._dir.x * headLength * 0.5,
-                this._tip.y - this._dir.y * headLength * 0.5,
-                0
-            );
+            this._headCenter.copy(this._tip.clone().addScaledVector(this._dir, -headLength * 0.5));
 
             this._shape.set(this._headWidth,headLength, this._headWidth);
             this._matrix.compose(this._headCenter, this._q, this._shape);
@@ -188,19 +180,15 @@ export class ArrowField2D extends Renderable2D {
     /**
      * @param {InstancedMesh} mesh
      * @param {number} index
-     * @param {Vector3} tip
-     * @param {Vector3} direction
+     * @param {Vec3} tip
+     * @param {Vec3} direction
      * @param {number} length
      * @param {number} side
      */
     _setHeadSegment(mesh, index, tip, direction, length, side) {
         this._perpendicular.set(-direction.y, direction.x, 0);
-        this._base.set(tip.x - direction.x * length, tip.y - direction.y * length, 0);
-        this._end.set(
-            this._base.x + this._perpendicular.x * this._headWidth * 0.5 * side,
-            this._base.y + this._perpendicular.y * this._headWidth * 0.5 * side,
-            0
-        );
+        this._base.copy(tip.clone().addScaledVector(direction, -length));
+        this._end.copy(this._base.clone().addScaledVector(this._perpendicular, this._headWidth * 0.5 * side));
 
         const dx = this._end.x - tip.x;
         const dy = this._end.y - tip.y;
@@ -208,11 +196,7 @@ export class ArrowField2D extends Renderable2D {
 
         this._segmentDir.set(dx / segmentLength, dy / segmentLength, 0);
         this._q.setFromUnitVectors(UP, this._segmentDir);
-        this._shape.set(
-            Math.max(this._shaftWidth, 0.001),
-            segmentLength,
-            Math.max(this._shaftWidth, 0.001)
-        );
+        this._shape.set(Math.max(this._shaftWidth, 0.001), segmentLength, Math.max(this._shaftWidth, 0.001));
 
         this._headCenter.set((tip.x + this._end.x) * 0.5, (tip.y + this._end.y) * 0.5, 0);
         this._matrix.compose(this._headCenter, this._q, this._shape);
@@ -287,10 +271,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         this._axis = new Line(new BufferGeometry(), new LineBasicMaterial({ color: 0x808080 }));
         this._real = new Line(new BufferGeometry(), new LineBasicMaterial({ color: 0xffc000 }));
         this._imag = new Line(new BufferGeometry(), new LineBasicMaterial({ color: 0x00d0ff }));
-        this._phase = new Mesh(new BufferGeometry(), new MeshBasicMaterial({
-            vertexColors: true,
-            side: DoubleSide
-        }));
+        this._phase = new Mesh(new BufferGeometry(), new MeshBasicMaterial({ vertexColors: true, side: DoubleSide }));
         this.add(this._axis, this._real, this._imag, this._phase);
 
         this._createStaticGeometry();
