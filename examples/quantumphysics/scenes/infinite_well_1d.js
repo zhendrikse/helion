@@ -7,29 +7,23 @@ const resolution = 80;
 const infiniteWell = new WaveFunction({ nx: resolution });
 const Lx = L / resolution;
 
-for (let n = 1; n <= 4; n++) {
-    const real = new Float64Array(resolution);
-    const imag = new Float64Array(resolution);
-    const k = n * Math.PI / L;
-    const energy = n * n * Math.PI * Math.PI / (2 * L * L);
-    for (let i = 0; i < resolution; i++) {
-        const x = i * Lx;
-        real[i] = Math.sqrt(2 / L) * Math.sin(k * x);
-        imag[i] = 0;
+/** @param {WaveFunction} infiniteWell */
+function initEigenstates(infiniteWell) {
+    for (let n = 1; n <= 4; n++) {
+        const real = new Float64Array(resolution);
+        const imag = new Float64Array(resolution);
+        const k = n * Math.PI / L;
+        const energy = n * n * Math.PI * Math.PI / (2 * L * L);
+        for (let i = 0; i < resolution; i++) {
+            const x = i * Lx;
+            real[i] = Math.sqrt(2 / L) * Math.sin(k * x);
+            imag[i] = 0;
+        }
+        infiniteWell.addEigenstate(real, imag, energy);
     }
-    infiniteWell.addEigenstate(real, imag, energy);
 }
-infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]);
-
-const arrowView = new OneDimensionalWaveFunctionArrows({
-    arrowDistance: Lx,
-    size: 0.1,
-    amplitude: 20,
-});
-arrowView.position.set(-.25 * L, 0, 0);
 
 const weights = {ground: 1, first: 0, second: 0, third: 0}
-
 function updateSuperposition() {
     infiniteWell.setSuperposition([
         {eigenstate: 0, coefficient: WaveFunction.realCoefficient(weights.ground) },
@@ -38,6 +32,16 @@ function updateSuperposition() {
         {eigenstate: 3, coefficient: WaveFunction.realCoefficient(weights.third) }
     ])
 }
+
+initEigenstates(infiniteWell);
+infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]);
+
+const arrowView = new OneDimensionalWaveFunctionArrows({
+    arrowDistance: Lx,
+    size: 0.1,
+    amplitude: 20,
+});
+arrowView.position.set(-.25 * L, 0, 0);
 
 Simulation
     .with({
@@ -63,10 +67,14 @@ Simulation
     .advancesBy(.5 *Math.PI)
     .onStep((clock, _) => infiniteWell.time = clock.simulatedTime)
     .append(new RadioGroup()
-        .add('Ground state (n=1)', () => infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]))
-        .add('1st excited (n=2)', () =>  infiniteWell.setSuperposition([{ eigenstate: 1, coefficient: WaveFunction.realCoefficient(1) }]))
-        .add('2nd excited (n=3)', () =>  infiniteWell.setSuperposition([{ eigenstate: 2, coefficient: WaveFunction.realCoefficient(1) }]))
-        .add('3rd excited (n=4)', () =>  infiniteWell.setSuperposition([{ eigenstate: 3, coefficient: WaveFunction.realCoefficient(1) }]))
+        .add('Ground state (n=1)', () => 
+            infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]))
+        .add('1st excited (n=2)', () =>  
+            infiniteWell.setSuperposition([{ eigenstate: 1, coefficient: WaveFunction.realCoefficient(1) }]))
+        .add('2nd excited (n=3)', () =>  
+            infiniteWell.setSuperposition([{ eigenstate: 2, coefficient: WaveFunction.realCoefficient(1) }]))
+        .add('3rd excited (n=4)', () =>  
+            infiniteWell.setSuperposition([{ eigenstate: 3, coefficient: WaveFunction.realCoefficient(1) }]))
         .checked(0)
     )
     .append(new Slider('n=1 (ground): ')
