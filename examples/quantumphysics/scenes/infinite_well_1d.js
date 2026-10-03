@@ -64,7 +64,12 @@ const thirdExcitedSlider = new Slider('n=4: ')
 
 /** @param {number} n */
 function setEigenstate(n) {
-    infiniteWell.setSuperposition([{ eigenstate: n, coefficient: WaveFunction.realCoefficient(1) }]);
+    weights.ground = n === 0 ? 1 : 0;
+    weights.first = n === 1 ? 1 : 0;
+    weights.second = n === 2 ? 1 : 0;
+    weights.third = n === 3 ? 1 : 0;
+    updateSuperposition();
+
     groundStateSlider.withValue(n === 0 ? 1 : 0);
     firstExcitedSlider.withValue(n === 1 ? 1 : 0);
     secondExcitedSlider.withValue(n === 2 ? 1 : 0);
