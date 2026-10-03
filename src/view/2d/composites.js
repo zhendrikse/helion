@@ -85,7 +85,6 @@ export class ArrowField2D extends Renderable2D {
         this._matrix = new Matrix4();
         this._q = new Quaternion();
         this._dir = new Vec3();
-        this._segmentDir = new Vec3();
         this._shape = new Vec3();
         this._position = new Vec2();
         this._target = new Vec3();
@@ -95,6 +94,8 @@ export class ArrowField2D extends Renderable2D {
         this._end = new Vec3();
         this._headCenter = new Vec3();
         this._perpendicular = new Vec3();
+
+        this._scratchVector = new Vec3();
     }
 
     /** @param {VectorField} vectorField */
@@ -105,21 +106,17 @@ export class ArrowField2D extends Renderable2D {
         return true;
     }
 
-    /** 
-     * @param {number} index  
-     * @param {number} positionX 
-     * @param {number} positionY 
-     */
-    _updateVectorAt(index, positionX, positionY) {
+    /** @param {number} index */
+    _updateVectorAt(index) {
         const x = -this._target.x;
         const y = -this._target.y;
         const magnitude = Math.hypot(x, y);
 
         if (magnitude < 1e-12) {
             this._hideInstance(this._shaftMesh, index);
-            if (this._headMesh)
+            if (this._headStyle === Arrow2D.HeadStyle.Filled) {
                 this._hideInstance(this._headMesh, index);
-            else {
+            } else {
                 this._hideInstance(this._headLeftMesh, index);
                 this._hideInstance(this._headRightMesh, index);
             }
@@ -131,18 +128,17 @@ export class ArrowField2D extends Renderable2D {
         const headLength = Math.min(this._headLength, visualMagnitude * 0.4);
         const shaftLength = Math.max(visualMagnitude - headLength, 0);
 
-        this._shaftCenter.copy(new Vec3(positionX, positionY, 0).addScaledVector(this._dir, shaftLength * 0.5));
-
+        this._scratchVector.set(this._position.x, this._position.y, 0).addScaledVector(this._dir, shaftLength * 0.5);
         this._q.setFromUnitVectors(UP, this._dir);
         this._shape.set(this._shaftWidth, shaftLength, this._shaftWidth);
-        this._matrix.compose(this._shaftCenter, this._q, this._shape);
+        this._matrix.compose(this._scratchVector, this._q, this._shape);
         this._shaftMesh.setMatrixAt(index, this._matrix);
 
-        this._tip.copy(new Vec3(positionX, positionY, 0).addScaledVector(this._dir, visualMagnitude));
+        this._scratchVector.set(this._position.x, this._position.y, 0);
+        this._tip.copy(this._scratchVector.addScaledVector(this._dir, visualMagnitude));
 
-        if (this._headMesh) {
+        if (this._headStyle === Arrow2D.HeadStyle.Filled) {
             this._headCenter.copy(this._tip.clone().addScaledVector(this._dir, -headLength * 0.5));
-
             this._shape.set(this._headWidth,headLength, this._headWidth);
             this._matrix.compose(this._headCenter, this._q, this._shape);
             this._headMesh.setMatrixAt(index, this._matrix);
@@ -151,7 +147,8 @@ export class ArrowField2D extends Renderable2D {
             this._setHeadSegment(this._headRightMesh, index, this._tip, this._dir, headLength, -1);
         }
 
-        const color = this._colorMap(new Vec3(this._dir.x, this._dir.y, 0), magnitude);
+        this._scratchVector.set(this._dir.x, this._dir.y, 0);
+        const color = this._colorMap(this._scratchVector, magnitude);
         this._shaftMesh.instanceColor.setXYZ(index, color.r, color.g, color.b);
     }
 
@@ -162,7 +159,7 @@ export class ArrowField2D extends Renderable2D {
             for (const y of /** @type {Iterable<number>} */ (this._yRange)) {
                 this._position.set(x, y);
                 vectorField.sample(this._position, this._target);
-                this._updateVectorAt(index++, x, y);
+                this._updateVectorAt(index++);
         }
 
         this._shaftMesh.instanceMatrix.needsUpdate = true;
@@ -194,8 +191,8 @@ export class ArrowField2D extends Renderable2D {
         const dy = this._end.y - tip.y;
         const segmentLength = Math.hypot(dx, dy);
 
-        this._segmentDir.set(dx / segmentLength, dy / segmentLength, 0);
-        this._q.setFromUnitVectors(UP, this._segmentDir);
+        this._scratchVector.set(dx / segmentLength, dy / segmentLength, 0);
+        this._q.setFromUnitVectors(UP, this._scratchVector);
         this._shape.set(Math.max(this._shaftWidth, 0.001), segmentLength, Math.max(this._shaftWidth, 0.001));
 
         this._headCenter.set((tip.x + this._end.x) * 0.5, (tip.y + this._end.y) * 0.5, 0);
