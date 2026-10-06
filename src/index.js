@@ -62,7 +62,7 @@ export { TangentFrameView } from './view/3d/surfaces/tangentframe.js';
 export { DifferentialGeometry, DifferentialFrame } from './model/math/numerics/diffgeometry.js';
 export { Matrix2D, RotationMatrix2D, linspace, meshgrid } from './model/math/linearalgebra.js';
 export { Arrow2D } from './view/2d/primitives.js';
-export { ArrowField2D, OneDimensionalWaveFunctionPlot, OneDimensionalWaveFunctionView } from './view/2d/composites.js';
+export { ArrowField2D, OneDimensionalWaveFunctionView } from './view/2d/composites.js';
 export { WaveEquationSolver, JacobiSolver } from './model/math/numerics/solvers/solvers.js';
 export { SchrodingerEigenstateSolver3D } from './model/math/numerics/solvers/qmsolvers.js';
 export { SchrodingerSolver } from './model/phys/quantum/schrodinger.js';
@@ -90,7 +90,7 @@ export {
 } from './view/3d/surfaces/visualization.js';
 
 export {
-    OneDimensionalWaveFunctionArrows, ElectromagneticWave, PointCloudView, PointCloudMaterial,
+    ElectromagneticWave, PointCloudView, PointCloudMaterial,
     ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule
 } from './view/3d/composite/composites.js';
 

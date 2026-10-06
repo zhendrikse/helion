@@ -69,12 +69,9 @@ function setCoherentState(alpha) {
 setCoherentState(1.5);
 
 const waveView = new OneDimensionalWaveFunctionView({
-    worldWidth: 20,
     amplitude: 5,
-    densityScale: 10,
     arrowDistance: dx,
     arrowSize: 0.1,
-    arrowAmplitude: 5,
     arrowOffsetX: -0.25 * L
 });
 

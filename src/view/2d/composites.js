@@ -99,6 +99,11 @@ export class ArrowField2D extends Renderable2D {
         this._scratchVector = new Vec3();
     }
 
+    /** @param {number} amplitude */
+    set amplitude(amplitude) {
+        this._amplitude = amplitude;
+    }
+
     /** @param {VectorField} vectorField */
     canBindTo(vectorField) {
         if (typeof vectorField?.sample !== "function")
@@ -224,7 +229,7 @@ export class ArrowField2D extends Renderable2D {
     }
 }
 
-export class OneDimensionalWaveFunctionPlot extends Renderable2D {
+class OneDimensionalWaveFunctionPlot extends Renderable2D {
     static Mode = Object.freeze({
         DENSITY_PHASE: "densityPhase",
         REAL_IMAG: "realImag"
@@ -235,7 +240,6 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
      *  worldWidth?: number,
      *  worldHeight?: number,
      *  amplitude?: number,
-     *  densityScale?: number,
      *  showImaginary?: boolean,
      *  mode?: string,
      *  nColors?: number
@@ -246,7 +250,6 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
             worldWidth = 20,
             worldHeight = 10,
             amplitude = 5,
-            densityScale = 55,
             showImaginary = true,
             mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,
             nColors = 360
@@ -257,7 +260,6 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         this._worldWidth = worldWidth;
         this._worldHeight = worldHeight;
         this._amplitudeScale = amplitude;
-        this._densityScale = densityScale;
         this._densityBaseline = -worldHeight * 0.4;
         this._showImaginary = showImaginary;
         this._mode = mode;
@@ -332,7 +334,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         waveFunction.sample(x, 0, this._sample);
         const phase = (this._sample.phase % 1 + 1) % 1;
         return {
-            density: this._sample.absSquared * this._densityScale,
+            density: this._sample.absSquared * this._amplitudeScale * 2,
             phase: phase,
             color: this._colors[Math.floor(phase * this._nColors)],
             x0: (x - 0.5) * this._worldWidth
@@ -397,7 +399,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
      * @param {import("three").TypedArray} realPositions
      * @param {import("three").TypedArray} imagPositions
      */
-    _updatePosition(x, waveFunction, realPositions, imagPositions) {
+    _drawRealImagCoordinates(x, waveFunction, realPositions, imagPositions) {
         const centerY = 0;
         const normalizedX = x / (waveFunction.nx - 1);
         waveFunction.sample(normalizedX, 0, this._sample);
@@ -420,7 +422,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
         const imagPositions = this._imag.geometry.attributes.position.array;
 
         for (let x = 0; x < waveFunction.nx; x++)
-            this._updatePosition(x, waveFunction, realPositions, imagPositions);
+            this._drawRealImagCoordinates(x, waveFunction, realPositions, imagPositions);
 
         this._real.geometry.attributes.position.needsUpdate = true;
         this._imag.geometry.attributes.position.needsUpdate = true;
@@ -452,11 +454,9 @@ export class OneDimensionalWaveFunctionView extends Renderable {
      *  worldWidth?: number,
      *  worldHeight?: number,
      *  amplitude?: number,
-     *  densityScale?: number,
      *  showImaginary?: boolean,
      *  arrowDistance?: number,
      *  arrowSize?: number,
-     *  arrowAmplitude?: number,
      *  arrowOffsetX?: number,
      *  mode?: string
      * }} [options]
@@ -464,12 +464,10 @@ export class OneDimensionalWaveFunctionView extends Renderable {
     constructor({
         worldWidth = 20,
         worldHeight = 10,
-        amplitude = 5,
-        densityScale = 55,
+        amplitude = 15,
         showImaginary = true,
         arrowDistance = 2,
         arrowSize = 1,
-        arrowAmplitude = 1,
         arrowOffsetX = 0,
         mode = OneDimensionalWaveFunctionView.Mode.ARROWS
     } = {}) {
@@ -478,7 +476,7 @@ export class OneDimensionalWaveFunctionView extends Renderable {
         this._arrows = new OneDimensionalWaveFunctionArrows({
             arrowDistance,
             size: arrowSize,
-            amplitude: arrowAmplitude
+            amplitude
         });
         this._arrows.position.x = arrowOffsetX;
 
@@ -486,7 +484,6 @@ export class OneDimensionalWaveFunctionView extends Renderable {
             worldWidth,
             worldHeight,
             amplitude,
-            densityScale,
             showImaginary,
             mode: OneDimensionalWaveFunctionPlot.Mode.REAL_IMAG
         });
@@ -522,8 +519,11 @@ export class OneDimensionalWaveFunctionView extends Renderable {
         this._updateVisibility();
     }
 
-    get mode() {
-        return this._mode;
+    /** @param {number} amplitude */
+    set amplitude(amplitude) {
+        this._amplitude = amplitude;
+        this._plot.amplitude = amplitude;
+        this._arrows.amplitude = amplitude;
     }
 
     _updateVisibility() {

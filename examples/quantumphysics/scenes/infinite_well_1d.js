@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalWaveFunctionArrows, RadioGroup, OneDimensionalWaveFunctionPlot
+    Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalWaveFunctionView, RadioGroup
 } from '../../../src/index.js';
 
 const PI = Math.PI;
@@ -34,13 +34,12 @@ function updateSuperposition() {
     ])
 }
 
-const arrowView = new OneDimensionalWaveFunctionArrows({
-    arrowDistance: Lx,
-    size: 0.1,
+const waveView = new OneDimensionalWaveFunctionView({
     amplitude: 20,
+    arrowDistance: Lx,
+    arrowSize: 0.1,
+    arrowOffsetX: -0.25 * L
 });
-
-const plotView = new OneDimensionalWaveFunctionPlot({ densityScale: 50 }); 
 
 const groundStateSlider = new Slider('n=1: ')
         .withRange(new Range(0, 1, 0.01))
@@ -76,8 +75,6 @@ function setEigenstate(n) {
 initEigenstates(infiniteWell);
 infiniteWell.setSuperposition([{ eigenstate: 0, coefficient: WaveFunction.realCoefficient(1) }]);
 setEigenstate(0);
-arrowView.position.set(-.25 * L, 0, 0);
-plotView.visible = false;
 
 Simulation
     .with({
@@ -98,26 +95,14 @@ Simulation
                 'Use sliders to mix eigenstates.'
         }
     })
-    .bind(infiniteWell.alwaysWith(arrowView))
-    .bind(infiniteWell.alwaysWith(plotView))
+    .bind(infiniteWell.alwaysWith(waveView))
     .runsEvery(0.02)
     .advancesBy(.5 *PI)
     .onStep((clock, _) => infiniteWell.time = clock.simulatedTime)
     .append(new RadioGroup()
-        .add('Arrows', () => {
-            arrowView.visible = true;
-            plotView.visible = false;
-        })
-        .add('Density/phase', () => {
-            arrowView.visible = false;
-            plotView.visible = true;
-            plotView.mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE;
-        })
-        .add('Real/imag', () => {
-            arrowView.visible = false;
-            plotView.visible = true;
-            plotView.mode = OneDimensionalWaveFunctionPlot.Mode.REAL_IMAG;
-        })
+        .add('Arrows', () => waveView.mode = OneDimensionalWaveFunctionView.Mode.ARROWS)
+        .add('Real/imag', () => waveView.mode = OneDimensionalWaveFunctionView.Mode.REAL_IMAG)
+        .add('Density/phase', () => waveView.mode = OneDimensionalWaveFunctionView.Mode.DENSITY_PHASE)
         .checked(0)
     )
     .append(new RadioGroup("Eigenstates:")

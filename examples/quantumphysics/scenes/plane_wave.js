@@ -1,5 +1,5 @@
 import {
-    Simulation, OneDimensionalWaveFunctionArrows, Vec3, Slider, Range, WaveFunction
+    Simulation, OneDimensionalWaveFunctionView, Vec3, Slider, Range, WaveFunction
 } from '../../../src/index.js';
 
 //
@@ -23,19 +23,13 @@ function updateEigenstate() {
 }
 updateEigenstate();
 
-const arrowView = new OneDimensionalWaveFunctionArrows({ amplitude: 20 });
-arrowView.position.set(-.5 * 100, 0, 0);
-
-//
-// View for 2D canvas
-//
-// const htmlDiv2d = document.getElementById('planeWaveContainer2d');
-// const renderer2d = Canvas2DRenderer.in(htmlDiv2d);
-// const waveView2d = new OneDimensionalComplexPlaneWave2D({
-//     scaleY: 10,
-//     width: htmlDiv2d.clientWidth,
-//     height: htmlDiv2d.clientHeight
-// });
+const waveView = new OneDimensionalWaveFunctionView({
+    amplitude: 25,
+    // arrowDistance: dx,
+    arrowSize: 0.75,
+    arrowOffsetX: -0.5 * 100,
+    mode: OneDimensionalWaveFunctionView.Mode.ARROWS
+});
 
 //
 // View for 3D canvas
@@ -60,14 +54,14 @@ Simulation
         }
     })
     // .synchronize(planeWave.alwaysWith(waveView2d))
-    .bind(planeWave.alwaysWith(arrowView))
+    .bind(planeWave.alwaysWith(waveView))
     .runsEvery(0.02)
     .onStep((clock, _) => planeWave.time = clock.simulatedTime)
     .append(new Slider('Amplitude: ')
-        .on(arrowView)
+        .on(waveView)
         .withProperty('amplitude')
-        .withValue(20)
-        .withRange(new Range(0.5, 25, .1)))
+        .withValue(25)
+        .withRange(new Range(0.5, 30, .1)))
     .append(new Slider('Omega: ')
         .withRange(new Range(0, 10, .1))
         .withValue(Math.PI)
@@ -84,29 +78,6 @@ Simulation
         }))
     .start();
 
-// const startStopButton = new Button(htmlDiv2d)
-//     .withText('Stop')
-//     .addEventListener('click', (event) => {
-//         if (simulation.isRunning)
-//             simulation.stop();
-//         else
-//             simulation.start();
-//
-//         event.target.innerText = event.target.innerText === 'Pause' ? 'Resume' : 'Pause';
-//     })
-//
-// RadioButton.togetherWith(startStopButton)
-//     .on(waveView2d)
-//     .withProperty('mode')
-//     .withLabel('Real/imag ')
-//     .withValue('realImag')
-//     .checked(true);
-//
-// RadioButton.togetherWith(startStopButton)
-//     .on(waveView2d)
-//     .withProperty('mode')
-//     .withLabel('Density/phase ')
-//     .withValue('densityPhase');
 
 
 
