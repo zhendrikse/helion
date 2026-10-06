@@ -6,10 +6,11 @@ import {
 import { Range } from "../../model/math/math.js";
 import { Vec2, Vec3 } from "../../model/math/objects.js";
 import { Arrow2D } from "./primitives.js";
-import { Renderable2D } from "../renderer.js";
+import { Renderable, Renderable2D } from "../renderer.js";
 import { VectorField, ComplexFunctionSample } from "../../model/math/fields.js";
 import { Colour, hsvToRgb } from "../colormappers.js";
 import { WaveFunction } from "../../model/phys/quantum/wavefunction.js";
+import { OneDimensionalWaveFunctionArrows } from "../3d/composite/composites.js";
 
 const UP = new Vector3(0, 1, 0);
 
@@ -434,6 +435,111 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
             object.material.dispose();
         }
 
+        this.clear();
+    }
+}
+
+
+export class OneDimensionalWaveFunctionView extends Renderable {
+    static Mode = Object.freeze({
+        ARROWS: "arrows",
+        REAL_IMAG: OneDimensionalWaveFunctionPlot.Mode.REAL_IMAG,
+        DENSITY_PHASE: OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE
+    });
+
+    /**
+     * @param {{
+     *  worldWidth?: number,
+     *  worldHeight?: number,
+     *  amplitude?: number,
+     *  densityScale?: number,
+     *  showImaginary?: boolean,
+     *  arrowDistance?: number,
+     *  arrowSize?: number,
+     *  arrowAmplitude?: number,
+     *  arrowOffsetX?: number,
+     *  mode?: string
+     * }} [options]
+     */
+    constructor({
+        worldWidth = 20,
+        worldHeight = 10,
+        amplitude = 5,
+        densityScale = 55,
+        showImaginary = true,
+        arrowDistance = 2,
+        arrowSize = 1,
+        arrowAmplitude = 1,
+        arrowOffsetX = 0,
+        mode = OneDimensionalWaveFunctionView.Mode.ARROWS
+    } = {}) {
+        super();
+
+        this._arrows = new OneDimensionalWaveFunctionArrows({
+            arrowDistance,
+            size: arrowSize,
+            amplitude: arrowAmplitude
+        });
+        this._arrows.position.x = arrowOffsetX;
+
+        this._plot = new OneDimensionalWaveFunctionPlot({
+            worldWidth,
+            worldHeight,
+            amplitude,
+            densityScale,
+            showImaginary,
+            mode: OneDimensionalWaveFunctionPlot.Mode.REAL_IMAG
+        });
+
+        this.add(this._arrows, this._plot);
+        this._mode = mode;
+        this._updateVisibility();
+    }
+
+    /** @param {WaveFunction} waveFunction */
+    canBindTo(waveFunction) {
+        this._arrows.canBindTo(waveFunction);
+        this._plot.canBindTo(waveFunction);
+        return true;
+    }
+
+    /** @param {WaveFunction} waveFunction */
+    initialize(waveFunction) {
+        this._arrows.initialize(waveFunction);
+        this._plot.initialize(waveFunction);
+        this._plot.initializeWith(waveFunction);
+    }
+
+    /** @param {WaveFunction} waveFunction */
+    synchronizeWith(waveFunction) {
+        this._arrows.synchronizeWith(waveFunction);
+        this._plot.synchronizeWith(waveFunction);
+    }
+
+    /** @param {string} mode */
+    set mode(mode) {
+        this._mode = mode;
+        this._updateVisibility();
+    }
+
+    get mode() {
+        return this._mode;
+    }
+
+    _updateVisibility() {
+        const arrows = this._mode === OneDimensionalWaveFunctionView.Mode.ARROWS;
+        const plot = !arrows;
+
+        this._arrows.visible = arrows;
+        this._plot.visible = plot;
+
+        if (plot)
+            this._plot.mode = this._mode;
+    }
+
+    dispose() {
+        this._arrows.dispose();
+        this._plot.dispose();
         this.clear();
     }
 }
