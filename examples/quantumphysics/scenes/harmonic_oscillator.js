@@ -3,6 +3,7 @@ import {
     OneDimensionalWaveFunctionArrows, OneDimensionalWaveFunctionPlot, RadioGroup
 } from '../../../src/index.js';
 
+const sqrtPi = Math.sqrt(Math.PI);
 const L = 12;
 const resolution = 80;
 const maxStates = 20;
@@ -16,10 +17,9 @@ const omega = 5;
 
 /**
  * @param {number} maxStates 
- * @param {number} resolution 
  * @returns {Float64Array<ArrayBuffer>[]}
  */
-function hermitePolynomials(maxStates = maxStates, resolution = resolution) {
+function hermitePolynomials(maxStates = maxStates) {
     const H = new Array(maxStates);
     for (let n = 0; n < maxStates; n++) 
         H[n] = new Float64Array(resolution);
@@ -32,7 +32,6 @@ function hermitePolynomials(maxStates = maxStates, resolution = resolution) {
         for (let i = 0; i < resolution; i++)
             H[n + 1][i] = 2 * xValues[i] * H[n][i] - 2 * n * H[n - 1][i];
 
-    const sqrtPi = Math.sqrt(Math.PI);
     let normFactor = 1 / sqrtPi ** 0.5;
     for (let i = 0; i < resolution; i++) 
         H[0][i] *= normFactor * Math.exp(-xValues[i] * xValues[i] / 2);
@@ -64,7 +63,7 @@ function setCoherentState(alpha) {
             factorial *= n;
         weights.push(normFactor * Math.pow(alpha, n) / Math.sqrt(factorial));
     }
-    const components = weights.map((w, n) => ({ eigenstate: n, coefficient: { re: w, im: 0 } }));
+    const components = weights.map((w, n) => ({ eigenstate: n, coefficient: WaveFunction.realCoefficient(w) }));
     psi.setSuperposition(components);
 }
 setCoherentState(1.5);
@@ -77,7 +76,7 @@ const arrowView = new OneDimensionalWaveFunctionArrows({
 arrowView.position.set(-.25 * L, 0, 0);
 
 const plotView = new OneDimensionalWaveFunctionPlot({
-    amplitude: 6,
+    amplitude: 5,
     densityScale: 10
 });
 plotView.visible = false;
@@ -124,7 +123,7 @@ Simulation
         .checked(0)
     )
     .append(new Slider('α (coherent state): ')
-        .withRange(new Range(0, 4, 0.01))
+        .withRange(new Range(0, 3, 0.01))
         .withValue(1.5)
         .onInput(event => setCoherentState(parseFloat(event.target.value)))
     )

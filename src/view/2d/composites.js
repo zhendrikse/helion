@@ -1,7 +1,7 @@
 import {
     BoxGeometry, ConeGeometry, DoubleSide, InstancedBufferAttribute, InstancedMesh,
     Matrix4, MeshBasicMaterial, Quaternion, Color, BufferGeometry,
-    LineBasicMaterial, Line, Mesh, Float32BufferAttribute
+    LineBasicMaterial, Line, Mesh, Float32BufferAttribute, Vector3
 } from "three";
 import { Range } from "../../model/math/math.js";
 import { Vec2, Vec3 } from "../../model/math/objects.js";
@@ -11,7 +11,7 @@ import { VectorField, ComplexFunctionSample } from "../../model/math/fields.js";
 import { Colour, hsvToRgb } from "../colormappers.js";
 import { WaveFunction } from "../../model/phys/quantum/wavefunction.js";
 
-const UP = new Vec3(0, 1, 0);
+const UP = new Vector3(0, 1, 0);
 
 export class ArrowField2D extends Renderable2D {
     /**
@@ -114,9 +114,9 @@ export class ArrowField2D extends Renderable2D {
 
         if (magnitude < 1e-12) {
             this._hideInstance(this._shaftMesh, index);
-            if (this._headStyle === Arrow2D.HeadStyle.Filled) {
+            if (this._headMesh)
                 this._hideInstance(this._headMesh, index);
-            } else {
+            else {
                 this._hideInstance(this._headLeftMesh, index);
                 this._hideInstance(this._headRightMesh, index);
             }
@@ -137,7 +137,7 @@ export class ArrowField2D extends Renderable2D {
         this._scratchVector.set(this._position.x, this._position.y, 0);
         this._tip.copy(this._scratchVector.addScaledVector(this._dir, visualMagnitude));
 
-        if (this._headStyle === Arrow2D.HeadStyle.Filled) {
+        if (this._headMesh) {
             this._headCenter.copy(this._tip.clone().addScaledVector(this._dir, -headLength * 0.5));
             this._shape.set(this._headWidth,headLength, this._headWidth);
             this._matrix.compose(this._headCenter, this._q, this._shape);
@@ -240,15 +240,17 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
      *  nColors?: number
      * }} [options]
      */
-    constructor({
-        worldWidth = 20,
-        worldHeight = 10,
-        amplitude = 20,
-        densityScale = 55,
-        showImaginary = true,
-        mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,
-        nColors = 360
-    } = {}) {
+    constructor(options = {}) {
+        const {
+            worldWidth = 20,
+            worldHeight = 10,
+            amplitude = 5,
+            densityScale = 55,
+            showImaginary = true,
+            mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,
+            nColors = 360
+        } = options;
+
         super();
 
         this._worldWidth = worldWidth;
