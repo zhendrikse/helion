@@ -6,6 +6,8 @@ import { ShapeConfiguration, ShapesFactory} from '../math/shapes.js';
 import { Transformation} from '../behavior.js';
 import { DiscreteComplexField, DiscreteScalarField } from '../math/fields.js';
 
+const { sin, cos, exp } = Math;
+
 export class DiamondSquareOperator extends Transformation {
     /**
      * @param {{
@@ -141,7 +143,7 @@ export class GaussianImpulse extends Transformation {
 
                 const dx = i - this._centerX;
                 const dy = j - this._centerY;
-                const value = this._amplitude * Math.exp(-(dx * dx + dy * dy) / (2 * sigma2));
+                const value = this._amplitude * exp(-(dx * dx + dy * dy) / (2 * sigma2));
                 field.setValueAt(i, j, field.valueAt(i, j) + value);
             }
     }
@@ -170,17 +172,17 @@ export class GaussianImpulseComplex2D extends Transformation {
     applyTo(field) {
         const packetWidth2 = this._packetWidth * this._packetWidth;
         const centerX = Math.floor(field.nx * 0.22);
-        const centerY = field.nx * .5;
+        const centerY = Math.floor(field.ny * 0.5);
         const e = this._wavePacketEnergy;
         const kx = Math.sqrt(2 * e);
         const ky = 0;
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++) {
-                const i = y * field.ny + x;
-                const envelope = Math.exp(-(x-centerX)*(x-centerX)/ packetWidth2) *
-                    Math.exp(-(y-centerY)*(y-centerY)/ packetWidth2);
-                field.real[i] = envelope * (Math.cos(kx*x)*Math.cos(ky*y) - Math.sin(kx*x)*Math.sin(ky*y));
-                field.imag[i] = envelope * (Math.cos(kx*x)*Math.sin(ky*y) + Math.sin(kx*x)*Math.cos(ky*y));
+                const i = field.index(x, y);
+                const envelope = exp(-(x - centerX) * (x - centerX) / packetWidth2) *
+                    exp(-( y -centerY) * (y - centerY) / packetWidth2);
+                field.real[i] = envelope * (cos(kx * x) * cos(ky * y) - sin(kx * x) * sin(ky * y));
+                field.imag[i] = envelope * (cos(kx * x) * sin(ky * y) + sin(kx * x) * cos(ky * y));
             }
     }
 }
@@ -266,7 +268,7 @@ export class DoubleSlitOperator extends Transformation {
                 const pathDiff = Math.abs(r1 - r2);
                 const rAverage = (r1 + r2) * 0.5;
                 const envelope = 1 / (1 + 0.1 * rAverage);
-                const factor = Math.cos(Math.PI * pathDiff * 25 / this._wavelength);
+                const factor = cos(Math.PI * pathDiff * 25 / this._wavelength);
                 field.setValueAt(i, j, factor * factor * envelope);
             }
     }
@@ -403,7 +405,7 @@ export class SineImpulseOperator extends Transformation {
     applyTo(field) {
         for (let x = 0; x < this._waveLength * this._periods; x++)
             for (let y = 0; y < field.ny; y++)
-                field.setValueAt(x, y, this._amplitude * Math.sin(2 * Math.PI * x / this._waveLength));
+                field.setValueAt(x, y, this._amplitude * sin(2 * Math.PI * x / this._waveLength));
     }
 
     /**
@@ -455,7 +457,7 @@ class FFT {
         this._twiddles = new Array(this._size);
         for (let i = 0; i < this._size; i++) {
             const phase = -2 * Math.PI * i / this._size;
-            this._twiddles[i] = [Math.cos(phase), Math.sin(phase)];
+            this._twiddles[i] = [cos(phase), sin(phase)];
         }
 
         this._bitReverse = new Array(this._size);
