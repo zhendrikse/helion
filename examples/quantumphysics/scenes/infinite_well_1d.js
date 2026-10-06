@@ -40,10 +40,7 @@ const arrowView = new OneDimensionalWaveFunctionArrows({
     amplitude: 20,
 });
 
-const plotView = new OneDimensionalWaveFunctionPlot({
-    mode: OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,
-    densityScale: 50
-}); 
+const plotView = new OneDimensionalWaveFunctionPlot({ densityScale: 50 }); 
 
 const groundStateSlider = new Slider('n=1: ')
         .withRange(new Range(0, 1, 0.01))
@@ -92,10 +89,10 @@ Simulation
         headUpDisplay: { enabled: false },
         viewport: { aspectRatio: '19/12', parameterMenuCollapsed: false },
         infoPanel: {
-            text: '<strong>Particle in an infinite square well</strong><br/>' +
+            text: '<strong>📦 Particle in a box</strong><br/>' +
                 'Use radio buttons to switch view:<br/>' +
-                '- <b><span style=\"color: #ff4444;\">Arrows</span></b>: 3D complex $\\psi$ (Re=z, Im=y, color=phase)<br/>' +
-                '- <b><span style=\"color: #4444ff;\">Density/phase</span></b>: 2D plot (height=$\\|\\psi\\|^2$, color=phase)<br/>' +
+                '- <b><span style=\"color: #ff4444;\">Arrows</span></b>: 3D complex $\\Psi$ (Re=z, Im=y, color=phase)<br/>' +
+                '- <b><span style=\"color: #4444ff;\">Density/phase</span></b>: 2D plot (height=$\\|\\Psi\\|^2$, color=phase)<br/>' +
                 '- <b><span style=\"color: #ffc000;\">Real</span>/<span style=\"color: #00d0ff;\">Imag</span></b>: 2D plot' + 
                 ' (<span style=\"color: #ffc000;\">yellow=Re</span>, <span style=\"color: #00d0ff;\">cyan=Im</span>)<br/>' +
                 'Use sliders to mix eigenstates.'

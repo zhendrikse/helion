@@ -43,6 +43,7 @@ export default defineConfig({
                 fraunhofer_diffraction: path.resolve(__dirname, 'examples/optics/scenes/fraunhofer_diffraction.js'),
                 game_of_life: path.resolve(__dirname, 'examples/games/scenes/game_of_life.js'),
                 harmonograph: path.resolve(__dirname, 'examples/mathematics/scenes/harmonograph.js'),
+                harmonic_oscillator: path.resolve(__dirname, 'examples/quantumphysics/scenes/harmonic_oscillator.js'),
                 infinite_well_1d: path.resolve(__dirname, 'examples/quantumphysics/scenes/infinite_well_1d.js'),
                 infinite_well_2d: path.resolve(__dirname, 'examples/quantumphysics/scenes/infinite_well_2d.js'),
                 interference_2d: path.resolve(__dirname, 'examples/waves/scenes/interference_2d.js'),

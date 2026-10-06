@@ -233,7 +233,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
      * @param {{
      *  worldWidth?: number,
      *  worldHeight?: number,
-     *  scaleY?: number,
+     *  amplitude?: number,
      *  densityScale?: number,
      *  showImaginary?: boolean,
      *  mode?: string,
@@ -243,7 +243,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
     constructor({
         worldWidth = 20,
         worldHeight = 10,
-        scaleY = 20,
+        amplitude = 20,
         densityScale = 55,
         showImaginary = true,
         mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE,
@@ -253,7 +253,7 @@ export class OneDimensionalWaveFunctionPlot extends Renderable2D {
 
         this._worldWidth = worldWidth;
         this._worldHeight = worldHeight;
-        this._amplitudeScale = scaleY;
+        this._amplitudeScale = amplitude;
         this._densityScale = densityScale;
         this._densityBaseline = -worldHeight * 0.4;
         this._showImaginary = showImaginary;

@@ -69,20 +69,16 @@ const nx = 20,
     width = 10,
     height = 10,
     maxMode = 5,
-    initialState = (x, y) => (x < width/2 && y < height/2) ? 1 : 0;
+    initialState = (/** @type {number} */ x, /** @type {number} */ y) => 
+        (x < width/2 && y < height/2) ? 1 : 0;
 
 /**
  * Analytic time evolution for a particle in a two-dimensional infinite square well.
- *
- * The well is represented by the stationary basis
- *
- *   psi(n,m) = sin(n*pi*x/Lx) sin(m*pi*y/Ly)
- *
- * and the wavefunction evolves by applying the corresponding phase factors.
+ * The well is represented by the stationary basis: psi(n, m) = sin(n*pi*x/Lx) sin(m*pi*y/Ly).
+ * The wavefunction evolves by applying the corresponding phase factors.
  */
 function initializePsi() {
     const psi = new WaveFunction({ nx, ny });
-    const index = (x, y) => y * nx + x;
 
     // Generate eigenstates
     for (let mx = 1; mx <= maxMode; mx++) {
@@ -94,7 +90,7 @@ function initializePsi() {
                 const y = height * j / (ny - 1);
                 for (let i = 0; i < nx; i++) {
                     const x = width * i / (nx - 1);
-                    real[index(i, j)] = Math.sin(mx * PI * x / width) * Math.sin(my * PI * y / height);
+                    real[psi.index(i, j)] = Math.sin(mx * PI * x / width) * Math.sin(my * PI * y / height);
                 }
             }
 
@@ -110,7 +106,7 @@ function initializePsi() {
         const y = height * j / (ny - 1);
         for (let i = 0; i < nx; i++) {
             const x = width * i / (nx - 1);
-            initial[index(i, j)] = initialState(x, y);
+            initial[psi.index(i, j)] = initialState(x, y);
         }
     }
     VecN.normalize(initial);
@@ -134,7 +130,7 @@ Simulation.with({
         camera: { position: new Vec3(12, 4, 2).multiplyScalar(0.8) },
         viewport: { aspectRatio: '19/12' },
         infoPanel: {
-            text: '<strong>Particle in a 2D box 📦</strong><br/>' +
+            text: '<strong>📦 2D particle in a box</strong><br/>' +
                 '- Cylinders $\\propto \\|\\Psi\\|$<br/>' +
                 '- Height $\\propto Re(\\Psi)$<br/>' +
                 '- Radius $\\propto Im(\\Psi)$<br/>' +

@@ -50,13 +50,13 @@ Simulation
         headUpDisplay: { enabled: false },
         viewport: { aspectRatio: '2/1', parameterMenuCollapsed: false },
         infoPanel: {
-            text: '<strong>Complex plane wave Ψ</strong><br/>' +
+            text: '<strong>Complex plane wave $\\Psi$</strong><br/>' +
                 'Each arrow represents the complex value of the wave function at a fixed position $x$.<br/>' +
                 'The arrow rotates in the complex plane as time evolves:<br/>' +
-                '- <b>z-direction</b>: $Re(\\psi)$<br/>' +
-                '- <b>y-direction</b>: $Im(\\psi)$<br/>' +
-                '- <b>color</b>: $\\text{phase}(\\psi)$<br/>' +
-                'The <b>arrow length is constant</b>, as $|\\psi|$ does not depend on $t$'
+                '- <b>z-direction</b>: $Re(\\Psi)$<br/>' +
+                '- <b>y-direction</b>: $Im(\\Psi)$<br/>' +
+                '- <b>color</b>: $\\text{phase}(\\Psi)$<br/>' +
+                'The <b>arrow length is constant</b>, as $\\|\\Psi\\|$ does not depend on $t$'
         }
     })
     // .synchronize(planeWave.alwaysWith(waveView2d))
