@@ -1,6 +1,6 @@
 import {
     Simulation, Vec3, Slider, Range, WaveFunction,
-    OneDimensionalWaveFunctionArrows, OneDimensionalWaveFunctionPlot, RadioGroup
+    OneDimensionalWaveFunctionView, RadioGroup
 } from '../../../src/index.js';
 
 const sqrtPi = Math.sqrt(Math.PI);
@@ -68,18 +68,15 @@ function setCoherentState(alpha) {
 }
 setCoherentState(1.5);
 
-const arrowView = new OneDimensionalWaveFunctionArrows({
+const waveView = new OneDimensionalWaveFunctionView({
+    worldWidth: 20,
+    amplitude: 5,
+    densityScale: 10,
     arrowDistance: dx,
-    size: 0.1,
-    amplitude: 5,
+    arrowSize: 0.1,
+    arrowAmplitude: 5,
+    arrowOffsetX: -0.25 * L
 });
-arrowView.position.set(-.25 * L, 0, 0);
-
-const plotView = new OneDimensionalWaveFunctionPlot({
-    amplitude: 5,
-    densityScale: 10
-});
-plotView.visible = false;
 
 Simulation
     .with({
@@ -100,26 +97,14 @@ Simulation
                 'Slider adjusts coherent state parameter α.'
         }
     })
-    .bind(psi.alwaysWith(arrowView))
-    .bind(psi.alwaysWith(plotView))
+    .bind(psi.alwaysWith(waveView))
     .runsEvery(0.03)
     //.advancesBy(0.5 * Math.PI)
     .onStep((clock, _) => psi.time = clock.simulatedTime)
     .append(new RadioGroup()
-        .add('Arrows', () => {
-            arrowView.visible = true;
-            plotView.visible = false;
-        })
-        .add('Real/imag', () => {
-            arrowView.visible = false;
-            plotView.visible = true;
-            plotView.mode = OneDimensionalWaveFunctionPlot.Mode.REAL_IMAG;
-        })
-        .add('Density/phase', () => {
-            arrowView.visible = false;
-            plotView.visible = true;
-            plotView.mode = OneDimensionalWaveFunctionPlot.Mode.DENSITY_PHASE;
-        })
+        .add('Arrows', () => waveView.mode = OneDimensionalWaveFunctionView.Mode.ARROWS)
+        .add('Real/imag', () => waveView.mode = OneDimensionalWaveFunctionView.Mode.REAL_IMAG)
+        .add('Density/phase', () => waveView.mode = OneDimensionalWaveFunctionView.Mode.DENSITY_PHASE)
         .checked(0)
     )
     .append(new Slider('α (coherent state): ')
