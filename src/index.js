@@ -21,6 +21,7 @@ export {
 export {
     DiscreteFieldSurfaceView, ComplexSurfaceView2D, ProbabilityDensityView2D, ParticleView2D, FieldEdgeIntensityPixelRaster
 } from './view/2d/views.js';
+export { FluidDynamicsView } from './view/2d/fluid.js';
 
 export {
     Force, CoulombForce, LorentzForce, DragForce, UniformGravitationalForce, SpringForce,
