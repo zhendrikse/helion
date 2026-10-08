@@ -5,6 +5,10 @@ import {
     FluidDynamicsView
 } from '../../../src/index.js';
 
+const U_FIELD = 0;
+const V_FIELD = 1;
+const S_FIELD = 2;
+
 const scene = {
     gravity: -9.81,
     dt: 1.0 / 60.0,
