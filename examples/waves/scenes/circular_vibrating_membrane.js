@@ -98,4 +98,5 @@ Simulation
         .add('None', () => surfaceView.display(SurfaceVisualization.Display.None))
         .checked(0))
     .append(surfaceView.glyphLayer.ui())
-    .appendStartStopResetUI();
+    .appendStartStopResetUI()
+    .start();
