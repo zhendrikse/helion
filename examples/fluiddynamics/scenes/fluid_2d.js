@@ -101,12 +101,7 @@ class FluidSolver extends Solver {
 
                     let correction = -div / sum;
                     correction *= OVER_RELAXATION;
-
-                    pressureField.setValueAt(
-                        x,
-                        y,
-                        pressureField.valueAt(x, y) + cp * correction
-                    );
+                    pressureField.setValueAt(x, y, pressureField.valueAt(x, y) + cp * correction);
 
                     this._u[i] -= sx0 * correction;
                     this._u[this._index(x + 1, y)] += sx1 * correction;
@@ -311,22 +306,22 @@ const obstacleView = new DiscreteFieldSurfaceView({
 
 solver.reset(pressureField);
 
-Simulation.with({
-    htmlDivId: 'fluid2dContainer',
-    viewport: { aspectRatio: '11/10', parameterMenuCollapsed: true },
-    camera: {
-        position: new Vec3(0, 0, 9),
-        orthographic: true,
-        controls: false
-    },
-    lighting: { enabled: false },
-    infoPanel: {
-        text:
-            '<strong>🌊 Fluid dynamics</strong><br/>' +
-            'Incompressible fluid flowing through a wind tunnel around a circular obstacle.'
-    }
-})
+Simulation
+    .with({
+        htmlDivId: 'fluid2dContainer',
+        viewport: { aspectRatio: '11/10', parameterMenuCollapsed: true },
+        camera: {
+            position: new Vec3(0, 0, 1),
+            orthographic: true,
+            controls: false
+        },
+        lighting: { enabled: false },
+        infoPanel: {
+            text: '<strong>🌊 Fluid dynamics</strong><br/>' +
+                'Incompressible fluid flowing through a wind tunnel around a circular obstacle.'
+        }
+    })
     .maxOutCpu(() => pressureField.evolve(solver), 20, 30)
     .bind(pressureField.alwaysWith(pressureView))
-        .bind(obstacleField.onceWith(obstacleView))
+    .bind(obstacleField.onceWith(obstacleView))
     .start();
