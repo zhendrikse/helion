@@ -5,10 +5,6 @@ import {
     FluidDynamicsView
 } from '../../../src/index.js';
 
-const SCENE_TYPE = Object.freeze({
-    WIND_TUNNEL: 1
-});
-
 const scene = {
     gravity: -9.81,
     dt: 1.0 / 60.0,
@@ -303,6 +299,8 @@ function setupScene() {
 
 setupScene();
 
+const solver = { scene };
+
 const fluidView = new FluidDynamicsView({
     smokeField: scene.fluid._smokeField,
     obstacleField: scene.fluid._obstacleField,
@@ -325,6 +323,3 @@ Simulation.with({
     .onStep(() => scene.frameNr++)
     .start();
 
-const solver = {
-    scene
-};
