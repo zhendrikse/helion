@@ -7,10 +7,15 @@ const resolution = 512;
 const field = new DiscreteComplexField({nx: resolution, ny: resolution});
 const intensityRaster = new ComplexSurfaceView2D({
     showPhaseColour: false,
-    brightnessFunction: modulus => modulus * 5e-3
+    brightnessFunction: modulus => modulus * 1e-3
 });
 
-function reset(shapeConfiguration, softness) {
+
+let softness = 2;
+/**
+ * @param {ShapeConfiguration} shapeConfiguration
+ */
+function reset(shapeConfiguration) {
     field
         .reset()
         .apply(new ComplexShapeMask(shapeConfiguration))
@@ -20,9 +25,8 @@ function reset(shapeConfiguration, softness) {
 }
 
 const shapeConfiguration = new ShapeConfiguration({ defaultShape: Shapes.Circle });
-let softness = 2;
-shapeConfiguration.onChangeEventListener = (_) => reset(shapeConfiguration, softness);
-reset(shapeConfiguration, softness);
+shapeConfiguration.onChangeEventListener = () => reset(shapeConfiguration);
+reset(shapeConfiguration);
 
 Simulation
     .with({
@@ -41,8 +45,9 @@ Simulation
         .withRange(new Range(0, 20, 1))
         .withValue(softness)
         .addEventListener("input", event => {
+            // @ts-ignore
             softness = Number(event.target.value);
-            reset(shapeConfiguration, softness);
+            reset(shapeConfiguration);
         })
     )
     .append(new Checkbox("🎨 Phase: ")
