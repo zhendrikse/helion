@@ -39,12 +39,15 @@ export class FluidDynamicsView extends DiscreteFieldSurfaceView {
         const height = pressureField.ny;
         const range = pressureField.rangeAt();
 
-        this._normalizer.adaptTo(range);
+        const pressureSpan = range.to - range.from;
 
         let index = 0;
         for (let j = 0; j < height; j++) {
             for (let i = 0; i < width; i++) {
-                const normalizedPressure = this._normalizer.normalize(pressureField.valueAt(i, j));
+                const pressure = pressureField.valueAt(i, j);
+                const normalizedPressure = pressureSpan === 0
+                    ? 0.5
+                    : (pressure - range.from) / pressureSpan;
                 const smoke = this._obstacleField.valueAt(i, j);
 
                 const [red, green, blue] = this._scientificColor(normalizedPressure);
