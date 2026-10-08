@@ -328,6 +328,5 @@ Simulation.with({
 })
     .maxOutCpu(() => pressureField.evolve(solver), 20, 30)
     .bind(pressureField.alwaysWith(pressureView))
-    .bind(smokeField.alwaysWith(smokeView))
-    .bind(obstacleField.onceWith(obstacleView))
+        .bind(obstacleField.onceWith(obstacleView))
     .start();
