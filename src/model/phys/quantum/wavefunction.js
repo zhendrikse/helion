@@ -1,5 +1,6 @@
 import {DiscreteComplexField} from "../../math/fields.js";
 import { Complex } from "../../math/math.js";
+import { VecN } from "../../math/objects.js";
 
 export class WaveFunction extends DiscreteComplexField{
     static realCoefficient = (/** @type {number} */ real) => new Complex(real, 0);
@@ -99,6 +100,17 @@ export class WaveFunction extends DiscreteComplexField{
     /** @param {number} eigenstateNumber */
     collapseToEigenstate(eigenstateNumber) {
         this.setSuperposition([{ eigenstate: eigenstateNumber, coefficient: WaveFunction.realCoefficient(1) }]);
+    }
+
+    normalize(dx = 1) {
+        let norm = VecN.dot(this.real, this.real);
+        norm += VecN.dot(this.imag, this.imag);
+        norm = Math.sqrt(norm);
+
+        for (let i = 0; i < this.nx * this.ny; i++) {
+            this.real[i] /= norm;
+            this.imag[i] /= norm;
+        }
     }
 
     get eigenstatesCount() { return this._eigenstates.length; }
