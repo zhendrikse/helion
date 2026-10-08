@@ -1,6 +1,5 @@
 import {
-    Simulation, Vec3, Slider, Range, WaveFunction,
-    OneDimensionalWaveFunctionView, RadioGroup
+    Simulation, Vec3, Slider, Range, WaveFunction, OneDimensionalWaveFunctionView, RadioGroup
 } from '../../../src/index.js';
 
 const sqrtPi = Math.sqrt(Math.PI);
@@ -19,7 +18,7 @@ const omega = 5;
  * @param {number} maxStates 
  * @returns {Float64Array<ArrayBuffer>[]}
  */
-function hermitePolynomials(maxStates = maxStates) {
+function hermitePolynomials(maxStates) {
     const H = new Array(maxStates);
     for (let n = 0; n < maxStates; n++) 
         H[n] = new Float64Array(resolution);
@@ -45,7 +44,7 @@ function hermitePolynomials(maxStates = maxStates) {
     return H;
 }
 
-const H = hermitePolynomials(maxStates, resolution);
+const H = hermitePolynomials(maxStates);
 for (let n = 0; n < maxStates; n++) {
     const real = H[n];
     const imag = new Float64Array(resolution);
@@ -53,6 +52,7 @@ for (let n = 0; n < maxStates; n++) {
     psi.addEigenstate(real, imag, energy);
 }
 
+/** @param {number} alpha */
 function setCoherentState(alpha) {
     /** @type {number[]} */
     const weights = [];
@@ -107,6 +107,7 @@ Simulation
     .append(new Slider('α (coherent state): ')
         .withRange(new Range(0, 3, 0.01))
         .withValue(1.5)
+        // @ts-ignore
         .onInput(event => setCoherentState(parseFloat(event.target.value)))
     )
     .start();
