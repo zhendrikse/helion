@@ -435,7 +435,10 @@ class FluidDomainView extends Renderable2D {
 }
 
 class FluidDynamicsVelocitiesView extends Renderable2D {
-    constructor({scale = 0.2, color = new Colour(0, 0, 0)} = {}) {
+    constructor({
+        scale = 1.5e-2,
+        color = new Colour(0.2, 0.2, 0.0)
+    } = {}) {
         super();
         this._scale = scale;
         this._geometry = new BufferGeometry();
@@ -475,13 +478,12 @@ class FluidDynamicsVelocitiesView extends Renderable2D {
 
         const positions = this._geometry.getAttribute('position').array;
         const h = fluid.h;
-        const scale = this._scale;
         let segmentCount = 0;
 
         for (let i = 0; i < fluid.numX; i++)
             for (let j = 0; j < fluid.numY; j++) {
                 const x0 = i * h;
-                const x1 = x0 + fluid.xVelocityAt(j, i) * scale;
+                const x1 = x0 + fluid.xVelocityAt(j, i) * this._scale;
                 const y = (j + 0.5) * h;
 
                 this._writeSegment(
@@ -492,7 +494,7 @@ class FluidDynamicsVelocitiesView extends Renderable2D {
 
                 const x = (i + 0.5) * h;
                 const y0 = j * h;
-                const y1 = y0 + fluid.yVelocityAt(j, i) * scale;
+                const y1 = y0 + fluid.yVelocityAt(j, i) * this._scale;
 
                 this._writeSegment(
                     positions, segmentCount++,
@@ -508,12 +510,12 @@ class FluidDynamicsVelocitiesView extends Renderable2D {
 
     _writeSegment(positions, segmentIndex, x0, y0, x1, y1) {
         const offset = segmentIndex * 6;
-        positions[offset] = x0;
-        positions[offset + 1] = y0;
-        positions[offset + 2] = 0.004;
-        positions[offset + 3] = x1;
-        positions[offset + 4] = y1;
-        positions[offset + 5] = 0.004;
+        positions[offset    ] = x0;    // from.x
+        positions[offset + 1] = y0;    // from.y
+        positions[offset + 2] = 0.004; // from.z
+        positions[offset + 3] = x1;    // to.x
+        positions[offset + 4] = y1;    // to.y
+        positions[offset + 5] = 0.004; // to.z
     }
 
     dispose() {
@@ -521,6 +523,7 @@ class FluidDynamicsVelocitiesView extends Renderable2D {
         this._material.dispose();
     }
 }
+
 class FluidStreamlinesView extends Renderable2D {
     constructor({
         numberOfSegments = 15,
