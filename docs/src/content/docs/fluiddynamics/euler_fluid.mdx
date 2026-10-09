@@ -21,25 +21,16 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
+🎯 A somewhat more elaborate demo using the [Helion](https://github.com/zhendrikse/helion/) library<br/>
 🧠 Copyright of original idea and software: [Matthias Müller](https://www.matthiasMueller.info/tenMinutePhysics) &mdash; [Ten Minute Physics](https://www.youtube.com/c/TenMinutePhysics)<br/>
 👉 Check out the accompanying [Lattice-Boltzmann Fluid Dynamics](https://physics.weber.edu/schroeder/javacourse/LatticeBoltzmann.pdf) PDF!<br/>
 👉 You can move the obstacle with your mouse!<br/>
 
 <p style="clear: both;"></p>
-<canvas id="myCanvas" width="650" height="650" style="border: none;"></canvas>
-<p style="clear: both;"></p>
-
-<button class="button" id="windTunnel">Wind Tunnel</button>
-<button class="button" id="hiresButton">Hires Tunnel</button>
-<button class="button" id="tankButton">Tank</button>
-<button class="button" id="paintButton">Paint</button>
-
-<label for="streamButton"></label><input type="checkbox" id="streamButton"/> Streamlines
-<label for="velocityButton"></label><input type="checkbox" id="velocityButton"/> Velocities
-<label for="pressureButton"></label><input type="checkbox" name="field" id="pressureButton" checked/> Pressure
-<label for="smokeButton"></label><input type="checkbox" name="field" id="smokeButton" checked/> Smoke
-<label for="overrelaxButton"></label><input type="checkbox" id="overrelaxButton" checked/> Overrelax
+<div id="eulerFluidContainer" style="width: 650px; height: 650px;"></div>
+<canvas id="myCanvas" width="650" height="650" style="border: none; position: relative; left: 15px; top:-650px; "></canvas>
 <script type="module" src={import.meta.env.BASE_URL + "examples/euler_fluid.js"}></script>
+
 
 ### Implementation
 <div class="header_line"><br/></div>

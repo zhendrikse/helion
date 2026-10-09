@@ -1,11 +1,13 @@
 import {
-    Checkbox, ColorMappers, DiscreteScalarField, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver
-} from "../../../src/index.js";
-import {Field} from "../../../src/model/math/fields.js";
-import {Renderable2D} from "../../../src/view/renderer.js";
-import {Color, LinearSRGBColorSpace} from "three";
+    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper,
+    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver
+} from '../../../src/index.js';
+import {Field} from '../../../src/model/math/fields.js';
+import {Renderable2D} from '../../../src/view/renderer.js';
+import {Color, LinearSRGBColorSpace} from 'three';
 
-const canvas = document.getElementById("myCanvas");
+const helionDiv = document.getElementById('eulerFluidContainer');
+const canvas = document.getElementById('myCanvas');
 const display = canvas.getContext('2d', { willReadFrequently: true });
 canvas.focus();
 
@@ -122,7 +124,7 @@ class Fluid extends Field {
      *     numX?: number,
      *     numY?: number,
      *     cellSize?: number
-     * }}
+     * }} options
      */
     constructor({
         density = 1000,
@@ -242,7 +244,7 @@ class Fluid extends Field {
     xVelocityAt(/** @type {number} */ i, /** @type {number} */ j)     { return this._velocityX.valueAt(i, j); }
     yVelocityAt(/** @type {number} */ i, /** @type {number} */ j)     { return this._velocityY.valueAt(i, j); }
 
-    _sampleField(/** @type {number} */ x, /** @type {number} */ y, /** @type {Field} */ field) {
+    _sampleField(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ fieldType) {
         const h = this.h;
         const h1 = 1.0 / h;
         const h2 = 0.5 * h;
@@ -250,7 +252,7 @@ class Fluid extends Field {
         let dx = 0.0;
         let dy = 0.0;
         let f;
-        switch (field) {
+        switch (fieldType) {
             case U_FIELD:
                 f = this._velocityX;
                 dy = h2;
@@ -380,20 +382,20 @@ class Circle extends Renderable2D {
 
     canBindTo(/** @type {RadialSymmetricBody} */ model) {
         if (model.radius === undefined)
-            throw new Error("Circle can only bind to models that have a radius property");
+            throw new Error('Circle can only bind to models that have a radius property');
         return true;
     }
 
     synchronizeWith(/** @type {RadialSymmetricBody} */ obstacle) {
         const r = obstacle.radius + this._radiusOffset;
-        this._display.fillStyle = this._showPressure ? "#131313" : "#DDDDDD";
+        this._display.fillStyle = this._showPressure ? '#131313' : '#DDDDDD';
         this._display.beginPath();
         this._display.arc(scaleX(obstacle.position.x), scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
         this._display.closePath();
         this._display.fill();
 
         this._display.lineWidth = 3.0;
-        this._display.strokeStyle = "#000000";
+        this._display.strokeStyle = '#000000';
         this._display.beginPath();
         this._display.arc(scaleX(obstacle.position.x), scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
         this._display.closePath();
@@ -414,7 +416,7 @@ class FluidDynamicsVelocitiesView extends Renderable2D {
     }
 
     synchronizeWith(/** @type {Fluid} */ fluid) {
-        this._display.strokeStyle = "#000000";
+        this._display.strokeStyle = '#000000';
         const scale = this._scale;
         const h = fluid.h;
         for (let i = 0; i < fluid.numX; i++)
@@ -454,7 +456,7 @@ class FluidStreamlinesView extends Renderable2D {
 
     synchronizeWith(/** @type {Fluid} */ fluid) {
         const numberOfSegments = this._numberOfSegments;
-        this._display.strokeStyle = "#000000";
+        this._display.strokeStyle = '#000000';
 
         for (let i = 1; i < fluid.numX - 1; i += 5)
             for (let j = 1; j < fluid.numY - 1; j += 5) {
@@ -499,6 +501,7 @@ class FluidDynamicsView extends Renderable2D {
 
     set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
     set showPressure(/** @type {boolean} */ showPressure) { this._showPressure = showPressure; }
+    set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
 
     /**
      * @param {number} i
@@ -549,7 +552,7 @@ class FluidDynamicsView extends Renderable2D {
     synchronizeWith(/** @type {Fluid} */ fluid) {
         const pressureRange = fluid.pressureRange;
         this._display.clearRect(0, 0, this._width, this._height);
-        this._display.fillStyle = "#FF0000";
+        this._display.fillStyle = '#FF0000';
 
         for (let i = 0; i < fluid.numX; i++)
             for (let j = 0; j < fluid.numY; j++)
@@ -558,9 +561,9 @@ class FluidDynamicsView extends Renderable2D {
         this._display.putImageData(this._imageData, 0, 0);
 
         if (this._showPressure) {
-            const pressureText = "pressure: " + pressureRange.min.toFixed(0) + " - " + pressureRange.max.toFixed(0) + " N/m";
-            this._display.fillStyle = "#A0A0A0";
-            this._display.font = "16px Arial";
+            const pressureText = 'pressure: ' + pressureRange.min.toFixed(0) + ' - ' + pressureRange.max.toFixed(0) + ' N/m';
+            this._display.fillStyle = '#A0A0A0';
+            this._display.font = '16px Arial';
             this._display.fillText(pressureText, 10, 35);
         }
     }
@@ -679,11 +682,6 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
         vortexSheddingScene(fluid, sceneNr);
     else if (sceneNr === SCENE_TYPE.PAINT)
         paintScene();
-
-    document.getElementById("streamButton").checked = streamlinesView.visible;
-    document.getElementById("velocityButton").checked = velocitiesView.visible;
-    document.getElementById("pressureButton").checked = fluidDynamicsView.showPressure;
-    document.getElementById("smokeButton").checked = fluidDynamicsView.showSmoke;
 }
 
 const streamlinesView = new FluidStreamlinesView({ display });
@@ -719,25 +717,11 @@ function drag(/** @type {number} */ x, /** @type {number} */ y) {
     fluid.setObstacle(x, y, false);
 }
 
-document.getElementById("tankButton").addEventListener("click", () => setupScene(SCENE_TYPE.TANK));
-document.getElementById("hiresButton").addEventListener("click", () => setupScene(SCENE_TYPE.HIRES_TUNNEL));
-document.getElementById("windTunnel").addEventListener("click", () => setupScene(SCENE_TYPE.WIND_TUNNEL));
-document.getElementById("paintButton").addEventListener("click", () => setupScene(SCENE_TYPE.PAINT));
-document.getElementById("streamButton").addEventListener("click", event => streamlinesView.visible = event.target.checked);
-document.getElementById("velocityButton").addEventListener("click", event => velocitiesView.visible = event.target.checked);
-document.getElementById("pressureButton").addEventListener("click", event => {
-    fluidDynamicsView.showPressure = event.target.checked;
-    obstacleView.showPressure = event.target.checked;
-});
-document.getElementById("smokeButton").addEventListener("click", event => fluidDynamicsView.showSmoke = event.target.checked);
-document.getElementById("overrelaxButton").addEventListener("click", event => solver.overRelaxation = solver.overRelaxation === 1.0 ? 1.9 : 1.0);
-
 canvas.addEventListener('mousedown', event => startDrag(event.x, event.y));
 canvas.addEventListener('mouseup', event => mouseDown = false);
 canvas.addEventListener('mousemove', event => drag(event.x, event.y));
 canvas.addEventListener('touchstart', event => startDrag(event.touches[0].clientX, event.touches[0].clientY));
 canvas.addEventListener('touchend', event => mouseDown = false);
-
 canvas.addEventListener('touchmove', event => {
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -761,7 +745,6 @@ document.addEventListener('keydown', event => {
 const obstacle = new RadialSymmetricBody({ radius: 0.15 });
 const solver = new FluidSolver({ numIterations: 40 });
 setupScene(SCENE_TYPE.WIND_TUNNEL);
-document.getElementById("overrelaxButton").checked = solver.overRelaxation > 1.0;
 
 function simulate() {
     if (paused)
@@ -774,14 +757,21 @@ function simulate() {
 
 Simulation
     .with({
-        htmlDivId: "fluid2dContainer",
-        viewport: { aspectRatio: `${fluid.numX} / ${fluid.numY}`, parameterMenuCollapsed: true },
+        htmlDivId: 'eulerFluidContainer',
+        viewport: { aspectRatio: `${fluid.numX} / ${fluid.numY}`, parameterMenuCollapsed: false },
         camera: {
             orthographic: true,
             controls: false
         },
         headUpDisplay: { enabled: false },
-        lighting: { enabled: false }
+        lighting: { enabled: false },
+        infoPanel: {
+            text:
+                '<strong>🍃 Euler fluid</strong><br/>&nbsp;<br/>' +
+                '©️ Original idea and software: ' +
+                '<a href=\"https://www.matthiasMueller.info/tenMinutePhysics\">Matthias Müller</a></br>' +
+                '👉 Use mouse to move obstacle!'
+        }
     })
     .runsEvery(3e-2)
     .onStep(() => simulate())
@@ -791,31 +781,33 @@ Simulation
     .bind(obstacle.alwaysWith(obstacleView))
     .frameSceneOn(fluidDynamicsView, { padding: 1.01 })
     .append(new RadioGroup()
-        .add('Pressure', () => { fluidDynamicsView.showPressure = true; fluidDynamicsView.showSmoke = false; })
-        .add('Smoke', () => { fluidDynamicsView.showPressure = false; fluidDynamicsView.showSmoke = true; })
-        .add('Pressure+Smoke', () => { fluidDynamicsView.showPressure = true; fluidDynamicsView.showSmoke = true; })
-        .add('None (fluid/solid)', () => { fluidDynamicsView.showPressure = false; fluidDynamicsView.showSmoke = false; })
-        .checked(0)
-    )
-    .append(new Checkbox('Velocities')
-        .onChange(e => velocitiesView.visible = e.target.checked)
-    )
-    .append(new Checkbox('Streamlines')
-        .onChange(e => streamlinesView.visible = e.target.checked)
-    )
-    .append(new Checkbox('Obstacle')
-        .checked(true)
-        .onChange(e => fluidDynamicsView.showObstacle = e.target.checked)
-    )
-    .append(new RadioGroup()
         .add('Tank', () => setupScene(SCENE_TYPE.TANK))
         .add('Wind Tunnel', () => setupScene(SCENE_TYPE.WIND_TUNNEL))
         .add('Paint', () => setupScene(SCENE_TYPE.PAINT))
         .add('Hires Tunnel', () => setupScene(SCENE_TYPE.HIRES_TUNNEL))
         .checked(1)
     )
-    .append(new Checkbox('Over-relaxation')
+    .append(new Checkbox('🏃🏻‍♀️‍➡️ Velocities')
+        .onChange(event => velocitiesView.visible = event.target.checked)
+        .togetherWith(new Checkbox('Streamlines')
+            .onChange(event => streamlinesView.visible = event.target.checked)
+    ))
+    .append(new Checkbox('🗜️ Pressure')
         .checked(true)
-        .onChange(e => solver.overRelaxation = e.target.checked ? 1.9 : 1.0)
-    )
+        .onChange(event => {
+            fluidDynamicsView.showPressure = event.target.checked;
+            obstacleView.showPressure = event.target.checked;
+        }).togetherWith(new Checkbox('Smoke')
+            .checked(true)
+            .onChange(event => fluidDynamicsView.showSmoke = event.target.checked)
+            .togetherWith(new Checkbox('Over-relaxation')
+                .checked(true)
+                .onChange(event =>solver.overRelaxation = solver.overRelaxation === 1.0 ? 1.9 : 1.0)
+    )))
+    .append(new DropdownMenu()
+        .for(new ColorMappers())
+        .withValue(ColorMappers.Scientific)
+        // @ts-ignore
+        .onChange(event =>
+            fluidDynamicsView.colorMapper = ColorMappers.get(event.target.value, {colorSpace: LinearSRGBColorSpace})))
     .start();

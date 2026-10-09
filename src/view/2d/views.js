@@ -37,7 +37,9 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
         this._normalizer = normalizer;
     }
 
-    /** @param {DiscreteScalarField} scalarField */
+    set colorMapper(colorMapper) { this._colorMapper = colorMapper; }
+
+    /** @type {DiscreteScalarField} scalarField */
     initialize(scalarField) {
         const width = scalarField.nx;
         const height = scalarField.ny;

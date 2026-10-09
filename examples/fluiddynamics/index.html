@@ -8,21 +8,10 @@
     <!-- L A T T I C E  B O L T Z M A N N
     <script type="module" src="scenes/lattice_boltzmann_2d.js"></script>
        -->
-    <!-- F L U I D  2 D
-    <script type="module" src="scenes/euler_fluid.js"></script>
+    <!-- E U L E R  F L U I D
        -->
-
-<button class="button" id="windTunnel">Wind Tunnel</button>
-<button class="button" id="hiresButton">Hires Tunnel</button>
-<button class="button" id="tankButton">Tank</button>
-<button class="button" id="paintButton">Paint</button>
-
-<label for="streamButton"></label><input type="checkbox" id="streamButton"/> Streamlines
-<label for="velocityButton"></label><input type="checkbox" id="velocityButton"/> Velocities
-<label for="pressureButton"></label><input type="checkbox" name="field" id="pressureButton"  checked/> Pressure
-<label for="smokeButton"></label><input type="checkbox" name="field" id="smokeButton" checked/> Smoke
-<label for="overrelaxButton"></label><input type="checkbox" id="overrelaxButton" checked> Overrelax
-<canvas id="myCanvas" width="650" height="650" style="border: none;"></canvas>
-<script type = "module" src="scenes/euler_fluid.js"></script>
+    <div id="eulerFluidContainer"></div>
+    <canvas id="myCanvas" width="650" height="650" style="position: fixed; top: 10px; left: 10px;"></canvas>
+    <script type = "module" src="scenes/euler_fluid.js"></script>
 </body>
 </html>
