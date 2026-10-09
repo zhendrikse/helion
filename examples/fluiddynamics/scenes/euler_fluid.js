@@ -435,44 +435,92 @@ class FluidDomainView extends Renderable2D {
 }
 
 class FluidDynamicsVelocitiesView extends Renderable2D {
-    constructor({display, scale = 0.2} = {}) {
+    constructor({scale = 0.2, color = new Colour(0, 0, 0)} = {}) {
         super();
-        this._scale = scale
-        this._display = display;
+        this._scale = scale;
+        this._geometry = new BufferGeometry();
+        this._material = new LineBasicMaterial();
+        color.asThreeJsColor(this._material.color);
+        this._lines = new LineSegments(this._geometry, this._material);
+        this.add(this._lines);
+        this._allocatedSegmentCount = 0;
     }
 
-    canBindTo(/** @type {Fluid} */ _model) {
+    canBindTo(/** @type {Fluid} */ model) {
+        if (model.xVelocityAt === undefined ||
+            model.yVelocityAt === undefined ||
+            model.numX === undefined ||
+            model.numY === undefined ||
+            model.h === undefined)
+            throw new Error('Fluid velocities view can only bind to models that behave as a fluid model');
+
         return true;
     }
 
+    _newGeometry(maxSegmentCount) {
+        this._geometry.dispose();
+        this._geometry = new BufferGeometry();
+        this._geometry.setAttribute(
+            'position',
+            new BufferAttribute(new Float32Array(maxSegmentCount * 2 * 3), 3)
+        );
+        this._lines.geometry = this._geometry;
+        this._allocatedSegmentCount = maxSegmentCount;
+    }
+
     synchronizeWith(/** @type {Fluid} */ fluid) {
-        this._display.strokeStyle = '#000000';
-        const scale = this._scale;
+        const maxSegmentCount = fluid.numX * fluid.numY * 2;
+        if (maxSegmentCount !== this._allocatedSegmentCount)
+            this._newGeometry(maxSegmentCount);
+
+        const positions = this._geometry.getAttribute('position').array;
         const h = fluid.h;
+        const scale = this._scale;
+        let segmentCount = 0;
+
         for (let i = 0; i < fluid.numX; i++)
             for (let j = 0; j < fluid.numY; j++) {
-                this._display.beginPath();
+                const x0 = i * h;
+                const x1 = x0 + fluid.xVelocityAt(j, i) * scale;
+                const y = (j + 0.5) * h;
 
-                const x0 = scaleX(i * h);
-                const x1 = scaleX(i * h + fluid.xVelocityAt(j, i) * scale);
-                const y = scaleY((j + 0.5) * h);
+                this._writeSegment(
+                    positions, segmentCount++,
+                    x0 - halfWidth, y - halfHeight,
+                    x1 - halfWidth, y - halfHeight
+                );
 
-                this._display.moveTo(x0, y);
-                this._display.lineTo(x1, y);
-                this._display.stroke();
+                const x = (i + 0.5) * h;
+                const y0 = j * h;
+                const y1 = y0 + fluid.yVelocityAt(j, i) * scale;
 
-                const x = scaleX((i + 0.5) * h);
-                const y0 = scaleY(j * h);
-                const y1 = scaleY(j * h + fluid.yVelocityAt(j, i) * scale)
-
-                this._display.beginPath();
-                this._display.moveTo(x, y0);
-                this._display.lineTo(x, y1);
-                this._display.stroke();
+                this._writeSegment(
+                    positions, segmentCount++,
+                    x - halfWidth, y0 - halfHeight,
+                    x - halfWidth, y1 - halfHeight
+                );
             }
+
+        this._geometry.getAttribute('position').needsUpdate = true;
+        this._geometry.setDrawRange(0, segmentCount * 2);
+        this._geometry.computeBoundingSphere();
+    }
+
+    _writeSegment(positions, segmentIndex, x0, y0, x1, y1) {
+        const offset = segmentIndex * 6;
+        positions[offset] = x0;
+        positions[offset + 1] = y0;
+        positions[offset + 2] = 0.004;
+        positions[offset + 3] = x1;
+        positions[offset + 4] = y1;
+        positions[offset + 5] = 0.004;
+    }
+
+    dispose() {
+        this._geometry.dispose();
+        this._material.dispose();
     }
 }
-
 class FluidStreamlinesView extends Renderable2D {
     constructor({
         numberOfSegments = 15,
