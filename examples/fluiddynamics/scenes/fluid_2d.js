@@ -449,44 +449,27 @@ class Circle extends Renderable2D {
     }
 }
 
-/**
- * Visualizes the pressure/smoke/obstacle combination used by the 2D fluid solver.
- *
- * The pressure field is the model bound to this view. The smoke and obstacle
- * fields are additional state needed to reproduce the fluid visualization.
- */
-class FluidDynamicsView extends Renderable2D {
-    constructor(display, width, height, scene) {
+class FluidDynamicsVelocitiesView extends Renderable2D {
+    constructor({display, scale = 0.2} = {}) {
         super();
-        this._imageData = display.getImageData(0, 0, width, height);
+        this._scale = scale
         this._display = display;
-        this._scene = scene;
-        this._showVelocities = false;
-        this._showStreamlines = false;
-        this._showPressure = true;
-        this._showSmoke = true;
-        this._height = height;
-        this._width = width;
-        this._canvasScale = height / simulationHeight;
-        this._color = new Color();
-        this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, {colorSpace: LinearSRGBColorSpace});
     }
 
-    set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
-    set showVelocities(/** @type {boolean} */ showVelocities) { this._showVelocities = showVelocities; }
-    set showStreamlines(/** @type {boolean} */ showStreamlines) { this._showStreamlines = showStreamlines; }
-    set showPressure(/** @type {boolean} */ showPressure) { this._showPressure = showPressure; }
+    canBindTo(/** @type {Fluid} */ _model) {
+        return true;
+    }
 
-    _doShowVelocities(/** @type {Fluid} */ fluid) {
+    synchronizeWith(/** @type {Fluid} */ fluid) {
         this._display.strokeStyle = "#000000";
-        const scale = 0.2;
+        const scale = this._scale;
         const h = fluid.h;
         for (let i = 0; i < fluid.numX; i++)
             for (let j = 0; j < fluid.numY; j++) {
                 this._display.beginPath();
 
                 const x0 = scaleX(i * h);
-                const x1 = scaleX(i * h + fluid._velocityX.valueAt(j, i) * scale);
+                const x1 = scaleX(i * h + fluid.xVelocityAt(j, i) * scale);
                 const y = scaleY((j + 0.5) * h);
 
                 this._display.moveTo(x0, y);
@@ -495,7 +478,7 @@ class FluidDynamicsView extends Renderable2D {
 
                 const x = scaleX((i + 0.5) * h);
                 const y0 = scaleY(j * h);
-                const y1 = scaleY(j * h + fluid._velocityY.valueAt(j, i) * scale)
+                const y1 = scaleY(j * h + fluid.yVelocityAt(j, i) * scale)
 
                 this._display.beginPath();
                 this._display.moveTo(x, y0);
@@ -503,9 +486,21 @@ class FluidDynamicsView extends Renderable2D {
                 this._display.stroke();
             }
     }
+}
 
-    _doShowStreamlines(/** @type {Fluid} */ fluid) {
-        const numberOfSegments = 15;
+class FluidStreamlinesView extends Renderable2D {
+    constructor({display, numberOfSegments = 15} = {}) {
+        super();
+        this._display = display;
+        this._numberOfSegments = numberOfSegments;
+    }
+
+    canBindTo(/** @type {Fluid} */ _model) {
+        return true;
+    }
+
+    synchronizeWith(/** @type {Fluid} */ fluid) {
+        const numberOfSegments = this._numberOfSegments;
         this._display.strokeStyle = "#000000";
 
         for (let i = 1; i < fluid.numX - 1; i += 5)
@@ -527,6 +522,31 @@ class FluidDynamicsView extends Renderable2D {
                 this._display.stroke();
             }
     }
+}
+
+/**
+ * Visualizes the pressure/smoke/obstacle combination used by the 2D fluid solver.
+ *
+ * The pressure field is the model bound to this view. The smoke and obstacle
+ * fields are additional state needed to reproduce the fluid visualization.
+ */
+class FluidDynamicsView extends Renderable2D {
+    constructor(display, width, height, scene) {
+        super();
+        this._imageData = display.getImageData(0, 0, width, height);
+        this._display = display;
+        this._scene = scene;
+        this._showPressure = true;
+        this._showSmoke = true;
+        this._height = height;
+        this._width = width;
+        this._canvasScale = height / simulationHeight;
+        this._color = new Color();
+        this._colorMapper = ColorMappers.get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace});
+    }
+
+    set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
+    set showPressure(/** @type {boolean} */ showPressure) { this._showPressure = showPressure; }
 
     /**
      * @param {number} i
@@ -585,12 +605,6 @@ class FluidDynamicsView extends Renderable2D {
 
         this._display.putImageData(this._imageData, 0, 0);
 
-        if (this._showVelocities)
-            this._doShowVelocities(fluid);
-
-        if (this._showStreamlines)
-            this._doShowStreamlines(fluid);
-
         if (this._showPressure) {
             const pressureText = "pressure: " + pressureRange.min.toFixed(0) + " - " + pressureRange.max.toFixed(0) + " N/m";
             this._display.fillStyle = "#A0A0A0";
@@ -624,8 +638,8 @@ function tankScene(/** @type {Fluid} */ fluid) {
     fluidDynamicsView.showPressure = true;
     obstacleView.showPressure = true;
     fluidDynamicsView.showSmoke = false;
-    fluidDynamicsView.showStreamlines = false;
-    fluidDynamicsView.showVelocities = false;
+    streamlinesView.visible = false;
+    velocitiesView.visible = false;
 }
 
 /**
@@ -663,8 +677,8 @@ function vortexSheddingScene(fluid, sceneNumber) {
     fluidDynamicsView.showPressure = true;
     obstacleView.showPressure = true;
     fluidDynamicsView.showSmoke = true;
-    fluidDynamicsView.showStreamlines = false;
-    fluidDynamicsView.showVelocities = false;
+    streamlinesView.visible = false;
+    velocitiesView.visible = false;
     if (sceneNumber === SCENE_TYPE.HIRES_TUNNEL)
         setHighResolution();
 }
@@ -676,8 +690,8 @@ function paintScene() {
     fluidDynamicsView.showPressure = false;
     obstacleView.showPressure = true;
     fluidDynamicsView.showSmoke = true;
-    fluidDynamicsView.showStreamlines = false;
-    fluidDynamicsView.showVelocities = false;
+    streamlinesView.visible = false;
+    velocitiesView.visible = false;
     obstacle.radius = 0.1;
 }
 
@@ -721,13 +735,15 @@ function setupScene(sceneNr = 0) {
     else if (sceneNr === SCENE_TYPE.PAINT)
         paintScene();
 
-    document.getElementById("streamButton").checked = fluidDynamicsView.showStreamlines;
-    document.getElementById("velocityButton").checked = fluidDynamicsView.showVelocities;
+    document.getElementById("streamButton").checked = streamlinesView.visible;
+    document.getElementById("velocityButton").checked = velocitiesView.visible;
     document.getElementById("pressureButton").checked = fluidDynamicsView.showPressure;
     document.getElementById("smokeButton").checked = fluidDynamicsView.showSmoke;
 }
 
+const streamlinesView = new FluidStreamlinesView({ display });
 const fluidDynamicsView = new FluidDynamicsView(display, canvas.width, canvas.height, scene);
+const velocitiesView = new FluidDynamicsVelocitiesView({ display });
 const obstacleView = new Circle({
     display,
     height: canvas.height,
@@ -767,8 +783,8 @@ document.getElementById("tankButton").addEventListener("click", () => setupScene
 document.getElementById("hiresButton").addEventListener("click", () => setupScene(SCENE_TYPE.HIRES_TUNNEL));
 document.getElementById("windTunnel").addEventListener("click", () => setupScene(SCENE_TYPE.WIND_TUNNEL));
 document.getElementById("paintButton").addEventListener("click", () => setupScene(SCENE_TYPE.PAINT));
-document.getElementById("streamButton").addEventListener("click", event => fluidDynamicsView.showStreamlines = event.target.checked);
-document.getElementById("velocityButton").addEventListener("click", event => fluidDynamicsView.showVelocities = event.target.checked);
+document.getElementById("streamButton").addEventListener("click", event => streamlinesView.visible = event.target.checked);
+document.getElementById("velocityButton").addEventListener("click", event => velocitiesView.visible = event.target.checked);
 document.getElementById("pressureButton").addEventListener("click", event => {
     fluidDynamicsView.showPressure = event.target.checked;
     obstacleView.showPressure = event.target.checked;
@@ -853,6 +869,8 @@ Simulation
     .runsEvery(3e-2)
     .onStep(() => simulate())
     .bind(fluid.alwaysWith(fluidDynamicsView))
+    .bind(fluid.alwaysWith(streamlinesView))
+    .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
     .frameSceneOn(fluidDynamicsView, { padding: 1.01 })
     .append(new RadioGroup()
@@ -863,10 +881,10 @@ Simulation
         .checked(0)
     )
     .append(new Checkbox('Velocities')
-        .onChange(e => { fluidDynamicsView.showVelocities = e.target.checked; })
+        .onChange(e => { velocitiesView.visible = e.target.checked; })
     )
     .append(new Checkbox('Streamlines')
-        .onChange(e => { fluidDynamicsView.showStreamlines = e.target.checked; })
+        .onChange(e => { streamlinesView.visible = e.target.checked; })
     )
     .append(new Checkbox('Obstacle')
         .checked(true)
