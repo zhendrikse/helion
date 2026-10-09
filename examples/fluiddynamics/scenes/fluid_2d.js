@@ -26,6 +26,11 @@ const SCENE_TYPE = Object.freeze({
     HIRES_TUNNEL: 3
 });
 
+const scaleX = (/** @type {number} */ x) => x * canvasScale;
+
+const scaleY = (/** @type {number} */ y) => canvas.height - y * canvasScale;
+
+
 //
 // F L U I D  S O L V E R
 //
@@ -383,10 +388,10 @@ class Fluid extends Field {
                     else
                         this._smokeField.setValueAt(j, i, 1.0);
 
-                    this._velocityX.setValueAt(i, j, vx);
-                    this._velocityX.setValueAt(i + 1, j, vx);
-                    this._velocityY.setValueAt(i, j, vy);
-                    this._velocityY.setValueAt(i, j + 1, vy);
+                    this._velocityX.setValueAt(j, i, vx);
+                    this._velocityX.setValueAt(j, i + 1, vx);
+                    this._velocityY.setValueAt(j, i, vy);
+                    this._velocityY.setValueAt(j + 1, i, vy);
                 }
             }
     }
@@ -442,13 +447,8 @@ class Circle extends Renderable2D {
         this._radiusOffset = radiusOffset;
         this._showPressure = true;
     }
-
     
     set showPressure(/** @type {boolean} */ value) { this._showPressure = value; }
-
-    _scaleX(/** @type {number} */ x) { return x * this._canvasScale; }
-
-    _scaleY(/** @type {number} */ y) { return this._height - y * this._canvasScale; }
 
     canBindTo(/** @type {RadialSymmetricBody} */ model) {
         if (model.radius === undefined)
@@ -461,14 +461,14 @@ class Circle extends Renderable2D {
         const r = obstacle.radius + this._radiusOffset;
         this._display.fillStyle = this._showPressure ? "#131313" : "#DDDDDD";
         this._display.beginPath();
-        this._display.arc(this._scaleX(obstacle.position.x), this._scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.arc(scaleX(obstacle.position.x), scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
         this._display.closePath();
         this._display.fill();
 
         this._display.lineWidth = 3.0;
         this._display.strokeStyle = "#000000";
         this._display.beginPath();
-        this._display.arc(this._scaleX(obstacle.position.x), this._scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.arc(scaleX(obstacle.position.x), scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
         this._display.closePath();
         this._display.stroke();
         this._display.lineWidth = 1.0;
@@ -497,10 +497,6 @@ class FluidDynamicsView extends Renderable2D {
         this._canvasScale = height / simulationHeight;
     }
 
-    _scaleX(/** @type {number} */ x) { return x * this._canvasScale; }
-
-    _scaleY(/** @type {number} */ y) { return this._height - y * this._canvasScale; }
-
     set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
     set showVelocities(/** @type {boolean} */ showVelocities) { this._showVelocities = showVelocities; }
     set showStreamlines(/** @type {boolean} */ showStreamlines) { this._showStreamlines = showStreamlines; }
@@ -511,14 +507,14 @@ class FluidDynamicsView extends Renderable2D {
         const r = obstacle.radius + fluid.h;
         this._display.fillStyle = this._showPressure ? "#131313" : "#DDDDDD";
         this._display.beginPath();
-        this._display.arc(this._scaleX(obstacle.position.x), this._scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.arc(scaleX(obstacle.position.x), scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
         this._display.closePath();
         this._display.fill();
 
         this._display.lineWidth = 3.0;
         this._display.strokeStyle = "#000000";
         this._display.beginPath();
-        this._display.arc(this._scaleX(obstacle.position.x), this._scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.arc(scaleX(obstacle.position.x), scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
         this._display.closePath();
         this._display.stroke();
         this._display.lineWidth = 1.0;
@@ -532,17 +528,17 @@ class FluidDynamicsView extends Renderable2D {
             for (let j = 0; j < fluid.numY; j++) {
                 this._display.beginPath();
 
-                const x0 = this._scaleX(i * h);
-                const x1 = this._scaleX(i * h + fluid._velocityX.valueAt(j, i) * scale);
-                const y = this._scaleY((j + 0.5) * h);
+                const x0 = scaleX(i * h);
+                const x1 = scaleX(i * h + fluid._velocityX.valueAt(j, i) * scale);
+                const y = scaleY((j + 0.5) * h);
 
                 this._display.moveTo(x0, y);
                 this._display.lineTo(x1, y);
                 this._display.stroke();
 
-                const x = this._scaleX((i + 0.5) * h);
-                const y0 = this._scaleY(j * h);
-                const y1 = this._scaleY(j * h + fluid._velocityY.valueAt(j, i) * scale)
+                const x = scaleX((i + 0.5) * h);
+                const y0 = scaleY(j * h);
+                const y1 = scaleY(j * h + fluid._velocityY.valueAt(j, i) * scale)
 
                 this._display.beginPath();
                 this._display.moveTo(x, y0);
@@ -561,7 +557,7 @@ class FluidDynamicsView extends Renderable2D {
                 let y = (j + 0.5) * fluid.h;
 
                 this._display.beginPath();
-                this._display.moveTo(this._scaleX(x), this._scaleY(y));
+                this._display.moveTo(scaleX(x), scaleY(y));
 
                 for (let n = 0; n < numberOfSegments; n++) {
                     if (x > fluid.numX * fluid.h)
@@ -569,7 +565,7 @@ class FluidDynamicsView extends Renderable2D {
 
                     x += fluid.sampleVelocityX(x, y) * 0.01;
                     y += fluid.sampleVelocityY(x, y) * 0.01;
-                    this._display.lineTo(this._scaleX(x), this._scaleY(y));
+                    this._display.lineTo(scaleX(x), scaleY(y));
                 }
                 this._display.stroke();
             }
@@ -606,8 +602,8 @@ class FluidDynamicsView extends Renderable2D {
             color[2] = 0;
         }
 
-        const x = Math.floor(this._scaleX(i * h));
-        const y = Math.floor(this._scaleY((j + 1) * h));
+        const x = Math.floor(scaleX(i * h));
+        const y = Math.floor(scaleY((j + 1) * h));
         const cx = Math.floor(this._canvasScale * cellScale * h) + 1;
         const cy = Math.floor(this._canvasScale * cellScale * h) + 1;
 
@@ -644,8 +640,8 @@ class FluidDynamicsView extends Renderable2D {
         if (this._showStreamlines)
             this._doShowStreamlines(fluid);
 
-        if (this._showObstacle)
-            this._doShowObstacle(fluid);
+        // if (this._showObstacle)
+        //     this._doShowObstacle(fluid);
 
         if (this._showPressure) {
             const pressureText = "pressure: " + pressureRange.min.toFixed(0) + " - " + pressureRange.max.toFixed(0) + " N/m";
@@ -677,6 +673,7 @@ function tankScene(/** @type {Fluid} */ fluid) {
 
     scene.gravity = -9.81;
     fluidDynamicsView.showPressure = true;
+    obstacleView.showPressure = true;
     fluidDynamicsView.showSmoke = false;
     fluidDynamicsView.showStreamlines = false;
     fluidDynamicsView.showVelocities = false;
@@ -714,6 +711,7 @@ function vortexSheddingScene(fluid, sceneNumber) {
 
     scene.gravity = 0.0;
     fluidDynamicsView.showPressure = true;
+    obstacleView.showPressure = true;
     fluidDynamicsView.showSmoke = true;
     fluidDynamicsView.showStreamlines = false;
     fluidDynamicsView.showVelocities = false;
@@ -726,6 +724,7 @@ function paintScene() {
     solver.overRelaxation = 1.0;
 
     fluidDynamicsView.showPressure = false;
+    obstacleView.showPressure = true;
     fluidDynamicsView.showSmoke = true;
     fluidDynamicsView.showStreamlines = false;
     fluidDynamicsView.showVelocities = false;
@@ -736,6 +735,7 @@ function setHighResolution() {
     dt = 1.0 / 125.0;
     solver.numIterations = 25;
     fluidDynamicsView.showPressure = true;
+    obstacleView.showPressure = true;
 }
 
 function setupScene(sceneNr = 0) {
@@ -815,7 +815,10 @@ document.getElementById("windTunnel").addEventListener("click", () => setupScene
 document.getElementById("paintButton").addEventListener("click", () => setupScene(SCENE_TYPE.PAINT));
 document.getElementById("streamButton").addEventListener("click", event => fluidDynamicsView.showStreamlines = event.target.checked);
 document.getElementById("velocityButton").addEventListener("click", event => fluidDynamicsView.showVelocities = event.target.checked);
-document.getElementById("pressureButton").addEventListener("click", event => fluidDynamicsView.showPressure = event.target.checked);
+document.getElementById("pressureButton").addEventListener("click", event => {
+    fluidDynamicsView.showPressure = event.target.checked;
+    obstacleView.showPressure = event.target.checked;
+});
 document.getElementById("smokeButton").addEventListener("click", event => fluidDynamicsView.showSmoke = event.target.checked);
 document.getElementById("overrelaxButton").addEventListener("click", event => solver.overRelaxation = solver.overRelaxation === 1.0 ? 1.9 : 1.0);
 canvas.addEventListener('mousedown', event => {
@@ -895,7 +898,7 @@ Simulation
     .runsEvery(3e-2)
     .onStep(() => simulate())
     .bind(fluid.alwaysWith(fluidDynamicsView))
-    //.bind(obstacle.alwaysWith(obstacleView))
+    .bind(obstacle.alwaysWith(obstacleView))
     .frameSceneOn(fluidDynamicsView, { padding: 1.01 })
     .append(new RadioGroup()
         .add('Pressure', () => { fluidDynamicsView.showPressure = true; fluidDynamicsView.showSmoke = false; })
