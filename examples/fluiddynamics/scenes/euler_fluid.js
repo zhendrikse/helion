@@ -169,7 +169,7 @@ class Fluid extends Field {
 
         for (let i = 1; i < this.numX; i++)
             for (let j = 1; j < this.numY - 1; j++)
-                if (this._obstacleMask.valueAt(j, i) !== 0.0 && this._obstacleMask.valueAt(j - 1, i) !== 0.0)
+                if (this._obstacleMask.valueAt(j, i) !== SOLID && this._obstacleMask.valueAt(j - 1, i) !== SOLID)
                     this._velocityY.setValueAt(j, i, this._velocityY.valueAt(j, i) + gravity * dt);
     }
 
@@ -180,7 +180,7 @@ class Fluid extends Field {
      * @param {number} overRelaxation
      */
     solveGridBox(i, j, cp, overRelaxation) {
-        if (this._obstacleMask.valueAt(j, i) === 0.0)
+        if (this._obstacleMask.valueAt(j, i) === SOLID)
             return;
 
         const sx0 = this._obstacleMask.valueAt(j, i - 1);
@@ -333,23 +333,23 @@ class Fluid extends Field {
 
         for (let i = 1; i < this.numX - 2; i++)
             for (let j = 1; j < this.numY - 2; j++) {
-                this._obstacleMask.setValueAt(j, i, 1.0);
+                this._obstacleMask.setValueAt(j, i, FLUID);
 
                 const dx = (i + 0.5) * this.h - x;
                 const dy = (j + 0.5) * this.h - y;
+                if (dx * dx + dy * dy > r * r)
+                    continue;
 
-                if (dx * dx + dy * dy < r * r) {
-                    this._obstacleMask.setValueAt(j, i, 0.0);
-                    if (sceneType === SCENE_TYPE.PAINT)
-                        this._smokeField.setValueAt(j, i, 0.5 + 0.5 * Math.sin(0.1 * frameNr));
-                    else
-                        this._smokeField.setValueAt(j, i, 1.0);
+                this._obstacleMask.setValueAt(j, i, SOLID);
+                if (sceneType === SCENE_TYPE.PAINT)
+                    this._smokeField.setValueAt(j, i, 0.5 + 0.5 * Math.sin(0.1 * frameNr));
+                else
+                    this._smokeField.setValueAt(j, i, 1.0);
 
-                    this._velocityX.setValueAt(j, i, vx);
-                    this._velocityX.setValueAt(j, i + 1, vx);
-                    this._velocityY.setValueAt(j, i, vy);
-                    this._velocityY.setValueAt(j + 1, i, vy);
-                }
+                this._velocityX.setValueAt(j, i, vx);
+                this._velocityX.setValueAt(j, i + 1, vx);
+                this._velocityY.setValueAt(j, i, vy);
+                this._velocityY.setValueAt(j + 1, i, vy);
             }
     }
 
