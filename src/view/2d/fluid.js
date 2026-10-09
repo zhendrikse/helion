@@ -5,6 +5,7 @@ import {
     Mesh,
     MeshBasicMaterial,
     PlaneGeometry,
+    LinearFilter,
     RGBAFormat,
     SRGBColorSpace
 } from "three";
@@ -93,8 +94,8 @@ export class FluidDynamicsView extends Renderable2D {
         );
         this._texture.colorSpace = SRGBColorSpace;
         this._texture.needsUpdate = true;
-        this._texture.magFilter = 1003; // THREE.LinearFilter
-        this._texture.minFilter = 1003; // THREE.LinearFilter
+        this._texture.magFilter = LinearFilter;
+        this._texture.minFilter = LinearFilter
 
         const geometry = new PlaneGeometry(fluid.numX * fluid.h, fluid.numY * fluid.h);
         const material = new MeshBasicMaterial({
