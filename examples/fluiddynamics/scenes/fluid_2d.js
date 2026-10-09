@@ -30,9 +30,9 @@ const SCENE_TYPE = Object.freeze({
 //
 class FluidSolver extends Solver {
     constructor({
-                    numIterations = 100,
-                    overRelaxation = 1.9
-                } = {}) {
+        numIterations = 100,
+        overRelaxation = 1.9
+    } = {}) {
         super();
         this.numIterations = numIterations;
         this.overRelaxation = overRelaxation;
@@ -105,18 +105,36 @@ class FluidSolver extends Solver {
 // F L U I D  M O D E L
 //
 class Fluid extends Field {
-    constructor(density, numX, numY, cellSize) {
+    constructor({
+        density = 1000,
+        numX = 100,
+        numY = 100,
+        cellSize = 1
+    } = {}) {
         super();
+        this.density = 0;
+        this.numX = 0;
+        this.numY = 0;
+        this.h = 0;
+        this._velocityX = null;
+        this._velocityY = null;
+        this._pressureField = null;
+        this._obstacleMask = null;
+        this._smokeField = null;
+        this.init(density, numX, numY, cellSize);
+    }
+
+    init(density, numX, numY, cellSize) {
         this.density = density;
         this.numX = numX + 2;
         this.numY = numY + 2;
         this.h = cellSize;
 
-        this._velocityX = new DiscreteScalarField({nx: this.numX, ny: this.numY});
-        this._velocityY = new DiscreteScalarField({nx: this.numX, ny: this.numY});
-        this._pressureField = new DiscreteScalarField({nx: this.numX, ny: this.numY});
-        this._obstacleMask = new DiscreteScalarField({nx: this.numX, ny: this.numY});
-        this._smokeField = new DiscreteScalarField({nx: this.numX, ny: this.numY});
+        this._velocityX = new DiscreteScalarField({nx: numX + 2, ny: numY + 2});
+        this._velocityY = new DiscreteScalarField({nx: numX + 2, ny: numY + 2});
+        this._pressureField = new DiscreteScalarField({nx: numX + 2, ny: numY + 2});
+        this._obstacleMask = new DiscreteScalarField({nx: numX + 2, ny: numY + 2});
+        this._smokeField = new DiscreteScalarField({nx: numX + 2, ny: numY + 2});
         this._smokeField.data.fill(1.0)
     }
 
@@ -513,7 +531,7 @@ class FluidDynamicsView extends Renderable2D {
 
 
 let dt = 1.0 / 120;
-let fluid;
+const fluid = new Fluid();
 
 const scene = {
     gravity: -9.81,
@@ -579,8 +597,8 @@ function paintScene() {
 }
 
 function setHighResolution() {
-    dt = 1.0 / 120.0;
-    solver.numIterations = 100;
+    dt = 1.0 / 125.0;
+    solver.numIterations = 25;
     fluidDynamicsView.showPressure = true;
 }
 
@@ -603,7 +621,7 @@ function setupScene(sceneNr = 0) {
     const numY = Math.floor(domainHeight / dy);
 
     const density = 1000.0;
-    fluid = new Fluid(density, numX, numY, dy);
+    fluid.init(density, numX, numY, dy);
     solver.init(fluid);
 
     if (sceneNr === SCENE_TYPE.TANK)
@@ -716,13 +734,13 @@ function simulate() {
     fluid.evolve(solver, dt);
 }
 
-function update() {
-    simulate();
-    fluidDynamicsView.synchronizeWith(fluid);
-    requestAnimationFrame(update);
-}
-
-update();
+// function update() {
+//     simulate();
+//     fluidDynamicsView.synchronizeWith(fluid);
+//     requestAnimationFrame(update);
+// }
+//
+// update();
 
 // Simulation
 //     .with({
@@ -740,19 +758,18 @@ update();
 //     .onStep(() => simulate(), 20, 30)
 //     .bind(fluid.alwaysWith(fluidDynamicsView))
 //     .start();
-// Simulation
-//     .with({
-//         htmlDivId: "fluid2dContainer",
-//         viewport: { aspectRatio: `${fluid.numX} / ${fluid.numY}`, parameterMenuCollapsed: true },
-//         camera: {
-//             orthographic: true,
-//             controls: false
-//         },
-//         headUpDisplay: { enabled: false },
-//         lighting: { enabled: false }
-//     })
-//     .runsEvery(0.04)
-//     .onStep(() => simulate())
-//     .bind(fluid.alwaysWith(fluidDynamicsView))
-//     .frameSceneOn(fluidDynamicsView, { padding: 1.1 })
-//     .start();
+Simulation
+    .with({
+        htmlDivId: "fluid2dContainer",
+        viewport: { aspectRatio: `${fluid.numX} / ${fluid.numY}`, parameterMenuCollapsed: true },
+        camera: {
+            orthographic: true,
+            controls: false
+        },
+        lighting: { enabled: false }
+    })
+    .runsEvery(3e-2)
+    .onStep(() => simulate())
+    .bind(fluid.alwaysWith(fluidDynamicsView))
+    .frameSceneOn(fluidDynamicsView, { padding: 1.01 })
+    .start();
