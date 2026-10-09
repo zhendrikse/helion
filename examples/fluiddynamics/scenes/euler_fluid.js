@@ -2,9 +2,12 @@ import {
     Checkbox, ColorMappers, DiscreteScalarField, ColorMapper,
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour
 } from '../../../src/index.js';
-import {Field} from '../../../src/model/math/fields.js';
-import {Renderable2D, Renderable3D} from '../../../src/view/renderer.js';
-import {BoxGeometry, BufferAttribute, BufferGeometry, CircleGeometry, Color, DoubleSide, LineBasicMaterial, LineSegments, LinearSRGBColorSpace, Mesh, MeshBasicMaterial, RingGeometry} from 'three';
+import { Field} from '../../../src/model/math/fields.js';
+import { Renderable2D } from '../../../src/view/renderer.js';
+import {
+    BoxGeometry, BufferAttribute, BufferGeometry, CircleGeometry, Color, DoubleSide, LineBasicMaterial,
+    LineSegments, LinearSRGBColorSpace, Mesh, MeshBasicMaterial, RingGeometry
+} from 'three';
 
 const helionDiv = document.getElementById('eulerFluidContainer');
 const canvas = document.getElementById('myCanvas');
@@ -15,6 +18,8 @@ canvas.focus();
 const simulationHeight = 1.1;
 const canvasScale = canvas.height / simulationHeight;
 const simulationWidth = canvas.width / canvasScale;
+const halfWidth = simulationWidth / 2;
+const halfHeight = simulationHeight / 2;
 
 const U_FIELD = 0; // x-component of velocity
 const V_FIELD = 1; // y-component of velocity
@@ -364,7 +369,7 @@ class Fluid extends Field {
 //
 // V I E W S
 //
-class Circle extends Renderable3D {
+class Circle extends Renderable2D {
     constructor({
         height,
         radiusOffset = 0,
@@ -403,7 +408,7 @@ class Circle extends Renderable3D {
         const radius = obstacle.radius + this._radiusOffset;
         this._fillMesh.scale.setScalar(radius);
         this._outlineMesh.scale.setScalar(radius);
-        this.position.set(obstacle.position.x - simulationWidth / 2, obstacle.position.y - simulationHeight / 2, 0.01);
+        this.position.set(obstacle.position.x - halfWidth, obstacle.position.y - halfHeight, 0.01);
     }
 }
 
@@ -411,7 +416,7 @@ class Circle extends Renderable3D {
  * Supplies real geometry for camera framing. The fluid fields are still
  * drawn on the existing 2D canvas, but they share this world-space domain.
  */
-class FluidDomainView extends Renderable3D {
+class FluidDomainView extends Renderable2D {
     constructor() {
         super();
         this.add(new Mesh(
@@ -468,74 +473,88 @@ class FluidDynamicsVelocitiesView extends Renderable2D {
     }
 }
 
-class FluidStreamlinesView extends Renderable3D {
-    constructor({numberOfSegments = 15, seedSpacing = 5} = {}) {
+class FluidStreamlinesView extends Renderable2D {
+    constructor({
+        numberOfSegments = 15,
+        seedSpacing = 5,
+        color = new Colour(0, .25, .25)
+    } = {}) {
         super();
         this._numberOfSegments = numberOfSegments;
         this._seedSpacing = seedSpacing;
         this._geometry = new BufferGeometry();
-        this._material = new LineBasicMaterial({color: 0x000000});
+        this._material = new LineBasicMaterial();
+        color.asThreeJsColor(this._material.color);
         this._lines = new LineSegments(this._geometry, this._material);
         this.add(this._lines);
         this._allocatedSegmentCount = 0;
     }
 
-    canBindTo(/** @type {Fluid} */ _model) {
+    canBindTo(/** @type {Fluid} */ model) {
+        if (model.sampleVelocityX === undefined ||
+            model.sampleVelocityY === undefined ||
+            model.numX === undefined ||
+            model.numY === undefined ||
+            model.h === undefined)
+            throw new Error('Fluid streamlines view can only bind to models that behave as a fluid model');
+
         return true;
     }
 
+    _newGeometry(maxSegmentCount) {
+        this._geometry.dispose();
+        this._geometry = new BufferGeometry();
+        this._geometry.setAttribute(
+            'position',
+            new BufferAttribute(new Float32Array(maxSegmentCount * 2 * 3), 3)
+        );
+        this._lines.geometry = this._geometry;
+        this._allocatedSegmentCount = maxSegmentCount;
+    }
+
+    initialize(/** @type {Fluid} */ fluid) {
+        const seedCountX = Math.ceil((fluid.numX - 2) / this._seedSpacing);
+        const seedCountY = Math.ceil((fluid.numY - 2) / this._seedSpacing);
+        const maxSegmentCount = seedCountX * seedCountY * this._numberOfSegments;
+        if (maxSegmentCount !== this._allocatedSegmentCount)
+            this._newGeometry(maxSegmentCount);
+    }
+
     synchronizeWith(/** @type {Fluid} */ fluid) {
-        const seedSpacing = this._seedSpacing;
-        const numberOfSegments = this._numberOfSegments;
-        const seedCountX = Math.ceil((fluid.numX - 2) / seedSpacing);
-        const seedCountY = Math.ceil((fluid.numY - 2) / seedSpacing);
-        const maxSegmentCount = seedCountX * seedCountY * numberOfSegments;
-
-        if (maxSegmentCount !== this._allocatedSegmentCount) {
-            this._geometry.dispose();
-            this._geometry = new BufferGeometry();
-            this._geometry.setAttribute(
-                'position',
-                new BufferAttribute(new Float32Array(maxSegmentCount * 2 * 3), 3)
-            );
-            this._lines.geometry = this._geometry;
-            this._allocatedSegmentCount = maxSegmentCount;
-        }
-
         const positions = this._geometry.getAttribute('position').array;
         let segmentCount = 0;
-        const halfWidth = simulationWidth / 2;
-        const halfHeight = simulationHeight / 2;
 
-        for (let i = 1; i < fluid.numX - 1; i += seedSpacing)
-            for (let j = 1; j < fluid.numY - 1; j += seedSpacing) {
+        for (let i = 1; i < fluid.numX - 1; i += this._seedSpacing)
+            for (let j = 1; j < fluid.numY - 1; j += this._seedSpacing) {
                 let x = (i + 0.5) * fluid.h;
                 let y = (j + 0.5) * fluid.h;
 
-                for (let n = 0; n < numberOfSegments; n++) {
-                    if (x < 0 || x > fluid.numX * fluid.h ||
-                        y < 0 || y > fluid.numY * fluid.h)
+                for (let n = 0; n < this._numberOfSegments; n++) {
+                    if (x < 0 || x > fluid.numX * fluid.h || y < 0 || y > fluid.numY * fluid.h)
                         break;
 
-                    const x0 = x;
-                    const y0 = y;
-                    x += fluid.sampleVelocityX(x, y) * 0.01;
-                    y += fluid.sampleVelocityY(x, y) * 0.01;
-
-                    const offset = segmentCount * 6;
-                    positions[offset] = x0 - halfWidth;
-                    positions[offset + 1] = y0 - halfHeight;
-                    positions[offset + 2] = 0.005;
-                    positions[offset + 3] = x - halfWidth;
-                    positions[offset + 4] = y - halfHeight;
-                    positions[offset + 5] = 0.005;
-                    segmentCount++;
+                    const { x1, y1 } = this._drawLine(x, y, fluid, segmentCount++, positions);
+                    x = x1; y = y1;
                 }
             }
 
         this._geometry.getAttribute('position').needsUpdate = true;
         this._geometry.setDrawRange(0, segmentCount * 2);
         this._geometry.computeBoundingSphere();
+    }
+
+    _drawLine(x, y, fluid, segmentCount, positions) {
+        const x1 = x + fluid.sampleVelocityX(x, y) * 0.01;
+        const y1 = y + fluid.sampleVelocityY(x, y) * 0.01;
+
+        const offset = segmentCount * 6;
+        positions[offset    ] = x - halfWidth;   // from.x
+        positions[offset + 1] = y - halfHeight;  // from.y
+        positions[offset + 2] = 0.005;           // from.z
+        positions[offset + 3] = x1 - halfWidth;  // to.x
+        positions[offset + 4] = y1 - halfHeight; // to.y
+        positions[offset + 5] = 0.005;           // to.z
+        return {x1, y1};
     }
 
     dispose() {
