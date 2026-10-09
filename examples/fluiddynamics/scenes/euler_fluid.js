@@ -3,11 +3,12 @@ import {
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver
 } from '../../../src/index.js';
 import {Field} from '../../../src/model/math/fields.js';
-import {Renderable2D} from '../../../src/view/renderer.js';
-import {Color, LinearSRGBColorSpace} from 'three';
+import {Renderable2D, Renderable3D} from '../../../src/view/renderer.js';
+import {BoxGeometry, CircleGeometry, Color, DoubleSide, LinearSRGBColorSpace, Mesh, MeshBasicMaterial, RingGeometry} from 'three';
 
 const helionDiv = document.getElementById('eulerFluidContainer');
 const canvas = document.getElementById('myCanvas');
+helionDiv.style.width = `${canvas.width}px`;
 const display = canvas.getContext('2d', { willReadFrequently: true });
 canvas.focus();
 
@@ -363,21 +364,39 @@ class Fluid extends Field {
 //
 // V I E W S
 //
-class Circle extends Renderable2D {
+class Circle extends Renderable3D {
     constructor({
-        display,
         height,
         radiusOffset = 0
     } = {}) {
         super();
-        this._height = height;
-        this._display = display;
         this._canvasScale = height / simulationHeight;
         this._radiusOffset = radiusOffset;
         this._showPressure = true;
+        this._radius = -1;
+
+        this._fillMaterial = new MeshBasicMaterial({
+            color: 0x131313,
+            side: DoubleSide
+        });
+        this._outlineMaterial = new MeshBasicMaterial({
+            color: 0x000000,
+            side: DoubleSide
+        });
+
+        this._fillMesh = new Mesh(new CircleGeometry(0.15, 64), this._fillMaterial);
+        this._outlineMesh = new Mesh(
+            new RingGeometry(0.15, 0.15 + 3 / this._canvasScale, 64),
+            this._outlineMaterial
+        );
+        this.add(this._fillMesh, this._outlineMesh);
     }
-    
-    set showPressure(/** @type {boolean} */ value) { this._showPressure = value; }
+
+    set showPressure(/** @type {boolean} */ value) {
+        this._showPressure = value;
+        this._fillMaterial.color.setHex(value ? 0x131313 : 0xDDDDDD);
+    }
+
     set radiusOffset(/** @type {number} */ value) { this._radiusOffset = value; }
 
     canBindTo(/** @type {RadialSymmetricBody} */ model) {
@@ -387,21 +406,49 @@ class Circle extends Renderable2D {
     }
 
     synchronizeWith(/** @type {RadialSymmetricBody} */ obstacle) {
-        const r = obstacle.radius + this._radiusOffset;
-        this._display.fillStyle = this._showPressure ? '#131313' : '#DDDDDD';
-        this._display.beginPath();
-        this._display.arc(scaleX(obstacle.position.x), scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
-        this._display.closePath();
-        this._display.fill();
+        const radius = obstacle.radius + this._radiusOffset;
+        if (Math.abs(radius - this._radius) > 1e-9) {
+            this._fillMesh.geometry.dispose();
+            this._outlineMesh.geometry.dispose();
+            this._fillMesh.geometry = new CircleGeometry(radius, 64);
+            this._outlineMesh.geometry = new RingGeometry(
+                radius,
+                radius + 3 / this._canvasScale,
+                64
+            );
+            this._radius = radius;
+        }
 
-        this._display.lineWidth = 3.0;
-        this._display.strokeStyle = '#000000';
-        this._display.beginPath();
-        this._display.arc(scaleX(obstacle.position.x), scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
-        this._display.closePath();
-        this._display.stroke();
-        this._display.lineWidth = 1.0;
+        // The fluid canvas uses (0, 0) at the lower-left; the Three.js
+        // orthographic view is centered on the simulation domain.
+        this.position.set(
+            obstacle.position.x - simulationWidth / 2,
+            obstacle.position.y - simulationHeight / 2,
+            0.01
+        );
     }
+}
+
+/**
+ * Supplies real geometry for camera framing. The fluid fields are still
+ * drawn on the existing 2D canvas, but they share this world-space domain.
+ */
+class FluidDomainView extends Renderable3D {
+    constructor() {
+        super();
+        this.add(new Mesh(
+            new BoxGeometry(simulationWidth, simulationHeight, 0.001),
+            new MeshBasicMaterial({
+                transparent: true,
+                opacity: 0,
+                colorWrite: false,
+                depthWrite: false
+            })
+        ));
+    }
+
+    canBindTo(/** @type {Fluid} */ _fluid) { return true; }
+    synchronizeWith(/** @type {Fluid} */ _fluid) {}
 }
 
 class FluidDynamicsVelocitiesView extends Renderable2D {
@@ -688,10 +735,10 @@ const streamlinesView = new FluidStreamlinesView({ display });
 const fluidDynamicsView = new FluidDynamicsView(display, canvas.width, canvas.height);
 const velocitiesView = new FluidDynamicsVelocitiesView({ display });
 const obstacleView = new Circle({
-    display,
     height: canvas.height,
     radiusOffset: fluid.h
 });
+const fluidDomainView = new FluidDomainView();
 
 function startDrag(/** @type {number} */ x, /** @type {number} */ y) {
     let bounds = canvas.getBoundingClientRect();
@@ -775,11 +822,12 @@ Simulation
     })
     .runsEvery(3e-2)
     .onStep(() => simulate())
+    .bind(fluid.alwaysWith(fluidDomainView))
     .bind(fluid.alwaysWith(fluidDynamicsView))
     .bind(fluid.alwaysWith(streamlinesView))
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
-    .frameSceneOn(fluidDynamicsView, { padding: 1.01 })
+    .frameSceneOn(fluidDomainView, { padding: 1.01 })
     .append(new RadioGroup()
         .add('Tank', () => setupScene(SCENE_TYPE.TANK))
         .add('Wind Tunnel', () => setupScene(SCENE_TYPE.WIND_TUNNEL))
@@ -811,3 +859,25 @@ Simulation
         .onChange(event =>
             fluidDynamicsView.colorMapper = ColorMappers.get(event.target.value, {colorSpace: LinearSRGBColorSpace})))
     .start();
+
+// Keep the existing Canvas 2D field renderer as a transparent layer beneath
+// the Three.js canvas, so the obstacle mesh can be rendered above it.
+const canvasWrapper = helionDiv.querySelector('.helionCanvasWrapper');
+if (canvasWrapper) {
+    canvasWrapper.appendChild(canvas);
+    Object.assign(canvas.style, {
+        position: 'absolute',
+        inset: '0',
+        width: '100%',
+        height: '100%',
+        zIndex: '0',
+        pointerEvents: 'auto'
+    });
+
+    const webglCanvas = canvasWrapper.querySelector('.helionCanvas');
+    if (webglCanvas)
+        Object.assign(webglCanvas.style, {
+            zIndex: '1',
+            pointerEvents: 'none'
+        });
+}
