@@ -16,7 +16,7 @@ function scientificColorCodingFor(value, minVal, maxVal) {
     if (maxVal <= minVal)
         return [128, 128, 128, 255];
 
-    value = Math.min(Math.max(value, minVal), maxVal - Number.EPSILON);
+    value = Math.min(Math.max(value, minVal), maxVal);
     const normalized = (value - minVal) / (maxVal - minVal);
     const segment = Math.min(3, Math.floor(4 * normalized));
     const fraction = 4 * normalized - segment;
@@ -95,7 +95,7 @@ export class FluidDynamicsView extends Renderable2D {
         this._texture.colorSpace = SRGBColorSpace;
         this._texture.needsUpdate = true;
         this._texture.magFilter = LinearFilter;
-        this._texture.minFilter = LinearFilter
+        this._texture.minFilter = LinearFilter;
 
         const geometry = new PlaneGeometry(fluid.numX * fluid.h, fluid.numY * fluid.h);
         const material = new MeshBasicMaterial({
