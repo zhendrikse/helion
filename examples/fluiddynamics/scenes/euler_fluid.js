@@ -827,7 +827,7 @@ Simulation
     .bind(fluid.alwaysWith(streamlinesView))
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
-    .frameSceneOn(fluidDomainView, { padding: 1.01 })
+    .frameSceneOn(fluidDomainView, { padding: 1.0 })
     .append(new RadioGroup()
         .add('Tank', () => setupScene(SCENE_TYPE.TANK))
         .add('Wind Tunnel', () => setupScene(SCENE_TYPE.WIND_TUNNEL))
