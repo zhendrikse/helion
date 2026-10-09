@@ -27,8 +27,8 @@ layout: ../../../layouts/DocsLayout.astro
 👉 You can move the obstacle with your mouse!<br/>
 
 <p style="clear: both;"></p>
-<div id="eulerFluidContainer" style="width: 650px; height: 650px;"></div>
-<canvas id="myCanvas" width="650" height="650" style="border: none; position: relative; left: 15px; top:-650px; "></canvas>
+<div id="eulerFluidContainer"></div>
+<canvas id="myCanvas" width="650" height="650" style="position: fixed; top: 10px; left: 10px;"></canvas>
 <script type="module" src={import.meta.env.BASE_URL + "examples/euler_fluid.js"}></script>
 
 
