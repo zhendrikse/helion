@@ -1,5 +1,6 @@
 import {
-    DiscreteScalarField, RadialSymmetricBody, Simulation, Solver, Vec3
+    Checkbox,
+    DiscreteScalarField, RadialSymmetricBody, RadioGroup, Simulation, Solver, Vec3
 } from "../../../src/index.js";
 import {Field} from "../../../src/model/math/fields.js";
 import {Renderable2D} from "../../../src/view/renderer.js";
@@ -41,6 +42,12 @@ class FluidSolver extends Solver {
         this._newSmokeField = new DiscreteScalarField({nx: 0, ny: 0});
     }
 
+    /**
+     * @param {Fluid} fluid
+     * @param {number} i
+     * @param {number} j
+     * @param {any} dt
+     */
     _advectVelocityAt(fluid, i, j, dt) {
         if (fluid.obstacleMaskAt(j, i) !== SOLID &&
             fluid.obstacleMaskAt(j, i - 1) !== SOLID &&
@@ -53,12 +60,22 @@ class FluidSolver extends Solver {
             this._newVelocityY.setValueAt(j, i, fluid.calculateVelocityY(i, j, dt));
     }
 
+    /**
+     * @param {Fluid} fluid
+     * @param {number} dt
+     */
     _advectVelocity(fluid, dt) {
         for (let i = 1; i < fluid.numX; i++)
             for (let j = 1; j < fluid.numY; j++)
                 this._advectVelocityAt(fluid, i, j, dt);
     }
 
+    /**
+     * @param {Fluid} fluid
+     * @param {number} i
+     * @param {number} j
+     * @param {number} dt
+     */
     _advectSmokeAt(fluid, i, j, dt) {
         if (fluid.obstacleMaskAt(j, i) === 0)
             return;
@@ -71,6 +88,10 @@ class FluidSolver extends Solver {
         this._newSmokeField.setValueAt(j, i, fluid.sampleSmoke(x, y));
     }
 
+    /**
+     * @param {Fluid} fluid
+     * @param {number} dt
+     */
     _advectSmoke(fluid, dt) {
         this._newSmokeField.data.set(fluid._smokeField.data);
         for (let i = 1; i < fluid.numX - 1; i++)
@@ -80,6 +101,10 @@ class FluidSolver extends Solver {
         fluid._smokeField.data.set(this._newSmokeField.data);
     }
 
+    /**
+     * @param {Fluid} fluid
+     * @param {number} dt
+     */
     step(fluid, dt) {
         fluid._pressureField.reset();
         fluid.solveIncompressibility(this.numIterations, this.overRelaxation, dt);
@@ -94,6 +119,9 @@ class FluidSolver extends Solver {
         this._advectSmoke(fluid, dt);
     }
 
+    /**
+     * @param {Fluid} fluid
+     */
     init(fluid) {
         this._newVelocityX = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});
         this._newVelocityY = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});
@@ -116,14 +144,20 @@ class Fluid extends Field {
         this.numX = 0;
         this.numY = 0;
         this.h = 0;
-        this._velocityX = null;
-        this._velocityY = null;
-        this._pressureField = null;
-        this._obstacleMask = null;
-        this._smokeField = null;
+        this._velocityX = new DiscreteScalarField({nx: 0, ny: 0});
+        this._velocityY = new DiscreteScalarField({nx: 0, ny: 0});
+        this._pressureField = new DiscreteScalarField({nx: 0, ny: 0});
+        this._obstacleMask = new DiscreteScalarField({nx: 0, ny: 0});
+        this._smokeField = new DiscreteScalarField({nx: 0, ny: 0});
         this.init(density, numX, numY, cellSize);
     }
 
+    /**
+     * @param {number} density
+     * @param {number} numX
+     * @param {number} numY
+     * @param {number} cellSize
+     */
     init(density, numX, numY, cellSize) {
         this.density = density;
         this.numX = numX + 2;
@@ -138,6 +172,10 @@ class Fluid extends Field {
         this._smokeField.data.fill(1.0)
     }
 
+    /**
+     * @param {number} gravity
+     * @param {number} dt
+     */
     integrate(gravity, dt) {
         if (gravity === 0.0)
             return;
@@ -148,6 +186,12 @@ class Fluid extends Field {
                     this._velocityY.setValueAt(j, i, this._velocityY.valueAt(j, i) + gravity * dt);
     }
 
+    /**
+     * @param {number} i
+     * @param {number} j
+     * @param {number} cp
+     * @param {number} overRelaxation
+     */
     solveGridBox(i, j, cp, overRelaxation) {
         if (this._obstacleMask.valueAt(j, i) === 0.0)
             return;
@@ -176,6 +220,11 @@ class Fluid extends Field {
         this._velocityY.setValueAt(j + 1, i, this._velocityY.valueAt(j + 1, i)  + sy1 * p);
     }
 
+    /**
+     * @param {number} numIters
+     * @param {number} overRelaxation
+     * @param {number} dt
+     */
     solveIncompressibility(numIters, overRelaxation, dt) {
         const cp = this.density * this.h / dt;
         for (let iter = 0; iter < numIters; iter++)
@@ -197,15 +246,20 @@ class Fluid extends Field {
 
     get pressureRange() { return this._pressureField.rangeAt(); }
 
-    sampleVelocityX(x, y) { return this._sampleField(x, y, U_FIELD); }
-    sampleVelocityY(x, y) { return this._sampleField(x, y, V_FIELD); }
-    sampleSmoke(x, y) { return this._sampleField(x, y, S_FIELD); }
-    pressureAt(i, j) { return this._pressureField.valueAt(i, j); }
-    smokeAt(i, j) { return this._smokeField.valueAt(i, j); }
-    obstacleMaskAt(i, j) { return this._obstacleMask.valueAt(i, j); }
-    xVelocityAt(i, j) { return this._velocityX.valueAt(i, j); }
-    yVelocityAt(i, j) { return this._velocityY.valueAt(i, j); }
+    sampleVelocityX(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, U_FIELD); }
+    sampleVelocityY(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, V_FIELD); }
+    sampleSmoke(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, S_FIELD); }
+    pressureAt(/** @type {number} */ i, /** @type {number} */ j) { return this._pressureField.valueAt(i, j); }
+    smokeAt(/** @type {number} */ i, /** @type {number} */ j) { return this._smokeField.valueAt(i, j); }
+    obstacleMaskAt(/** @type {number} */ i, /** @type {number} */ j) { return this._obstacleMask.valueAt(i, j); }
+    xVelocityAt(/** @type {number} */ i, /** @type {number} */ j) { return this._velocityX.valueAt(i, j); }
+    yVelocityAt(/** @type {number} */ i, /** @type {number} */ j) { return this._velocityY.valueAt(i, j); }
 
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {number} field
+     */
     _sampleField(x, y, field) {
         const h = this.h;
         const h1 = 1.0 / h;
@@ -249,6 +303,10 @@ class Fluid extends Field {
             sx * ty * f.valueAt(y1, x0);
     }
 
+    /**
+     * @param {number} i
+     * @param {number} j
+     */
     _averageVelocityX(i, j) {
         return (
             this._velocityX.valueAt(j - 1, i) +
@@ -258,6 +316,10 @@ class Fluid extends Field {
         ) * 0.25;
     }
 
+    /**
+     * @param {number} i
+     * @param {number} j
+     */
     _averageVelocityY(i, j) {
         return (
             this._velocityY.valueAt(j, i - 1) +
@@ -267,6 +329,11 @@ class Fluid extends Field {
         ) * 0.25;
     }
 
+    /**
+     * @param {number} i
+     * @param {number} j
+     * @param {number} dt
+     */
     calculateVelocityX(i, j, dt) {
         let x = i * this.h;
         let y = (j + .5) * this.h;
@@ -275,6 +342,11 @@ class Fluid extends Field {
         return this.sampleVelocityX(x, y);
     }
 
+    /**
+     * @param {number} i
+     * @param {number} j
+     * @param {number} dt
+     */
     calculateVelocityY(i, j, dt) {
         let x = (i + .5) * this.h;
         let y = j * this.h;
@@ -283,6 +355,11 @@ class Fluid extends Field {
         return this.sampleVelocityY(x, y);
     }
 
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @param {boolean} reset
+     */
     setObstacle(x, y, reset) {
         let vx = 0.0;
         let vy = 0.0;
@@ -317,6 +394,10 @@ class Fluid extends Field {
             }
     }
 
+    /**
+     * @param {FluidSolver} solver
+     * @param {number} dt
+     */
     evolve(solver, dt) {
         solver.step(this, dt);
     }
@@ -325,6 +406,11 @@ class Fluid extends Field {
 //
 // V I E W
 //
+/**
+ * @param {number} value
+ * @param {number} minVal
+ * @param {number} maxVal
+ */
 function scientificColorCodingFor(value, minVal, maxVal) {
     value = Math.min(Math.max(value, minVal), maxVal - 0.0001);
     const range = maxVal - minVal;
@@ -341,6 +427,8 @@ function scientificColorCodingFor(value, minVal, maxVal) {
             return [255 * s, 255, 0, 255];
         case 3 :
             return [255, 255 * (1 - s), 0, 255];
+        default:
+            return [0, 0, 0, 255];
     }
 }
 
@@ -355,19 +443,23 @@ class Circle extends Renderable2D {
         this._display = display;
         this._canvasScale = height / simulationHeight;
         this._radiusOffset = radiusOffset;
+        this._showPressure = true;
     }
 
-    _scaleX(x) { return x * this._canvasScale; }
+    
+    set showPressure(/** @type {boolean} */ value) { this._showPressure = value; }
 
-    _scaleY(y) { return this._height - y * this._canvasScale; }
+    _scaleX(/** @type {number} */ x) { return x * this._canvasScale; }
 
-    canBindTo(model) {
+    _scaleY(/** @type {number} */ y) { return this._height - y * this._canvasScale; }
+
+    canBindTo(/** @type {RadialSymmetricBody} */ model) {
         if (model.radius === undefined)
             throw new Error("Circle can only bind to models that have a radius property");
         return true;
     }
 
-    synchronizeWith(obstacle) {
+    synchronizeWith(/** @type {RadialSymmetricBody} */ obstacle) {
         //this._display.strokeW
         const r = obstacle.radius + this._radiusOffset;
         this._display.fillStyle = this._showPressure ? "#131313" : "#DDDDDD";
@@ -408,16 +500,16 @@ class FluidDynamicsView extends Renderable2D {
         this._canvasScale = height / simulationHeight;
     }
 
-    _scaleX(x) { return x * this._canvasScale; }
+    _scaleX(/** @type {number} */ x) { return x * this._canvasScale; }
 
-    _scaleY(y) { return this._height - y * this._canvasScale; }
+    _scaleY(/** @type {number} */ y) { return this._height - y * this._canvasScale; }
 
-    set showSmoke(showSmoke) { this._showSmoke = showSmoke; }
-    set showVelocities(showVelocities) { this._showVelocities = showVelocities; }
-    set showStreamlines(showStreamlines) { this._showStreamlines = showStreamlines; }
-    set showPressure(showPressure) { this._showPressure = showPressure; }
+    set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
+    set showVelocities(/** @type {boolean} */ showVelocities) { this._showVelocities = showVelocities; }
+    set showStreamlines(/** @type {boolean} */ showStreamlines) { this._showStreamlines = showStreamlines; }
+    set showPressure(/** @type {boolean} */ showPressure) { this._showPressure = showPressure; }
 
-    _doShowObstacle(fluid) {
+    _doShowObstacle(/** @type {Fluid} */ fluid) {
         //display.strokeW
         const r = obstacle.radius + fluid.h;
         this._display.fillStyle = this._showPressure ? "#131313" : "#DDDDDD";
@@ -435,7 +527,7 @@ class FluidDynamicsView extends Renderable2D {
         this._display.lineWidth = 1.0;
     }
 
-    _doShowVelocities(fluid) {
+    _doShowVelocities(/** @type {Fluid} */ fluid) {
         this._display.strokeStyle = "#000000";
         const scale = 0.2;
         const h = fluid.h;
@@ -462,7 +554,7 @@ class FluidDynamicsView extends Renderable2D {
             }
     }
 
-    _doShowStreamlines(fluid) {
+    _doShowStreamlines(/** @type {Fluid} */ fluid) {
         const numberOfSegments = 15;
         this._display.strokeStyle = "#000000";
 
@@ -486,11 +578,17 @@ class FluidDynamicsView extends Renderable2D {
             }
     }
 
+    /**
+     * @param {number} i
+     * @param {number} j
+     * @param {Fluid} fluid
+     * @param {{ min: number; max: number; }} pressureRange
+     */
     _updateImageDataAt(i, j, fluid, pressureRange) {
         const cellScale = 1.1;
         const h = fluid.h;
 
-        let color = [255, 255, 255, 0];
+        let color = [255, 255, 255, 255];
         const smoke = fluid.smokeAt(j, i);
         if (this._showPressure) {
             color = scientificColorCodingFor(fluid.pressureAt(j, i), pressureRange.min, pressureRange.max);
@@ -523,16 +621,16 @@ class FluidDynamicsView extends Renderable2D {
                 this._imageData.data[pos++] = color[0]; // red
                 this._imageData.data[pos++] = color[1]; // green
                 this._imageData.data[pos++] = color[2]; // blue
-                this._imageData.data[pos++] = color[3]; // opacity
+                this._imageData.data[pos++] = 255; // opacity (always opaque)
             }
         }
     }
 
-    canBindTo(_model) {
+    canBindTo(/** @type {Fluid} */ model) {
         return true;
     }
 
-    synchronizeWith(fluid) {
+    synchronizeWith(/** @type {Fluid} */ fluid) {
         const pressureRange = fluid.pressureRange;
         this._display.clearRect(0, 0, this._width, this._height);
         this._display.fillStyle = "#FF0000";
@@ -575,7 +673,7 @@ const scene = {
     sceneNr: SCENE_TYPE.WIND_TUNNEL,
 };
 
-function tankScene(fluid) {
+function tankScene(/** @type {Fluid} */ fluid) {
     for (let i = 0; i < fluid.numX; i++)
         for (let j = 0; j < fluid.numY; j++)
             fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.numX - 1 || j === 0) ? SOLID : FLUID);
@@ -587,6 +685,11 @@ function tankScene(fluid) {
     fluidDynamicsView.showVelocities = false;
 }
 
+/**
+ * @param {Fluid} fluid
+ * @param {number} i
+ * @param {number} j
+ */
 function updateSmokeFieldInVortexScene(fluid, i, j) {
     fluid._obstacleMask.setValueAt(j, i, (i === 0 || j === 0 || j === fluid.numY - 1) ? SOLID : FLUID);
 
@@ -595,6 +698,10 @@ function updateSmokeFieldInVortexScene(fluid, i, j) {
         fluid._velocityX.setValueAt(j, i, inwardVelocity);
 }
 
+/**
+ * @param {Fluid} fluid
+ * @param {number} sceneNumber
+ */
 function vortexSheddingScene(fluid, sceneNumber) {
     for (let i = 0; i < fluid.numX; i++)
         for (let j = 0; j < fluid.numY; j++)
@@ -793,4 +900,32 @@ Simulation
     .bind(fluid.alwaysWith(fluidDynamicsView))
     //.bind(obstacle.alwaysWith(obstacleView))
     .frameSceneOn(fluidDynamicsView, { padding: 1.01 })
+    .append(new RadioGroup()
+        .add('Pressure', () => { fluidDynamicsView.showPressure = true; fluidDynamicsView.showSmoke = false; })
+        .add('Smoke', () => { fluidDynamicsView.showPressure = false; fluidDynamicsView.showSmoke = true; })
+        .add('Pressure+Smoke', () => { fluidDynamicsView.showPressure = true; fluidDynamicsView.showSmoke = true; })
+        .add('None (fluid/solid)', () => { fluidDynamicsView.showPressure = false; fluidDynamicsView.showSmoke = false; })
+        .checked(0)
+    )
+    .append(new Checkbox('Velocities')
+        .onChange(e => { fluidDynamicsView.showVelocities = e.target.checked; })
+    )
+    .append(new Checkbox('Streamlines')
+        .onChange(e => { fluidDynamicsView.showStreamlines = e.target.checked; })
+    )
+    .append(new Checkbox('Obstacle')
+        .checked(true)
+        .onChange(e => { fluidDynamicsView.showObstacle = e.target.checked; })
+    )
+    .append(new RadioGroup()
+        .add('Tank', () => setupScene(SCENE_TYPE.TANK))
+        .add('Wind Tunnel', () => setupScene(SCENE_TYPE.WIND_TUNNEL))
+        .add('Paint', () => setupScene(SCENE_TYPE.PAINT))
+        .add('Hires Tunnel', () => setupScene(SCENE_TYPE.HIRES_TUNNEL))
+        .checked(1)
+    )
+    .append(new Checkbox('Over-relaxation')
+        .checked(true)
+        .onChange(e => { solver.overRelaxation = e.target.checked ? 1.9 : 1.0; })
+    )
     .start();
