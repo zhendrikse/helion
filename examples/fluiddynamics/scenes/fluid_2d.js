@@ -420,9 +420,10 @@ Simulation
     .runsEvery(1 / 60)
     .onStep(() => simulate())
     .bind(scene.fluid.alwaysWith(fluidDynamicsView))
+    .frameSceneOn(fluidDynamicsView, { padding: 1.05 })
     .start();
 
-
+/* Legacy canvas-based setup removed during the Three.js migration.
 // Simulation
 //     .with({
 //         htmlDivId: 'fluid2dContainer',
@@ -438,4 +439,4 @@ Simulation
 //     .runsEvery(0.04)
 //     .onStep(() => simulate(), 20, 30)
 //     .bind(scene.fluid.alwaysWith(fluidDynamicsView))
-//     .start();
+*/
