@@ -186,8 +186,8 @@ class Fluid extends Field {
         let vy = 0.0;
 
         if (!reset) {
-            vx = (x - scene.obstacleX) / scene.dt;
-            vy = (y - scene.obstacleY) / scene.dt;
+            vx = (x - scene.obstacleX) / dt;
+            vy = (y - scene.obstacleY) / dt;
         }
 
         scene.obstacleX = x;
@@ -240,17 +240,12 @@ const scene = {
     fluid: null
 };
 
-function updateSmokeFieldInTankScene(fluid, i, j) {
-    let smoke = 1.0;	// fluid
-    if (i === 0 || i === fluid.numX - 1 || j === 0)
-        smoke = 0.0;	// solid
-    fluid._obstacleMask.setValueAt(j, i, smoke);
-}
-
+const SOLID = 0.0;
+const FLUID = 1.0;
 function tankScene(fluid) {
     for (let i = 0; i < fluid.numX; i++)
         for (let j = 0; j < fluid.numY; j++)
-            updateSmokeFieldInTankScene(fluid, i, j);
+            fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.numX - 1 || j === 0) ? SOLID : FLUID);
 
     scene.gravity = -9.81;
     fluidDynamicsView.showPressure = true;
@@ -306,6 +301,7 @@ function paintScene() {
 function setHighResolution() {
     dt = 1.0 / 120.0;
     solver.numIterations = 100;
+    solver.init(scene.fluid);
     fluidDynamicsView.showPressure = true;
 }
 
