@@ -572,6 +572,14 @@ class FluidStreamlinesView extends Renderable2D {
     }
 
     synchronizeWith(/** @type {Fluid} */ fluid) {
+        // Scene changes can resize the fluid grid without reinitializing this view.
+        // Ensure the position buffer matches the current grid before writing into it.
+        const seedCountX = Math.ceil((fluid.numX - 2) / this._seedSpacing);
+        const seedCountY = Math.ceil((fluid.numY - 2) / this._seedSpacing);
+        const maxSegmentCount = seedCountX * seedCountY * this._numberOfSegments;
+        if (maxSegmentCount !== this._allocatedSegmentCount)
+            this._newGeometry(maxSegmentCount);
+
         const positions = this._geometry.getAttribute('position').array;
         let segmentCount = 0;
 
