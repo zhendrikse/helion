@@ -423,20 +423,3 @@ Simulation
     .frameSceneOn(fluidDynamicsView, { padding: 1.05 })
     .start();
 
-/* Legacy canvas-based setup removed during the Three.js migration.
-// Simulation
-//     .with({
-//         htmlDivId: 'fluid2dContainer',
-//         viewport: { aspectRatio: '1/1', parameterMenuCollapsed: true },
-//         camera: {
-//             position: new Vec3(0, 0, 2),
-//             orthographic: true,
-//             controls: false
-//         },
-//         headUpDisplay: false,
-//         lighting: { enabled: false }
-//     })
-//     .runsEvery(0.04)
-//     .onStep(() => simulate(), 20, 30)
-//     .bind(scene.fluid.alwaysWith(fluidDynamicsView))
-*/
