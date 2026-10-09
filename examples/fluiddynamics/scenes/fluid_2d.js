@@ -6,7 +6,7 @@ import {Field} from "../../../src/model/math/fields.js";
 import {Renderable2D} from "../../../src/view/renderer.js";
 
 const canvas = document.getElementById("myCanvas");
-const display = canvas.getContext("2d");
+const display = canvas.getContext('2d', { willReadFrequently: true });
 canvas.focus();
 
 const simulationHeight = 1.1;
@@ -119,10 +119,7 @@ class FluidSolver extends Solver {
         this._advectSmoke(fluid, dt);
     }
 
-    /**
-     * @param {Fluid} fluid
-     */
-    init(fluid) {
+    init(/* @type {Fluid} */ fluid) {
         this._newVelocityX = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});
         this._newVelocityY = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});
         this._newSmokeField = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});

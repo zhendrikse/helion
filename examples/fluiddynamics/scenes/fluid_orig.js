@@ -1,5 +1,5 @@
 const canvas = document.getElementById("myCanvas");
-const display = canvas.getContext("2d");
+const display = canvas.getContext('2d', { willReadFrequently: true });
 
 canvas.focus();
 
@@ -10,6 +10,15 @@ const simulationWidth = canvas.width / canvasScale;
 const U_FIELD = 0; // x-component of velocity
 const V_FIELD = 1; // y-component of velocity
 const S_FIELD = 2; // smoke field
+const SOLID = 0.0;
+const FLUID = 1.0;
+
+const SCENE_TYPE = Object.freeze({
+    TANK: 0,
+    WIND_TUNNEL: 1,
+    PAINT: 2,
+    HIRES_TUNNEL: 3
+});
 
 function scaleX(x) {
     return x * canvasScale;
@@ -19,8 +28,6 @@ function scaleY(y) {
     return canvas.height - y * canvasScale;
 }
 
-// ----------------- start of simulator ------------------------------
-
 class Fluid {
     constructor(density, numX, numY, h) {
         this.density = density;
@@ -28,15 +35,16 @@ class Fluid {
         this.numY = numY + 2;
         this.numCells = this.numX * this.numY;
         this.h = h;
-        this.u = new Float32Array(this.numCells);
-        this.v = new Float32Array(this.numCells);
-        this.newU = new Float32Array(this.numCells);
-        this.newV = new Float32Array(this.numCells);
-        this.p = new Float32Array(this.numCells);
-        this.s = new Float32Array(this.numCells);
-        this.m = new Float32Array(this.numCells);
-        this.newM = new Float32Array(this.numCells);
+        this.u = new Float64Array(this.numCells);
+        this.v = new Float64Array(this.numCells);
+        this.p = new Float64Array(this.numCells);
+        this.s = new Float64Array(this.numCells);
+        this.m = new Float64Array(this.numCells);
         this.m.fill(1.0)
+
+        this.newU = new Float64Array(this.numCells);
+        this.newV = new Float64Array(this.numCells);
+        this.newM = new Float64Array(this.numCells);
     }
 
     integrate(dt, gravity) {
@@ -527,6 +535,7 @@ function draw() {
     display.fillStyle = "#FF0000";
 
     const pressureRange = getPressureRange(scene.fluid);
+
     const imageData = display.getImageData(0, 0, canvas.width, canvas.height);
     updateImageData(imageData, scene.fluid, pressureRange);
     display.putImageData(imageData, 0, 0);
