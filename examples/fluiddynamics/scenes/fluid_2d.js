@@ -301,7 +301,6 @@ function paintScene() {
 function setHighResolution() {
     dt = 1.0 / 120.0;
     solver.numIterations = 100;
-    solver.init(scene.fluid);
     fluidDynamicsView.showPressure = true;
 }
 
@@ -325,6 +324,7 @@ function setupScene(sceneNr = 0) {
 
     const density = 1000.0;
     const fluid = scene.fluid = new Fluid(density, numX, numY, dy);
+    solver.init(fluid);
 
     if (sceneNr === SCENE_TYPE.TANK)
         tankScene(fluid);
@@ -492,9 +492,8 @@ class Solver {
     }
 }
 
-setupScene(SCENE_TYPE.WIND_TUNNEL);
 const solver = new Solver({ numIterations: 40 });
-solver.init(scene.fluid);
+setupScene(SCENE_TYPE.WIND_TUNNEL);
 document.getElementById("overrelaxButton").checked = solver.overRelaxation > 1.0;
 
 // main -------------------------------------------------------
