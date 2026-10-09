@@ -4,7 +4,7 @@ import {
 } from '../../../src/index.js';
 import {Field} from '../../../src/model/math/fields.js';
 import {Renderable2D, Renderable3D} from '../../../src/view/renderer.js';
-import {BoxGeometry, CircleGeometry, Color, DoubleSide, LinearSRGBColorSpace, Mesh, MeshBasicMaterial, RingGeometry} from 'three';
+import {BoxGeometry, BufferAttribute, BufferGeometry, CircleGeometry, Color, DoubleSide, LineBasicMaterial, LineSegments, LinearSRGBColorSpace, Mesh, MeshBasicMaterial, RingGeometry} from 'three';
 
 const helionDiv = document.getElementById('eulerFluidContainer');
 const canvas = document.getElementById('myCanvas');
@@ -468,11 +468,16 @@ class FluidDynamicsVelocitiesView extends Renderable2D {
     }
 }
 
-class FluidStreamlinesView extends Renderable2D {
-    constructor({display, numberOfSegments = 15} = {}) {
+class FluidStreamlinesView extends Renderable3D {
+    constructor({numberOfSegments = 15, seedSpacing = 5} = {}) {
         super();
-        this._display = display;
         this._numberOfSegments = numberOfSegments;
+        this._seedSpacing = seedSpacing;
+        this._geometry = new BufferGeometry();
+        this._material = new LineBasicMaterial({color: 0x000000});
+        this._lines = new LineSegments(this._geometry, this._material);
+        this.add(this._lines);
+        this._allocatedSegmentCount = 0;
     }
 
     canBindTo(/** @type {Fluid} */ _model) {
@@ -480,27 +485,62 @@ class FluidStreamlinesView extends Renderable2D {
     }
 
     synchronizeWith(/** @type {Fluid} */ fluid) {
+        const seedSpacing = this._seedSpacing;
         const numberOfSegments = this._numberOfSegments;
-        this._display.strokeStyle = '#000000';
+        const seedCountX = Math.ceil((fluid.numX - 2) / seedSpacing);
+        const seedCountY = Math.ceil((fluid.numY - 2) / seedSpacing);
+        const maxSegmentCount = seedCountX * seedCountY * numberOfSegments;
 
-        for (let i = 1; i < fluid.numX - 1; i += 5)
-            for (let j = 1; j < fluid.numY - 1; j += 5) {
+        if (maxSegmentCount !== this._allocatedSegmentCount) {
+            this._geometry.dispose();
+            this._geometry = new BufferGeometry();
+            this._geometry.setAttribute(
+                'position',
+                new BufferAttribute(new Float32Array(maxSegmentCount * 2 * 3), 3)
+            );
+            this._lines.geometry = this._geometry;
+            this._allocatedSegmentCount = maxSegmentCount;
+        }
+
+        const positions = this._geometry.getAttribute('position').array;
+        let segmentCount = 0;
+        const halfWidth = simulationWidth / 2;
+        const halfHeight = simulationHeight / 2;
+
+        for (let i = 1; i < fluid.numX - 1; i += seedSpacing)
+            for (let j = 1; j < fluid.numY - 1; j += seedSpacing) {
                 let x = (i + 0.5) * fluid.h;
                 let y = (j + 0.5) * fluid.h;
 
-                this._display.beginPath();
-                this._display.moveTo(scaleX(x), scaleY(y));
-
                 for (let n = 0; n < numberOfSegments; n++) {
-                    if (x > fluid.numX * fluid.h)
+                    if (x < 0 || x > fluid.numX * fluid.h ||
+                        y < 0 || y > fluid.numY * fluid.h)
                         break;
 
+                    const x0 = x;
+                    const y0 = y;
                     x += fluid.sampleVelocityX(x, y) * 0.01;
                     y += fluid.sampleVelocityY(x, y) * 0.01;
-                    this._display.lineTo(scaleX(x), scaleY(y));
+
+                    const offset = segmentCount * 6;
+                    positions[offset] = x0 - halfWidth;
+                    positions[offset + 1] = y0 - halfHeight;
+                    positions[offset + 2] = 0.005;
+                    positions[offset + 3] = x - halfWidth;
+                    positions[offset + 4] = y - halfHeight;
+                    positions[offset + 5] = 0.005;
+                    segmentCount++;
                 }
-                this._display.stroke();
             }
+
+        this._geometry.getAttribute('position').needsUpdate = true;
+        this._geometry.setDrawRange(0, segmentCount * 2);
+        this._geometry.computeBoundingSphere();
+    }
+
+    dispose() {
+        this._geometry.dispose();
+        this._material.dispose();
     }
 }
 
@@ -709,7 +749,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
         paintScene();
 }
 
-const streamlinesView = new FluidStreamlinesView({ display });
+const streamlinesView = new FluidStreamlinesView();
 const fluidDynamicsView = new FluidDynamicsView(display, canvas.width, canvas.height);
 const velocitiesView = new FluidDynamicsVelocitiesView({ display });
 const obstacleView = new Circle({
