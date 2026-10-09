@@ -407,19 +407,17 @@ setupScene(SCENE_TYPE.WIND_TUNNEL);
 Simulation
     .with({
         htmlDivId: "fluid2dContainer",
-        viewport: { aspectRatio: "1 / 1", parameterMenuCollapsed: true },
+        viewport: { aspectRatio: `${scene.fluid.numX} / ${scene.fluid.numY}`, parameterMenuCollapsed: true },
         camera: {
-            position: new Vec3(0.5, 0.5, 2),
-            target: new Vec3(0.5, 0.5, 0),
             orthographic: true,
             controls: false
         },
         headUpDisplay: { enabled: false },
         lighting: { enabled: false }
     })
-    .runsEvery(1 / 60)
+    .runsEvery(0.04)
     .onStep(() => simulate())
     .bind(scene.fluid.alwaysWith(fluidDynamicsView))
-    .frameSceneOn(fluidDynamicsView, { padding: 1.05 })
+    .frameSceneOn(fluidDynamicsView, { padding: 1 })
     .start();
 

@@ -1,13 +1,6 @@
 import {
-    CircleGeometry,
-    DataTexture,
-    DoubleSide,
-    Mesh,
-    MeshBasicMaterial,
-    PlaneGeometry,
-    LinearFilter,
-    RGBAFormat,
-    SRGBColorSpace
+    CircleGeometry, DataTexture, DoubleSide, Mesh, MeshBasicMaterial, PlaneGeometry, LinearFilter,
+    RGBAFormat, SRGBColorSpace
 } from "three";
 
 import {Renderable2D} from "../renderer.js";
@@ -86,12 +79,7 @@ export class FluidDynamicsView extends Renderable2D {
         this._gridHeight = fluid.numY;
 
         const pixels = new Uint8Array(this._gridWidth * this._gridHeight * 4);
-        this._texture = new DataTexture(
-            pixels,
-            this._gridWidth,
-            this._gridHeight,
-            RGBAFormat
-        );
+        this._texture = new DataTexture(pixels, this._gridWidth, this._gridHeight, RGBAFormat);
         this._texture.colorSpace = SRGBColorSpace;
         this._texture.needsUpdate = true;
         this._texture.magFilter = LinearFilter;
@@ -103,11 +91,7 @@ export class FluidDynamicsView extends Renderable2D {
             side: DoubleSide
         });
         this._fieldMesh = new Mesh(geometry, material);
-        this._fieldMesh.position.set(
-            fluid.numX * fluid.h / 2,
-            fluid.numY * fluid.h / 2,
-            0
-        );
+        this._fieldMesh.position.set(fluid.numX * fluid.h / 2, fluid.numY * fluid.h / 2, 0);
         this.add(this._fieldMesh);
     }
 
@@ -154,11 +138,6 @@ export class FluidDynamicsView extends Renderable2D {
     }
 
     synchronizeWith(fluid) {
-        if (!this._fieldMesh || fluid.numX !== this._gridWidth || fluid.numY !== this._gridHeight) {
-            this._createFieldMesh(fluid);
-            this._createObstacleMesh(fluid);
-        }
-
         const {min, max} = fluid.pressureRange;
         const pixels = this._texture.image.data;
 
