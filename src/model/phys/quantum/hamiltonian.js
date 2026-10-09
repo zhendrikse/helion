@@ -1,5 +1,5 @@
 import { DiscreteComplexField, DiscreteScalarField, DiscreteScalarField3D} from '../../math/fields.js';
-import { SchrodingerSolver } from './schrodinger.js';
+import { SchrodingerSolver } from './solvers.js';
 
 /**
  * Single non-relativistic particle used by quantum potential functions.

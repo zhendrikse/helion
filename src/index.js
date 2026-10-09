@@ -64,13 +64,14 @@ export { DifferentialGeometry, DifferentialFrame } from './model/math/numerics/d
 export { Matrix2D, RotationMatrix2D, linspace, meshgrid } from './model/math/linearalgebra.js';
 export { Arrow2D } from './view/2d/primitives.js';
 export { ArrowField2D, OneDimensionalWaveFunctionView } from './view/2d/composites.js';
-export { WaveEquationSolver, JacobiSolver } from './model/math/numerics/solvers/solvers.js';
-export { SchrodingerEigenstateSolver3D } from './model/math/numerics/solvers/qmsolvers.js';
-export { SchrodingerSolver } from './model/phys/quantum/schrodinger.js';
+export { WaveEquationSolver, JacobiSolver, Solver } from './model/math/numerics/solvers/solvers.js';
 export { WaveFunction } from './model/phys/quantum/wavefunction.js';
-export { LanczosEigenstateSolver, RelaxationEigenstateSolver } from './model/phys/quantum/solvers.js';
 export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js';
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
+
+export {
+    SchrodingerEigenstateSolver3D,LanczosEigenstateSolver, RelaxationEigenstateSolver, SchrodingerSolver
+} from './model/phys/quantum/solvers.js';
 
 export {
     CylinderSegmentsView, BoxSegmentsView, LineSegmentsView, LineSegmentView, CurveView

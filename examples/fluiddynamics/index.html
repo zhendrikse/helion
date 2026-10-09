@@ -26,7 +26,17 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -->
-<div id="fluid2dContainer" style="width: 650px; height: 650px;"></div>
+<button class="button" id="windTunnel">Wind Tunnel</button>
+<button class="button" id="hiresButton">Hires Tunnel</button>
+<button class="button" id="tankButton">Tank</button>
+<button class="button" id="paintButton">Paint</button>
+
+<label for="streamButton"></label><input type="checkbox" id="streamButton"/> Streamlines
+<label for="velocityButton"></label><input type="checkbox" id="velocityButton"/> Velocities
+<label for="pressureButton"></label><input type="checkbox" name="field" id="pressureButton"  checked/> Pressure
+<label for="smokeButton"></label><input type="checkbox" name="field" id="smokeButton" checked/> Smoke
+<label for="overrelaxButton"></label><input type="checkbox" id="overrelaxButton" checked> Overrelax
+<canvas id="myCanvas" width="650" height="650" style="border: none;"></canvas>
 <script type = "module" src="scenes/fluid_2d.js"></script>
 </body>
 </html>

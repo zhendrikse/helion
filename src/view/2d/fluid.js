@@ -1,189 +1,199 @@
-import {
-    CircleGeometry, DataTexture, DoubleSide, Mesh, MeshBasicMaterial, PlaneGeometry, LinearFilter,
-    RGBAFormat, SRGBColorSpace
-} from "three";
-
 import {Renderable2D} from "../renderer.js";
 
 function scientificColorCodingFor(value, minVal, maxVal) {
-    if (maxVal <= minVal)
-        return [128, 128, 128, 255];
+    value = Math.min(Math.max(value, minVal), maxVal - 0.0001);
+    const range = maxVal - minVal;
+    value = range === 0.0 ? 0.5 : (value - minVal) / range;
+    const num = Math.floor(4 * value);
+    const s = 4 * (value - num / 4);
 
-    value = Math.min(Math.max(value, minVal), maxVal);
-    const normalized = (value - minVal) / (maxVal - minVal);
-    const segment = Math.min(3, Math.floor(4 * normalized));
-    const fraction = 4 * normalized - segment;
-
-    switch (segment) {
-        case 0:
-            return [0, 255 * fraction, 255, 255];
-        case 1:
-            return [0, 255, 255 * (1 - fraction), 255];
-        case 2:
-            return [255 * fraction, 255, 0, 255];
-        default:
-            return [255, 255 * (1 - fraction), 0, 255];
+    switch (num) {
+        case 0 :
+            return [0, 255 * s, 255, 255];
+        case 1 :
+            return [0, 255, 255 * (1 - s), 255];
+        case 2 :
+            return [255 * s, 255, 0, 255];
+        case 3 :
+            return [255, 255 * (1 - s), 0, 255];
     }
 }
 
 /**
- * Three.js visualization of the 2D fluid grid.
+ * Visualizes the pressure/smoke/obstacle combination used by the 2D fluid solver.
  *
- * The grid is uploaded directly to a DataTexture; this view does not use a
- * 2D canvas context. The obstacle is a separate Three.js mesh so it remains
- * crisp when the simulation is zoomed.
+ * The pressure field is the model bound to this view. The smoke and obstacle
+ * fields are additional state needed to reproduce the fluid visualization.
  */
 export class FluidDynamicsView extends Renderable2D {
-    constructor(scene = {}) {
+    constructor(display, width, height, scene) {
         super();
-
+        this._imageData = display.getImageData(0, 0, width, height);
+        this._display = display;
         this._scene = scene;
+        this._showVelocities = false;
+        this._showStreamlines = false;
         this._showObstacle = true;
         this._showPressure = true;
         this._showSmoke = true;
-
-        this._texture = null;
-        this._fieldMesh = null;
-        this._obstacleMesh = null;
-        this._gridWidth = 0;
-        this._gridHeight = 0;
+        this._height = height;
+        this._width = width;
+        const simulationHeight = 1.1;
+        this._canvasScale = height / simulationHeight;
     }
 
-    set showSmoke(showSmoke) {
-        this._showSmoke = showSmoke;
+    _scaleX(x) { return x * this._canvasScale; }
+
+    _scaleY(y) { return this._height - y * this._canvasScale; }
+
+    set showSmoke(showSmoke) { this._showSmoke = showSmoke; }
+    set showVelocities(showVelocities) { this._showVelocities = showVelocities; }
+    set showStreamlines(showStreamlines) { this._showStreamlines = showStreamlines; }
+    set showPressure(showPressure) { this._showPressure = showPressure; }
+
+    _doShowObstacle(fluid) {
+        //display.strokeW
+        const r = this._scene.obstacleRadius + fluid.h;
+        if (this._showPressure)
+            this._display.fillStyle = "#131313";
+        else
+            this._display.fillStyle = "#DDDDDD";
+        this._display.beginPath();
+        this._display.arc(this._scaleX(this._scene.obstacleX), this._scaleY(this._scene.obstacleY), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.closePath();
+        this._display.fill();
+
+        this._display.lineWidth = 3.0;
+        this._display.strokeStyle = "#000000";
+        this._display.beginPath();
+        this._display.arc(this._scaleX(this._scene.obstacleX), this._scaleY(this._scene.obstacleY), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.closePath();
+        this._display.stroke();
+        this._display.lineWidth = 1.0;
     }
 
-    set showPressure(showPressure) {
-        this._showPressure = showPressure;
+    _doShowVelocities(fluid) {
+        this._display.strokeStyle = "#000000";
+        const scale = 0.2;
+        const h = fluid.h;
+        for (let i = 0; i < fluid.numX; i++)
+            for (let j = 0; j < fluid.numY; j++) {
+                this._display.beginPath();
+
+                const x0 = this._scaleX(i * h);
+                const x1 = this._scaleX(i * h + fluid._velocityX.valueAt(j, i) * scale);
+                const y = this._scaleY((j + 0.5) * h);
+
+                this._display.moveTo(x0, y);
+                this._display.lineTo(x1, y);
+                this._display.stroke();
+
+                const x = this._scaleX((i + 0.5) * h);
+                const y0 = this._scaleY(j * h);
+                const y1 = this._scaleY(j * h + fluid._velocityY.valueAt(j, i) * scale)
+
+                this._display.beginPath();
+                this._display.moveTo(x, y0);
+                this._display.lineTo(x, y1);
+                this._display.stroke();
+            }
     }
 
-    set showObstacle(showObstacle) {
-        this._showObstacle = showObstacle;
-        if (this._obstacleMesh)
-            this._obstacleMesh.visible = showObstacle;
+    _doShowStreamlines(fluid) {
+        const numberOfSegments = 15;
+        this._display.strokeStyle = "#000000";
+
+        for (let i = 1; i < fluid.numX - 1; i += 5)
+            for (let j = 1; j < fluid.numY - 1; j += 5) {
+                let x = (i + 0.5) * fluid.h;
+                let y = (j + 0.5) * fluid.h;
+
+                this._display.beginPath();
+                this._display.moveTo(this._scaleX(x), this._scaleY(y));
+
+                for (let n = 0; n < numberOfSegments; n++) {
+                    if (x > fluid.numX * fluid.h)
+                        break;
+
+                    x += fluid.xVelocityAt(x, y) * 0.01;
+                    y += fluid.yVelocityAt(x, y) * 0.01;
+                    this._display.lineTo(this._scaleX(x), this._scaleY(y));
+                }
+                this._display.stroke();
+            }
     }
 
-    canBindTo(model) {
-        return Boolean(model && model.pressureAt && model.smokeAt && model.obstacleAt);
-    }
+    _updateImageDataAt(i, j, fluid, pressureRange) {
+        const cellScale = 1.1;
+        const h = fluid.h;
 
-    initialize(fluid) {
-        this._createFieldMesh(fluid);
-        this._createObstacleMesh(fluid);
-    }
-
-    _createFieldMesh(fluid) {
-        this._disposeFieldMesh();
-
-        this._gridWidth = fluid.numX;
-        this._gridHeight = fluid.numY;
-
-        const pixels = new Uint8Array(this._gridWidth * this._gridHeight * 4);
-        this._texture = new DataTexture(pixels, this._gridWidth, this._gridHeight, RGBAFormat);
-        this._texture.colorSpace = SRGBColorSpace;
-        this._texture.needsUpdate = true;
-        this._texture.magFilter = LinearFilter;
-        this._texture.minFilter = LinearFilter;
-
-        const geometry = new PlaneGeometry(fluid.numX * fluid.h, fluid.numY * fluid.h);
-        const material = new MeshBasicMaterial({
-            map: this._texture,
-            side: DoubleSide
-        });
-        this._fieldMesh = new Mesh(geometry, material);
-        this._fieldMesh.position.set(fluid.numX * fluid.h / 2, fluid.numY * fluid.h / 2, 0);
-        this.add(this._fieldMesh);
-    }
-
-    _createObstacleMesh(fluid) {
-        if (this._obstacleMesh) {
-            this.remove(this._obstacleMesh);
-            this._obstacleMesh.geometry.dispose();
-            this._obstacleMesh.material.dispose();
+        let color = [255, 255, 255, 0];
+        const smoke = fluid.smokeAt(j, i);
+        if (this._showPressure) {
+            color = scientificColorCodingFor(fluid.pressureAt(j, i), pressureRange.min, pressureRange.max);
+            if (this._showSmoke) {
+                color[0] = Math.max(0.0, color[0] - 255 * smoke);
+                color[1] = Math.max(0.0, color[1] - 255 * smoke);
+                color[2] = Math.max(0.0, color[2] - 255 * smoke);
+            }
+        } else if (this._showSmoke) {
+            color[0] = 255 * smoke;
+            color[1] = 255 * smoke;
+            color[2] = 255 * smoke;
+            if (this._scene.sceneNr === 2) //SCENE_TYPE.PAINT)
+                color = scientificColorCodingFor(smoke, 0.0, 1.0);
+        } else if (fluid.obstacleMaskAt(j, i) === 0.0) {
+            color[0] = 0;
+            color[1] = 0;
+            color[2] = 0;
         }
 
-        const radius = (this._scene.obstacleRadius ?? 0.15) + fluid.h;
-        this._obstacleMesh = new Mesh(
-            new CircleGeometry(radius, 48),
-            new MeshBasicMaterial({
-                color: this._showPressure ? 0x131313 : 0xdddddd,
-                side: DoubleSide
-            })
-        );
-        this._obstacleMesh.position.z = 0.01;
-        this._obstacleMesh.visible = this._showObstacle;
-        this.add(this._obstacleMesh);
-        this._positionObstacle();
+        const x = Math.floor(this._scaleX(i * h));
+        const y = Math.floor(this._scaleY((j + 1) * h));
+        const cx = Math.floor(this._canvasScale * cellScale * h) + 1;
+        const cy = Math.floor(this._canvasScale * cellScale * h) + 1;
+
+        for (let yi = y; yi < y + cy; yi++) {
+            let pos = 4 * (yi * this._width + x);
+
+            for (let xi = 0; xi < cx; xi++) {
+                this._imageData.data[pos++] = color[0]; // red
+                this._imageData.data[pos++] = color[1]; // green
+                this._imageData.data[pos++] = color[2]; // blue
+                this._imageData.data[pos++] = color[3]; // opacity
+            }
+        }
     }
 
-    _positionObstacle() {
-        if (!this._obstacleMesh)
-            return;
-
-        this._obstacleMesh.position.x = this._scene.obstacleX ?? 0;
-        this._obstacleMesh.position.y = this._scene.obstacleY ?? 0;
-        this._obstacleMesh.material.color.set(this._showPressure ? 0x131313 : 0xdddddd);
-    }
-
-    _disposeFieldMesh() {
-        if (!this._fieldMesh)
-            return;
-
-        this.remove(this._fieldMesh);
-        this._fieldMesh.geometry.dispose();
-        this._fieldMesh.material.dispose();
-        this._texture?.dispose();
-        this._fieldMesh = null;
-        this._texture = null;
+    canBindTo(_model) {
+        return true;
     }
 
     synchronizeWith(fluid) {
-        const {min, max} = fluid.pressureRange;
-        const pixels = this._texture.image.data;
+        const pressureRange = fluid.pressureRange;
+        this._display.clearRect(0, 0, this._width, this._height);
+        this._display.fillStyle = "#FF0000";
 
-        // DataTexture rows are written from the bottom of the plane upward,
-        // matching the simulation's increasing y-coordinate.
-        for (let j = 0; j < fluid.numY; j++) {
-            for (let i = 0; i < fluid.numX; i++) {
-                const index = 4 * (j * fluid.numX + i);
-                const smoke = fluid.obstacleAt(j, i);
-                let color;
+        for (let i = 0; i < fluid.numX; i++)
+            for (let j = 0; j < fluid.numY; j++)
+                this._updateImageDataAt(i, j, fluid, pressureRange);
 
-                if (this._showPressure) {
-                    color = scientificColorCodingFor(fluid.pressureAt(j, i), min, max);
-                    if (this._showSmoke) {
-                        color[0] = Math.max(0, color[0] - 255 * smoke);
-                        color[1] = Math.max(0, color[1] - 255 * smoke);
-                        color[2] = Math.max(0, color[2] - 255 * smoke);
-                    }
-                } else if (this._showSmoke) {
-                    const shade = Math.round(255 * smoke);
-                    color = [shade, shade, shade, 255];
-                    if (this._scene.sceneNr === 2)
-                        color = scientificColorCodingFor(smoke, 0, 1);
-                } else {
-                    const shade = fluid.smokeAt(j, i) === 0 ? 0 : 255;
-                    color = [shade, shade, shade, 255];
-                }
+        this._display.putImageData(this._imageData, 0, 0);
 
-                pixels[index] = color[0];
-                pixels[index + 1] = color[1];
-                pixels[index + 2] = color[2];
-                pixels[index + 3] = 255;
-            }
-        }
+        if (this._showVelocities)
+            this._doShowVelocities(fluid);
 
-        this._texture.needsUpdate = true;
-        this._positionObstacle();
-    }
+        if (this._showStreamlines)
+            this._doShowStreamlines(fluid);
 
-    dispose() {
-        this._disposeFieldMesh();
-        if (this._obstacleMesh) {
-            this.remove(this._obstacleMesh);
-            this._obstacleMesh.geometry.dispose();
-            this._obstacleMesh.material.dispose();
-            this._obstacleMesh = null;
+        if (this._showObstacle)
+            this._doShowObstacle(fluid);
+
+        if (this._showPressure) {
+            const pressureText = "pressure: " + pressureRange.min.toFixed(0) + " - " + pressureRange.max.toFixed(0) + " N/m";
+            this._display.fillStyle = "#A0A0A0";
+            this._display.font = "16px Arial";
+            this._display.fillText(pressureText, 10, 35);
         }
     }
 }
