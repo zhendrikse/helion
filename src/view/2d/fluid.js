@@ -1,4 +1,23 @@
-import { DiscreteFieldSurfaceView } from './views.js';
+import {Renderable2D} from "../renderer.js";
+
+function scientificColorCodingFor(value, minVal, maxVal) {
+    value = Math.min(Math.max(value, minVal), maxVal - 0.0001);
+    const range = maxVal - minVal;
+    value = range === 0.0 ? 0.5 : (value - minVal) / range;
+    const num = Math.floor(4 * value);
+    const s = 4 * (value - num / 4);
+
+    switch (num) {
+        case 0 :
+            return [0, 255 * s, 255, 255];
+        case 1 :
+            return [0, 255, 255 * (1 - s), 255];
+        case 2 :
+            return [255 * s, 255, 0, 255];
+        case 3 :
+            return [255, 255 * (1 - s), 0, 255];
+    }
+}
 
 /**
  * Visualizes the pressure/smoke/obstacle combination used by the 2D fluid solver.
@@ -6,80 +25,175 @@ import { DiscreteFieldSurfaceView } from './views.js';
  * The pressure field is the model bound to this view. The smoke and obstacle
  * fields are additional state needed to reproduce the fluid visualization.
  */
-export class FluidDynamicsView extends DiscreteFieldSurfaceView {
-    /**
-     * @param {{
-     *   smokeField: import('../../model/math/fields.js').DiscreteScalarField,
-     *   obstacleField: import('../../model/math/fields.js').DiscreteScalarField,
-     *   scale?: number
-     * }} options
-     */
-    constructor({ smokeField, obstacleField, scale = 1 } = {}) {
-        super({ scale });
-        this._smokeField = smokeField;
-        this._obstacleField = obstacleField;
+export class FluidDynamicsView extends Renderable2D {
+    constructor(display, width, height, scene) {
+        super();
+        this._imageData = display.getImageData(0, 0, width, height);
+        this._display = display;
+        this._scene = scene;
+        this._showVelocities = false;
+        this._showStreamlines = false;
+        this._showObstacle = true;
+        this._showPressure = true;
+        this._showSmoke = true;
+        this._height = height;
+        this._width = width;
+        const simulationHeight = 1.1;
+        this._canvasScale = height / simulationHeight;
     }
 
-    /** @param {import('../../model/math/fields.js').DiscreteScalarField} pressureField */
-    canBindTo(pressureField) {
-        super.canBindTo(pressureField);
+    _scaleX(x) { return x * this._canvasScale; }
 
-        if (this._smokeField?.nx !== pressureField.nx || this._smokeField?.ny !== pressureField.ny)
-            throw new Error('FluidDynamicsView needs a smoke field with the same dimensions as the pressure field.');
+    _scaleY(y) { return this._height - y * this._canvasScale; }
 
-        if (this._obstacleField?.nx !== pressureField.nx || this._obstacleField?.ny !== pressureField.ny)
-            throw new Error('FluidDynamicsView needs an obstacle field with the same dimensions as the pressure field.');
+    set showSmoke(showSmoke) { this._showSmoke = showSmoke; }
+    set showVelocities(showVelocities) { this._showVelocities = showVelocities; }
+    set showStreamlines(showStreamlines) { this._showStreamlines = showStreamlines; }
+    set showPressure(showPressure) { this._showPressure = showPressure; }
 
+    _doShowObstacle(fluid) {
+        //display.strokeW
+        const r = this._scene.obstacleRadius + fluid.h;
+        if (this._showPressure)
+            this._display.fillStyle = "#131313";
+        else
+            this._display.fillStyle = "#DDDDDD";
+        this._display.beginPath();
+        this._display.arc(this._scaleX(this._scene.obstacleX), this._scaleY(this._scene.obstacleY), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.closePath();
+        this._display.fill();
+
+        this._display.lineWidth = 3.0;
+        this._display.strokeStyle = "#000000";
+        this._display.beginPath();
+        this._display.arc(this._scaleX(this._scene.obstacleX), this._scaleY(this._scene.obstacleY), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.closePath();
+        this._display.stroke();
+        this._display.lineWidth = 1.0;
+    }
+
+    _doShowVelocities(fluid) {
+        this._display.strokeStyle = "#000000";
+        const scale = 0.2;
+        const h = fluid.h;
+        for (let i = 0; i < fluid.numX; i++)
+            for (let j = 0; j < fluid.numY; j++) {
+                this._display.beginPath();
+
+                const x0 = this._scaleX(i * h);
+                const x1 = this._scaleX(i * h + fluid._velocityX.valueAt(j, i) * scale);
+                const y = this._scaleY((j + 0.5) * h);
+
+                this._display.moveTo(x0, y);
+                this._display.lineTo(x1, y);
+                this._display.stroke();
+
+                const x = this._scaleX((i + 0.5) * h);
+                const y0 = this._scaleY(j * h);
+                const y1 = this._scaleY(j * h + fluid._velocityY.valueAt(j, i) * scale)
+
+                this._display.beginPath();
+                this._display.moveTo(x, y0);
+                this._display.lineTo(x, y1);
+                this._display.stroke();
+            }
+    }
+
+    _doShowStreamlines(fluid) {
+        const numberOfSegments = 15;
+        this._display.strokeStyle = "#000000";
+
+        for (let i = 1; i < fluid.numX - 1; i += 5)
+            for (let j = 1; j < fluid.numY - 1; j += 5) {
+                let x = (i + 0.5) * fluid.h;
+                let y = (j + 0.5) * fluid.h;
+
+                this._display.beginPath();
+                this._display.moveTo(this._scaleX(x), this._scaleY(y));
+
+                for (let n = 0; n < numberOfSegments; n++) {
+                    if (x > fluid.numX * fluid.h)
+                        break;
+
+                    x += fluid.xVelocityAt(x, y) * 0.01;
+                    y += fluid.yVelocityAt(x, y) * 0.01;
+                    this._display.lineTo(this._scaleX(x), this._scaleY(y));
+                }
+                this._display.stroke();
+            }
+    }
+
+    _updateImageDataAt(i, j, fluid, pressureRange) {
+        const cellScale = 1.1;
+        const h = fluid.h;
+
+        let color = [255, 255, 255, 0];
+        const smoke = fluid.obstacleAt(j, i);
+        if (this._showPressure) {
+            color = scientificColorCodingFor(fluid.pressureAt(j, i), pressureRange.min, pressureRange.max);
+            if (this._showSmoke) {
+                color[0] = Math.max(0.0, color[0] - 255 * smoke);
+                color[1] = Math.max(0.0, color[1] - 255 * smoke);
+                color[2] = Math.max(0.0, color[2] - 255 * smoke);
+            }
+        } else if (this._showSmoke) {
+            color[0] = 255 * smoke;
+            color[1] = 255 * smoke;
+            color[2] = 255 * smoke;
+            if (this._scene.sceneNr === 2) //SCENE_TYPE.PAINT)
+                color = scientificColorCodingFor(smoke, 0.0, 1.0);
+        } else if (fluid.smokeAt(j, i) === 0.0) {
+            color[0] = 0;
+            color[1] = 0;
+            color[2] = 0;
+        }
+
+        const x = Math.floor(this._scaleX(i * h));
+        const y = Math.floor(this._scaleY((j + 1) * h));
+        const cx = Math.floor(this._canvasScale * cellScale * h) + 1;
+        const cy = Math.floor(this._canvasScale * cellScale * h) + 1;
+
+        for (let yi = y; yi < y + cy; yi++) {
+            let pos = 4 * (yi * this._width + x);
+
+            for (let xi = 0; xi < cx; xi++) {
+                this._imageData.data[pos++] = color[0]; // red
+                this._imageData.data[pos++] = color[1]; // green
+                this._imageData.data[pos++] = color[2]; // blue
+                this._imageData.data[pos++] = color[3]; // opacity
+            }
+        }
+    }
+
+    canBindTo(_model) {
         return true;
     }
 
-    /** @param {import('../../model/math/fields.js').DiscreteScalarField} pressureField */
-    synchronizeWith(pressureField) {
-        const width = pressureField.nx;
-        const height = pressureField.ny;
-        const range = pressureField.rangeAt();
+    synchronizeWith(fluid) {
+        const pressureRange = fluid.pressureRange;
+        this._display.clearRect(0, 0, this._width, this._height);
+        this._display.fillStyle = "#FF0000";
 
-        const pressureSpan = range.to - range.from;
+        for (let i = 0; i < fluid.numX; i++)
+            for (let j = 0; j < fluid.numY; j++)
+                this._updateImageDataAt(i, j, fluid, pressureRange);
 
-        let index = 0;
-        for (let j = 0; j < height; j++) {
-            for (let i = 0; i < width; i++) {
-                const pressure = pressureField.valueAt(i, j);
-                const normalizedPressure = pressureSpan === 0
-                    ? 0.5
-                    : (pressure - range.from) / pressureSpan;
-                const smoke = this._obstacleField.valueAt(i, j);
+        this._display.putImageData(this._imageData, 0, 0);
 
-                const [red, green, blue] = this._scientificColor(normalizedPressure);
+        if (this._showVelocities)
+            this._doShowVelocities(fluid);
 
-                this._pixels[index++] = Math.max(0, red - 255 * smoke);
-                this._pixels[index++] = Math.max(0, green - 255 * smoke);
-                this._pixels[index++] = Math.max(0, blue - 255 * smoke);
-                this._pixels[index++] = 255;
-            }
-        }
+        if (this._showStreamlines)
+            this._doShowStreamlines(fluid);
 
-        this._texture.needsUpdate = true;
-        this._mesh.material.map.needsUpdate = true;
-    }
+        if (this._showObstacle)
+            this._doShowObstacle(fluid);
 
-    /** @param {number} value normalized to [0, 1] */
-    _scientificColor(value) {
-        value = Math.min(Math.max(value, 0), 0.9999);
-
-        const scaled = 4 * value;
-        const segment = Math.floor(scaled);
-        const s = scaled - segment;
-
-        switch (segment) {
-            case 0:
-                return [0, 255 * s, 255];
-            case 1:
-                return [0, 255, 255 * (1 - s)];
-            case 2:
-                return [255 * s, 255, 0];
-            default:
-                return [255, 255 * (1 - s), 0];
+        if (this._showPressure) {
+            const pressureText = "pressure: " + pressureRange.min.toFixed(0) + " - " + pressureRange.max.toFixed(0) + " N/m";
+            this._display.fillStyle = "#A0A0A0";
+            this._display.font = "16px Arial";
+            this._display.fillText(pressureText, 10, 35);
         }
     }
 }
