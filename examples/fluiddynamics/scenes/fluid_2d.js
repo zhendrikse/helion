@@ -1,6 +1,5 @@
 import {
-    Checkbox, ColorMappers,
-    Colour, DiscreteScalarField, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Vec3
+    Checkbox, ColorMappers, DiscreteScalarField, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver
 } from "../../../src/index.js";
 import {Field} from "../../../src/model/math/fields.js";
 import {Renderable2D} from "../../../src/view/renderer.js";
@@ -31,9 +30,6 @@ const scaleX = (/** @type {number} */ x) => x * canvasScale;
 
 const scaleY = (/** @type {number} */ y) => canvas.height - y * canvasScale;
 
-//
-// F L U I D  S O L V E R
-//
 class FluidSolver extends Solver {
     constructor({
         numIterations = 100,
@@ -65,11 +61,7 @@ class FluidSolver extends Solver {
             this._newVelocityY.setValueAt(j, i, fluid.calculateVelocityY(i, j, dt));
     }
 
-    /**
-     * @param {Fluid} fluid
-     * @param {number} dt
-     */
-    _advectVelocity(fluid, dt) {
+    _advectVelocity(/** @type {Fluid} */ fluid, /** @type {number} */ dt) {
         for (let i = 1; i < fluid.numX; i++)
             for (let j = 1; j < fluid.numY; j++)
                 this._advectVelocityAt(fluid, i, j, dt);
@@ -93,11 +85,7 @@ class FluidSolver extends Solver {
         this._newSmokeField.setValueAt(j, i, fluid.sampleSmoke(x, y));
     }
 
-    /**
-     * @param {Fluid} fluid
-     * @param {number} dt
-     */
-    _advectSmoke(fluid, dt) {
+    _advectSmoke(/** @type {Fluid} */ fluid, /** @type {number} */ dt) {
         this._newSmokeField.data.set(fluid._smokeField.data);
         for (let i = 1; i < fluid.numX - 1; i++)
             for (let j = 1; j < fluid.numY - 1; j++)
@@ -106,11 +94,7 @@ class FluidSolver extends Solver {
         fluid._smokeField.data.set(this._newSmokeField.data);
     }
 
-    /**
-     * @param {Fluid} fluid
-     * @param {number} dt
-     */
-    step(fluid, dt) {
+    step(/** @type {Fluid} */ fluid, /** @type {number} */ dt) {
         fluid._pressureField.reset();
         fluid.solveIncompressibility(this.numIterations, this.overRelaxation, dt);
         fluid.extrapolate();
@@ -124,17 +108,22 @@ class FluidSolver extends Solver {
         this._advectSmoke(fluid, dt);
     }
 
-    init(/* @type {Fluid} */ fluid) {
+    init(/** @type {Fluid} */ fluid) {
         this._newVelocityX = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});
         this._newVelocityY = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});
         this._newSmokeField = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});
     }
 }
 
-//
-// F L U I D  M O D E L
-//
 class Fluid extends Field {
+    /**
+     * @param {{
+     *     density?: number,
+     *     numX?: number,
+     *     numY?: number,
+     *     cellSize?: number
+     * }}
+     */
     constructor({
         density = 1000,
         numX = 100,
@@ -174,11 +163,7 @@ class Fluid extends Field {
         this._smokeField.data.fill(1.0)
     }
 
-    /**
-     * @param {number} gravity
-     * @param {number} dt
-     */
-    integrate(gravity, dt) {
+    integrate(/** @type {number} */ gravity, /** @type {number} */ dt) {
         if (gravity === 0.0)
             return;
 
@@ -250,19 +235,14 @@ class Fluid extends Field {
 
     sampleVelocityX(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, U_FIELD); }
     sampleVelocityY(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, V_FIELD); }
-    sampleSmoke(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, S_FIELD); }
-    pressureAt(/** @type {number} */ i, /** @type {number} */ j) { return this._pressureField.valueAt(i, j); }
-    smokeAt(/** @type {number} */ i, /** @type {number} */ j) { return this._smokeField.valueAt(i, j); }
-    obstacleMaskAt(/** @type {number} */ i, /** @type {number} */ j) { return this._obstacleMask.valueAt(i, j); }
-    xVelocityAt(/** @type {number} */ i, /** @type {number} */ j) { return this._velocityX.valueAt(i, j); }
-    yVelocityAt(/** @type {number} */ i, /** @type {number} */ j) { return this._velocityY.valueAt(i, j); }
+    sampleSmoke(/** @type {number} */ x, /** @type {number} */ y)     { return this._sampleField(x, y, S_FIELD); }
+    pressureAt(/** @type {number} */ i, /** @type {number} */ j)      { return this._pressureField.valueAt(i, j); }
+    smokeAt(/** @type {number} */ i, /** @type {number} */ j)         { return this._smokeField.valueAt(i, j); }
+    obstacleMaskAt(/** @type {number} */ i, /** @type {number} */ j)  { return this._obstacleMask.valueAt(i, j); }
+    xVelocityAt(/** @type {number} */ i, /** @type {number} */ j)     { return this._velocityX.valueAt(i, j); }
+    yVelocityAt(/** @type {number} */ i, /** @type {number} */ j)     { return this._velocityY.valueAt(i, j); }
 
-    /**
-     * @param {number} x
-     * @param {number} y
-     * @param {number} field
-     */
-    _sampleField(x, y, field) {
+    _sampleField(/** @type {number} */ x, /** @type {number} */ y, /** @type {Field} */ field) {
         const h = this.h;
         const h1 = 1.0 / h;
         const h2 = 0.5 * h;
@@ -305,11 +285,7 @@ class Fluid extends Field {
             sx * ty * f.valueAt(y1, x0);
     }
 
-    /**
-     * @param {number} i
-     * @param {number} j
-     */
-    _averageVelocityX(i, j) {
+    _averageVelocityX(/** @type {number} */ i, /** @type {number} */ j) {
         return (
             this._velocityX.valueAt(j - 1, i) +
             this._velocityX.valueAt(j, i) +
@@ -318,11 +294,7 @@ class Fluid extends Field {
         ) * 0.25;
     }
 
-    /**
-     * @param {number} i
-     * @param {number} j
-     */
-    _averageVelocityY(i, j) {
+    _averageVelocityY(/** @type {number} */ i, /** @type {number} */ j) {
         return (
             this._velocityY.valueAt(j, i - 1) +
             this._velocityY.valueAt(j, i) +
@@ -331,12 +303,7 @@ class Fluid extends Field {
         ) * 0.25;
     }
 
-    /**
-     * @param {number} i
-     * @param {number} j
-     * @param {number} dt
-     */
-    calculateVelocityX(i, j, dt) {
+    calculateVelocityX(/** @type {number} */ i, /** @type {number} */ j, /** @type {number} */ dt) {
         let x = i * this.h;
         let y = (j + .5) * this.h;
         x -= dt * this._velocityX.valueAt(j, i);
@@ -344,12 +311,7 @@ class Fluid extends Field {
         return this.sampleVelocityX(x, y);
     }
 
-    /**
-     * @param {number} i
-     * @param {number} j
-     * @param {number} dt
-     */
-    calculateVelocityY(i, j, dt) {
+    calculateVelocityY(/** @type {number} */ i, /** @type {number} */ j, /** @type {number} */ dt) {
         let x = (i + .5) * this.h;
         let y = j * this.h;
         x -= dt * this._averageVelocityX(i, j);
@@ -357,12 +319,7 @@ class Fluid extends Field {
         return this.sampleVelocityY(x, y);
     }
 
-    /**
-     * @param {number} x
-     * @param {number} y
-     * @param {boolean} reset
-     */
-    setObstacle(x, y, reset) {
+    setObstacle(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ reset) {
         let vx = 0.0;
         let vy = 0.0;
 
@@ -383,8 +340,8 @@ class Fluid extends Field {
 
                 if (dx * dx + dy * dy < r * r) {
                     this._obstacleMask.setValueAt(j, i, 0.0);
-                    if (scene.sceneNr === SCENE_TYPE.PAINT)
-                        this._smokeField.setValueAt(j, i, 0.5 + 0.5 * Math.sin(0.1 * scene.frameNr));
+                    if (sceneType === SCENE_TYPE.PAINT)
+                        this._smokeField.setValueAt(j, i, 0.5 + 0.5 * Math.sin(0.1 * frameNr));
                     else
                         this._smokeField.setValueAt(j, i, 1.0);
 
@@ -396,11 +353,7 @@ class Fluid extends Field {
             }
     }
 
-    /**
-     * @param {FluidSolver} solver
-     * @param {number} dt
-     */
-    evolve(solver, dt) {
+    evolve(/** @type {Solver} */ solver, /** @type {number} */ dt) {
         solver.step(this, dt);
     }
 }
@@ -531,11 +484,10 @@ class FluidStreamlinesView extends Renderable2D {
  * fields are additional state needed to reproduce the fluid visualization.
  */
 class FluidDynamicsView extends Renderable2D {
-    constructor(display, width, height, scene) {
+    constructor(display, width, height) {
         super();
         this._imageData = display.getImageData(0, 0, width, height);
         this._display = display;
-        this._scene = scene;
         this._showPressure = true;
         this._showSmoke = true;
         this._height = height;
@@ -568,7 +520,7 @@ class FluidDynamicsView extends Renderable2D {
                     Math.max(0.0, this._color.b - smoke));
         } else if (this._showSmoke) {
             this._color.setRGB(smoke, smoke, smoke);
-            if (this._scene.sceneNr === 2) //SCENE_TYPE.PAINT)
+            if (sceneType === SCENE_TYPE.PAINT)
                 this._colorMapper.map(smoke, this._color);
         } else if (fluid.obstacleMaskAt(j, i) === 0.0)
             this._color.setRGB(0, 0, 0);
@@ -617,23 +569,20 @@ class FluidDynamicsView extends Renderable2D {
 //
 // S C E N E
 //
-
 let dt = 1.0 / 120;
+let paused = false;
+let sceneType = SCENE_TYPE.WIND_TUNNEL
+let frameNr = 0;
+let mouseDown = false;
+let gravity = -9.81;
 const fluid = new Fluid();
-
-const scene = {
-    gravity: -9.81,
-    frameNr: 0,
-    paused: false,
-    sceneNr: SCENE_TYPE.WIND_TUNNEL,
-};
 
 function tankScene(/** @type {Fluid} */ fluid) {
     for (let i = 0; i < fluid.numX; i++)
         for (let j = 0; j < fluid.numY; j++)
             fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.numX - 1 || j === 0) ? SOLID : FLUID);
 
-    scene.gravity = -9.81;
+    gravity = -9.81;
     solver.overRelaxation = 1.9;
     fluidDynamicsView.showPressure = true;
     obstacleView.showPressure = true;
@@ -655,11 +604,7 @@ function updateSmokeFieldInVortexScene(fluid, i, j) {
         fluid._velocityX.setValueAt(j, i, inwardVelocity);
 }
 
-/**
- * @param {Fluid} fluid
- * @param {number} sceneNumber
- */
-function vortexSheddingScene(fluid, sceneNumber) {
+function vortexSheddingScene(/** @type {Fluid} */ fluid, /** @type {number} */ sceneNumber) {
     for (let i = 0; i < fluid.numX; i++)
         for (let j = 0; j < fluid.numY; j++)
             updateSmokeFieldInVortexScene(fluid, i, j);
@@ -672,7 +617,7 @@ function vortexSheddingScene(fluid, sceneNumber) {
 
     fluid.setObstacle(0.4, 0.5, true);
 
-    scene.gravity = 0.0;
+    gravity = 0.0;
     solver.overRelaxation = 1.9;
     fluidDynamicsView.showPressure = true;
     obstacleView.showPressure = true;
@@ -684,7 +629,7 @@ function vortexSheddingScene(fluid, sceneNumber) {
 }
 
 function paintScene() {
-    scene.gravity = 0.0;
+    gravity = 0.0;
     solver.overRelaxation = 1.0;
 
     fluidDynamicsView.showPressure = false;
@@ -702,9 +647,9 @@ function setHighResolution() {
     obstacleView.showPressure = true;
 }
 
-function setupScene(sceneNr = 0) {
-    scene.sceneNr = sceneNr;
-
+function setupScene(/** @type {number} */ sceneNr = 0) {
+    sceneType = sceneNr;
+    frameNr = 0;
     let resolution = 100;
     if (sceneNr === SCENE_TYPE.TANK)
         resolution = 50;
@@ -742,16 +687,15 @@ function setupScene(sceneNr = 0) {
 }
 
 const streamlinesView = new FluidStreamlinesView({ display });
-const fluidDynamicsView = new FluidDynamicsView(display, canvas.width, canvas.height, scene);
+const fluidDynamicsView = new FluidDynamicsView(display, canvas.width, canvas.height);
 const velocitiesView = new FluidDynamicsVelocitiesView({ display });
 const obstacleView = new Circle({
     display,
     height: canvas.height,
     radiusOffset: fluid.h
 });
-let mouseDown = false;
 
-function startDrag(x, y) {
+function startDrag(/** @type {number} */ x, /** @type {number} */ y) {
     let bounds = canvas.getBoundingClientRect();
 
     let mx = x - bounds.left - canvas.clientLeft;
@@ -764,19 +708,15 @@ function startDrag(x, y) {
     fluid.setObstacle(x, y, true);
 }
 
-function drag(x, y) {
-    if (mouseDown) {
-        let bounds = canvas.getBoundingClientRect();
-        let mx = x - bounds.left - canvas.clientLeft;
-        let my = y - bounds.top - canvas.clientTop;
-        x = mx / canvasScale;
-        y = (canvas.height - my) / canvasScale;
-        fluid.setObstacle(x, y, false);
-    }
-}
-
-function endDrag() {
-    mouseDown = false;
+function drag(/** @type {number} */ x, /** @type {number} */ y) {
+    if (!mouseDown)
+        return;
+    let bounds = canvas.getBoundingClientRect();
+    let mx = x - bounds.left - canvas.clientLeft;
+    let my = y - bounds.top - canvas.clientTop;
+    x = mx / canvasScale;
+    y = (canvas.height - my) / canvasScale;
+    fluid.setObstacle(x, y, false);
 }
 
 document.getElementById("tankButton").addEventListener("click", () => setupScene(SCENE_TYPE.TANK));
@@ -791,25 +731,12 @@ document.getElementById("pressureButton").addEventListener("click", event => {
 });
 document.getElementById("smokeButton").addEventListener("click", event => fluidDynamicsView.showSmoke = event.target.checked);
 document.getElementById("overrelaxButton").addEventListener("click", event => solver.overRelaxation = solver.overRelaxation === 1.0 ? 1.9 : 1.0);
-canvas.addEventListener('mousedown', event => {
-    startDrag(event.x, event.y);
-});
 
-canvas.addEventListener('mouseup', event => {
-    endDrag();
-});
-
-canvas.addEventListener('mousemove', event => {
-    drag(event.x, event.y);
-});
-
-canvas.addEventListener('touchstart', event => {
-    startDrag(event.touches[0].clientX, event.touches[0].clientY)
-});
-
-canvas.addEventListener('touchend', event => {
-    endDrag()
-});
+canvas.addEventListener('mousedown', event => startDrag(event.x, event.y));
+canvas.addEventListener('mouseup', event => mouseDown = false);
+canvas.addEventListener('mousemove', event => drag(event.x, event.y));
+canvas.addEventListener('touchstart', event => startDrag(event.touches[0].clientX, event.touches[0].clientY));
+canvas.addEventListener('touchend', event => mouseDown = false);
 
 canvas.addEventListener('touchmove', event => {
     event.preventDefault();
@@ -821,12 +748,12 @@ canvas.addEventListener('touchmove', event => {
 document.addEventListener('keydown', event => {
     switch (event.key) {
         case 'p':
-            scene.paused = !scene.paused;
+            paused = !paused;
             break;
         case 'm':
-            scene.paused = false;
+            paused = false;
             simulate();
-            scene.paused = true;
+            paused = true;
             break;
     }
 });
@@ -836,24 +763,14 @@ const solver = new FluidSolver({ numIterations: 40 });
 setupScene(SCENE_TYPE.WIND_TUNNEL);
 document.getElementById("overrelaxButton").checked = solver.overRelaxation > 1.0;
 
-// main -------------------------------------------------------
 function simulate() {
-    scene.frameNr++;
-
-    if (scene.paused)
+    if (paused)
         return;
 
-    fluid.integrate(scene.gravity, dt);
+    frameNr++;
+    fluid.integrate(gravity, dt);
     fluid.evolve(solver, dt);
 }
-
-// function update() {
-//     simulate();
-//     fluidDynamicsView.synchronizeWith(fluid);
-//     requestAnimationFrame(update);
-// }
-//
-// update();
 
 Simulation
     .with({
@@ -881,14 +798,14 @@ Simulation
         .checked(0)
     )
     .append(new Checkbox('Velocities')
-        .onChange(e => { velocitiesView.visible = e.target.checked; })
+        .onChange(e => velocitiesView.visible = e.target.checked)
     )
     .append(new Checkbox('Streamlines')
-        .onChange(e => { streamlinesView.visible = e.target.checked; })
+        .onChange(e => streamlinesView.visible = e.target.checked)
     )
     .append(new Checkbox('Obstacle')
         .checked(true)
-        .onChange(e => { fluidDynamicsView.showObstacle = e.target.checked; })
+        .onChange(e => fluidDynamicsView.showObstacle = e.target.checked)
     )
     .append(new RadioGroup()
         .add('Tank', () => setupScene(SCENE_TYPE.TANK))
@@ -899,6 +816,6 @@ Simulation
     )
     .append(new Checkbox('Over-relaxation')
         .checked(true)
-        .onChange(e => { solver.overRelaxation = e.target.checked ? 1.9 : 1.0; })
+        .onChange(e => solver.overRelaxation = e.target.checked ? 1.9 : 1.0)
     )
     .start();
