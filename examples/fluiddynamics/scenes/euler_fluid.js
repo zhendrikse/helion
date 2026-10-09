@@ -1,6 +1,6 @@
 import {
     Checkbox, ColorMappers, DiscreteScalarField, ColorMapper,
-    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver
+    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour
 } from '../../../src/index.js';
 import {Field} from '../../../src/model/math/fields.js';
 import {Renderable2D, Renderable3D} from '../../../src/view/renderer.js';
@@ -367,36 +367,30 @@ class Fluid extends Field {
 class Circle extends Renderable3D {
     constructor({
         height,
-        radiusOffset = 0
+        radiusOffset = 0,
+        fillColor = new Colour(0x131313),
+        borderColor = Colour.Black,
+        borderWidth = 0.05,
     } = {}) {
         super();
         this._canvasScale = height / simulationHeight;
         this._radiusOffset = radiusOffset;
-        this._showPressure = true;
         this._radius = -1;
 
-        this._fillMaterial = new MeshBasicMaterial({
-            color: 0x131313,
-            side: DoubleSide
-        });
-        this._outlineMaterial = new MeshBasicMaterial({
-            color: 0x000000,
-            side: DoubleSide
-        });
+        this._fillMaterial = new MeshBasicMaterial({ side: DoubleSide });
+        this._outlineMaterial = new MeshBasicMaterial({ side: DoubleSide });
+        fillColor.asThreeJsColor(this._fillMaterial.color);
+        borderColor.asThreeJsColor(this._outlineMaterial.color);
 
-        this._fillMesh = new Mesh(new CircleGeometry(0.15, 64), this._fillMaterial);
+        this._fillMesh = new Mesh(new CircleGeometry(1, 64), this._fillMaterial);
         this._outlineMesh = new Mesh(
-            new RingGeometry(0.15, 0.15 + 3 / this._canvasScale, 64),
+            new RingGeometry(1, 1 + borderWidth, 64),
             this._outlineMaterial
         );
         this.add(this._fillMesh, this._outlineMesh);
     }
 
-    set showPressure(/** @type {boolean} */ value) {
-        this._showPressure = value;
-        this._fillMaterial.color.setHex(value ? 0x131313 : 0xDDDDDD);
-    }
-
+    set fillColor(/** @type {Colour} */ colour) { colour.asThreeJsColor(this._fillMaterial.color); }
     set radiusOffset(/** @type {number} */ value) { this._radiusOffset = value; }
 
     canBindTo(/** @type {RadialSymmetricBody} */ model) {
@@ -407,25 +401,9 @@ class Circle extends Renderable3D {
 
     synchronizeWith(/** @type {RadialSymmetricBody} */ obstacle) {
         const radius = obstacle.radius + this._radiusOffset;
-        if (Math.abs(radius - this._radius) > 1e-9) {
-            this._fillMesh.geometry.dispose();
-            this._outlineMesh.geometry.dispose();
-            this._fillMesh.geometry = new CircleGeometry(radius, 64);
-            this._outlineMesh.geometry = new RingGeometry(
-                radius,
-                radius + 3 / this._canvasScale,
-                64
-            );
-            this._radius = radius;
-        }
-
-        // The fluid canvas uses (0, 0) at the lower-left; the Three.js
-        // orthographic view is centered on the simulation domain.
-        this.position.set(
-            obstacle.position.x - simulationWidth / 2,
-            obstacle.position.y - simulationHeight / 2,
-            0.01
-        );
+        this._fillMesh.scale.setScalar(radius);
+        this._outlineMesh.scale.setScalar(radius);
+        this.position.set(obstacle.position.x - simulationWidth / 2, obstacle.position.y - simulationHeight / 2, 0.01);
     }
 }
 
@@ -635,7 +613,7 @@ function tankScene(/** @type {Fluid} */ fluid) {
     gravity = -9.81;
     solver.overRelaxation = 1.9;
     fluidDynamicsView.showPressure = true;
-    obstacleView.showPressure = true;
+    obstacleView.fillColor = new Colour(0x131313);
     fluidDynamicsView.showSmoke = false;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
@@ -670,7 +648,7 @@ function vortexSheddingScene(/** @type {Fluid} */ fluid, /** @type {number} */ s
     gravity = 0.0;
     solver.overRelaxation = 1.9;
     fluidDynamicsView.showPressure = true;
-    obstacleView.showPressure = true;
+    obstacleView.fillColor = new Colour(0x131313);
     fluidDynamicsView.showSmoke = true;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
@@ -683,7 +661,7 @@ function paintScene() {
     solver.overRelaxation = 1.0;
 
     fluidDynamicsView.showPressure = false;
-    obstacleView.showPressure = true;
+    obstacleView.fillColor = new Colour(0x131313);
     fluidDynamicsView.showSmoke = true;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
@@ -694,7 +672,7 @@ function setHighResolution() {
     dt = 1.0 / 125.0;
     solver.numIterations = 25;
     fluidDynamicsView.showPressure = true;
-    obstacleView.showPressure = true;
+    obstacleView.fillColor = new Colour(0x131313);
 }
 
 function setupScene(/** @type {number} */ sceneNr = 0) {
@@ -844,7 +822,7 @@ Simulation
         .checked(true)
         .onChange(event => {
             fluidDynamicsView.showPressure = event.target.checked;
-            obstacleView.showPressure = event.target.checked;
+            obstacleView.fillColor = event.target.checked ? new Colour(0x131313) : new Colour(0xDDDDDD);
         }).togetherWith(new Checkbox('Smoke')
             .checked(true)
             .onChange(event => fluidDynamicsView.showSmoke = event.target.checked)
