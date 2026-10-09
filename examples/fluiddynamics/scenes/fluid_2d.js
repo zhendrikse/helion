@@ -1,5 +1,5 @@
 import {
-    DiscreteScalarField, Simulation, Solver, Vec3
+    DiscreteScalarField, RadialSymmetricBody, Simulation, Solver, Vec3
 } from "../../../src/index.js";
 import {Field} from "../../../src/model/math/fields.js";
 import {Renderable2D} from "../../../src/view/renderer.js";
@@ -23,7 +23,7 @@ const SCENE_TYPE = Object.freeze({
     WIND_TUNNEL: 1,
     PAINT: 2,
     HIRES_TUNNEL: 3
-})
+});
 
 //
 // F L U I D  S O L V E R
@@ -288,13 +288,12 @@ class Fluid extends Field {
         let vy = 0.0;
 
         if (!reset) {
-            vx = (x - scene.obstacleX) / dt;
-            vy = (y - scene.obstacleY) / dt;
+            vx = (x - obstacle.position.x) / dt;
+            vy = (y - obstacle.position.y) / dt;
         }
 
-        scene.obstacleX = x;
-        scene.obstacleY = y;
-        const r = scene.obstacleRadius;
+        obstacle.position.set(x, y);
+        const r = obstacle.radius;
 
         for (let i = 1; i < this.numX - 2; i++)
             for (let j = 1; j < this.numY - 2; j++) {
@@ -345,6 +344,48 @@ function scientificColorCodingFor(value, minVal, maxVal) {
     }
 }
 
+class Circle extends Renderable2D {
+    constructor({
+        display,
+        height,
+        radiusOffset = 0
+    } = {}) {
+        super();
+        this._height = height;
+        this._display = display;
+        this._canvasScale = height / simulationHeight;
+        this._radiusOffset = radiusOffset;
+    }
+
+    _scaleX(x) { return x * this._canvasScale; }
+
+    _scaleY(y) { return this._height - y * this._canvasScale; }
+
+    canBindTo(model) {
+        if (model.radius === undefined)
+            throw new Error("Circle can only bind to models that have a radius property");
+        return true;
+    }
+
+    synchronizeWith(obstacle) {
+        //this._display.strokeW
+        const r = obstacle.radius + this._radiusOffset;
+        this._display.fillStyle = this._showPressure ? "#131313" : "#DDDDDD";
+        this._display.beginPath();
+        this._display.arc(this._scaleX(obstacle.position.x), this._scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.closePath();
+        this._display.fill();
+
+        this._display.lineWidth = 3.0;
+        this._display.strokeStyle = "#000000";
+        this._display.beginPath();
+        this._display.arc(this._scaleX(obstacle.position.x), this._scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.closePath();
+        this._display.stroke();
+        this._display.lineWidth = 1.0;
+    }
+}
+
 /**
  * Visualizes the pressure/smoke/obstacle combination used by the 2D fluid solver.
  *
@@ -364,7 +405,6 @@ class FluidDynamicsView extends Renderable2D {
         this._showSmoke = true;
         this._height = height;
         this._width = width;
-        const simulationHeight = 1.1;
         this._canvasScale = height / simulationHeight;
     }
 
@@ -379,20 +419,17 @@ class FluidDynamicsView extends Renderable2D {
 
     _doShowObstacle(fluid) {
         //display.strokeW
-        const r = this._scene.obstacleRadius + fluid.h;
-        if (this._showPressure)
-            this._display.fillStyle = "#131313";
-        else
-            this._display.fillStyle = "#DDDDDD";
+        const r = obstacle.radius + fluid.h;
+        this._display.fillStyle = this._showPressure ? "#131313" : "#DDDDDD";
         this._display.beginPath();
-        this._display.arc(this._scaleX(this._scene.obstacleX), this._scaleY(this._scene.obstacleY), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.arc(this._scaleX(obstacle.position.x), this._scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
         this._display.closePath();
         this._display.fill();
 
         this._display.lineWidth = 3.0;
         this._display.strokeStyle = "#000000";
         this._display.beginPath();
-        this._display.arc(this._scaleX(this._scene.obstacleX), this._scaleY(this._scene.obstacleY), this._canvasScale * r, 0.0, 2.0 * Math.PI);
+        this._display.arc(this._scaleX(obstacle.position.x), this._scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
         this._display.closePath();
         this._display.stroke();
         this._display.lineWidth = 1.0;
@@ -524,11 +561,9 @@ class FluidDynamicsView extends Renderable2D {
     }
 }
 
-
 //
 // S C E N E
 //
-
 
 let dt = 1.0 / 120;
 const fluid = new Fluid();
@@ -536,9 +571,6 @@ const fluid = new Fluid();
 const scene = {
     gravity: -9.81,
     frameNr: 0,
-    obstacleX: 0.0,
-    obstacleY: 0.0,
-    obstacleRadius: 0.15,
     paused: false,
     sceneNr: SCENE_TYPE.WIND_TUNNEL,
 };
@@ -593,7 +625,7 @@ function paintScene() {
     fluidDynamicsView.showSmoke = true;
     fluidDynamicsView.showStreamlines = false;
     fluidDynamicsView.showVelocities = false;
-    scene.obstacleRadius = 0.1;
+    obstacle.radius = 0.1;
 }
 
 function setHighResolution() {
@@ -604,7 +636,7 @@ function setHighResolution() {
 
 function setupScene(sceneNr = 0) {
     scene.sceneNr = sceneNr;
-    scene.obstacleRadius = 0.15;
+    obstacle.radius = 0.15;
     dt = 1.0 / 60.0;
 
     let resolution = 100;
@@ -638,7 +670,11 @@ function setupScene(sceneNr = 0) {
 }
 
 const fluidDynamicsView = new FluidDynamicsView(display, canvas.width, canvas.height, scene);
-
+const obstacleView = new Circle({
+    display,
+    height: canvas.height,
+    radiusOffset: fluid.h
+});
 let mouseDown = false;
 
 function startDrag(x, y) {
@@ -718,7 +754,7 @@ document.addEventListener('keydown', event => {
     }
 });
 
-
+const obstacle = new RadialSymmetricBody({ radius: 0.15 });
 const solver = new FluidSolver({ numIterations: 40 });
 setupScene(SCENE_TYPE.WIND_TUNNEL);
 document.getElementById("overrelaxButton").checked = solver.overRelaxation > 1.0;
@@ -742,22 +778,6 @@ function simulate() {
 //
 // update();
 
-// Simulation
-//     .with({
-//         htmlDivId: 'fluid2dContainer',
-//         viewport: { aspectRatio: '1/1', parameterMenuCollapsed: true },
-//         camera: {
-//             position: new Vec3(0, 0, 2),
-//             orthographic: true,
-//             controls: false
-//         },
-//         headUpDisplay: false,
-//         lighting: { enabled: false }
-//     })
-//     .runsEvery(0.04)
-//     .onStep(() => simulate(), 20, 30)
-//     .bind(fluid.alwaysWith(fluidDynamicsView))
-//     .start();
 Simulation
     .with({
         htmlDivId: "fluid2dContainer",
@@ -771,5 +791,6 @@ Simulation
     .runsEvery(3e-2)
     .onStep(() => simulate())
     .bind(fluid.alwaysWith(fluidDynamicsView))
+    //.bind(obstacle.alwaysWith(obstacleView))
     .frameSceneOn(fluidDynamicsView, { padding: 1.01 })
     .start();
