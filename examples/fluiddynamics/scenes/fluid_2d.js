@@ -1,9 +1,10 @@
 import {
-    Checkbox,
-    DiscreteScalarField, RadialSymmetricBody, RadioGroup, Simulation, Solver, Vec3
+    Checkbox, ColorMappers,
+    Colour, DiscreteScalarField, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Vec3
 } from "../../../src/index.js";
 import {Field} from "../../../src/model/math/fields.js";
 import {Renderable2D} from "../../../src/view/renderer.js";
+import {Color, LinearSRGBColorSpace} from "three";
 
 const canvas = document.getElementById("myCanvas");
 const display = canvas.getContext('2d', { willReadFrequently: true });
@@ -29,7 +30,6 @@ const SCENE_TYPE = Object.freeze({
 const scaleX = (/** @type {number} */ x) => x * canvasScale;
 
 const scaleY = (/** @type {number} */ y) => canvas.height - y * canvasScale;
-
 
 //
 // F L U I D  S O L V E R
@@ -406,34 +406,8 @@ class Fluid extends Field {
 }
 
 //
-// V I E W
+// V I E W S
 //
-/**
- * @param {number} value
- * @param {number} minVal
- * @param {number} maxVal
- */
-function scientificColorCodingFor(value, minVal, maxVal) {
-    value = Math.min(Math.max(value, minVal), maxVal - 0.0001);
-    const range = maxVal - minVal;
-    value = range === 0.0 ? 0.5 : (value - minVal) / range;
-    const num = Math.floor(4 * value);
-    const s = 4 * (value - num / 4);
-
-    switch (num) {
-        case 0 :
-            return [0, 255 * s, 255, 255];
-        case 1 :
-            return [0, 255, 255 * (1 - s), 255];
-        case 2 :
-            return [255 * s, 255, 0, 255];
-        case 3 :
-            return [255, 255 * (1 - s), 0, 255];
-        default:
-            return [0, 0, 0, 255];
-    }
-}
-
 class Circle extends Renderable2D {
     constructor({
         display,
@@ -449,6 +423,7 @@ class Circle extends Renderable2D {
     }
     
     set showPressure(/** @type {boolean} */ value) { this._showPressure = value; }
+    set radiusOffset(/** @type {number} */ value) { this._radiusOffset = value; }
 
     canBindTo(/** @type {RadialSymmetricBody} */ model) {
         if (model.radius === undefined)
@@ -457,7 +432,6 @@ class Circle extends Renderable2D {
     }
 
     synchronizeWith(/** @type {RadialSymmetricBody} */ obstacle) {
-        //this._display.strokeW
         const r = obstacle.radius + this._radiusOffset;
         this._display.fillStyle = this._showPressure ? "#131313" : "#DDDDDD";
         this._display.beginPath();
@@ -489,36 +463,19 @@ class FluidDynamicsView extends Renderable2D {
         this._scene = scene;
         this._showVelocities = false;
         this._showStreamlines = false;
-        this._showObstacle = true;
         this._showPressure = true;
         this._showSmoke = true;
         this._height = height;
         this._width = width;
         this._canvasScale = height / simulationHeight;
+        this._color = new Color();
+        this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, {colorSpace: LinearSRGBColorSpace});
     }
 
     set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
     set showVelocities(/** @type {boolean} */ showVelocities) { this._showVelocities = showVelocities; }
     set showStreamlines(/** @type {boolean} */ showStreamlines) { this._showStreamlines = showStreamlines; }
     set showPressure(/** @type {boolean} */ showPressure) { this._showPressure = showPressure; }
-
-    _doShowObstacle(/** @type {Fluid} */ fluid) {
-        //display.strokeW
-        const r = obstacle.radius + fluid.h;
-        this._display.fillStyle = this._showPressure ? "#131313" : "#DDDDDD";
-        this._display.beginPath();
-        this._display.arc(scaleX(obstacle.position.x), scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
-        this._display.closePath();
-        this._display.fill();
-
-        this._display.lineWidth = 3.0;
-        this._display.strokeStyle = "#000000";
-        this._display.beginPath();
-        this._display.arc(scaleX(obstacle.position.x), scaleY(obstacle.position.y), this._canvasScale * r, 0.0, 2.0 * Math.PI);
-        this._display.closePath();
-        this._display.stroke();
-        this._display.lineWidth = 1.0;
-    }
 
     _doShowVelocities(/** @type {Fluid} */ fluid) {
         this._display.strokeStyle = "#000000";
@@ -575,32 +532,26 @@ class FluidDynamicsView extends Renderable2D {
      * @param {number} i
      * @param {number} j
      * @param {Fluid} fluid
-     * @param {{ min: number; max: number; }} pressureRange
+     * @param {Interval} pressureRange
      */
     _updateImageDataAt(i, j, fluid, pressureRange) {
         const cellScale = 1.1;
         const h = fluid.h;
 
-        let color = [255, 255, 255, 255];
         const smoke = fluid.smokeAt(j, i);
         if (this._showPressure) {
-            color = scientificColorCodingFor(fluid.pressureAt(j, i), pressureRange.min, pressureRange.max);
-            if (this._showSmoke) {
-                color[0] = Math.max(0.0, color[0] - 255 * smoke);
-                color[1] = Math.max(0.0, color[1] - 255 * smoke);
-                color[2] = Math.max(0.0, color[2] - 255 * smoke);
-            }
+            this._colorMapper.map(pressureRange.normalize(fluid.pressureAt(j, i)), this._color);
+            if (this._showSmoke)
+                this._color.setRGB(
+                    Math.max(0.0, this._color.r - smoke),
+                    Math.max(0.0, this._color.g - smoke),
+                    Math.max(0.0, this._color.b - smoke));
         } else if (this._showSmoke) {
-            color[0] = 255 * smoke;
-            color[1] = 255 * smoke;
-            color[2] = 255 * smoke;
+            this._color.setRGB(smoke, smoke, smoke);
             if (this._scene.sceneNr === 2) //SCENE_TYPE.PAINT)
-                color = scientificColorCodingFor(smoke, 0.0, 1.0);
-        } else if (fluid.obstacleMaskAt(j, i) === 0.0) {
-            color[0] = 0;
-            color[1] = 0;
-            color[2] = 0;
-        }
+                this._colorMapper.map(smoke, this._color);
+        } else if (fluid.obstacleMaskAt(j, i) === 0.0)
+            this._color.setRGB(0, 0, 0);
 
         const x = Math.floor(scaleX(i * h));
         const y = Math.floor(scaleY((j + 1) * h));
@@ -611,9 +562,9 @@ class FluidDynamicsView extends Renderable2D {
             let pos = 4 * (yi * this._width + x);
 
             for (let xi = 0; xi < cx; xi++) {
-                this._imageData.data[pos++] = color[0]; // red
-                this._imageData.data[pos++] = color[1]; // green
-                this._imageData.data[pos++] = color[2]; // blue
+                this._imageData.data[pos++] = 255 * this._color.r; // red
+                this._imageData.data[pos++] = 255 * this._color.g; // green
+                this._imageData.data[pos++] = 255 * this._color.b; // blue
                 this._imageData.data[pos++] = 255; // opacity (always opaque)
             }
         }
@@ -639,9 +590,6 @@ class FluidDynamicsView extends Renderable2D {
 
         if (this._showStreamlines)
             this._doShowStreamlines(fluid);
-
-        // if (this._showObstacle)
-        //     this._doShowObstacle(fluid);
 
         if (this._showPressure) {
             const pressureText = "pressure: " + pressureRange.min.toFixed(0) + " - " + pressureRange.max.toFixed(0) + " N/m";
@@ -672,6 +620,7 @@ function tankScene(/** @type {Fluid} */ fluid) {
             fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.numX - 1 || j === 0) ? SOLID : FLUID);
 
     scene.gravity = -9.81;
+    solver.overRelaxation = 1.9;
     fluidDynamicsView.showPressure = true;
     obstacleView.showPressure = true;
     fluidDynamicsView.showSmoke = false;
@@ -710,6 +659,7 @@ function vortexSheddingScene(fluid, sceneNumber) {
     fluid.setObstacle(0.4, 0.5, true);
 
     scene.gravity = 0.0;
+    solver.overRelaxation = 1.9;
     fluidDynamicsView.showPressure = true;
     obstacleView.showPressure = true;
     fluidDynamicsView.showSmoke = true;
@@ -740,8 +690,6 @@ function setHighResolution() {
 
 function setupScene(sceneNr = 0) {
     scene.sceneNr = sceneNr;
-    obstacle.radius = 0.15;
-    dt = 1.0 / 60.0;
 
     let resolution = 100;
     if (sceneNr === SCENE_TYPE.TANK)
@@ -756,9 +704,15 @@ function setupScene(sceneNr = 0) {
     const numX = Math.floor(domainWidth / dy);
     const numY = Math.floor(domainHeight / dy);
 
+    /** !! CRITICAL INIT STATEMENTS */
+    // Todo enforce in an init routine?
+    dt = 1.0 / 60.0;
+    obstacle.radius = 0.15;
     const density = 1000.0;
     fluid.init(density, numX, numY, dy);
     solver.init(fluid);
+    obstacleView.radiusOffset = dy;
+    /**                             */
 
     if (sceneNr === SCENE_TYPE.TANK)
         tankScene(fluid);
@@ -893,6 +847,7 @@ Simulation
             orthographic: true,
             controls: false
         },
+        headUpDisplay: { enabled: false },
         lighting: { enabled: false }
     })
     .runsEvery(3e-2)

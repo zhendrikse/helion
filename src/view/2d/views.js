@@ -21,7 +21,7 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
      * }} param0 
      */
     constructor({
-        colorMapper = new WavelengthColorMapper(525),
+        colorMapper = new WavelengthColorMapper({ lambdaInNanos: 525}),
         opacityFunction = (/** @type {number} */ fieldValue) => Math.sqrt(fieldValue),
         normalizer = new AdaptiveSymmetricNormalizer(),
         scale = 1
@@ -94,7 +94,7 @@ export class FieldEdgeIntensityPixelRaster extends Renderable2D {
      */
     constructor({
         edgeHeight = 100,
-        colorMapper = new WavelengthColorMapper(525),
+        colorMapper = new WavelengthColorMapper({ lambdaInNanos: 525 }),
         opacityFunction = (/** @type {number} */ intensity) => Math.sqrt(intensity)
     } = {}) {
         super();

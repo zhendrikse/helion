@@ -197,6 +197,15 @@ function wavelengthToRGBNormalized(wavelength, targetColor) {
  */
 export class ColorMapper {
     /**
+     * @param {{
+     *     colorSpace?: string
+     * }}
+     */
+    constructor({colorSpace = SRGBColorSpace} = {}) {
+        this._colorSpace = colorSpace;
+    }
+
+    /**
      * @abstract
      * @param {number | {phase: number, modulus: number}} value
      * @param {Color} targetColor
@@ -206,11 +215,18 @@ export class ColorMapper {
 
 export class WavelengthColorMapper extends ColorMapper {
     /**
-     * @param {number} lambdaInNanos
-     * @param {boolean} showSpectralColor
+     * @param {{
+     *     colorSpace?: string
+     *     showSpectralColor?: boolean
+     *     lambdaInNanos?: number
+     * }}
      */
-    constructor(lambdaInNanos = 590, showSpectralColor = true) {
-        super();
+    constructor({
+        lambdaInNanos = 590,
+        showSpectralColor = true,
+        colorSpace = SRGBColorSpace,
+    } = {}) {
+        super({colorSpace});
         this._showSpectralColor = showSpectralColor;
         this._lambdaInNanos = lambdaInNanos;
     }
@@ -223,7 +239,7 @@ export class WavelengthColorMapper extends ColorMapper {
         if (this._showSpectralColor)
             wavelengthColor(this._lambdaInNanos, targetColor);
         else
-            targetColor.setRGB(1, 1, 0, SRGBColorSpace);
+            targetColor.setRGB(1, 1, 0, this._colorSpace);
     }
 
     /** @param {boolean} value */
@@ -243,16 +259,16 @@ class ScientificColorMapper extends ColorMapper {
 
         switch (num) {
             case 0 :
-                targetColor.setRGB(0, s, 1, SRGBColorSpace);
+                targetColor.setRGB(0, s, 1, this._colorSpace);
                 return 1;
             case 1 :
-                targetColor.setRGB(0, 1, 1 - s, SRGBColorSpace);
+                targetColor.setRGB(0, 1, 1 - s, this._colorSpace);
                 return 1;
             case 2 :
-                targetColor.setRGB(s, 1, 0, SRGBColorSpace);
+                targetColor.setRGB(s, 1, 0, this._colorSpace);
                 return 1;
             case 3 :
-                targetColor.setRGB(1, 1 - s, 0, SRGBColorSpace);
+                targetColor.setRGB(1, 1 - s, 0, this._colorSpace);
                 return 1;
         }
     }
@@ -264,7 +280,7 @@ class RdYlBuColorMapper extends ColorMapper {
     map(value, targetColor) {
         const idx = Math.max(0, Math.min(255, Math.floor(value * 255)));
         const c = RdYlBuColorMapper.RdYlBucMap[idx];
-        targetColor.setRGB(c[0], c[1], c[2], SRGBColorSpace);
+        targetColor.setRGB(c[0], c[1], c[2], this._colorSpace);
     }
 }
 
@@ -278,7 +294,7 @@ class ViridisColorMapper extends ColorMapper {
     map(value, targetColor) {
         const idx = Math.max(0, Math.min(255, Math.floor(value * 255)));
         const c = ViridisColorMapper.viridiscMap[idx];
-        targetColor.setRGB(c[0], c[1], c[2], SRGBColorSpace);
+        targetColor.setRGB(c[0], c[1], c[2], this._colorSpace);
     }
 }
 
@@ -292,7 +308,7 @@ class SeismicColorMapper extends ColorMapper {
     map(value, targetColor) {
         const idx = Math.max(0, Math.min(255, Math.floor(value * 255)));
         const c = SeismicColorMapper.siesmiccMap[idx];
-        targetColor.setRGB(c[0], c[1], c[2], SRGBColorSpace);
+        targetColor.setRGB(c[0], c[1], c[2], this._colorSpace);
     }
 }
 
@@ -306,7 +322,7 @@ class InfernoColorMapper extends ColorMapper {
     map(value, targetColor) {
         const idx = Math.max(0, Math.min(255, Math.floor(value * 255)));
         const c = InfernoColorMapper.infernocMap[idx];
-        targetColor.setRGB(c[0], c[1], c[2], SRGBColorSpace);
+        targetColor.setRGB(c[0], c[1], c[2], this._colorSpace);
     }
 }
 
@@ -316,7 +332,7 @@ class WaterColorMapper extends ColorMapper {
      * @param {Color} targetColor
      */
     map(value, targetColor) {
-        targetColor.setRGB(value * 0.3, value * 0.6, value, SRGBColorSpace);
+        targetColor.setRGB(value * 0.3, value * 0.6, value, this._colorSpace);
     }
 }
 
@@ -326,7 +342,7 @@ class GradientColorMapper extends ColorMapper {
      * @param {Color} targetColor
      */
     map(value, targetColor) {
-        targetColor.setRGB(value, 0.2, 1.0 - value, SRGBColorSpace);
+        targetColor.setRGB(value, 0.2, 1.0 - value, this._colorSpace);
     }
 }
 
@@ -445,7 +461,7 @@ class ComplexHsvColorMapper extends ColorMapper {
 
         // Modulus is part of the complex-color mapping:
         const brightness = Math.min(1, value.modulus);
-        targetColor.setRGB(r * brightness, g * brightness, b * brightness, SRGBColorSpace);
+        targetColor.setRGB(r * brightness, g * brightness, b * brightness, this._colorSpace);
     }
 }
 
@@ -550,15 +566,15 @@ export class ColorMappers extends Registry {
         super({
             label: label,
             entries: {
-                Gradient: _options => new GradientColorMapper(),
-                Inferno: _options => new InfernoColorMapper(),
-                RdYlBu: _options => new RdYlBuColorMapper(),
-                Seismic: _options => new SeismicColorMapper(),
-                Scientific: _options => new ScientificColorMapper(),
-                Terrain: _options => new TerrainColorMapper(),
+                Gradient: _options => new GradientColorMapper(_options),
+                Inferno: _options => new InfernoColorMapper(_options),
+                RdYlBu: _options => new RdYlBuColorMapper(_options),
+                Seismic: _options => new SeismicColorMapper(_options),
+                Scientific: _options => new ScientificColorMapper(_options),
+                Terrain: _options => new TerrainColorMapper(_options),
                 Uniform: _options => new UniformColorMapper(_options),
-                Viridis: _options => new ViridisColorMapper(),
-                Water: _options => new WaterColorMapper()
+                Viridis: _options => new ViridisColorMapper(_options),
+                Water: _options => new WaterColorMapper(_options)
             }
         });
     }

@@ -6,7 +6,7 @@ import {
 
 const resolution = 50;
 const xMax = 4;
-const wavelengthColorMapper = new WavelengthColorMapper(525);
+const wavelengthColorMapper = new WavelengthColorMapper({ lambdaInNanos: 525 });
 
 const slitSize = .5;
 const slit1 = new AxialSymmetricBody({
