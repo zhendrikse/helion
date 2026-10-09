@@ -446,7 +446,7 @@ export class SineImpulseOperator extends Transformation {
 // js/fft-esm.js
 // ESM-versie van fft.js suitable for browser
 //
-class FFT {
+export class FFT {
     /** @param {number} size */
     constructor(size) {
         this._size = size | 0;
