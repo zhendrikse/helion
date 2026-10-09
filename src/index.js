@@ -14,14 +14,14 @@ export {
 
 export {
     LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator,
-    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ComplexSoftness, SineImpulseOperator, ShapeMask, ComplexShapeMask,
-    Softness, Potential
+    GaussianImpulseComplex2D, FFTShift2D, FFT2D, ComplexSoftness, SineImpulseOperator, ShapeMask,
+    ComplexShapeMask, Softness, Potential
 } from './model/transformations/operators.js';
 
 export {
-    DiscreteFieldSurfaceView, ComplexSurfaceView2D, ProbabilityDensityView2D, ParticleView2D, FieldEdgeIntensityPixelRaster
+    DiscreteFieldSurfaceView, ComplexSurfaceView2D, ProbabilityDensityView2D, ParticleView2D,
+    FieldEdgeIntensityPixelRaster
 } from './view/2d/views.js';
-export { FluidDynamicsView } from './view/2d/fluid.js';
 
 export {
     Force, CoulombForce, LorentzForce, DragForce, UniformGravitationalForce, SpringForce,
