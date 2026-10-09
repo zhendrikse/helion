@@ -6,14 +6,8 @@ import {
     Vec3
 } from "../../../src/index.js";
 
-const canvas = document.getElementById("myCanvas");
-const display = canvas.getContext("2d");
-
-canvas.focus();
-
 const simulationHeight = 1.1;
-const canvasScale = canvas.height / simulationHeight;
-const simulationWidth = canvas.width / canvasScale;
+const simulationWidth = simulationHeight;
 
 const U_FIELD = 0; // x-component of velocity
 const V_FIELD = 1; // y-component of velocity
@@ -391,92 +385,9 @@ function setupScene(sceneNr = 0) {
     else if (sceneNr === SCENE_TYPE.PAINT)
         paintScene();
 
-    document.getElementById("streamButton").checked = fluidDynamicsView.showStreamlines;
-    document.getElementById("velocityButton").checked = fluidDynamicsView.showVelocities;
-    document.getElementById("pressureButton").checked = fluidDynamicsView.showPressure;
-    document.getElementById("smokeButton").checked = fluidDynamicsView.showSmoke;
-    document.getElementById("overrelaxButton").checked = scene.overRelaxation > 1.0;
 }
 
-const fluidDynamicsView = new FluidDynamicsView(display, canvas.width, canvas.height, scene);
-
-let mouseDown = false;
-
-function startDrag(x, y) {
-    let bounds = canvas.getBoundingClientRect();
-
-    let mx = x - bounds.left - canvas.clientLeft;
-    let my = y - bounds.top - canvas.clientTop;
-    mouseDown = true;
-
-    x = mx / canvasScale;
-    y = (canvas.height - my) / canvasScale;
-
-    scene.fluid.setObstacle(x, y, true);
-}
-
-function drag(x, y) {
-    if (mouseDown) {
-        let bounds = canvas.getBoundingClientRect();
-        let mx = x - bounds.left - canvas.clientLeft;
-        let my = y - bounds.top - canvas.clientTop;
-        x = mx / canvasScale;
-        y = (canvas.height - my) / canvasScale;
-        scene.fluid.setObstacle(x, y, false);
-    }
-}
-
-function endDrag() {
-    mouseDown = false;
-}
-
-document.getElementById("tankButton").addEventListener("click", () => setupScene(SCENE_TYPE.TANK));
-document.getElementById("hiresButton").addEventListener("click", () => setupScene(SCENE_TYPE.HIRES_TUNNEL));
-document.getElementById("windTunnel").addEventListener("click", () => setupScene(SCENE_TYPE.WIND_TUNNEL));
-document.getElementById("paintButton").addEventListener("click", () => setupScene(SCENE_TYPE.PAINT));
-document.getElementById("streamButton").addEventListener("click", event => fluidDynamicsView.showStreamlines = event.target.checked);
-document.getElementById("velocityButton").addEventListener("click", event => fluidDynamicsView.showVelocities = event.target.checked);
-document.getElementById("pressureButton").addEventListener("click", event => fluidDynamicsView.showPressure = event.target.checked);
-document.getElementById("smokeButton").addEventListener("click", event => fluidDynamicsView.showSmoke = event.target.checked);
-canvas.addEventListener('mousedown', event => {
-    startDrag(event.x, event.y);
-});
-
-canvas.addEventListener('mouseup', event => {
-    endDrag();
-});
-
-canvas.addEventListener('mousemove', event => {
-    drag(event.x, event.y);
-});
-
-canvas.addEventListener('touchstart', event => {
-    startDrag(event.touches[0].clientX, event.touches[0].clientY)
-});
-
-canvas.addEventListener('touchend', event => {
-    endDrag()
-});
-
-canvas.addEventListener('touchmove', event => {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    drag(event.touches[0].clientX, event.touches[0].clientY)
-}, {passive: false});
-
-
-document.addEventListener('keydown', event => {
-    switch (event.key) {
-        case 'p':
-            scene.paused = !scene.paused;
-            break;
-        case 'm':
-            scene.paused = false;
-            simulate();
-            scene.paused = true;
-            break;
-    }
-});
+const fluidDynamicsView = new FluidDynamicsView(scene);
 
 class Solver {
     constructor(scene) {
@@ -485,21 +396,32 @@ class Solver {
 }
 const solver = new Solver(scene);
 
-// main -------------------------------------------------------
 function simulate() {
     if (!scene.paused)
         scene.fluid.evolve(solver, solver.scene.dt);
     scene.frameNr++;
 }
 
-function update() {
-    simulate();
-    fluidDynamicsView.synchronizeWith(scene.fluid);
-    requestAnimationFrame(update);
-}
-
 setupScene(SCENE_TYPE.WIND_TUNNEL);
-update();
+
+Simulation
+    .with({
+        htmlDivId: "fluid2dContainer",
+        viewport: { aspectRatio: "1 / 1", parameterMenuCollapsed: true },
+        camera: {
+            position: new Vec3(0.5, 0.5, 2),
+            target: new Vec3(0.5, 0.5, 0),
+            orthographic: true,
+            controls: false
+        },
+        headUpDisplay: { enabled: false },
+        lighting: { enabled: false }
+    })
+    .runsEvery(1 / 60)
+    .onStep(() => simulate())
+    .bind(scene.fluid.alwaysWith(fluidDynamicsView))
+    .start();
+
 
 // Simulation
 //     .with({
