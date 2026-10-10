@@ -1,7 +1,9 @@
 import {
     Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, VectorField, Circle,
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour,
-    Vec2, StreamlinesView, VelocitiesView
+    Vec2, StreamlinesView, VelocitiesView,
+    Slider,
+    Range
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
 import { BoxGeometry, Color, LinearSRGBColorSpace, Mesh, MeshBasicMaterial } from 'three';
@@ -43,9 +45,9 @@ class FluidSolver extends Solver {
         super();
         this.numIterations = numIterations;
         this.overRelaxation = overRelaxation;
-        this._newVelocityX = new DiscreteScalarField({nx: 0, ny: 0});
-        this._newVelocityY = new DiscreteScalarField({nx: 0, ny: 0});
-        this._newSmokeField = new DiscreteScalarField({nx: 0, ny: 0});
+        this._newVelocityX = new DiscreteScalarField({ nx: 0, ny: 0 });
+        this._newVelocityY = new DiscreteScalarField({ nx: 0, ny: 0 });
+        this._newSmokeField = new DiscreteScalarField({ nx: 0, ny: 0 });
     }
 
     /**
@@ -115,9 +117,9 @@ class FluidSolver extends Solver {
     }
 
     init(/** @type {EulerFluid} */ fluid) {
-        this._newVelocityX = new DiscreteScalarField({nx: fluid.nx, ny: fluid.ny});
-        this._newVelocityY = new DiscreteScalarField({nx: fluid.nx, ny: fluid.ny});
-        this._newSmokeField = new DiscreteScalarField({nx: fluid.nx, ny: fluid.ny});
+        this._newVelocityX = new DiscreteScalarField({ nx: fluid.nx, ny: fluid.ny });
+        this._newVelocityY = new DiscreteScalarField({ nx: fluid.nx, ny: fluid.ny });
+        this._newSmokeField = new DiscreteScalarField({ nx: fluid.nx, ny: fluid.ny });
     }
 }
 
@@ -138,12 +140,12 @@ class EulerFluid extends VectorField {
         this.ny = 0;
         this._cellSize = 0;
         this.resolution = 0;
-        this._velocityX = new DiscreteScalarField({nx: 0, ny: 0});
-        this._velocityY = new DiscreteScalarField({nx: 0, ny: 0});
-        this._pressureField = new DiscreteScalarField({nx: 0, ny: 0});
-        this._obstacleMask = new DiscreteScalarField({nx: 0, ny: 0});
-        this._smokeField = new DiscreteScalarField({nx: 0, ny: 0});
-        this.init({density, resolution});
+        this._velocityX = new DiscreteScalarField({ nx: 0, ny: 0 });
+        this._velocityY = new DiscreteScalarField({ nx: 0, ny: 0 });
+        this._pressureField = new DiscreteScalarField({ nx: 0, ny: 0 });
+        this._obstacleMask = new DiscreteScalarField({ nx: 0, ny: 0 });
+        this._smokeField = new DiscreteScalarField({ nx: 0, ny: 0 });
+        this.init({ density, resolution });
     }
 
     /**
@@ -162,11 +164,11 @@ class EulerFluid extends VectorField {
         this.resolution = resolution;
         this._cellSize = 1 / resolution;
 
-        this._velocityX = new DiscreteScalarField({nx: this.nx, ny: this.ny});
-        this._velocityY = new DiscreteScalarField({nx: this.nx, ny: this.ny});
-        this._pressureField = new DiscreteScalarField({nx: this.nx, ny: this.ny});
-        this._obstacleMask = new DiscreteScalarField({nx: this.nx, ny: this.ny});
-        this._smokeField = new DiscreteScalarField({nx: this.nx, ny: this.ny});
+        this._velocityX = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
+        this._velocityY = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
+        this._pressureField = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
+        this._obstacleMask = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
+        this._smokeField = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
         this._smokeField.data.fill(1.0)
     }
 
@@ -211,7 +213,7 @@ class EulerFluid extends VectorField {
         this._velocityX.setValueAt(j, i, this._velocityX.valueAt(j, i) - sx0 * p);
         this._velocityX.setValueAt(j, i + 1, this._velocityX.valueAt(j, i + 1) + sx1 * p);
         this._velocityY.setValueAt(j, i, this._velocityY.valueAt(j, i) - sy0 * p);
-        this._velocityY.setValueAt(j + 1, i, this._velocityY.valueAt(j + 1, i)  + sy1 * p);
+        this._velocityY.setValueAt(j + 1, i, this._velocityY.valueAt(j + 1, i) + sy1 * p);
     }
 
     /**
@@ -230,7 +232,7 @@ class EulerFluid extends VectorField {
     extrapolate() {
         for (let i = 0; i < this.nx; i++) {
             this._velocityX.setValueAt(0, i, this._velocityX.valueAt(1, i));
-            this._velocityX.setValueAt(this.ny - 1, i,  this._velocityX.valueAt(this.ny - 2, i));
+            this._velocityX.setValueAt(this.ny - 1, i, this._velocityX.valueAt(this.ny - 2, i));
         }
         for (let j = 0; j < this.ny; j++) {
             this._velocityY.setValueAt(j, 0, this._velocityY.valueAt(j, 1));
@@ -252,12 +254,12 @@ class EulerFluid extends VectorField {
         return aVector.x >= 0 && aVector.x < this.nx * this._cellSize && aVector.y >= 0 && aVector.y < this.ny * this._cellSize;
     }
 
-    sampleSmoke(/** @type {number} */ x, /** @type {number} */ y)     { return this._sampleField(x, y, S_FIELD); }
-    pressureAt(/** @type {number} */ i, /** @type {number} */ j)      { return this._pressureField.valueAt(i, j); }
-    smokeAt(/** @type {number} */ i, /** @type {number} */ j)         { return this._smokeField.valueAt(i, j); }
-    obstacleMaskAt(/** @type {number} */ i, /** @type {number} */ j)  { return this._obstacleMask.valueAt(i, j); }
-    xVelocityAt(/** @type {number} */ i, /** @type {number} */ j)     { return this._velocityX.valueAt(i, j); }
-    yVelocityAt(/** @type {number} */ i, /** @type {number} */ j)     { return this._velocityY.valueAt(i, j); }
+    sampleSmoke(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, S_FIELD); }
+    pressureAt(/** @type {number} */ i, /** @type {number} */ j) { return this._pressureField.valueAt(i, j); }
+    smokeAt(/** @type {number} */ i, /** @type {number} */ j) { return this._smokeField.valueAt(i, j); }
+    obstacleMaskAt(/** @type {number} */ i, /** @type {number} */ j) { return this._obstacleMask.valueAt(i, j); }
+    xVelocityAt(/** @type {number} */ i, /** @type {number} */ j) { return this._velocityX.valueAt(i, j); }
+    yVelocityAt(/** @type {number} */ i, /** @type {number} */ j) { return this._velocityY.valueAt(i, j); }
     velocityAt(/** @type {number} */ i, /** @type {number} */ j, /** @type {Vec2} */ target) {
         target.set(this._velocityX.valueAt(i, j), this._velocityY.valueAt(i, j));
         return target;
@@ -398,7 +400,7 @@ class FluidDomainView extends Renderable2D {
     }
 
     canBindTo(/** @type {EulerFluid} */ _fluid) { return true; }
-    synchronizeWith(/** @type {EulerFluid} */ _fluid) {}
+    synchronizeWith(/** @type {EulerFluid} */ _fluid) { }
 }
 
 
@@ -419,12 +421,64 @@ class FluidDynamicsView extends Renderable2D {
         this._width = width;
         this._canvasScale = height / simulationHeight;
         this._color = new Color();
-        this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, {colorSpace: LinearSRGBColorSpace});
+        this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, { colorSpace: LinearSRGBColorSpace });
     }
 
     set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
     set showPressure(/** @type {boolean} */ showPressure) { this._showPressure = showPressure; }
     set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
+
+    /*
+        initialize(fluid) {
+        this._width = fluid.nx;
+        this._height = fluid.ny;
+        this._pixels = new Uint8Array(this._width * this._height * 4);
+        this._texture = new DataTexture(this._pixels, this._width, this._height, RGBAFormat);
+        this._texture.needsUpdate = true;
+
+        const geometry = new PlaneGeometry(this._width, this._height);
+        const material = new MeshBasicMaterial({
+            map: this._texture,
+            transparent: true,
+            side: DoubleSide
+        });
+        this._mesh = new Mesh(geometry, material);
+        this._mesh.position.set(-halfWidth, -halfHeight, 0);
+        this._mesh.rotation.x = -Math.PI / 2; // Lay flat on XZ plane
+        this.add(this._mesh);
+    }
+
+    _updateTexture(fluid, pressureRange) {
+        let index = 0;
+        const h = 1 / fluid.resolution;
+
+        for (let j = 0; j < this._height; j++) {
+            for (let i = 0; i < this._width; i++) {
+                const smoke = fluid.smokeAt(j, i);
+                if (this._showPressure) {
+                    this._colorMapper.map(pressureRange.normalize(fluid.pressureAt(j, i)), this._color);
+                    if (this._showSmoke)
+                        this._color.setRGB(
+                            Math.max(0.0, this._color.r - smoke),
+                            Math.max(0.0, this._color.g - smoke),
+                            Math.max(0.0, this._color.b - smoke));
+                } else if (this._showSmoke) {
+                    this._color.setRGB(smoke, smoke, smoke);
+                    if (sceneType === SCENE_TYPE.PAINT)
+                        this._colorMapper.map(smoke, this._color);
+                } else if (fluid.obstacleMaskAt(j, i) === SOLID)
+                    this._color.setRGB(0, 0, 0);
+
+                // Opaque rendering (no alpha blending)
+                this._pixels[index++] = 255 * this._color.r;
+                this._pixels[index++] = 255 * this._color.g;
+                this._pixels[index++] = 255 * this._color.b;
+                this._pixels[index++] = 255; // fully opaque
+            }
+        }
+        this._texture.needsUpdate = true;
+    }
+    */
 
     /**
      * @param {number} i
@@ -455,7 +509,7 @@ class FluidDynamicsView extends Renderable2D {
         const y = Math.floor(scaleY((j + 1) * h));
         const cx = Math.floor(this._canvasScale * cellScale * h) + 1;
         const cy = Math.floor(this._canvasScale * cellScale * h) + 1;
-        const opacity = sceneType === SCENE_TYPE.PAINT || sceneType === SCENE_TYPE.TANK ? 1 : Math.sqrt(1 - smoke);
+        const opacity = sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke;
         for (let yi = y; yi < y + cy; yi++) {
             let pos = 4 * (yi * this._width + x);
 
@@ -463,7 +517,7 @@ class FluidDynamicsView extends Renderable2D {
                 this._imageData.data[pos++] = 255 * this._color.r; // red
                 this._imageData.data[pos++] = 255 * this._color.g; // green
                 this._imageData.data[pos++] = 255 * this._color.b; // blue
-                this._imageData.data[pos++] = opacity * 255;
+                this._imageData.data[pos++] = 55 + opacity * 200;
             }
         }
     }
@@ -502,6 +556,7 @@ let sceneType = SCENE_TYPE.WIND_TUNNEL;
 let frameNr = 0;
 let mouseDown = false;
 let gravity = -9.81;
+let fluidSpeed = 2.0;
 const fluid = new EulerFluid();
 
 function tankScene(/** @type {EulerFluid} */ fluid) {
@@ -518,23 +573,18 @@ function tankScene(/** @type {EulerFluid} */ fluid) {
     velocitiesView.visible = false;
 }
 
-/**
- * @param {EulerFluid} fluid
- * @param {number} i
- * @param {number} j
- */
-function updateSmokeFieldInVortexScene(fluid, i, j) {
-    fluid._obstacleMask.setValueAt(j, i, (i === 0 || j === 0 || j === fluid.ny - 1) ? SOLID : FLUID);
-
-    const inwardVelocity = 2.0;
-    if (i === 1)
-        fluid._velocityX.setValueAt(j, i, inwardVelocity);
+function setFluidVelocity(/** @type {number} */ speed) {
+    fluidSpeed = speed;
+    for (let j = 0; j < fluid.ny; j++)
+        fluid._velocityX.setValueAt(j, 1, speed);
 }
 
-function vortexSheddingScene(/** @type {EulerFluid} */ fluid, /** @type {number} */ sceneNumber) {
+function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number} */ fluidSpeed, /** @type {number} */ sceneNumber) {
     for (let i = 0; i < fluid.nx; i++)
         for (let j = 0; j < fluid.ny; j++)
-            updateSmokeFieldInVortexScene(fluid, i, j);
+            fluid._obstacleMask.setValueAt(j, i, (i === 0 || j === 0 || j === fluid.ny - 1) ? SOLID : FLUID);
+
+    setFluidVelocity(fluidSpeed);
 
     const pipeH = 0.1 * fluid.ny;
     const minJ = Math.floor(0.5 * fluid.ny - 0.5 * pipeH);
@@ -595,7 +645,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     if (sceneNr === SCENE_TYPE.TANK)
         tankScene(fluid);
     else if (sceneNr === SCENE_TYPE.WIND_TUNNEL || sceneNr === SCENE_TYPE.HIRES_TUNNEL)
-        vortexSheddingScene(fluid, sceneNr);
+        vortexSheddingScene(fluid, fluidSpeed, sceneNr);
     else if (sceneNr === SCENE_TYPE.PAINT)
         paintScene();
 }
@@ -639,7 +689,7 @@ canvas.addEventListener('touchmove', event => {
     event.preventDefault();
     event.stopImmediatePropagation();
     drag(event.touches[0].clientX, event.touches[0].clientY)
-}, {passive: false});
+}, { passive: false });
 
 
 document.addEventListener('keydown', event => {
@@ -704,7 +754,7 @@ Simulation
         .onChange(event => velocitiesView.visible = event.target.checked)
         .togetherWith(new Checkbox('Streamlines')
             .onChange(event => streamlinesView.visible = event.target.checked)
-    ))
+        ))
     .append(new Checkbox('🗜️ Pressure')
         .checked(true)
         .onChange(event => {
@@ -715,14 +765,18 @@ Simulation
             .onChange(event => fluidDynamicsView.showSmoke = event.target.checked)
             .togetherWith(new Checkbox('Over-relaxation')
                 .checked(true)
-                .onChange(event =>solver.overRelaxation = solver.overRelaxation === 1.0 ? 1.9 : 1.0)
-    )))
+                .onChange(event => solver.overRelaxation = solver.overRelaxation === 1.0 ? 1.9 : 1.0)
+            )))
     .append(new DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.RdYlBu)
         // @ts-ignore
         .onChange(event =>
-            fluidDynamicsView.colorMapper = ColorMappers.get(event.target.value, {colorSpace: LinearSRGBColorSpace})))
+            fluidDynamicsView.colorMapper = ColorMappers.get(event.target.value, { colorSpace: LinearSRGBColorSpace })))
+    .append(new Slider('🏃🏻‍♀️‍➡️ Fluid velocity')
+        .withRange(new Range(.5, 3, .01))
+        .withValue(fluidSpeed)
+        .onInput(event => setFluidVelocity(Number(event.target.value))))
     .start();
 
 // Keep the existing Canvas 2D field renderer as a transparent layer beneath
