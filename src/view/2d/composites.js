@@ -120,11 +120,11 @@ export class VelocitiesView extends Renderable2D {
         this._lines = new LineSegments(this._geometry, this._material);
         this.add(this._lines);
         this._allocatedSegmentCount = 0;
+        this._velocity = new Vec2();
     }
 
-    canBindTo(/** @type {EulerFluid} */ model) {
-        if (model.xVelocityAt === undefined ||
-            model.yVelocityAt === undefined ||
+    canBindTo(/** @type {{nx: number, ny: number, resolution: number, velocityAt:(i: number, j:number, target: Vec2) => Vec2}} */ model) {
+        if (model.velocityAt === undefined ||
             model.nx === undefined ||
             model.ny === undefined ||
             model.resolution === undefined)
@@ -144,7 +144,7 @@ export class VelocitiesView extends Renderable2D {
         this._allocatedSegmentCount = maxSegmentCount;
     }
 
-    synchronizeWith(/** @type {EulerFluid} */ fluid) {
+    synchronizeWith(/** @type {{nx: number, ny: number, resolution: number, velocityAt:(i: number, j: number, target: Vec2) => Vec2}} */ fluid) {
         const maxSegmentCount = fluid.nx * fluid.ny * 2;
         if (maxSegmentCount !== this._allocatedSegmentCount)
             this._newGeometry(maxSegmentCount);
@@ -155,15 +155,16 @@ export class VelocitiesView extends Renderable2D {
 
         for (let i = 0; i < fluid.nx; i++)
             for (let j = 0; j < fluid.ny; j++) {
+                fluid.velocityAt(j, i, this._velocity);
                 const x0 = i * h;
-                const x1 = x0 + fluid.xVelocityAt(j, i) * this._scale;
+                const x1 = x0 + this._velocity.x * this._scale;
                 const y = (j + 0.5) * h;
 
                 this._writeSegment(positions, segmentCount++, x0, y, x1, y);
 
                 const x = (i + 0.5) * h;
                 const y0 = j * h;
-                const y1 = y0 + fluid.yVelocityAt(j, i) * this._scale;
+                const y1 = y0 + this._velocity.y * this._scale;
 
                 this._writeSegment(positions, segmentCount++, x, y0, x, y1);
             }
