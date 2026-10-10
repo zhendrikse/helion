@@ -118,6 +118,12 @@ export class StreamlinesView extends Renderable2D {
 }
 
 export class VelocitiesView extends Renderable2D {
+    /**
+     * @typedef {object} VelocitiesViewOptions
+     * @property {Colour} [color]
+     * @property {number} [scale]
+     */
+    /** @param {VelocitiesViewOptions} [options] */
     constructor({
         scale = 1.5e-2,
         color = new Colour(0.2, 0.2, 0.0)
