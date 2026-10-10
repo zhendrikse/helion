@@ -6,17 +6,16 @@ import {
     Range
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
-import { BoxGeometry, Color, LinearSRGBColorSpace, Mesh, MeshBasicMaterial } from 'three';
+import {
+    BoxGeometry, Color, DataTexture, DoubleSide, LinearSRGBColorSpace,
+    Mesh, MeshBasicMaterial, PlaneGeometry, RGBAFormat, SRGBColorSpace
+} from 'three';
 
 const helionDiv = document.getElementById('eulerFluidContainer');
-const canvas = document.getElementById('myCanvas');
-helionDiv.style.width = `${canvas.width}px`;
-const display = canvas.getContext('2d', { willReadFrequently: true });
-canvas.focus();
+helionDiv.style.width = '650px';
 
 const simulationHeight = 1.1;
-const canvasScale = canvas.height / simulationHeight;
-const simulationWidth = canvas.width / canvasScale;
+const simulationWidth = simulationHeight;
 const halfWidth = simulationWidth / 2;
 const halfHeight = simulationHeight / 2;
 
@@ -405,21 +404,22 @@ class FluidDomainView extends Renderable2D {
 
 
 /**
- * Visualizes the pressure/smoke/obstacle combination used by the 2D fluid solver.
+ * Renders the pressure/smoke field as a Three.js data texture.
  *
- * The pressure field is the model bound to this view. The smoke and obstacle
- * fields are additional state needed to reproduce the fluid visualization.
+ * The texture is stretched over the same centered world-space domain used by
+ * the Three.js scene. Its rows follow the fluid grid's y-axis (j = 0 at the
+ * bottom), while the simulation itself remains independent of the renderer.
  */
 class FluidDynamicsView extends Renderable2D {
-    constructor(display, width, height) {
+    constructor() {
         super();
-        this._imageData = display.getImageData(0, 0, width, height);
-        this._display = display;
         this._showPressure = true;
         this._showSmoke = true;
-        this._height = height;
-        this._width = width;
-        this._canvasScale = height / simulationHeight;
+        this._width = 0;
+        this._height = 0;
+        this._pixels = new Uint8Array();
+        this._texture = null;
+        this._mesh = null;
         this._color = new Color();
         this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, { colorSpace: LinearSRGBColorSpace });
     }
@@ -428,57 +428,31 @@ class FluidDynamicsView extends Renderable2D {
     set showPressure(/** @type {boolean} */ showPressure) { this._showPressure = showPressure; }
     set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
 
-    /*
-        initialize(fluid) {
+    canBindTo(/** @type {EulerFluid} */ _model) { return true; }
+
+    initialize(/** @type {EulerFluid} */ fluid) {
+        this.dispose();
         this._width = fluid.nx;
         this._height = fluid.ny;
         this._pixels = new Uint8Array(this._width * this._height * 4);
         this._texture = new DataTexture(this._pixels, this._width, this._height, RGBAFormat);
+        this._texture.colorSpace = SRGBColorSpace;
         this._texture.needsUpdate = true;
 
-        const geometry = new PlaneGeometry(this._width, this._height);
-        const material = new MeshBasicMaterial({
-            map: this._texture,
-            transparent: true,
-            side: DoubleSide
-        });
-        this._mesh = new Mesh(geometry, material);
-        this._mesh.position.set(-halfWidth, -halfHeight, 0);
-        this._mesh.rotation.x = -Math.PI / 2; // Lay flat on XZ plane
+        this._mesh = new Mesh(
+            new PlaneGeometry(simulationWidth, simulationHeight),
+            new MeshBasicMaterial({
+                map: this._texture,
+                transparent: true,
+                depthWrite: false,
+                side: DoubleSide
+            })
+        );
+        // PlaneGeometry is centered at the origin, matching FluidDomainView.
+        // Streamlines, velocities, and the obstacle translate model coordinates
+        // by (-halfWidth, -halfHeight); the field texture itself spans the domain.
         this.add(this._mesh);
     }
-
-    _updateTexture(fluid, pressureRange) {
-        let index = 0;
-        const h = 1 / fluid.resolution;
-
-        for (let j = 0; j < this._height; j++) {
-            for (let i = 0; i < this._width; i++) {
-                const smoke = fluid.smokeAt(j, i);
-                if (this._showPressure) {
-                    this._colorMapper.map(pressureRange.normalize(fluid.pressureAt(j, i)), this._color);
-                    if (this._showSmoke)
-                        this._color.setRGB(
-                            Math.max(0.0, this._color.r - smoke),
-                            Math.max(0.0, this._color.g - smoke),
-                            Math.max(0.0, this._color.b - smoke));
-                } else if (this._showSmoke) {
-                    this._color.setRGB(smoke, smoke, smoke);
-                    if (sceneType === SCENE_TYPE.PAINT)
-                        this._colorMapper.map(smoke, this._color);
-                } else if (fluid.obstacleMaskAt(j, i) === SOLID)
-                    this._color.setRGB(0, 0, 0);
-
-                // Opaque rendering (no alpha blending)
-                this._pixels[index++] = 255 * this._color.r;
-                this._pixels[index++] = 255 * this._color.g;
-                this._pixels[index++] = 255 * this._color.b;
-                this._pixels[index++] = 255; // fully opaque
-            }
-        }
-        this._texture.needsUpdate = true;
-    }
-    */
 
     /**
      * @param {number} i
@@ -486,11 +460,11 @@ class FluidDynamicsView extends Renderable2D {
      * @param {EulerFluid} fluid
      * @param {Interval} pressureRange
      */
-    _updateImageDataAt(i, j, fluid, pressureRange) {
-        const cellScale = 1.1;
-        const h = 1 / fluid.resolution;
-
+    _updatePixelAt(i, j, fluid, pressureRange) {
+        const offset = 4 * (j * this._width + i);
         const smoke = fluid.smokeAt(j, i);
+        let alpha = 0;
+
         if (this._showPressure) {
             this._colorMapper.map(pressureRange.normalize(fluid.pressureAt(j, i)), this._color);
             if (this._showSmoke)
@@ -498,51 +472,47 @@ class FluidDynamicsView extends Renderable2D {
                     Math.max(0.0, this._color.r - smoke),
                     Math.max(0.0, this._color.g - smoke),
                     Math.max(0.0, this._color.b - smoke));
+            alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
         } else if (this._showSmoke) {
             this._color.setRGB(smoke, smoke, smoke);
             if (sceneType === SCENE_TYPE.PAINT)
                 this._colorMapper.map(smoke, this._color);
-        } else if (fluid.obstacleMaskAt(j, i) === SOLID)
+            alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
+        } else if (fluid.obstacleMaskAt(j, i) === SOLID) {
             this._color.setRGB(0, 0, 0);
-
-        const x = Math.floor(scaleX(i * h));
-        const y = Math.floor(scaleY((j + 1) * h));
-        const cx = Math.floor(this._canvasScale * cellScale * h) + 1;
-        const cy = Math.floor(this._canvasScale * cellScale * h) + 1;
-        const opacity = sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke;
-        for (let yi = y; yi < y + cy; yi++) {
-            let pos = 4 * (yi * this._width + x);
-
-            for (let xi = 0; xi < cx; xi++) {
-                this._imageData.data[pos++] = 255 * this._color.r; // red
-                this._imageData.data[pos++] = 255 * this._color.g; // green
-                this._imageData.data[pos++] = 255 * this._color.b; // blue
-                this._imageData.data[pos++] = 55 + opacity * 200;
-            }
+            alpha = 255;
+        } else {
+            this._color.setRGB(0, 0, 0);
         }
-    }
 
-    canBindTo(/** @type {EulerFluid} */ model) {
-        return true;
+        this._pixels[offset] = Math.round(255 * this._color.r);
+        this._pixels[offset + 1] = Math.round(255 * this._color.g);
+        this._pixels[offset + 2] = Math.round(255 * this._color.b);
+        this._pixels[offset + 3] = Math.round(alpha);
     }
 
     synchronizeWith(/** @type {EulerFluid} */ fluid) {
+        if (!this._texture || this._width !== fluid.nx || this._height !== fluid.ny)
+            this.initialize(fluid);
+
         const pressureRange = fluid.pressureRange;
-        this._display.clearRect(0, 0, this._width, this._height);
-        this._display.fillStyle = '#FF0000';
+        for (let j = 0; j < fluid.ny; j++)
+            for (let i = 0; i < fluid.nx; i++)
+                this._updatePixelAt(i, j, fluid, pressureRange);
 
-        for (let i = 0; i < fluid.nx; i++)
-            for (let j = 0; j < fluid.ny; j++)
-                this._updateImageDataAt(i, j, fluid, pressureRange);
+        this._texture.needsUpdate = true;
+    }
 
-        this._display.putImageData(this._imageData, 0, 0);
-
-        if (this._showPressure) {
-            const pressureText = 'pressure: ' + pressureRange.min.toFixed(0) + ' - ' + pressureRange.max.toFixed(0) + ' N/m';
-            this._display.fillStyle = '#A0A0A0';
-            this._display.font = '16px Arial';
-            this._display.fillText(pressureText, 10, 35);
+    dispose() {
+        if (this._mesh) {
+            this.remove(this._mesh);
+            this._mesh.geometry.dispose();
+            this._mesh.material.dispose();
+            this._mesh = null;
         }
+        this._texture?.dispose();
+        this._texture = null;
+        this._pixels = new Uint8Array();
     }
 }
 
@@ -652,7 +622,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
 
 const streamlinesView = new StreamlinesView();
 streamlinesView.position.set(-halfWidth, -halfHeight);
-const fluidDynamicsView = new FluidDynamicsView(display, canvas.width, canvas.height);
+const fluidDynamicsView = new FluidDynamicsView();
 const velocitiesView = new VelocitiesView();
 velocitiesView.position.set(-halfWidth, -halfHeight);
 const obstacleView = new Circle({
@@ -663,33 +633,22 @@ obstacleView._fillMesh.position.set(-halfWidth, -halfHeight);
 obstacleView._outlineMesh.position.set(-halfWidth, -halfHeight);
 const fluidDomainView = new FluidDomainView();
 
-function startDrag(/** @type {number} */ x, /** @type {number} */ y) {
+function startDrag(/** @type {number} */ x, /** @type {number} */ y, canvas) {
     const bounds = canvas.getBoundingClientRect();
     mouseDown = true;
-    x = ((x - bounds.left) / bounds.width); // * fluid.nx / fluid.resolution;
-    y = ((bounds.bottom - y) / bounds.height); // * fluid.ny / fluid.resolution;
+    x = (x - bounds.left) / bounds.width;
+    y = (bounds.bottom - y) / bounds.height;
     fluid.setObstacle(x, y, true);
 }
 
-function drag(/** @type {number} */ x, /** @type {number} */ y) {
+function drag(/** @type {number} */ x, /** @type {number} */ y, canvas) {
     if (!mouseDown)
         return;
     const bounds = canvas.getBoundingClientRect();
-    x = ((x - bounds.left) / bounds.width);// * fluid.nx / fluid.resolution;
-    y = ((bounds.bottom - y) / bounds.height);// * fluid.ny / fluid.resolution;
+    x = (x - bounds.left) / bounds.width;
+    y = (bounds.bottom - y) / bounds.height;
     fluid.setObstacle(x, y, false);
 }
-
-canvas.addEventListener('mousedown', event => startDrag(event.x, event.y));
-canvas.addEventListener('mouseup', event => mouseDown = false);
-canvas.addEventListener('mousemove', event => drag(event.x, event.y));
-canvas.addEventListener('touchstart', event => startDrag(event.touches[0].clientX, event.touches[0].clientY));
-canvas.addEventListener('touchend', event => mouseDown = false);
-canvas.addEventListener('touchmove', event => {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    drag(event.touches[0].clientX, event.touches[0].clientY)
-}, { passive: false });
 
 
 document.addEventListener('keydown', event => {
@@ -779,24 +738,24 @@ Simulation
         .onInput(event => setFluidVelocity(Number(event.target.value))))
     .start();
 
-// Keep the existing Canvas 2D field renderer as a transparent layer beneath
-// the Three.js canvas, so the obstacle mesh can be rendered above it.
-const canvasWrapper = helionDiv.querySelector('.helionCanvasWrapper');
-if (canvasWrapper) {
-    canvasWrapper.appendChild(canvas);
-    Object.assign(canvas.style, {
-        position: 'absolute',
-        inset: '0',
-        width: '100%',
-        height: '100%',
-        zIndex: '0',
-        pointerEvents: 'auto'
-    });
-
-    const webglCanvas = canvasWrapper.querySelector('.helionCanvas');
-    if (webglCanvas)
-        Object.assign(webglCanvas.style, {
-            zIndex: '1',
-            pointerEvents: 'none'
-        });
+// Use Helion's own Three.js canvas for obstacle interaction; no separate
+// Canvas 2D overlay is needed now that the pressure/smoke field is a texture.
+const canvas = helionDiv.querySelector('.helionCanvas');
+if (canvas) {
+    canvas.addEventListener('mousedown', event => startDrag(event.clientX, event.clientY, canvas));
+    canvas.addEventListener('mouseup', () => mouseDown = false);
+    canvas.addEventListener('mouseleave', () => mouseDown = false);
+    canvas.addEventListener('mousemove', event => drag(event.clientX, event.clientY, canvas));
+    canvas.addEventListener('touchstart', event => {
+        if (event.touches.length)
+            startDrag(event.touches[0].clientX, event.touches[0].clientY, canvas);
+    }, { passive: true });
+    canvas.addEventListener('touchend', () => mouseDown = false);
+    canvas.addEventListener('touchcancel', () => mouseDown = false);
+    canvas.addEventListener('touchmove', event => {
+        if (!event.touches.length)
+            return;
+        event.preventDefault();
+        drag(event.touches[0].clientX, event.touches[0].clientY, canvas);
+    }, { passive: false });
 }
