@@ -450,8 +450,10 @@ class FluidDynamicsView extends Renderable2D {
         this._texture.colorSpace = SRGBColorSpace;
         this._texture.needsUpdate = true;
 
+        const domainWidth = fluid.nx / fluid.resolution;
+        const domainHeight = fluid.ny / fluid.resolution;
         this._mesh = new Mesh(
-            new PlaneGeometry(simulationWidth, simulationHeight),
+            new PlaneGeometry(domainWidth, domainHeight),
             new MeshBasicMaterial({
                 map: this._texture,
                 transparent: true,
@@ -459,9 +461,12 @@ class FluidDynamicsView extends Renderable2D {
                 side: DoubleSide
             })
         );
-        // PlaneGeometry is centered at the origin, matching FluidDomainView.
-        // Streamlines, velocities, and the obstacle translate model coordinates
-        // by (-halfWidth, -halfHeight); the field texture itself spans the domain.
+
+        // All fluid views use model coordinates with their origin at the
+        // lower-left. Center the plane in local coordinates, then apply the
+        // same translation as the obstacle, velocity vectors, and streamlines.
+        this._mesh.position.set(domainWidth / 2, domainHeight / 2, 0);
+        this.position.set(-halfWidth, -halfHeight);
         this.add(this._mesh);
     }
 
