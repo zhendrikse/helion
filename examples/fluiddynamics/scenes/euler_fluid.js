@@ -32,10 +32,6 @@ const SCENE_TYPE = Object.freeze({
     HIRES_TUNNEL: 3
 });
 
-const scaleX = (/** @type {number} */ x) => x * canvasScale;
-
-const scaleY = (/** @type {number} */ y) => canvas.height - y * canvasScale;
-
 class FluidSolver extends Solver {
     constructor({
         numIterations = 100,
