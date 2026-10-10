@@ -661,9 +661,9 @@ const simulation = Simulation
             return;
 
         mouseDown = true;
-        fluid.setObstacle(x, y, false);
+        fluid.setObstacle(x, y, true);
     }, { passive: true })
-    .onMouse('touchmove', event => {
+    .onMouse('touchmove', (x, y, event) => {
         if (!event.touches.length || !mouseDown)
             return;
 
