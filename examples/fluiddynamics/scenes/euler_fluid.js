@@ -420,12 +420,28 @@ class FluidDynamicsView extends Renderable2D {
         this._pixels = new Uint8Array();
         this._texture = null;
         this._mesh = null;
+        this._pressureLabel = document.createElement('div');
+        Object.assign(this._pressureLabel.style, {
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            color: '#A0A0A0',
+            font: '16px Arial',
+            zIndex: '2',
+            pointerEvents: 'none'
+        });
         this._color = new Color();
         this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, { colorSpace: LinearSRGBColorSpace });
     }
 
+    get pressureLabelElement() { return this._pressureLabel; }
+
     set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
-    set showPressure(/** @type {boolean} */ showPressure) { this._showPressure = showPressure; }
+    set showPressure(/** @type {boolean} */ showPressure) {
+        this._showPressure = showPressure;
+        if (!showPressure)
+            this._pressureLabel.textContent = '';
+    }
     set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
 
     canBindTo(/** @type {EulerFluid} */ _model) { return true; }
@@ -501,6 +517,9 @@ class FluidDynamicsView extends Renderable2D {
                 this._updatePixelAt(i, j, fluid, pressureRange);
 
         this._texture.needsUpdate = true;
+        this._pressureLabel.textContent = this._showPressure
+            ? 'pressure: ' + pressureRange.min.toFixed(0) + ' - ' + pressureRange.max.toFixed(0) + ' N/m'
+            : '';
     }
 
     dispose() {
@@ -740,6 +759,10 @@ Simulation
 
 // Use Helion's own Three.js canvas for obstacle interaction; no separate
 // Canvas 2D overlay is needed now that the pressure/smoke field is a texture.
+const canvasWrapper = helionDiv.querySelector('.helionCanvasWrapper');
+if (canvasWrapper)
+    canvasWrapper.appendChild(fluidDynamicsView.pressureLabelElement);
+
 const canvas = helionDiv.querySelector('.helionCanvas');
 if (canvas) {
     canvas.addEventListener('mousedown', event => startDrag(event.clientX, event.clientY, canvas));
