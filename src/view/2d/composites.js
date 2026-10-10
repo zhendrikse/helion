@@ -1,7 +1,7 @@
 import {
     BoxGeometry, ConeGeometry, DoubleSide, InstancedBufferAttribute, InstancedMesh,
-    Matrix4, MeshBasicMaterial, Quaternion, Color, BufferGeometry,
-    LineBasicMaterial, Line, Mesh, Float32BufferAttribute, Vector3
+    Matrix4, MeshBasicMaterial, Quaternion, Color, BufferGeometry, LineSegments,
+    LineBasicMaterial, Line, Mesh, Float32BufferAttribute, Vector3, BufferAttribute
 } from "three";
 import { Range } from "../../model/math/math.js";
 import { Vec2, Vec3 } from "../../model/math/objects.js";
@@ -11,8 +11,183 @@ import { VectorField, ComplexFunctionSample } from "../../model/math/fields.js";
 import { Colour, hsvToRgb } from "../colormappers.js";
 import { WaveFunction } from "../../model/phys/quantum/wavefunction.js";
 import { OneDimensionalWaveFunctionArrows } from "../3d/composite/composites.js";
+import { RadioGroup } from "../../core/controls.js";
 
 const UP = new Vector3(0, 1, 0);
+
+export class StreamlinesView extends Renderable2D {
+    constructor({
+        numberOfSegments = 15,
+        seedSpacing = 5,
+        color = new Colour(0, .25, .25)
+    } = {}) {
+        super();
+        this._numberOfSegments = numberOfSegments;
+        this._seedSpacing = seedSpacing;
+        this._geometry = new BufferGeometry();
+        this._material = new LineBasicMaterial();
+        color.asThreeJsColor(this._material.color);
+        this._lines = new LineSegments(this._geometry, this._material);
+        this.add(this._lines);
+        this._allocatedSegmentCount = 0;
+        this._position = new Vec2();
+        this._velocity = new Vec2();
+        this._vector = new Vec2();
+    }
+
+    canBindTo(/** @type {{nx: number, ny: number, resolution: number, contains:(position: Vec2) => number}} */ model) {
+        if (model.contains === undefined ||
+            model.nx === undefined ||
+            model.ny === undefined ||
+            model.resolution === undefined)
+            throw new Error('Fluid streamlines view can only bind to discrete models');
+
+        return true;
+    }
+
+    _newGeometry(/** @type {number} */ maxSegmentCount) {
+        this._geometry.dispose();
+        this._geometry = new BufferGeometry();
+        this._geometry.setAttribute(
+            'position',
+            new BufferAttribute(new Float32Array(maxSegmentCount * 2 * 3), 3)
+        );
+        this._lines.geometry = this._geometry;
+        this._allocatedSegmentCount = maxSegmentCount;
+    }
+
+    synchronizeWith(/** @type {{nx: number, ny: number, resolution: number, contains:(position: Vec2) => number}} */ fluid) {
+        // Scene changes can resize the fluid grid without reinitializing this view.
+        // Ensure the position buffer matches the current grid before writing into it.
+        const seedCountX = Math.ceil((fluid.nx - 2) / this._seedSpacing);
+        const seedCountY = Math.ceil((fluid.ny - 2) / this._seedSpacing);
+        const maxSegmentCount = seedCountX * seedCountY * this._numberOfSegments;
+        if (maxSegmentCount !== this._allocatedSegmentCount)
+            this._newGeometry(maxSegmentCount);
+
+        const positions = this._geometry.getAttribute('position').array;
+        let segmentCount = 0;
+
+        const cellSize = 1 / fluid.resolution;
+        for (let i = 1; i < fluid.nx - 1; i += this._seedSpacing)
+            for (let j = 1; j < fluid.ny - 1; j += this._seedSpacing) {
+                this._position.set((i + 0.5) * cellSize, (j + 0.5) * cellSize);
+
+                for (let n = 0; n < this._numberOfSegments; n++) {
+                    if (!fluid.contains(this._position))
+                        break;
+
+                    this._drawLine(fluid, segmentCount++, positions);
+                    this._position.copy(this._vector);
+                }
+            }
+
+        this._geometry.getAttribute('position').needsUpdate = true;
+        this._geometry.setDrawRange(0, segmentCount * 2);
+        this._geometry.computeBoundingSphere();
+    }
+
+    _drawLine(fluid, segmentCount, positions) {
+        fluid.sample(this._position, this._velocity);
+        this._vector.copy(this._position);
+        this._vector.addScaledVector(this._velocity, 0.01);
+
+        const offset = segmentCount * 6;
+        positions[offset    ] = this._position.x; // from.x
+        positions[offset + 1] = this._position.y; // from.y
+        positions[offset + 2] = 0.005;            // from.z
+        positions[offset + 3] = this._vector.x    // to.x
+        positions[offset + 4] = this._vector.y    // to.y
+        positions[offset + 5] = 0.005;            // to.z
+    }
+
+    dispose() {
+        this._geometry.dispose();
+        this._material.dispose();
+    }
+}
+
+export class VelocitiesView extends Renderable2D {
+    constructor({
+        scale = 1.5e-2,
+        color = new Colour(0.2, 0.2, 0.0)
+    } = {}) {
+        super();
+        this._scale = scale;
+        this._geometry = new BufferGeometry();
+        this._material = new LineBasicMaterial();
+        color.asThreeJsColor(this._material.color);
+        this._lines = new LineSegments(this._geometry, this._material);
+        this.add(this._lines);
+        this._allocatedSegmentCount = 0;
+    }
+
+    canBindTo(/** @type {EulerFluid} */ model) {
+        if (model.xVelocityAt === undefined ||
+            model.yVelocityAt === undefined ||
+            model.nx === undefined ||
+            model.ny === undefined ||
+            model.resolution === undefined)
+            throw new Error('Fluid velocities view can only bind to models that behave as a fluid model');
+
+        return true;
+    }
+
+    _newGeometry(/** @type {number} */ maxSegmentCount) {
+        this._geometry.dispose();
+        this._geometry = new BufferGeometry();
+        this._geometry.setAttribute(
+            'position',
+            new BufferAttribute(new Float32Array(maxSegmentCount * 2 * 3), 3)
+        );
+        this._lines.geometry = this._geometry;
+        this._allocatedSegmentCount = maxSegmentCount;
+    }
+
+    synchronizeWith(/** @type {EulerFluid} */ fluid) {
+        const maxSegmentCount = fluid.nx * fluid.ny * 2;
+        if (maxSegmentCount !== this._allocatedSegmentCount)
+            this._newGeometry(maxSegmentCount);
+
+        const positions = this._geometry.getAttribute('position').array;
+        const h = 1 / fluid.resolution;
+        let segmentCount = 0;
+
+        for (let i = 0; i < fluid.nx; i++)
+            for (let j = 0; j < fluid.ny; j++) {
+                const x0 = i * h;
+                const x1 = x0 + fluid.xVelocityAt(j, i) * this._scale;
+                const y = (j + 0.5) * h;
+
+                this._writeSegment(positions, segmentCount++, x0, y, x1, y);
+
+                const x = (i + 0.5) * h;
+                const y0 = j * h;
+                const y1 = y0 + fluid.yVelocityAt(j, i) * this._scale;
+
+                this._writeSegment(positions, segmentCount++, x, y0, x, y1);
+            }
+
+        this._geometry.getAttribute('position').needsUpdate = true;
+        this._geometry.setDrawRange(0, segmentCount * 2);
+        this._geometry.computeBoundingSphere();
+    }
+
+    _writeSegment(positions, segmentIndex, x0, y0, x1, y1) {
+        const offset = segmentIndex * 6;
+        positions[offset    ] = x0;    // from.x
+        positions[offset + 1] = y0;    // from.y
+        positions[offset + 2] = 0.004; // from.z
+        positions[offset + 3] = x1;    // to.x
+        positions[offset + 4] = y1;    // to.y
+        positions[offset + 5] = 0.004; // to.z
+    }
+
+    dispose() {
+        this._geometry.dispose();
+        this._material.dispose();
+    }
+}
 
 export class ArrowField2D extends Renderable2D {
     /**
@@ -229,7 +404,7 @@ export class ArrowField2D extends Renderable2D {
     }
 }
 
-class OneDimensionalWaveFunctionPlot extends Renderable2D {
+export class OneDimensionalWaveFunctionPlot extends Renderable2D {
     static Mode = Object.freeze({
         DENSITY_PHASE: "densityPhase",
         REAL_IMAG: "realImag"
@@ -491,6 +666,14 @@ export class OneDimensionalWaveFunctionView extends Renderable {
         this.add(this._arrows, this._plot);
         this._mode = mode;
         this._updateVisibility();
+    }
+
+    ui() {
+        return new RadioGroup()
+            .add('Arrows', () => this.mode = OneDimensionalWaveFunctionView.Mode.ARROWS)
+            .add('Real/imag', () => this.mode = OneDimensionalWaveFunctionView.Mode.REAL_IMAG)
+            .add('Density/phase', () => this.mode = OneDimensionalWaveFunctionView.Mode.DENSITY_PHASE)
+            .checked(this.mode === OneDimensionalWaveFunctionView.Mode.ARROWS ? 0 : this.mode === OneDimensionalWaveFunctionView.Mode.REAL_IMAG ? 1 : 2);
     }
 
     /** @param {WaveFunction} waveFunction */
