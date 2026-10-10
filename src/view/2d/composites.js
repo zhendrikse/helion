@@ -16,12 +16,22 @@ import { RadioGroup } from "../../core/controls.js";
 const UP = new Vector3(0, 1, 0);
 
 export class StreamlinesView extends Renderable2D {
+    /**
+     * @typedef {object} StreamlinesViewOptions
+     * @property {Colour} [color]
+     * @property {number} [scale]
+     * @property {number} [seedSpacing]
+     * @property {number} [numberOfSegments]
+     */
+    /** @param {StreamlinesViewOptions} [options] */
     constructor({
         numberOfSegments = 15,
         seedSpacing = 5,
+        scale = 1e-2,
         color = new Colour(0, .25, .25)
     } = {}) {
         super();
+        this._scale = scale;
         this._numberOfSegments = numberOfSegments;
         this._seedSpacing = seedSpacing;
         this._geometry = new BufferGeometry();
@@ -90,7 +100,7 @@ export class StreamlinesView extends Renderable2D {
     _drawLine(fluid, segmentCount, positions) {
         fluid.sample(this._position, this._velocity);
         this._vector.copy(this._position);
-        this._vector.addScaledVector(this._velocity, 0.01);
+        this._vector.addScaledVector(this._velocity, this._scale);
 
         const offset = segmentCount * 6;
         positions[offset    ] = this._position.x; // from.x
