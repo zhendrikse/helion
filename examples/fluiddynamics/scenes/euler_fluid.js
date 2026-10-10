@@ -5,8 +5,7 @@ import {
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
 import {
-    Color, DataTexture, DoubleSide, LinearSRGBColorSpace,
-    Mesh, MeshBasicMaterial, PlaneGeometry, RGBAFormat, SRGBColorSpace
+    Color, DataTexture, DoubleSide, LinearSRGBColorSpace, Mesh, MeshBasicMaterial, PlaneGeometry, RGBAFormat
 } from 'three';
 
 const helionDiv = document.getElementById('eulerFluidContainer');
@@ -369,6 +368,7 @@ class EulerFluid extends VectorField {
     }
 }
 
+
 /**
  * Renders the pressure/smoke field as a Three.js data texture.
  *
@@ -376,11 +376,14 @@ class EulerFluid extends VectorField {
  * the Three.js scene. Its rows follow the fluid grid's y-axis (j = 0 at the
  * bottom), while the simulation itself remains independent of the renderer.
  */
-class FluidDynamicsView extends Renderable2D {
-    constructor() {
+class SmokePressureView extends Renderable2D {
+    constructor({
+                    showPressure = true,
+                    showSmoke = true,
+                } = {}) {
         super();
-        this._showPressure = true;
-        this._showSmoke = true;
+        this._showPressure = showPressure;
+        this._showSmoke = showSmoke;
         this._width = 0;
         this._height = 0;
         this._pixels = new Uint8Array();
@@ -410,15 +413,23 @@ class FluidDynamicsView extends Renderable2D {
     }
     set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
 
-    canBindTo(/** @type {EulerFluid} */ _model) { return true; }
+    canBindTo(/** @type {{nx:number, ny:number, resolution:number, pressureRange:Interval}} */ model) {
+        if (model.pressureRange === undefined ||
+            model.nx === undefined ||
+            model.ny === undefined ||
+            model.resolution === undefined)
+            throw new Error('Fluid velocities view can only bind to models that behave as a fluid model');
 
-    initialize(/** @type {EulerFluid} */ fluid) {
+        return true;
+    }
+
+    initialize(/** @type {{nx:number, ny:number, resolution:number, pressureRange:Interval}} */ fluid) {
         this.dispose();
         this._width = fluid.nx;
         this._height = fluid.ny;
         this._pixels = new Uint8Array(this._width * this._height * 4);
         this._texture = new DataTexture(this._pixels, this._width, this._height, RGBAFormat);
-        this._texture.colorSpace = SRGBColorSpace;
+        this._texture.colorSpace = LinearSRGBColorSpace;
         this._texture.needsUpdate = true;
 
         const domainWidth = fluid.nx / fluid.resolution;
@@ -477,7 +488,7 @@ class FluidDynamicsView extends Renderable2D {
         this._pixels[offset + 3] = Math.round(alpha);
     }
 
-    synchronizeWith(/** @type {EulerFluid} */ fluid) {
+    synchronizeWith(/** @type {{nx:number, ny:number, resolution:number, pressureRange: Interval}} */ fluid) {
         if (!this._texture || this._width !== fluid.nx || this._height !== fluid.ny)
             this.initialize(fluid);
 
@@ -488,7 +499,7 @@ class FluidDynamicsView extends Renderable2D {
 
         this._texture.needsUpdate = true;
         this._pressureLabel.textContent = this._showPressure
-            ? 'pressure: ' + pressureRange.min.toFixed(0) + ' - ' + pressureRange.max.toFixed(0) + ' N/m'
+            ? 'pressure: ' + pressureRange.min.toFixed(0) + ' - ' + pressureRange.max.toFixed(0) + ' Pa'
             : '';
     }
 
@@ -549,10 +560,9 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
     const minJ = Math.floor(0.5 * fluid.ny - 0.5 * pipeH);
     const maxJ = Math.floor(0.5 * fluid.ny + 0.5 * pipeH);
     for (let j = minJ; j < maxJ; j++)
-        fluid._smokeField.data[j] = 0.0;
+        fluid._smokeField.setValueAt(j, 0, 0.0);
 
     fluid.setObstacle(0.4, 0.5, true);
-
     gravity = 0.0;
     solver.overRelaxation = 1.9;
     fluidDynamicsView.showPressure = true;
@@ -567,7 +577,6 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
 function paintScene() {
     gravity = 0.0;
     solver.overRelaxation = 1.0;
-
     fluidDynamicsView.showPressure = false;
     obstacleView.fillColor = new Colour(0x131313);
     fluidDynamicsView.showSmoke = true;
@@ -592,14 +601,12 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     else if (sceneNr === SCENE_TYPE.HIRES_TUNNEL)
         resolution = 200;
 
-    /** !! CRITICAL INIT STATEMENTS */
-    // Todo enforce in an init routine?
     dt = 1.0 / 60.0;
     obstacle.radius = 0.15;
     fluid.init({ resolution });
     solver.init(fluid);
+    solver.numIterations = 40;
     obstacleView.radiusOffset = 1 / resolution;
-    /**                             */
 
     if (sceneNr === SCENE_TYPE.TANK)
         tankScene(fluid);
@@ -610,7 +617,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
 }
 
 const streamlinesView = new StreamlinesView();
-const fluidDynamicsView = new FluidDynamicsView();
+const fluidDynamicsView = new SmokePressureView();
 const velocitiesView = new VelocitiesView();
 const obstacleView = new Circle({
     radiusOffset: 1 / fluid.resolution
@@ -662,7 +669,7 @@ function simulate() {
 Simulation
     .with({
         htmlDivId: 'eulerFluidContainer',
-        viewport: { aspectRatio: `${fluid.nx} / ${fluid.ny}`, parameterMenuCollapsed: false },
+        viewport: { parameterMenuCollapsed: false },
         camera: {
             orthographic: true,
             controls: false
