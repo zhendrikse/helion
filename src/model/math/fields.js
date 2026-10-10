@@ -78,11 +78,58 @@ export class VectorField extends MathPhysicsModelBehavior {
     /**
      * @param {Vec2 | Vec3} positionVector 
      * @param {Vec2 | Vec3} target
-     * @return { Vec2 | Vec3 | void }
+     * @return { Vec2 | Vec3 }
      */
     sample(positionVector, target) {
         target.set(0, 0, 0);
         return target;
+    }
+}
+
+export class DiscreteVectorField extends VectorField {
+    /**
+     * @param {{
+     *  nx?: number,
+     *  ny?: number
+     * }} [options]
+     */
+    constructor({
+        nx = 100,
+        ny = 100
+    } = {}) {
+        super();
+        this._nx = nx;
+        this._ny = ny;
+        this._vectorComponentX = new DiscreteScalarField({nx, ny});
+        this._vectorComponentY = new DiscreteScalarField({nx, ny});
+        this._vectorComponentZ = new DiscreteScalarField({nx, ny});
+    }
+
+    get nx() { return this._nx; }
+    get ny() { return this._ny; }
+
+    valueAt(/** @type {number} */ i, /** @type {number} */ j, /** @type {Vec2 | Vec3} */ target) {
+        target.set(
+            this._vectorComponentX.valueAt(i, j),
+            this._vectorComponentY.valueAt(i, j),
+            this._vectorComponentZ.valueAt(i, j)
+        );
+        return target;
+    }
+
+    /**
+     * @param {number} x
+     * @param {number} y
+     */
+    index(x, y) {
+        return y * this._nx + x;
+    }
+
+    reset() {
+        this._vectorComponentX.reset();
+        this._vectorComponentY.reset();
+        this._vectorComponentZ.reset();
+        return this;
     }
 }
 
@@ -257,28 +304,15 @@ export class DiscreteScalarField extends ScalarField {
     get ny() { return this._ny; }
     get data() { return this._data; }
 
-    /** 
-     * @param {number} x  
-     * @param {number} y 
-     */
-    index(x, y) {
+    index(/** @type {number} */ x, /** @type {number} */ y) {
         return y * this._nx + x;
     }
 
-    /** 
-     * @param {number} x  
-     * @param {number} y 
-     */
-    valueAt(x, y) {
+    valueAt(/** @type {number} */ x, /** @type {number} */ y) {
         return this._data[this.index(x, y)];
     }
 
-    /** 
-     * @param {number} x  
-     * @param {number} y  
-     * @param {number} value 
-     */
-    setValueAt(x, y, value) {
+    setValueAt(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ value) {
         this._data[this.index(x, y)] = value;
     }
 

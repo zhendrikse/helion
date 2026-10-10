@@ -1,5 +1,5 @@
 import {
-    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, VectorField, Circle,
+    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, DiscreteVectorField, Circle,
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour,
     Vec2, StreamlinesView, VelocitiesView, Slider, Range
 } from '../../../src/index.js';
@@ -32,6 +32,9 @@ class FluidSolver extends Solver {
         this._newVelocityX = new DiscreteScalarField({ nx: 0, ny: 0 });
         this._newVelocityY = new DiscreteScalarField({ nx: 0, ny: 0 });
         this._newSmokeField = new DiscreteScalarField({ nx: 0, ny: 0 });
+        this._vector1 = new Vec2();
+        this._vector2 = new Vec2();
+        this._vector3 = new Vec2();
     }
 
     /**
@@ -68,9 +71,12 @@ class FluidSolver extends Solver {
         if (fluid.obstacleMaskAt(j, i) === SOLID)
             return;
 
-        const delta = 1 / fluid.resolution;
-        const u = (fluid.xVelocityAt(j, i) + fluid.xVelocityAt(j, i + 1)) * 0.5;
-        const v = (fluid.yVelocityAt(j, i) + fluid.yVelocityAt(j + 1, i)) * 0.5;
+        const delta = fluid.cellSize;
+        fluid.valueAt(j, i, this._vector1);
+        fluid.valueAt(j, i + 1, this._vector2);
+        fluid.valueAt(j + 1, i, this._vector3);
+        const u = (this._vector1.x + this._vector2.x) * 0.5;
+        const v = (this._vector1.y + this._vector3.y) * 0.5;
         const x = (i + .5) * delta - dt * u;
         const y = (j + .5) * delta - dt * v;
 
@@ -91,11 +97,11 @@ class FluidSolver extends Solver {
         fluid.solveIncompressibility(this.numIterations, this.overRelaxation, dt);
         fluid.extrapolate();
 
-        this._newVelocityX.data.set(fluid._velocityX.data);
-        this._newVelocityY.data.set(fluid._velocityY.data);
+        this._newVelocityX.data.set(fluid._vectorComponentX.data);
+        this._newVelocityY.data.set(fluid._vectorComponentY.data);
         this._advectVelocity(fluid, dt);
-        fluid._velocityX.data.set(this._newVelocityX.data);
-        fluid._velocityY.data.set(this._newVelocityY.data);
+        fluid._vectorComponentX.data.set(this._newVelocityX.data);
+        fluid._vectorComponentY.data.set(this._newVelocityY.data);
 
         this._advectSmoke(fluid, dt);
     }
@@ -107,7 +113,7 @@ class FluidSolver extends Solver {
     }
 }
 
-class EulerFluid extends VectorField {
+class EulerFluid extends DiscreteVectorField {
     /**
      * @param {{
      *     density?: number,
@@ -120,12 +126,7 @@ class EulerFluid extends VectorField {
     } = {}) {
         super();
         this.density = 0;
-        this.nx = 0;
-        this.ny = 0;
         this._cellSize = 0;
-        this.resolution = 0;
-        this._velocityX = new DiscreteScalarField({ nx: 0, ny: 0 });
-        this._velocityY = new DiscreteScalarField({ nx: 0, ny: 0 });
         this._pressureField = new DiscreteScalarField({ nx: 0, ny: 0 });
         this._obstacleMask = new DiscreteScalarField({ nx: 0, ny: 0 });
         this._smokeField = new DiscreteScalarField({ nx: 0, ny: 0 });
@@ -143,13 +144,16 @@ class EulerFluid extends VectorField {
         resolution = 100
     } = {}) {
         this.density = density;
-        this.nx = resolution + 2;
-        this.ny = resolution + 2;
-        this.resolution = resolution;
+        this._nx = resolution + 2;
+        this._ny = resolution + 2;
         this._cellSize = 1 / resolution;
 
-        this._velocityX = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
-        this._velocityY = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
+        this._vectorComponentX = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
+        this._vectorComponentY = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
+        // Unused z-component of velocity vector, but needs to be initialized too,
+        // otherwise valueAt() won't work properly anymore, as the indices run out of bounds!
+        this._vectorComponentZ = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
+
         this._pressureField = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
         this._obstacleMask = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
         this._smokeField = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
@@ -163,7 +167,7 @@ class EulerFluid extends VectorField {
         for (let i = 1; i < this.nx; i++)
             for (let j = 1; j < this.ny - 1; j++)
                 if (this._obstacleMask.valueAt(j, i) !== SOLID && this._obstacleMask.valueAt(j - 1, i) !== SOLID)
-                    this._velocityY.setValueAt(j, i, this._velocityY.valueAt(j, i) + gravity * dt);
+                    this._vectorComponentY.setValueAt(j, i, this._vectorComponentY.valueAt(j, i) + gravity * dt);
     }
 
     /**
@@ -185,19 +189,19 @@ class EulerFluid extends VectorField {
             return;
 
         const div =
-            this._velocityX.valueAt(j, i + 1) -
-            this._velocityX.valueAt(j, i) +
-            this._velocityY.valueAt(j + 1, i) -
-            this._velocityY.valueAt(j, i);
+            this._vectorComponentX.valueAt(j, i + 1) -
+            this._vectorComponentX.valueAt(j, i) +
+            this._vectorComponentY.valueAt(j + 1, i) -
+            this._vectorComponentY.valueAt(j, i);
 
         let p = -div / s;
         p *= overRelaxation;
         this._pressureField.setValueAt(j, i, this._pressureField.valueAt(j, i) + cp * p);
 
-        this._velocityX.setValueAt(j, i, this._velocityX.valueAt(j, i) - sx0 * p);
-        this._velocityX.setValueAt(j, i + 1, this._velocityX.valueAt(j, i + 1) + sx1 * p);
-        this._velocityY.setValueAt(j, i, this._velocityY.valueAt(j, i) - sy0 * p);
-        this._velocityY.setValueAt(j + 1, i, this._velocityY.valueAt(j + 1, i) + sy1 * p);
+        this._vectorComponentX.setValueAt(j, i, this._vectorComponentX.valueAt(j, i) - sx0 * p);
+        this._vectorComponentX.setValueAt(j, i + 1, this._vectorComponentX.valueAt(j, i + 1) + sx1 * p);
+        this._vectorComponentY.setValueAt(j, i, this._vectorComponentY.valueAt(j, i) - sy0 * p);
+        this._vectorComponentY.setValueAt(j + 1, i, this._vectorComponentY.valueAt(j + 1, i) + sy1 * p);
     }
 
     /**
@@ -215,18 +219,19 @@ class EulerFluid extends VectorField {
 
     extrapolate() {
         for (let i = 0; i < this.nx; i++) {
-            this._velocityX.setValueAt(0, i, this._velocityX.valueAt(1, i));
-            this._velocityX.setValueAt(this.ny - 1, i, this._velocityX.valueAt(this.ny - 2, i));
+            this._vectorComponentX.setValueAt(0, i, this._vectorComponentX.valueAt(1, i));
+            this._vectorComponentX.setValueAt(this.ny - 1, i, this._vectorComponentX.valueAt(this.ny - 2, i));
         }
         for (let j = 0; j < this.ny; j++) {
-            this._velocityY.setValueAt(j, 0, this._velocityY.valueAt(j, 1));
-            this._velocityY.setValueAt(j, this.nx - 1, this._velocityY.valueAt(j, this.nx - 2));
+            this._vectorComponentY.setValueAt(j, 0, this._vectorComponentY.valueAt(j, 1));
+            this._vectorComponentY.setValueAt(j, this.nx - 1, this._vectorComponentY.valueAt(j, this.nx - 2));
         }
     }
 
     get pressureRange() { return this._pressureField.rangeAt(); }
+    get cellSize() { return this._cellSize; }
 
-    sample(/** @type {Vec2} */ positionVector, /** @type {Vec2} */ velocity) {
+    sample(positionVector, velocity) {
         velocity.set(
             this._sampleField(positionVector.x, positionVector.y, U_FIELD),
             this._sampleField(positionVector.x, positionVector.y, V_FIELD)
@@ -242,12 +247,6 @@ class EulerFluid extends VectorField {
     pressureAt(/** @type {number} */ i, /** @type {number} */ j) { return this._pressureField.valueAt(i, j); }
     smokeAt(/** @type {number} */ i, /** @type {number} */ j) { return this._smokeField.valueAt(i, j); }
     obstacleMaskAt(/** @type {number} */ i, /** @type {number} */ j) { return this._obstacleMask.valueAt(i, j); }
-    xVelocityAt(/** @type {number} */ i, /** @type {number} */ j) { return this._velocityX.valueAt(i, j); }
-    yVelocityAt(/** @type {number} */ i, /** @type {number} */ j) { return this._velocityY.valueAt(i, j); }
-    velocityAt(/** @type {number} */ i, /** @type {number} */ j, /** @type {Vec2} */ target) {
-        target.set(this._velocityX.valueAt(i, j), this._velocityY.valueAt(i, j));
-        return target;
-    }
 
     _sampleField(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ fieldType) {
         const h = this._cellSize;
@@ -259,11 +258,11 @@ class EulerFluid extends VectorField {
         let field;
         switch (fieldType) {
             case U_FIELD:
-                field = this._velocityX;
+                field = this._vectorComponentX;
                 dy = h2;
                 break;
             case V_FIELD:
-                field = this._velocityY;
+                field = this._vectorComponentY;
                 dx = h2;
                 break;
             case S_FIELD:
@@ -294,26 +293,26 @@ class EulerFluid extends VectorField {
 
     _averageVelocityX(/** @type {number} */ i, /** @type {number} */ j) {
         return (
-            this._velocityX.valueAt(j - 1, i) +
-            this._velocityX.valueAt(j, i) +
-            this._velocityX.valueAt(j - 1, i + 1) +
-            this._velocityX.valueAt(j, i + 1)
+            this._vectorComponentX.valueAt(j - 1, i) +
+            this._vectorComponentX.valueAt(j, i) +
+            this._vectorComponentX.valueAt(j - 1, i + 1) +
+            this._vectorComponentX.valueAt(j, i + 1)
         ) * 0.25;
     }
 
     _averageVelocityY(/** @type {number} */ i, /** @type {number} */ j) {
         return (
-            this._velocityY.valueAt(j, i - 1) +
-            this._velocityY.valueAt(j, i) +
-            this._velocityY.valueAt(j + 1, i - 1) +
-            this._velocityY.valueAt(j + 1, i)
+            this._vectorComponentY.valueAt(j, i - 1) +
+            this._vectorComponentY.valueAt(j, i) +
+            this._vectorComponentY.valueAt(j + 1, i - 1) +
+            this._vectorComponentY.valueAt(j + 1, i)
         ) * 0.25;
     }
 
     calculateVelocityX(/** @type {number} */ i, /** @type {number} */ j, /** @type {number} */ dt) {
         let x = i * this._cellSize;
         let y = (j + .5) * this._cellSize;
-        x -= dt * this._velocityX.valueAt(j, i);
+        x -= dt * this._vectorComponentX.valueAt(j, i);
         y -= dt * this._averageVelocityY(i, j);
         return this._sampleField(x, y, U_FIELD);
     }
@@ -322,7 +321,7 @@ class EulerFluid extends VectorField {
         let x = (i + .5) * this._cellSize;
         let y = j * this._cellSize;
         x -= dt * this._averageVelocityX(i, j);
-        y -= dt * this._velocityY.valueAt(j, i);
+        y -= dt * this._vectorComponentY.valueAt(j, i);
         return this._sampleField(x, y, V_FIELD);
     }
 
@@ -353,10 +352,10 @@ class EulerFluid extends VectorField {
                 else
                     this._smokeField.setValueAt(j, i, 1.0);
 
-                this._velocityX.setValueAt(j, i, vx);
-                this._velocityX.setValueAt(j, i + 1, vx);
-                this._velocityY.setValueAt(j, i, vy);
-                this._velocityY.setValueAt(j + 1, i, vy);
+                this._vectorComponentX.setValueAt(j, i, vx);
+                this._vectorComponentX.setValueAt(j, i + 1, vx);
+                this._vectorComponentY.setValueAt(j, i, vy);
+                this._vectorComponentY.setValueAt(j + 1, i, vy);
             }
     }
 
@@ -410,17 +409,16 @@ class SmokePressureView extends Renderable2D {
     }
     set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
 
-    canBindTo(/** @type {{nx:number, ny:number, resolution:number, pressureRange:Interval}} */ model) {
+    canBindTo(/** @type {{nx:number, ny:number, pressureRange:Interval}} */ model) {
         if (model.pressureRange === undefined ||
             model.nx === undefined ||
-            model.ny === undefined ||
-            model.resolution === undefined)
+            model.ny === undefined)
             throw new Error('Fluid velocities view can only bind to models that behave as a fluid model');
 
         return true;
     }
 
-    initialize(/** @type {{nx:number, ny:number, resolution:number, pressureRange:Interval}} */ fluid) {
+    initialize(/** @type {{nx:number, ny:number, pressureRange:Interval}} */ fluid) {
         this.dispose();
         this._width = fluid.nx;
         this._height = fluid.ny;
@@ -429,10 +427,8 @@ class SmokePressureView extends Renderable2D {
         this._texture.colorSpace = LinearSRGBColorSpace;
         this._texture.needsUpdate = true;
 
-        const domainWidth = fluid.nx / fluid.resolution;
-        const domainHeight = fluid.ny / fluid.resolution;
         this._mesh = new Mesh(
-            new PlaneGeometry(domainWidth, domainHeight),
+            new PlaneGeometry(1, 1),
             new MeshBasicMaterial({
                 map: this._texture,
                 transparent: true,
@@ -444,7 +440,7 @@ class SmokePressureView extends Renderable2D {
         // All fluid views use model coordinates with their origin at the
         // lower-left. Center the plane in local coordinates, then apply the
         // same translation as the obstacle, velocity vectors, and streamlines.
-        this._mesh.position.set(domainWidth / 2, domainHeight / 2, 0);
+        this._mesh.position.set(.5, .5, 0);
         this.add(this._mesh);
     }
 
@@ -485,7 +481,7 @@ class SmokePressureView extends Renderable2D {
         this._pixels[offset + 3] = Math.round(alpha);
     }
 
-    synchronizeWith(/** @type {{nx:number, ny:number, resolution:number, pressureRange: Interval}} */ fluid) {
+    synchronizeWith(/** @type {{nx:number, ny:number, pressureRange: Interval}} */ fluid) {
         if (!this._texture || this._width !== fluid.nx || this._height !== fluid.ny)
             this.initialize(fluid);
 
@@ -543,7 +539,7 @@ function tankScene(/** @type {EulerFluid} */ fluid) {
 function setFluidVelocity(/** @type {number} */ speed) {
     fluidSpeed = speed;
     for (let j = 0; j < fluid.ny; j++)
-        fluid._velocityX.setValueAt(j, 1, speed);
+        fluid._vectorComponentX.setValueAt(j, 1, speed);
 }
 
 function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number} */ fluidSpeed, /** @type {number} */ sceneNumber) {
@@ -603,7 +599,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     fluid.init({ resolution });
     solver.init(fluid);
     solver.numIterations = 40;
-    obstacleView.radiusOffset = 1 / resolution;
+    obstacleView.radiusOffset = fluid.cellSize;
 
     if (sceneNr === SCENE_TYPE.TANK)
         tankScene(fluid);
@@ -617,7 +613,7 @@ const streamlinesView = new StreamlinesView();
 const fluidDynamicsView = new SmokePressureView();
 const velocitiesView = new VelocitiesView();
 const obstacleView = new Circle({
-    radiusOffset: 1 / fluid.resolution
+    radiusOffset: fluid.cellSize,
 });
 
 function startDrag(/** @type {number} */ x, /** @type {number} */ y, canvas) {

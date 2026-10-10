@@ -35,7 +35,7 @@ export {
 
 export {
     Domain, DiscreteScalarField, DiscreteScalarField3D, DiscreteComplexField, DiscreteComplexField3D,
-    VectorField, ComplexFunction, MultivariateFunction, ComplexFunctionSample, RealFunction
+    VectorField, ComplexFunction, MultivariateFunction, ComplexFunctionSample, RealFunction, DiscreteVectorField
 } from './model/math/fields.js';
 
 export { ElectricField, PlaneWave1D } from './model/phys/fields.js';
