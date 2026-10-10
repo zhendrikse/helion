@@ -1,7 +1,6 @@
 import {
-    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, DiscreteVectorField, Circle,
-    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour,
-    Vec2, StreamlinesView, VelocitiesView, Slider, Range
+    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
+    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
 import {
@@ -204,12 +203,7 @@ class EulerFluid extends DiscreteVectorField {
         this._vectorComponentY.setValueAt(j + 1, i, this._vectorComponentY.valueAt(j + 1, i) + sy1 * p);
     }
 
-    /**
-     * @param {number} numIters
-     * @param {number} overRelaxation
-     * @param {number} dt
-     */
-    solveIncompressibility(numIters, overRelaxation, dt) {
+    solveIncompressibility(/** @type {number} */ numIters, /** @type {number} */ overRelaxation, /** @type {number} */ dt) {
         const cp = this.density * this._cellSize / dt;
         for (let iter = 0; iter < numIters; iter++)
             for (let i = 1; i < this.nx - 1; i++)
@@ -364,7 +358,6 @@ class EulerFluid extends DiscreteVectorField {
     }
 }
 
-
 /**
  * Renders the pressure/smoke field as a Three.js data texture.
  *
@@ -374,9 +367,9 @@ class EulerFluid extends DiscreteVectorField {
  */
 class SmokePressureView extends Renderable2D {
     constructor({
-                    showPressure = true,
-                    showSmoke = true,
-                } = {}) {
+        showPressure = true,
+        showSmoke = true,
+    } = {}) {
         super();
         this._showPressure = showPressure;
         this._showSmoke = showSmoke;
@@ -385,28 +378,13 @@ class SmokePressureView extends Renderable2D {
         this._pixels = new Uint8Array();
         this._texture = null;
         this._mesh = null;
-        this._pressureLabel = document.createElement('div');
-        Object.assign(this._pressureLabel.style, {
-            position: 'absolute',
-            top: '10px',
-            left: '10px',
-            color: '#A0A0A0',
-            font: '16px Arial',
-            zIndex: '2',
-            pointerEvents: 'none'
-        });
+
         this._color = new Color();
         this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, { colorSpace: LinearSRGBColorSpace });
     }
 
-    get pressureLabelElement() { return this._pressureLabel; }
-
     set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
-    set showPressure(/** @type {boolean} */ showPressure) {
-        this._showPressure = showPressure;
-        if (!showPressure)
-            this._pressureLabel.textContent = '';
-    }
+    set showPressure(/** @type {boolean} */ showPressure) { this._showPressure = showPressure; }
     set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
 
     canBindTo(/** @type {{nx:number, ny:number, pressureRange:Interval}} */ model) {
@@ -471,9 +449,8 @@ class SmokePressureView extends Renderable2D {
         } else if (fluid.obstacleMaskAt(j, i) === SOLID) {
             this._color.setRGB(0, 0, 0);
             alpha = 255;
-        } else {
+        } else
             this._color.setRGB(0, 0, 0);
-        }
 
         this._pixels[offset] = Math.round(255 * this._color.r);
         this._pixels[offset + 1] = Math.round(255 * this._color.g);
@@ -491,9 +468,6 @@ class SmokePressureView extends Renderable2D {
                 this._updatePixelAt(i, j, fluid, pressureRange);
 
         this._texture.needsUpdate = true;
-        this._pressureLabel.textContent = this._showPressure
-            ? 'pressure: ' + pressureRange.min.toFixed(0) + ' - ' + pressureRange.max.toFixed(0) + ' Pa'
-            : '';
     }
 
     dispose() {
@@ -517,6 +491,7 @@ let paused = false;
 /** @type {number} */
 let sceneType = SCENE_TYPE.WIND_TUNNEL;
 let frameNr = 0;
+let showPressure = true;
 let mouseDown = false;
 let gravity = -9.81;
 let fluidSpeed = 2.0;
@@ -612,26 +587,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
 const streamlinesView = new StreamlinesView();
 const fluidDynamicsView = new SmokePressureView();
 const velocitiesView = new VelocitiesView();
-const obstacleView = new Circle({
-    radiusOffset: fluid.cellSize,
-});
-
-function startDrag(/** @type {number} */ x, /** @type {number} */ y, canvas) {
-    const bounds = canvas.getBoundingClientRect();
-    mouseDown = true;
-    x = (x - bounds.left) / bounds.width;
-    y = (bounds.bottom - y) / bounds.height;
-    fluid.setObstacle(x, y, true);
-}
-
-function drag(/** @type {number} */ x, /** @type {number} */ y, canvas) {
-    if (!mouseDown)
-        return;
-    const bounds = canvas.getBoundingClientRect();
-    x = (x - bounds.left) / bounds.width;
-    y = (bounds.bottom - y) / bounds.height;
-    fluid.setObstacle(x, y, false);
-}
+const obstacleView = new Circle({ radiusOffset: fluid.cellSize });
 
 document.addEventListener('keydown', event => {
     switch (event.key) {
@@ -657,16 +613,17 @@ function simulate() {
     frameNr++;
     fluid.integrate(gravity, dt);
     fluid.evolve(solver, dt);
+
+    if (frameNr % 10 === 0)
+        simulation.setBottomText( showPressure ?
+            `Pressure: [${fluid.pressureRange.min.toFixed(0)}, ${fluid.pressureRange.max.toFixed(0)}] Pa` : '');
 }
 
-Simulation
+const simulation = Simulation
     .with({
         htmlDivId: 'eulerFluidContainer',
         viewport: { parameterMenuCollapsed: false },
-        camera: {
-            orthographic: true,
-            controls: false
-        },
+        camera: { orthographic: true, controls: false },
         headUpDisplay: { enabled: false },
         lighting: { enabled: false },
         infoPanel: {
@@ -674,7 +631,8 @@ Simulation
                 '<strong>🍃 Euler fluid</strong><br/>&nbsp;<br/>' +
                 '©️ Original idea and software: ' +
                 '<a href=\"https://www.matthiasMueller.info/tenMinutePhysics\">Matthias Müller</a></br>' +
-                '👉 Use mouse to move obstacle!'
+                '👉 Use mouse to move obstacle.<br>' +
+                '👉 Use \"p\" and \"m\" keys to pause and/or step'
         }
     })
     .runsEvery(3e-2)
@@ -684,6 +642,35 @@ Simulation
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
     .frameSceneOn(fluidDynamicsView, { padding: 1.0 })
+    /* Mouse event handling */
+    .onMouse('mouseup', () => mouseDown = false)
+    .onMouse('mouseleave', () => mouseDown = false)
+    .onMouse('mousedown', (x, y, _event) => {
+        mouseDown = true;
+        fluid.setObstacle(x, y, true);
+    })
+    .onMouse('mousemove', (x, y, _event) => {
+        if (!mouseDown)
+            return;
+
+        fluid.setObstacle(x, y, false);
+    })
+    /* Mobile devices event handling */
+    .onMouse('touchstart', (x, y, event) => {
+        if (!event.touches.length)
+            return;
+
+        mouseDown = true;
+        fluid.setObstacle(x, y, false);
+    }, { passive: true })
+    .onMouse('touchmove', event => {
+        if (!event.touches.length || !mouseDown)
+            return;
+
+        fluid.setObstacle(x, y, false);
+    }, { passive: false })
+    .onMouse('touchcancel', () => mouseDown = false)
+    .onMouse('touchend', () => mouseDown = false)
     .append(new RadioGroup()
         .add('Tank', () => setupScene(SCENE_TYPE.TANK))
         .add('Wind Tunnel', () => setupScene(SCENE_TYPE.WIND_TUNNEL))
@@ -697,17 +684,14 @@ Simulation
             .onChange(event => streamlinesView.visible = event.target.checked)
         ))
     .append(new Checkbox('🗜️ Pressure')
-        .checked(true)
+        .checked(showPressure)
         .onChange(event => {
-            fluidDynamicsView.showPressure = event.target.checked;
-            obstacleView.fillColor = event.target.checked ? new Colour(0x131313) : new Colour(0xDDDDDD);
-        }).togetherWith(new Checkbox('Smoke')
+            showPressure = event.target.checked;
+            fluidDynamicsView.showPressure = showPressure;
+            obstacleView.fillColor = showPressure ? new Colour(0x131313) : new Colour(0xDDDDDD);
+        }).togetherWith(new Checkbox('🚬 Smoke')
             .checked(true)
-            .onChange(event => fluidDynamicsView.showSmoke = event.target.checked)
-            .togetherWith(new Checkbox('Over-relaxation')
-                .checked(true)
-                .onChange(event => solver.overRelaxation = solver.overRelaxation === 1.0 ? 1.9 : 1.0)
-            )))
+            .onChange(event => fluidDynamicsView.showSmoke = event.target.checked)))
     .append(new DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.RdYlBu)
@@ -718,31 +702,9 @@ Simulation
         .withRange(new Range(.5, 3, .01))
         .withValue(fluidSpeed)
         .onInput(event => setFluidVelocity(Number(event.target.value))))
+    .append(new Slider('🧘🏻‍♀️ Over-relaxation')
+        .on(solver)
+        .withProperty("overRelaxation")
+        .withRange(new Range(1.0, 1.95, 0.01))
+        .withValue(solver.overRelaxation))
     .start();
-
-// Use Helion's own Three.js canvas for obstacle interaction; no separate
-// Canvas 2D overlay is needed now that the pressure/smoke field is a texture.
-const helionDiv = document.getElementById('eulerFluidContainer');
-const canvasWrapper = helionDiv.querySelector('.helionCanvasWrapper');
-if (canvasWrapper)
-    canvasWrapper.appendChild(fluidDynamicsView.pressureLabelElement);
-
-const canvas = helionDiv.querySelector('.helionCanvas');
-if (canvas) {
-    canvas.addEventListener('mousedown', event => startDrag(event.clientX, event.clientY, canvas));
-    canvas.addEventListener('mouseup', () => mouseDown = false);
-    canvas.addEventListener('mouseleave', () => mouseDown = false);
-    canvas.addEventListener('mousemove', event => drag(event.clientX, event.clientY, canvas));
-    canvas.addEventListener('touchstart', event => {
-        if (event.touches.length)
-            startDrag(event.touches[0].clientX, event.touches[0].clientY, canvas);
-    }, { passive: true });
-    canvas.addEventListener('touchend', () => mouseDown = false);
-    canvas.addEventListener('touchcancel', () => mouseDown = false);
-    canvas.addEventListener('touchmove', event => {
-        if (!event.touches.length)
-            return;
-        event.preventDefault();
-        drag(event.touches[0].clientX, event.touches[0].clientY, canvas);
-    }, { passive: false });
-}

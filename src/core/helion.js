@@ -193,7 +193,7 @@ export class Simulation {
     get width() { return this._viewport.width; }
     get height() { return this._viewport.height; }
     /** @param {Vec3} position */
-    set cameraPosition(position)   { this._renderer.cameraPosition = position;   }
+    set cameraPosition(position)     { this._renderer.cameraPosition = position;   }
     /** @param {boolean} autoRotate */
     set autoRotate(autoRotate)     { this._renderer.autoRotate = autoRotate;     }
     /** @param {boolean} visible */
@@ -201,8 +201,7 @@ export class Simulation {
     /** @param {boolean} orthographic */
     set orthographic(orthographic) { this._renderer.orthographic = orthographic; }
 
-    /** @param {Object3D} object3D */
-    addObject3D(object3D) {
+    addObject3D(/** @type {Object3D} */ object3D) {
         this._renderer.add(object3D);
         return this;
     }
@@ -212,14 +211,12 @@ export class Simulation {
         return this;
     }
 
-    /** @param {string} latex */
-    setLatexTitle(latex) {
+    setLatexTitle(/** @type {string} */ latex) {
         renderMath(this._viewport.titleDiv, latex);
         return this;
     }
 
-    /** @param {string} text */
-    setTextTitle(text) {
+    setTextTitle(/** @type {string} */ text) {
         this._viewport.titleDiv.textContent = text;
         return this;
     }
@@ -227,6 +224,10 @@ export class Simulation {
     clearTitle() {
         this._viewport.titleDiv.replaceChildren();
         return this;
+    }
+
+    setBottomText(/** @type {string} */ text) {
+        this._viewport.bottomLeftText = text;
     }
 
     /**
@@ -391,7 +392,6 @@ export class Simulation {
         const maxSteps = 10;
 
         while (this._clock.accumulator >= this._clock.realTimeStep && i < maxSteps) {
-
             for (let j = 0; j < this._stepsPerClockTick; j++) {
                 this._stepFunction(this._clock, this._clock.simulationTimeStep);
                 this._clock.tick();
@@ -401,8 +401,7 @@ export class Simulation {
         }
     }
 
-    /** @param {number} timeStamp */
-    _tuneIterationsPerFrame(timeStamp) {
+    _tuneIterationsPerFrame(/** @type {number} */ timeStamp) {
         if (this._framesPerSecond <= this._minimumFrameRate)
             if (this._iterationsPerFrame > 5) // do not drop below 5 iterations per frame
                 this._iterationsPerFrame--;
@@ -466,6 +465,23 @@ export class Simulation {
             throw new Error('Cannot mix iteration mode and step mode');
 
         this._stepFunction = stepFunction;
+        return this;
+    }
+
+    /**
+     * @param {string} action
+     * @param {(x: number, y: number, event: Event) => void} callback
+     * @param {{}} options
+     * @returns {Simulation}
+     */
+    onMouse(action, callback, options= {}) {
+        const eventHandler = event => {
+            const bounds =this._viewport.canvas.getBoundingClientRect();
+            const x = (event.clientX - bounds.left) / bounds.width;
+            const y = (bounds.bottom - event.clientY) / bounds.height;
+            callback(x, y, event);
+        }
+        this._viewport.canvas.addEventListener(action, eventHandler, options);
         return this;
     }
 
