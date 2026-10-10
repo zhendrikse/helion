@@ -1,8 +1,8 @@
 import {
-    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper,
-    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour
+    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, VectorField,
+    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour,
+    Vec2
 } from '../../../src/index.js';
-import { Field} from '../../../src/model/math/fields.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
 import {
     BoxGeometry, BufferAttribute, BufferGeometry, CircleGeometry, Color, DoubleSide, LineBasicMaterial,
@@ -52,7 +52,7 @@ class FluidSolver extends Solver {
     }
 
     /**
-     * @param {Fluid} fluid
+     * @param {EulerFluid} fluid
      * @param {number} i
      * @param {number} j
      * @param {any} dt
@@ -60,23 +60,23 @@ class FluidSolver extends Solver {
     _advectVelocityAt(fluid, i, j, dt) {
         if (fluid.obstacleMaskAt(j, i) !== SOLID &&
             fluid.obstacleMaskAt(j, i - 1) !== SOLID &&
-            j < fluid.numY - 1)
+            j < fluid.ny - 1)
             this._newVelocityX.setValueAt(j, i, fluid.calculateVelocityX(i, j, dt));
 
         if (fluid.obstacleMaskAt(j, i) !== SOLID &&
             fluid.obstacleMaskAt(j - 1, i) !== SOLID &&
-            i < fluid.numX - 1)
+            i < fluid.nx - 1)
             this._newVelocityY.setValueAt(j, i, fluid.calculateVelocityY(i, j, dt));
     }
 
-    _advectVelocity(/** @type {Fluid} */ fluid, /** @type {number} */ dt) {
-        for (let i = 1; i < fluid.numX; i++)
-            for (let j = 1; j < fluid.numY; j++)
+    _advectVelocity(/** @type {EulerFluid} */ fluid, /** @type {number} */ dt) {
+        for (let i = 1; i < fluid.nx; i++)
+            for (let j = 1; j < fluid.ny; j++)
                 this._advectVelocityAt(fluid, i, j, dt);
     }
 
     /**
-     * @param {Fluid} fluid
+     * @param {EulerFluid} fluid
      * @param {number} i
      * @param {number} j
      * @param {number} dt
@@ -85,24 +85,25 @@ class FluidSolver extends Solver {
         if (fluid.obstacleMaskAt(j, i) === 0)
             return;
 
+        const delta = 1 / fluid.resolution;
         const u = (fluid.xVelocityAt(j, i) + fluid.xVelocityAt(j, i + 1)) * 0.5;
         const v = (fluid.yVelocityAt(j, i) + fluid.yVelocityAt(j + 1, i)) * 0.5;
-        const x = (i + .5) * fluid.h - dt * u;
-        const y = (j + .5) * fluid.h - dt * v;
+        const x = (i + .5) * delta - dt * u;
+        const y = (j + .5) * delta - dt * v;
 
         this._newSmokeField.setValueAt(j, i, fluid.sampleSmoke(x, y));
     }
 
-    _advectSmoke(/** @type {Fluid} */ fluid, /** @type {number} */ dt) {
+    _advectSmoke(/** @type {EulerFluid} */ fluid, /** @type {number} */ dt) {
         this._newSmokeField.data.set(fluid._smokeField.data);
-        for (let i = 1; i < fluid.numX - 1; i++)
-            for (let j = 1; j < fluid.numY - 1; j++)
+        for (let i = 1; i < fluid.nx - 1; i++)
+            for (let j = 1; j < fluid.ny - 1; j++)
                 this._advectSmokeAt(fluid, i, j, dt);
 
         fluid._smokeField.data.set(this._newSmokeField.data);
     }
 
-    step(/** @type {Fluid} */ fluid, /** @type {number} */ dt) {
+    step(/** @type {EulerFluid} */ fluid, /** @type {number} */ dt) {
         fluid._pressureField.reset();
         fluid.solveIncompressibility(this.numIterations, this.overRelaxation, dt);
         fluid.extrapolate();
@@ -116,58 +117,59 @@ class FluidSolver extends Solver {
         this._advectSmoke(fluid, dt);
     }
 
-    init(/** @type {Fluid} */ fluid) {
-        this._newVelocityX = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});
-        this._newVelocityY = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});
-        this._newSmokeField = new DiscreteScalarField({nx: fluid.numX, ny: fluid.numY});
+    init(/** @type {EulerFluid} */ fluid) {
+        this._newVelocityX = new DiscreteScalarField({nx: fluid.nx, ny: fluid.ny});
+        this._newVelocityY = new DiscreteScalarField({nx: fluid.nx, ny: fluid.ny});
+        this._newSmokeField = new DiscreteScalarField({nx: fluid.nx, ny: fluid.ny});
     }
 }
 
-class Fluid extends Field {
+class EulerFluid extends VectorField {
     /**
      * @param {{
      *     density?: number,
-     *     numX?: number,
-     *     numY?: number,
-     *     cellSize?: number
+     *     resolution?: number
      * }} options
      */
     constructor({
         density = 1000,
-        numX = 100,
-        numY = 100,
-        cellSize = 1
+        resolution = 100
     } = {}) {
         super();
         this.density = 0;
-        this.numX = 0;
-        this.numY = 0;
-        this.h = 0;
+        this.nx = 0;
+        this.ny = 0;
+        this._cellSize = 0;
+        this.resolution = 0;
         this._velocityX = new DiscreteScalarField({nx: 0, ny: 0});
         this._velocityY = new DiscreteScalarField({nx: 0, ny: 0});
         this._pressureField = new DiscreteScalarField({nx: 0, ny: 0});
         this._obstacleMask = new DiscreteScalarField({nx: 0, ny: 0});
         this._smokeField = new DiscreteScalarField({nx: 0, ny: 0});
-        this.init(density, numX, numY, cellSize);
+        this.init({density, resolution});
     }
 
     /**
-     * @param {number} density
-     * @param {number} numX
-     * @param {number} numY
-     * @param {number} cellSize
+     * @param {{
+     *    density?: number,
+     *    resolution?: number
+     * }} options
      */
-    init(density, numX, numY, cellSize) {
+    init({
+        density = 1000,
+        resolution = 100
+    } = {}) {
         this.density = density;
-        this.numX = numX + 2;
-        this.numY = numY + 2;
-        this.h = cellSize;
+        this.nx = resolution + 2;
+        this.ny = resolution + 2;
+        this.resolution = resolution;
+        this._cellSize = 1 / resolution;
 
-        this._velocityX = new DiscreteScalarField({nx: numX + 2, ny: numY + 2});
-        this._velocityY = new DiscreteScalarField({nx: numX + 2, ny: numY + 2});
-        this._pressureField = new DiscreteScalarField({nx: numX + 2, ny: numY + 2});
-        this._obstacleMask = new DiscreteScalarField({nx: numX + 2, ny: numY + 2});
-        this._smokeField = new DiscreteScalarField({nx: numX + 2, ny: numY + 2});
+        this._velocityX = new DiscreteScalarField({nx: this.nx, ny: this.ny});
+        this._velocityY = new DiscreteScalarField({nx: this.nx, ny: this.ny});
+        this._pressureField = new DiscreteScalarField({nx: this.nx, ny: this.ny});
+        this._obstacleMask = new DiscreteScalarField({nx: this.nx, ny: this.ny});
+        this._smokeField = new DiscreteScalarField({nx: this.nx, ny: this.ny});
         this._smokeField.data.fill(1.0)
     }
 
@@ -175,8 +177,8 @@ class Fluid extends Field {
         if (gravity === 0.0)
             return;
 
-        for (let i = 1; i < this.numX; i++)
-            for (let j = 1; j < this.numY - 1; j++)
+        for (let i = 1; i < this.nx; i++)
+            for (let j = 1; j < this.ny - 1; j++)
                 if (this._obstacleMask.valueAt(j, i) !== SOLID && this._obstacleMask.valueAt(j - 1, i) !== SOLID)
                     this._velocityY.setValueAt(j, i, this._velocityY.valueAt(j, i) + gravity * dt);
     }
@@ -221,28 +223,38 @@ class Fluid extends Field {
      * @param {number} dt
      */
     solveIncompressibility(numIters, overRelaxation, dt) {
-        const cp = this.density * this.h / dt;
+        const cp = this.density * this._cellSize / dt;
         for (let iter = 0; iter < numIters; iter++)
-            for (let i = 1; i < this.numX - 1; i++)
-                for (let j = 1; j < this.numY - 1; j++)
+            for (let i = 1; i < this.nx - 1; i++)
+                for (let j = 1; j < this.ny - 1; j++)
                     this.solveGridBox(i, j, cp, overRelaxation);
     }
 
     extrapolate() {
-        for (let i = 0; i < this.numX; i++) {
+        for (let i = 0; i < this.nx; i++) {
             this._velocityX.setValueAt(0, i, this._velocityX.valueAt(1, i));
-            this._velocityX.setValueAt(this.numY - 1, i,  this._velocityX.valueAt(this.numY - 2, i));
+            this._velocityX.setValueAt(this.ny - 1, i,  this._velocityX.valueAt(this.ny - 2, i));
         }
-        for (let j = 0; j < this.numY; j++) {
+        for (let j = 0; j < this.ny; j++) {
             this._velocityY.setValueAt(j, 0, this._velocityY.valueAt(j, 1));
-            this._velocityY.setValueAt(j, this.numX - 1, this._velocityY.valueAt(j, this.numX - 2));
+            this._velocityY.setValueAt(j, this.nx - 1, this._velocityY.valueAt(j, this.nx - 2));
         }
     }
 
     get pressureRange() { return this._pressureField.rangeAt(); }
 
-    sampleVelocityX(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, U_FIELD); }
-    sampleVelocityY(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, V_FIELD); }
+    sample(/** @type {Vec2} */ positionVector, /** @type {Vec2} */ velocity) {
+        velocity.set(
+            this._sampleField(positionVector.x, positionVector.y, U_FIELD),
+            this._sampleField(positionVector.x, positionVector.y, V_FIELD)
+        );
+        return velocity;
+    }
+
+    contains(/** @type {Vec2} */ aVector) {
+        return aVector.x >= 0 && aVector.x < this.nx * this._cellSize && aVector.y >= 0 && aVector.y < this.ny * this._cellSize;
+    }
+
     sampleSmoke(/** @type {number} */ x, /** @type {number} */ y)     { return this._sampleField(x, y, S_FIELD); }
     pressureAt(/** @type {number} */ i, /** @type {number} */ j)      { return this._pressureField.valueAt(i, j); }
     smokeAt(/** @type {number} */ i, /** @type {number} */ j)         { return this._smokeField.valueAt(i, j); }
@@ -251,46 +263,46 @@ class Fluid extends Field {
     yVelocityAt(/** @type {number} */ i, /** @type {number} */ j)     { return this._velocityY.valueAt(i, j); }
 
     _sampleField(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ fieldType) {
-        const h = this.h;
+        const h = this._cellSize;
         const h1 = 1.0 / h;
         const h2 = 0.5 * h;
 
         let dx = 0.0;
         let dy = 0.0;
-        let f;
+        let field;
         switch (fieldType) {
             case U_FIELD:
-                f = this._velocityX;
+                field = this._velocityX;
                 dy = h2;
                 break;
             case V_FIELD:
-                f = this._velocityY;
+                field = this._velocityY;
                 dx = h2;
                 break;
             case S_FIELD:
-                f = this._smokeField;
+                field = this._smokeField;
                 dx = h2;
                 dy = h2;
                 break;
         }
 
-        x = Math.max(Math.min(x, this.numX * h), h) - dx;
-        y = Math.max(Math.min(y, this.numY * h), h) - dy;
-        const x0 = Math.min(Math.floor(x * h1), this.numX - 1);
+        x = Math.max(Math.min(x, this.nx * h), h) - dx;
+        y = Math.max(Math.min(y, this.ny * h), h) - dy;
+        const x0 = Math.min(Math.floor(x * h1), this.nx - 1);
         const tx = (x - x0 * h) * h1;
-        const x1 = Math.min(x0 + 1, this.numX - 1);
+        const x1 = Math.min(x0 + 1, this.nx - 1);
 
-        const y0 = Math.min(Math.floor(y * h1), this.numY - 1);
+        const y0 = Math.min(Math.floor(y * h1), this.ny - 1);
         const ty = (y - y0 * h) * h1;
-        const y1 = Math.min(y0 + 1, this.numY - 1);
+        const y1 = Math.min(y0 + 1, this.ny - 1);
 
         const sx = 1.0 - tx;
         const sy = 1.0 - ty;
 
-        return sx * sy * f.valueAt(y0, x0) +
-            tx * sy * f.valueAt(y0, x1) +
-            tx * ty * f.valueAt(y1, x1) +
-            sx * ty * f.valueAt(y1, x0);
+        return sx * sy * field.valueAt(y0, x0) +
+            tx * sy * field.valueAt(y0, x1) +
+            tx * ty * field.valueAt(y1, x1) +
+            sx * ty * field.valueAt(y1, x0);
     }
 
     _averageVelocityX(/** @type {number} */ i, /** @type {number} */ j) {
@@ -312,19 +324,19 @@ class Fluid extends Field {
     }
 
     calculateVelocityX(/** @type {number} */ i, /** @type {number} */ j, /** @type {number} */ dt) {
-        let x = i * this.h;
-        let y = (j + .5) * this.h;
+        let x = i * this._cellSize;
+        let y = (j + .5) * this._cellSize;
         x -= dt * this._velocityX.valueAt(j, i);
         y -= dt * this._averageVelocityY(i, j);
-        return this.sampleVelocityX(x, y);
+        return this._sampleField(x, y, U_FIELD);
     }
 
     calculateVelocityY(/** @type {number} */ i, /** @type {number} */ j, /** @type {number} */ dt) {
-        let x = (i + .5) * this.h;
-        let y = j * this.h;
+        let x = (i + .5) * this._cellSize;
+        let y = j * this._cellSize;
         x -= dt * this._averageVelocityX(i, j);
         y -= dt * this._velocityY.valueAt(j, i);
-        return this.sampleVelocityY(x, y);
+        return this._sampleField(x, y, V_FIELD);
     }
 
     setObstacle(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ reset) {
@@ -339,12 +351,12 @@ class Fluid extends Field {
         obstacle.position.set(x, y);
         const r = obstacle.radius;
 
-        for (let i = 1; i < this.numX - 2; i++)
-            for (let j = 1; j < this.numY - 2; j++) {
+        for (let i = 1; i < this.nx - 2; i++)
+            for (let j = 1; j < this.ny - 2; j++) {
                 this._obstacleMask.setValueAt(j, i, FLUID);
 
-                const dx = (i + 0.5) * this.h - x;
-                const dy = (j + 0.5) * this.h - y;
+                const dx = (i + 0.5) * this._cellSize - x;
+                const dy = (j + 0.5) * this._cellSize - y;
                 if (dx * dx + dy * dy > r * r)
                     continue;
 
@@ -430,8 +442,8 @@ class FluidDomainView extends Renderable2D {
         ));
     }
 
-    canBindTo(/** @type {Fluid} */ _fluid) { return true; }
-    synchronizeWith(/** @type {Fluid} */ _fluid) {}
+    canBindTo(/** @type {EulerFluid} */ _fluid) { return true; }
+    synchronizeWith(/** @type {EulerFluid} */ _fluid) {}
 }
 
 class FluidDynamicsVelocitiesView extends Renderable2D {
@@ -449,18 +461,18 @@ class FluidDynamicsVelocitiesView extends Renderable2D {
         this._allocatedSegmentCount = 0;
     }
 
-    canBindTo(/** @type {Fluid} */ model) {
+    canBindTo(/** @type {EulerFluid} */ model) {
         if (model.xVelocityAt === undefined ||
             model.yVelocityAt === undefined ||
-            model.numX === undefined ||
-            model.numY === undefined ||
-            model.h === undefined)
+            model.nx === undefined ||
+            model.ny === undefined ||
+            model.resolution === undefined)
             throw new Error('Fluid velocities view can only bind to models that behave as a fluid model');
 
         return true;
     }
 
-    _newGeometry(maxSegmentCount) {
+    _newGeometry(/** @type {number} */ maxSegmentCount) {
         this._geometry.dispose();
         this._geometry = new BufferGeometry();
         this._geometry.setAttribute(
@@ -471,17 +483,17 @@ class FluidDynamicsVelocitiesView extends Renderable2D {
         this._allocatedSegmentCount = maxSegmentCount;
     }
 
-    synchronizeWith(/** @type {Fluid} */ fluid) {
-        const maxSegmentCount = fluid.numX * fluid.numY * 2;
+    synchronizeWith(/** @type {EulerFluid} */ fluid) {
+        const maxSegmentCount = fluid.nx * fluid.ny * 2;
         if (maxSegmentCount !== this._allocatedSegmentCount)
             this._newGeometry(maxSegmentCount);
 
         const positions = this._geometry.getAttribute('position').array;
-        const h = fluid.h;
+        const h = 1 / fluid.resolution;
         let segmentCount = 0;
 
-        for (let i = 0; i < fluid.numX; i++)
-            for (let j = 0; j < fluid.numY; j++) {
+        for (let i = 0; i < fluid.nx; i++)
+            for (let j = 0; j < fluid.ny; j++) {
                 const x0 = i * h;
                 const x1 = x0 + fluid.xVelocityAt(j, i) * this._scale;
                 const y = (j + 0.5) * h;
@@ -539,20 +551,22 @@ class FluidStreamlinesView extends Renderable2D {
         this._lines = new LineSegments(this._geometry, this._material);
         this.add(this._lines);
         this._allocatedSegmentCount = 0;
+        this._position = new Vec2();
+        this._velocity = new Vec2();
+        this._vector = new Vec2();
     }
 
-    canBindTo(/** @type {Fluid} */ model) {
-        if (model.sampleVelocityX === undefined ||
-            model.sampleVelocityY === undefined ||
-            model.numX === undefined ||
-            model.numY === undefined ||
-            model.h === undefined)
+    canBindTo(/** @type {EulerFluid} */ model) {
+        if (model.sample === undefined ||
+            model.nx === undefined ||
+            model.ny === undefined ||
+            model.resolution === undefined)
             throw new Error('Fluid streamlines view can only bind to models that behave as a fluid model');
 
         return true;
     }
 
-    _newGeometry(maxSegmentCount) {
+    _newGeometry(/** @type {number} */ maxSegmentCount) {
         this._geometry.dispose();
         this._geometry = new BufferGeometry();
         this._geometry.setAttribute(
@@ -563,11 +577,11 @@ class FluidStreamlinesView extends Renderable2D {
         this._allocatedSegmentCount = maxSegmentCount;
     }
 
-    synchronizeWith(/** @type {Fluid} */ fluid) {
+    synchronizeWith(/** @type {EulerFluid} */ fluid) {
         // Scene changes can resize the fluid grid without reinitializing this view.
         // Ensure the position buffer matches the current grid before writing into it.
-        const seedCountX = Math.ceil((fluid.numX - 2) / this._seedSpacing);
-        const seedCountY = Math.ceil((fluid.numY - 2) / this._seedSpacing);
+        const seedCountX = Math.ceil((fluid.nx - 2) / this._seedSpacing);
+        const seedCountY = Math.ceil((fluid.ny - 2) / this._seedSpacing);
         const maxSegmentCount = seedCountX * seedCountY * this._numberOfSegments;
         if (maxSegmentCount !== this._allocatedSegmentCount)
             this._newGeometry(maxSegmentCount);
@@ -575,17 +589,17 @@ class FluidStreamlinesView extends Renderable2D {
         const positions = this._geometry.getAttribute('position').array;
         let segmentCount = 0;
 
-        for (let i = 1; i < fluid.numX - 1; i += this._seedSpacing)
-            for (let j = 1; j < fluid.numY - 1; j += this._seedSpacing) {
-                let x = (i + 0.5) * fluid.h;
-                let y = (j + 0.5) * fluid.h;
+        const cellSize = 1 / fluid.resolution;
+        for (let i = 1; i < fluid.nx - 1; i += this._seedSpacing)
+            for (let j = 1; j < fluid.ny - 1; j += this._seedSpacing) {
+                this._position.set((i + 0.5) * cellSize, (j + 0.5) * cellSize);
 
                 for (let n = 0; n < this._numberOfSegments; n++) {
-                    if (x < 0 || x > fluid.numX * fluid.h || y < 0 || y > fluid.numY * fluid.h)
+                    if (!fluid.contains(this._position))
                         break;
 
-                    const { x1, y1 } = this._drawLine(x, y, fluid, segmentCount++, positions);
-                    x = x1; y = y1;
+                    this._drawLine(fluid, segmentCount++, positions);
+                    this._position.copy(this._vector);
                 }
             }
 
@@ -594,18 +608,18 @@ class FluidStreamlinesView extends Renderable2D {
         this._geometry.computeBoundingSphere();
     }
 
-    _drawLine(x, y, fluid, segmentCount, positions) {
-        const x1 = x + fluid.sampleVelocityX(x, y) * 0.01;
-        const y1 = y + fluid.sampleVelocityY(x, y) * 0.01;
+    _drawLine(fluid, segmentCount, positions) {
+        fluid.sample(this._position, this._velocity);
+        this._vector.copy(this._position);
+        this._vector.addScaledVector(this._velocity, 0.01);
 
         const offset = segmentCount * 6;
-        positions[offset    ] = x - halfWidth;   // from.x
-        positions[offset + 1] = y - halfHeight;  // from.y
-        positions[offset + 2] = 0.005;           // from.z
-        positions[offset + 3] = x1 - halfWidth;  // to.x
-        positions[offset + 4] = y1 - halfHeight; // to.y
-        positions[offset + 5] = 0.005;           // to.z
-        return {x1, y1};
+        positions[offset    ] = this._position.x - halfWidth;  // from.x
+        positions[offset + 1] = this._position.y - halfHeight; // from.y
+        positions[offset + 2] = 0.005;                         // from.z
+        positions[offset + 3] = this._vector.x - halfWidth;    // to.x
+        positions[offset + 4] = this._vector.y - halfHeight;   // to.y
+        positions[offset + 5] = 0.005;                         // to.z
     }
 
     dispose() {
@@ -631,7 +645,7 @@ class FluidDynamicsView extends Renderable2D {
         this._width = width;
         this._canvasScale = height / simulationHeight;
         this._color = new Color();
-        this._colorMapper = ColorMappers.get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace});
+        this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, {colorSpace: LinearSRGBColorSpace});
     }
 
     set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
@@ -641,12 +655,12 @@ class FluidDynamicsView extends Renderable2D {
     /**
      * @param {number} i
      * @param {number} j
-     * @param {Fluid} fluid
+     * @param {EulerFluid} fluid
      * @param {Interval} pressureRange
      */
     _updateImageDataAt(i, j, fluid, pressureRange) {
         const cellScale = 1.1;
-        const h = fluid.h;
+        const h = 1 / fluid.resolution;
 
         const smoke = fluid.smokeAt(j, i);
         if (this._showPressure) {
@@ -680,17 +694,17 @@ class FluidDynamicsView extends Renderable2D {
         }
     }
 
-    canBindTo(/** @type {Fluid} */ model) {
+    canBindTo(/** @type {EulerFluid} */ model) {
         return true;
     }
 
-    synchronizeWith(/** @type {Fluid} */ fluid) {
+    synchronizeWith(/** @type {EulerFluid} */ fluid) {
         const pressureRange = fluid.pressureRange;
         this._display.clearRect(0, 0, this._width, this._height);
         this._display.fillStyle = '#FF0000';
 
-        for (let i = 0; i < fluid.numX; i++)
-            for (let j = 0; j < fluid.numY; j++)
+        for (let i = 0; i < fluid.nx; i++)
+            for (let j = 0; j < fluid.ny; j++)
                 this._updateImageDataAt(i, j, fluid, pressureRange);
 
         this._display.putImageData(this._imageData, 0, 0);
@@ -713,12 +727,12 @@ let sceneType = SCENE_TYPE.WIND_TUNNEL
 let frameNr = 0;
 let mouseDown = false;
 let gravity = -9.81;
-const fluid = new Fluid();
+const fluid = new EulerFluid();
 
-function tankScene(/** @type {Fluid} */ fluid) {
-    for (let i = 0; i < fluid.numX; i++)
-        for (let j = 0; j < fluid.numY; j++)
-            fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.numX - 1 || j === 0) ? SOLID : FLUID);
+function tankScene(/** @type {EulerFluid} */ fluid) {
+    for (let i = 0; i < fluid.nx; i++)
+        for (let j = 0; j < fluid.ny; j++)
+            fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.nx - 1 || j === 0) ? SOLID : FLUID);
 
     gravity = -9.81;
     solver.overRelaxation = 1.9;
@@ -730,26 +744,26 @@ function tankScene(/** @type {Fluid} */ fluid) {
 }
 
 /**
- * @param {Fluid} fluid
+ * @param {EulerFluid} fluid
  * @param {number} i
  * @param {number} j
  */
 function updateSmokeFieldInVortexScene(fluid, i, j) {
-    fluid._obstacleMask.setValueAt(j, i, (i === 0 || j === 0 || j === fluid.numY - 1) ? SOLID : FLUID);
+    fluid._obstacleMask.setValueAt(j, i, (i === 0 || j === 0 || j === fluid.ny - 1) ? SOLID : FLUID);
 
     const inwardVelocity = 2.0;
     if (i === 1)
         fluid._velocityX.setValueAt(j, i, inwardVelocity);
 }
 
-function vortexSheddingScene(/** @type {Fluid} */ fluid, /** @type {number} */ sceneNumber) {
-    for (let i = 0; i < fluid.numX; i++)
-        for (let j = 0; j < fluid.numY; j++)
+function vortexSheddingScene(/** @type {EulerFluid} */ fluid, /** @type {number} */ sceneNumber) {
+    for (let i = 0; i < fluid.nx; i++)
+        for (let j = 0; j < fluid.ny; j++)
             updateSmokeFieldInVortexScene(fluid, i, j);
 
-    const pipeH = 0.1 * fluid.numY;
-    const minJ = Math.floor(0.5 * fluid.numY - 0.5 * pipeH);
-    const maxJ = Math.floor(0.5 * fluid.numY + 0.5 * pipeH);
+    const pipeH = 0.1 * fluid.ny;
+    const minJ = Math.floor(0.5 * fluid.ny - 0.5 * pipeH);
+    const maxJ = Math.floor(0.5 * fluid.ny + 0.5 * pipeH);
     for (let j = minJ; j < maxJ; j++)
         fluid._smokeField.data[j] = 0.0;
 
@@ -794,21 +808,13 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     else if (sceneNr === SCENE_TYPE.HIRES_TUNNEL)
         resolution = 200;
 
-    const domainHeight = 1.0;
-    const domainWidth = domainHeight / simulationHeight * simulationWidth;
-    const dy = domainHeight / resolution;
-
-    const numX = Math.floor(domainWidth / dy);
-    const numY = Math.floor(domainHeight / dy);
-
     /** !! CRITICAL INIT STATEMENTS */
     // Todo enforce in an init routine?
     dt = 1.0 / 60.0;
     obstacle.radius = 0.15;
-    const density = 1000.0;
-    fluid.init(density, numX, numY, dy);
+    fluid.init({ resolution });
     solver.init(fluid);
-    obstacleView.radiusOffset = dy;
+    obstacleView.radiusOffset = 1 / resolution;
     /**                             */
 
     if (sceneNr === SCENE_TYPE.TANK)
@@ -824,7 +830,7 @@ const fluidDynamicsView = new FluidDynamicsView(display, canvas.width, canvas.he
 const velocitiesView = new FluidDynamicsVelocitiesView({ display });
 const obstacleView = new Circle({
     height: canvas.height,
-    radiusOffset: fluid.h
+    radiusOffset: 1 / fluid.resolution
 });
 const fluidDomainView = new FluidDomainView();
 
@@ -893,7 +899,7 @@ function simulate() {
 Simulation
     .with({
         htmlDivId: 'eulerFluidContainer',
-        viewport: { aspectRatio: `${fluid.numX} / ${fluid.numY}`, parameterMenuCollapsed: false },
+        viewport: { aspectRatio: `${fluid.nx} / ${fluid.ny}`, parameterMenuCollapsed: false },
         camera: {
             orthographic: true,
             controls: false
@@ -942,7 +948,7 @@ Simulation
     )))
     .append(new DropdownMenu()
         .for(new ColorMappers())
-        .withValue(ColorMappers.Scientific)
+        .withValue(ColorMappers.RdYlBu)
         // @ts-ignore
         .onChange(event =>
             fluidDynamicsView.colorMapper = ColorMappers.get(event.target.value, {colorSpace: LinearSRGBColorSpace})))

@@ -1,19 +1,23 @@
-import { Renderable3D } from '../renderer.js';
+import {Renderable2D, Renderable3D} from '../renderer.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 import { Vec2 } from '../../model/math/objects.js';
-import { Body } from '../../model/phys/bodies.js'
-import { Float32BufferAttribute, DoubleSide, MeshBasicMaterial, BufferGeometry, Mesh, Color } from 'three';
-import {Colour} from '../colormappers.js';
+import { Colour } from '../colormappers.js';
+import { Body, RadialSymmetricBody } from '../../model/phys/bodies.js'
+import {
+    Float32BufferAttribute, DoubleSide, MeshBasicMaterial, BufferGeometry, Mesh, Color,
+    CircleGeometry, RingGeometry
+} from 'three';
 
 export class Arrow2D extends Renderable3D {
     static HeadStyle = Object.freeze({
         Open: 'open',
         Filled: 'filled'
     });
+
     /**
-     * @typedef {Object} Arrow2DOptions
+     * @typedef {object} Arrow2DOptions
      * @property {Colour} [color]
      * @property {number} [size]
      * @property {number} [lineWidth]
@@ -21,10 +25,7 @@ export class Arrow2D extends Renderable3D {
      * @property {number} [headLength]
      * @property {string} [headStyle]
      */
-
-    /**
-     * @param {Arrow2DOptions} [options]
-     */
+    /** @param {Arrow2DOptions} [options] */
     constructor({
         color = Colour.Red,
         size = 0.1,
@@ -62,28 +63,21 @@ export class Arrow2D extends Renderable3D {
     }
 
     #line() {
-        const geometry = new LineSegmentsGeometry();
-        return new LineSegments2(geometry, this._material);
+        return new LineSegments2(new LineSegmentsGeometry(), this._material);
     }
 
-    /** @param {Body} model */
-    canBindTo(model) {
+    canBindTo(/** @type {{position: Vec2, axis: Vec2}} */ model) {
         if (!model.position || !model.axis)
             throw new Error('Arrow2D can only bind to models with a position and an axis.');
 
         return true;
     }
 
-    /** @param {Body} model */
-    synchronizeWith(model) {
+    synchronizeWith(/** @type {{position: Vec2, axis: Vec2}} */ model) {
         this.setVector(model.position, model.axis);
     }
 
-    /**
-     * @param {Vec2} position 
-     * @param {Vec2} vector 
-     */
-    setVector(position, vector) {
+    setVector(/** @type {Vec2} */ position, /** @type {Vec2} */ vector) {
         const x = vector.x;
         const y = vector.y;
         const magnitude = Math.hypot(x, y);
@@ -150,8 +144,7 @@ export class Arrow2D extends Renderable3D {
         line.geometry.computeBoundingSphere();
     }
 
-    /** @param {Color} color */
-    set color(color) {
+    set color(/** @type {Color} */ color) {
         this._material.color.set(color);
         this._headMaterial.color.set(color);
     }
@@ -164,5 +157,55 @@ export class Arrow2D extends Renderable3D {
         this._headMaterial.dispose();
 
         this.clear();
+    }
+}
+
+export class Circle extends Renderable2D {
+    /**
+     * @param {object} [param0]
+     * @param {number} [param0.radiusOffset] additional increment in radius size
+     * @param {Colour} [param0.fillColor]
+     * @param {Colour} [param0.borderColor]
+     * @param {number} [param0.borderWidth]
+     * @param {number} [param0.segments]
+     */
+    constructor({
+        radiusOffset = 0,
+        fillColor = new Colour(0x131313),
+        borderColor = Colour.Black,
+        borderWidth = 0.05,
+        segments = 64
+    } = {}) {
+        super();
+        this._radiusOffset = radiusOffset;
+        this._radius = -1;
+
+        this._fillMaterial = new MeshBasicMaterial({ side: DoubleSide });
+        this._outlineMaterial = new MeshBasicMaterial({ side: DoubleSide });
+        fillColor.asThreeJsColor(this._fillMaterial.color);
+        borderColor.asThreeJsColor(this._outlineMaterial.color);
+
+        this._fillMesh = new Mesh(new CircleGeometry(1, segments), this._fillMaterial);
+        this._outlineMesh = new Mesh(
+            new RingGeometry(1, 1 + borderWidth, segments),
+            this._outlineMaterial
+        );
+        this.add(this._fillMesh, this._outlineMesh);
+    }
+
+    set fillColor(/** @type {Colour} */ colour) { colour.asThreeJsColor(this._fillMaterial.color); }
+    set radiusOffset(/** @type {number} */ value) { this._radiusOffset = value; }
+
+    canBindTo(/** @type {RadialSymmetricBody} */ model) {
+        if (model.radius === undefined || model.position === undefined)
+            throw new Error('Circle can only bind to models that have both a position and radius property');
+        return true;
+    }
+
+    synchronizeWith(/** @type {RadialSymmetricBody} */ obstacle) {
+        const radius = obstacle.radius + this._radiusOffset;
+        this._fillMesh.scale.setScalar(radius);
+        this._outlineMesh.scale.setScalar(radius);
+        this.position.set(obstacle.position.x, obstacle.position.y, 0.01);
     }
 }
