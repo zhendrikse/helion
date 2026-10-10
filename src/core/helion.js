@@ -469,6 +469,8 @@ export class Simulation {
     }
 
     /**
+     * Interaction / control with mouse.
+     *
      * @param {string} action
      * @param {(x: number, y: number, event: Event) => void} callback
      * @param {{}} options
@@ -476,9 +478,31 @@ export class Simulation {
      */
     onMouse(action, callback, options= {}) {
         const eventHandler = event => {
-            const bounds =this._viewport.canvas.getBoundingClientRect();
+            const bounds = event.currentTarget.getBoundingClientRect();
             const x = (event.clientX - bounds.left) / bounds.width;
             const y = (bounds.bottom - event.clientY) / bounds.height;
+            callback(x, y, event);
+        }
+        this._viewport.canvas.addEventListener(action, eventHandler, options);
+        return this;
+    }
+
+    /**
+     * Interaction / control on screens (mobile devices).
+     *
+     * @param {string} action
+     * @param {(x: number, y: number, event: Event) => void} callback
+     * @param {{}} options
+     * @returns {Simulation}
+     */
+    onTouch(action, callback, options= {}) {
+        const eventHandler = event => {
+            if (!event.touches.length)
+                return;
+
+            const bounds = event.currentTarget.getBoundingClientRect();
+            const x = (event.touches[0].clientX - bounds.left) / bounds.width;
+            const y = (bounds.bottom - event.touches[0].clientY) / bounds.height;
             callback(x, y, event);
         }
         this._viewport.canvas.addEventListener(action, eventHandler, options);

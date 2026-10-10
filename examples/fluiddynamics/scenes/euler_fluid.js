@@ -642,7 +642,6 @@ const simulation = Simulation
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
     .frameSceneOn(fluidDynamicsView, { padding: 1.0 })
-    /* Mouse event handling */
     .onMouse('mouseup', () => mouseDown = false)
     .onMouse('mouseleave', () => mouseDown = false)
     .onMouse('mousedown', (x, y, _event) => {
@@ -655,22 +654,19 @@ const simulation = Simulation
 
         fluid.setObstacle(x, y, false);
     })
-    /* Mobile devices event handling */
-    .onMouse('touchstart', (x, y, event) => {
-        if (!event.touches.length)
-            return;
-
+    .onTouch('touchstart', (x, y, event) => {
         mouseDown = true;
         fluid.setObstacle(x, y, true);
     }, { passive: true })
-    .onMouse('touchmove', (x, y, event) => {
-        if (!event.touches.length || !mouseDown)
+    .onTouch('touchmove', (x, y, event) => {
+        if (!mouseDown)
             return;
 
+        event.preventDefault();
         fluid.setObstacle(x, y, false);
     }, { passive: false })
-    .onMouse('touchcancel', () => mouseDown = false)
-    .onMouse('touchend', () => mouseDown = false)
+    .onTouch('touchcancel', () => mouseDown = false)
+    .onTouch('touchend', () => mouseDown = false)
     .append(new RadioGroup()
         .add('Tank', () => setupScene(SCENE_TYPE.TANK))
         .add('Wind Tunnel', () => setupScene(SCENE_TYPE.WIND_TUNNEL))
@@ -680,7 +676,7 @@ const simulation = Simulation
     )
     .append(new Checkbox('🏃🏻‍♀️‍➡️ Velocities')
         .onChange(event => velocitiesView.visible = event.target.checked)
-        .togetherWith(new Checkbox('Streamlines')
+        .togetherWith(new Checkbox('✈️ Streamlines')
             .onChange(event => streamlinesView.visible = event.target.checked)
         ))
     .append(new Checkbox('🗜️ Pressure')
