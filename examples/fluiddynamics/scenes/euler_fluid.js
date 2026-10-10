@@ -8,9 +8,6 @@ import {
     Color, DataTexture, DoubleSide, LinearSRGBColorSpace, Mesh, MeshBasicMaterial, PlaneGeometry, RGBAFormat
 } from 'three';
 
-const helionDiv = document.getElementById('eulerFluidContainer');
-helionDiv.style.width = '650px';
-
 const U_FIELD = 0; // x-component of velocity
 const V_FIELD = 1; // y-component of velocity
 const S_FIELD = 2; // smoke field
@@ -729,6 +726,7 @@ Simulation
 
 // Use Helion's own Three.js canvas for obstacle interaction; no separate
 // Canvas 2D overlay is needed now that the pressure/smoke field is a texture.
+const helionDiv = document.getElementById('eulerFluidContainer');
 const canvasWrapper = helionDiv.querySelector('.helionCanvasWrapper');
 if (canvasWrapper)
     canvasWrapper.appendChild(fluidDynamicsView.pressureLabelElement);
