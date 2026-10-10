@@ -1,13 +1,11 @@
 import {
     Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, VectorField, Circle,
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour,
-    Vec2, StreamlinesView, VelocitiesView,
-    Slider,
-    Range
+    Vec2, StreamlinesView, VelocitiesView, Slider, Range
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
 import {
-    BoxGeometry, Color, DataTexture, DoubleSide, LinearSRGBColorSpace,
+    Color, DataTexture, DoubleSide, LinearSRGBColorSpace,
     Mesh, MeshBasicMaterial, PlaneGeometry, RGBAFormat, SRGBColorSpace
 } from 'three';
 
@@ -377,28 +375,6 @@ class EulerFluid extends VectorField {
 }
 
 /**
- * Supplies the shared world-space domain used to frame the fluid scene.
- */
-class FluidDomainView extends Renderable2D {
-    constructor() {
-        super();
-        this.add(new Mesh(
-            new BoxGeometry(simulationWidth, simulationHeight, 0.001),
-            new MeshBasicMaterial({
-                transparent: true,
-                opacity: 0,
-                colorWrite: false,
-                depthWrite: false
-            })
-        ));
-    }
-
-    canBindTo(/** @type {EulerFluid} */ _fluid) { return true; }
-    synchronizeWith(/** @type {EulerFluid} */ _fluid) { }
-}
-
-
-/**
  * Renders the pressure/smoke field as a Three.js data texture.
  *
  * The texture is stretched over the same centered world-space domain used by
@@ -649,7 +625,6 @@ const obstacleView = new Circle({
 });
 obstacleView._fillMesh.position.set(-halfWidth, -halfHeight);
 obstacleView._outlineMesh.position.set(-halfWidth, -halfHeight);
-const fluidDomainView = new FluidDomainView();
 
 function startDrag(/** @type {number} */ x, /** @type {number} */ y, canvas) {
     const bounds = canvas.getBoundingClientRect();
@@ -719,7 +694,7 @@ Simulation
     .bind(fluid.alwaysWith(streamlinesView))
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
-    .frameSceneOn(fluidDomainView, { padding: 1.0 })
+    .frameSceneOn(fluidDynamicsView, { padding: 1.0 })
     .append(new RadioGroup()
         .add('Tank', () => setupScene(SCENE_TYPE.TANK))
         .add('Wind Tunnel', () => setupScene(SCENE_TYPE.WIND_TUNNEL))
