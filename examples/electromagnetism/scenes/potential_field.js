@@ -125,7 +125,7 @@ const streamlinesView = new StreamlinesView({
     numberOfSegments: 20,
     seedSpacing: 5,
     scale: 4e-6,
-    color: new Colour(0x999999)
+    color: new Colour(0x090909)
 });
 streamlinesView.position.set(-30, -30);
 streamlinesView.visible = false;
