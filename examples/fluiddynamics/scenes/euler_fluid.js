@@ -12,11 +12,6 @@ import {
 const helionDiv = document.getElementById('eulerFluidContainer');
 helionDiv.style.width = '650px';
 
-const simulationHeight = 1.1;
-const simulationWidth = simulationHeight;
-const halfWidth = simulationWidth / 2;
-const halfHeight = simulationHeight / 2;
-
 const U_FIELD = 0; // x-component of velocity
 const V_FIELD = 1; // y-component of velocity
 const S_FIELD = 2; // smoke field
@@ -442,7 +437,6 @@ class FluidDynamicsView extends Renderable2D {
         // lower-left. Center the plane in local coordinates, then apply the
         // same translation as the obstacle, velocity vectors, and streamlines.
         this._mesh.position.set(domainWidth / 2, domainHeight / 2, 0);
-        this.position.set(-halfWidth, -halfHeight);
         this.add(this._mesh);
     }
 
@@ -616,15 +610,11 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
 }
 
 const streamlinesView = new StreamlinesView();
-streamlinesView.position.set(-halfWidth, -halfHeight);
 const fluidDynamicsView = new FluidDynamicsView();
 const velocitiesView = new VelocitiesView();
-velocitiesView.position.set(-halfWidth, -halfHeight);
 const obstacleView = new Circle({
     radiusOffset: 1 / fluid.resolution
 });
-obstacleView._fillMesh.position.set(-halfWidth, -halfHeight);
-obstacleView._outlineMesh.position.set(-halfWidth, -halfHeight);
 
 function startDrag(/** @type {number} */ x, /** @type {number} */ y, canvas) {
     const bounds = canvas.getBoundingClientRect();
@@ -642,7 +632,6 @@ function drag(/** @type {number} */ x, /** @type {number} */ y, canvas) {
     y = (bounds.bottom - y) / bounds.height;
     fluid.setObstacle(x, y, false);
 }
-
 
 document.addEventListener('keydown', event => {
     switch (event.key) {
