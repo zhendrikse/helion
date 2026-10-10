@@ -377,8 +377,7 @@ class EulerFluid extends VectorField {
 }
 
 /**
- * Supplies real geometry for camera framing. The fluid fields are still
- * drawn on the existing 2D canvas, but they share this world-space domain.
+ * Supplies the shared world-space domain used to frame the fluid scene.
  */
 class FluidDomainView extends Renderable2D {
     constructor() {
@@ -641,7 +640,6 @@ const fluidDynamicsView = new FluidDynamicsView();
 const velocitiesView = new VelocitiesView();
 velocitiesView.position.set(-halfWidth, -halfHeight);
 const obstacleView = new Circle({
-    height: canvas.height,
     radiusOffset: 1 / fluid.resolution
 });
 obstacleView._fillMesh.position.set(-halfWidth, -halfHeight);
