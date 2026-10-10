@@ -258,6 +258,10 @@ class EulerFluid extends VectorField {
     obstacleMaskAt(/** @type {number} */ i, /** @type {number} */ j)  { return this._obstacleMask.valueAt(i, j); }
     xVelocityAt(/** @type {number} */ i, /** @type {number} */ j)     { return this._velocityX.valueAt(i, j); }
     yVelocityAt(/** @type {number} */ i, /** @type {number} */ j)     { return this._velocityY.valueAt(i, j); }
+    velocityAt(/** @type {number} */ i, /** @type {number} */ j, /** @type {Vec2} */ target) {
+        target.set(this._velocityX.valueAt(i, j), this._velocityY.valueAt(i, j));
+        return target;
+    }
 
     _sampleField(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ fieldType) {
         const h = this._cellSize;
@@ -451,7 +455,7 @@ class FluidDynamicsView extends Renderable2D {
         const y = Math.floor(scaleY((j + 1) * h));
         const cx = Math.floor(this._canvasScale * cellScale * h) + 1;
         const cy = Math.floor(this._canvasScale * cellScale * h) + 1;
-
+        const opacity = sceneType === SCENE_TYPE.PAINT || sceneType === SCENE_TYPE.TANK ? 1 : Math.sqrt(1 - smoke);
         for (let yi = y; yi < y + cy; yi++) {
             let pos = 4 * (yi * this._width + x);
 
@@ -459,7 +463,7 @@ class FluidDynamicsView extends Renderable2D {
                 this._imageData.data[pos++] = 255 * this._color.r; // red
                 this._imageData.data[pos++] = 255 * this._color.g; // green
                 this._imageData.data[pos++] = 255 * this._color.b; // blue
-                this._imageData.data[pos++] = Math.sqrt(1 - smoke) * 255;
+                this._imageData.data[pos++] = opacity * 255;
             }
         }
     }
