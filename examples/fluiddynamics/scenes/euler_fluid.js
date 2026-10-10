@@ -82,7 +82,7 @@ class FluidSolver extends Solver {
      * @param {number} dt
      */
     _advectSmokeAt(fluid, i, j, dt) {
-        if (fluid.obstacleMaskAt(j, i) === 0)
+        if (fluid.obstacleMaskAt(j, i) === SOLID)
             return;
 
         const delta = 1 / fluid.resolution;
@@ -381,16 +381,23 @@ class EulerFluid extends VectorField {
 //
 // V I E W S
 //
-class Circle extends Renderable2D {
+export class Circle extends Renderable2D {
+    /**
+     * @param {object} [param0]
+     * @param {number} [param0.radiusOffset] additional increment in radius size
+     * @param {Colour} [param0.fillColor]
+     * @param {Colour} [param0.borderColor]
+     * @param {number} [param0.borderWidth]
+     * @param {number} [param0.segments]
+     */
     constructor({
-        height,
         radiusOffset = 0,
         fillColor = new Colour(0x131313),
         borderColor = Colour.Black,
         borderWidth = 0.05,
+        segments = 64
     } = {}) {
         super();
-        this._canvasScale = height / simulationHeight;
         this._radiusOffset = radiusOffset;
         this._radius = -1;
 
@@ -399,9 +406,9 @@ class Circle extends Renderable2D {
         fillColor.asThreeJsColor(this._fillMaterial.color);
         borderColor.asThreeJsColor(this._outlineMaterial.color);
 
-        this._fillMesh = new Mesh(new CircleGeometry(1, 64), this._fillMaterial);
+        this._fillMesh = new Mesh(new CircleGeometry(1, segments), this._fillMaterial);
         this._outlineMesh = new Mesh(
-            new RingGeometry(1, 1 + borderWidth, 64),
+            new RingGeometry(1, 1 + borderWidth, segments),
             this._outlineMaterial
         );
         this.add(this._fillMesh, this._outlineMesh);
@@ -411,8 +418,8 @@ class Circle extends Renderable2D {
     set radiusOffset(/** @type {number} */ value) { this._radiusOffset = value; }
 
     canBindTo(/** @type {RadialSymmetricBody} */ model) {
-        if (model.radius === undefined)
-            throw new Error('Circle can only bind to models that have a radius property');
+        if (model.radius === undefined || model.position === undefined)
+            throw new Error('Circle can only bind to models that have both a position and radius property');
         return true;
     }
 
@@ -674,7 +681,7 @@ class FluidDynamicsView extends Renderable2D {
             this._color.setRGB(smoke, smoke, smoke);
             if (sceneType === SCENE_TYPE.PAINT)
                 this._colorMapper.map(smoke, this._color);
-        } else if (fluid.obstacleMaskAt(j, i) === 0.0)
+        } else if (fluid.obstacleMaskAt(j, i) === SOLID)
             this._color.setRGB(0, 0, 0);
 
         const x = Math.floor(scaleX(i * h));
@@ -689,7 +696,7 @@ class FluidDynamicsView extends Renderable2D {
                 this._imageData.data[pos++] = 255 * this._color.r; // red
                 this._imageData.data[pos++] = 255 * this._color.g; // green
                 this._imageData.data[pos++] = 255 * this._color.b; // blue
-                this._imageData.data[pos++] = 255; // opacity (always opaque)
+                this._imageData.data[pos++] = Math.sqrt(1 - smoke) * 255;
             }
         }
     }
@@ -723,7 +730,8 @@ class FluidDynamicsView extends Renderable2D {
 //
 let dt = 1.0 / 120;
 let paused = false;
-let sceneType = SCENE_TYPE.WIND_TUNNEL
+/** @type {number} */
+let sceneType = SCENE_TYPE.WIND_TUNNEL;
 let frameNr = 0;
 let mouseDown = false;
 let gravity = -9.81;
@@ -835,26 +843,19 @@ const obstacleView = new Circle({
 const fluidDomainView = new FluidDomainView();
 
 function startDrag(/** @type {number} */ x, /** @type {number} */ y) {
-    let bounds = canvas.getBoundingClientRect();
-
-    let mx = x - bounds.left - canvas.clientLeft;
-    let my = y - bounds.top - canvas.clientTop;
+    const bounds = canvas.getBoundingClientRect();
     mouseDown = true;
-
-    x = mx / canvasScale;
-    y = (canvas.height - my) / canvasScale;
-
+    x = ((x - bounds.left) / bounds.width); // * fluid.nx / fluid.resolution;
+    y = ((bounds.bottom - y) / bounds.height); // * fluid.ny / fluid.resolution;
     fluid.setObstacle(x, y, true);
 }
 
 function drag(/** @type {number} */ x, /** @type {number} */ y) {
     if (!mouseDown)
         return;
-    let bounds = canvas.getBoundingClientRect();
-    let mx = x - bounds.left - canvas.clientLeft;
-    let my = y - bounds.top - canvas.clientTop;
-    x = mx / canvasScale;
-    y = (canvas.height - my) / canvasScale;
+    const bounds = canvas.getBoundingClientRect();
+    x = ((x - bounds.left) / bounds.width);// * fluid.nx / fluid.resolution;
+    y = ((bounds.bottom - y) / bounds.height);// * fluid.ny / fluid.resolution;
     fluid.setObstacle(x, y, false);
 }
 
