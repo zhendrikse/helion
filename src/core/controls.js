@@ -45,8 +45,8 @@ export class HtmlControl {
     }
 
     /**
-     * @param {string} eventType 
-     * @param {(event: Event) => void} callback 
+     * @param {string} eventType
+     * @param {(event: Event) => void} callback
      * @returns {HtmlControl}
      */
     addEventListener(eventType, callback) {
@@ -61,19 +61,9 @@ export class HtmlControl {
         return this;
     }
 
-    /** @param {(event: Event) => void} callback */
-    onChange(callback) {
-        return this.addEventListener('change', callback);
-    }
-
-    /** @param {(event: Event) => void} callback */
-    onInput(callback) {
-        return this.addEventListener('input', callback);
-    }
-
     /**
-     * @param {HtmlControl} control 
-     * @param {HTMLDivElement} buttonRow 
+     * @param {HtmlControl} control
+     * @param {HTMLDivElement} buttonRow
      */
     _appendToButtonRow(control, buttonRow) {
         buttonRow.appendChild(control._label);
@@ -95,8 +85,8 @@ export class HtmlControl {
     }
 
     /**
-     * @param {HtmlControl} control 
-     * @param {Simulation} simulation 
+     * @param {HtmlControl} control
+     * @param {Simulation} simulation
      */
     _setSimulationOn(control, simulation) {
         control._simulation = simulation;
@@ -109,7 +99,7 @@ export class HtmlControl {
         this._setSimulationOn(this, simulation);
         return this;
     }
-    
+
     /** @param {HtmlControl} otherControl */
     togetherWith(otherControl) {
         this._childControl = otherControl;
@@ -229,7 +219,7 @@ export class Slider extends HtmlControl {
     /** @param {number} value */
     withValue(value) {
         this._inputControl.value = String(value);
-        this._span.textContent = Number(value).toFixed(2) + this._units;
+        this._span.textContent = value.toFixed(2) + this._units;
         return this;
     }
 
@@ -248,14 +238,16 @@ export class Slider extends HtmlControl {
         if (!this._targetObject)
             throw new Error('Set target object first with the checkbox.on() method');
 
-        if (name in this._targetObject)
+        if (this._targetObject[name])
             this.withValue(this._targetObject[name]);
         else
             console.info(`Helion cannot set initial state of slider control: no getter for property ${name}`);
 
-        this.onInput(value => {
-            this._targetObject[name] = value;
-            this._span.textContent = value.toFixed(2) + this._units;
+        this.addEventListener('input', (event) => {
+            // @ts-ignore
+            this._targetObject[name] = Number(event.target.value);
+            // @ts-ignore
+            this._span.textContent = Number(event.target.value).toFixed(2) + this._units;
         });
         return this;
     }
@@ -274,7 +266,7 @@ export class Slider extends HtmlControl {
 
     /**
      * @param {string} eventType
-     * @param {(event: Event) => void} callback 
+     * @param {(event: Event) => void} callback
      */
     addEventListener(eventType, callback) {
         const isString = typeof eventType === 'string' || eventType instanceof String;
@@ -322,7 +314,7 @@ export class Checkbox extends HtmlControl {
         if (!this._targetObject)
             throw new Error('Set target object first with the checkbox.on() method');
 
-        if (name in this._targetObject)
+        if (this._targetObject[name])
             this._inputControl.checked = this._targetObject[name];
         else
             console.info(`Helion cannot set initial state of checkbox control: no getter for property ${name}`);
@@ -354,7 +346,7 @@ export class RadioGroup extends HtmlControl {
         this._buttons.forEach(button => button.disabled = value);
     }
 
-    /** 
+    /**
      * @param {string} label
      * @param {(event: Event) => void} callback
      * @return {RadioGroup}
@@ -401,18 +393,18 @@ export class TextInput extends HtmlControl {
         this._label.classList.add('helionTextInputLabel');
     }
 
-    /** 
-     * @param {string} text 
-     * @return {TextInput} 
+    /**
+     * @param {string} text
+     * @return {TextInput}
      */
     withPlaceholder(text) {
         this._inputControl.placeholder = text;
         return this;
     }
 
-    /** 
-     * @param {string} value 
-     * @return {TextInput} 
+    /**
+     * @param {string} value
+     * @return {TextInput}
      */
     withValue(value) {
         this._inputControl.value = value;
@@ -427,18 +419,18 @@ export class TextInput extends HtmlControl {
         this._inputControl.classList.toggle('helionTextInput--invalid', !isValid);
     }
 
-    /** 
-     * @param {string|number} width 
-     * @return {TextInput} 
+    /**
+     * @param {string|number} width
+     * @return {TextInput}
      */
     withMinWidth(width) {
         this._inputControl.style.minWidth = typeof width === 'number' ? `${width}px` : width;
         return this;
     }
 
-    /** 
-     * @param {string} name 
-     * @return {TextInput} 
+    /**
+     * @param {string} name
+     * @return {TextInput}
      */
     withProperty(name) {
         // @ts-ignore
@@ -446,14 +438,14 @@ export class TextInput extends HtmlControl {
         return this;
     }
 
-    /** 
-     * @param {(event: KeyboardEvent) => void} callback 
-     * @return {TextInput} 
+    /**
+     * @param {(event: KeyboardEvent) => void} callback
+     * @return {TextInput}
      */
     onEnter(callback) {
         this.addEventListener('keydown', event => {
             // @ts-ignore
-            if (event.key === 'Enter') 
+            if (event.key === 'Enter')
                 callback(event);
         });
         return this;
@@ -469,8 +461,8 @@ export class Button extends HtmlControl {
         this._inputControl.classList.add('helionButton');
     }
 
-    /** 
-     * @param {string} text 
+    /**
+     * @param {string} text
      * @return {Button}
      */
     withText(text) {
@@ -479,7 +471,7 @@ export class Button extends HtmlControl {
         return this;
     }
 
-    /** 
+    /**
      * @param {(event: Event) => void} callback
      * @return {Button}
      */
@@ -488,8 +480,8 @@ export class Button extends HtmlControl {
         return this;
     }
 
-    /** 
-     * @param {string} name 
+    /**
+     * @param {string} name
      * @return {Button}
      */
     withProperty(name) {
@@ -512,39 +504,33 @@ export class AxesUI {
         return new CompoundControl()
             .add(new Checkbox('Frame ')
                 .checked(true)
-                .addEventListener('click', event =>
-                    // @ts-ignore
-                    this._axes.withSettings({ frame: event.target.checked }))
+                .onChange(checked =>
+                    this._axes.withSettings({ frame: checked }))
                 .togetherWith(new Checkbox('Annotations ')
                     .checked(true)
-                    .addEventListener('click', event =>
-                        // @ts-ignore
-                        this._axes.withSettings({ annotations: event.target.checked }))
+                    .onChange(checked =>
+                        this._axes.withSettings({ annotations: checked }))
                     .togetherWith(new Checkbox('Tick labels ')
                         .checked(true)
-                        .addEventListener('click', event =>
-                            // @ts-ignore
-                            this._axes.withSettings({ tickLabels: event.target.checked }))
+                        .onChange(checked =>
+                            this._axes.withSettings({ tickLabels: checked }))
                     )
                 )
             )
             .add(new Checkbox('XY-plane')
                 .checked(true)
-                .addEventListener('click', event =>
-                    // @ts-ignore
-                    this._axes.withSettings({ xyPlane: event.target.checked }))
+                .onChange(checked =>
+                    this._axes.withSettings({ xyPlane: checked }))
                 .togetherWith(
                     new Checkbox('XZ-plane')
                         .checked(true)
-                        .addEventListener('click', event =>
-                            // @ts-ignore
-                            this._axes.withSettings({ xzPlane: event.target.checked }))
+                        .onChange(checked =>
+                            this._axes.withSettings({ xzPlane: checked }))
                         .togetherWith(
                             new Checkbox('YZ-plane')
                                 .checked(true)
-                                .addEventListener('click', event =>
-                                    // @ts-ignore
-                                    this._axes.withSettings({ yzPlane: event.target.checked }))
+                                .onChange(checked =>
+                                    this._axes.withSettings({ yzPlane: checked }))
                         )
                 )
             );
