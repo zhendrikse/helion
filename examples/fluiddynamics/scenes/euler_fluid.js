@@ -1,8 +1,7 @@
 import {
     Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView,
-    DiscreteFieldSurfaceView, FixedIntervalNormalizer, AdaptiveSymmetricNormalizer, MathPhysicsModelBehavior,
-    ColorMapper
+    DiscreteFieldSurfaceView, FixedIntervalNormalizer, AdaptiveSymmetricNormalizer, MathPhysicsModelBehavior
 } from '../../../src/index.js';
 import {
     Color, LinearSRGBColorSpace
@@ -403,10 +402,15 @@ class BlackColorMapper extends ColorMapper {
 }
 
 class FluidOverlaySurfaceView extends DiscreteFieldSurfaceView {
+    constructor({ renderOrder = 0, ...options } = {}) {
+        super(options);
+        this._renderOrder = renderOrder;
+    }
+
     initialize(field) {
         super.initialize(field);
         this._mesh.material.depthWrite = false;
-        this._mesh.renderOrder = 1;
+        this._mesh.renderOrder = this._renderOrder;
     }
 }
 
@@ -501,6 +505,8 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     fluid.init({ resolution });
     fluidDynamicsView.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
     fluidDynamicsView.position.set(0.5, 0.5, 0);
+    smokeView.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
+    smokeView.position.set(0.5, 0.5, 0.001);
     solver.init(fluid);
     solver.numIterations = 40;
     obstacleView.radiusOffset = fluid.cellSize;
@@ -520,12 +526,14 @@ const pressureFieldAdapter = new PressureFieldAdapter(fluid);
 const smokeFieldAdapter = new SmokeFieldAdapter(fluid);
 
 const fluidDynamicsView = new FluidOverlaySurfaceView({
+    renderOrder: 0,
     colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace }),
     normalizer: new AdaptiveSymmetricNormalizer(),
     opacityFunction: () => 1,
     colorSpace: LinearSRGBColorSpace
 });
 const smokeView = new FluidOverlaySurfaceView({
+    renderOrder: 1,
     colorMapper: new BlackColorMapper({ colorSpace: LinearSRGBColorSpace }),
     normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
     opacityFunction: value => value,
