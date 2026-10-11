@@ -1,6 +1,6 @@
 import {
     Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, Color, Box3, CircleGeometry, DoubleSide,
-    Points, PointsMaterial, BufferGeometry, Float32BufferAttribute
+    Points, PointsMaterial, BufferGeometry, Float32BufferAttribute, SRGBColorSpace, LinearSRGBColorSpace
 } from 'three';
 
 import { Renderable2D } from '../renderer.js';
@@ -18,17 +18,20 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
      *   normalizer?: Normalizer
      *   opacityFunction?: (fieldValue: number) => number
      *   scale?: number
+     *   colorSpace?: string
      * }} param0 
      */
     constructor({
         colorMapper = new WavelengthColorMapper({ lambdaInNanos: 525}),
         opacityFunction = (/** @type {number} */ fieldValue) => Math.sqrt(fieldValue),
         normalizer = new AdaptiveSymmetricNormalizer(),
-        scale = 1
+        scale = 1,
+        colorSpace = SRGBColorSpace
     } = {}) {
         super();
         this.scale.set(scale, scale, 1);
         this._colorMapper = colorMapper;
+        this._colorSpace = colorSpace;
         this._opacityFunction = opacityFunction;
         this._mesh = null;
         this._pixels = new Uint8Array();
@@ -45,6 +48,7 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
         const height = scalarField.ny;
         this._pixels = new Uint8Array(width * height * 4);
         this._texture = new DataTexture(this._pixels, width, height, RGBAFormat);
+        this._texture.colorSpace = this._colorSpace;
         this._texture.needsUpdate = true;
         this._mesh = new Mesh(
             new PlaneGeometry(width, height),

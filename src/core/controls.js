@@ -61,16 +61,6 @@ export class HtmlControl {
         return this;
     }
 
-    /** @param {(event: Event) => void} callback */
-    onChange(callback) {
-        return this.addEventListener('change', callback);
-    }
-
-    /** @param {(event: Event) => void} callback */
-    onInput(callback) {
-        return this.addEventListener('input', callback);
-    }
-
     /**
      * @param {HtmlControl} control 
      * @param {HTMLDivElement} buttonRow 
@@ -514,39 +504,33 @@ export class AxesUI {
         return new CompoundControl()
             .add(new Checkbox('Frame ')
                 .checked(true)
-                .addEventListener('click', event =>
-                    // @ts-ignore
-                    this._axes.withSettings({ frame: event.target.checked }))
+                .onChange(checked =>
+                    this._axes.withSettings({ frame: checked }))
                 .togetherWith(new Checkbox('Annotations ')
                     .checked(true)
-                    .addEventListener('click', event =>
-                        // @ts-ignore
-                        this._axes.withSettings({ annotations: event.target.checked }))
+                    .onChange(checked =>
+                        this._axes.withSettings({ annotations: checked }))
                     .togetherWith(new Checkbox('Tick labels ')
                         .checked(true)
-                        .addEventListener('click', event =>
-                            // @ts-ignore
-                            this._axes.withSettings({ tickLabels: event.target.checked }))
+                        .onChange(checked =>
+                            this._axes.withSettings({ tickLabels: checked }))
                     )
                 )
             )
             .add(new Checkbox('XY-plane')
                 .checked(true)
-                .addEventListener('click', event =>
-                    // @ts-ignore
-                    this._axes.withSettings({ xyPlane: event.target.checked }))
+                .onChange(checked =>
+                    this._axes.withSettings({ xyPlane: checked }))
                 .togetherWith(
                     new Checkbox('XZ-plane')
                         .checked(true)
-                        .addEventListener('click', event =>
-                            // @ts-ignore
-                            this._axes.withSettings({ xzPlane: event.target.checked }))
+                        .onChange(checked =>
+                            this._axes.withSettings({ xzPlane: checked }))
                         .togetherWith(
                             new Checkbox('YZ-plane')
                                 .checked(true)
-                                .addEventListener('click', event =>
-                                    // @ts-ignore
-                                    this._axes.withSettings({ yzPlane: event.target.checked }))
+                                .onChange(checked =>
+                                    this._axes.withSettings({ yzPlane: checked }))
                         )
                 )
             );

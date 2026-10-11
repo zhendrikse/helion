@@ -358,104 +358,22 @@ class EulerFluid extends DiscreteVectorField {
     }
 }
 
-/**
- * Renders the pressure/smoke field as a Three.js data texture.
- *
- * The texture is stretched over the same centered world-space domain used by
- * the Three.js scene. Its rows follow the fluid grid's y-axis (j = 0 at the
- * bottom), while the simulation itself remains independent of the renderer.
- */
-/**
- * Adapts the fluid's pressure, smoke and obstacle data to the scalar-field
- * contract expected by DiscreteFieldSurfaceView.
- *
- * Each cell's final RGBA pixel is packed into one unsigned 32-bit scalar.
- * The view's color mapper and opacity function unpack that pixel again. This
- * lets us reuse the generic surface view without changing its implementation
- * or losing the existing pressure/smoke/obstacle rendering rules.
- */
 class FluidDisplayFieldAdapter extends MathPhysicsModelBehavior {
     constructor(fluid) {
         super();
         this._fluid = fluid;
-        this.showPressure = true;
-        this.showSmoke = true;
-        this.colorMapper = ColorMappers.get(ColorMappers.RdYlBu, { colorSpace: LinearSRGBColorSpace });
-        this._rgb = new Color();
-        this._range = new Interval(0, 0xFFFFFFFF);
     }
 
     get nx() { return this._fluid.nx; }
     get ny() { return this._fluid.ny; }
 
     rangeAt() {
-        return this._range;
+        return this._fluid.pressureRange;
     }
 
     valueAt(i, j) {
-        const fluid = this._fluid;
-        const smoke = fluid.smokeAt(j, i);
-        let alpha = 0;
-
-        if (this.showPressure) {
-            this.colorMapper.map(fluid.pressureRange.normalize(fluid.pressureAt(j, i)), this._rgb);
-            if (this.showSmoke)
-                this._rgb.setRGB(
-                    Math.max(0, this._rgb.r - smoke),
-                    Math.max(0, this._rgb.g - smoke),
-                    Math.max(0, this._rgb.b - smoke),
-                    LinearSRGBColorSpace
-                );
-            alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
-        } else if (this.showSmoke) {
-            this._rgb.setRGB(smoke, smoke, smoke, LinearSRGBColorSpace);
-            if (sceneType === SCENE_TYPE.PAINT)
-                this.colorMapper.map(smoke, this._rgb);
-            alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
-        } else if (fluid.obstacleMaskAt(j, i) === SOLID) {
-            this._rgb.setRGB(0, 0, 0, LinearSRGBColorSpace);
-            alpha = 255;
-        } else {
-            this._rgb.setRGB(0, 0, 0, LinearSRGBColorSpace);
-        }
-
-        const red = Math.round(255 * this._rgb.r);
-        const green = Math.round(255 * this._rgb.g);
-        const blue = Math.round(255 * this._rgb.b);
-        const opacity = Math.round(alpha);
-        return (((red << 24) | (green << 16) | (blue << 8) | opacity) >>> 0);
+        return this._fluid.pressureRange.normalize(this._fluid.pressureAt(j, i)) - this._fluid.smokeAt(j, i);
     }
-}
-
-/**
- * Fluid-specific presentation settings for the generic scalar surface view.
- * Keep the texture color space and transparent depth behavior used by the
- * previous SmokePressureView.
- */
-class FluidSurfaceView extends DiscreteFieldSurfaceView {
-    initialize(scalarField) {
-        super.initialize(scalarField);
-        this._texture.colorSpace = LinearSRGBColorSpace;
-        this._mesh.material.depthWrite = false;
-        this._texture.needsUpdate = true;
-    }
-}
-
-class PackedFluidColorMapper extends ColorMapper {
-    map(normalizedValue, targetColor) {
-        const packed = Math.round(normalizedValue * 0xFFFFFFFF);
-        targetColor.setRGB(
-            ((packed >>> 24) & 0xFF) / 255,
-            ((packed >>> 16) & 0xFF) / 255,
-            ((packed >>> 8) & 0xFF) / 255,
-            LinearSRGBColorSpace
-        );
-    }
-}
-
-function fluidPixelOpacity(normalizedValue) {
-    const packed = Math.round(normalizedValue * 0xFFFFFFFF);
-    return (packed & 0xFF) / 255;
 }
 
 //
@@ -562,14 +480,18 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
 }
 
 const streamlinesView = new StreamlinesView();
+
+
 const fluidFieldAdapter = new FluidDisplayFieldAdapter(fluid);
-const fluidDynamicsView = new FluidSurfaceView({
-    colorMapper: new PackedFluidColorMapper(),
-    normalizer: new FixedIntervalNormalizer(new Interval(0, 0xFFFFFFFF)),
-    opacityFunction: fluidPixelOpacity
+const fluidDynamicsView = new DiscreteFieldSurfaceView({
+    colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace }),
+    normalizer: new FixedIntervalNormalizer(new Interval(-1, 1)),
+    opacityFunction: value => value,
+    colorSpace: LinearSRGBColorSpace
 });
 fluidDynamicsView.position.set(0.5, 0.5, 0);
 fluidDynamicsView.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
+
 const velocitiesView = new VelocitiesView();
 const obstacleView = new Circle({ radiusOffset: fluid.cellSize });
 
