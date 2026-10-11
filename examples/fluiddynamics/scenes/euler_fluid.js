@@ -490,16 +490,40 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
         paintScene();
 }
 
+class ResizableDiscreteFieldSurfaceView extends DiscreteFieldSurfaceView {
+    initialize(field) {
+        super.initialize(field);
+        this._fieldWidth = field.nx;
+        this._fieldHeight = field.ny;
+    }
+
+    synchronizeWith(field) {
+        if (field.nx !== this._fieldWidth || field.ny !== this._fieldHeight) {
+            if (this._mesh) {
+                this.remove(this._mesh);
+                this._mesh.geometry.dispose();
+                this._mesh.material.dispose();
+                this._texture.dispose();
+                this._mesh = null;
+                this._texture = null;
+            }
+            this.initialize(field);
+        }
+
+        super.synchronizeWith(field);
+    }
+}
+
 const pressureFieldAdapter = new PressureFieldAdapter(fluid);
 const smokeFieldAdapter = new SmokeFieldAdapter(fluid);
 
-const fluidDynamicsView = new DiscreteFieldSurfaceView({
+const fluidDynamicsView = new ResizableDiscreteFieldSurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace }),
     normalizer: new AdaptiveSymmetricNormalizer(),
     opacityFunction: () => 1,
     colorSpace: LinearSRGBColorSpace,
 });
-const smokeView = new DiscreteFieldSurfaceView({
+const smokeView = new ResizableDiscreteFieldSurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Uniform, {
         colorSpace: LinearSRGBColorSpace,
         color: new Color().setRGB( 5e-3, 5e-3, 5e-3, LinearSRGBColorSpace)
