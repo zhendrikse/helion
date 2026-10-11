@@ -388,14 +388,6 @@ class FluidDisplayFieldAdapter extends MathPhysicsModelBehavior {
     get nx() { return this._fluid.nx; }
     get ny() { return this._fluid.ny; }
 
-    canBindTo(model) {
-        if (model.nx === undefined || model.ny === undefined ||
-            model.pressureRange === undefined || model.pressureAt === undefined ||
-            model.smokeAt === undefined || model.obstacleMaskAt === undefined)
-            throw new Error('Fluid display adapter requires pressure, smoke and obstacle data');
-        return true;
-    }
-
     rangeAt() {
         return this._range;
     }
