@@ -270,7 +270,7 @@ export class Slider extends HtmlControl {
 
     /** @param {(value: number) => void} callback */
     onChange(callback) {
-        this.addEventListener('change', event => callback(Number(event.target.checked)));
+        this.addEventListener('change', event => callback(Number(event.target.value)));
         return this;
     }
 
