@@ -248,7 +248,7 @@ export class Slider extends HtmlControl {
         if (!this._targetObject)
             throw new Error('Set target object first with the checkbox.on() method');
 
-        if (this._targetObject[name])
+        if (name in this._targetObject)
             this.withValue(this._targetObject[name]);
         else
             console.info(`Helion cannot set initial state of slider control: no getter for property ${name}`);
@@ -324,7 +324,7 @@ export class Checkbox extends HtmlControl {
         if (!this._targetObject)
             throw new Error('Set target object first with the checkbox.on() method');
 
-        if (this._targetObject[name])
+        if (name in this._targetObject)
             this._inputControl.checked = this._targetObject[name];
         else
             console.info(`Helion cannot set initial state of checkbox control: no getter for property ${name}`);
