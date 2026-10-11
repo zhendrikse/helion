@@ -2,7 +2,7 @@ import {
     ParticleView2D, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, MathPhysicsModelBehavior
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
-import { Box3, Vector3 } from 'three';
+import {Box3, LinearSRGBColorSpace, Vector3} from 'three';
 
 const swarmSize = 1500;
 const width = 500;
@@ -127,7 +127,6 @@ const verticalDrift = 1.5;
 const particleField = new ParticleCloud(swarmSize);
 const coralBounds = new CoralBounds(particleField);
 
-let colorMapper = new ColorMappers().get(ColorMappers.Scientific)();
 const colorFunction = (particle) => {
     if (!particle.frozen)
         return normalize(0, 0, maxDistance);
@@ -150,14 +149,13 @@ const simulation = Simulation
     .onStep(() => particleField.update())
     .append(new DropdownMenu()
         .for(new ColorMappers())
+        .withValue(ColorMappers.Scientific)
         .onChange(value => {
-            colorMapper = ColorMappers.get(value);
-            // propagate to all existing views
-            for (const view of particleViews)
-                view.colorMapper = colorMapper;
-        })
-    );
+            const mapper = ColorMappers.get(value, {colorSpace: LinearSRGBColorSpace});
+            particleViews.forEach(view => view.colorMapper = mapper);
+        }));
 
+const colorMapper = new ColorMappers().get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace})();
 for (let i = 0; i < swarmSize; i++) {
     const view = new ParticleView2D({ colorFunction, colorMapper });
     particleViews.push(view);

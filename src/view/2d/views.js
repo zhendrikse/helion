@@ -428,6 +428,9 @@ export class ParticleView2D extends Renderable2D {
         this._colorMapper = colorMapper;
     }
 
+    /** @param {ColorMapper} colorMapper */
+    set colorMapper(colorMapper) { this._colorMapper = colorMapper; }
+
     /** @param {(property: any) => number} fn */
     set colorFunction(fn) { this._colorFunction = fn; }
     
