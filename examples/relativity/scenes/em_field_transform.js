@@ -235,14 +235,12 @@ simulation
     .append(new Slider('β = v/c')
         .withRange(new Range(0, 0.9, 0.05))
         .withValue(0.3)
-        // @ts-ignore
-        .onInput(event => setBeta(Number(event.target.value))))
+        .onInput(value => setBeta(value)))
     .append(new Slider('I')
         .withRange(new Range(5, 25, 1))
         .withValue(I0)
-        .onInput(e => {
-            // @ts-ignore
-            const I = Number(e.target.value);
+        .onInput(value => {
+            const I = value;
             staticElectromagneticField._currentInWire = I;
             electromagneticField._currentInWire = I;
         }));

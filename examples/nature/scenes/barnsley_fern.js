@@ -112,5 +112,5 @@ Simulation
         cameraPosition: new Vec3(2, .5, .75).multiplyScalar(10)
     })
     .bind(fern.field.alwaysWith(fernImage))
-    .onClockTick(() => fern.iterate())
+    .onStep(() => fern.iterate())
     .start();

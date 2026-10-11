@@ -126,10 +126,11 @@ for (const segment of solenoid.segments)
     simulation.bind(segment.onceWith(new Cylinder({ color: Colour.Yellow })));
 
 simulation.append(new Slider('️⚡ Field strength: ')
+    .withRange(new Range(0, 1, 0.01))
     .on(magneticField)
     .withProperty('fieldStrength')
-    .withRange(new Range(0, 1, 0.01))
-    .withValue(.5)
+    .withValue(0.5)
     .togetherWith(new Checkbox('↻ Rotate: ')
+        .on(simulation)
         .withProperty('autoRotate')
-        .on(simulation)));
+    ));

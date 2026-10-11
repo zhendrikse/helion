@@ -62,11 +62,9 @@ const simulation = Simulation
     .append(new Slider('Wavelength ')
         .withRange(new Range(380, 700, 1))
         .withValue(480)
-        .addEventListener('input', event => {
-            // @ts-ignore
-            wavelengthColorMapper.lambdaInNanos = Number(event.target.value);
-            // @ts-ignore
-            doubleSlitOperator.wavelength = Number(event.target.value);
+        .onInput(value => {
+            wavelengthColorMapper.lambdaInNanos = value;
+            doubleSlitOperator.wavelength = value;
             field.apply(doubleSlitOperator);
         })
     );
@@ -74,8 +72,7 @@ const simulation = Simulation
 let spawnParticles = true;
 simulation.append(new Checkbox('Particles: ')
     .checked(true)
-    // @ts-ignore
-    .addEventListener('click', (event) => spawnParticles = event.target.checked)
+    .onChange(checked => spawnParticles = checked)
     .togetherWith(new Checkbox('↻ Rotate: ')
         .withProperty('autoRotate')
         .on(simulation))

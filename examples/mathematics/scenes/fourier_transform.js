@@ -137,9 +137,7 @@ simulation
     .append(new Slider('Maximum frequency')
         .withRange(new Range(0, maximumFrequency, 1))
         .withValue(0)
-        .onInput(event => {
-            // @ts-ignore
-            const frequency = Number(event.target.value);
+        .onInput(frequency => {
             const terms = numberOfTermsForFrequency(frequency);
             approximatedFunction.setFunction((/** @type {number} */ x) => fourierExpansion.evaluate(x, terms));
             simulation.setLatexTitle(fourierLatex(frequency));

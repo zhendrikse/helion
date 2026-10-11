@@ -219,16 +219,16 @@ const simulation = Simulation
     .addGraph(graph)
     .append(
         new Slider('Spring force ')
+            .withRange(new Range(1, 100, 1))
             .on(chain)
             .withProperty('springConstant')
-            .withRange(new Range(1, 100, 1))
             .withValue(chain.springConstant)
     )
     .append(
         new Slider('Damping ')
+            .withRange(new Range(0, 1, 0.01))
             .on(chain)
             .withProperty('damping')
-            .withRange(new Range(0, 1, 0.01))
             .withValue(chain.damping)
     );
 

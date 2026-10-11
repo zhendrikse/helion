@@ -23,10 +23,9 @@ export class Equation {
 
     ui() {
         return new Slider('💤 Damping')
-            .withValue(this._damping * 100)
             .withRange(new Range(0, .1, 1e-4))
-            // @ts-ignore
-            .addEventListener('input', event => this._damping = Number(event.target.value) / 100);
+            .withValue(this._damping * 100)
+            .onInput(value => this._damping = value / 100);
     }
 
     /** 

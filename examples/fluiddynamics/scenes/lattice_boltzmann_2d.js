@@ -265,7 +265,6 @@ Simulation.with({
     .append(new DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.Inferno)
-        // @ts-ignore
-        .onChange(event => curlView.colorMapper = ColorMappers.get(event.target.value)))
+        .onChange(value => curlView.colorMapper = ColorMappers.get(value)))
     .append(configuration.ui())
     .start();

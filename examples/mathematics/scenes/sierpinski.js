@@ -1,6 +1,6 @@
 import {
     Segments, LineSegmentsView, RadioGroup, Simulation, LineSegment, HueColorMapper, Vec3
-} from "../../../src/index.js";
+} from '../../../src/index.js';
 
 const LEVEL = 5;
 
@@ -117,19 +117,15 @@ const fractalView = new LineSegmentsView({
 
 Simulation
     .with({
-        htmlDivId: "sierpinskiContainer",
-        headUpDisplay: {
-            enabled: false
-        },
-        camera: {
-            fieldOfView: 30
-        },
-        viewport: {aspectRatio: "3/4", parameterMenuCollapsed: false }
-        })
+        htmlDivId: 'sierpinskiContainer',
+        headUpDisplay: { enabled: false },
+        camera: { fieldOfView: 30 },
+        viewport: { aspectRatio: '3/4', parameterMenuCollapsed: false }
+    })
     .bind(fractal.alwaysWith(fractalView))
     .frameSceneOn(fractalView, {padding: 1, translationY: -1})
     .append(new RadioGroup()
-        .add("Pyramid", buildPyramid)
-        .add("Tetrahedron", buildTetrahedron)
+        .add('Pyramid', buildPyramid)
+        .add('Tetrahedron', buildTetrahedron)
         .checked(0)
     );

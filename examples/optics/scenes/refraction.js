@@ -159,8 +159,7 @@ const wavefrontView = new LineSegmentView({
 const wavelengthSlider = new Slider('Wavelength')
     .withRange(new Range(LAMBDA_BLUE, LAMBDA_RED, 1))
     .withValue(550)
-    // @ts-ignore
-    .onInput(event => updateLightColor(false, Number(event.target.value)));
+    .onInput(value => updateLightColor(false, value));
 
 let incidentAngle = INITIAL_ANGLE;
 let animationRate = INITIAL_RATE;
@@ -194,25 +193,23 @@ const simulation = Simulation
     })
     .appendStartStopResetUI()
     .append(new Slider('Incident angle')
-        .withValue(INITIAL_ANGLE)
         .withRange(new Range(-89, 89, 1))
-        .onInput(event => {
-            // @ts-ignore
-            incidentAngle = Number(event.target.value);
+        .withValue(INITIAL_ANGLE)
+        .onInput(value => {
+            incidentAngle = value;
             initializeRays();
         }))
     .append(new Slider('Animation speed')
-        .withValue(INITIAL_RATE)
         .withRange(new Range(0, INITIAL_RATE * 5, 1))
-        .onInput(event => {
-            // @ts-ignore
-            animationRate = Number(event.target.value);
+        .withValue(INITIAL_RATE)
+        .onInput(value => {
+            animationRate = value;
             simulation.atSpeed(animationRate / INITIAL_RATE);
         }))
     .append(wavelengthSlider)
     .append(new Checkbox('White')
-        .checked(0)
-        .onChange(() => updateLightColor(true)))
+        .checked(false)
+        .onChange(checked => updateLightColor(checked)))
     .append(new Checkbox('Wavefront')
         .checked(true)
         .on(wavefrontView)

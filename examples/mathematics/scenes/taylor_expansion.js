@@ -130,9 +130,7 @@ simulation
     .append(new Slider('Terms')
         .withRange(new Range(1, 10, 1))
         .withValue(1)
-        .onInput(event => {
-            // @ts-ignore
-            const terms = Number(event.target.value);
+        .onInput(terms => {
             approximatedFunction.setFunction(x => taylorExpansion.evaluate(x, terms) - size);
             simulation.setLatexTitle('e^x = ' + taylorLatex(terms));
         })

@@ -65,12 +65,12 @@ export class ComplexFieldViewable extends Renderable3D {
         return new CompoundControl()
             .add(new DropdownMenu()
                 .for(new ComplexColorMappers())
-                .addEventListener("change", event => this.colorMapper = ComplexColorMappers.get(event.target.value))
+                .onChange(value => this.colorMapper = ComplexColorMappers.get(value))
             )
             .add(new Slider("🪟 Opacity ")
                 .withRange(new Range(0, 1, 0.01))
                 .withValue(1)
-                .addEventListener("input", event => this._mesh.material.opacity = Number(event.target.value))
+                .onInput(value => this._mesh.material.opacity = value)
             );
     }
 

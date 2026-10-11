@@ -83,9 +83,8 @@ const simulation = Simulation
     .append(new Slider('Growth rate')
         .withRange(new Range(10, 20, 0.5))
         .withValue(c)
-        .onInput(event => {
-            // @ts-ignore
-            c = Number(event.target.value);
+        .onInput(value => {
+            c = value;
             n = 0;
             flowerSeeds.forEach(seed => seed.updateWith(c));
             updateTitle(c, n);
@@ -99,10 +98,9 @@ const simulation = Simulation
     )
     .append(new Checkbox('Border around dots')
         .checked(drawBorderAroundDots)
-        .addEventListener('click', event => {
+        .onChange(checked => {
             for (const view of particleViews) 
-                // @ts-ignore
-                view.hasBorder = event.target.checked;
+                view.hasBorder = checked;
         })
     )
     .start();

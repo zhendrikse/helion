@@ -144,9 +144,8 @@ const surfaceController = new SurfaceController(simulation);
 // Shared color mapper control — updates both 2D and 3D views (was only 3D via surfaceView.ui())
 const sharedColorControl = new DropdownMenu()
     .for(new ComplexColorMappers())
-    .addEventListener('change', event => {
-        // @ts-ignore
-        const mapper = ComplexColorMappers.get(event.target.value);
+    .onChange(value => {
+        const mapper = ComplexColorMappers.get(value);
         surfaceView.colorMapper = mapper;
         surfaceView2D.colorMapper = mapper;
     });
@@ -154,8 +153,7 @@ const sharedColorControl = new DropdownMenu()
 simulation
     .append(new DropdownMenu()
         .for(functionsRegistry)
-        // @ts-ignore
-        .addEventListener('change', event => surfaceController.changeSurface(event.target.value)))
+        .onChange(value => surfaceController.changeSurface(value)))
     .append(new RadioGroup()
         .add('2D', event => setDimension(false))
         .add('3D', event => setDimension(true))
@@ -164,12 +162,11 @@ simulation
     .append(new Slider('🪟 Opacity ')
         .withRange(new Range(0, 1, 0.01))
         .withValue(1)
-        // @ts-ignore
-        .addEventListener('input', event => surfaceView._mesh.material.opacity = Number(event.target.value)))
+        .onInput(value => surfaceView._mesh.material.opacity = value))
     .append(new Slider('Maximum height: ')
+        .withRange(new Range(1, 10, .1))
         .on(surfaceView)
         .withProperty('maxHeight')
-        .withRange(new Range(1, 10, .1))
         .withValue(4.0))
 
 surfaceController.changeSurface('z * z + 2');

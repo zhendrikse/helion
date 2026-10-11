@@ -177,18 +177,17 @@ simulation
         })
         .checked(1))
     .append(new Slider('Size: ')
-        .withValue(initialDiameter)
         .withRange(new Range(50, 300, 1))
-        .onChange(event => {
-            // @ts-ignore
-            fraunhoferSimulation.diameterInMicroMeter = event.target.value;
+        .withValue(initialDiameter)
+        .onChange(value => {
+            fraunhoferSimulation.diameterInMicroMeter = value;
             fraunhoferSimulation.recompute().then(_ => simulation.hideHud());
         }))
     .append(new Slider('Color: ')
-        .withValue(initialLambda)
         .withRange(new Range(380, 700, 1))
-        // .addEventListener('input', (event) => {
-        //     const wavelength = Number(event.target.value);
+        .withValue(initialLambda)
+        // .onInput(value => {
+        //     const wavelength = value;
         //     const color = wavelengthToRGBNormalized(wavelength);
         //     const intensity = 1;
         //     wavelengthProbe.style.backgroundColor =
@@ -196,9 +195,8 @@ simulation
         //          ${color.g * intensity * 255},
         //          ${color.b * intensity * 255})`;
         // })
-        .onChange(event => {
-            // @ts-ignore
-            fraunhoferSimulation.lambdaInNanos = event.target.value;
+        .onChange(value => {
+            fraunhoferSimulation.lambdaInNanos = value;
             fraunhoferSimulation.recompute().then(r => simulation.hideHud());
         })
         .togetherWith(new Checkbox('🎨 ')

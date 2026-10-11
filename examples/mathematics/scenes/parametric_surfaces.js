@@ -87,8 +87,7 @@ const simulation = Simulation
     })
     .append(new DropdownMenu()
         .for(surfacesRegistry)
-        // @ts-ignore
-        .addEventListener('change', event => changeSurface(event.target.value))
+        .onChange(value => changeSurface(value))
     )
     .append(surfaceView.colorLayerUI())
     .append(surfaceView.ui())

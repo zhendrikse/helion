@@ -179,18 +179,15 @@ simulation
     .append(new Slider('a')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(2)
-        // @ts-ignore
-        .onInput(event => onMatrixModified('a', Number(event.target.value)))
+        .onInput(value => onMatrixModified('a', value))
     )
     .append(new Slider('b')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(1)
-        // @ts-ignore
-        .onInput(event => onMatrixModified('b', Number(event.target.value)))
+        .onInput(value => onMatrixModified('b', value))
     )
     .append(new Slider('d')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(2)
-        // @ts-ignore
-        .onInput(event => onMatrixModified('d', Number(event.target.value)))
+        .onInput(value => onMatrixModified('d', value))
     );

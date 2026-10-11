@@ -108,5 +108,5 @@ Simulation
     .bind(turtle.alwaysWith(turtleView))
     .append(new Button()
         .withText("Penrose tiling ⟡")
-        .addEventListener("click", () => drawPenrose(turtle))
+        .onClick(() => drawPenrose(turtle))
     );

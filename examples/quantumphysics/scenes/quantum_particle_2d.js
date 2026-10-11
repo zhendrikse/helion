@@ -152,9 +152,8 @@ let staticView = false;
 let is3d = true;
 const probabilityCheckbox = new Checkbox("Probability cloud")
     .checked(showProbabilityCloud)
-    .onChange(event => {
-        // @ts-ignore
-        showProbabilityCloud = event.target.checked;
+    .onChange(checked => {
+        showProbabilityCloud = checked;
         is3d = showProbabilityCloud ? false : is3d;
         dimensionRadioGroup.checked(is3d ? 1 : 0);
         updateView();
@@ -171,12 +170,12 @@ simulation
     .append(new DropdownMenu()
         .for(potentialsRegistry)
         .withValue('Coulomb (hydrogen-like)')
-        .onChange(event => solveFor(String(/** @type {HTMLInputElement} */ (event.target).value)))
+        .onChange(value => solveFor(value))
     )    
     .append(new Slider('🌀 Eigenstate')
         .withRange(new Range(0, psi.eigenstatesCount - 1, 1))
         .withValue(currentEigenstate)
-        .addEventListener('input', event => changeState(Number(/** @type {HTMLInputElement} */(event.target).value)))
+        .onInput(value => changeState(value))
     )
     .append(new Slider('📐 Height scale')
         .withRange(new Range(1, 10, .1))
@@ -187,8 +186,7 @@ simulation
     .append(dimensionRadioGroup)
     .append(probabilityCheckbox.togetherWith(new Checkbox("Static")
         .checked(staticView)
-        // @ts-ignore
-        .onChange(event => staticView = event.target.checked)
+        .onChange(checked => staticView = checked)
     ))
     .addGraph(barGraph)
     .start();

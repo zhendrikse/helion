@@ -71,17 +71,17 @@ const simulation = Simulation
         .checked(1))
     .append(new Checkbox('🌈 Show phase color ')
         .checked(true)
-        .onChange(event => {
-            waveFunctionSurface2d.phaseColor = event.target.checked;
-            waveFunctionSurface.phaseColor = event.target.checked;
+        .onChange(checked => {
+            waveFunctionSurface2d.phaseColor = checked;
+            waveFunctionSurface.phaseColor = checked;
         })
     )
     .append(new Slider('🏃 Packet energy ')
+        .withRange(new Range(0.001, 0.1, 0.001))
         .on(gaussianImpulse)
         .withProperty('wavePacketEnergy')
-        .withRange(new Range(0.001, 0.1, 0.001))
         .withValue(0.050)
-        .addEventListener('input', () => reset(shapeConfiguration, potentialStrength, softness))
+        .onInput(value => reset(shapeConfiguration, potentialStrength, softness))
     )
     .append(new Slider('🪜 Height scale')
         .withRange(new Range(10, 25, 0.1))
@@ -93,16 +93,16 @@ const simulation = Simulation
     .append(new Slider('💪🏻 Energy barrier')
         .withRange(new Range(-0.1, 0.1, .001))
         .withValue(potentialStrength)
-        .addEventListener('input', event => {
-            potentialStrength = Number(event.target.value);
+        .onInput(value => {
+            potentialStrength = value;
             reset(shapeConfiguration, potentialStrength, softness);
         })
     )
     .append(new Slider('🧸 Softness')
         .withRange(new Range(0, 20, 1))
         .withValue(softness)
-        .addEventListener('input', event => {
-            softness = Number(event.target.value);
+        .onInput(value => {
+            softness = value;
             reset(shapeConfiguration, potentialStrength, softness);
         }));
 

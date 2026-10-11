@@ -285,11 +285,11 @@ Simulation
     .append(new Slider('Contrast')
         .withRange(new Range(0, 20, .1))
         .withValue(5)
-        // @ts-ignore
-        .onInput(event => colorMapper.scale = Number(event.target.value)))
+        .on(colorMapper)
+        .withProperty("scale"))
     .append(new Button('Clear')
         .withText('Clear')
-        .addEventListener('click', () => field.data.fill(0)))
+        .onClick(() => field.data.fill(0)))
     .start();
 
 

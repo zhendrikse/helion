@@ -83,13 +83,11 @@ const simulation = Simulation
     .append(new Slider('Temperature')
         .withRange(new Range(0.1, 4, 0.01))
         .withValue(T)
-        // @ts-ignore
-        .onInput(event => T = Number(event.target.value)))
+        .onInput(value => T = value))
     .append(new Slider('Steps / frame')
         .withRange(new Range(1000, 50000, 1000))
         .withValue(stepsPerFrame)
-        // @ts-ignore
-        .onInput(event => stepsPerFrame = Number(event.target.value)))
+        .onInput(value => stepsPerFrame = value))
     .append(new Button()
         .withText('Pause')
         .onClick(() => {

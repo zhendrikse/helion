@@ -77,6 +77,6 @@ Simulation
     .append(new Slider('🚀 Speed: ')
         .withRange(new Range(1, 100, 1))
         .withValue(50)
-        .addEventListener('input', event =>
-            proton.state.velocity.copy(speedToVelocity(event.target.value * .01, proton.velocity)))
+        .onInput(value  =>
+            proton.state.velocity.copy(speedToVelocity(value * .01, proton.velocity)))
     );

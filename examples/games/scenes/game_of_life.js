@@ -166,7 +166,7 @@ const simulation = Simulation.with({
     .append(new Slider("🏃 Frame rate")
         .withRange(new Range(1, 30, 1))
         .withValue(10)
-        .onChange(event => simulation.runsEvery(1 / Number(event.target.value)))
+        .onChange(value => simulation.runsEvery(1 / value))
     );
 
 

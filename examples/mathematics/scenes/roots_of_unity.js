@@ -171,9 +171,8 @@ const simulation = Simulation
     .append(new Slider('n')
         .withRange(new Range(1, range, 1))
         .withValue(3)
-        .onInput(event => {
-            // @ts-ignore
-            const n = Number(event.target.value);
+        .onInput(value => {
+            const n = value;
             updateRoots(simulation, n);
             roots.update(n);
             polygon.update(n);

@@ -332,9 +332,8 @@ const simulation = Simulation
 const distanceSlider = new Slider('Distance: ')
     .withRange(new Range(25.1, 64, .1))
     .withValue(33)
-    .addEventListener('input', event => {
-        // @ts-ignore
-        initialCometDistance = Number(event.target.value);
+    .onInput(value => {
+        initialCometDistance = value;
         realComet._stateVector = StateVector.initial(currentIsRingOrbitValue);
         comet.reset();
         flatComet.reset();
@@ -353,16 +352,13 @@ simulation
         .withProperty('visible')
         .checked(false)
         .togetherWith(new Checkbox('Orbit: ')
-            .addEventListener('click', event => {
+            .onChange(checked => {
                 realComet.reset();
-                // @ts-ignore
-                realComet._stateVector = StateVector.initial(event.target.checked);
+                realComet._stateVector = StateVector.initial(checked);
                 comet.reset();
-                // @ts-ignore
-                comet._stateVector = StateVector.initial(event.target.checked);
+                comet._stateVector = StateVector.initial(checked);
                 flatComet.reset();
-                // @ts-ignore
-                currentIsRingOrbitValue = event.target.checked;
+                currentIsRingOrbitValue = checked;
             })
         )
     )

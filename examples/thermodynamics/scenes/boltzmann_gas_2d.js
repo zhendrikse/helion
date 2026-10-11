@@ -23,8 +23,7 @@ const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SP
 const temperatureSlider = new Slider('Temperature')
     .withRange(new Range(0.1, MAX_SPEED * .5, 0.1))
     .withValue(gas.temperature)
-    // @ts-ignore
-    .onInput(event => gas.temperature = Number(event.target.value));
+    .onInput(value => gas.temperature = value);
 
 const graph = new UPlotGraph({
     dataDefinition: [
@@ -63,11 +62,9 @@ const simulation = Simulation
         }))
     .append(new Checkbox('Tracer particle')
         .checked(true)
-        .addEventListener('change', event => {
-            // @ts-ignore
-            particleViews[0].visible = event.target.checked;
-            // @ts-ignore
-            tracerTrail.visible = event.target.checked;
+        .onChange(checked => {
+            particleViews[0].visible = checked;
+            tracerTrail.visible = checked;
         })
         .togetherWith(new RadioGroup()
             .add('Box', _event => {

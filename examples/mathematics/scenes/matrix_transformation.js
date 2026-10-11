@@ -202,22 +202,22 @@ simulation
     .append(new Slider('a')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(2)
-        .onInput(event => onMatrixModified('a', Number(event.target.value)))
+        .onInput(value => onMatrixModified('a', value))
     )
     .append(new Slider('b')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(1)
-        .onInput(event => onMatrixModified('b', Number(event.target.value)))
+        .onInput(value => onMatrixModified('b', value))
     )
     .append(new Slider('c')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(0)
-        .onInput(event => onMatrixModified('c', Number(event.target.value)))
+        .onInput(value => onMatrixModified('c', value))
     )
     .append(new Slider('d')
         .withRange(new Range(-2, 2, 0.01))
         .withValue(1)
-        .onInput(event => onMatrixModified('d', Number(event.target.value)))
+        .onInput(value => onMatrixModified('d', value))
     )
     .append(new RadioGroup()
         .add('None', () => labelsVisibleIs(false))
@@ -241,16 +241,16 @@ simulation
     .append(new Slider('x')
         .withRange(new Range(-size, size, 0.01))
         .withValue(2)
-        .onInput(event => {
-            originalVector.axis.x =  Number(event.target.value)
+        .onInput(value => {
+            originalVector.axis.x = value;
             updateVectors();
         })
     )
     .append(new Slider('y')
         .withRange(new Range(-size, size, 0.01))
         .withValue(1)
-        .onInput(event => {
-            originalVector.axis.y =  Number(event.target.value);
+        .onInput(value => {
+            originalVector.axis.y = value;
             updateVectors();
         })
     );

@@ -424,20 +424,17 @@ export class SineImpulseOperator extends Transformation {
             .add(new Slider('〰️ Wavelength')
                 .withRange(wavelengthInPixelsRange)
                 .withValue(this._waveLength)
-                // @ts-ignore
-                .onInput(event => this._waveLength = Number(event.target.value))
+                .onInput(value => this._waveLength = value)
             )
             .add(new Slider('〽️ Amplitude')
                 .withRange(amplitudeRange)
                 .withValue(this._amplitude)
-                // @ts-ignore
-                .onInput(event => this._amplitude = Number(event.target.value))
+                .onInput(value => this._amplitude = value)
             )
             .add(new Slider('🕓 Period')
                 .withRange(periodRange)
                 .withValue(this._periods)
-                // @ts-ignore
-                .onInput(event => this._periods = Number(event.target.value))
+                .onInput(value => this._periods = value)
             );
     }
 }

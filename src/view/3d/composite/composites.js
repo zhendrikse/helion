@@ -684,7 +684,7 @@ export class LatticeView extends Renderable3D {
             )
             .add(new Checkbox("Show nodes ")
                 .checked(true)
-                .addEventListener("change", event => this.nodesVisible = event.target.checked)
+                .onChange(checked => this.nodesVisible = checked)
             );
     }
 

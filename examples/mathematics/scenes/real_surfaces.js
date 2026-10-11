@@ -112,8 +112,7 @@ simulation
     .onStep((clock, _) => surfaceController.time = clock.simulatedTime)
     .append(new DropdownMenu()
         .for(functionsRegistry)
-        // @ts-ignore
-        .onChange(event => surfaceController.changeSurface(event.target.value))
+        .onChange(value => surfaceController.changeSurface(value))
     )
     .append(surfaceView.ui())
     .append(new Checkbox('Animate surface ')

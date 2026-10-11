@@ -64,7 +64,6 @@ const arrowField = new ArrowField({
 });
 
 const speedToVelocity = (speed, direction) => direction.clone().normalize().multiplyScalar(speed);
-const speedCallback = event => proton.state.velocity = speedToVelocity(event.target.value, proton.velocity);
 const outOfBox = (pos) => pos.y > boxSize || pos.x < -boxSize || pos.x > boxSize || pos.z < -boxSize || pos.z > boxSize;
 
 Simulation
@@ -109,4 +108,4 @@ Simulation
     .append(new Slider('🚀 Speed: ')
         .withRange(new Range(1, 100, 1))
         .withValue(50)
-        .addEventListener('input', speedCallback));
+        .onInput(value => proton.state.velocity = speedToVelocity(value, proton.velocity)));

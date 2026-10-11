@@ -150,10 +150,9 @@ const simulation = Simulation
     .onStep(() => particleField.update())
     .append(new DropdownMenu()
         .for(new ColorMappers())
-        .addEventListener('change', event => {
-            // @ts-ignore
-            colorMapper = ColorMappers.get(event.target.value);
-            // propagate naar alle bestaande views (veralgemeniseerd model)
+        .onChange(value => {
+            colorMapper = ColorMappers.get(value);
+            // propagate to all existing views
             for (const view of particleViews)
                 view.colorMapper = colorMapper;
         })

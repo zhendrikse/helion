@@ -71,18 +71,16 @@ const arrowField = new ArrowField({
     colorMap: (axis, magnitude) => new Color(1, Math.sqrt(magnitude) * 1e-10, 0)
 });
 
-const chargeCallback = event => movingCharge.state.charge = Number(event.target.value) * 5e-42 * EC;
-const speedCallback = event => movingCharge.state.velocity.x = event.target.value / scale;
 const chargeSlider = new Slider('🪫 Charge: ')
     .withUnits(' electron charge(s)')
     .withValue(1)
     .withRange(new Range(0, 5, .1))
-    .addEventListener('input', chargeCallback);
+    .onInput(value => movingCharge.state.charge = value * 5e-42 * EC);
 const speedSlider = new Slider('🚀 Speed: ')
     .withUnits(' x 1E-14 m/s')
     .withValue(25)
     .withRange(new Range(1, 50, 1))
-    .addEventListener('input', speedCallback);
+    .onInput(value => movingCharge.state.velocity.x = value / scale);
 
 const simulation = Simulation
     .with({

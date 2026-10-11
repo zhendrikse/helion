@@ -610,7 +610,7 @@ export class Simulation {
 
     appendStartStopResetUI() {
         this._runButton
-            .addEventListener('click', () => {
+            .onClick(() => {
                 if (this._status === Simulation.Status.RUNNING) {
                     this._hud?.show('Paused');
                     this._runButton.withText('▶︎ Run');
@@ -623,7 +623,7 @@ export class Simulation {
             })
             .togetherWith(new Button()
                 .withText('⟳ Reset')
-                .addEventListener('click', () => {
+                .onClick(() => {
                     this._hud?.show('Reset', 1000);
                     this.reset();
                 }));

@@ -89,13 +89,13 @@ const simulation = Simulation
     .bind(dipoleField.onceWith(arrowField));
 
 simulation.append(new Slider('️⚡ Field strength: ')
+    .withRange(new Range(0, 1, 0.01))
+    .withValue(0.5)
     .on(dipoleField)
     .withProperty('fieldStrength')
-    .withRange(new Range(0, 1, 0.01))
-    .withValue(.5)
     .togetherWith(new Checkbox('↻ Rotate: ')
-        .withProperty('autoRotate')
         .on(simulation)
+        .withProperty('autoRotate')
     ));
 
 

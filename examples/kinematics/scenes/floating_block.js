@@ -67,7 +67,7 @@ const graph = new UPlotGraph({
     yLabel: 'y [m]'
 });
 
-const simulation = Simulation
+Simulation
     .with({
         htmlDivId: 'floatingBlockContainer',
         camera: {

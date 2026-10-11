@@ -181,8 +181,8 @@ let simulation = Simulation
         .withProperty('wireframe'))
     .append(new Slider('Obstacle speed')
         .withRange(new Range(0, 10, 0.1))
-        // @ts-ignore
-        .withValue(5).onInput(e => obstacle.speed = Number(e.target.value))
+        .withValue(5)
+        .onInput(value => obstacle.speed = value)
     );
 
 poolWalls.forEach(wall => simulation.bind(wall.onceWith(new Box({ color: new Colour(0xccaa00) }))));

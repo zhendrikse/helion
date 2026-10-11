@@ -102,7 +102,6 @@ Simulation
     .append(new Slider('α (coherent state): ')
         .withRange(new Range(0, 3, 0.01))
         .withValue(1.5)
-        // @ts-ignore
-        .onInput(event => setCoherentState(parseFloat(event.target.value)))
+        .onInput(value => setCoherentState(value))
     )
     .start();

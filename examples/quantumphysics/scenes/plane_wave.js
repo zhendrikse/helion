@@ -58,22 +58,22 @@ Simulation
     .runsEvery(0.02)
     .onStep((clock, _) => planeWave.time = clock.simulatedTime)
     .append(new Slider('Amplitude: ')
+        .withRange(new Range(0.5, 30, .1))
         .on(waveView)
         .withProperty('amplitude')
-        .withValue(25)
-        .withRange(new Range(0.5, 30, .1)))
+        .withValue(25))
     .append(new Slider('Omega: ')
         .withRange(new Range(0, 10, .1))
         .withValue(Math.PI)
-        .onInput(event => {
-            omega = -Number(/** @type {HTMLInputElement} */ (event.target).value);
+        .onInput(value => {
+            omega = -value;
             updateEigenstate();
         }))
     .append(new Slider('Wave number: ')
         .withRange(new Range(-.4, .4, .01))
         .withValue(0.1)
-        .onInput(event => {
-            k = -Number(/** @type {HTMLInputElement} */ (event.target).value);
+        .onInput(value => {
+            k = -value;
             updateEigenstate();
         }))
     .start();

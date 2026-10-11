@@ -33,8 +33,7 @@ class Droplet extends RadialSymmetricBody {
     }
 }
 
-// The beam owns a pool of droplets instead of continuously
-// allocating new objects.
+// The beam owns a pool of droplets instead of continuously allocating new objects.
 class WaterBeam {
     constructor(size = 100) {
         this._droplets = [];
@@ -209,21 +208,21 @@ const simulation = Simulation
         .checked(0)
     )
     .append(new Slider('Omega')
+        .withRange(new Range(-2 * Math.PI, 2 * Math.PI, .1))
         .on(sprinkler)
         .withProperty('omega')
-        .withRange(new Range(-2 * Math.PI, 2 * Math.PI, .1))
         .withValue(Math.PI)
     )
     .append(new Slider('Droplet / s')
+        .withRange(new Range(1, 30, 1))
         .on(sprinkler)
         .withProperty('dropletFrequency')
-        .withRange(new Range(1, 30, 1))
         .withValue(15)
     )
     .append(new Slider('Water velocity')
+        .withRange(new Range(0, 1, .01))
         .on(sprinkler)
         .withProperty('waterVelocity')
-        .withRange(new Range(0, 1, .01))
         .withValue(.3)
     )
     .start();

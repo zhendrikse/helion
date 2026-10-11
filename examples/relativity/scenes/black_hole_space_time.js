@@ -98,6 +98,6 @@ simulation
     .append(new Slider("Mass")
         .withRange(new Range(1, 100, 1))
         .withValue(0.025)
-        .onInput(event => canvasMaterial.uniforms.uGM.value = Number(event.target.value)/ 1000)
+        .onInput(value => canvasMaterial.uniforms.uGM.value = value / 1000)
     );
 

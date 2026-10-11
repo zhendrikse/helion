@@ -231,13 +231,10 @@ const simulation = Simulation.with({
     })
     .append(new Checkbox('Labels')
         .checked(false)
-        .onChange(event => {
-            // @ts-ignore
-            sourceLabel.visible = event.target.checked;
-            // @ts-ignore
-            sinkLabel.visible = event.target.checked;
-            // @ts-ignore
-            curlLabel.visible = event.target.checked;
+        .onChange(checked => {
+            sourceLabel.visible = checked;
+            sinkLabel.visible = checked;
+            curlLabel.visible = checked;
         }));
 
 for (const particle of particles)

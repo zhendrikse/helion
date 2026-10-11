@@ -44,9 +44,8 @@ Simulation
     .append(new Slider("🧸 Softness")
         .withRange(new Range(0, 20, 1))
         .withValue(softness)
-        .addEventListener("input", event => {
-            // @ts-ignore
-            softness = Number(event.target.value);
+        .onInput(value => {
+            softness = value;
             reset(shapeConfiguration);
         })
     )

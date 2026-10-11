@@ -206,9 +206,7 @@ export class ShapeConfiguration {
     get shape() { return this._shape; }
     get position() { return this._position; }
 
-    /**
-     * @param {() => void} onChangeEventListener
-     */
+    /** @param {() => void} onChangeEventListener */
     set onChangeEventListener(onChangeEventListener) {
         this._onChangeEventListener = onChangeEventListener;
     }
@@ -218,19 +216,17 @@ export class ShapeConfiguration {
             .add(new DropdownMenu()
                 .for(new ShapesFactory())
                 .withValue(this._shape)
-                .addEventListener('change', event => {
-                    // @ts-ignore
-                    this._shape = event.target.value;
-                    this._onChangeEventListener(event);
+                .onChange(value => {
+                    this._shape = value;
+                    this._onChangeEventListener();
                 })
             )
             .add(new Slider('📐 Size')
                 .withRange(new Range(5, 50, 1))
                 .withValue(this._size)
-                .addEventListener('input', event => {
-                    // @ts-ignore
-                    this._size = Number(event.target.value);
-                    this._onChangeEventListener(event);
+                .onInput(value => {
+                    this._size = value;
+                    this._onChangeEventListener();
                 })
             );
     }

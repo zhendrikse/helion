@@ -137,8 +137,7 @@ const simulation = Simulation
     .append(new DropdownMenu()
         .for(orbitalRegistry)
         .withValue('3d_z²')
-        // @ts-ignore
-        .onChange(e => showOrbital(e.target.value)))
+        .onChange(orbitalId => showOrbital(orbitalId)))
     .append(surfaceView.ui());
 
 /** @param {string} name */

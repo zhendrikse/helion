@@ -24,8 +24,7 @@ const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SP
 const temperatureSlider = new Slider('Temperature')
     .withRange(new Range(0.1, MAX_SPEED * .5, 0.1))
     .withValue(gas.temperature)
-    // @ts-ignore
-    .onInput(event => gas.temperature = Number(event.target.value));
+    .onInput(value => gas.temperature = value);
 
 const graph = new UPlotGraph({
     dataDefinition: [
@@ -63,22 +62,22 @@ const simulation = Simulation
                     bindParticle(particle, index);
         }))
     .append(new Checkbox('Gas particles')
-        .addEventListener('change', event => particleViews.slice(1).forEach(view => view.visible = event.target.checked))
         .checked(true)
+        .onChange(checked => particleViews.slice(1).forEach(view => view.visible = checked))
         .togetherWith(new RadioGroup()
-        .add('Box', _event => {
-            gas.limitToContainer = Gas.bounceWithinBox;
-            gas.reset();
-            tracerTrail.reset();
-        })
-        .add('Sphere', _event => {
-            gas.limitToContainer = Gas.bounceWithinSphere;
-            gas.reset();
-            tracerTrail.reset();
-        }).checked(0)))
+            .add('Box', _event => {
+                gas.limitToContainer = Gas.bounceWithinBox;
+                gas.reset();
+                tracerTrail.reset();
+            })
+            .add('Sphere', _event => {
+                gas.limitToContainer = Gas.bounceWithinSphere;
+                gas.reset();
+                tracerTrail.reset();
+            }).checked(0)))
     .append(new Slider('Tracer mass')
-        .withValue(50)
         .withRange(new Range(1, 100, 1))
+        .withValue(50)
         .on(gas)
         .withProperty('tracerMass'))
     .append(temperatureSlider)

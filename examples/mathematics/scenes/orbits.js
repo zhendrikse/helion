@@ -125,21 +125,21 @@ simulation
     .append(new Slider('Rotation')
         .withRange(new Range(0, 2 * Math.PI, 0.01))
         .withValue(0)
-        .onInput(event => updateRotation(Number(event.target.value)))
+        .onInput(value => updateRotation(value))
     )
     .append(new Slider('x')
         .withRange(new Range(-size, size, 0.01))
         .withValue(2)
-        .onInput(event => {
-            point.axis.x = Number(event.target.value);
+        .onInput(value => {
+            point.axis.x = value;
             updateRotation(rotationAngle);
         })
     )
     .append(new Slider('y')
         .withRange(new Range(-size, size, 0.01))
         .withValue(1)
-        .onInput(event => {
-            point.axis.y = Number(event.target.value);
+        .onInput(value => {
+            point.axis.y = value;
             updateRotation(rotationAngle);
         })
     );

@@ -76,15 +76,15 @@ Simulation
     .bind(crystal.alwaysWith(latticeView))
     .append(latticeView.ui())
     .append(new Slider("Bond force ")
+        .withRange(new Range(0.1, 20, .01))
         .on(crystal)
         .withProperty("bondForce")
-        .withRange(new Range(0.1, 20, .01))
         .withValue(1.5)
     )
     .append(new Slider("Damping ")
+        .withRange(new Range(0, 1, .01))
         .on(crystal)
         .withProperty("damping")
-        .withRange(new Range(0, 1, .01))
         .withValue(0.2)
     );
 

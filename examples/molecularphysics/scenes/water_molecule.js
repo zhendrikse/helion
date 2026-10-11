@@ -109,7 +109,6 @@ class TorqueForce extends Force {
         this._bisector.multiplyScalar(1 / bisectorLength);
 
         // torque_force = kt * spacing * (angle - bond_angle) * norm(v1 + v2)
-        // @ts-ignore
         this._forceVector.copy(this._bisector).multiplyScalar(this._k * this._restLength * (angle - this._restAngle));
     }
 

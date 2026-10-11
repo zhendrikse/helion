@@ -43,20 +43,16 @@ const waveView = new OneDimensionalWaveFunctionView({
 
 const groundStateSlider = new Slider('n=1: ')
         .withRange(new Range(0, 1, 0.01))
-        // @ts-ignore
-        .onInput(event => { weights.ground = parseFloat(event.target.value); updateSuperposition(); });
+        .onInput(value => { weights.ground = value; updateSuperposition(); });
 const firstExcitedSlider = new Slider('n=2: ')
         .withRange(new Range(0, 1, 0.01))
-        // @ts-ignore
-        .onInput(event => { weights.first = parseFloat(event.target.value); updateSuperposition(); });
+        .onInput(value => { weights.first = value; updateSuperposition(); });
 const secondExcitedSlider = new Slider('n=3: ')
         .withRange(new Range(0, 1, 0.01))
-        // @ts-ignore
-        .onInput(event => { weights.second = parseFloat(event.target.value); updateSuperposition(); });
+        .onInput(value => { weights.second = value; updateSuperposition(); });
 const thirdExcitedSlider = new Slider('n=4: ')
         .withRange(new Range(0, 1, 0.01))
-        // @ts-ignore
-        .onInput(event => { weights.third = parseFloat(event.target.value); updateSuperposition(); });
+        .onInput(value => { weights.third = value; updateSuperposition(); });
 
 /** @param {number} n */
 function setEigenstate(n) {

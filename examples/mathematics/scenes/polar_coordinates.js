@@ -43,29 +43,27 @@ const simulation = Simulation.with({
     .append(new Slider("θ (theta)")
         .withRange(new Range(0, 180, 1))
         .withValue(initialU * 180)
-        .onInput(e => { 
-            // @ts-ignore
-            surfacePoint.u = Number(e.target.value) / 180;
+        .onInput(value => {
+            surfacePoint.u = value / 180;
             sphereSurface.frameAt(surfacePoint.u, surfacePoint.v, surfacePoint);
         })
     )
     .append(new Slider("φ (phi)")
         .withRange(new Range(0, 360, 1))
         .withValue(initialV * 360)
-        .onInput(e => {
-            // @ts-ignore
-            surfacePoint.v = Number(e.target.value) / 360;
+        .onInput(value => {
+            surfacePoint.v = value / 360;
             sphereSurface.frameAt(surfacePoint.u, surfacePoint.v, surfacePoint);
         })
     )
     .append(new Checkbox("Principal directions")
+        .on(tangentFrameView)
+        .withProperty("showPrincipals")
         .checked(false)
-            // @ts-ignore
-        .onChange(e => tangentFrameView.showPrincipals = e.target.checked)
         .togetherWith(new Checkbox("Axes")
+            .on(tangentFrameView)
+            .withProperty("showAxes")
             .checked(true)
-            // @ts-ignore
-            .onChange(/* @ts-ignore */ e => tangentFrameView.showAxes = e.target.checked)
     ))
     .provideAxesAround(sphereView)
     .frameSceneOn(sphereView, { padding: 0.9, translationY: -1 });

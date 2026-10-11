@@ -1,6 +1,5 @@
 import {ArrowField, Simulation, VectorField, Range, Vec3} from "../../../src/index.js";
 
-
 const VectorFields = Object.freeze({
     FIELD_1: "Vector field 1",
     FIELD_2: "Vector field 2"

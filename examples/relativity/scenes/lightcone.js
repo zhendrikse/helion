@@ -136,6 +136,9 @@ const simulation = Simulation.with({
         spacetime.t += dt * 0.3; // 0.3 schaalt zodat hele kegel in ~3s opbouwt, zoals origineel
         if (spacetime.t > 1) spacetime.t = 1;
     })
-    .append(new Slider("v = β").withRange(new Range(0, 0.9, 0.05)).withValue(0.5).onInput(e => { spacetime.v = Number(e.target.value); }));
+    .append(new Slider("v = β")
+        .withRange(new Range(0, 0.9, 0.05))
+        .withValue(0.5)
+        .onInput(value => spacetime.v = value));
 
 simulation.setLatexTitle("$x',t'$ geboost met $\\beta=v/c$, lichtkegel $x^2+y^2=t^2$");

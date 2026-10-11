@@ -190,6 +190,12 @@ export class DropdownMenu extends HtmlControl {
         return this;
     }
 
+    /** @param {(value: string) => void} callback */
+    onChange(callback) {
+        this.addEventListener('change', event => callback(event.target.value));
+        return this;
+    }
+
     /** @param {string} value */
     withValue(value) {
         this._inputControl.value = value;
@@ -239,6 +245,14 @@ export class Slider extends HtmlControl {
 
     /** @param {string} name */
     withProperty(name) {
+        if (!this._targetObject)
+            throw new Error('Set target object first with the checkbox.on() method');
+
+        if (this._targetObject[name])
+            this.withValue(this._targetObject[name]);
+        else
+            console.info(`Helion cannot set initial state of slider control: no getter for property ${name}`);
+
         this.addEventListener('input', (event) => {
             // @ts-ignore
             this._targetObject[name] = Number(event.target.value);
@@ -248,11 +262,21 @@ export class Slider extends HtmlControl {
         return this;
     }
 
+    /** @param {(value: number) => void} callback */
+    onInput(callback) {
+        this.addEventListener('input', event => callback(Number(event.target.value)));
+        return this;
+    }
+
+    /** @param {(value: number) => void} callback */
+    onChange(callback) {
+        this.addEventListener('change', event => callback(Number(event.target.checked)));
+        return this;
+    }
+
     /**
-     * 
-     * @param {string} eventType 
+     * @param {string} eventType
      * @param {(event: Event) => void} callback 
-     * @returns 
      */
     addEventListener(eventType, callback) {
         const isString = typeof eventType === 'string' || eventType instanceof String;
@@ -289,10 +313,24 @@ export class Checkbox extends HtmlControl {
         return this;
     }
 
+    /** @param {(checked: boolean) => void} callback */
+    onChange(callback) {
+        this.addEventListener('change', event => callback(event.target.checked));
+        return this;
+    }
+
     /** @param {string} name */
     withProperty(name) {
+        if (!this._targetObject)
+            throw new Error('Set target object first with the checkbox.on() method');
+
+        if (this._targetObject[name])
+            this._inputControl.checked = this._targetObject[name];
+        else
+            console.info(`Helion cannot set initial state of checkbox control: no getter for property ${name}`);
+
         // @ts-ignore
-        this.addEventListener('click', (event) => this._targetObject[name] = event.target.checked);
+        this.addEventListener('change', (event) => this._targetObject[name] = event.target.checked);
         return this;
     }
 }

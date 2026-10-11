@@ -371,8 +371,8 @@ class SmokePressureView extends Renderable2D {
         showSmoke = true,
     } = {}) {
         super();
-        this._showPressure = showPressure;
-        this._showSmoke = showSmoke;
+        this.showPressure = showPressure;
+        this.showSmoke = showSmoke;
         this._width = 0;
         this._height = 0;
         this._pixels = new Uint8Array();
@@ -383,8 +383,6 @@ class SmokePressureView extends Renderable2D {
         this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, { colorSpace: LinearSRGBColorSpace });
     }
 
-    set showSmoke(/** @type {boolean} */ showSmoke) { this._showSmoke = showSmoke; }
-    set showPressure(/** @type {boolean} */ showPressure) { this._showPressure = showPressure; }
     set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
 
     canBindTo(/** @type {{nx:number, ny:number, pressureRange:Interval}} */ model) {
@@ -433,15 +431,15 @@ class SmokePressureView extends Renderable2D {
         const smoke = fluid.smokeAt(j, i);
         let alpha = 0;
 
-        if (this._showPressure) {
+        if (this.showPressure) {
             this._colorMapper.map(pressureRange.normalize(fluid.pressureAt(j, i)), this._color);
-            if (this._showSmoke)
+            if (this.showSmoke)
                 this._color.setRGB(
                     Math.max(0.0, this._color.r - smoke),
                     Math.max(0.0, this._color.g - smoke),
                     Math.max(0.0, this._color.b - smoke));
             alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
-        } else if (this._showSmoke) {
+        } else if (this.showSmoke) {
             this._color.setRGB(smoke, smoke, smoke);
             if (sceneType === SCENE_TYPE.PAINT)
                 this._colorMapper.map(smoke, this._color);
@@ -589,6 +587,8 @@ const fluidDynamicsView = new SmokePressureView();
 const velocitiesView = new VelocitiesView();
 const obstacleView = new Circle({ radiusOffset: fluid.cellSize });
 
+console.log(fluidDynamicsView["showPressure"]);
+
 document.addEventListener('keydown', event => {
     switch (event.key) {
         case 'p':
@@ -675,32 +675,31 @@ const simulation = Simulation
         .checked(1)
     )
     .append(new Checkbox('🏃🏻‍♀️‍➡️ Velocities')
-        .onChange(event => velocitiesView.visible = event.target.checked)
+        .on(velocitiesView)
+        .withProperty("visible")
         .togetherWith(new Checkbox('✈️ Streamlines')
-            .onChange(event => streamlinesView.visible = event.target.checked)
+            .on(streamlinesView)
+            .withProperty("visible")
         ))
     .append(new Checkbox('🗜️ Pressure')
-        .checked(showPressure)
-        .onChange(event => {
-            showPressure = event.target.checked;
-            fluidDynamicsView.showPressure = showPressure;
-            obstacleView.fillColor = showPressure ? new Colour(0x131313) : new Colour(0xDDDDDD);
+        .on(fluidDynamicsView)
+        .withProperty("showPressure")
+        .onChange(checked => {
+            showPressure = checked;
+            obstacleView.fillColor = checked ? new Colour(0x131313) : new Colour(0xDDDDDD);
         }).togetherWith(new Checkbox('🚬 Smoke')
-            .checked(true)
-            .onChange(event => fluidDynamicsView.showSmoke = event.target.checked)))
+            .on(fluidDynamicsView)
+            .withProperty("showSmoke")))
     .append(new DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.RdYlBu)
-        // @ts-ignore
-        .onChange(event =>
-            fluidDynamicsView.colorMapper = ColorMappers.get(event.target.value, { colorSpace: LinearSRGBColorSpace })))
+        .onChange(value =>
+            fluidDynamicsView.colorMapper = ColorMappers.get(value, { colorSpace: LinearSRGBColorSpace })))
     .append(new Slider('🏃🏻‍♀️‍➡️ Fluid velocity')
         .withRange(new Range(.5, 3, .01))
-        .withValue(fluidSpeed)
-        .onInput(event => setFluidVelocity(Number(event.target.value))))
+        .onInput(value => setFluidVelocity(value)))
     .append(new Slider('🧘🏻‍♀️ Over-relaxation')
-        .on(solver)
-        .withProperty("overRelaxation")
         .withRange(new Range(1.0, 1.95, 0.01))
-        .withValue(solver.overRelaxation))
+        .on(solver)
+        .withProperty("overRelaxation"))
     .start();

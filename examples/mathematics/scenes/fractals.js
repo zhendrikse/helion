@@ -1,7 +1,7 @@
 import {
     Button, LineSegmentsView, Simulation, Vec3, Turtle, HexValueColorMapper
-} from "../../../src/index.js";
-import {Color} from "three";
+} from '../../../src/index.js';
+import {Color} from 'three';
 
 function kochSnowflake(turtle, length, depth) {
     if (depth === 0) {
@@ -201,7 +201,7 @@ const turtleView = new LineSegmentsView({
 drawDragonCurve(turtle);
 Simulation
     .with({
-        htmlDivId: "fractalsContainer",
+        htmlDivId: 'fractalsContainer',
         viewport: { parameterMenuCollapsed: false },
         camera: {
             fieldOfView: 30,
@@ -211,25 +211,25 @@ Simulation
         headUpDisplay: {
             enabled: false
         }
-        })
+    })
     .bind(turtle.alwaysWith(turtleView))
     .append(new Button()
-        .withText("T-square fractal 🔶")
-        .addEventListener("click", () => drawTSquare(turtle))
+        .withText('T-square fractal 🔶')
+        .onClick(() => drawTSquare(turtle))
         .togetherWith(new Button()
-            .withText("Dragon curve 🐦‍🔥")
-            .addEventListener("click", () => drawDragonCurve(turtle))
+            .withText('Dragon curve 🐦‍🔥')
+            .onClick(() => drawDragonCurve(turtle))
         )
     )
     .append(new Button()
-        .withText("Koch snowflake ❄️")
-        .addEventListener("click", () => drawSnowflake(turtle))
+        .withText('Koch snowflake ❄️')
+        .onClick(() => drawSnowflake(turtle))
         .togetherWith(new Button()
-            .withText("Cesaro fractal 🏛️")
-            .addEventListener("click", () => drawCesaro(turtle))
+            .withText('Cesaro fractal 🏛️')
+            .onClick(() => drawCesaro(turtle))
         )
     )
     .append(new Button()
-        .withText("Sierpinski triangle 🔺️")
-        .addEventListener("click", () => drawSierpinskiTriangle(turtle))
+        .withText('Sierpinski triangle 🔺️')
+        .onClick(() => drawSierpinskiTriangle(turtle))
     );

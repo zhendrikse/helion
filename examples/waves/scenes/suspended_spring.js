@@ -80,15 +80,15 @@ Simulation
         granularity: 20
     }))
     .append(new Slider('Bond force ')
+        .withRange(new Range(10, 1000, 1))
         .on(chain)
         .withProperty('bondForce')
-        .withRange(new Range(10, 1000, 1))
         .withValue(30)
     )
     .append(new Slider('Damping ')
+        .withRange(new Range(0, .5, .01))
         .on(chain)
         .withProperty('damping')
-        .withRange(new Range(0, .5, .01))
         .withValue(0.2)
     );
 

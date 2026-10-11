@@ -17,13 +17,13 @@ const cellSize = 0.3;
 
 // Color mapping for potential: -V0/2 (red) -> 0 (yellow) -> +V0/2 (green)
 class PotentialColorMapper extends ColorMapper {
-    map(/* @type {number} */ value, /* @type {Color} */ target) {
+    map(/** @type {number} */ value, /** @type {Color} */ target) {
         value < 0.5 ? target.setRGB(1, 2 * value, 0): target.setRGB(1 - 2 * (value - 0.5), 1, 0);
     }
 }
 
 class DipoleBoundaryCondition extends DirichletBoundaryCondition {
-    constructor(/* @type {number} */ separation = d) {
+    constructor(/** @type {number} */ separation = d) {
         const cx = Math.floor(N / 2);
         const cy = Math.floor(N / 2);
 
@@ -43,7 +43,7 @@ class DipoleBoundaryCondition extends DirichletBoundaryCondition {
 }
 
 class ChargedRingBoundaryCondition extends DirichletBoundaryCondition {
-    constructor(/* @type {number} */ radius = L * .75) {
+    constructor(/** @type {number} */ radius = L * .75) {
         const cx = Math.floor(N / 2);
         const cy = Math.floor(N / 2);
         const ringRadiusCells = Math.round(radius / h);
@@ -93,7 +93,7 @@ class ElectricFieldStreamlinesAdapter extends MathPhysicsModelBehavior {
         this._halfHeight = 0.5 * this.ny * this.cellSize;
     }
 
-    contains(/* @type {Vec2} */ position) {
+    contains(/** @type {Vec2} */ position) {
         // StreamlinesView uses simulation coordinates [0, nx*cellSize] x [0, ny*cellSize]
         // but we need to check if the corresponding world position is within bounds
         const worldX = position.x - this._halfWidth;
@@ -101,7 +101,7 @@ class ElectricFieldStreamlinesAdapter extends MathPhysicsModelBehavior {
         return Math.abs(worldX) <= this._halfWidth && Math.abs(worldY) <= this._halfHeight;
     }
 
-    sample(/* @type {Vec2} */ position, /* @type {Vec2} */ target) {
+    sample(/** @type {Vec2} */ position, /** @type {Vec2} */ target) {
         // Convert from StreamlinesView coordinates [0, nx*cellSize] to ElectricField world coords [-halfWidth, +halfWidth]
         const worldX = position.x - this._halfWidth;
         const worldY = position.y - this._halfHeight;
@@ -128,7 +128,7 @@ const streamlinesView = new StreamlinesView({
     color: new Colour(0x090909)
 });
 streamlinesView.position.set(-30, -30);
-streamlinesView.visible = false;
+streamlinesView.visible = true;
 
 const view = new DiscreteFieldSurfaceView({
     scale: cellSize,
@@ -188,9 +188,8 @@ const simulation = Simulation
     .append(new Slider('Iterations')
         .withRange(new Range(0, 15000, 100))
         .withValue(iterationLimit)
-        .onChange(event => {
-            // @ts-ignore
-            iterationLimit = Number(event.target.value);
+        .onChange(value => {
+            iterationLimit = value;
             reset();
         }))
     .append(new Checkbox('Electric field arrows ')

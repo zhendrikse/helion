@@ -309,39 +309,42 @@ export class SurfaceVisualization extends Renderable3D {
         this._meshLayer?.initialize(model);
         for (const layer of this._overlayLayers) layer.initialize(model);
     }
+
     ui() {
         const colorMappers = new ColorMappers('🎨 Color map');
         return new CompoundControl()
-            .add(new DropdownMenu().for(colorMappers).addEventListener('change', event => {
-                // @ts-ignore
-                this._surfaceLayer.colorMapper = colorMappers.get(event.target.value)();
-                // @ts-ignore
-                this._glyphLayer.colorMapper = colorMappers.get(event.target.value)();
+            .add(new DropdownMenu()
+                .for(colorMappers)
+                .onChange(value => {
+                    this._surfaceLayer.colorMapper = colorMappers.get(value)();
+                    this._glyphLayer.colorMapper = colorMappers.get(value)();
             }))
-            .add(new Slider('🪟 Opacity ').withRange(new Range(0, 1, 0.01)).withValue(this._options.opacity)
-                .addEventListener('input', event => {
-                    // @ts-ignore
-                    this._surfaceLayer.opacity = Number(event.target.value);
-                    // @ts-ignore
-                    this._glyphLayer.opacity = Number(event.target.value);
+            .add(new Slider('🪟 Opacity ')
+                .withRange(new Range(0, 1, 0.01))
+                .withValue(this._options.opacity)
+                .onInput(value => {
+                    this._surfaceLayer.opacity = value;
+                    this._glyphLayer.opacity = value;
                 }));
     }
+
     colorLayerUI() {
         const colorLayers = new ColorLayers('🖌️ Color ');
-        return new DropdownMenu().for(colorLayers).addEventListener('change', event => {
-            // @ts-ignore
-            const colorLayer = colorLayers.get(event.target.value)();
-            this._surfaceLayer.colorLayer = colorLayer;
-            this._surfaceLayer.colorMapper = colorLayer.preferredColorMapper();
-            this._surfaceLayer.normalizer = colorLayer.preferredNormalizer();
-            this._glyphLayer.colorLayer = colorLayer;
-            this._glyphLayer.colorMapper = colorLayer.preferredColorMapper();
-            this._glyphLayer.normalizer = colorLayer.preferredNormalizer();
-            for (const layer of this._overlayLayers) {
-                layer.colorLayer = colorLayer;
-                layer.colorMapper = colorLayer.preferredColorMapper();
-                layer.normalizer = colorLayer.preferredNormalizer();
-            }
+        return new DropdownMenu()
+            .for(colorLayers)
+            .onChange(value => {
+                const colorLayer = colorLayers.get(value)();
+                this._surfaceLayer.colorLayer = colorLayer;
+                this._surfaceLayer.colorMapper = colorLayer.preferredColorMapper();
+                this._surfaceLayer.normalizer = colorLayer.preferredNormalizer();
+                this._glyphLayer.colorLayer = colorLayer;
+                this._glyphLayer.colorMapper = colorLayer.preferredColorMapper();
+                this._glyphLayer.normalizer = colorLayer.preferredNormalizer();
+                for (const layer of this._overlayLayers) {
+                    layer.colorLayer = colorLayer;
+                    layer.colorMapper = colorLayer.preferredColorMapper();
+                    layer.normalizer = colorLayer.preferredNormalizer();
+                }
         });
     }
 

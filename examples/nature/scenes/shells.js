@@ -85,7 +85,7 @@ const simulation = Simulation
     .onFrame((_) => surfaceView.rotation.y += 0.0167)
     .append(new DropdownMenu()
         .for(surfacesRegistry)
-        .addEventListener('change', event => changeSurface(event.target.value)))
+        .onChange(value => changeSurface(value)))
     .append(surfaceView.ui())
     .start();
 
