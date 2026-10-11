@@ -362,17 +362,69 @@ class FluidDisplayFieldAdapter extends MathPhysicsModelBehavior {
     constructor(fluid) {
         super();
         this._fluid = fluid;
+        this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, { colorSpace: LinearSRGBColorSpace });
+        this._rgb = new Color();
+        this._range = new Interval(0, 0xFFFFFFFF);
     }
 
     get nx() { return this._fluid.nx; }
     get ny() { return this._fluid.ny; }
 
+    set colorMapper(colorMapper) {
+        this._colorMapper = colorMapper;
+    }
+
     rangeAt() {
-        return this._fluid.pressureRange;
+        return this._range;
     }
 
     valueAt(i, j) {
-        return this._fluid.pressureRange.normalize(this._fluid.pressureAt(j, i)) - this._fluid.smokeAt(j, i);
+        const fluid = this._fluid;
+        const smoke = fluid.smokeAt(j, i);
+
+        // Reproduce the old combined rendering: map pressure to RGB, then
+        // darken every channel by the local smoke value.
+        this._colorMapper.map(fluid.pressureRange.normalize(fluid.pressureAt(j, i)), this._rgb);
+        this._rgb.setRGB(
+            Math.max(0, this._rgb.r - smoke),
+            Math.max(0, this._rgb.g - smoke),
+            Math.max(0, this._rgb.b - smoke),
+            LinearSRGBColorSpace
+        );
+
+        const alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
+        const red = Math.round(255 * this._rgb.r);
+        const green = Math.round(255 * this._rgb.g);
+        const blue = Math.round(255 * this._rgb.b);
+        const opacity = Math.round(alpha);
+
+        return (((red << 24) | (green << 16) | (blue << 8) | opacity) >>> 0);
+    }
+}
+
+class PackedFluidColorMapper extends ColorMapper {
+    map(normalizedValue, targetColor) {
+        const packed = Math.round(normalizedValue * 0xFFFFFFFF);
+        targetColor.setRGB(
+            ((packed >>> 24) & 0xFF) / 255,
+            ((packed >>> 16) & 0xFF) / 255,
+            ((packed >>> 8) & 0xFF) / 255,
+            LinearSRGBColorSpace
+        );
+    }
+}
+
+function fluidPixelOpacity(normalizedValue) {
+    const packed = Math.round(normalizedValue * 0xFFFFFFFF);
+    return (packed & 0xFF) / 255;
+}
+
+class FluidSurfaceView extends DiscreteFieldSurfaceView {
+    initialize(scalarField) {
+        super.initialize(scalarField);
+        this._texture.colorSpace = LinearSRGBColorSpace;
+        this._mesh.material.depthWrite = false;
+        this._texture.needsUpdate = true;
     }
 }
 
@@ -483,11 +535,10 @@ const streamlinesView = new StreamlinesView();
 
 
 const fluidFieldAdapter = new FluidDisplayFieldAdapter(fluid);
-const fluidDynamicsView = new DiscreteFieldSurfaceView({
-    colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace }),
-    normalizer: new FixedIntervalNormalizer(new Interval(-1, 1)),
-    opacityFunction: value => value,
-    colorSpace: LinearSRGBColorSpace
+const fluidDynamicsView = new FluidSurfaceView({
+    colorMapper: new PackedFluidColorMapper(),
+    normalizer: new FixedIntervalNormalizer(new Interval(0, 0xFFFFFFFF)),
+    opacityFunction: fluidPixelOpacity
 });
 fluidDynamicsView.position.set(0.5, 0.5, 0);
 fluidDynamicsView.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
