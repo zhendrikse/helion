@@ -11,6 +11,7 @@ import { ThreeJsScene } from '../view/3d/scene.js';
 import { Renderable, Renderer } from '../view/renderer.js';
 import { Colour } from '../view/colormappers.js';
 import { Object3D } from 'three/src/Three.js';
+import { Binding } from "../model/behavior.js";
 
 class SimulationClock {
     /**
@@ -568,7 +569,6 @@ export class Simulation {
     }
 
     /**
-     *
      * @param {(event: Event) => void} callback
      * @returns {Simulation}
      */

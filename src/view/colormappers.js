@@ -368,7 +368,7 @@ export class HexValueColorMapper extends ColorMapper {
 
 class UniformColorMapper extends ColorMapper {
     constructor({
-        color = 0xffff00
+        color = new Color().setRGB( 1, 1, 0.0, SRGBColorSpace)
     }={}) {
         super();
         this.color = color;
@@ -379,7 +379,7 @@ class UniformColorMapper extends ColorMapper {
      * @param {Color} targetColor
      */
     map(value, targetColor) {
-        targetColor.setHex(this.color);
+        targetColor.copy(this.color);
     }
 }
 

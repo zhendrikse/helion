@@ -28,7 +28,7 @@ export class StreamlinesView extends Renderable2D {
         numberOfSegments = 15,
         seedSpacing = 5,
         scale = 1e-2,
-        color = new Colour(0, .25, .25)
+        color = new Colour(.175, .175, .175)
     } = {}) {
         super();
         this._scale = scale;
@@ -126,7 +126,7 @@ export class VelocitiesView extends Renderable2D {
     /** @param {VelocitiesViewOptions} [options] */
     constructor({
         scale = 1.5e-2,
-        color = new Colour(0.2, 0.2, 0.0)
+        color = new Colour(0.0, 0.125, 0.125)
     } = {}) {
         super();
         this._scale = scale;

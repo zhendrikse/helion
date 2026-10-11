@@ -22,12 +22,12 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
      * }} param0
      */
     constructor({
-                    colorMapper = new WavelengthColorMapper({ lambdaInNanos: 525}),
-                    opacityFunction = (/** @type {number} */ fieldValue) => Math.sqrt(fieldValue),
-                    normalizer = new AdaptiveSymmetricNormalizer(),
-                    scale = 1,
-                    colorSpace = SRGBColorSpace
-                } = {}) {
+        colorMapper = new WavelengthColorMapper({ lambdaInNanos: 525}),
+        opacityFunction = (/** @type {number} */ fieldValue) => Math.sqrt(fieldValue),
+        normalizer = new AdaptiveSymmetricNormalizer(),
+        scale = 1,
+        colorSpace = SRGBColorSpace
+    } = {}) {
         super();
         this.scale.set(scale, scale, 1);
         this._colorMapper = colorMapper;
@@ -96,13 +96,13 @@ export class FieldEdgeIntensityPixelRaster extends Renderable2D {
      * edgeHeight?: number
      * colorMapper?: ColorMapper
      * opacityFunction?: (fieldValue: number) => number
-     * }} param0
+     * }} param0 
      */
     constructor({
-                    edgeHeight = 100,
-                    colorMapper = new WavelengthColorMapper({ lambdaInNanos: 525 }),
-                    opacityFunction = (/** @type {number} */ intensity) => Math.sqrt(intensity)
-                } = {}) {
+        edgeHeight = 100,
+        colorMapper = new WavelengthColorMapper({ lambdaInNanos: 525 }),
+        opacityFunction = (/** @type {number} */ intensity) => Math.sqrt(intensity)
+    } = {}) {
         super();
         this._opacityFunction = opacityFunction;
         this._texture = null;
@@ -224,11 +224,11 @@ export class ComplexSurfaceView2D extends ComplexFieldViewable2D {
      * defaultResolution?: SurfaceResolution}} [param0]
      */
     constructor({
-                    showPhaseColour = true,
-                    brightnessFunction = (/** @type {number} */ modulus) => modulus > 1.0 ? 1.0 : modulus,
-                    colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsv),
-                    defaultResolution = new SurfaceResolution(400, 400),
-                } = {}) {
+        showPhaseColour = true,
+        brightnessFunction = (/** @type {number} */ modulus) => modulus > 1.0 ? 1.0 : modulus,
+        colorMapper = ComplexColorMappers.get(ComplexColorMappers.Hsv),
+        defaultResolution = new SurfaceResolution(400, 400),
+    } = {}) {
         super(defaultResolution);
         this._brightnessFunction = brightnessFunction;
         this._colorMapper = colorMapper;
@@ -318,10 +318,10 @@ export class ProbabilityDensityView2D extends Renderable2D {
      * @param {{pointCount?: number, pointSize?: number, color?: Colour}} [param0]
      */
     constructor({
-                    pointCount = 30000,
-                    pointSize = 0.09,
-                    color = Colour.White
-                } = {}) {
+        pointCount = 30000,
+        pointSize = 0.09,
+        color = Colour.White
+    } = {}) {
         super();
         this._pointCount = pointCount;
         this._material = new PointsMaterial({
@@ -408,12 +408,12 @@ export class ParticleView2D extends Renderable2D {
      * }} [param0]
      */
     constructor({
-                    segments = 16,
-                    colorFunction = _particle => 0xffff00,
-                    colorMapper = new HexValueColorMapper(),
-                    hasBorder = false,
-                    borderColor = Colour.Yellow
-                } = {}) {
+        segments = 16,
+        colorFunction = _particle => 0xffff00,
+        colorMapper = new HexValueColorMapper(),
+        hasBorder = false,
+        borderColor = Colour.Yellow
+    } = {}) {
         super();
         this._hasBorder = hasBorder;
         this._color = new Color();

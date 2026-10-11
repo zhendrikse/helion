@@ -42,6 +42,35 @@ Let's first assert that:
 - We assume the fluid (or free gas) to be incompressible. Water is actually very close to being incompressible.
 - We also assume the liquid to be inviscid (i.e. non-viscous).
 
+```text
+ ┌───────────────────────────────────────────────┐
+ │              Fluid model (Demo)               │
+ │                     │                         │
+ │         DiscreteVectorField (Helion)          │
+ │                     │                         │
+ │ Velocities, pressure, smoke, streaming values │
+ └───────────────────────────────────────────────┘
+                       │
+                       │
+                       ▼
+ ┌───────────────────────────────────────────────┐
+ │                  Adapter                      │
+ │                     │                         │
+ │   PressureFieldAdapter / SmokeFieldAdapter    │
+ │                     │                         │
+ │      Fluid values ==> surface view values     │
+ └───────────────────────────────────────────────┘
+                       │
+                       │
+                       ▼
+ ┌───────────────────────────────────────────────┐
+ │      DiscreteFieldSurfaceView (Helion)        │
+ │                     │                         │
+ │        Generic existing visualisation         │
+ │                     │                         │
+ │    Velocities, pressure, smoke, streamlines   │
+ └───────────────────────────────────────────────┘
+```
 
 ### The three main steps 
 <div style="border-top: 1px solid #999999"><br/></div>

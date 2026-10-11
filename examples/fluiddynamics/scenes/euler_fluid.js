@@ -1,11 +1,9 @@
+import { Color, LinearSRGBColorSpace } from 'three';
 import {
-    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, DiscreteVectorField, Circle, VelocitiesView, Slider,
-    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView, Vec2
+    Checkbox, ColorMappers, DiscreteScalarField, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
+    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView,
+    DiscreteFieldSurfaceView, FixedIntervalNormalizer, MathPhysicsModelBehavior
 } from '../../../src/index.js';
-import { Renderable2D } from '../../../src/view/renderer.js';
-import {
-    Color, DataTexture, DoubleSide, LinearSRGBColorSpace, Mesh, MeshBasicMaterial, PlaneGeometry, RGBAFormat
-} from 'three';
 
 const U_FIELD = 0; // x-component of velocity
 const V_FIELD = 1; // y-component of velocity
@@ -36,12 +34,6 @@ class FluidSolver extends Solver {
         this._vector3 = new Vec2();
     }
 
-    /**
-     * @param {EulerFluid} fluid
-     * @param {number} i
-     * @param {number} j
-     * @param {any} dt
-     */
     _advectVelocityAt(fluid, i, j, dt) {
         if (fluid.obstacleMaskAt(j, i) !== SOLID &&
             fluid.obstacleMaskAt(j, i - 1) !== SOLID &&
@@ -60,12 +52,6 @@ class FluidSolver extends Solver {
                 this._advectVelocityAt(fluid, i, j, dt);
     }
 
-    /**
-     * @param {EulerFluid} fluid
-     * @param {number} i
-     * @param {number} j
-     * @param {number} dt
-     */
     _advectSmokeAt(fluid, i, j, dt) {
         if (fluid.obstacleMaskAt(j, i) === SOLID)
             return;
@@ -91,7 +77,11 @@ class FluidSolver extends Solver {
         fluid._smokeField.data.set(this._newSmokeField.data);
     }
 
-    step(/** @type {EulerFluid} */ fluid, /** @type {number} */ dt) {
+    /**
+     * @param {EulerFluid} fluid
+     * @param {number} dt
+     */
+    step(fluid, dt) {
         fluid._pressureField.reset();
         fluid.solveIncompressibility(this.numIterations, this.overRelaxation, dt);
         fluid.extrapolate();
@@ -142,9 +132,9 @@ class EulerFluid extends DiscreteVectorField {
      * }} options
      */
     init({
-        density = 1000,
-        resolution = 100
-    } = {}) {
+         density = 1000,
+         resolution = 100
+     } = {}) {
         this.resize(resolution + 2, resolution + 2);
         this.density = density;
         this._cellSize = 1 / resolution;
@@ -164,12 +154,6 @@ class EulerFluid extends DiscreteVectorField {
                     this._vectorComponentY.setValueAt(j, i, this._vectorComponentY.valueAt(j, i) + gravity * dt);
     }
 
-    /**
-     * @param {number} i
-     * @param {number} j
-     * @param {number} cp
-     * @param {number} overRelaxation
-     */
     _solveIncompressibility(i, j, cp, overRelaxation) {
         if (this._obstacleMask.valueAt(j, i) === SOLID)
             return;
@@ -345,129 +329,54 @@ class EulerFluid extends DiscreteVectorField {
             }
     }
 
-    evolve(/** @type {Solver} */ solver, /** @type {number} */ dt) {
-        solver.step(this, dt);
-    }
+    /**
+     * @param {Solver} solver
+     * @param {number} dt
+     */
+    evolve(solver, dt) { solver.step(this, dt); }
 }
 
-/**
- * Renders the pressure/smoke field as a Three.js data texture.
- *
- * The texture is stretched over the same centered world-space domain used by
- * the Three.js scene. Its rows follow the fluid grid's y-axis (j = 0 at the
- * bottom), while the simulation itself remains independent of the renderer.
- */
-class SmokePressureView extends Renderable2D {
-    constructor({
-        showPressure = true,
-        showSmoke = true,
-    } = {}) {
+class PressureFieldAdapter extends MathPhysicsModelBehavior {
+    constructor(fluid) {
         super();
-        this.showPressure = showPressure;
-        this.showSmoke = showSmoke;
-        this._width = 0;
-        this._height = 0;
-        this._pixels = new Uint8Array();
-        this._texture = null;
+        this.fluid = fluid;
+    }
+
+    get nx() { return this.fluid.nx; }
+    get ny() { return this.fluid.ny; }
+
+    rangeAt() { return this.fluid.pressureRange; }
+    valueAt(i, j) { return this.fluid.pressureAt(j, i); }
+}
+
+class SmokeFieldAdapter extends MathPhysicsModelBehavior {
+    constructor(fluid) {
+        super();
+        this.fluid = fluid;
+        this._range = new Interval(0, 1);
+    }
+
+    get nx() { return this.fluid.nx; }
+    get ny() { return this.fluid.ny; }
+
+    rangeAt() { return this._range; }
+    valueAt(i, j) { return this.fluid.smokeAt(j, i); }
+}
+
+class ResizableDiscreteFieldSurfaceView extends DiscreteFieldSurfaceView {
+    _disposeMesh() {
+        this.remove(this._mesh);
+        this._mesh.geometry.dispose();
+        this._mesh.material.dispose();
+        this._texture.dispose();
         this._mesh = null;
-
-        this._color = new Color();
-        this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, { colorSpace: LinearSRGBColorSpace });
-    }
-
-    set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
-
-    canBindTo(/** @type {{nx:number, ny:number, pressureRange:Interval}} */ model) {
-        if (model.pressureRange === undefined || model.nx === undefined || model.ny === undefined)
-            throw new Error('Fluid velocities view can only bind to models that behave as a fluid model');
-
-        return true;
-    }
-
-    initialize(/** @type {{nx:number, ny:number, pressureRange:Interval}} */ fluid) {
-        this.dispose();
-        this._width = fluid.nx;
-        this._height = fluid.ny;
-        this._pixels = new Uint8Array(this._width * this._height * 4);
-        this._texture = new DataTexture(this._pixels, this._width, this._height, RGBAFormat);
-        this._texture.colorSpace = LinearSRGBColorSpace;
-        this._texture.needsUpdate = true;
-
-        this._mesh = new Mesh(
-            new PlaneGeometry(1, 1),
-            new MeshBasicMaterial({
-                map: this._texture,
-                transparent: true,
-                depthWrite: false,
-                side: DoubleSide
-            })
-        );
-
-        // All fluid views use model coordinates with their origin at the
-        // lower-left. Center the plane in local coordinates, then apply the
-        // same translation as the obstacle, velocity vectors, and streamlines.
-        this._mesh.position.set(.5, .5, 0);
-        this.add(this._mesh);
-    }
-
-    /**
-     * @param {number} i
-     * @param {number} j
-     * @param {EulerFluid} fluid
-     * @param {Interval} pressureRange
-     */
-    _updatePixelAt(i, j, fluid, pressureRange) {
-        const offset = 4 * (j * this._width + i);
-        const smoke = fluid.smokeAt(j, i);
-        let alpha = 0;
-
-        if (this.showPressure) {
-            this._colorMapper.map(pressureRange.normalize(fluid.pressureAt(j, i)), this._color);
-            if (this.showSmoke)
-                this._color.setRGB(
-                    Math.max(0.0, this._color.r - smoke),
-                    Math.max(0.0, this._color.g - smoke),
-                    Math.max(0.0, this._color.b - smoke));
-            alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
-        } else if (this.showSmoke) {
-            this._color.setRGB(smoke, smoke, smoke);
-            if (sceneType === SCENE_TYPE.PAINT)
-                this._colorMapper.map(smoke, this._color);
-            alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
-        } else if (fluid.obstacleMaskAt(j, i) === SOLID) {
-            this._color.setRGB(0, 0, 0);
-            alpha = 255;
-        } else
-            this._color.setRGB(0, 0, 0);
-
-        this._pixels[offset] = Math.round(255 * this._color.r);
-        this._pixels[offset + 1] = Math.round(255 * this._color.g);
-        this._pixels[offset + 2] = Math.round(255 * this._color.b);
-        this._pixels[offset + 3] = Math.round(alpha);
-    }
-
-    synchronizeWith(/** @type {{nx:number, ny:number, pressureRange: Interval}} */ fluid) {
-        if (!this._texture || this._width !== fluid.nx || this._height !== fluid.ny)
-            this.initialize(fluid);
-
-        const pressureRange = fluid.pressureRange;
-        for (let j = 0; j < fluid.ny; j++)
-            for (let i = 0; i < fluid.nx; i++)
-                this._updatePixelAt(i, j, fluid, pressureRange);
-
-        this._texture.needsUpdate = true;
-    }
-
-    dispose() {
-        if (this._mesh) {
-            this.remove(this._mesh);
-            this._mesh.geometry.dispose();
-            this._mesh.material.dispose();
-            this._mesh = null;
-        }
-        this._texture?.dispose();
         this._texture = null;
-        this._pixels = new Uint8Array();
+    }
+
+    resetResolution(field) {
+        if (this._mesh)
+            this._disposeMesh();
+        this.initialize(field);
     }
 }
 
@@ -492,9 +401,9 @@ function tankScene(/** @type {EulerFluid} */ fluid) {
 
     gravity = -9.81;
     solver.overRelaxation = 1.9;
-    fluidDynamicsView.showPressure = true;
+    pressureView.visible = true;
     obstacleView.fillColor = new Colour(0x131313);
-    fluidDynamicsView.showSmoke = false;
+    smokeView.visible = false;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
 }
@@ -521,9 +430,9 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
     fluid.setObstacle(0.4, 0.5, true);
     gravity = 0.0;
     solver.overRelaxation = 1.9;
-    fluidDynamicsView.showPressure = true;
+    pressureView.visible = true;
     obstacleView.fillColor = new Colour(0x131313);
-    fluidDynamicsView.showSmoke = true;
+    smokeView.visible = true;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
     if (sceneNumber === SCENE_TYPE.HIRES_TUNNEL)
@@ -533,9 +442,9 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
 function paintScene() {
     gravity = 0.0;
     solver.overRelaxation = 1.0;
-    fluidDynamicsView.showPressure = false;
+    pressureView.visible = true;
     obstacleView.fillColor = new Colour(0x131313);
-    fluidDynamicsView.showSmoke = true;
+    smokeView.visible = true;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
     obstacle.radius = 0.1;
@@ -544,8 +453,14 @@ function paintScene() {
 function setHighResolution() {
     dt = 1.0 / 125.0;
     solver.numIterations = 25;
-    fluidDynamicsView.showPressure = true;
+    pressureView.visible = true;
     obstacleView.fillColor = new Colour(0x131313);
+}
+
+function configureDiscreteFieldSurfaceView(view, fluid) {
+    view.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
+    view.position.set(0.5, 0.5, 0);
+    view.resetResolution(fluid);
 }
 
 function setupScene(/** @type {number} */ sceneNr = 0) {
@@ -560,6 +475,8 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     dt = 1.0 / 60.0;
     obstacle.radius = 0.15;
     fluid.init({ resolution });
+    configureDiscreteFieldSurfaceView(pressureView, fluid);
+    configureDiscreteFieldSurfaceView(smokeView, fluid);
     solver.init(fluid);
     solver.numIterations = 40;
     obstacleView.radiusOffset = fluid.cellSize;
@@ -572,23 +489,28 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
         paintScene();
 }
 
-const streamlinesView = new StreamlinesView();
-const fluidDynamicsView = new SmokePressureView();
+const pressureFieldAdapter = new PressureFieldAdapter(fluid);
+const smokeFieldAdapter = new SmokeFieldAdapter(fluid);
+
+const pressureView = new ResizableDiscreteFieldSurfaceView({
+    colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace }),
+    opacityFunction: () => 1,
+    colorSpace: LinearSRGBColorSpace,
+});
+
+const smokeView = new ResizableDiscreteFieldSurfaceView({
+    colorMapper: ColorMappers.get(ColorMappers.Uniform, {
+        colorSpace: LinearSRGBColorSpace,
+        color: new Color().setRGB( 0, 0, 0, LinearSRGBColorSpace)
+    }),
+    normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
+    opacityFunction: value => Math.sqrt(value),
+    colorSpace: LinearSRGBColorSpace
+});
+
 const velocitiesView = new VelocitiesView();
 const obstacleView = new Circle({ radiusOffset: fluid.cellSize });
-
-document.addEventListener('keydown', event => {
-    switch (event.key) {
-        case 'p':
-            paused = !paused;
-            break;
-        case 'm':
-            paused = false;
-            simulate();
-            paused = true;
-            break;
-    }
-});
+const streamlinesView = new StreamlinesView();
 
 const obstacle = new RadialSymmetricBody({ radius: 0.15 });
 const solver = new FluidSolver({ numIterations: 40 });
@@ -617,7 +539,7 @@ const simulation = Simulation
         infoPanel: {
             text:
                 '<strong>🍃 Euler fluid</strong><br/>&nbsp;<br/>' +
-                '©️ Original idea and software: ' +
+                '©️ Fluid dynamics: ' +
                 '<a href=\"https://www.matthiasMueller.info/tenMinutePhysics\">Matthias Müller</a></br>' +
                 '👉 Use mouse to move obstacle.<br>' +
                 '👉 Use \"p\" and \"m\" keys to pause and/or step'
@@ -625,11 +547,12 @@ const simulation = Simulation
     })
     .runsEvery(3e-2)
     .onStep(() => simulate())
-    .bind(fluid.alwaysWith(fluidDynamicsView))
+    .bind(pressureFieldAdapter.alwaysWith(pressureView))
+    .bind(smokeFieldAdapter.alwaysWith(smokeView))
     .bind(fluid.alwaysWith(streamlinesView))
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
-    .frameSceneOn(fluidDynamicsView, { padding: 1.0 })
+    .frameSceneOn(pressureView, { padding: 1.0 })
     .onMouse('mouseup', () => mouseDown = false)
     .onMouse('mouseleave', () => mouseDown = false)
     .onMouse('mousedown', (x, y, _event) => {
@@ -637,8 +560,7 @@ const simulation = Simulation
         fluid.setObstacle(x, y, true);
     })
     .onMouse('mousemove', (x, y, _event) => {
-        if (!mouseDown)
-            return;
+        if (!mouseDown) return;
 
         fluid.setObstacle(x, y, false);
     })
@@ -647,8 +569,7 @@ const simulation = Simulation
         fluid.setObstacle(x, y, true);
     }, { passive: true })
     .onTouch('touchmove', (x, y, event) => {
-        if (!mouseDown)
-            return;
+        if (!mouseDown) return;
 
         event.preventDefault();
         fluid.setObstacle(x, y, false);
@@ -667,22 +588,22 @@ const simulation = Simulation
         .withProperty("visible")
         .togetherWith(new Checkbox('✈️ Streamlines')
             .on(streamlinesView)
-            .withProperty("visible")
-        ))
+            .withProperty("visible")))
     .append(new Checkbox('🗜️ Pressure')
-        .on(fluidDynamicsView)
-        .withProperty("showPressure")
+        .on(pressureView)
+        .withProperty("visible")
         .onChange(checked => {
             showPressure = checked;
             obstacleView.fillColor = checked ? new Colour(0x131313) : new Colour(0xDDDDDD);
-        }).togetherWith(new Checkbox('🚬 Smoke')
-            .on(fluidDynamicsView)
-            .withProperty("showSmoke")))
+        })
+        .togetherWith(new Checkbox('🚬 Smoke')
+            .on(smokeView)
+            .withProperty("visible")))
     .append(new DropdownMenu()
         .for(new ColorMappers())
-        .withValue(ColorMappers.RdYlBu)
+        .withValue(ColorMappers.Scientific)
         .onChange(value =>
-            fluidDynamicsView.colorMapper = ColorMappers.get(value, { colorSpace: LinearSRGBColorSpace })))
+            pressureView.colorMapper = ColorMappers.get(value, { colorSpace: LinearSRGBColorSpace })))
     .append(new Slider('🏃🏻‍♀️‍➡️ Fluid velocity')
         .withRange(new Range(.5, 3, .01))
         .onInput(value => setFluidVelocity(value)))
@@ -691,3 +612,16 @@ const simulation = Simulation
         .on(solver)
         .withProperty("overRelaxation"))
     .start();
+
+document.addEventListener('keydown', event => {
+    switch (event.key) {
+        case 'p':
+            paused = !paused;
+            break;
+        case 'm':
+            paused = false;
+            simulate();
+            paused = true;
+            break;
+    }
+});
