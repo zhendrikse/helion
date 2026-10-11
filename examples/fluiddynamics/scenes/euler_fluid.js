@@ -3,9 +3,8 @@ import {
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView,
     DiscreteFieldSurfaceView, FixedIntervalNormalizer, MathPhysicsModelBehavior
 } from '../../../src/index.js';
-import { Renderable2D } from '../../../src/view/renderer.js';
 import {
-    Color, DataTexture, DoubleSide, LinearSRGBColorSpace, Mesh, MeshBasicMaterial, PlaneGeometry, RGBAFormat
+    Color, LinearSRGBColorSpace
 } from 'three';
 
 const U_FIELD = 0; // x-component of velocity
@@ -366,123 +365,6 @@ class EulerFluid extends DiscreteVectorField {
  * the Three.js scene. Its rows follow the fluid grid's y-axis (j = 0 at the
  * bottom), while the simulation itself remains independent of the renderer.
  */
-class SmokePressureView extends Renderable2D {
-    constructor({
-        showPressure = true,
-        showSmoke = true,
-    } = {}) {
-        super();
-        this.showPressure = showPressure;
-        this.showSmoke = showSmoke;
-        this._width = 0;
-        this._height = 0;
-        this._pixels = new Uint8Array();
-        this._texture = null;
-        this._mesh = null;
-
-        this._color = new Color();
-        this._colorMapper = ColorMappers.get(ColorMappers.RdYlBu, { colorSpace: LinearSRGBColorSpace });
-    }
-
-    set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
-
-    canBindTo(/** @type {{nx:number, ny:number, pressureRange:Interval}} */ model) {
-        if (model.pressureRange === undefined ||
-            model.nx === undefined ||
-            model.ny === undefined)
-            throw new Error('Fluid velocities view can only bind to models that behave as a fluid model');
-
-        return true;
-    }
-
-    initialize(/** @type {{nx:number, ny:number, pressureRange:Interval}} */ fluid) {
-        this.dispose();
-        this._width = fluid.nx;
-        this._height = fluid.ny;
-        this._pixels = new Uint8Array(this._width * this._height * 4);
-        this._texture = new DataTexture(this._pixels, this._width, this._height, RGBAFormat);
-        this._texture.colorSpace = LinearSRGBColorSpace;
-        this._texture.needsUpdate = true;
-
-        this._mesh = new Mesh(
-            new PlaneGeometry(1, 1),
-            new MeshBasicMaterial({
-                map: this._texture,
-                transparent: true,
-                depthWrite: false,
-                side: DoubleSide
-            })
-        );
-
-        // All fluid views use model coordinates with their origin at the
-        // lower-left. Center the plane in local coordinates, then apply the
-        // same translation as the obstacle, velocity vectors, and streamlines.
-        this._mesh.position.set(.5, .5, 0);
-        this.add(this._mesh);
-    }
-
-    /**
-     * @param {number} i
-     * @param {number} j
-     * @param {EulerFluid} fluid
-     * @param {Interval} pressureRange
-     */
-    _updatePixelAt(i, j, fluid, pressureRange) {
-        const offset = 4 * (j * this._width + i);
-        const smoke = fluid.smokeAt(j, i);
-        let alpha = 0;
-
-        if (this.showPressure) {
-            this._colorMapper.map(pressureRange.normalize(fluid.pressureAt(j, i)), this._color);
-            if (this.showSmoke)
-                this._color.setRGB(
-                    Math.max(0.0, this._color.r - smoke),
-                    Math.max(0.0, this._color.g - smoke),
-                    Math.max(0.0, this._color.b - smoke));
-            alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
-        } else if (this.showSmoke) {
-            this._color.setRGB(smoke, smoke, smoke);
-            if (sceneType === SCENE_TYPE.PAINT)
-                this._colorMapper.map(smoke, this._color);
-            alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
-        } else if (fluid.obstacleMaskAt(j, i) === SOLID) {
-            this._color.setRGB(0, 0, 0);
-            alpha = 255;
-        } else
-            this._color.setRGB(0, 0, 0);
-
-        this._pixels[offset] = Math.round(255 * this._color.r);
-        this._pixels[offset + 1] = Math.round(255 * this._color.g);
-        this._pixels[offset + 2] = Math.round(255 * this._color.b);
-        this._pixels[offset + 3] = Math.round(alpha);
-    }
-
-    synchronizeWith(/** @type {{nx:number, ny:number, pressureRange: Interval}} */ fluid) {
-        if (!this._texture || this._width !== fluid.nx || this._height !== fluid.ny)
-            this.initialize(fluid);
-
-        const pressureRange = fluid.pressureRange;
-        for (let j = 0; j < fluid.ny; j++)
-            for (let i = 0; i < fluid.nx; i++)
-                this._updatePixelAt(i, j, fluid, pressureRange);
-
-        this._texture.needsUpdate = true;
-    }
-
-    dispose() {
-        if (this._mesh) {
-            this.remove(this._mesh);
-            this._mesh.geometry.dispose();
-            this._mesh.material.dispose();
-            this._mesh = null;
-        }
-        this._texture?.dispose();
-        this._texture = null;
-        this._pixels = new Uint8Array();
-    }
-}
-
-
 /**
  * Adapts the fluid's pressure, smoke and obstacle data to the scalar-field
  * contract expected by DiscreteFieldSurfaceView.
@@ -620,7 +502,7 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
     fluid.setObstacle(0.4, 0.5, true);
     gravity = 0.0;
     solver.overRelaxation = 1.9;
-    fluidDynamicsView.showPressure = true;
+    fluidFieldAdapter.showPressure = true;
     obstacleView.fillColor = new Colour(0x131313);
     fluidFieldAdapter.showSmoke = true;
     streamlinesView.visible = false;
@@ -634,7 +516,7 @@ function paintScene() {
     solver.overRelaxation = 1.0;
     fluidFieldAdapter.showPressure = false;
     obstacleView.fillColor = new Colour(0x131313);
-    fluidDynamicsView.showSmoke = true;
+    fluidFieldAdapter.showSmoke = true;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
     obstacle.radius = 0.1;
@@ -643,7 +525,7 @@ function paintScene() {
 function setHighResolution() {
     dt = 1.0 / 125.0;
     solver.numIterations = 25;
-    fluidDynamicsView.showPressure = true;
+    fluidFieldAdapter.showPressure = true;
     obstacleView.fillColor = new Colour(0x131313);
 }
 
@@ -659,6 +541,8 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     dt = 1.0 / 60.0;
     obstacle.radius = 0.15;
     fluid.init({ resolution });
+    fluidDynamicsView.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
+    fluidDynamicsView.position.set(0.5, 0.5, 0);
     solver.init(fluid);
     solver.numIterations = 40;
     obstacleView.radiusOffset = fluid.cellSize;
@@ -678,10 +562,10 @@ const fluidDynamicsView = new DiscreteFieldSurfaceView({
     normalizer: new FixedIntervalNormalizer(new Interval(0, 0xFFFFFFFF)),
     opacityFunction: fluidPixelOpacity
 });
+fluidDynamicsView.position.set(0.5, 0.5, 0);
+fluidDynamicsView.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
 const velocitiesView = new VelocitiesView();
 const obstacleView = new Circle({ radiusOffset: fluid.cellSize });
-
-console.log(fluidDynamicsView["showPressure"]);
 
 document.addEventListener('keydown', event => {
     switch (event.key) {
