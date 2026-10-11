@@ -1,6 +1,7 @@
 import {
     Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
-    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView
+    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView,
+    DiscreteFieldSurfaceView, FixedIntervalNormalizer, MathPhysicsModelBehavior
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
 import {
@@ -481,6 +482,94 @@ class SmokePressureView extends Renderable2D {
     }
 }
 
+
+/**
+ * Adapts the fluid's pressure, smoke and obstacle data to the scalar-field
+ * contract expected by DiscreteFieldSurfaceView.
+ *
+ * Each cell's final RGBA pixel is packed into one unsigned 32-bit scalar.
+ * The view's color mapper and opacity function unpack that pixel again. This
+ * lets us reuse the generic surface view without changing its implementation
+ * or losing the existing pressure/smoke/obstacle rendering rules.
+ */
+class FluidDisplayFieldAdapter extends MathPhysicsModelBehavior {
+    constructor(fluid) {
+        super();
+        this._fluid = fluid;
+        this.showPressure = true;
+        this.showSmoke = true;
+        this.colorMapper = ColorMappers.get(ColorMappers.RdYlBu, { colorSpace: LinearSRGBColorSpace });
+        this._rgb = new Color();
+        this._range = new Interval(0, 0xFFFFFFFF);
+    }
+
+    get nx() { return this._fluid.nx; }
+    get ny() { return this._fluid.ny; }
+
+    canBindTo(model) {
+        if (model.nx === undefined || model.ny === undefined ||
+            model.pressureRange === undefined || model.pressureAt === undefined ||
+            model.smokeAt === undefined || model.obstacleMaskAt === undefined)
+            throw new Error('Fluid display adapter requires pressure, smoke and obstacle data');
+        return true;
+    }
+
+    rangeAt() {
+        return this._range;
+    }
+
+    valueAt(i, j) {
+        const fluid = this._fluid;
+        const smoke = fluid.smokeAt(j, i);
+        let alpha = 0;
+
+        if (this.showPressure) {
+            this.colorMapper.map(fluid.pressureRange.normalize(fluid.pressureAt(j, i)), this._rgb);
+            if (this.showSmoke)
+                this._rgb.setRGB(
+                    Math.max(0, this._rgb.r - smoke),
+                    Math.max(0, this._rgb.g - smoke),
+                    Math.max(0, this._rgb.b - smoke),
+                    LinearSRGBColorSpace
+                );
+            alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
+        } else if (this.showSmoke) {
+            this._rgb.setRGB(smoke, smoke, smoke, LinearSRGBColorSpace);
+            if (sceneType === SCENE_TYPE.PAINT)
+                this.colorMapper.map(smoke, this._rgb);
+            alpha = 55 + (sceneType === SCENE_TYPE.TANK ? 1 : 1 - smoke) * 200;
+        } else if (fluid.obstacleMaskAt(j, i) === SOLID) {
+            this._rgb.setRGB(0, 0, 0, LinearSRGBColorSpace);
+            alpha = 255;
+        } else {
+            this._rgb.setRGB(0, 0, 0, LinearSRGBColorSpace);
+        }
+
+        const red = Math.round(255 * this._rgb.r);
+        const green = Math.round(255 * this._rgb.g);
+        const blue = Math.round(255 * this._rgb.b);
+        const opacity = Math.round(alpha);
+        return (((red << 24) | (green << 16) | (blue << 8) | opacity) >>> 0);
+    }
+}
+
+class PackedFluidColorMapper extends ColorMapper {
+    map(normalizedValue, targetColor) {
+        const packed = Math.round(normalizedValue * 0xFFFFFFFF);
+        targetColor.setRGB(
+            ((packed >>> 24) & 0xFF) / 255,
+            ((packed >>> 16) & 0xFF) / 255,
+            ((packed >>> 8) & 0xFF) / 255,
+            LinearSRGBColorSpace
+        );
+    }
+}
+
+function fluidPixelOpacity(normalizedValue) {
+    const packed = Math.round(normalizedValue * 0xFFFFFFFF);
+    return (packed & 0xFF) / 255;
+}
+
 //
 // S C E N E
 //
@@ -502,9 +591,9 @@ function tankScene(/** @type {EulerFluid} */ fluid) {
 
     gravity = -9.81;
     solver.overRelaxation = 1.9;
-    fluidDynamicsView.showPressure = true;
+    fluidFieldAdapter.showPressure = true;
     obstacleView.fillColor = new Colour(0x131313);
-    fluidDynamicsView.showSmoke = false;
+    fluidFieldAdapter.showSmoke = false;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
 }
@@ -533,7 +622,7 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
     solver.overRelaxation = 1.9;
     fluidDynamicsView.showPressure = true;
     obstacleView.fillColor = new Colour(0x131313);
-    fluidDynamicsView.showSmoke = true;
+    fluidFieldAdapter.showSmoke = true;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
     if (sceneNumber === SCENE_TYPE.HIRES_TUNNEL)
@@ -543,7 +632,7 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
 function paintScene() {
     gravity = 0.0;
     solver.overRelaxation = 1.0;
-    fluidDynamicsView.showPressure = false;
+    fluidFieldAdapter.showPressure = false;
     obstacleView.fillColor = new Colour(0x131313);
     fluidDynamicsView.showSmoke = true;
     streamlinesView.visible = false;
@@ -583,7 +672,12 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
 }
 
 const streamlinesView = new StreamlinesView();
-const fluidDynamicsView = new SmokePressureView();
+const fluidFieldAdapter = new FluidDisplayFieldAdapter(fluid);
+const fluidDynamicsView = new DiscreteFieldSurfaceView({
+    colorMapper: new PackedFluidColorMapper(),
+    normalizer: new FixedIntervalNormalizer(new Interval(0, 0xFFFFFFFF)),
+    opacityFunction: fluidPixelOpacity
+});
 const velocitiesView = new VelocitiesView();
 const obstacleView = new Circle({ radiusOffset: fluid.cellSize });
 
@@ -637,7 +731,7 @@ const simulation = Simulation
     })
     .runsEvery(3e-2)
     .onStep(() => simulate())
-    .bind(fluid.alwaysWith(fluidDynamicsView))
+    .bind(fluidFieldAdapter.alwaysWith(fluidDynamicsView))
     .bind(fluid.alwaysWith(streamlinesView))
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
@@ -682,19 +776,19 @@ const simulation = Simulation
             .withProperty("visible")
         ))
     .append(new Checkbox('🗜️ Pressure')
-        .on(fluidDynamicsView)
+        .on(fluidFieldAdapter)
         .withProperty("showPressure")
         .onChange(checked => {
             showPressure = checked;
             obstacleView.fillColor = checked ? new Colour(0x131313) : new Colour(0xDDDDDD);
         }).togetherWith(new Checkbox('🚬 Smoke')
-            .on(fluidDynamicsView)
+            .on(fluidFieldAdapter)
             .withProperty("showSmoke")))
     .append(new DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.RdYlBu)
         .onChange(value =>
-            fluidDynamicsView.colorMapper = ColorMappers.get(value, { colorSpace: LinearSRGBColorSpace })))
+            fluidFieldAdapter.colorMapper = ColorMappers.get(value, { colorSpace: LinearSRGBColorSpace })))
     .append(new Slider('🏃🏻‍♀️‍➡️ Fluid velocity')
         .withRange(new Range(.5, 3, .01))
         .onInput(value => setFluidVelocity(value)))
