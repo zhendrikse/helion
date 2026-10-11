@@ -105,6 +105,14 @@ export class DiscreteVectorField extends VectorField {
         this._vectorComponentZ = new DiscreteScalarField({nx, ny});
     }
 
+    resize(nx, ny) {
+        this._nx = nx;
+        this._ny = ny;
+        this._vectorComponentX = new DiscreteScalarField({ nx, ny });
+        this._vectorComponentY = new DiscreteScalarField({ nx, ny });
+        this._vectorComponentZ = new DiscreteScalarField({ nx, ny });
+    }
+
     get nx() { return this._nx; }
     get ny() { return this._ny; }
 

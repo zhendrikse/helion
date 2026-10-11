@@ -1,6 +1,6 @@
 import {
-    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
-    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView
+    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, DiscreteVectorField, Circle, VelocitiesView, Slider,
+    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView, Vec2
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
 import {
@@ -112,6 +112,9 @@ class FluidSolver extends Solver {
     }
 }
 
+/**
+ * The discrete vector field represents the (two-dimensional) velocity vectors.
+ */
 class EulerFluid extends DiscreteVectorField {
     /**
      * @param {{
@@ -123,7 +126,7 @@ class EulerFluid extends DiscreteVectorField {
         density = 1000,
         resolution = 100
     } = {}) {
-        super();
+        super({ nx: 0, ny: 0 });
         this.density = 0;
         this._cellSize = 0;
         this._pressureField = new DiscreteScalarField({ nx: 0, ny: 0 });
@@ -142,17 +145,9 @@ class EulerFluid extends DiscreteVectorField {
         density = 1000,
         resolution = 100
     } = {}) {
+        this.resize(resolution + 2, resolution + 2);
         this.density = density;
-        this._nx = resolution + 2;
-        this._ny = resolution + 2;
         this._cellSize = 1 / resolution;
-
-        this._vectorComponentX = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
-        this._vectorComponentY = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
-        // Unused z-component of velocity vector, but needs to be initialized too,
-        // otherwise valueAt() won't work properly anymore, as the indices run out of bounds!
-        this._vectorComponentZ = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
-
         this._pressureField = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
         this._obstacleMask = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
         this._smokeField = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
@@ -175,7 +170,7 @@ class EulerFluid extends DiscreteVectorField {
      * @param {number} cp
      * @param {number} overRelaxation
      */
-    solveGridBox(i, j, cp, overRelaxation) {
+    _solveIncompressibility(i, j, cp, overRelaxation) {
         if (this._obstacleMask.valueAt(j, i) === SOLID)
             return;
 
@@ -208,7 +203,7 @@ class EulerFluid extends DiscreteVectorField {
         for (let iter = 0; iter < numIters; iter++)
             for (let i = 1; i < this.nx - 1; i++)
                 for (let j = 1; j < this.ny - 1; j++)
-                    this.solveGridBox(i, j, cp, overRelaxation);
+                    this._solveIncompressibility(i, j, cp, overRelaxation);
     }
 
     extrapolate() {
@@ -244,36 +239,33 @@ class EulerFluid extends DiscreteVectorField {
 
     _sampleField(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ fieldType) {
         const h = this._cellSize;
-        const h1 = 1.0 / h;
-        const h2 = 0.5 * h;
-
         let dx = 0.0;
         let dy = 0.0;
         let field;
         switch (fieldType) {
             case U_FIELD:
                 field = this._vectorComponentX;
-                dy = h2;
+                dy = 0.5 * h;
                 break;
             case V_FIELD:
                 field = this._vectorComponentY;
-                dx = h2;
+                dx = 0.5 * h;
                 break;
             case S_FIELD:
                 field = this._smokeField;
-                dx = h2;
-                dy = h2;
+                dx = 0.5 * h;
+                dy = 0.5 * h;
                 break;
         }
 
         x = Math.max(Math.min(x, this.nx * h), h) - dx;
         y = Math.max(Math.min(y, this.ny * h), h) - dy;
-        const x0 = Math.min(Math.floor(x * h1), this.nx - 1);
-        const tx = (x - x0 * h) * h1;
+        const x0 = Math.min(Math.floor(x / this._cellSize), this.nx - 1);
+        const tx = (x - x0 * h) / this._cellSize;
         const x1 = Math.min(x0 + 1, this.nx - 1);
 
-        const y0 = Math.min(Math.floor(y * h1), this.ny - 1);
-        const ty = (y - y0 * h) * h1;
+        const y0 = Math.min(Math.floor(y / this._cellSize), this.ny - 1);
+        const ty = (y - y0 * h) / this._cellSize;
         const y1 = Math.min(y0 + 1, this.ny - 1);
 
         const sx = 1.0 - tx;
@@ -386,9 +378,7 @@ class SmokePressureView extends Renderable2D {
     set colorMapper(/** @type {ColorMapper} */ colorMapper) { this._colorMapper = colorMapper; }
 
     canBindTo(/** @type {{nx:number, ny:number, pressureRange:Interval}} */ model) {
-        if (model.pressureRange === undefined ||
-            model.nx === undefined ||
-            model.ny === undefined)
+        if (model.pressureRange === undefined || model.nx === undefined || model.ny === undefined)
             throw new Error('Fluid velocities view can only bind to models that behave as a fluid model');
 
         return true;
@@ -586,8 +576,6 @@ const streamlinesView = new StreamlinesView();
 const fluidDynamicsView = new SmokePressureView();
 const velocitiesView = new VelocitiesView();
 const obstacleView = new Circle({ radiusOffset: fluid.cellSize });
-
-console.log(fluidDynamicsView["showPressure"]);
 
 document.addEventListener('keydown', event => {
     switch (event.key) {
