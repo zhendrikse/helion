@@ -4,7 +4,7 @@ import {
     DiscreteFieldSurfaceView, FixedIntervalNormalizer, AdaptiveSymmetricNormalizer, MathPhysicsModelBehavior
 } from '../../../src/index.js';
 import {
-    Color, LinearSRGBColorSpace
+    Color, LinearSRGBColorSpace, SRGBColorSpace
 } from 'three';
 
 const U_FIELD = 0; // x-component of velocity
@@ -361,57 +361,28 @@ class EulerFluid extends DiscreteVectorField {
 class PressureFieldAdapter extends MathPhysicsModelBehavior {
     constructor(fluid) {
         super();
-        this._fluid = fluid;
+        this.fluid = fluid;
     }
 
-    get nx() { return this._fluid.nx; }
-    get ny() { return this._fluid.ny; }
+    get nx() { return this.fluid.nx; }
+    get ny() { return this.fluid.ny; }
 
-    rangeAt() {
-        return this._fluid.pressureRange;
-    }
-
-    valueAt(i, j) {
-        return this._fluid.pressureAt(j, i);
-    }
+    rangeAt() { return this.fluid.pressureRange; }
+    valueAt(i, j) { return this.fluid.pressureAt(j, i); }
 }
 
 class SmokeFieldAdapter extends MathPhysicsModelBehavior {
     constructor(fluid) {
         super();
-        this._fluid = fluid;
+        this.fluid = fluid;
         this._range = new Interval(0, 1);
     }
 
-    get nx() { return this._fluid.nx; }
-    get ny() { return this._fluid.ny; }
+    get nx() { return this.fluid.nx; }
+    get ny() { return this.fluid.ny; }
 
-    rangeAt() {
-        return this._range;
-    }
-
-    valueAt(i, j) {
-        return this._fluid.smokeAt(j, i);
-    }
-}
-
-class BlackColorMapper extends ColorMapper {
-    map(_value, targetColor) {
-        targetColor.setRGB(0, 0, 0, LinearSRGBColorSpace);
-    }
-}
-
-class FluidOverlaySurfaceView extends DiscreteFieldSurfaceView {
-    constructor({ renderOrder = 0, ...options } = {}) {
-        super(options);
-        this._renderOrder = renderOrder;
-    }
-
-    initialize(field) {
-        super.initialize(field);
-        this._mesh.material.depthWrite = false;
-        this._mesh.renderOrder = this._renderOrder;
-    }
+    rangeAt() { return this._range; }
+    valueAt(i, j) { return this.fluid.smokeAt(j, i); }
 }
 
 //
@@ -519,34 +490,28 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
         paintScene();
 }
 
-const streamlinesView = new StreamlinesView();
-
-
 const pressureFieldAdapter = new PressureFieldAdapter(fluid);
 const smokeFieldAdapter = new SmokeFieldAdapter(fluid);
 
-const fluidDynamicsView = new FluidOverlaySurfaceView({
-    renderOrder: 0,
+const fluidDynamicsView = new DiscreteFieldSurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace }),
     normalizer: new AdaptiveSymmetricNormalizer(),
     opacityFunction: () => 1,
-    colorSpace: LinearSRGBColorSpace
+    colorSpace: LinearSRGBColorSpace,
 });
-const smokeView = new FluidOverlaySurfaceView({
-    renderOrder: 1,
-    colorMapper: new BlackColorMapper({ colorSpace: LinearSRGBColorSpace }),
+const smokeView = new DiscreteFieldSurfaceView({
+    colorMapper: ColorMappers.get(ColorMappers.Uniform, {
+        colorSpace: LinearSRGBColorSpace,
+        color: new Color().setRGB( 5e-3, 5e-3, 5e-3, LinearSRGBColorSpace)
+    }),
     normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
-    opacityFunction: value => value,
+    opacityFunction: value => Math.sqrt(value),
     colorSpace: LinearSRGBColorSpace
 });
-fluidDynamicsView.position.set(0.5, 0.5, 0);
-smokeView.position.set(0.5, 0.5, 0.001);
-fluidDynamicsView.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
-smokeView.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
-smokeView.visible = true;
 
 const velocitiesView = new VelocitiesView();
 const obstacleView = new Circle({ radiusOffset: fluid.cellSize });
+const streamlinesView = new StreamlinesView();
 
 document.addEventListener('keydown', event => {
     switch (event.key) {
