@@ -229,7 +229,7 @@ export class Slider extends HtmlControl {
     /** @param {number} value */
     withValue(value) {
         this._inputControl.value = String(value);
-        this._span.textContent = value.toFixed(2) + this._units;
+        this._span.textContent = Number(value).toFixed(2) + this._units;
         return this;
     }
 
@@ -253,11 +253,9 @@ export class Slider extends HtmlControl {
         else
             console.info(`Helion cannot set initial state of slider control: no getter for property ${name}`);
 
-        this.addEventListener('input', (event) => {
-            // @ts-ignore
-            this._targetObject[name] = Number(event.target.value);
-            // @ts-ignore
-            this._span.textContent = Number(event.target.value).toFixed(2) + this._units;
+        this.onInput(value => {
+            this._targetObject[name] = value;
+            this._span.textContent = value.toFixed(2) + this._units;
         });
         return this;
     }
