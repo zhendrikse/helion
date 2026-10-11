@@ -1,7 +1,8 @@
 import {
     Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView,
-    DiscreteFieldSurfaceView, FixedIntervalNormalizer, MathPhysicsModelBehavior
+    DiscreteFieldSurfaceView, FixedIntervalNormalizer, AdaptiveSymmetricNormalizer, MathPhysicsModelBehavior,
+    ColorMapper
 } from '../../../src/index.js';
 import {
     Color, LinearSRGBColorSpace
@@ -358,7 +359,7 @@ class EulerFluid extends DiscreteVectorField {
     }
 }
 
-class FluidDisplayFieldAdapter extends MathPhysicsModelBehavior {
+class PressureFieldAdapter extends MathPhysicsModelBehavior {
     constructor(fluid) {
         super();
         this._fluid = fluid;
@@ -372,7 +373,40 @@ class FluidDisplayFieldAdapter extends MathPhysicsModelBehavior {
     }
 
     valueAt(i, j) {
-        return this._fluid.pressureRange.normalize(this._fluid.pressureAt(j, i)) - this._fluid.smokeAt(j, i);
+        return this._fluid.pressureAt(j, i);
+    }
+}
+
+class SmokeFieldAdapter extends MathPhysicsModelBehavior {
+    constructor(fluid) {
+        super();
+        this._fluid = fluid;
+        this._range = new Interval(0, 1);
+    }
+
+    get nx() { return this._fluid.nx; }
+    get ny() { return this._fluid.ny; }
+
+    rangeAt() {
+        return this._range;
+    }
+
+    valueAt(i, j) {
+        return this._fluid.smokeAt(j, i);
+    }
+}
+
+class BlackColorMapper extends ColorMapper {
+    map(_value, targetColor) {
+        targetColor.setRGB(0, 0, 0, LinearSRGBColorSpace);
+    }
+}
+
+class FluidOverlaySurfaceView extends DiscreteFieldSurfaceView {
+    initialize(field) {
+        super.initialize(field);
+        this._mesh.material.depthWrite = false;
+        this._mesh.renderOrder = 1;
     }
 }
 
@@ -397,9 +431,9 @@ function tankScene(/** @type {EulerFluid} */ fluid) {
 
     gravity = -9.81;
     solver.overRelaxation = 1.9;
-    fluidFieldAdapter.showPressure = true;
+    fluidDynamicsView.visible = true;
     obstacleView.fillColor = new Colour(0x131313);
-    fluidFieldAdapter.showSmoke = false;
+    smokeView.visible = false;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
 }
@@ -426,9 +460,9 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
     fluid.setObstacle(0.4, 0.5, true);
     gravity = 0.0;
     solver.overRelaxation = 1.9;
-    fluidFieldAdapter.showPressure = true;
+    fluidDynamicsView.visible = true;
     obstacleView.fillColor = new Colour(0x131313);
-    fluidFieldAdapter.showSmoke = true;
+    smokeView.visible = true;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
     if (sceneNumber === SCENE_TYPE.HIRES_TUNNEL)
@@ -438,9 +472,9 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
 function paintScene() {
     gravity = 0.0;
     solver.overRelaxation = 1.0;
-    fluidFieldAdapter.showPressure = false;
+    fluidDynamicsView.visible = false;
     obstacleView.fillColor = new Colour(0x131313);
-    fluidFieldAdapter.showSmoke = true;
+    smokeView.visible = true;
     streamlinesView.visible = false;
     velocitiesView.visible = false;
     obstacle.radius = 0.1;
@@ -449,7 +483,7 @@ function paintScene() {
 function setHighResolution() {
     dt = 1.0 / 125.0;
     solver.numIterations = 25;
-    fluidFieldAdapter.showPressure = true;
+    fluidDynamicsView.visible = true;
     obstacleView.fillColor = new Colour(0x131313);
 }
 
@@ -482,15 +516,26 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
 const streamlinesView = new StreamlinesView();
 
 
-const fluidFieldAdapter = new FluidDisplayFieldAdapter(fluid);
-const fluidDynamicsView = new DiscreteFieldSurfaceView({
+const pressureFieldAdapter = new PressureFieldAdapter(fluid);
+const smokeFieldAdapter = new SmokeFieldAdapter(fluid);
+
+const fluidDynamicsView = new FluidOverlaySurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace }),
-    normalizer: new FixedIntervalNormalizer(new Interval(-1, 1)),
+    normalizer: new AdaptiveSymmetricNormalizer(),
+    opacityFunction: () => 1,
+    colorSpace: LinearSRGBColorSpace
+});
+const smokeView = new FluidOverlaySurfaceView({
+    colorMapper: new BlackColorMapper({ colorSpace: LinearSRGBColorSpace }),
+    normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
     opacityFunction: value => value,
     colorSpace: LinearSRGBColorSpace
 });
 fluidDynamicsView.position.set(0.5, 0.5, 0);
+smokeView.position.set(0.5, 0.5, 0.001);
 fluidDynamicsView.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
+smokeView.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
+smokeView.visible = true;
 
 const velocitiesView = new VelocitiesView();
 const obstacleView = new Circle({ radiusOffset: fluid.cellSize });
@@ -543,7 +588,8 @@ const simulation = Simulation
     })
     .runsEvery(3e-2)
     .onStep(() => simulate())
-    .bind(fluidFieldAdapter.alwaysWith(fluidDynamicsView))
+    .bind(pressureFieldAdapter.alwaysWith(fluidDynamicsView))
+    .bind(smokeFieldAdapter.alwaysWith(smokeView))
     .bind(fluid.alwaysWith(streamlinesView))
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
@@ -588,19 +634,19 @@ const simulation = Simulation
             .withProperty("visible")
         ))
     .append(new Checkbox('🗜️ Pressure')
-        .on(fluidFieldAdapter)
-        .withProperty("showPressure")
+        .on(fluidDynamicsView)
+        .withProperty("visible")
         .onChange(checked => {
             showPressure = checked;
             obstacleView.fillColor = checked ? new Colour(0x131313) : new Colour(0xDDDDDD);
         }).togetherWith(new Checkbox('🚬 Smoke')
-            .on(fluidFieldAdapter)
-            .withProperty("showSmoke")))
+            .on(smokeView)
+            .withProperty("visible")))
     .append(new DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.RdYlBu)
         .onChange(value =>
-            fluidFieldAdapter.colorMapper = ColorMappers.get(value, { colorSpace: LinearSRGBColorSpace })))
+            fluidDynamicsView.colorMapper = ColorMappers.get(value, { colorSpace: LinearSRGBColorSpace })))
     .append(new Slider('🏃🏻‍♀️‍➡️ Fluid velocity')
         .withRange(new Range(.5, 3, .01))
         .onInput(value => setFluidVelocity(value)))
