@@ -435,6 +435,20 @@ class FluidDisplayFieldAdapter extends MathPhysicsModelBehavior {
     }
 }
 
+/**
+ * Fluid-specific presentation settings for the generic scalar surface view.
+ * Keep the texture color space and transparent depth behavior used by the
+ * previous SmokePressureView.
+ */
+class FluidSurfaceView extends DiscreteFieldSurfaceView {
+    initialize(scalarField) {
+        super.initialize(scalarField);
+        this._texture.colorSpace = LinearSRGBColorSpace;
+        this._mesh.material.depthWrite = false;
+        this._texture.needsUpdate = true;
+    }
+}
+
 class PackedFluidColorMapper extends ColorMapper {
     map(normalizedValue, targetColor) {
         const packed = Math.round(normalizedValue * 0xFFFFFFFF);
@@ -557,7 +571,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
 
 const streamlinesView = new StreamlinesView();
 const fluidFieldAdapter = new FluidDisplayFieldAdapter(fluid);
-const fluidDynamicsView = new DiscreteFieldSurfaceView({
+const fluidDynamicsView = new FluidSurfaceView({
     colorMapper: new PackedFluidColorMapper(),
     normalizer: new FixedIntervalNormalizer(new Interval(0, 0xFFFFFFFF)),
     opacityFunction: fluidPixelOpacity
