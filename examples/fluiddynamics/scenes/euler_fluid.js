@@ -1,11 +1,9 @@
+import { Color, LinearSRGBColorSpace } from 'three';
 import {
-    Checkbox, ColorMappers, DiscreteScalarField, ColorMapper, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
+    Checkbox, ColorMappers, DiscreteScalarField, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView,
-    DiscreteFieldSurfaceView, FixedIntervalNormalizer, AdaptiveSymmetricNormalizer, MathPhysicsModelBehavior
+    DiscreteFieldSurfaceView, FixedIntervalNormalizer, MathPhysicsModelBehavior
 } from '../../../src/index.js';
-import {
-    Color, LinearSRGBColorSpace, SRGBColorSpace
-} from 'three';
 
 const U_FIELD = 0; // x-component of velocity
 const V_FIELD = 1; // y-component of velocity
@@ -22,9 +20,9 @@ const SCENE_TYPE = Object.freeze({
 
 class FluidSolver extends Solver {
     constructor({
-                    numIterations = 100,
-                    overRelaxation = 1.9
-                } = {}) {
+        numIterations = 100,
+        overRelaxation = 1.9
+    } = {}) {
         super();
         this.numIterations = numIterations;
         this.overRelaxation = overRelaxation;
@@ -373,6 +371,23 @@ class SmokeFieldAdapter extends MathPhysicsModelBehavior {
     valueAt(i, j) { return this.fluid.smokeAt(j, i); }
 }
 
+class ResizableDiscreteFieldSurfaceView extends DiscreteFieldSurfaceView {
+    _disposeMesh() {
+        this.remove(this._mesh);
+        this._mesh.geometry.dispose();
+        this._mesh.material.dispose();
+        this._texture.dispose();
+        this._mesh = null;
+        this._texture = null;
+    }
+
+    resetResolution(field) {
+        if (this._mesh)
+            this._disposeMesh();
+        this.initialize(field);
+    }
+}
+
 //
 // S C E N E
 //
@@ -482,37 +497,16 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
         paintScene();
 }
 
-class DiscreteFieldSurfaceViewAdapter extends DiscreteFieldSurfaceView {
-    initialize(field) { super.initialize(field); }
-
-    _disposeMesh() {
-        this.remove(this._mesh);
-        this._mesh.geometry.dispose();
-        this._mesh.material.dispose();
-        this._texture.dispose();
-        this._mesh = null;
-        this._texture = null;
-    }
-
-    resetResolution(field) {
-        if (this._mesh)
-            this._disposeMesh();
-        this.initialize(field);
-    }
-
-    synchronizeWith(field) {  super.synchronizeWith(field); }
-}
-
 const pressureFieldAdapter = new PressureFieldAdapter(fluid);
 const smokeFieldAdapter = new SmokeFieldAdapter(fluid);
 
-const pressureView = new DiscreteFieldSurfaceViewAdapter({
+const pressureView = new ResizableDiscreteFieldSurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace }),
     opacityFunction: () => 1,
     colorSpace: LinearSRGBColorSpace,
 });
 
-const smokeView = new DiscreteFieldSurfaceViewAdapter({
+const smokeView = new ResizableDiscreteFieldSurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Uniform, {
         colorSpace: LinearSRGBColorSpace,
         color: new Color().setRGB( 0, 0, 0, LinearSRGBColorSpace)
@@ -553,7 +547,7 @@ const simulation = Simulation
         infoPanel: {
             text:
                 '<strong>🍃 Euler fluid</strong><br/>&nbsp;<br/>' +
-                '©️ Original idea and software: ' +
+                '©️ Fluid dynamics: ' +
                 '<a href=\"https://www.matthiasMueller.info/tenMinutePhysics\">Matthias Müller</a></br>' +
                 '👉 Use mouse to move obstacle.<br>' +
                 '👉 Use \"p\" and \"m\" keys to pause and/or step'
