@@ -388,20 +388,6 @@ class ResizableDiscreteFieldSurfaceView extends DiscreteFieldSurfaceView {
     }
 }
 
-//
-// S C E N E
-//
-let dt = 1.0 / 120;
-let paused = false;
-/** @type {number} */
-let sceneType = SCENE_TYPE.WIND_TUNNEL;
-let frameNr = 0;
-let showPressure = true;
-let mouseDown = false;
-let gravity = -9.81;
-let fluidSpeed = 2.0;
-const fluid = new EulerFluid();
-
 function tankScene(/** @type {EulerFluid} */ fluid) {
     for (let i = 0; i < fluid.nx; i++)
         for (let j = 0; j < fluid.ny; j++)
@@ -409,11 +395,7 @@ function tankScene(/** @type {EulerFluid} */ fluid) {
 
     gravity = -9.81;
     solver.overRelaxation = 1.9;
-    pressureView.visible = true;
-    obstacleView.fillColor = new Colour(0x131313);
     smokeView.visible = false;
-    streamlinesView.visible = false;
-    velocitiesView.visible = false;
 }
 
 function setFluidVelocity(/** @type {number} */ speed) {
@@ -440,31 +422,12 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
                       0.5 - 0.5 * fluid.ny * fluid.gridSpacing, true);
     gravity = 0.0;
     solver.overRelaxation = 1.9;
-    pressureView.visible = true;
-    obstacleView.fillColor = new Colour(0x131313);
-    smokeView.visible = true;
-    streamlinesView.visible = false;
-    velocitiesView.visible = false;
-    if (sceneNumber === SCENE_TYPE.HIRES_TUNNEL)
-        setHighResolution();
 }
 
 function paintScene() {
     gravity = 0.0;
     solver.overRelaxation = 1.0;
-    pressureView.visible = true;
-    obstacleView.fillColor = new Colour(0x131313);
-    smokeView.visible = true;
-    streamlinesView.visible = false;
-    velocitiesView.visible = false;
     obstacle.radius = 0.1;
-}
-
-function setHighResolution() {
-    dt = 1.0 / 125.0;
-    solver.numIterations = 25;
-    pressureView.visible = true;
-    obstacleView.fillColor = new Colour(0x131313);
 }
 
 function configureDiscreteFieldSurfaceView(view, fluid) {
@@ -475,14 +438,18 @@ function configureDiscreteFieldSurfaceView(view, fluid) {
 function setupScene(/** @type {number} */ sceneNr = 0) {
     sceneType = sceneNr;
     frameNr = 0;
-    dt = 1.0 / 60.0;
-    obstacle.radius = 0.15;
-    fluid.init({ resolution: sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 200 : 100 });
+    dt = sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 1.0 / 125.0 : 1 / 60.0;
+    solver.numIterations = sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 25 : 40;
+
+    fluid.init({ resolution: sceneNr === SCENE_TYPE.HIRES_TUNNEL || SCENE_TYPE.PAINT ? 200 : 100 });
     configureDiscreteFieldSurfaceView(pressureView, fluid);
     configureDiscreteFieldSurfaceView(smokeView, fluid);
     solver.init(fluid);
     solver.numIterations = 40;
+    obstacle.radius = 0.15;
     obstacleView.radiusOffset = fluid.gridSpacing;
+    smokeView.visible = true;
+    obstacleView.fillColor = new Colour(0x131313);
 
     if (sceneNr === SCENE_TYPE.TANK)
         tankScene(fluid);
@@ -491,9 +458,6 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     else if (sceneNr === SCENE_TYPE.PAINT)
         paintScene();
 }
-
-const pressureFieldAdapter = new PressureFieldAdapter(fluid);
-const smokeFieldAdapter = new SmokeFieldAdapter(fluid);
 
 const pressureView = new ResizableDiscreteFieldSurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace }),
@@ -511,9 +475,19 @@ const smokeView = new ResizableDiscreteFieldSurfaceView({
     colorSpace: LinearSRGBColorSpace
 });
 
-const velocitiesView = new VelocitiesView();
+let dt = 1.0 / 120;
+let paused = false;
+/** @type {number} */
+let sceneType = SCENE_TYPE.WIND_TUNNEL;
+let frameNr = 0;
+let showPressure = true;
+let mouseDown = false;
+let gravity = -9.81;
+let fluidSpeed = 2.0;
+const fluid = new EulerFluid();
+const velocitiesView = new VelocitiesView({ visible: false });
 const obstacleView = new Circle({ radiusOffset: fluid.gridSpacing });
-const streamlinesView = new StreamlinesView();
+const streamlinesView = new StreamlinesView({ visible: false });
 
 const obstacle = new RadialSymmetricBody({ radius: 0.15 });
 const solver = new FluidSolver({ numIterations: 40 });
@@ -550,8 +524,8 @@ const simulation = Simulation
     })
     .runsEvery(3e-2)
     .onStep(() => simulate())
-    .bind(pressureFieldAdapter.alwaysWith(pressureView))
-    .bind(smokeFieldAdapter.alwaysWith(smokeView))
+    .bind(new PressureFieldAdapter(fluid).alwaysWith(pressureView))
+    .bind(new SmokeFieldAdapter(fluid).alwaysWith(smokeView))
     .bind(fluid.alwaysWith(streamlinesView))
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))

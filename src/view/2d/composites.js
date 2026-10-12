@@ -22,13 +22,15 @@ export class StreamlinesView extends Renderable2D {
      * @property {number} [scale]
      * @property {number} [seedSpacing]
      * @property {number} [numberOfSegments]
+     * @property {boolean} [visible]
      */
     /** @param {StreamlinesViewOptions} [options] */
     constructor({
         numberOfSegments = 15,
         seedSpacing = 5,
         scale = 1e-2,
-        color = new Colour(.175, .175, .175)
+        color = new Colour(.175, .175, .175),
+        visible = true
     } = {}) {
         super();
         this._scale = scale;
@@ -43,6 +45,7 @@ export class StreamlinesView extends Renderable2D {
         this._position = new Vec2();
         this._velocity = new Vec2();
         this._vector = new Vec2();
+        this.visible = visible;
     }
 
     canBindTo(/** @type {{nx: number, ny: number, gridSpacing: number, contains:(position: Vec2) => number}} */ model) {
@@ -124,10 +127,12 @@ export class VelocitiesView extends Renderable2D {
      * @typedef {object} VelocitiesViewOptions
      * @property {Colour} [color]
      * @property {number} [scale]
+     * @property {boolean} [visible]
      */
     /** @param {VelocitiesViewOptions} [options] */
     constructor({
         scale = 1.5e-2,
+        visible = true,
         color = new Colour(0.0, 0.125, 0.125)
     } = {}) {
         super();
@@ -139,6 +144,7 @@ export class VelocitiesView extends Renderable2D {
         this.add(this._lines);
         this._allocatedSegmentCount = 0;
         this._velocity = new Vec2();
+        this.visible = visible;
     }
 
     canBindTo(/** @type {{nx: number, ny: number, gridSpacing: number, valueAt:(i: number, j:number, target: Vec2) => Vec2}} */ model) {
