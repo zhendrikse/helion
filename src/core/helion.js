@@ -502,7 +502,7 @@ export class Simulation {
                 return;
 
             const bounds = event.currentTarget.getBoundingClientRect();
-            const x = (event.touches[0].clientX - bounds.left -bounds.width) / bounds.width;
+            const x = (event.touches[0].clientX - bounds.left - bounds.width / 2) / bounds.width;
             const y = (bounds.top - bounds.height / 2 - event.touches[0].clientY) / bounds.height;
             callback(x, y, event);
         }

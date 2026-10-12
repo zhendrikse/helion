@@ -394,7 +394,6 @@ function tankScene(/** @type {EulerFluid} */ fluid) {
             fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.nx - 1 || j === 0) ? SOLID : FLUID);
 
     gravity = -9.81;
-    solver.overRelaxation = 1.9;
     smokeView.visible = false;
 }
 
@@ -420,12 +419,9 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
     // Preserve the obstacle's previous location after centering the world.
     fluid.setObstacle(0.4 - 0.5 * fluid.nx * fluid.gridSpacing,
                       0.5 - 0.5 * fluid.ny * fluid.gridSpacing, true);
-    gravity = 0.0;
-    solver.overRelaxation = 1.9;
 }
 
 function paintScene() {
-    gravity = 0.0;
     solver.overRelaxation = 1.0;
     obstacle.radius = 0.1;
 }
@@ -436,16 +432,19 @@ function configureDiscreteFieldSurfaceView(view, fluid) {
 }
 
 function setupScene(/** @type {number} */ sceneNr = 0) {
+    gravity = 0.0;
     sceneType = sceneNr;
     frameNr = 0;
     dt = sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 1.0 / 125.0 : 1 / 60.0;
     solver.numIterations = sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 25 : 40;
 
-    fluid.init({ resolution: sceneNr === SCENE_TYPE.HIRES_TUNNEL || SCENE_TYPE.PAINT ? 200 : 100 });
+    const resolution = sceneNr === SCENE_TYPE.HIRES_TUNNEL || sceneNr === SCENE_TYPE.PAINT ? 200 : 100;
+    fluid.init({ resolution });
     configureDiscreteFieldSurfaceView(pressureView, fluid);
     configureDiscreteFieldSurfaceView(smokeView, fluid);
     solver.init(fluid);
     solver.numIterations = 40;
+    solver.overRelaxation = 1.9;
     obstacle.radius = 0.15;
     obstacleView.radiusOffset = fluid.gridSpacing;
     smokeView.visible = true;
