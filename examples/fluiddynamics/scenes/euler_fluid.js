@@ -393,7 +393,6 @@ function tankScene(/** @type {EulerFluid} */ fluid) {
         for (let j = 0; j < fluid.ny; j++)
             fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.nx - 1 || j === 0 || j === fluid.ny - 1) ? SOLID : FLUID);
 
-    setFluidVelocity(0);
     gravity = -9.81;
     smokeView.visible = false;
 }
