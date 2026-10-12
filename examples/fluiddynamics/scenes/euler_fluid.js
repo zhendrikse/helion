@@ -210,40 +210,24 @@ class EulerFluid extends DiscreteVectorField {
         const x = positionVector.x + (0.5 * this.nx + 0.5) * this._gridSpacing;
         const y = positionVector.y + (0.5 * this.ny + 0.5) * this._gridSpacing;
         velocity.set(
-            this._sampleField(x, y, U_FIELD),
-            this._sampleField(x, y, V_FIELD)
+            this._sampleField(x, y, 0, .5 * this._gridSpacing, this._vectorComponentX),
+            this._sampleField(x, y, 0.5 * this._gridSpacing, 0, this._vectorComponentY)
         );
         return velocity;
     }
 
-    sampleSmoke(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, S_FIELD); }
+    sampleSmoke(/** @type {number} */ x, /** @type {number} */ y) {
+        return this._sampleField(x, y,.5 * this._gridSpacing, .5 * this._gridSpacing, this._smokeField);
+    }
     pressureAt(/** @type {number} */ i, /** @type {number} */ j) { return this._pressureField.valueAt(i, j); }
     smokeAt(/** @type {number} */ i, /** @type {number} */ j) { return this._smokeField.valueAt(i, j); }
     obstacleMaskAt(/** @type {number} */ i, /** @type {number} */ j) { return this._obstacleMask.valueAt(i, j); }
 
-    _sampleField(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ fieldType) {
+    _sampleField(x, y, dx, dy, field) {
         const h = this._gridSpacing;
-        let dx = 0.0;
-        let dy = 0.0;
-        let field;
-        switch (fieldType) {
-            case U_FIELD:
-                field = this._vectorComponentX;
-                dy = 0.5 * h;
-                break;
-            case V_FIELD:
-                field = this._vectorComponentY;
-                dx = 0.5 * h;
-                break;
-            case S_FIELD:
-                field = this._smokeField;
-                dx = 0.5 * h;
-                dy = 0.5 * h;
-                break;
-        }
-
         x = Math.max(Math.min(x, this.nx * h), h) - dx;
         y = Math.max(Math.min(y, this.ny * h), h) - dy;
+
         const x0 = Math.min(Math.floor(x / this._gridSpacing), this.nx - 1);
         const tx = (x - x0 * h) / this._gridSpacing;
         const x1 = Math.min(x0 + 1, this.nx - 1);
@@ -284,7 +268,7 @@ class EulerFluid extends DiscreteVectorField {
         let y = (j + .5) * this._gridSpacing;
         x -= dt * this._vectorComponentX.valueAt(j, i);
         y -= dt * this._averageVelocityY(i, j);
-        return this._sampleField(x, y, U_FIELD);
+        return this._sampleField(x, y, 0, .5 * this._gridSpacing, this._vectorComponentX);
     }
 
     calculateVelocityY(/** @type {number} */ i, /** @type {number} */ j, /** @type {number} */ dt) {
@@ -292,7 +276,7 @@ class EulerFluid extends DiscreteVectorField {
         let y = j * this._gridSpacing;
         x -= dt * this._averageVelocityX(i, j);
         y -= dt * this._vectorComponentY.valueAt(j, i);
-        return this._sampleField(x, y, V_FIELD);
+        return this._sampleField(x, y, .5 * this._gridSpacing, 0, this._vectorComponentY);
     }
 
     setObstacle(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ reset) {
