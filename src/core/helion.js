@@ -483,7 +483,7 @@ export class Simulation {
             const x = (event.clientX - bounds.left - bounds.width / 2) / bounds.width;
             const y = (bounds.top + bounds.height / 2 - event.clientY) / bounds.height;
             callback(x, y, event);
-        }
+        };
         this._viewport.canvas.addEventListener(action, eventHandler, options);
         return this;
     }
@@ -496,16 +496,17 @@ export class Simulation {
      * @param {{}} options
      * @returns {Simulation}
      */
-    onTouch(action, callback, options= {}) {
+    onTouch(action, callback, options = {}) {
         const eventHandler = event => {
             if (!event.touches.length)
                 return;
 
             const bounds = event.currentTarget.getBoundingClientRect();
-            const x = (event.touches[0].clientX - bounds.left - bounds.width / 2) / bounds.width;
-            const y = (bounds.top - bounds.height / 2 - event.touches[0].clientY) / bounds.height;
+            const touch = event.touches[0];
+            const x = (touch.clientX - bounds.left - bounds.width / 2) / bounds.width;
+            const y = (bounds.top + bounds.height / 2 - touch.clientY) / bounds.height;
             callback(x, y, event);
-        }
+        };
         this._viewport.canvas.addEventListener(action, eventHandler, options);
         return this;
     }
