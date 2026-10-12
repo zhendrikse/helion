@@ -469,22 +469,15 @@ function setHighResolution() {
 
 function configureDiscreteFieldSurfaceView(view, fluid) {
     view.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
-    view.position.set(0, 0, 0);
     view.resetResolution(fluid);
 }
 
 function setupScene(/** @type {number} */ sceneNr = 0) {
     sceneType = sceneNr;
     frameNr = 0;
-    let resolution = 100;
-    if (sceneNr === SCENE_TYPE.TANK)
-        resolution = 50;
-    else if (sceneNr === SCENE_TYPE.HIRES_TUNNEL)
-        resolution = 200;
-
     dt = 1.0 / 60.0;
     obstacle.radius = 0.15;
-    fluid.init({ resolution });
+    fluid.init({ resolution: sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 200 : 100 });
     configureDiscreteFieldSurfaceView(pressureView, fluid);
     configureDiscreteFieldSurfaceView(smokeView, fluid);
     solver.init(fluid);
