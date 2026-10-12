@@ -41,6 +41,7 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
     }
 
     set colorMapper(colorMapper) { this._colorMapper = colorMapper; }
+    set opacityFunction(opacityFunction) { this._opacityFunction = opacityFunction; }
 
     /** @type {DiscreteScalarField} scalarField */
     initialize(scalarField) {

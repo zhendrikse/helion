@@ -391,8 +391,9 @@ class ResizableDiscreteFieldSurfaceView extends DiscreteFieldSurfaceView {
 function tankScene(/** @type {EulerFluid} */ fluid) {
     for (let i = 0; i < fluid.nx; i++)
         for (let j = 0; j < fluid.ny; j++)
-            fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.nx - 1 || j === 0) ? SOLID : FLUID);
+            fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.nx - 1 || j === 0 || j === fluid.ny - 1) ? SOLID : FLUID);
 
+    setFluidVelocity(0);
     gravity = -9.81;
     smokeView.visible = false;
 }
@@ -424,6 +425,7 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
 function paintScene() {
     solver.overRelaxation = 1.0;
     obstacle.radius = 0.1;
+    obstacleView.fillColor = new Colour(0x333333);
 }
 
 function configureDiscreteFieldSurfaceView(view, fluid) {
@@ -438,8 +440,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     dt = sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 1.0 / 125.0 : 1 / 60.0;
     solver.numIterations = sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 25 : 40;
 
-    const resolution = sceneNr === SCENE_TYPE.HIRES_TUNNEL || sceneNr === SCENE_TYPE.PAINT ? 200 : 100;
-    fluid.init({ resolution });
+    fluid.init({ resolution: sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 200 : 100 });
     configureDiscreteFieldSurfaceView(pressureView, fluid);
     configureDiscreteFieldSurfaceView(smokeView, fluid);
     solver.init(fluid);
@@ -464,11 +465,11 @@ const pressureView = new ResizableDiscreteFieldSurfaceView({
     colorSpace: LinearSRGBColorSpace,
 });
 
+const smokePressureColor = new Color().setRGB( 1.2e-2, 1.2e-2, 1.2e-2);
+const smokeColor = new Color().setRGB( 1 - 1.2e-2, 1 - 1.2e-2, 1 - 1.2e-2);
+const smokeMapper = ColorMappers.get(ColorMappers.Uniform, { color: smokePressureColor });
 const smokeView = new ResizableDiscreteFieldSurfaceView({
-    colorMapper: ColorMappers.get(ColorMappers.Uniform, {
-        colorSpace: LinearSRGBColorSpace,
-        color: new Color().setRGB( 0, 0, 0, LinearSRGBColorSpace)
-    }),
+    colorMapper: smokeMapper,
     normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
     opacityFunction: value => Math.sqrt(value),
     colorSpace: LinearSRGBColorSpace
@@ -570,7 +571,9 @@ const simulation = Simulation
         .withProperty("visible")
         .onChange(checked => {
             showPressure = checked;
-            obstacleView.fillColor = checked ? new Colour(0x131313) : new Colour(0xDDDDDD);
+            obstacleView.fillColor = checked ? new Colour(0x131313) : new Colour(0x333333);
+            smokeMapper.color = checked ? smokePressureColor : smokeColor;
+            smokeView.opacityFunction = checked ? value => Math.sqrt(value) : value => 1 - Math.sqrt(value);
         })
         .togetherWith(new Checkbox('🚬 Smoke')
             .on(smokeView)
