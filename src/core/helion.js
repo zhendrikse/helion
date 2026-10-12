@@ -480,8 +480,8 @@ export class Simulation {
     onMouse(action, callback, options= {}) {
         const eventHandler = event => {
             const bounds = event.currentTarget.getBoundingClientRect();
-            const x = (event.clientX - bounds.left) / bounds.width;
-            const y = (bounds.bottom - event.clientY) / bounds.height;
+            const x = (event.clientX - .5 * bounds.width) / bounds.width;
+            const y = (.5 * bounds.bottom - event.clientY) / bounds.height;
             callback(x, y, event);
         }
         this._viewport.canvas.addEventListener(action, eventHandler, options);
@@ -502,8 +502,8 @@ export class Simulation {
                 return;
 
             const bounds = event.currentTarget.getBoundingClientRect();
-            const x = (event.touches[0].clientX - bounds.left) / bounds.width;
-            const y = (bounds.bottom - event.touches[0].clientY) / bounds.height;
+            const x = (event.touches[0].clientX - .5 * bounds.width) / bounds.width;
+            const y = (.5 * bounds.bottom - event.touches[0].clientY) / bounds.height;
             callback(x, y, event);
         }
         this._viewport.canvas.addEventListener(action, eventHandler, options);
@@ -631,7 +631,11 @@ export class Simulation {
         return this;
     }
 
-    /** @param {Event} _event */
+    /**
+     * We enforce a new synchronization of ALL views after each user interaction.
+     *
+     * @param {Event} _event
+     */
     onUserInteraction(_event) {
         for (const binding of this._bindings)
             binding.forceSynchronize();
