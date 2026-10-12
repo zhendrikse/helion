@@ -91,20 +91,16 @@ class ElectricFieldStreamlinesAdapter extends MathPhysicsModelBehavior {
         this.gridSpacing = electricField._gridSpacing;
     }
 
-    contains(/** @type {Vec2} */ position) {
-        return true; // The field lines on the borders are so small, that they don't need to be skipped
-    }
+    // The field lines on the borders are so small, we don't need clipping here
+    contains = (/** @type {Vec2} */ position) => true;
 
-    sample(/** @type {Vec2} */ position, /** @type {Vec2} */ target) {
-        return this._electricField.sample(position, target);
-    }
+    sample = (/** @type {Vec2} */ position, /** @type {Vec2} */ target) => this._electricField.sample(position, target);
 }
 
 const potential = new DiscreteScalarField({nx: N, ny: N});
 const boundaryCondition = new CapacitorBoundaryCondition();
 const solver = new JacobiSolver(boundaryCondition);
 const electricField = new ElectricField({potential, gridSpacing, derivativeSpacing: h });
-
 const electricFieldAdapter = new ElectricFieldStreamlinesAdapter(electricField);
 
 const streamlinesView = new StreamlinesView({
@@ -113,10 +109,9 @@ const streamlinesView = new StreamlinesView({
     scale: 4e-6,
     color: new Colour(0x090909)
 });
-// streamlinesView.position.set(-30, -30);
 streamlinesView.visible = true;
 
-const view = new DiscreteFieldSurfaceView({
+const potentialView = new DiscreteFieldSurfaceView({
     scale: gridSpacing,
     colorMapper: new PotentialColorMapper(),
     normalizer: new FixedIntervalNormalizer(potentialRangeInterval),
@@ -126,7 +121,7 @@ const view = new DiscreteFieldSurfaceView({
 const arrowSpacing = 1.5;
 const width = 0.5 * N * gridSpacing;
 const height = 0.5 * N * gridSpacing;
-const arrows = new ArrowField2D({
+const arrowField = new ArrowField2D({
     xRange: new Range((2 + .5) * gridSpacing - width, (N - 2 + .5) * gridSpacing - width, arrowSpacing),
     yRange: new Range((2 + .5) * gridSpacing - height, (N - 2 + .5) * gridSpacing - height, arrowSpacing),
     scaleFactor: 1,
@@ -151,7 +146,7 @@ const simulation = Simulation
     .with({
         htmlDivId: 'potentialFieldContainer',
         camera: { orthographic: true },
-        viewport: {aspectRatio: '1/1', parameterMenuCollapsed: false },
+        viewport: { parameterMenuCollapsed: false },
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: '<strong>💪 Potential fields</strong><br/>' +
@@ -160,8 +155,8 @@ const simulation = Simulation
                 'Electric field: $$\\overrightarrow{E}=-\\overrightarrow{\\nabla}V$$'
         }
     })
-    .bind(potential.alwaysWith(view))
-    .bind(electricField.alwaysWith(arrows))
+    .bind(potential.alwaysWith(potentialView))
+    .bind(electricField.alwaysWith(arrowField))
     .bind(electricFieldAdapter.alwaysWith(streamlinesView))
     .onStep(() => {
         if (solvedIterations >= iterationLimit)
@@ -179,7 +174,7 @@ const simulation = Simulation
             reset();
         }))
     .append(new Checkbox('Electric field arrows ')
-        .on(arrows)
+        .on(arrowField)
         .withProperty('visible')
     )
     .append(new Checkbox('Electric field lines ')
@@ -204,5 +199,5 @@ const simulation = Simulation
                 reset();
             })))
     )
-    .frameSceneOn(view, { padding: 1.15, viewDirection: new Vec3(0, 0, 1) })
+    .frameSceneOn(potentialView, { padding: 1.15, viewDirection: new Vec3(0, 0, 1) })
     .start();
