@@ -1,11 +1,10 @@
 import {
-    Simulation, Vec3, DiscreteScalarField, ArrowField2D, Colour,
+    Simulation, Vec3, DiscreteScalarField, ArrowField2D, Colour, StreamlinesView,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
-    JacobiSolver, ColorMapper, Checkbox, Arrow2D, Button, ElectricField, DiscreteFieldSurfaceView,
-    StreamlinesView, MathPhysicsModelBehavior, Vec2
+    JacobiSolver, ColorMapper, Checkbox, Arrow2D, Button, ElectricField, DiscreteFieldSurfaceView
 } from '../../../src/index.js';
 
-const N = 201;
+const N = 250;
 const h = 1e-2 / (N - 1);
 const L = 4e-3;
 const d = 1e-3;
@@ -81,41 +80,23 @@ class CapacitorBoundaryCondition extends DirichletBoundaryCondition {
     }
 }
 
-// Adapter to make ElectricField compatible with StreamlinesView
-class ElectricFieldStreamlinesAdapter extends MathPhysicsModelBehavior {
-    constructor(electricField) {
-        super();
-        this._electricField = electricField;
-        this.nx = electricField._potentialField.nx;
-        this.ny = electricField._potentialField.ny;
-        this.gridSpacing = electricField._gridSpacing;
-    }
-
-    // The field lines on the borders are so small, we don't need clipping here
-    contains = (/** @type {Vec2} */ position) => true;
-
-    sample = (/** @type {Vec2} */ position, /** @type {Vec2} */ target) => this._electricField.sample(position, target);
-}
-
 const potential = new DiscreteScalarField({nx: N, ny: N});
 const boundaryCondition = new CapacitorBoundaryCondition();
 const solver = new JacobiSolver(boundaryCondition);
 const electricField = new ElectricField({potential, gridSpacing, derivativeSpacing: h });
-const electricFieldAdapter = new ElectricFieldStreamlinesAdapter(electricField);
 
 const streamlinesView = new StreamlinesView({
     numberOfSegments: 20,
     seedSpacing: 5,
-    scale: 4e-6,
-    color: new Colour(0x090909)
+    scaleFactor: 3.5e-6,
+    color: new Colour(0x131313)
 });
-streamlinesView.visible = true;
 
 const potentialView = new DiscreteFieldSurfaceView({
     scale: gridSpacing,
     colorMapper: new PotentialColorMapper(),
     normalizer: new FixedIntervalNormalizer(potentialRangeInterval),
-    opacityFunction: value => 2 * Math.abs(value - 0.5)
+    opacityFunction: value => Math.log(1 + 2 * Math.abs(value - 0.5))
 });
 
 const arrowSpacing = 1.5;
@@ -135,7 +116,7 @@ const arrowField = new ArrowField2D({
 });
 
 let solvedIterations = 0;
-let iterationLimit = 9000;
+let iterationLimit = 12500;
 let stepSize = 25;
 
 const reset = () => {
@@ -157,7 +138,7 @@ const simulation = Simulation
     })
     .bind(potential.alwaysWith(potentialView))
     .bind(electricField.alwaysWith(arrowField))
-    .bind(electricFieldAdapter.alwaysWith(streamlinesView))
+    .bind(electricField.alwaysWith(streamlinesView))
     .onStep(() => {
         if (solvedIterations >= iterationLimit)
             return;
@@ -167,7 +148,7 @@ const simulation = Simulation
         simulation.setBottomText(`Iterations: ${solvedIterations}`);
     })
     .append(new Slider('Iterations')
-        .withRange(new Range(0, 15000, 100))
+        .withRange(new Range(0, 20000, 100))
         .withValue(iterationLimit)
         .onChange(value => {
             iterationLimit = value;
@@ -183,21 +164,21 @@ const simulation = Simulation
     )
     .append(new Button()
         .withText('🔋 Capacitor')
-        .addEventListener('click', () => {
+        .onClick(() => {
             solver.boundaryCondition = new CapacitorBoundaryCondition();
             reset();
         }).togetherWith(new Button()
             .withText('⚡ Dipole')
-            .addEventListener('click', () => {
+            .onClick(() => {
                 solver.boundaryCondition = new DipoleBoundaryCondition();
                 reset();
             })
         .togetherWith(new Button()
             .withText('💍 Charged Ring')
-            .addEventListener('click', () => {
+            .onClick(() => {
                 solver.boundaryCondition = new ChargedRingBoundaryCondition();
                 reset();
             })))
     )
-    .frameSceneOn(potentialView, { padding: 1.15, viewDirection: new Vec3(0, 0, 1) })
+    .frameSceneOn(potentialView, { padding: 1.1, viewDirection: new Vec3(0, 0, 1) })
     .start();

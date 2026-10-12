@@ -216,13 +216,6 @@ class EulerFluid extends DiscreteVectorField {
         return velocity;
     }
 
-    contains(/** @type {Vec2} */ aVector) {
-        const halfWidth = 0.5 * this.nx * this._gridSpacing;
-        const halfHeight = 0.5 * this.ny * this._gridSpacing;
-        return aVector.x >= -halfWidth && aVector.x < halfWidth &&
-            aVector.y >= -halfHeight && aVector.y < halfHeight;
-    }
-
     sampleSmoke(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, S_FIELD); }
     pressureAt(/** @type {number} */ i, /** @type {number} */ j) { return this._pressureField.valueAt(i, j); }
     smokeAt(/** @type {number} */ i, /** @type {number} */ j) { return this._smokeField.valueAt(i, j); }
@@ -325,10 +318,7 @@ class EulerFluid extends DiscreteVectorField {
                     continue;
 
                 this._obstacleMask.setValueAt(j, i, SOLID);
-                if (sceneType === SCENE_TYPE.PAINT)
-                    this._smokeField.setValueAt(j, i, 0.5 + 0.5 * Math.sin(0.1 * frameNr));
-                else
-                    this._smokeField.setValueAt(j, i, 1.0);
+                this._smokeField.setValueAt(j, i, 0.5 + 0.5 * Math.sin(0.1 * frameNr));
 
                 this._vectorComponentX.setValueAt(j, i, vx);
                 this._vectorComponentX.setValueAt(j, i + 1, vx);
@@ -388,11 +378,15 @@ class ResizableDiscreteFieldSurfaceView extends DiscreteFieldSurfaceView {
     }
 }
 
-function tankScene(/** @type {EulerFluid} */ fluid) {
+function setLeftBorderTo(solidOrLiquid) {
+    const left = solidOrLiquid === SOLID ? fluid.nx - 1 : 0;
     for (let i = 0; i < fluid.nx; i++)
         for (let j = 0; j < fluid.ny; j++)
-            fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === fluid.nx - 1 || j === 0 || j === fluid.ny - 1) ? SOLID : FLUID);
+            fluid._obstacleMask.setValueAt(j, i, (i === 0 || i === left || j === 0 || j === fluid.ny - 1) ? SOLID : FLUID);
+}
 
+function tankScene(/** @type {EulerFluid} */ fluid) {
+    setLeftBorderTo(SOLID);
     gravity = -9.81;
     smokeView.visible = false;
 }
@@ -404,12 +398,7 @@ function setFluidVelocity(/** @type {number} */ speed) {
 }
 
 function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number} */ fluidSpeed, /** @type {number} */ sceneNumber) {
-    for (let i = 0; i < fluid.nx; i++)
-        for (let j = 0; j < fluid.ny; j++)
-            fluid._obstacleMask.setValueAt(j, i, (i === 0 || j === 0 || j === fluid.ny - 1) ? SOLID : FLUID);
-
     setFluidVelocity(fluidSpeed);
-
     const pipeH = 0.1 * fluid.ny;
     const minJ = Math.floor(0.5 * fluid.ny - 0.5 * pipeH);
     const maxJ = Math.floor(0.5 * fluid.ny + 0.5 * pipeH);
@@ -422,6 +411,7 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
 }
 
 function paintScene() {
+    setLeftBorderTo(SOLID);
     solver.overRelaxation = 1.0;
     obstacle.radius = 0.1;
     obstacleView.fillColor = new Colour(0x333333);
@@ -434,7 +424,6 @@ function configureDiscreteFieldSurfaceView(view, fluid) {
 
 function setupScene(/** @type {number} */ sceneNr = 0) {
     gravity = 0.0;
-    sceneType = sceneNr;
     frameNr = 0;
     dt = sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 1.0 / 125.0 : 1 / 60.0;
     solver.numIterations = sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 25 : 40;
@@ -442,6 +431,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     fluid.init({ resolution: sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 200 : 100 });
     configureDiscreteFieldSurfaceView(pressureView, fluid);
     configureDiscreteFieldSurfaceView(smokeView, fluid);
+    setLeftBorderTo(FLUID);
     solver.init(fluid);
     solver.numIterations = 40;
     solver.overRelaxation = 1.9;
@@ -449,6 +439,8 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     obstacleView.radiusOffset = fluid.gridSpacing;
     smokeView.visible = true;
     obstacleView.fillColor = new Colour(0x131313);
+    streamlinesView.seedSpacing = sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 10 : 5;
+    velocitiesView.stepSize = sceneNr === SCENE_TYPE.HIRES_TUNNEL ? 2 : 1;
 
     if (sceneNr === SCENE_TYPE.TANK)
         tankScene(fluid);
@@ -476,8 +468,6 @@ const smokeView = new ResizableDiscreteFieldSurfaceView({
 
 let dt = 1.0 / 120;
 let paused = false;
-/** @type {number} */
-let sceneType = SCENE_TYPE.WIND_TUNNEL;
 let frameNr = 0;
 let showPressure = true;
 let mouseDown = false;

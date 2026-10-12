@@ -96,7 +96,7 @@ export class WaveEquationSolver extends Solver {
         const damping = 1 - gamma * dt;
         for (let i = 1; i < nx - 1; i++)
             for (let j = 1; j < ny - 1; j++) {
-                const index = i + field.nx * j;
+                const index = field.index(i, j);
                 const acceleration = this._equation.acceleration(field, i, j);
                 const velocity = field.valueAt(i, j) - previous[index];
                 next[index] = field.valueAt(i, j) + damping * velocity + dt2 * acceleration;

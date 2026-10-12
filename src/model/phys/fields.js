@@ -53,6 +53,9 @@ export class ElectricField extends VectorField {
         if (potential == null)
             throw new Error('Cannot calculate electric field without potential.');
 
+        this._nx = potential.nx;
+        this._ny = potential.ny;
+
         if (gridSpacing <= 0)
             throw new Error('gridSpacing must be > 0.');
 
@@ -64,6 +67,10 @@ export class ElectricField extends VectorField {
         this._scalarFieldCalculus = new ScalarFieldCalculus(potential);
         this._h = derivativeSpacing;
     }
+
+    get nx() { return this._nx; }
+    get ny() { return this._ny; }
+    get gridSpacing() { return this._gridSpacing; }
 
     sample(position = new Vec2(), target = this._target) {
         const width = 0.5 * this._potentialField.nx * this._gridSpacing;

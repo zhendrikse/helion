@@ -17,23 +17,23 @@ const UP = new Vector3(0, 1, 0);
 
 export class StreamlinesView extends Renderable2D {
     /**
-     * @typedef {object} StreamlinesViewOptions
-     * @property {Colour} [color]
-     * @property {number} [scale]
-     * @property {number} [seedSpacing]
-     * @property {number} [numberOfSegments]
-     * @property {boolean} [visible]
+     * @param {{
+     * color?: {Colour}
+     * scaleFactor:? {number}
+     * seedSpacing?: {number}
+     * numberOfSegments?: {number}
+     * visible:? {boolean}
+     * }} [options]
      */
-    /** @param {StreamlinesViewOptions} [options] */
     constructor({
         numberOfSegments = 15,
         seedSpacing = 5,
-        scale = 1e-2,
+        scaleFactor = 1e-2,
         color = new Colour(.175, .175, .175),
         visible = true
     } = {}) {
         super();
-        this._scale = scale;
+        this._scaleFactor = scaleFactor;
         this._numberOfSegments = numberOfSegments;
         this._seedSpacing = seedSpacing;
         this._geometry = new BufferGeometry();
@@ -45,12 +45,15 @@ export class StreamlinesView extends Renderable2D {
         this._position = new Vec2();
         this._velocity = new Vec2();
         this._vector = new Vec2();
+        this._halfWidth = 0;
+        this._halfHeight = 0;
         this.visible = visible;
     }
 
-    canBindTo(/** @type {{nx: number, ny: number, gridSpacing: number, contains:(position: Vec2) => number}} */ model) {
-        if (model.contains === undefined ||
-            model.nx === undefined ||
+    set seedSpacing(seedSpacing) { this._seedSpacing = seedSpacing; }
+
+    canBindTo(/** @type {{nx: number, ny: number, gridSpacing: number}} */ model) {
+        if (model.nx === undefined ||
             model.ny === undefined ||
             model.gridSpacing === undefined)
             throw new Error('Fluid streamlines view can only bind to discrete models');
@@ -69,7 +72,17 @@ export class StreamlinesView extends Renderable2D {
         this._allocatedSegmentCount = maxSegmentCount;
     }
 
-    synchronizeWith(/** @type {{nx: number, ny: number, gridSpacing: number, contains:(position: Vec2) => number}} */ fluid) {
+    initialize(/** @type {{nx: number, ny: number, gridSpacing: number}} */ model) {
+        this._halfWidth = 0.5 * model.nx * model.gridSpacing;
+        this._halfHeight = 0.5 * model.ny * model.gridSpacing;
+    }
+
+    _positionNeedsClipping() {
+        return this._position.x < -this._halfWidth && this._position.x > this._halfWidth &&
+            this._position.y < -this._halfHeight && this._position.y > this._halfHeight;
+    }
+
+    synchronizeWith(/** @type {{nx: number, ny: number, gridSpacing: number }} */ fluid) {
         // Scene changes can resize the fluid grid without reinitializing this view.
         // Ensure the position buffer matches the current grid before writing into it.
         const seedCountX = Math.ceil((fluid.nx - 2) / this._seedSpacing);
@@ -89,11 +102,10 @@ export class StreamlinesView extends Renderable2D {
                 this._position.set((i - halfWidth) * gridSpacing, (j - halfHeight) * gridSpacing);
 
                 for (let n = 0; n < this._numberOfSegments; n++) {
-                    if (!fluid.contains(this._position))
-                        break;
-
                     this._drawLine(fluid, segmentCount++, positions);
                     this._position.copy(this._vector);
+                    if (this._positionNeedsClipping())
+                        break;
                 }
             }
 
@@ -105,7 +117,7 @@ export class StreamlinesView extends Renderable2D {
     _drawLine(fluid, segmentCount, positions) {
         fluid.sample(this._position, this._velocity);
         this._vector.copy(this._position);
-        this._vector.addScaledVector(this._velocity, this._scale);
+        this._vector.addScaledVector(this._velocity, this._scaleFactor);
 
         const offset = segmentCount * 6;
         positions[offset    ] = this._position.x; // from.x
@@ -124,19 +136,22 @@ export class StreamlinesView extends Renderable2D {
 
 export class VelocitiesView extends Renderable2D {
     /**
-     * @typedef {object} VelocitiesViewOptions
-     * @property {Colour} [color]
-     * @property {number} [scale]
-     * @property {boolean} [visible]
+     * @param{{
+     * stepSize?: {number}
+     * color?: {Colour}
+     * scaleFactor?: {number}
+     * visible?: {boolean}
+     * }} [options]
      */
-    /** @param {VelocitiesViewOptions} [options] */
     constructor({
-        scale = 1.5e-2,
+        scaleFactor = 1.5e-2,
         visible = true,
-        color = new Colour(0.0, 0.125, 0.125)
+        color = new Colour(0.0, 0.125, 0.125),
+        stepSize = 1
     } = {}) {
         super();
-        this._scale = scale;
+        this._scaleFactor = scaleFactor;
+        this._stepSize = stepSize;
         this._geometry = new BufferGeometry();
         this._material = new LineBasicMaterial();
         color.asThreeJsColor(this._material.color);
@@ -146,6 +161,8 @@ export class VelocitiesView extends Renderable2D {
         this._velocity = new Vec2();
         this.visible = visible;
     }
+
+    set stepSize(stepSize) { this._stepSize = stepSize; }
 
     canBindTo(/** @type {{nx: number, ny: number, gridSpacing: number, valueAt:(i: number, j:number, target: Vec2) => Vec2}} */ model) {
         if (model.valueAt === undefined ||
@@ -179,22 +196,24 @@ export class VelocitiesView extends Renderable2D {
 
         const halfWidth = .5 * fluid.nx;
         const halfHeight = .5 * fluid.ny;
-        for (let i = 0; i < fluid.nx; i++)
+        for (let i = 0; i < fluid.nx; i++) {
+            if (i % this._stepSize) continue;
             for (let j = 0; j < fluid.ny; j++) {
+                if (j % this._stepSize) continue;
                 fluid.valueAt(j, i, this._velocity);
                 const x0 = (i - halfWidth) * h;
-                const x1 = x0 + this._velocity.x * this._scale;
+                const x1 = x0 + this._velocity.x * this._scaleFactor;
                 const y = (j - halfHeight + 0.5) * h;
 
                 this._writeSegment(positions, segmentCount++, x0, y, x1, y);
 
                 const x = (i - halfWidth + 0.5) * h;
-                const y0 = (j -halfHeight) * h;
-                const y1 = y0 + this._velocity.y * this._scale;
+                const y0 = (j - halfHeight) * h;
+                const y1 = y0 + this._velocity.y * this._scaleFactor;
 
                 this._writeSegment(positions, segmentCount++, x, y0, x, y1);
             }
-
+        }
         this._geometry.getAttribute('position').needsUpdate = true;
         this._geometry.setDrawRange(0, segmentCount * 2);
         this._geometry.computeBoundingSphere();
