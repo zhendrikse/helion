@@ -78,10 +78,12 @@ export class StreamlinesView extends Renderable2D {
         const positions = this._geometry.getAttribute('position').array;
         let segmentCount = 0;
 
+        const halfWidth = .5 * fluid.nx;
+        const halfHeight = .5 * fluid.ny;
         const gridSpacing = fluid.gridSpacing;
         for (let i = 1; i < fluid.nx - 1; i += this._seedSpacing)
             for (let j = 1; j < fluid.ny - 1; j += this._seedSpacing) {
-                this._position.set((i - .5 * fluid.nx) * gridSpacing, (j - 0.5 * fluid.ny) * gridSpacing);
+                this._position.set((i - halfWidth) * gridSpacing, (j - halfHeight) * gridSpacing);
 
                 for (let n = 0; n < this._numberOfSegments; n++) {
                     if (!fluid.contains(this._position))
@@ -169,17 +171,19 @@ export class VelocitiesView extends Renderable2D {
         const h = fluid.gridSpacing;
         let segmentCount = 0;
 
+        const halfWidth = .5 * fluid.nx;
+        const halfHeight = .5 * fluid.ny;
         for (let i = 0; i < fluid.nx; i++)
             for (let j = 0; j < fluid.ny; j++) {
                 fluid.valueAt(j, i, this._velocity);
-                const x0 = i * h;
+                const x0 = (i - halfWidth) * h;
                 const x1 = x0 + this._velocity.x * this._scale;
-                const y = (j + 0.5) * h;
+                const y = (j - halfHeight + 0.5) * h;
 
                 this._writeSegment(positions, segmentCount++, x0, y, x1, y);
 
-                const x = (i + 0.5) * h;
-                const y0 = j * h;
+                const x = (i - halfWidth + 0.5) * h;
+                const y0 = (j -halfHeight) * h;
                 const y1 = y0 + this._velocity.y * this._scale;
 
                 this._writeSegment(positions, segmentCount++, x, y0, x, y1);
