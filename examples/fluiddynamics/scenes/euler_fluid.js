@@ -56,7 +56,7 @@ class FluidSolver extends Solver {
         if (fluid.obstacleMaskAt(j, i) === SOLID)
             return;
 
-        const delta = fluid.cellSize;
+        const delta = fluid.gridSpacing;
         fluid.valueAt(j, i, this._vector1);
         fluid.valueAt(j, i + 1, this._vector2);
         fluid.valueAt(j + 1, i, this._vector3);
@@ -118,7 +118,7 @@ class EulerFluid extends DiscreteVectorField {
     } = {}) {
         super({ nx: 0, ny: 0 });
         this.density = 0;
-        this._cellSize = 0;
+        this._gridSpacing = 0;
         this._pressureField = new DiscreteScalarField({ nx: 0, ny: 0 });
         this._obstacleMask = new DiscreteScalarField({ nx: 0, ny: 0 });
         this._smokeField = new DiscreteScalarField({ nx: 0, ny: 0 });
@@ -137,7 +137,7 @@ class EulerFluid extends DiscreteVectorField {
      } = {}) {
         this.resize(resolution + 2, resolution + 2);
         this.density = density;
-        this._cellSize = 1 / resolution;
+        this._gridSpacing = 1 / resolution;
         this._pressureField = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
         this._obstacleMask = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
         this._smokeField = new DiscreteScalarField({ nx: this.nx, ny: this.ny });
@@ -183,7 +183,7 @@ class EulerFluid extends DiscreteVectorField {
     }
 
     solveIncompressibility(/** @type {number} */ numIters, /** @type {number} */ overRelaxation, /** @type {number} */ dt) {
-        const cp = this.density * this._cellSize / dt;
+        const cp = this.density * this._gridSpacing / dt;
         for (let iter = 0; iter < numIters; iter++)
             for (let i = 1; i < this.nx - 1; i++)
                 for (let j = 1; j < this.ny - 1; j++)
@@ -202,7 +202,7 @@ class EulerFluid extends DiscreteVectorField {
     }
 
     get pressureRange() { return this._pressureField.rangeAt(); }
-    get cellSize() { return this._cellSize; }
+    get gridSpacing() { return this._gridSpacing; }
 
     sample(positionVector, velocity) {
         velocity.set(
@@ -213,7 +213,7 @@ class EulerFluid extends DiscreteVectorField {
     }
 
     contains(/** @type {Vec2} */ aVector) {
-        return aVector.x >= 0 && aVector.x < this.nx * this._cellSize && aVector.y >= 0 && aVector.y < this.ny * this._cellSize;
+        return aVector.x >= 0 && aVector.x < this.nx * this._gridSpacing && aVector.y >= 0 && aVector.y < this.ny * this._gridSpacing;
     }
 
     sampleSmoke(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, S_FIELD); }
@@ -222,7 +222,7 @@ class EulerFluid extends DiscreteVectorField {
     obstacleMaskAt(/** @type {number} */ i, /** @type {number} */ j) { return this._obstacleMask.valueAt(i, j); }
 
     _sampleField(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ fieldType) {
-        const h = this._cellSize;
+        const h = this._gridSpacing;
         let dx = 0.0;
         let dy = 0.0;
         let field;
@@ -244,12 +244,12 @@ class EulerFluid extends DiscreteVectorField {
 
         x = Math.max(Math.min(x, this.nx * h), h) - dx;
         y = Math.max(Math.min(y, this.ny * h), h) - dy;
-        const x0 = Math.min(Math.floor(x / this._cellSize), this.nx - 1);
-        const tx = (x - x0 * h) / this._cellSize;
+        const x0 = Math.min(Math.floor(x / this._gridSpacing), this.nx - 1);
+        const tx = (x - x0 * h) / this._gridSpacing;
         const x1 = Math.min(x0 + 1, this.nx - 1);
 
-        const y0 = Math.min(Math.floor(y / this._cellSize), this.ny - 1);
-        const ty = (y - y0 * h) / this._cellSize;
+        const y0 = Math.min(Math.floor(y / this._gridSpacing), this.ny - 1);
+        const ty = (y - y0 * h) / this._gridSpacing;
         const y1 = Math.min(y0 + 1, this.ny - 1);
 
         const sx = 1.0 - tx;
@@ -280,16 +280,16 @@ class EulerFluid extends DiscreteVectorField {
     }
 
     calculateVelocityX(/** @type {number} */ i, /** @type {number} */ j, /** @type {number} */ dt) {
-        let x = i * this._cellSize;
-        let y = (j + .5) * this._cellSize;
+        let x = i * this._gridSpacing;
+        let y = (j + .5) * this._gridSpacing;
         x -= dt * this._vectorComponentX.valueAt(j, i);
         y -= dt * this._averageVelocityY(i, j);
         return this._sampleField(x, y, U_FIELD);
     }
 
     calculateVelocityY(/** @type {number} */ i, /** @type {number} */ j, /** @type {number} */ dt) {
-        let x = (i + .5) * this._cellSize;
-        let y = j * this._cellSize;
+        let x = (i + .5) * this._gridSpacing;
+        let y = j * this._gridSpacing;
         x -= dt * this._averageVelocityX(i, j);
         y -= dt * this._vectorComponentY.valueAt(j, i);
         return this._sampleField(x, y, V_FIELD);
@@ -311,8 +311,8 @@ class EulerFluid extends DiscreteVectorField {
             for (let j = 1; j < this.ny - 2; j++) {
                 this._obstacleMask.setValueAt(j, i, FLUID);
 
-                const dx = (i + 0.5) * this._cellSize - x;
-                const dy = (j + 0.5) * this._cellSize - y;
+                const dx = (i + 0.5) * this._gridSpacing - x;
+                const dy = (j + 0.5) * this._gridSpacing - y;
                 if (dx * dx + dy * dy > r * r)
                     continue;
 
@@ -479,7 +479,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
     configureDiscreteFieldSurfaceView(smokeView, fluid);
     solver.init(fluid);
     solver.numIterations = 40;
-    obstacleView.radiusOffset = fluid.cellSize;
+    obstacleView.radiusOffset = fluid.gridSpacing;
 
     if (sceneNr === SCENE_TYPE.TANK)
         tankScene(fluid);
@@ -509,7 +509,7 @@ const smokeView = new ResizableDiscreteFieldSurfaceView({
 });
 
 const velocitiesView = new VelocitiesView();
-const obstacleView = new Circle({ radiusOffset: fluid.cellSize });
+const obstacleView = new Circle({ radiusOffset: fluid.gridSpacing });
 const streamlinesView = new StreamlinesView();
 
 const obstacle = new RadialSymmetricBody({ radius: 0.15 });

@@ -45,11 +45,11 @@ export class StreamlinesView extends Renderable2D {
         this._vector = new Vec2();
     }
 
-    canBindTo(/** @type {{nx: number, ny: number, cellSize: number, contains:(position: Vec2) => number}} */ model) {
+    canBindTo(/** @type {{nx: number, ny: number, gridSpacing: number, contains:(position: Vec2) => number}} */ model) {
         if (model.contains === undefined ||
             model.nx === undefined ||
             model.ny === undefined ||
-            model.cellSize === undefined)
+            model.gridSpacing === undefined)
             throw new Error('Fluid streamlines view can only bind to discrete models');
 
         return true;
@@ -66,7 +66,7 @@ export class StreamlinesView extends Renderable2D {
         this._allocatedSegmentCount = maxSegmentCount;
     }
 
-    synchronizeWith(/** @type {{nx: number, ny: number, cellSize: number, contains:(position: Vec2) => number}} */ fluid) {
+    synchronizeWith(/** @type {{nx: number, ny: number, gridSpacing: number, contains:(position: Vec2) => number}} */ fluid) {
         // Scene changes can resize the fluid grid without reinitializing this view.
         // Ensure the position buffer matches the current grid before writing into it.
         const seedCountX = Math.ceil((fluid.nx - 2) / this._seedSpacing);
@@ -78,10 +78,10 @@ export class StreamlinesView extends Renderable2D {
         const positions = this._geometry.getAttribute('position').array;
         let segmentCount = 0;
 
-        const cellSize = fluid.cellSize;
+        const gridSpacing = fluid.gridSpacing;
         for (let i = 1; i < fluid.nx - 1; i += this._seedSpacing)
             for (let j = 1; j < fluid.ny - 1; j += this._seedSpacing) {
-                this._position.set((i + 0.5) * cellSize, (j + 0.5) * cellSize);
+                this._position.set((i - .5 * fluid.nx) * gridSpacing, (j - 0.5 * fluid.ny) * gridSpacing);
 
                 for (let n = 0; n < this._numberOfSegments; n++) {
                     if (!fluid.contains(this._position))
@@ -139,11 +139,11 @@ export class VelocitiesView extends Renderable2D {
         this._velocity = new Vec2();
     }
 
-    canBindTo(/** @type {{nx: number, ny: number, cellSize: number, valueAt:(i: number, j:number, target: Vec2) => Vec2}} */ model) {
+    canBindTo(/** @type {{nx: number, ny: number, gridSpacing: number, valueAt:(i: number, j:number, target: Vec2) => Vec2}} */ model) {
         if (model.valueAt === undefined ||
             model.nx === undefined ||
             model.ny === undefined ||
-            model.cellSize === undefined)
+            model.gridSpacing === undefined)
             throw new Error('Fluid velocities view can only bind to models that behave as a fluid model');
 
         return true;
@@ -160,13 +160,13 @@ export class VelocitiesView extends Renderable2D {
         this._allocatedSegmentCount = maxSegmentCount;
     }
 
-    synchronizeWith(/** @type {{nx: number, ny: number, cellSize: number, velocityAt:(i: number, j: number, target: Vec2) => Vec2}} */ fluid) {
+    synchronizeWith(/** @type {{nx: number, ny: number, gridSpacing: number, velocityAt:(i: number, j: number, target: Vec2) => Vec2}} */ fluid) {
         const maxSegmentCount = fluid.nx * fluid.ny * 2;
         if (maxSegmentCount !== this._allocatedSegmentCount)
             this._newGeometry(maxSegmentCount);
 
         const positions = this._geometry.getAttribute('position').array;
-        const h = fluid.cellSize;
+        const h = fluid.gridSpacing;
         let segmentCount = 0;
 
         for (let i = 0; i < fluid.nx; i++)

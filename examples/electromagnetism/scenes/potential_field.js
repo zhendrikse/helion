@@ -13,7 +13,7 @@ const V0 = 200;
 const potentialRangeInterval = new Interval(-V0 / 2, V0 / 2);
 const plateHalfLen = Math.floor((L / h) / 2);
 const plateHalfGap = Math.floor((d / h) / 2);
-const cellSize = 0.3;
+const gridSpacing = 0.3;
 
 // Color mapping for potential: -V0/2 (red) -> 0 (yellow) -> +V0/2 (green)
 class PotentialColorMapper extends ColorMapper {
@@ -88,36 +88,22 @@ class ElectricFieldStreamlinesAdapter extends MathPhysicsModelBehavior {
         this._electricField = electricField;
         this.nx = electricField._potentialField.nx;
         this.ny = electricField._potentialField.ny;
-        this.cellSize = electricField._gridSpacing;
-        this._halfWidth = 0.5 * this.nx * this.cellSize;
-        this._halfHeight = 0.5 * this.ny * this.cellSize;
+        this.gridSpacing = electricField._gridSpacing;
     }
 
     contains(/** @type {Vec2} */ position) {
-        // StreamlinesView uses simulation coordinates [0, nx*cellSize] x [0, ny*cellSize]
-        // but we need to check if the corresponding world position is within bounds
-        const worldX = position.x - this._halfWidth;
-        const worldY = position.y - this._halfHeight;
-        return Math.abs(worldX) <= this._halfWidth && Math.abs(worldY) <= this._halfHeight;
+        return true; // The field lines on the borders are so small, that they don't need to be skipped
     }
 
     sample(/** @type {Vec2} */ position, /** @type {Vec2} */ target) {
-        // Convert from StreamlinesView coordinates [0, nx*cellSize] to ElectricField world coords [-halfWidth, +halfWidth]
-        const worldX = position.x - this._halfWidth;
-        const worldY = position.y - this._halfHeight;
-        const worldPos = new Vec2(worldX, worldY);
-        return this._electricField.sample(worldPos, target);
+        return this._electricField.sample(position, target);
     }
 }
 
 const potential = new DiscreteScalarField({nx: N, ny: N});
 const boundaryCondition = new CapacitorBoundaryCondition();
 const solver = new JacobiSolver(boundaryCondition);
-const electricField = new ElectricField({
-    potential,
-    gridSpacing: cellSize,
-    derivativeSpacing: h
-});
+const electricField = new ElectricField({potential, gridSpacing, derivativeSpacing: h });
 
 const electricFieldAdapter = new ElectricFieldStreamlinesAdapter(electricField);
 
@@ -127,22 +113,22 @@ const streamlinesView = new StreamlinesView({
     scale: 4e-6,
     color: new Colour(0x090909)
 });
-streamlinesView.position.set(-30, -30);
+// streamlinesView.position.set(-30, -30);
 streamlinesView.visible = true;
 
 const view = new DiscreteFieldSurfaceView({
-    scale: cellSize,
+    scale: gridSpacing,
     colorMapper: new PotentialColorMapper(),
     normalizer: new FixedIntervalNormalizer(potentialRangeInterval),
     opacityFunction: value => 2 * Math.abs(value - 0.5)
 });
 
 const arrowSpacing = 1.5;
-const width = 0.5 * N * cellSize;
-const height = 0.5 * N * cellSize;
+const width = 0.5 * N * gridSpacing;
+const height = 0.5 * N * gridSpacing;
 const arrows = new ArrowField2D({
-    xRange: new Range((2 + .5) * cellSize - width, (N - 2 + .5) * cellSize - width, arrowSpacing),
-    yRange: new Range((2 + .5) * cellSize - height, (N - 2 + .5) * cellSize - height, arrowSpacing),
+    xRange: new Range((2 + .5) * gridSpacing - width, (N - 2 + .5) * gridSpacing - width, arrowSpacing),
+    yRange: new Range((2 + .5) * gridSpacing - height, (N - 2 + .5) * gridSpacing - height, arrowSpacing),
     scaleFactor: 1,
     magnitudeMap: m => Math.min(m * 1e-4, 2.5),
     size: 0.25,
