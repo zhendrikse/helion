@@ -484,9 +484,9 @@ let mouseDown = false;
 let gravity = -9.81;
 let fluidSpeed = 2.0;
 const fluid = new EulerFluid();
-const velocitiesView = new VelocitiesView({ visible: false });
+const velocitiesView = new VelocitiesView({ visible: false, color: new Colour(0x006666) });
 const obstacleView = new Circle({ radiusOffset: fluid.gridSpacing });
-const streamlinesView = new StreamlinesView({ visible: false });
+const streamlinesView = new StreamlinesView({ visible: false, color: new Colour(0x666600) });
 
 const obstacle = new RadialSymmetricBody({ radius: 0.15 });
 const solver = new FluidSolver({ numIterations: 40 });
