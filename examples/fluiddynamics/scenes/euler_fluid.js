@@ -205,15 +205,22 @@ class EulerFluid extends DiscreteVectorField {
     get gridSpacing() { return this._gridSpacing; }
 
     sample(positionVector, velocity) {
+        // StreamlinesView uses centered world coordinates; the solver's raster
+        // sampling remains in coordinates measured from the lower-left grid edge.
+        const x = positionVector.x + (0.5 * this.nx + 0.5) * this._gridSpacing;
+        const y = positionVector.y + (0.5 * this.ny + 0.5) * this._gridSpacing;
         velocity.set(
-            this._sampleField(positionVector.x, positionVector.y, U_FIELD),
-            this._sampleField(positionVector.x, positionVector.y, V_FIELD)
+            this._sampleField(x, y, U_FIELD),
+            this._sampleField(x, y, V_FIELD)
         );
         return velocity;
     }
 
     contains(/** @type {Vec2} */ aVector) {
-        return aVector.x >= 0 && aVector.x < this.nx * this._gridSpacing && aVector.y >= 0 && aVector.y < this.ny * this._gridSpacing;
+        const halfWidth = 0.5 * this.nx * this._gridSpacing;
+        const halfHeight = 0.5 * this.ny * this._gridSpacing;
+        return aVector.x >= -halfWidth && aVector.x < halfWidth &&
+            aVector.y >= -halfHeight && aVector.y < halfHeight;
     }
 
     sampleSmoke(/** @type {number} */ x, /** @type {number} */ y) { return this._sampleField(x, y, S_FIELD); }
@@ -311,8 +318,9 @@ class EulerFluid extends DiscreteVectorField {
             for (let j = 1; j < this.ny - 2; j++) {
                 this._obstacleMask.setValueAt(j, i, FLUID);
 
-                const dx = (i + 0.5) * this._gridSpacing - x;
-                const dy = (j + 0.5) * this._gridSpacing - y;
+                // Cell centers and obstacle positions are both in centered world coordinates.
+                const dx = (i + 0.5 - 0.5 * this.nx) * this._gridSpacing - x;
+                const dy = (j + 0.5 - 0.5 * this.ny) * this._gridSpacing - y;
                 if (dx * dx + dy * dy > r * r)
                     continue;
 
@@ -427,7 +435,9 @@ function vortexSheddingScene(/** @type {EulerFluid} */ fluid,  /** @type {number
     for (let j = minJ; j < maxJ; j++)
         fluid._smokeField.setValueAt(j, 0, 0.0);
 
-    fluid.setObstacle(0.4, 0.5, true);
+    // Preserve the obstacle's previous location after centering the world.
+    fluid.setObstacle(0.4 - 0.5 * fluid.nx * fluid.gridSpacing,
+                      0.5 - 0.5 * fluid.ny * fluid.gridSpacing, true);
     gravity = 0.0;
     solver.overRelaxation = 1.9;
     pressureView.visible = true;
@@ -459,7 +469,7 @@ function setHighResolution() {
 
 function configureDiscreteFieldSurfaceView(view, fluid) {
     view.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
-    view.position.set(0.5, 0.5, 0);
+    view.position.set(0, 0, 0);
     view.resetResolution(fluid);
 }
 
