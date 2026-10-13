@@ -304,7 +304,7 @@ class Engine {
             return;
         for (let i = 0; i < this.forceVelocityCell.numParticles; i++) {
             const particle = this.forceVelocityCell._particles[i];
-            particle.velocity.copy(this.forceVelocity);
+            particle.velocity.copy(this.forceVelocityVector);
             particle.force.set(0, 0);
         }
         this.forceVelocityOn = false;
@@ -465,8 +465,13 @@ const simulation = Simulation
         if (speedColoring && ++colorUpdateCounter % COLOR_UPDATE_INTERVAL === 0)
             updateParticleColors();
     })
-    //.onMouse("mousemove", (x, y, e) => engine.forceVelocity(x, y, e.movementX, e.movementY))
-    //.onMouse("mousemove", (x, y, e) => console.log(x, y, e.movementX, e.movementY))
+    .onMouse("mousemove", (x, y, e) => {
+        // Simulation.onMouse supplies normalized canvas coordinates in [-0.5, 0.5].
+        // Engine.forceVelocity expects canvas pixels, with the origin at the top-left.
+        const pointerX = Math.max(0, Math.min(simulation.width - 1, (x + 0.5) * simulation.width));
+        const pointerY = Math.max(0, Math.min(simulation.height - 1, (0.5 - y) * simulation.height));
+        engine.forceVelocity(pointerX, pointerY, e.movementX, e.movementY);
+    })
     .onReset(initializeEngine)
     .append(controls.gravityX)
     .append(controls.gravityY)
