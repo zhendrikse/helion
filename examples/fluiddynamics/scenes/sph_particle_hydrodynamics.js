@@ -1,7 +1,8 @@
 import { Color, BufferGeometry, Float32BufferAttribute, Points, PointsMaterial } from 'three';
 import {
-    Button, Checkbox, MathPhysicsModelBehavior, Range, Renderable2D, Simulation, Slider, Vec3
+    Button, Checkbox, MathPhysicsModelBehavior, Range, Simulation, Slider, Vec3
 } from '../../../src/index.js';
+import { Renderable2D } from '../../../src/view/renderer.js';
 
 const WIDTH = 14;
 const HEIGHT = 8;
