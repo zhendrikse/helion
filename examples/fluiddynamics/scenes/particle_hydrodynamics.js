@@ -154,9 +154,7 @@ class Grid {
             cell._particles[cell.numParticles++] = particle;
     }
 
-    evolve(solver, dt) {
-        solver.step(this, dt);
-    }
+    evolve(solver, dt) { solver.step(this, dt); }
 }
 
 function Wpoly6(rSquared) {
@@ -171,6 +169,8 @@ function Wspiky_grad2(r) {
 
 const Wvisc_lapl= (/** @type {number} */ r) => Wvisc_lapl_coeff * (1 - r / h);
 
+const grid = new Grid();
+
 class SPHSolver {
     constructor({
         gravity = new Vec2(0, -20)
@@ -179,7 +179,6 @@ class SPHSolver {
 
         /** @type {Particle[]} */
         this._particles = [];
-        this._grid = new Grid();
         this._xRange = new Interval(0, 1);
         this._yRange = new Interval(0, 1);
 
@@ -212,10 +211,10 @@ class SPHSolver {
 
         const numGridCellsX = Math.floor(this.xlimit / gridCellSize);
         const numGridCellsY = Math.floor(this.ylimit / gridCellSize);
-        this._grid.init(numGridCellsX, numGridCellsY, this.xlimit, this.ylimit);
+        grid.init(numGridCellsX, numGridCellsY, this.xlimit, this.ylimit); // TODO haal dit uit de solver
 
         this._particles = [];
-        this.setNumParticles(particleCount);
+        this.setNumParticles(grid, particleCount);
     }
 
     resize(left, right, bottom, top) {
@@ -223,11 +222,11 @@ class SPHSolver {
         this._yRange = new Interval(Math.max(bottom / domainScale, 0), Math.min(top / domainScale, this.ylimit));
     }
 
-    setNumParticles(n) {
+    setNumParticles(grid, n) {
         let i0 = 0;
 
         if (n < this._particles.length) {
-            this._grid.hardReset();
+            grid.hardReset();
             this._particles.length = n;
         }
         i0 = this._particles.length;
@@ -241,8 +240,8 @@ class SPHSolver {
         }
     }
 
-    _calcDensity() {
-        for (const cell of this._grid) {
+    _calcDensity(grid) {
+        for (const cell of grid) {
             for (let i = 0; i < cell.numParticles; i++) {
                 const particle = cell._particles[i];
                 for (let j = i + 1; j < cell.numParticles; j++)
@@ -285,8 +284,8 @@ class SPHSolver {
         particle2.force.sub(this._forceVector);
     }
 
-    _calcForces() {
-        for (const cell of this._grid)
+    _calcForces(grid) {
+        for (const cell of grid)
             for (let i = 0; i < cell.numParticles; i++) {
                 const particle = cell._particles[i];
                 for (let j = i + 1; j < cell.numParticles; j++)
@@ -328,10 +327,10 @@ class SPHSolver {
         this.forceVelocityOn = false;
     }
 
-    forceVelocity(x, y, Vx, Vy) {
+    forceVelocity(grid, x, y, Vx, Vy) {
         this.forceVelocityOn = true;
         this._positionVector.set(x / domainScale, this._yRange.max - y / domainScale);
-        this.forceVelocityCell = this._grid.getCellFromLocation(this._positionVector);
+        this.forceVelocityCell = grid.getCellFromLocation(this._positionVector);
         this.forceVelocityVector.set(Vx, -Vy);
     }
 
@@ -352,21 +351,21 @@ class SPHSolver {
         }
     }
 
-    _updatePosition(dt) {
+    _updatePosition(grid, dt) {
         for (const particle of this._particles) {
             particle.integrate(this._gravity, dt);
             this._boxBounce(particle);
-            this._grid.addParticleToCell(particle);
+            grid.addParticleToCell(particle);
             particle.reset();
         }
     }
 
-    step(dt) {
-        this._calcDensity();
-        this._calcForces();
+    step(grid, dt) {
+        this._calcDensity(grid);
+        this._calcForces(grid);
         this._calcForcedVelocity();
-        this._grid.reset();
-        this._updatePosition(dt);
+        grid.reset();
+        this._updatePosition(grid, dt);
     }
 
     getParticlePosition(i, position) {
@@ -390,7 +389,7 @@ const controls = {
         .onChange(value => {
             particleCount = Math.round(value / 10) * 10;
             createParticleViews(particleCount);
-            solver.setNumParticles(particleCount);
+            solver.setNumParticles(grid, particleCount);
             synchronizeParticlePositions();
         }),
     mass: new Slider('Particle mass')
@@ -479,7 +478,7 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .runsEvery(0.01)
     .onStep((_clock, dt) => {
-        solver.step(dt);
+        grid.evolve(solver, dt);
         synchronizeParticlePositions();
         if (speedColoring && ++colorUpdateCounter % COLOR_UPDATE_INTERVAL === 0)
             updateParticleColors();
@@ -489,7 +488,7 @@ const simulation = Simulation
         // Engine.forceVelocity expects canvas pixels, with the origin at the top-left.
         const pointerX = Math.max(0, Math.min(simulation.width - 1, (x + 0.5) * simulation.width));
         const pointerY = Math.max(0, Math.min(simulation.height - 1, (0.5 - y) * simulation.height));
-        solver.forceVelocity(pointerX, pointerY, e.movementX, e.movementY);
+        solver.forceVelocity(grid, pointerX, pointerY, e.movementX, e.movementY);
     })
     .onReset(() => solver.initialize())
     .append(controls.gravityX)
@@ -521,7 +520,7 @@ const simulation = Simulation
             colorUpdateCounter = 0;
             for (const view of particleViews)
                 view.fillColor = particleColor;
-            solver.setNumParticles(particleCount);
+            solver.setNumParticles(grid, particleCount);
             updateFluidProperties();
             synchronizeParticlePositions();
         }));
