@@ -1,6 +1,6 @@
 import {
-    Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, ParticleView2D, Checkbox,
-    RadialSymmetricBody, UPlotGraph, Colour
+    Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, Checkbox,
+    RadialSymmetricBody, UPlotGraph, Colour, Circle
 } from '../../../src/index.js';
 
 const CONTAINER_SIZE = 10;
@@ -13,7 +13,7 @@ const AVERAGING_FRAMES = 100;
 const gas = new Gas({
     containerSize: CONTAINER_SIZE,
 });
-/** @type {ParticleView2D[]} */
+/** @type {Circle[]} */
 const particleViews = [];
 const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: new Colour(0xBF40BF) });
 /** @type {number[][]} */
@@ -119,8 +119,8 @@ const simulation = Simulation
  * @param {number} index
  */
 function bindParticle(particle, index) {
-    const particleView = new ParticleView2D({
-        colorFunction: () => index === 0 ? 0xff0000 : index > PARTICLE_COUNT ? 0x00ffff : 0xffff00,
+    const particleView = new Circle({
+        fillColor: index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow,
     });
     particleViews.push(particleView);
     simulation.bind(particle.alwaysWith(particleView));

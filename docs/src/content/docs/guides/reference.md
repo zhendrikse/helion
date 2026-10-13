@@ -407,8 +407,6 @@ new PixelRasterView({ width=512, height=512, transparent }) // DataTexture + Pla
 new DiscreteFieldSurfaceView({ colorMapper:new WavelengthColorMapper(525), opacityFunction:v=>Math.sqrt(v) })
 new FieldEdgeIntensityPixelRaster({ edgeHeight:100, colorMapper, opacityFunction })
 new ComplexSurfaceView2D({ showPhaseColour, brightnessFunction:m=>m>1?1:m, colorMapper:ComplexColorMappers.get(ComplexColorMappers.Hsv) })
-new ParticleView2D({ segments:16, colorFunction:p=>number, colorMapper:new HueColorMapper(), hasBorder:false, borderColor:Colour.Yellow, visible:true })
-// ParticleView2D replaces the legacy InstancedMesh ParticleCloudView; visibility via particle.visible (model) keeps Binding.synchronize() active; hasBorder adds CircleGeometry(1.15) outline
 ```
 
 ### 1D — CurveView (LineSegmentsView subclass)

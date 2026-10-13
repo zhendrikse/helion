@@ -194,6 +194,7 @@ export class Circle extends Renderable2D {
     }
 
     set fillColor(/** @type {Colour} */ colour) { colour.asThreeJsColor(this._fillMaterial.color); }
+    set borderColor(/** @type {Colour} */ colour) { colour.asThreeJsColor(this._outlineMaterial.color); }
     set radiusOffset(/** @type {number} */ value) { this._radiusOffset = value; }
 
     canBindTo(/** @type {RadialSymmetricBody} */ model) {

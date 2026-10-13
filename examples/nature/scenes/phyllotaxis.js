@@ -1,6 +1,6 @@
 import {
-    ParticleView2D, Simulation, Vec3, Vec2, Slider, Range, Button, Checkbox,
-    HueColorMapper, RadialSymmetricBody
+    Circle, Simulation, Vec3, Vec2, Slider, Range, Button, Checkbox,
+    HueColorMapper, RadialSymmetricBody, Colour
 } from '../../../src/index.js';
 
 const numberOfDots = 360;
@@ -54,9 +54,8 @@ const colorSchemes = [
 
 /** @type {FlowerParticle[]} */
 const flowerSeeds = [];
-/** @type {ParticleView2D[]} */
+/** @type {Circle[]} */
 const particleViews = [];
-const resetParticleViews = () => particleViews.forEach(view => view.visible = false);
 
 const simulation = Simulation
     .with({
@@ -91,36 +90,42 @@ const simulation = Simulation
         })
     )
     .append(
-        new Button().withText('Colors 1').onClick(() => setColoringSchemeTo(0))
-            .togetherWith(new Button().withText('Colors 2').onClick(() => setColoringSchemeTo(1))
-                .togetherWith(new Button().withText('Colors 3').onClick(() => setColoringSchemeTo(2))
-                    .togetherWith(new Button().withText('Monochrome').onClick(() => setColoringSchemeTo(3)))))
+        new Button().withText('Colors 1').onClick(() => updateFlowerSeeds(0))
+            .togetherWith(new Button().withText('Colors 2').onClick(() => updateFlowerSeeds(1))
+                .togetherWith(new Button().withText('Colors 3').onClick(() => updateFlowerSeeds(2))
+                    .togetherWith(new Button().withText('Monochrome').onClick(() => updateFlowerSeeds(3)))))
     )
     .append(new Checkbox('Border around dots')
         .checked(drawBorderAroundDots)
         .onChange(checked => {
-            for (const view of particleViews) 
-                view.hasBorder = checked;
+            showBorder = checked;
+            updateFlowerSeeds();
         })
     )
     .start();
 
 for (let index = 0; index <= numberOfDots; index++) {
     flowerSeeds.push(new FlowerParticle(c, index));
-    const view = new ParticleView2D({ 
-        colorFunction: colorSchemes[3], 
-        colorMapper: new HueColorMapper(), 
-        hasBorder: drawBorderAroundDots 
+    const view = new Circle({
+        fillColor: Colour.Yellow
     });
     particleViews.push(view);
     simulation.bind(flowerSeeds[index].alwaysWith(view));
 }
-resetParticleViews();
 
-/** @param {number} index */
-function setColoringSchemeTo(index) {
+let currentScheme = 0
+let showBorder = false
+updateFlowerSeeds();
+
+/** @param {number} schemeNr */
+function updateFlowerSeeds(schemeNr= currentScheme) {
+    currentScheme = schemeNr;
     n = 0;
-    resetParticleViews();
-    particleViews.forEach(view => view.colorFunction = colorSchemes[index]);
+    particleViews.forEach(view => view.visible = false);
+    flowerSeeds.forEach((seed, index) => {
+        const seedColour = new Colour().setHSL(colorSchemes[schemeNr](seed), 1, .5);
+        particleViews[index].fillColor = seedColour;
+        particleViews[index].borderColor = showBorder ? Colour.White : seedColour;
+    });
     updateTitle(c, n);
 }
