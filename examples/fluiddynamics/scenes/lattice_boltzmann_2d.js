@@ -199,7 +199,7 @@ class LatticeBoltzmannSolver extends Solver {
     }
 
     velocityAt(/** @type {number} */ x, /** @type {number} */ y, /** @type {Vec2} */ target) {
-        const index = y * NX + x;
+        const index = y * this._barrierField.nx + x;
         if (this._barrierField.valueAt(x, y) !== 0) {
             target.set(0, 0);
             return target;
@@ -216,9 +216,8 @@ class LatticeBoltzmannSolver extends Solver {
  * the public interface uses centered world coordinates.
  */
 class LatticeBoltzmannVelocityField {
-    constructor({ solver, barrierField, nx, ny, gridSpacing }) {
+    constructor({ solver, nx, ny, gridSpacing }) {
         this._solver = solver;
-        this._barrierField = barrierField;
         this._nx = nx;
         this._ny = ny;
         this._gridSpacing = gridSpacing;
@@ -335,7 +334,6 @@ Simulation.with({
     .bind(curlField.alwaysWith(curlView))
     .bind(new LatticeBoltzmannVelocityField({
         solver,
-        barrierField,
         nx: NX,
         ny: NY,
         gridSpacing: CELL_SIZE
