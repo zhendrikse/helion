@@ -340,7 +340,7 @@ Simulation.with({
         ny: NY,
         gridSpacing: CELL_SIZE
     }).alwaysWith(new StreamlinesView({
-        scaleFactor: 1,
+        scaleFactor: CELL_SIZE,
         seedSpacing: 5,
         color: Colour.White
     })))
