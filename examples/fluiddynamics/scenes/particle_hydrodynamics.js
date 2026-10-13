@@ -1,12 +1,13 @@
 import {
-    Circle, Colour, MathPhysicsModelBehavior, Simulation, Vec2, Vec3
+    Button, Circle, Colour, DropdownMenu, MathPhysicsModelBehavior, Range, Registry, Simulation, Slider, Vec2, Vec3
 } from '../../../src/index.js';
 
 //
 // https://github.com/mjwatkins2/WebGL-SPH
 //
 
-const PARTICLE_COUNT = 1000;
+const DEFAULT_PARTICLE_COUNT = 1000;
+const MAX_PARTICLE_COUNT = 5000;
 const WORLD_HEIGHT = 20;
 const PARTICLE_RADIUS_IN_PIXELS = 5;
 
@@ -387,13 +388,16 @@ const simulation = Simulation
 const engine = new Engine();
 const particlePosition = new Vec2();
 const particleModels = [];
+const particleViews = [];
+let particleCount = DEFAULT_PARTICLE_COUNT;
+let particleColor = new Colour(0x00ff00);
 
 function initializeEngine() {
     const width = simulation.width;
     const height = simulation.height;
 
     engine.init(width, height, 0, width, 0, height);
-    engine.setNumParticles(PARTICLE_COUNT);
+    engine.setNumParticles(particleCount);
     engine.unpause();
 }
 
@@ -403,7 +407,11 @@ function synchronizeParticlePositions() {
     const worldWidth = WORLD_HEIGHT * width / height;
     const radius = PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / height;
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (let i = 0; i < particleModels.length; i++) {
+        const visible = i < particleCount;
+        particleViews[i].visible = visible;
+        if (!visible)
+            continue;
         engine.getParticlePosition(i, particlePosition);
         particleModels[i].updatePosition(
             particlePosition.x / width * worldWidth - worldWidth / 2,
@@ -414,21 +422,127 @@ function synchronizeParticlePositions() {
 }
 
 function createParticleViews() {
-    const fillColor = new Colour(0x00ff00);
-
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (let i = 0; i < MAX_PARTICLE_COUNT; i++) {
         const model = new ParticleRenderModel(PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / simulation.height);
         const view = new Circle({
-            fillColor,
+            fillColor: particleColor,
             borderColor: Colour.Black,
             borderWidth: 0.05,
             segments: 8
         });
 
         particleModels.push(model);
+        particleViews.push(view);
+        view.visible = i < particleCount;
         simulation.bind(model.alwaysWith(view));
     }
 }
 
 initializeEngine();
 createParticleViews();
+
+const controls = {
+    particleCount: new Slider('Num particles')
+        .withRange(new Range(0, MAX_PARTICLE_COUNT, 10))
+        .withValue(DEFAULT_PARTICLE_COUNT)
+        .onChange(value => {
+            particleCount = Math.round(value / 10) * 10;
+            engine.setNumParticles(particleCount);
+            synchronizeParticlePositions();
+        }),
+    mass: new Slider('Particle mass')
+        .withRange(new Range(1, 1000, 1))
+        .withValue(1)
+        .onInput(value => {
+            mass = value;
+            updateFluidProperties();
+        }),
+    gasConstant: new Slider('Gas constant')
+        .withRange(new Range(1, 1000, 1))
+        .withValue(120)
+        .onInput(value => {
+            k = value;
+            updateFluidProperties();
+        }),
+    restDensity: new Slider('Rest density')
+        .withRange(new Range(0, 10, 0.1))
+        .withValue(0.5)
+        .onInput(value => {
+            rho0 = value;
+            updateFluidProperties();
+        }),
+    viscosity: new Slider('Viscosity')
+        .withRange(new Range(0, 10, 0.1))
+        .withValue(3)
+        .onInput(value => {
+            mu = value;
+            updateFluidProperties();
+        }),
+    gravityX: new Slider('Gravity X')
+        .withRange(new Range(-100, 100, 10))
+        .withValue(0)
+        .onInput(value => engine.setGravity(value, gravity.y)),
+    gravityY: new Slider('Gravity Y')
+        .withRange(new Range(-100, 100, 10))
+        .withValue(-20)
+        .onInput(value => engine.setGravity(gravity.x, value))
+};
+
+function updateFluidProperties() {
+    engine.setFluidProperties(mass, k, rho0, mu);
+}
+
+const colorRegistry = new Registry({
+    label: 'Particle color',
+    entries: {
+        Green: '#00ff00',
+        Cyan: '#00ffff',
+        Blue: '#3388ff',
+        Orange: '#ff9900',
+        White: '#ffffff'
+    }
+});
+
+simulation
+    .append(controls.particleCount)
+    .append(controls.mass)
+    .append(controls.gasConstant)
+    .append(controls.restDensity)
+    .append(controls.viscosity)
+    .append(controls.gravityX)
+    .append(controls.gravityY)
+    .append(new DropdownMenu()
+        .for(colorRegistry)
+        .withValue('Green')
+        .onChange(name => {
+            particleColor = new Colour(Number.parseInt(colorRegistry.get(name).slice(1), 16));
+            for (const view of particleViews)
+                view.fillColor = particleColor;
+        }))
+    .append(new Button('Defaults')
+        .withText('Set defaults')
+        .onClick(() => {
+            particleCount = DEFAULT_PARTICLE_COUNT;
+            mass = 1;
+            k = 120;
+            rho0 = 0.5;
+            mu = 3;
+            engine.setGravity(0, -20);
+            controls.particleCount.withValue(DEFAULT_PARTICLE_COUNT);
+            controls.mass.withValue(1);
+            controls.gasConstant.withValue(120);
+            controls.restDensity.withValue(0.5);
+            controls.viscosity.withValue(3);
+            controls.gravityX.withValue(0);
+            controls.gravityY.withValue(-20);
+            colorRegistry.add('Green', '#00ff00');
+            particleColor = new Colour(0x00ff00);
+            for (const view of particleViews)
+                view.fillColor = particleColor;
+            engine.setNumParticles(particleCount);
+            updateFluidProperties();
+            synchronizeParticlePositions();
+        }));
+
+updateFluidProperties();
+simulation.appendStartStopResetUI().start();
