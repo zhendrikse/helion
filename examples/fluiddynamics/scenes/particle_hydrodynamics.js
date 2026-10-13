@@ -6,260 +6,293 @@ import {
 // https://github.com/mjwatkins2/WebGL-SPH
 //
 
-let Engine = (function() {
+const PARTICLE_COUNT = 1000;
+const WORLD_HEIGHT = 20;
+const PARTICLE_RADIUS_IN_PIXELS = 5;
 
-    function Particle() {
-        this.x = Math.random()*(xmax-xmin)+xmin;
-        this.y = Math.random()*(ymax-ymin)+ymin;
-        this.Vx = Math.random()-0.5; // current velocity
-        this.Vy = Math.random()-0.5;
-        this.rho = 0; // density
-        this.P = 0; // pressure
+const domainScale = 30;
+const gridCellSize = 1;
+const INIT_MAX_PARTICLES_IN_CELL = 50;
+
+const h = 1;
+const h2 = h * h;
+const h5 = Math.pow(h, 5);
+const h6 = Math.pow(h, 6);
+const h9 = Math.pow(h, 9);
+const Wpoly6_coeff = 315.0 / (64 * Math.PI * h9);
+const Wspiky_grad_coeff = -45.0 / (Math.PI * h6);
+const Wvisc_lapl_coeff = 45.0 / (Math.PI * h5);
+
+let mass = 1.0;
+let k = 120;
+let rho0 = 0;
+let mu = 3;
+let gx = 0;
+let gy = -20;
+
+class Particle {
+    constructor(xmin, xmax, ymin, ymax) {
+        this.x = Math.random() * (xmax - xmin) + xmin;
+        this.y = Math.random() * (ymax - ymin) + ymin;
+        this.Vx = Math.random() - 0.5;
+        this.Vy = Math.random() - 0.5;
+        this.rho = 0;
+        this.P = 0;
         this.Fx = 0;
         this.Fy = 0;
-
-        // Note that making these properties into an array did not improve performance,
-        // at least not as benchmarked in Chrome.
-        this.reset = function() {
-            this.Fx = 0;
-            this.Fy = 0;
-            this.rho = m * Wpoly6(0);
-        }
     }
 
-    function Grid() {
+    reset() {
+        this.Fx = 0;
+        this.Fy = 0;
+        this.rho = mass * Wpoly6(0);
+    }
+}
 
-        function Cell() {
-            this.particles = new Array(INIT_MAX_PARTICLES_IN_CELL);
-            this.halfNeighbors = new Array(0);
-            this.numParticles = 0;
-        }
+class Cell {
+    constructor() {
+        this.particles = new Array(INIT_MAX_PARTICLES_IN_CELL);
+        this.halfNeighbors = [];
+        this.numParticles = 0;
+    }
+}
 
-        const INIT_MAX_PARTICLES_IN_CELL = 50;
+class Grid {
+    constructor() {
         this.cells = [];
-        this.nx = 0; // # of cells in x direction
-        this.ny = 0; // # of cells in y direction
-        this.w = 0; // domain width
-        this.y = 0; // domain height
+        this.nx = 0;
+        this.ny = 0;
+        this.w = 0;
+        this.h = 0;
+    }
 
-        this.init = function(nx, ny, w, h) {
-            this.nx = nx;
-            this.ny = ny;
-            this.w = w;
-            this.h = h;
-            let numCells = nx*ny;
-            this.cells = new Array(numCells);
-            for (let i = 0; i < numCells; i++)
-                this.cells[i] = new Cell();
+    init(nx, ny, w, h) {
+        this.nx = nx;
+        this.ny = ny;
+        this.w = w;
+        this.h = h;
+        const numCells = nx * ny;
+        this.cells = new Array(numCells);
+        for (let i = 0; i < numCells; i++)
+            this.cells[i] = new Cell();
 
-            for (let i = 0; i < nx; i++)
-                for (let j = 0; j < ny; j++) {
-                    let c = this.cells[i+j*nx]
-                    this.computeNeighbors(i, j, c);
-                }
-        }
-
-        /* References are stored to half of the neighboring cells of center cell C:
-        ^ y
-        |___________
-        |_1_|_2_|_3_|
-        |___|_C_|_0_|
-        |___|___|___| --> x
-        */
-        this.computeNeighbors = function(i, j, c) {
-            let idx = i + j*this.nx;
-            if (i !== this.nx - 1)
-                c.halfNeighbors.push(this.cells[idx + 1]);
-            if (j !== this.ny - 1) {
-                for (let i2 = Math.max(0, i-1); i2 <= Math.min(this.nx-1, i+1); i2++)
-                    c.halfNeighbors.push(this.cells[idx + this.nx + i2 - i]);
+        for (let i = 0; i < nx; i++)
+            for (let j = 0; j < ny; j++) {
+                const c = this.cells[i + j * nx];
+                this.computeNeighbors(i, j, c);
             }
-        }
+    }
 
-        this.reset = function() {
-            for (let c of this.cells)
-                c.numParticles = 0;
-        }
-
-        // also clears references to particles
-        this.hardreset = function() {
-            for (let c of this.cells) {
-                c.numParticles = 0;
-                c.particles = new Array(INIT_MAX_PARTICLES_IN_CELL);
-            }
-        }
-
-        this.getCellFromLocation = function(x, y) {
-            let i = Math.floor(this.nx * x / this.w);
-            let j = Math.floor(this.ny * y / this.h);
-            return this.cells[i + j*this.nx];
-        }
-
-        this.addParticleToCell = function(p) {
-            let c = this.getCellFromLocation(p.x, p.y);
-            if (c != null)
-                c.particles[c.numParticles++] = p;
-            else
-                console.log("Undefined grid cell!");
+    computeNeighbors(i, j, c) {
+        const idx = i + j * this.nx;
+        if (i !== this.nx - 1)
+            c.halfNeighbors.push(this.cells[idx + 1]);
+        if (j !== this.ny - 1) {
+            for (let i2 = Math.max(0, i - 1); i2 <= Math.min(this.nx - 1, i + 1); i2++)
+                c.halfNeighbors.push(this.cells[idx + this.nx + i2 - i]);
         }
     }
 
-    let particles = [];
-    let grid;
-
-    let h = 1;     // smoothing length
-    let h2 = Math.pow(h, 2);
-    let h5 = Math.pow(h, 5);
-    let h6 = Math.pow(h, 6);
-    let h9 = Math.pow(h, 9);
-    let Wpoly6_coeff = 315.0 / (64 * Math.PI * h9);
-    let Wspiky_grad_coeff = -45.0 / (Math.PI * h6);
-    let Wvisc_lapl_coeff = 45.0 / (Math.PI * h5);
-    let m = 1.0;	    // Particle mass
-    let k = 120;				// Gas constant
-    let rho0 = 0;			// Rest density
-    let mu = 3;				// Viscosity
-    let gx = 0;				// Gravity-x
-    let gy = -20;				// Gravity-y
-
-    let xmin, xmax, ymin, ymax; // viewable area in which the fluid can flow
-    let xlimit, ylimit; // max possible values of xmax and ymax
-    let domainScale = 30;
-    let gridCellSize = h;
-
-    let lastTime = performance.now();
-
-    let forceVelocityOn = false;
-    let forceVelocityCell = null;
-    let forceVx = 0;
-    let forceVy = 0;
-
-    // assumption: r2 is less than h2
-    function Wpoly6(r2) {
-        let temp = h2 - r2;
-        return Wpoly6_coeff * temp * temp * temp;
+    reset() {
+        for (const c of this.cells)
+            c.numParticles = 0;
     }
 
-    // assumption: r is less than h
-    function Wspiky_grad2(r) {
-        let temp = h - r;
-        return Wspiky_grad_coeff * temp * temp / r;
-    }
-
-    // assumption: r is less than h
-    function Wvisc_lapl(r) {
-        return Wvisc_lapl_coeff * (1 - r / h);
-    }
-
-    function dist2(p1, p2) {
-        let dx = p2.x - p1.x;
-        let dy = p2.y - p1.y;
-        return dx * dx + dy * dy;
-    }
-
-    function AddDensity(p1, p2) {
-        let r2 = dist2(p1, p2);
-        if (r2 < h2) {
-            let temp = m * Wpoly6(r2);
-            p1.rho += temp;
-            p2.rho += temp;
+    hardreset() {
+        for (const c of this.cells) {
+            c.numParticles = 0;
+            c.particles = new Array(INIT_MAX_PARTICLES_IN_CELL);
         }
     }
 
-    function CalcDensity() {
-        for (const cell of grid.cells)
+    getCellFromLocation(x, y) {
+        const i = Math.floor(this.nx * x / this.w);
+        const j = Math.floor(this.ny * y / this.h);
+        return this.cells[i + j * this.nx];
+    }
+
+    addParticleToCell(p) {
+        const c = this.getCellFromLocation(p.x, p.y);
+        if (c != null)
+            c.particles[c.numParticles++] = p;
+        else
+            console.log("Undefined grid cell!");
+    }
+}
+
+function Wpoly6(r2) {
+    const temp = h2 - r2;
+    return Wpoly6_coeff * temp * temp * temp;
+}
+
+function Wspiky_grad2(r) {
+    const temp = h - r;
+    return Wspiky_grad_coeff * temp * temp / r;
+}
+
+function Wvisc_lapl(r) {
+    return Wvisc_lapl_coeff * (1 - r / h);
+}
+
+function dist2(p1, p2) {
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    return dx * dx + dy * dy;
+}
+
+function addDensity(p1, p2) {
+    const r2 = dist2(p1, p2);
+    if (r2 < h2) {
+        const temp = mass * Wpoly6(r2);
+        p1.rho += temp;
+        p2.rho += temp;
+    }
+}
+
+function addForces(p1, p2) {
+    const r2 = dist2(p1, p2);
+    if (r2 < h2) {
+        const r = Math.sqrt(r2) + 1e-6;
+        const temp1 = mass * (p2.P + p1.P) / (2 * p2.rho) * Wspiky_grad2(r);
+        let Fx = temp1 * (p2.x - p1.x);
+        let Fy = temp1 * (p2.y - p1.y);
+        const temp2 = mu * mass * Wvisc_lapl(r) / p2.rho;
+        Fx += temp2 * (p2.Vx - p1.Vx);
+        Fy += temp2 * (p2.Vy - p1.Vy);
+        p1.Fx += Fx;
+        p1.Fy += Fy;
+        p2.Fx -= Fx;
+        p2.Fy -= Fy;
+    }
+}
+
+function addWallForces(p1, xmin, xmax, ymin, ymax) {
+    if (p1.x < xmin + h) {
+        const r = p1.x - xmin;
+        p1.Fx -= mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
+    } else if (p1.x > xmax - h) {
+        const r = xmax - p1.x;
+        p1.Fx += mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
+    }
+    if (p1.y < ymin + h) {
+        const r = p1.y - ymin;
+        p1.Fy -= mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
+    } else if (p1.y > ymax - h) {
+        const r = ymax - p1.y;
+        p1.Fy += mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
+    }
+}
+
+class Engine {
+    constructor() {
+        this.particles = [];
+        this.grid = new Grid();
+        this.xmin = 0;
+        this.xmax = 0;
+        this.ymin = 0;
+        this.ymax = 0;
+        this.xlimit = 0;
+        this.ylimit = 0;
+        this.lastTime = performance.now();
+        this.forceVelocityOn = false;
+        this.forceVelocityCell = null;
+        this.forceVx = 0;
+        this.forceVy = 0;
+    }
+
+    init(width, height, left, right, bottom, top) {
+        while (left >= width) {
+            width += width;
+        }
+        this.xlimit = width / domainScale;
+        this.xmin = left / domainScale;
+        this.xmax = right / domainScale;
+
+        this.ylimit = height / domainScale;
+        this.ymin = bottom / domainScale;
+        this.ymax = top / domainScale;
+
+        const numGridCellsX = Math.floor(this.xlimit / gridCellSize);
+        const numGridCellsY = Math.floor(this.ylimit / gridCellSize);
+        this.grid.init(numGridCellsX, numGridCellsY, this.xlimit, this.ylimit);
+
+        this.particles = [];
+    }
+
+    resize(left, right, bottom, top) {
+        this.xmin = Math.max(left / domainScale, 0);
+        this.xmax = Math.min(right / domainScale, this.xlimit);
+        this.ymin = Math.max(bottom / domainScale, 0);
+        this.ymax = Math.min(top / domainScale, this.ylimit);
+    }
+
+    setNumParticles(n) {
+        let i0 = 0;
+
+        if (n < this.particles.length) {
+            this.grid.hardreset();
+            this.particles.length = n;
+        }
+        i0 = this.particles.length;
+
+        for (let i = i0; i < n; i++) {
+            this.particles[i] = new Particle(this.xmin, this.xmax, this.ymin, this.ymax);
+            this.particles[i].rho = mass * Wpoly6(0);
+        }
+    }
+
+    calcDensity() {
+        for (const cell of this.grid.cells) {
             for (let i = 0; i < cell.numParticles; i++) {
                 const p1 = cell.particles[i];
-                //p1.rho = 0;
-                // interactions between particles in this cell
                 for (let j = i + 1; j < cell.numParticles; j++) {
                     const p2 = cell.particles[j];
-                    AddDensity(p1, p2);
+                    addDensity(p1, p2);
                 }
-                // interactions between particles in neighbor cells
-                for (let neighbor of cell.halfNeighbors)
+                for (const neighbor of cell.halfNeighbors) {
                     for (let j = 0; j < neighbor.numParticles; j++) {
                         const p2 = neighbor.particles[j];
-                        AddDensity(p1, p2);
+                        addDensity(p1, p2);
                     }
+                }
                 p1.P = Math.max(k * (p1.rho - rho0), 0);
             }
-    }
-
-    function AddForces(p1, p2) {
-        let r2 = dist2(p1, p2);
-        if (r2 < h2) {
-            let r = Math.sqrt(r2) + 1e-6; // add a tiny bit to avoid divide by zero
-            // Eqn. 2.23 pressure-force
-            let temp1 = m * (p2.P + p1.P) / (2 * p2.rho) * Wspiky_grad2(r);
-            let Fx = temp1 * (p2.x - p1.x);
-            let Fy = temp1 * (p2.y - p1.y);
-            // Eqn. 2.26 viscosity-force
-            let temp2 = mu * m * Wvisc_lapl(r) / p2.rho;
-            Fx += temp2 * (p2.Vx - p1.Vx);
-            Fy += temp2 * (p2.Vy - p1.Vy);
-            p1.Fx += Fx;
-            p1.Fy += Fy;
-            p2.Fx -= Fx;
-            p2.Fy -= Fy;
         }
     }
 
-    function AddWallForces(p1) {
-        if (p1.x < xmin + h) {
-            const r = p1.x - xmin;
-            p1.Fx -= m * p1.P / p1.rho * Wspiky_grad2(r) * r;
-        }
-        else if (p1.x > xmax - h) {
-            const r = xmax - p1.x;
-            p1.Fx += m * p1.P / p1.rho * Wspiky_grad2(r) * r;
-        }
-        if (p1.y < ymin + h) {
-            const r = p1.y - ymin;
-            p1.Fy -= m * p1.P / p1.rho * Wspiky_grad2(r) * r;
-        } else if (p1.y > ymax - h) {
-            const r = ymax - p1.y;
-            p1.Fy += m * p1.P / p1.rho * Wspiky_grad2(r) * r;
-        }
-    }
-
-    function CalcForces() {
-        for (const cell of grid.cells) {
+    calcForces() {
+        for (const cell of this.grid.cells) {
             for (let i = 0; i < cell.numParticles; i++) {
                 const p1 = cell.particles[i];
-                // interactions between particles in this cell
-                for (let j = i + 1; j < cell.numParticles; j++) {
-                    const p2 = cell.particles[j];
-                    AddForces(p1, p2);
+                for (let j = i + 1; j < cell.numParticles; j++)
+                    addForces(p1, cell.particles[j]);
+
+                for (const neighbor of cell.halfNeighbors) {
+                    for (let j = 0; j < neighbor.numParticles; j++)
+                        addForces(p1, neighbor.particles[j]);
                 }
-                // interactions between particles in neighbor cells
-                for (let neighbor of cell.halfNeighbors)
-                    for (let j = 0; j < neighbor.numParticles; j++) {
-                        const p2 = neighbor.particles[j];
-                        AddForces(p1, p2);
-                    }
-                AddWallForces(p1);
+                addWallForces(p1, this.xmin, this.xmax, this.ymin, this.ymax);
             }
         }
     }
 
-    function CalcForcedVelocity() {
-        if (!forceVelocityOn || forceVelocityCell == null)
+    calcForcedVelocity() {
+        if (!this.forceVelocityOn || this.forceVelocityCell == null)
             return;
-        for (let i = 0; i < forceVelocityCell.numParticles; i++) {
-            let p = forceVelocityCell.particles[i];
-            p.Vx = forceVx;
-            p.Vy = forceVy;
+        for (let i = 0; i < this.forceVelocityCell.numParticles; i++) {
+            const p = this.forceVelocityCell.particles[i];
+            p.Vx = this.forceVx;
+            p.Vy = this.forceVy;
             p.Fx = 0;
             p.Fy = 0;
         }
-        forceVelocityOn = false;
+        this.forceVelocityOn = false;
     }
 
-    function UpdatePosition(dT) {
-        for (let p of particles) {
-            let Ax = p.Fx / p.rho + gx;
-            let Ay = p.Fy / p.rho + gy;
+    updatePosition(dT) {
+        for (const p of this.particles) {
+            const Ax = p.Fx / p.rho + gx;
+            const Ay = p.Fy / p.rho + gy;
 
             p.Vx += Ax * dT;
             p.Vy += Ay * dT;
@@ -267,122 +300,66 @@ let Engine = (function() {
             p.x += (p.Vx + 0.5 * Ax * dT) * dT;
             p.y += (p.Vy + 0.5 * Ay * dT) * dT;
 
-            if (p.x < xmin) {
-                p.x = xmin + 1e-6;
+            if (p.x < this.xmin) {
+                p.x = this.xmin + 1e-6;
+                p.Vx *= -0.5;
+            } else if (p.x > this.xmax) {
+                p.x = this.xmax - 1e-6;
                 p.Vx *= -0.5;
             }
-            else if (p.x > xmax) {
-                p.x = xmax - 1e-6;
-                p.Vx *= -0.5;
-            }
-            if (p.y < ymin) {
-                p.y = ymin + 1e-6;
+            if (p.y < this.ymin) {
+                p.y = this.ymin + 1e-6;
                 p.Vy *= -0.5;
-            } else if (p.y > ymax) {
-                p.y = ymax - 1e-6;
+            } else if (p.y > this.ymax) {
+                p.y = this.ymax - 1e-6;
                 p.Vy *= -0.5;
             }
 
-            grid.addParticleToCell(p);
-
+            this.grid.addParticleToCell(p);
             p.reset();
         }
     }
 
-    return {
-
-        init: function(width, height, left, right, bottom, top) {
-            while (left >= width) {
-                // assume two identical monitor setup arranged horizontally
-                width += width;
-            }
-            xlimit = width / domainScale;
-            xmin = left / domainScale;
-            xmax = right / domainScale;
-
-            ylimit = height / domainScale;
-            ymin = bottom / domainScale;
-            ymax = top / domainScale;
-
-            let numGridCellsX = Math.floor(xlimit / gridCellSize);
-            let numGridCellsY = Math.floor(ylimit / gridCellSize);
-            grid = new Grid();
-            grid.init(numGridCellsX, numGridCellsY, xlimit, ylimit);
-
-            particles = []
-        },
-
-        resize: function(left, right, bottom, top) {
-            xmin = Math.max(left / domainScale, 0);
-            xmax = Math.min(right / domainScale, xlimit);
-            ymin = Math.max(bottom / domainScale, 0);
-            ymax = Math.min(top / domainScale, ylimit);
-        },
-
-        setNumParticles: function(n) {
-            let i0 = 0;
-
-            if (particles === undefined)
-                particles = new Array(n);
-            else {
-                if (n < particles.length) {
-                    grid.hardreset();
-                    particles.length = n;
-                }
-                i0 = particles.length;
-            }
-
-            for (let i = i0; i < n; i++) {
-                particles[i] = new Particle();
-                particles[i].rho = m * Wpoly6(0);
-            }
-        },
-
-        doPhysics : function() {
-            CalcDensity();
-            CalcForces();
-            CalcForcedVelocity();
-            grid.reset();
-            let now = performance.now();
-            let dT = now - lastTime;
-            lastTime = now;
-            UpdatePosition(dT * 0.001);
-        },
-
-        unpause : function() {
-            lastTime = performance.now();
-        },
-
-        getParticlePosition: function(i, position) {
-            let p = particles[i];
-            position.x = p.x * domainScale;
-            position.y = p.y * domainScale - ymin;
-        },
-
-        forceVelocity: function(x, y, Vx, Vy) {
-            forceVelocityOn = true;
-            forceVelocityCell = grid.getCellFromLocation(x / domainScale, ymax - y / domainScale);
-            forceVx = Vx;
-            forceVy = -Vy;
-        },
-
-        setGravity: function(gravityX, gravityY) {
-            gx = gravityX;
-            gy = gravityY;
-        },
-
-        setFluidProperties: function(mass, gasConstant, restDensity, viscosity) {
-            m = mass;
-            k = gasConstant;
-            rho0 = restDensity;
-            mu = viscosity;
-        }
+    doPhysics() {
+        this.calcDensity();
+        this.calcForces();
+        this.calcForcedVelocity();
+        this.grid.reset();
+        const now = performance.now();
+        const dT = now - this.lastTime;
+        this.lastTime = now;
+        this.updatePosition(dT * 0.001);
     }
-})();
 
-const PARTICLE_COUNT = 1000;
-const WORLD_HEIGHT = 20;
-const PARTICLE_RADIUS_IN_PIXELS = 5;
+    unpause() {
+        this.lastTime = performance.now();
+    }
+
+    getParticlePosition(i, position) {
+        const p = this.particles[i];
+        position.x = p.x * domainScale;
+        position.y = p.y * domainScale - this.ymin;
+    }
+
+    forceVelocity(x, y, Vx, Vy) {
+        this.forceVelocityOn = true;
+        this.forceVelocityCell = this.grid.getCellFromLocation(x / domainScale, this.ymax - y / domainScale);
+        this.forceVx = Vx;
+        this.forceVy = -Vy;
+    }
+
+    setGravity(gravityX, gravityY) {
+        gx = gravityX;
+        gy = gravityY;
+    }
+
+    setFluidProperties(mass, gasConstant, restDensity, viscosity) {
+        mass = mass;
+        k = gasConstant;
+        rho0 = restDensity;
+        mu = viscosity;
+    }
+}
 
 class ParticleRenderModel extends MathPhysicsModelBehavior {
     constructor(radius) {
@@ -419,7 +396,7 @@ const simulation = Simulation
     .onFrame(synchronizeParticlePositions)
     .onReset(initializeEngine);
 
-const engine = Engine;
+const engine = new Engine();
 const particlePosition = new Vec2();
 const particleModels = [];
 
@@ -444,7 +421,6 @@ function synchronizeParticlePositions() {
             particlePosition.x / width * worldWidth - worldWidth / 2,
             particlePosition.y / height * WORLD_HEIGHT - WORLD_HEIGHT / 2
         );
-        // Keep the original five-pixel particle radius when the viewport changes size.
         particleModels[i].radius = radius;
     }
 }
@@ -468,4 +444,3 @@ function createParticleViews() {
 
 initializeEngine();
 createParticleViews();
-

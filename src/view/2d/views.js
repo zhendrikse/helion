@@ -85,6 +85,17 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
         this._texture.needsUpdate = true;
         this._mesh.material.map.needsUpdate = true;
     }
+
+    dispose() {
+        if (!this._mesh)
+            return;
+        this.remove(this._mesh);
+        this._mesh.geometry.dispose();
+        this._mesh.material.dispose();
+        this._texture.dispose();
+        this._mesh = null;
+        this._texture = null;
+    }
 }
 
 /**

@@ -5,9 +5,6 @@ import {
     DiscreteFieldSurfaceView, FixedIntervalNormalizer, MathPhysicsModelBehavior
 } from '../../../src/index.js';
 
-const U_FIELD = 0; // x-component of velocity
-const V_FIELD = 1; // y-component of velocity
-const S_FIELD = 2; // smoke field
 const SOLID = 0.0;
 const FLUID = 1.0;
 
@@ -337,23 +334,6 @@ class SmokeFieldAdapter extends MathPhysicsModelBehavior {
     valueAt(i, j) { return this.fluid.smokeAt(j, i); }
 }
 
-class ResizableDiscreteFieldSurfaceView extends DiscreteFieldSurfaceView {
-    _disposeMesh() {
-        this.remove(this._mesh);
-        this._mesh.geometry.dispose();
-        this._mesh.material.dispose();
-        this._texture.dispose();
-        this._mesh = null;
-        this._texture = null;
-    }
-
-    resetResolution(field) {
-        if (this._mesh)
-            this._disposeMesh();
-        this.initialize(field);
-    }
-}
-
 function setLeftBorderTo(solidOrLiquid) {
     const left = solidOrLiquid === SOLID ? fluid.nx - 1 : 0;
     for (let i = 0; i < fluid.nx; i++)
@@ -395,7 +375,8 @@ function paintScene() {
 
 function configureDiscreteFieldSurfaceView(view, fluid) {
     view.scale.set(1 / fluid.nx, 1 / fluid.ny, 1);
-    view.resetResolution(fluid);
+    view.dispose();
+    view.initialize(fluid);
 }
 
 function setupScene(/** @type {number} */ sceneNr = 0) {
@@ -426,7 +407,7 @@ function setupScene(/** @type {number} */ sceneNr = 0) {
         paintScene();
 }
 
-const pressureView = new ResizableDiscreteFieldSurfaceView({
+const pressureView = new DiscreteFieldSurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace }),
     opacityFunction: () => 1,
     colorSpace: LinearSRGBColorSpace,
@@ -435,7 +416,7 @@ const pressureView = new ResizableDiscreteFieldSurfaceView({
 const smokePressureColor = new Color().setRGB( 1.2e-2, 1.2e-2, 1.2e-2);
 const smokeColor = new Color().setRGB( 1 - 1.2e-2, 1 - 1.2e-2, 1 - 1.2e-2);
 const smokeMapper = ColorMappers.get(ColorMappers.Uniform, { color: smokePressureColor });
-const smokeView = new ResizableDiscreteFieldSurfaceView({
+const smokeView = new DiscreteFieldSurfaceView({
     colorMapper: smokeMapper,
     normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
     opacityFunction: value => Math.sqrt(value),
