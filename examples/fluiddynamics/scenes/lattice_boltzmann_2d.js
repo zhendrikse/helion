@@ -197,10 +197,85 @@ class LatticeBoltzmannSolver extends Solver {
         const v = momentum / rho;
         return isFinite(v) ? v : 0;
     }
+
+    velocityAt(/** @type {number} */ x, /** @type {number} */ y, /** @type {Vec2} */ target) {
+        const index = y * NX + x;
+        if (this._barrierField.valueAt(x, y) !== 0) {
+            target.set(0, 0);
+            return target;
+        }
+
+        target.set(this._velocityX(index), this._velocityY(index));
+        return target;
+    }
 }
 
-const curlField = new DiscreteScalarField({ nx: NX, ny: NY });
-const barrierField = new DiscreteScalarField({ nx: NX, ny: NY });
+/**
+ * Exposes the Lattice Boltzmann solver's macroscopic velocity as a world-space
+ * vector field for StreamlinesView. Grid samples are located at cell centers;
+ * the public interface uses centered world coordinates.
+ */
+class LatticeBoltzmannVelocityField {
+    constructor({ solver, barrierField, nx, ny, gridSpacing }) {
+        this._solver = solver;
+        this._barrierField = barrierField;
+        this._nx = nx;
+        this._ny = ny;
+        this._gridSpacing = gridSpacing;
+        this._v00 = new Vec2();
+        this._v10 = new Vec2();
+        this._v01 = new Vec2();
+        this._v11 = new Vec2();
+    }
+
+    get nx() { return this._nx; }
+    get ny() { return this._ny; }
+    get gridSpacing() { return this._gridSpacing; }
+
+    contains(position) {
+        const halfWidth = 0.5 * this._nx * this._gridSpacing;
+        const halfHeight = 0.5 * this._ny * this._gridSpacing;
+        return position.x >= -halfWidth && position.x < halfWidth &&
+            position.y >= -halfHeight && position.y < halfHeight;
+    }
+
+    sample(position, target) {
+        if (!this.contains(position)) {
+            target.set(0, 0);
+            return target;
+        }
+
+        // Convert centered world coordinates to grid-index coordinates.
+        const gx = position.x / this._gridSpacing + 0.5 * this._nx - 0.5;
+        const gy = position.y / this._gridSpacing + 0.5 * this._ny - 0.5;
+        const x0 = Math.max(0, Math.min(this._nx - 1, Math.floor(gx)));
+        const y0 = Math.max(0, Math.min(this._ny - 1, Math.floor(gy)));
+        const x1 = Math.min(x0 + 1, this._nx - 1);
+        const y1 = Math.min(y0 + 1, this._ny - 1);
+        const tx = Math.max(0, Math.min(1, gx - x0));
+        const ty = Math.max(0, Math.min(1, gy - y0));
+
+        this._solver.velocityAt(x0, y0, this._v00);
+        this._solver.velocityAt(x1, y0, this._v10);
+        this._solver.velocityAt(x0, y1, this._v01);
+        this._solver.velocityAt(x1, y1, this._v11);
+
+        const vx0 = this._v00.x * (1 - tx) + this._v10.x * tx;
+        const vx1 = this._v01.x * (1 - tx) + this._v11.x * tx;
+        const vy0 = this._v00.y * (1 - tx) + this._v10.y * tx;
+        const vy1 = this._v01.y * (1 - tx) + this._v11.y * tx;
+
+        // StreamlinesView integrates this vector in display-space units.
+        target.set(
+            (vx0 * (1 - ty) + vx1 * ty) / this._gridSpacing,
+            (vy0 * (1 - ty) + vy1 * ty) / this._gridSpacing
+        );
+        return target;
+    }
+}
+
+const curlField = new DiscreteScalarField({ nx: NX, ny: NY, gridSpacing: CELL_SIZE });
+const barrierField = new DiscreteScalarField({ nx: NX, ny: NY, gridSpacing: CELL_SIZE });
 
 const configuration = new ShapeConfiguration({
     defaultPosition: new Vec2(-NX * .35, 0),
@@ -258,7 +333,17 @@ Simulation.with({
     .maxOutCpu(() => curlField.evolve(solver), 20, 30)
     .appendStartStopResetUI()
     .bind(curlField.alwaysWith(curlView))
-    .bind(curlField.alwaysWith(new StreamlinesView({scaleFactor: CELL_SIZE, color: Colour.White})))
+    .bind(new LatticeBoltzmannVelocityField({
+        solver,
+        barrierField,
+        nx: NX,
+        ny: NY,
+        gridSpacing: CELL_SIZE
+    }).alwaysWith(new StreamlinesView({
+        scaleFactor: 1,
+        seedSpacing: 5,
+        color: Colour.White
+    })))
     .bind(barrierField.onceWith(barrierView))
     .onReset(reset)
     .append(new DropdownMenu()
