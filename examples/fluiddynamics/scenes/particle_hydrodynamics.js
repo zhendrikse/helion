@@ -132,14 +132,14 @@ class Grid {
     }
 
     /** @param {Vec2} position */
-    _getCellFromLocation(position) {
+    getCellFromLocation(position) {
         const i = Math.floor(this.nx * position.x / this.w);
         const j = Math.floor(this.ny * position.y / this.h);
         return this._cells[i + j * this.nx];
     }
 
     addParticleToCell(particle) {
-        const cell = this._getCellFromLocation(particle.position);
+        const cell = this.getCellFromLocation(particle.position);
         if (cell === null)
             console.warn("Undefined grid cell!");
         else
@@ -169,10 +169,9 @@ class Engine {
 
         this.xlimit = 0;
         this.ylimit = 0;
-        this.lastTime = performance.now();
         this.forceVelocityOn = false;
         this.forceVelocityCell = null;
-        this.forceVelocity = new Vec2(0, 0);
+        this.forceVelocityVector = new Vec2(0, 0);
 
         this._positionVector = new Vec2();
         this._velocityVector = new Vec2();
@@ -304,11 +303,18 @@ class Engine {
         if (!this.forceVelocityOn || this.forceVelocityCell == null)
             return;
         for (let i = 0; i < this.forceVelocityCell.numParticles; i++) {
-            const particle = this.forceVelocityCell.particles[i];
+            const particle = this.forceVelocityCell._particles[i];
             particle.velocity.copy(this.forceVelocity);
             particle.force.set(0, 0);
         }
         this.forceVelocityOn = false;
+    }
+
+    forceVelocity(x, y, Vx, Vy) {
+        this.forceVelocityOn = true;
+        this._positionVector.set(x / domainScale, this._yRange.max - y / domainScale);
+        this.forceVelocityCell = this._grid.getCellFromLocation(this._positionVector);
+        this.forceVelocityVector.set(Vx, -Vy);
     }
 
     _boxBounce(particle) {
@@ -337,19 +343,12 @@ class Engine {
         }
     }
 
-    step() {
+    step(dt) {
         this._calcDensity();
         this._calcForces();
         this._calcForcedVelocity();
         this._grid.reset();
-        const now = performance.now();
-        const dT = now - this.lastTime;
-        this.lastTime = now;
-        this._updatePosition(dT * 0.001);
-    }
-
-    unpause() {
-        this.lastTime = performance.now();
+        this._updatePosition(dt);
     }
 
     getParticlePosition(i, position) {
@@ -461,11 +460,13 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .runsEvery(0.01)
     .onStep((_clock, dt) => {
-        engine.step();
+        engine.step(dt);
         synchronizeParticlePositions();
         if (speedColoring && ++colorUpdateCounter % COLOR_UPDATE_INTERVAL === 0)
             updateParticleColors();
     })
+    //.onMouse("mousemove", (x, y, e) => engine.forceVelocity(x, y, e.movementX, e.movementY))
+    //.onMouse("mousemove", (x, y, e) => console.log(x, y, e.movementX, e.movementY))
     .onReset(initializeEngine)
     .append(controls.gravityX)
     .append(controls.gravityY)
@@ -520,7 +521,6 @@ function initializeEngine() {
 
     engine.init(width, height, 0, width, 0, height);
     engine.setNumParticles(particleCount);
-    engine.unpause();
 }
 
 const normalizer = new FixedIntervalNormalizer(new Interval(0, SPEED_COLOR_MAX));
