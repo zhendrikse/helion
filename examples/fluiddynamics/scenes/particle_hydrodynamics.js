@@ -7,6 +7,8 @@ const DEFAULT_PARTICLE_COUNT = 1000;
 const MAX_PARTICLE_COUNT = 5000;
 const WORLD_HEIGHT = 20;
 const PARTICLE_RADIUS_IN_PIXELS = 5;
+const COLOR_UPDATE_INTERVAL = 10;
+const SPEED_COLOR_MAX = 20;
 
 const domainScale = 30;
 const gridCellSize = 1;
@@ -323,6 +325,11 @@ class Engine {
         this.lastTime = performance.now();
     }
 
+    getParticleSpeed(i) {
+        const velocity = this.particles[i].velocity;
+        return Math.hypot(velocity.x, velocity.y);
+    }
+
     getParticlePosition(i, position) {
         position.copy(this.particles[i].position).multiplyScalar(domainScale);
         position.y -= this._yRange.min;
@@ -409,7 +416,8 @@ const colorRegistry = new Registry({
         Cyan: Colour.Cyan,
         Blue: new Colour(0x3388ff),
         Orange: Colour.Orange,
-        White: Colour.White
+        White: Colour.White,
+        Speed: new Colour(0x3388ff)
     }
 });
 
@@ -417,9 +425,16 @@ const colorControl = new DropdownMenu()
     .for(colorRegistry)
     .withValue('Blue')
     .onChange(name => {
-        particleColor = colorRegistry.get(name);
-        for (const view of particleViews)
-            view.fillColor = particleColor;
+        speedColoring = name === 'Speed';
+        colorUpdateCounter = 0;
+
+        if (!speedColoring) {
+            particleColor = colorRegistry.get(name);
+            for (const view of particleViews)
+                view.fillColor = particleColor;
+        } else {
+            updateParticleColors();
+        }
     });
 
 const simulation = Simulation
@@ -442,6 +457,10 @@ const simulation = Simulation
     .runsEvery(0.01)
     .onStep((_clock, dt) => {
         engine.step();
+        if (speedColoring && ++colorUpdateCounter >= COLOR_UPDATE_INTERVAL) {
+            colorUpdateCounter = 0;
+            updateParticleColors();
+        }
         synchronizeParticlePositions();
     })
     .onReset(initializeEngine)
@@ -471,6 +490,8 @@ const simulation = Simulation
             controls.gravityY.withValue(-20);
             colorControl.withValue('Blue');
             particleColor = colorRegistry.get('Blue');
+            speedColoring = false;
+            colorUpdateCounter = 0;
             for (const view of particleViews)
                 view.fillColor = particleColor;
             engine.setNumParticles(particleCount);
@@ -484,6 +505,8 @@ const particleModels = [];
 const particleViews = [];
 let particleCount = DEFAULT_PARTICLE_COUNT;
 let particleColor = colorRegistry.get('Blue');
+let speedColoring = false;
+let colorUpdateCounter = 0;
 
 const updateFluidProperties = () => engine.setFluidProperties(mass, k, rho0, mu);
 
@@ -494,6 +517,36 @@ function initializeEngine() {
     engine.init(width, height, 0, width, 0, height);
     engine.setNumParticles(particleCount);
     engine.unpause();
+}
+
+function speedToColor(speed) {
+    const t = Math.max(0, Math.min(1, speed / SPEED_COLOR_MAX));
+    const stops = [
+        { at: 0, color: [0x33, 0x88, 0xff] },
+        { at: 1 / 3, color: [0x00, 0xdd, 0xff] },
+        { at: 2 / 3, color: [0xff, 0xdd, 0x00] },
+        { at: 1, color: [0xff, 0x33, 0x00] }
+    ];
+
+    let start = stops[0];
+    let end = stops[stops.length - 1];
+    for (let i = 1; i < stops.length; i++) {
+        if (t <= stops[i].at) {
+            start = stops[i - 1];
+            end = stops[i];
+            break;
+        }
+    }
+
+    const fraction = (t - start.at) / (end.at - start.at);
+    const channels = start.color.map((channel, i) =>
+        Math.round(channel + (end.color[i] - channel) * fraction));
+    return new Colour((channels[0] << 16) | (channels[1] << 8) | channels[2]);
+}
+
+function updateParticleColors() {
+    for (let i = 0; i < particleCount; i++)
+        particleViews[i].fillColor = speedToColor(engine.getParticleSpeed(i));
 }
 
 function synchronizeParticlePositions() {
