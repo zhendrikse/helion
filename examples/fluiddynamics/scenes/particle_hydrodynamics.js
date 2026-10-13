@@ -407,7 +407,7 @@ const colorRegistry = new Registry({
     entries: {
         Green: Colour.Green,
         Cyan: Colour.Cyan,
-        Blue: new Colour(0x3388ff),
+        Blue: Colour.LightBlue,
         Orange: Colour.Orange,
         White: Colour.White
     }

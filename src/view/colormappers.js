@@ -29,6 +29,7 @@ export class Colour {
     static Black = new Colour(0, 0, 0);
     static Purple = new Colour(0.5, 0, 0.5);
     static Magenta = new Colour(1, 0, 1);
+    static LightBlue = new Colour(0x3388ff);
 
     static fromThreeJsColor = (/** @type {Color} */ threeJsColor) => {
         const c = new Colour();
