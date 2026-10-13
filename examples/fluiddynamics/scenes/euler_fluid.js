@@ -278,17 +278,11 @@ class EulerFluid extends DiscreteVectorField {
     }
 
     setObstacle(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ reset) {
-        let vx = 0.0;
-        let vy = 0.0;
-
-        if (!reset) {
-            vx = (x - obstacle.position.x) / dt;
-            vy = (y - obstacle.position.y) / dt;
-        }
+        const vx = reset ? 0.0 : (x - obstacle.position.x) / dt;
+        const vy = reset ? 0.0 : (y - obstacle.position.y) / dt;
+        const r2 = obstacle.radius * obstacle.radius;
 
         obstacle.position.set(x, y);
-        const r = obstacle.radius;
-
         for (let i = 1; i < this.nx - 2; i++)
             for (let j = 1; j < this.ny - 2; j++) {
                 this._obstacleMask.setValueAt(j, i, FLUID);
@@ -296,7 +290,7 @@ class EulerFluid extends DiscreteVectorField {
                 // Cell centers and obstacle positions are both in centered world coordinates.
                 const dx = (i + 0.5 - 0.5 * this.nx) * this._gridSpacing - x;
                 const dy = (j + 0.5 - 0.5 * this.ny) * this._gridSpacing - y;
-                if (dx * dx + dy * dy > r * r)
+                if (dx * dx + dy * dy > r2)
                     continue;
 
                 this._obstacleMask.setValueAt(j, i, SOLID);
@@ -568,7 +562,7 @@ document.addEventListener('keydown', event => {
         case 'p':
             paused = !paused;
             break;
-        case 'm':
+        case 's':
             paused = false;
             simulate();
             paused = true;
