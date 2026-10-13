@@ -25,7 +25,7 @@ const Wvisc_lapl_coeff = 45.0 / (Math.PI * h5);
 
 let mass = 1.0;
 let k = 120;
-let rho0 = 0;
+let rho0 = 2.75;
 let mu = 3;
 let gravity = new Vec2(0, -20);
 
@@ -387,7 +387,7 @@ const controls = {
         }),
     restDensity: new Slider('Rest density')
         .withRange(new Range(0, 10, 0.1))
-        .withValue(0.5)
+        .withValue(2.75)
         .onInput(value => {
             rho0 = value;
             updateFluidProperties();
@@ -414,7 +414,7 @@ const colorRegistry = new Registry({
     entries: {
         Green: Colour.Green,
         Cyan: Colour.Cyan,
-        Blue: new Colour(0x3388ff),
+        Blue: Colour.LightBlue,
         Orange: Colour.Orange,
         White: Colour.White,
         Speed: new Colour(0x3388ff)
@@ -478,13 +478,13 @@ const simulation = Simulation
             particleCount = DEFAULT_PARTICLE_COUNT;
             mass = 1;
             k = 120;
-            rho0 = 0.5;
+            rho0 = 2.75;
             mu = 3;
             gravity.set(0, -20);
             controls.particleCount.withValue(DEFAULT_PARTICLE_COUNT);
             controls.mass.withValue(1);
             controls.gasConstant.withValue(120);
-            controls.restDensity.withValue(0.5);
+            controls.restDensity.withValue(2.75);
             controls.viscosity.withValue(3);
             controls.gravityX.withValue(0);
             controls.gravityY.withValue(-20);
