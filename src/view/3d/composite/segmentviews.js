@@ -9,7 +9,7 @@ import { Renderable3D } from "../../renderer.js";
 import { Interval } from "../../../model/math/math.js";
 import { Vec2, Vec3 } from "../../../model/math/objects.js";
 import { LineSegment, Segments } from "../../../model/math/objects.js";
-import { ColorMappers } from "../../colormappers.js";
+import { ColorMapper, ColorMappers } from "../../colormappers.js";
 
 class InstancedSegmentsView extends Renderable3D {
     /**
@@ -36,25 +36,30 @@ class InstancedSegmentsView extends Renderable3D {
         this._instanceIndex = 0;
     }
 
+    /** @param {Segments} segments */
     canBindTo(segments) {
         if (!(segments instanceof Segments))
             throw new Error("An instanced segments view can only be bound to a Segments collection.");
         return true;
     }
 
+    /** @param {Segments} segments */
     initialize(segments) {
         this._mesh = new InstancedMesh(this.createGeometry(), this._material, segments.count);
         this.add(this._mesh);
     }
 
+    /** @abstract */
     createGeometry() {
         throw new Error("createGeometry() must be implemented");
     }
 
+    /** @abstract */
     updateTransform(segment) {
         throw new Error("updateTransform() must be implemented");
     }
 
+    /** @param {Segments} segments */
     synchronizeWith(segments) {
         this._instanceIndex = 0;
 

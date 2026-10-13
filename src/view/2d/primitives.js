@@ -4,7 +4,7 @@ import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 import { Vec2 } from '../../model/math/objects.js';
 import { Colour } from '../colormappers.js';
-import { Body, RadialSymmetricBody } from '../../model/phys/bodies.js'
+import { RadialSymmetricBody } from '../../model/phys/bodies.js'
 import {
     Float32BufferAttribute, DoubleSide, MeshBasicMaterial, BufferGeometry, Mesh, Color,
     CircleGeometry, RingGeometry

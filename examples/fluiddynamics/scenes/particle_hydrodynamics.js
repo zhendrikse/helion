@@ -1,16 +1,16 @@
+import { VelocityNode } from 'three/src/nodes/Nodes.js';
 import {
-    AdaptiveNormalizer,
-    Button, Circle, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
-    Interval, MathPhysicsModelBehavior, Range, Registry, Simulation, Slider, Vec2, Vec3
+    AxialSymmetricBody, Button, Circle, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
+    Interval, Range, Registry, Simulation, Slider, Vec2, Vec3
 } from '../../../src/index.js';
-import {Color, LinearSRGBColorSpace} from "three";
+import { LinearSRGBColorSpace} from "three";
 
 const DEFAULT_PARTICLE_COUNT = 1000;
 const MAX_PARTICLE_COUNT = 5000;
 const WORLD_HEIGHT = 20;
 const PARTICLE_RADIUS_IN_PIXELS = 5;
 const COLOR_UPDATE_INTERVAL = 10;
-const SPEED_COLOR_MAX = 50;
+const SPEED_COLOR_MAX = 30;
 
 const domainScale = 30;
 const gridCellSize = 1;
@@ -27,18 +27,23 @@ const Wvisc_lapl_coeff = 45.0 / (Math.PI * h5);
 
 let mass = 1.0;
 let k = 120;
-let rho0 = 2.75;
+let rho0 = 3.75;
 let mu = 3;
 let gravity = new Vec2(0, -20);
 
 class Particle {
     /**
-     * @param {Interval} xRange
-     * @param {Interval} yRange
+     * @param {{
+     * position?: Vec2
+     * velocity?: Vec2
+     * }} options
      */
-    constructor(xRange, yRange) {
-        this.position = new Vec2(Math.random() * xRange.range + xRange.min, Math.random() * yRange.range + yRange.min);
-        this.velocity = new Vec2(Math.random() - 0.5, Math.random() - 0.5);
+    constructor({
+        position = new Vec2(),
+        velocity = new Vec2(),
+    } = {}) {
+        this.position = position.clone();
+        this.velocity = velocity.clone();
         this.force = new Vec2(0, 0);
 
         this.rho = 0;
@@ -55,6 +60,8 @@ class Particle {
         this.position.addScaledVector(this._acceleration, .5 * dt * dt);
     }
 
+    get speed() { return Math.hypot(this.velocity.x, this.velocity.y); }
+
     reset() {
         this.force.set(0, 0);
         this.rho = mass * Wpoly6(0);
@@ -63,20 +70,31 @@ class Particle {
 
 class Cell {
     constructor() {
-        this.particles = new Array(INIT_MAX_PARTICLES_IN_CELL);
+        this._particles = new Array(INIT_MAX_PARTICLES_IN_CELL);
+        /** @type {Cell[]} */
         this.halfNeighbors = [];
         this.numParticles = 0;
+    }
+
+    reset() {
+        this.numParticles = 0;
+        this._particles = new Array(INIT_MAX_PARTICLES_IN_CELL);
     }
 }
 
 class Grid {
     constructor() {
         /** @type {Cell[]} */
-        this.cells = [];
+        this._cells = [];
         this.nx = 0;
         this.ny = 0;
         this.w = 0;
         this.h = 0;
+    }
+    
+    /** @returns {ArrayIterator<Cell>} */
+    [Symbol.iterator]() {
+        return this._cells[Symbol.iterator]();
     }
 
     init(nx, ny, w, h) {
@@ -85,49 +103,48 @@ class Grid {
         this.w = w;
         this.h = h;
         const numCells = nx * ny;
-        this.cells = new Array(numCells);
+        this._cells = new Array(numCells);
         for (let i = 0; i < numCells; i++)
-            this.cells[i] = new Cell();
+            this._cells[i] = new Cell();
 
         for (let i = 0; i < nx; i++)
             for (let j = 0; j < ny; j++)
-                this._computeNeighbors(i, j, this.cells[i + j * nx]);
+                this._computeNeighbors(i, j, this._cells[i + j * nx]);
     }
 
     _computeNeighbors(i, j, cell) {
         const idx = i + j * this.nx;
         if (i !== this.nx - 1)
-            cell.halfNeighbors.push(this.cells[idx + 1]);
+            cell.halfNeighbors.push(this._cells[idx + 1]);
         if (j !== this.ny - 1) {
             for (let i2 = Math.max(0, i - 1); i2 <= Math.min(this.nx - 1, i + 1); i2++)
-                cell.halfNeighbors.push(this.cells[idx + this.nx + i2 - i]);
+                cell.halfNeighbors.push(this._cells[idx + this.nx + i2 - i]);
         }
     }
 
     reset() {
-        for (const cell of this.cells)
+        for (const cell of this._cells)
             cell.numParticles = 0;
     }
 
     hardReset() {
-        for (const cell of this.cells) {
-            cell.numParticles = 0;
-            cell.particles = new Array(INIT_MAX_PARTICLES_IN_CELL);
-        }
+        for (const cell of this._cells) 
+            cell.reset();
     }
 
-    getCellFromLocation(x, y) {
-        const i = Math.floor(this.nx * x / this.w);
-        const j = Math.floor(this.ny * y / this.h);
-        return this.cells[i + j * this.nx];
+    /** @param {Vec2} position */
+    _getCellFromLocation(position) {
+        const i = Math.floor(this.nx * position.x / this.w);
+        const j = Math.floor(this.ny * position.y / this.h);
+        return this._cells[i + j * this.nx];
     }
 
     addParticleToCell(particle) {
-        const cell = this.getCellFromLocation(particle.position.x, particle.position.y);
-        if (cell != null)
-            cell.particles[cell.numParticles++] = particle;
+        const cell = this._getCellFromLocation(particle.position);
+        if (cell === null)
+            console.warn("Undefined grid cell!");
         else
-            console.log("Undefined grid cell!");
+            cell._particles[cell.numParticles++] = particle;
     }
 }
 
@@ -141,12 +158,14 @@ function Wspiky_grad2(r) {
     return Wspiky_grad_coeff * temp * temp / r;
 }
 
-const Wvisc_lapl= (r) => Wvisc_lapl_coeff * (1 - r / h);
+
+const Wvisc_lapl= (/** @type {number} */ r) => Wvisc_lapl_coeff * (1 - r / h);
 
 class Engine {
     constructor() {
-        this.particles = [];
-        this.grid = new Grid();
+        /** @type {Particle[]} */
+        this._particles = [];
+        this._grid = new Grid();
         this._xRange = new Interval(0, 1);
         this._yRange = new Interval(0, 1);
 
@@ -162,6 +181,11 @@ class Engine {
         this._forceVector = new Vec2();
     }
 
+    /** @returns {ArrayIterator<Particle>} */
+    [Symbol.iterator]() {
+        return this._particles[Symbol.iterator]();
+    }
+
     init(width, height, left, right, bottom, top) {
         while (left >= width)
             width += width;
@@ -174,9 +198,9 @@ class Engine {
 
         const numGridCellsX = Math.floor(this.xlimit / gridCellSize);
         const numGridCellsY = Math.floor(this.ylimit / gridCellSize);
-        this.grid.init(numGridCellsX, numGridCellsY, this.xlimit, this.ylimit);
+        this._grid.init(numGridCellsX, numGridCellsY, this.xlimit, this.ylimit);
 
-        this.particles = [];
+        this._particles = [];
     }
 
     resize(left, right, bottom, top) {
@@ -187,28 +211,31 @@ class Engine {
     setNumParticles(n) {
         let i0 = 0;
 
-        if (n < this.particles.length) {
-            this.grid.hardReset();
-            this.particles.length = n;
+        if (n < this._particles.length) {
+            this._grid.hardReset();
+            this._particles.length = n;
         }
-        i0 = this.particles.length;
+        i0 = this._particles.length;
 
         for (let i = i0; i < n; i++) {
-            this.particles[i] = new Particle(this._xRange, this._yRange);
-            this.particles[i].rho = mass * Wpoly6(0);
+            this._particles[i] = new Particle({
+                position: new Vec2(Math.random() * this._xRange.range + this._xRange.min, Math.random() * this._yRange.range + this._yRange.min),
+                velocity: new Vec2(Math.random() - 0.5, Math.random() - 0.5)
+            });
+            this._particles[i].rho = mass * Wpoly6(0);
         }
     }
 
     _calcDensity() {
-        for (const cell of this.grid.cells) {
+        for (const cell of this._grid) {
             for (let i = 0; i < cell.numParticles; i++) {
-                const particle = cell.particles[i];
+                const particle = cell._particles[i];
                 for (let j = i + 1; j < cell.numParticles; j++)
-                    this._addDensity(particle, cell.particles[j]);
+                    this._addDensity(particle, cell._particles[j]);
 
                 for (const neighbor of cell.halfNeighbors)
                     for (let j = 0; j < neighbor.numParticles; j++)
-                        this._addDensity(particle, neighbor.particles[j]);
+                        this._addDensity(particle, neighbor._particles[j]);
 
                 particle.P = Math.max(k * (particle.rho - rho0), 0);
             }
@@ -244,15 +271,15 @@ class Engine {
     }
 
     _calcForces() {
-        for (const cell of this.grid.cells)
+        for (const cell of this._grid)
             for (let i = 0; i < cell.numParticles; i++) {
-                const particle = cell.particles[i];
+                const particle = cell._particles[i];
                 for (let j = i + 1; j < cell.numParticles; j++)
-                    this._addForces(particle, cell.particles[j]);
+                    this._addForces(particle, cell._particles[j]);
 
                 for (const neighbor of cell.halfNeighbors)
                     for (let j = 0; j < neighbor.numParticles; j++)
-                        this._addForces(particle, neighbor.particles[j]);
+                        this._addForces(particle, neighbor._particles[j]);
 
                 this._addWallForces(particle);
             }
@@ -304,10 +331,10 @@ class Engine {
     }
 
     _updatePosition(dt) {
-        for (const particle of this.particles) {
+        for (const particle of this._particles) {
             particle.integrate(dt);
             this._boxBounce(particle);
-            this.grid.addParticleToCell(particle);
+            this._grid.addParticleToCell(particle);
             particle.reset();
         }
     }
@@ -316,7 +343,7 @@ class Engine {
         this._calcDensity();
         this._calcForces();
         this._calcForcedVelocity();
-        this.grid.reset();
+        this._grid.reset();
         const now = performance.now();
         const dT = now - this.lastTime;
         this.lastTime = now;
@@ -327,20 +354,9 @@ class Engine {
         this.lastTime = performance.now();
     }
 
-    getParticleSpeed(i) {
-        const velocity = this.particles[i].velocity;
-        return Math.hypot(velocity.x, velocity.y);
-    }
-
     getParticlePosition(i, position) {
-        position.copy(this.particles[i].position).multiplyScalar(domainScale);
+        position.copy(this._particles[i].position).multiplyScalar(domainScale);
         position.y -= this._yRange.min;
-    }
-
-    forceVelocity(x, y, Vx, Vy) {
-        this.forceVelocityOn = true;
-        this.forceVelocityCell = this.grid.getCellFromLocation(x / domainScale, this._yRange.max - y / domainScale);
-        this.forceVelocity.set(Vx, -Vy);
     }
 
     setFluidProperties(mass_, gasConstant, restDensity, viscosity) {
@@ -348,18 +364,6 @@ class Engine {
         k = gasConstant;
         rho0 = restDensity;
         mu = viscosity;
-    }
-}
-
-class ParticleRenderModel extends MathPhysicsModelBehavior {
-    constructor(radius) {
-        super();
-        this.position = new Vec2();
-        this.radius = radius;
-    }
-
-    updatePosition(x, y) {
-        this.position.set(x, y);
     }
 }
 
@@ -389,7 +393,7 @@ const controls = {
         }),
     restDensity: new Slider('Rest density')
         .withRange(new Range(0, 10, 0.1))
-        .withValue(2.75)
+        .withValue(3.75)
         .onInput(value => {
             rho0 = value;
             updateFluidProperties();
@@ -419,7 +423,7 @@ const colorRegistry = new Registry({
         Blue: Colour.LightBlue,
         Orange: Colour.Orange,
         White: Colour.White,
-        Speed: new Colour(0x3388ff)
+        Speed: Colour.LightBlue
     }
 });
 
@@ -479,13 +483,13 @@ const simulation = Simulation
             particleCount = DEFAULT_PARTICLE_COUNT;
             mass = 1;
             k = 120;
-            rho0 = 2.75;
+            rho0 = 3.75;
             mu = 3;
             gravity.set(0, -20);
             controls.particleCount.withValue(DEFAULT_PARTICLE_COUNT);
             controls.mass.withValue(1);
             controls.gasConstant.withValue(120);
-            controls.restDensity.withValue(2.75);
+            controls.restDensity.withValue(3.75);
             controls.viscosity.withValue(3);
             controls.gravityX.withValue(0);
             controls.gravityY.withValue(-20);
@@ -501,7 +505,9 @@ const simulation = Simulation
 
 const engine = new Engine();
 const particlePosition = new Vec2();
+/** @type {AxialSymmetricBody[]} */
 const particleModels = [];
+/** @type {Circle[]} */
 const particleViews = [];
 let particleCount = DEFAULT_PARTICLE_COUNT;
 let particleColor = colorRegistry.get('Blue');
@@ -524,7 +530,7 @@ const colorMapper = ColorMappers.get(ColorMappers.Scientific, {colorSpace: Linea
 const colour = new Colour();
 function updateParticleColors() {
     for (let i = 0; i < particleCount; i++) {
-        colorMapper.map(normalizer.normalize(engine.getParticleSpeed(i)), colour)
+        colorMapper.map(normalizer.normalize(engine._particles[i].speed), colour)
         particleViews[i].fillColor = colour;
     }
 }
@@ -541,7 +547,7 @@ function synchronizeParticlePositions() {
         if (!visible)
             continue;
         engine.getParticlePosition(i, particlePosition);
-        particleModels[i].updatePosition(
+        particleModels[i].position.set(
             particlePosition.x / width * worldWidth - worldWidth / 2,
             particlePosition.y / height * WORLD_HEIGHT - WORLD_HEIGHT / 2
         );
@@ -551,7 +557,9 @@ function synchronizeParticlePositions() {
 
 function createParticleViews(count = particleCount) {
     for (let i = particleModels.length; i < count; i++) {
-        const model = new ParticleRenderModel(PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / simulation.height);
+        const model = new AxialSymmetricBody({
+            radius: PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / simulation.height
+        });
         const view = new Circle({
             fillColor: particleColor,
             borderColor: new Colour(0x131313),
