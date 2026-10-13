@@ -118,7 +118,6 @@ class EulerFluid extends DiscreteVectorField {
     } = {}) {
         super({ nx: 0, ny: 0 });
         this.density = 0;
-        this._gridSpacing = 0;
         this._pressureField = new DiscreteScalarField({ nx: 0, ny: 0 });
         this._obstacleMask = new DiscreteScalarField({ nx: 0, ny: 0 });
         this._smokeField = new DiscreteScalarField({ nx: 0, ny: 0 });
@@ -202,7 +201,6 @@ class EulerFluid extends DiscreteVectorField {
     }
 
     get pressureRange() { return this._pressureField.rangeAt(); }
-    get gridSpacing() { return this._gridSpacing; }
 
     sample(positionVector, velocity) {
         // StreamlinesView uses centered world coordinates; the solver's raster

@@ -1,6 +1,6 @@
 import {
     ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer, DiscreteFieldSurfaceView,
-    Interval, ShapeConfiguration, ShapeMask, Simulation, Vec3, DiscreteScalarField, Vec2, Shapes,
+    Interval, ShapeConfiguration, ShapeMask, Simulation, Vec3, DiscreteScalarField, Vec2, Shapes, StreamlinesView,
 } from '../../../src/index.js';
 import { Solver } from '../../../src/model/math/numerics/solvers/solvers.js';
 
@@ -144,9 +144,7 @@ class LatticeBoltzmannSolver extends Solver {
 
         for (let k = 0; k < 9; k++) {
             const eu = EX[k] * ux + EY[k] * uy;
-            target[k] = WEIGHT[k] * rho * (
-                1 + 3 * eu + 4.5 * eu * eu - 1.5 * speedSquared
-            );
+            target[k] = WEIGHT[k] * rho * (1 + 3 * eu + 4.5 * eu * eu - 1.5 * speedSquared);
         }
     }
 
@@ -213,7 +211,7 @@ const solver = new LatticeBoltzmannSolver({
     barrierField,
     viscosity: 0.02,
     flowSpeed: 0.10
-        });
+});
 
 function reset() {
     barrierField
@@ -230,7 +228,7 @@ const curlView = new DiscreteFieldSurfaceView({
     colorMapper: ColorMappers.get(ColorMappers.Inferno),
     scale: CELL_SIZE
     //opacityFunction: v => Math.min(1, Math.abs(v - 0.5) * 5)
-        });
+});
 
 const barrierView = new DiscreteFieldSurfaceView({
     scale: CELL_SIZE,
@@ -260,6 +258,7 @@ Simulation.with({
     .maxOutCpu(() => curlField.evolve(solver), 20, 30)
     .appendStartStopResetUI()
     .bind(curlField.alwaysWith(curlView))
+    //.bind(curlField.alwaysWith(new StreamlinesView({scaleFactor: CELL_SIZE, color: Colour.White})))
     .bind(barrierField.onceWith(barrierView))
     .onReset(reset)
     .append(new DropdownMenu()

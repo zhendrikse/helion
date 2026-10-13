@@ -1,4 +1,4 @@
-import { VectorField } from '../math/fields.js';
+import { DiscreteScalarField } from '../math/fields.js';
 import { Vec2, Vec3 } from '../math/objects.js';
 import { ScalarFieldCalculus } from '../math/numerics/discretecalc.js';
 import { MathPhysicsModelBehavior } from "../behavior.js";
@@ -35,7 +35,7 @@ export class PlaneWave1D extends MathPhysicsModelBehavior {
  * native grid using gridOrigin and gridSpacing. The gradient is then
  * calculated directly from the native grid values using a central difference.
  */
-export class ElectricField extends VectorField {
+export class DiscreteElectricField extends DiscreteScalarField {
     /**
      * @param {{
      * potential?: DiscreteScalarField
@@ -48,16 +48,10 @@ export class ElectricField extends VectorField {
         gridSpacing = 1,
         derivativeSpacing = gridSpacing
     } = {}) {
-        super();
-
         if (potential == null)
             throw new Error('Cannot calculate electric field without potential.');
 
-        this._nx = potential.nx;
-        this._ny = potential.ny;
-
-        if (gridSpacing <= 0)
-            throw new Error('gridSpacing must be > 0.');
+        super({ nx: potential.nx, ny: potential.ny, gridSpacing });
 
         if (derivativeSpacing <= 0)
             throw new Error('derivativeSpacing must be > 0.');
@@ -68,11 +62,14 @@ export class ElectricField extends VectorField {
         this._h = derivativeSpacing;
     }
 
-    get nx() { return this._nx; }
-    get ny() { return this._ny; }
-    get gridSpacing() { return this._gridSpacing; }
-
-    sample(position = new Vec2(), target = this._target) {
+    /**
+     * Evaluate the electric field at an arbitrary position.
+     *
+     * @param {Vec2} position
+     * @param {Vec2} target
+     * @returns {Vec2}
+     */
+    sample(position, target = this._target) {
         const width = 0.5 * this._potentialField.nx * this._gridSpacing;
         const height = 0.5 * this._potentialField.ny * this._gridSpacing;
 

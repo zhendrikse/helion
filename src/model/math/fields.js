@@ -91,15 +91,22 @@ export class DiscreteVectorField extends VectorField {
      * @param {{
      *  nx?: number,
      *  ny?: number
+     *  gridSpacing,
      * }} [options]
      */
     constructor({
         nx = 100,
-        ny = 100
+        ny = 100,
+        gridSpacing = 1,
     } = {}) {
         super();
+
+        if (gridSpacing <= 0)
+            throw new Error('gridSpacing must be > 0.');
+
         this._nx = nx;
         this._ny = ny;
+        this._gridSpacing = gridSpacing;
         this._vectorComponentX = new DiscreteScalarField({nx, ny});
         this._vectorComponentY = new DiscreteScalarField({nx, ny});
         this._vectorComponentZ = new DiscreteScalarField({nx, ny});
@@ -115,6 +122,7 @@ export class DiscreteVectorField extends VectorField {
 
     get nx() { return this._nx; }
     get ny() { return this._ny; }
+    get gridSpacing() { return this._gridSpacing; }
 
     valueAt(/** @type {number} */ i, /** @type {number} */ j, /** @type {Vec2 | Vec3} */ target) {
         target.set(
@@ -295,21 +303,25 @@ export class DiscreteScalarField extends ScalarField {
     /** 
      * @param {{
      *  nx?: number,
-     *  ny?: number
+     *  ny?: number,
+     *  gridSpacing: number
      * }} [options] 
      */
     constructor({
         nx = 100,
-        ny = 100
+        ny = 100,
+        gridSpacing = 1
     } = {}) {
         super();
         this._nx = nx;
         this._ny = ny;
+        this._gridSpacing = gridSpacing;
         this._data = new Float64Array(nx * ny);
     }
 
     get nx() { return this._nx; }
     get ny() { return this._ny; }
+    get gridSpacing() { return this._gridSpacing; }
     get data() { return this._data; }
 
     index(/** @type {number} */ x, /** @type {number} */ y) {

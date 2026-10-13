@@ -1,4 +1,4 @@
-import { generateUUID } from "three/src/math/MathUtils.js";
+import {generateUUID} from "../model/math/math.js";
 
 export class Registry {
     constructor({

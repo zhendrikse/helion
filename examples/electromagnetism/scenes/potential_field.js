@@ -1,7 +1,7 @@
 import {
     Simulation, Vec3, DiscreteScalarField, ArrowField2D, Colour, StreamlinesView,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
-    JacobiSolver, ColorMapper, Checkbox, Arrow2D, Button, ElectricField, DiscreteFieldSurfaceView
+    JacobiSolver, ColorMapper, Checkbox, Arrow2D, Button, DiscreteElectricField, DiscreteFieldSurfaceView
 } from '../../../src/index.js';
 
 const N = 250;
@@ -83,7 +83,7 @@ class CapacitorBoundaryCondition extends DirichletBoundaryCondition {
 const potential = new DiscreteScalarField({nx: N, ny: N});
 const boundaryCondition = new CapacitorBoundaryCondition();
 const solver = new JacobiSolver(boundaryCondition);
-const electricField = new ElectricField({potential, gridSpacing, derivativeSpacing: h });
+const electricField = new DiscreteElectricField({potential, gridSpacing, derivativeSpacing: h });
 
 const streamlinesView = new StreamlinesView({
     numberOfSegments: 20,

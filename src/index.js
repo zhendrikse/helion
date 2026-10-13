@@ -38,7 +38,7 @@ export {
     VectorField, ComplexFunction, MultivariateFunction, ComplexFunctionSample, RealFunction, DiscreteVectorField
 } from './model/math/fields.js';
 
-export { ElectricField, PlaneWave1D } from './model/phys/fields.js';
+export { DiscreteElectricField, PlaneWave1D } from './model/phys/fields.js';
 export { ComplexSurfaceView3D, WaveFunctionSurface3D } from './view/3d/surfaces/complex.js';
 export { WaveFunctionOrbital3D } from './view/3d/surfaces/orbital.js';
 export { ThreeJsScene } from './view/3d/scene.js';
