@@ -421,8 +421,8 @@ function synchronizeParticlePositions() {
     }
 }
 
-function createParticleViews() {
-    for (let i = 0; i < MAX_PARTICLE_COUNT; i++) {
+function createParticleViews(count = particleCount) {
+    for (let i = particleModels.length; i < count; i++) {
         const model = new ParticleRenderModel(PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / simulation.height);
         const view = new Circle({
             fillColor: particleColor,
@@ -447,6 +447,7 @@ const controls = {
         .withValue(DEFAULT_PARTICLE_COUNT)
         .onChange(value => {
             particleCount = Math.round(value / 10) * 10;
+            createParticleViews(particleCount);
             engine.setNumParticles(particleCount);
             synchronizeParticlePositions();
         }),
@@ -503,6 +504,15 @@ const colorRegistry = new Registry({
     }
 });
 
+const colorControl = new DropdownMenu()
+    .for(colorRegistry)
+    .withValue('Green')
+    .onChange(name => {
+        particleColor = new Colour(Number.parseInt(colorRegistry.get(name).slice(1), 16));
+        for (const view of particleViews)
+            view.fillColor = particleColor;
+    });
+
 simulation
     .append(controls.particleCount)
     .append(controls.mass)
@@ -511,14 +521,7 @@ simulation
     .append(controls.viscosity)
     .append(controls.gravityX)
     .append(controls.gravityY)
-    .append(new DropdownMenu()
-        .for(colorRegistry)
-        .withValue('Green')
-        .onChange(name => {
-            particleColor = new Colour(Number.parseInt(colorRegistry.get(name).slice(1), 16));
-            for (const view of particleViews)
-                view.fillColor = particleColor;
-        }))
+    .append(colorControl)
     .append(new Button('Defaults')
         .withText('Set defaults')
         .onClick(() => {
@@ -535,7 +538,7 @@ simulation
             controls.viscosity.withValue(3);
             controls.gravityX.withValue(0);
             controls.gravityY.withValue(-20);
-            colorRegistry.add('Green', '#00ff00');
+            colorControl.withValue('Green');
             particleColor = new Colour(0x00ff00);
             for (const view of particleViews)
                 view.fillColor = particleColor;
