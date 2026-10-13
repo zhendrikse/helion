@@ -28,7 +28,6 @@ let mass = 1.0;
 let k = 120;
 let rho0 = 3.75;
 let mu = 3;
-let gravity = new Vec2(0, -20);
 
 class Particle {
     /**
@@ -51,7 +50,7 @@ class Particle {
         this._acceleration = new Vec2();
     }
 
-    integrate(dt) {
+    integrate(gravity, dt) {
         this._acceleration.set(this.force.x, this.force.y).multiplyScalar(1 / this.rho);
         this._acceleration.add(gravity);
         this.velocity.addScaledVector(this._acceleration, dt);
@@ -85,10 +84,10 @@ class Grid {
     constructor() {
         /** @type {Cell[]} */
         this._cells = [];
-        this.nx = 0;
-        this.ny = 0;
-        this.w = 0;
-        this.h = 0;
+        this._nx = 0;
+        this._ny = 0;
+        this._width = 0;
+        this._height = 0;
     }
     
     /** @returns {ArrayIterator<Cell>} */
@@ -96,11 +95,11 @@ class Grid {
         return this._cells[Symbol.iterator]();
     }
 
-    init(nx, ny, w, h) {
-        this.nx = nx;
-        this.ny = ny;
-        this.w = w;
-        this.h = h;
+    init(nx, ny, width, height) {
+        this._nx = nx;
+        this._ny = ny;
+        this._width = width;
+        this._height = height;
         const numCells = nx * ny;
         this._cells = new Array(numCells);
         for (let i = 0; i < numCells; i++)
@@ -111,13 +110,22 @@ class Grid {
                 this._computeNeighbors(i, j, this._cells[i + j * nx]);
     }
 
+    /**
+     * References are stored to half of the neighboring cells of center cell C:
+     * ^ y
+     * |
+     * |___________
+     * |_1_|_2_|_3_|
+     * |___|_C_|_0_|
+     * |___|___|___| --> x
+     */
     _computeNeighbors(i, j, cell) {
-        const idx = i + j * this.nx;
-        if (i !== this.nx - 1)
+        const idx = i + j * this._nx;
+        if (i !== this._nx - 1)
             cell.halfNeighbors.push(this._cells[idx + 1]);
-        if (j !== this.ny - 1) {
-            for (let i2 = Math.max(0, i - 1); i2 <= Math.min(this.nx - 1, i + 1); i2++)
-                cell.halfNeighbors.push(this._cells[idx + this.nx + i2 - i]);
+        if (j !== this._ny - 1) {
+            for (let i2 = Math.max(0, i - 1); i2 <= Math.min(this._nx - 1, i + 1); i2++)
+                cell.halfNeighbors.push(this._cells[idx + this._nx + i2 - i]);
         }
     }
 
@@ -133,9 +141,9 @@ class Grid {
 
     /** @param {Vec2} position */
     getCellFromLocation(position) {
-        const i = Math.floor(this.nx * position.x / this.w);
-        const j = Math.floor(this.ny * position.y / this.h);
-        return this._cells[i + j * this.nx];
+        const i = Math.floor(this._nx * position.x / this._width);
+        const j = Math.floor(this._ny * position.y / this._height);
+        return this._cells[i + j * this._nx];
     }
 
     addParticleToCell(particle) {
@@ -145,10 +153,14 @@ class Grid {
         else
             cell._particles[cell.numParticles++] = particle;
     }
+
+    evolve(solver, dt) {
+        solver.step(this, dt);
+    }
 }
 
-function Wpoly6(r2) {
-    const temp = h2 - r2;
+function Wpoly6(rSquared) {
+    const temp = h2 - rSquared;
     return Wpoly6_coeff * temp * temp * temp;
 }
 
@@ -159,8 +171,12 @@ function Wspiky_grad2(r) {
 
 const Wvisc_lapl= (/** @type {number} */ r) => Wvisc_lapl_coeff * (1 - r / h);
 
-class Engine {
-    constructor() {
+class SPHSolver {
+    constructor({
+        gravity = new Vec2(0, -20)
+    } = {}) {
+        this._gravity = gravity;
+
         /** @type {Particle[]} */
         this._particles = [];
         this._grid = new Grid();
@@ -178,26 +194,28 @@ class Engine {
         this._forceVector = new Vec2();
     }
 
+    get gravity() { return this._gravity; }
+
     /** @returns {ArrayIterator<[number, Particle]>} */
-    entries() {
-        return this._particles.entries();
-    }
+    entries() { return this._particles.entries(); }
 
-    init(width, height, left, right, bottom, top) {
-        while (left >= width)
-            width += width;
-
+    initialize() {
+        const width = simulation.width;
+        const height = simulation.height;
         this.xlimit = width / domainScale;
         this.ylimit = height / domainScale;
 
-        this._xRange = new Interval(left / domainScale, right / domainScale);
-        this._yRange = new Interval(bottom / domainScale, top / domainScale);
+        const left = 0;
+        const bottom = 0;
+        this._xRange = new Interval(left / domainScale, width / domainScale);
+        this._yRange = new Interval(bottom / domainScale, height / domainScale);
 
         const numGridCellsX = Math.floor(this.xlimit / gridCellSize);
         const numGridCellsY = Math.floor(this.ylimit / gridCellSize);
         this._grid.init(numGridCellsX, numGridCellsY, this.xlimit, this.ylimit);
 
         this._particles = [];
+        this.setNumParticles(particleCount);
     }
 
     resize(left, right, bottom, top) {
@@ -336,7 +354,7 @@ class Engine {
 
     _updatePosition(dt) {
         for (const particle of this._particles) {
-            particle.integrate(dt);
+            particle.integrate(this._gravity, dt);
             this._boxBounce(particle);
             this._grid.addParticleToCell(particle);
             particle.reset();
@@ -364,6 +382,7 @@ class Engine {
     }
 }
 
+const solver = new SPHSolver();
 const controls = {
     particleCount: new Slider('Num particles')
         .withRange(new Range(0, MAX_PARTICLE_COUNT, 10))
@@ -371,7 +390,7 @@ const controls = {
         .onChange(value => {
             particleCount = Math.round(value / 10) * 10;
             createParticleViews(particleCount);
-            engine.setNumParticles(particleCount);
+            solver.setNumParticles(particleCount);
             synchronizeParticlePositions();
         }),
     mass: new Slider('Particle mass')
@@ -405,11 +424,11 @@ const controls = {
     gravityX: new Slider('Gravity X')
         .withRange(new Range(-100, 100, 10))
         .withValue(0)
-        .onInput(value => gravity.set(value, gravity.y)),
+        .onInput(value => solver.gravity.set(value, solver.gravity.y)),
     gravityY: new Slider('Gravity Y')
         .withRange(new Range(-100, 100, 10))
         .withValue(-20)
-        .onInput(value => gravity.set(gravity.x, value))
+        .onInput(value => solver.gravity.set(solver.gravity.x, value))
 };
 
 const colorRegistry = new Registry({
@@ -460,7 +479,7 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .runsEvery(0.01)
     .onStep((_clock, dt) => {
-        engine.step(dt);
+        solver.step(dt);
         synchronizeParticlePositions();
         if (speedColoring && ++colorUpdateCounter % COLOR_UPDATE_INTERVAL === 0)
             updateParticleColors();
@@ -470,9 +489,9 @@ const simulation = Simulation
         // Engine.forceVelocity expects canvas pixels, with the origin at the top-left.
         const pointerX = Math.max(0, Math.min(simulation.width - 1, (x + 0.5) * simulation.width));
         const pointerY = Math.max(0, Math.min(simulation.height - 1, (0.5 - y) * simulation.height));
-        engine.forceVelocity(pointerX, pointerY, e.movementX, e.movementY);
+        solver.forceVelocity(pointerX, pointerY, e.movementX, e.movementY);
     })
-    .onReset(initializeEngine)
+    .onReset(() => solver.initialize())
     .append(controls.gravityX)
     .append(controls.gravityY)
     .append(controls.particleCount)
@@ -489,7 +508,7 @@ const simulation = Simulation
             k = 120;
             rho0 = 3.75;
             mu = 3;
-            gravity.set(0, -20);
+            solver.gravity.set(0, -20);
             controls.particleCount.withValue(DEFAULT_PARTICLE_COUNT);
             controls.mass.withValue(1);
             controls.gasConstant.withValue(120);
@@ -502,12 +521,11 @@ const simulation = Simulation
             colorUpdateCounter = 0;
             for (const view of particleViews)
                 view.fillColor = particleColor;
-            engine.setNumParticles(particleCount);
+            solver.setNumParticles(particleCount);
             updateFluidProperties();
             synchronizeParticlePositions();
         }));
 
-const engine = new Engine();
 const particlePosition = new Vec2();
 /** @type {AxialSymmetricBody[]} */
 const particleModels = [];
@@ -518,22 +536,14 @@ let particleColor = colorRegistry.get('Blue');
 let speedColoring = true;
 let colorUpdateCounter = 0;
 
-const updateFluidProperties = () => engine.setFluidProperties(mass, k, rho0, mu);
-
-function initializeEngine() {
-    const width = simulation.width;
-    const height = simulation.height;
-
-    engine.init(width, height, 0, width, 0, height);
-    engine.setNumParticles(particleCount);
-}
+const updateFluidProperties = () => solver.setFluidProperties(mass, k, rho0, mu);
 
 const normalizer = new FixedIntervalNormalizer(new Interval(0, SPEED_COLOR_MAX));
 const colorMapper = ColorMappers.get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace});
 const colour = new Colour();
 function updateParticleColors() {
     let i, particle;
-    for ([i, particle] of engine.entries()) {
+    for ([i, particle] of solver.entries()) {
         colorMapper.map(normalizer.normalize(particle.speed), colour)
         particleViews[i].fillColor = colour;
     }
@@ -550,7 +560,7 @@ function synchronizeParticlePositions() {
         particleViews[i].visible = visible;
         if (!visible)
             continue;
-        engine.getParticlePosition(i, particlePosition);
+        solver.getParticlePosition(i, particlePosition);
         particleModels[i].position.set(
             particlePosition.x / width * worldWidth - worldWidth / 2,
             particlePosition.y / height * WORLD_HEIGHT - WORLD_HEIGHT / 2
@@ -578,7 +588,7 @@ function createParticleViews(count = particleCount) {
     }
 }
 
-initializeEngine();
+solver.initialize();
 createParticleViews();
 updateFluidProperties();
 synchronizeParticlePositions();
