@@ -78,8 +78,10 @@ export class StreamlinesView extends Renderable2D {
     }
 
     _positionNeedsClipping() {
-        return this._position.x < -this._halfWidth && this._position.x > this._halfWidth &&
-            this._position.y < -this._halfHeight && this._position.y > this._halfHeight;
+        return this._position.x < -this._halfWidth ||
+            this._position.x > this._halfWidth     ||
+            this._position.y < -this._halfHeight   ||
+            this._position.y > this._halfHeight;
     }
 
     synchronizeWith(/** @type {{nx: number, ny: number, gridSpacing: number }} */ fluid) {
@@ -102,10 +104,10 @@ export class StreamlinesView extends Renderable2D {
                 this._position.set((i - halfWidth) * gridSpacing, (j - halfHeight) * gridSpacing);
 
                 for (let n = 0; n < this._numberOfSegments; n++) {
-                    this._drawLine(fluid, segmentCount++, positions);
-                    this._position.copy(this._vector);
                     if (this._positionNeedsClipping())
                         break;
+                    this._drawLine(fluid, segmentCount++, positions);
+                    this._position.copy(this._vector);
                 }
             }
 
