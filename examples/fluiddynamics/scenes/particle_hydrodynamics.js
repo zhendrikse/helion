@@ -27,24 +27,20 @@ let mass = 1.0;
 let k = 120;
 let rho0 = 0;
 let mu = 3;
-let gx = 0;
-let gy = -20;
+let gravity = new Vec2(0, -20);
 
 class Particle {
     constructor(xmin, xmax, ymin, ymax) {
-        this.x = Math.random() * (xmax - xmin) + xmin;
-        this.y = Math.random() * (ymax - ymin) + ymin;
-        this.Vx = Math.random() - 0.5;
-        this.Vy = Math.random() - 0.5;
+        this.position = new Vec2(Math.random() * (xmax - xmin) + xmin, Math.random() * (ymax - ymin) + ymin);
+        this.velocity = new Vec2(Math.random() - 0.5, Math.random() - 0.5);
+        this.force = new Vec2(0, 0);
+
         this.rho = 0;
         this.P = 0;
-        this.Fx = 0;
-        this.Fy = 0;
     }
 
     reset() {
-        this.Fx = 0;
-        this.Fy = 0;
+        this.force.set(0, 0);
         this.rho = mass * Wpoly6(0);
     }
 }
@@ -99,9 +95,9 @@ class Grid {
     }
 
     hardreset() {
-        for (const c of this.cells) {
-            c.numParticles = 0;
-            c.particles = new Array(INIT_MAX_PARTICLES_IN_CELL);
+        for (const cell of this.cells) {
+            cell.numParticles = 0;
+            cell.particles = new Array(INIT_MAX_PARTICLES_IN_CELL);
         }
     }
 
@@ -111,10 +107,10 @@ class Grid {
         return this.cells[i + j * this.nx];
     }
 
-    addParticleToCell(p) {
-        const c = this.getCellFromLocation(p.x, p.y);
-        if (c != null)
-            c.particles[c.numParticles++] = p;
+    addParticleToCell(particle) {
+        const cell = this.getCellFromLocation(particle.position.x, particle.position.y);
+        if (cell != null)
+            cell.particles[cell.numParticles++] = particle;
         else
             console.log("Undefined grid cell!");
     }
@@ -135,8 +131,8 @@ function Wvisc_lapl(r) {
 }
 
 function dist2(p1, p2) {
-    const dx = p2.x - p1.x;
-    const dy = p2.y - p1.y;
+    const dx = p2.position.x - p1.position.x;
+    const dy = p2.position.y - p1.position.y;
     return dx * dx + dy * dy;
 }
 
@@ -154,32 +150,29 @@ function addForces(p1, p2) {
     if (r2 < h2) {
         const r = Math.sqrt(r2) + 1e-6;
         const temp1 = mass * (p2.P + p1.P) / (2 * p2.rho) * Wspiky_grad2(r);
-        let Fx = temp1 * (p2.x - p1.x);
-        let Fy = temp1 * (p2.y - p1.y);
+        const force = new Vec2(temp1 * (p2.position.x - p1.position.x), temp1 * (p2.position.y - p1.position.y));
         const temp2 = mu * mass * Wvisc_lapl(r) / p2.rho;
-        Fx += temp2 * (p2.Vx - p1.Vx);
-        Fy += temp2 * (p2.Vy - p1.Vy);
-        p1.Fx += Fx;
-        p1.Fy += Fy;
-        p2.Fx -= Fx;
-        p2.Fy -= Fy;
+        force.x += temp2 * (p2.velocity.x - p1.velocity.x);
+        force.y += temp2 * (p2.velocity.y - p1.velocity.y);
+        p1.force.add(force);
+        p2.force.sub(force);
     }
 }
 
 function addWallForces(p1, xmin, xmax, ymin, ymax) {
-    if (p1.x < xmin + h) {
-        const r = p1.x - xmin;
-        p1.Fx -= mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
-    } else if (p1.x > xmax - h) {
-        const r = xmax - p1.x;
-        p1.Fx += mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
+    if (p1.position.x < xmin + h) {
+        const r = p1.position.x - xmin;
+        p1.force.x -= mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
+    } else if (p1.position.x > xmax - h) {
+        const r = xmax - p1.position.x;
+        p1.force.x += mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
     }
-    if (p1.y < ymin + h) {
-        const r = p1.y - ymin;
-        p1.Fy -= mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
-    } else if (p1.y > ymax - h) {
-        const r = ymax - p1.y;
-        p1.Fy += mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
+    if (p1.position.y < ymin + h) {
+        const r = p1.position.y - ymin;
+        p1.force.y -= mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
+    } else if (p1.position.y > ymax - h) {
+        const r = ymax - p1.position.y;
+        p1.force.y += mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
     }
 }
 
@@ -196,14 +189,13 @@ class Engine {
         this.lastTime = performance.now();
         this.forceVelocityOn = false;
         this.forceVelocityCell = null;
-        this.forceVx = 0;
-        this.forceVy = 0;
+        this.forceVelocity = new Vec2(0, 0);
     }
 
     init(width, height, left, right, bottom, top) {
-        while (left >= width) {
+        while (left >= width)
             width += width;
-        }
+
         this.xlimit = width / domainScale;
         this.xmin = left / domainScale;
         this.xmax = right / domainScale;
@@ -281,38 +273,36 @@ class Engine {
             return;
         for (let i = 0; i < this.forceVelocityCell.numParticles; i++) {
             const p = this.forceVelocityCell.particles[i];
-            p.Vx = this.forceVx;
-            p.Vy = this.forceVy;
-            p.Fx = 0;
-            p.Fy = 0;
+            p.velocity.copy(this.forceVelocity);
+            p.force.set(0, 0);
         }
         this.forceVelocityOn = false;
     }
 
     updatePosition(dT) {
         for (const p of this.particles) {
-            const Ax = p.Fx / p.rho + gx;
-            const Ay = p.Fy / p.rho + gy;
+            const ax = p.force.x / p.rho + gravity.x;
+            const ay = p.force.y / p.rho + gravity.y;
 
-            p.Vx += Ax * dT;
-            p.Vy += Ay * dT;
+            p.velocity.x += ax * dT;
+            p.velocity.y += ay * dT;
 
-            p.x += (p.Vx + 0.5 * Ax * dT) * dT;
-            p.y += (p.Vy + 0.5 * Ay * dT) * dT;
+            p.position.x += (p.velocity.x + 0.5 * ax * dT) * dT;
+            p.position.y += (p.velocity.y + 0.5 * ay * dT) * dT;
 
-            if (p.x < this.xmin) {
-                p.x = this.xmin + 1e-6;
-                p.Vx *= -0.5;
-            } else if (p.x > this.xmax) {
-                p.x = this.xmax - 1e-6;
-                p.Vx *= -0.5;
+            if (p.position.x < this.xmin) {
+                p.position.x = this.xmin + 1e-6;
+                p.velocity.x *= -0.5;
+            } else if (p.position.x > this.xmax) {
+                p.position.x = this.xmax - 1e-6;
+                p.velocity.x *= -0.5;
             }
-            if (p.y < this.ymin) {
-                p.y = this.ymin + 1e-6;
-                p.Vy *= -0.5;
-            } else if (p.y > this.ymax) {
-                p.y = this.ymax - 1e-6;
-                p.Vy *= -0.5;
+            if (p.position.y < this.ymin) {
+                p.position.y = this.ymin + 1e-6;
+                p.velocity.y *= -0.5;
+            } else if (p.position.y > this.ymax) {
+                p.position.y = this.ymax - 1e-6;
+                p.velocity.y *= -0.5;
             }
 
             this.grid.addParticleToCell(p);
@@ -337,24 +327,22 @@ class Engine {
 
     getParticlePosition(i, position) {
         const p = this.particles[i];
-        position.x = p.x * domainScale;
-        position.y = p.y * domainScale - this.ymin;
+        position.x = p.position.x * domainScale;
+        position.y = p.position.y * domainScale - this.ymin;
     }
 
     forceVelocity(x, y, Vx, Vy) {
         this.forceVelocityOn = true;
         this.forceVelocityCell = this.grid.getCellFromLocation(x / domainScale, this.ymax - y / domainScale);
-        this.forceVx = Vx;
-        this.forceVy = -Vy;
+        this.forceVelocity.set(Vx, -Vy);
     }
 
     setGravity(gravityX, gravityY) {
-        gx = gravityX;
-        gy = gravityY;
+        gravity.set(gravityX, gravityY);
     }
 
-    setFluidProperties(mass, gasConstant, restDensity, viscosity) {
-        mass = mass;
+    setFluidProperties(mass_, gasConstant, restDensity, viscosity) {
+        mass = mass_;
         k = gasConstant;
         rho0 = restDensity;
         mu = viscosity;
