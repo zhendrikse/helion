@@ -378,7 +378,6 @@ import {
 } from '../../../src/index.js';
 
 const PARTICLE_COUNT = 1000;
-const DOMAIN_SCALE = 30;
 const WORLD_HEIGHT = 20;
 const PARTICLE_RADIUS_IN_PIXELS = 5;
 
@@ -415,7 +414,6 @@ const simulation = Simulation.with({
 const engine = Engine;
 const particlePosition = new Vec2();
 const particleModels = [];
-const particleViews = [];
 
 function initializeEngine() {
     const width = simulation.width;
@@ -447,7 +445,7 @@ function createParticleViews() {
     const fillColor = new Colour(0x00ff00);
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-        const model = new ParticleRenderModel(PARTICLE_RADIUS_IN_PIXELS / DOMAIN_SCALE);
+        const model = new ParticleRenderModel(PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / simulation.height);
         const view = new Circle({
             fillColor,
             borderColor: Colour.Black,
@@ -456,7 +454,6 @@ function createParticleViews() {
         });
 
         particleModels.push(model);
-        particleViews.push(view);
         simulation.bind(model.alwaysWith(view));
     }
 }
