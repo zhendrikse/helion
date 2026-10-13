@@ -1,7 +1,8 @@
 import {
-    ParticleView2D, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, MathPhysicsModelBehavior
+    Circle, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, MathPhysicsModelBehavior
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
+import { Colour, ColorMapper } from '../../../src/view/colormappers.js';
 import {Box3, LinearSRGBColorSpace, Vector3} from 'three';
 
 const swarmSize = 1500;
@@ -86,7 +87,7 @@ export class ParticleCloud extends MathPhysicsModelBehavior {
     get size() { return this._count; }
 }
 
-// Per-particle wrapper zodat ParticleView2D (Renderable2D) kan binden.
+// Per-particle wrapper zodat Circle (Renderable2D) kan binden.
 class CoralParticle extends MathPhysicsModelBehavior {
     constructor(field, index) {
         super();
@@ -100,32 +101,36 @@ class CoralParticle extends MathPhysicsModelBehavior {
     get frozen() { return this._field._frozen[this._index]; }
 }
 
-// Helper voor frameSceneOn: berekent union-bounding box van alle particles.
-class CoralBounds extends Renderable2D {
-    constructor(field) {
-        super();
-        this._field = field;
+// CoralParticleView extends Circle with colorFunction/colorMapper support
+class CoralParticleView extends Circle {
+    /**
+     * @param {{
+     *   colorFunction: (particle: CoralParticle) => number,
+     *   colorMapper: ColorMapper
+     * }} param0
+     */
+    constructor({ colorFunction, colorMapper }) {
+        super({ segments: 16 });
+        this._colorFunction = colorFunction;
+        this._colorMapper = colorMapper;
+        this._color = new Colour();
     }
 
-    get boundingBox() {
-        const box = new Box3();
-        for (let i = 0; i < this._field.size; i++) {
-            const pos = this._field._positions[i];
-            const r = this._field._sizes[i];
-            box.expandByPoint(new Vector3(pos.x - r, pos.y - r, pos.z - r));
-            box.expandByPoint(new Vector3(pos.x + r, pos.y + r, pos.z + r));
-        }
-        return box;
+    set colorMapper(mapper) { this._colorMapper = mapper; }
+
+    synchronizeWith(particle) {
+        super.synchronizeWith(particle);
+        const value = this._colorFunction(particle);
+        this._colorMapper.map(value, this._color);
+        this._fillMaterial.color.set(this._color.asThreeJsColor());
     }
 }
 
-const thresholdDistance = 5;
+const thresholdDistance = 7;
 const thresholdDistanceSquared = thresholdDistance * thresholdDistance;
 const noise = 10;
 const verticalDrift = 1.5;
-
 const particleField = new ParticleCloud(swarmSize);
-const coralBounds = new CoralBounds(particleField);
 
 const colorFunction = (particle) => {
     if (!particle.frozen)
@@ -133,18 +138,19 @@ const colorFunction = (particle) => {
     return normalize(1.75 * particle.position.distanceTo(particleField._positions[0]), 0, maxDistance);
 };
 
-/** @type {ParticleView2D[]} */
+/** @type {CoralParticleView[]} */
 const particleViews = [];
 
 const simulation = Simulation
     .with({
         htmlDivId: 'coralContainer',
         camera: {
-            controls: false
+            position: new Vec3(0, 0, width),
+            orthographic: true
         }
     })
     .withMouseClickEventListener()
-    .onReset(resetSimulation)
+    .onReset(() => particleField.reset())
     .runsEvery(0.05)
     .onStep(() => particleField.update())
     .append(new DropdownMenu()
@@ -157,17 +163,11 @@ const simulation = Simulation
 
 const colorMapper = new ColorMappers().get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace})();
 for (let i = 0; i < swarmSize; i++) {
-    const view = new ParticleView2D({ colorFunction, colorMapper });
+    const view = new CoralParticleView({ colorFunction, colorMapper });
+    view._fillMesh.position.set(-width / 2, -height / 2, 0);
+    view._borderMesh.position.set(-width / 2, -height / 2, 0);
     particleViews.push(view);
     simulation.bind(new CoralParticle(particleField, i).alwaysWith(view));
 }
 
-function resetSimulation() {
-    particleField.reset();
-    simulation.frameSceneOn(coralBounds, {
-        padding: 0.5,
-        viewDirection: new Vec3(0, 0, 1)
-    });
-}
-
-resetSimulation();
+particleField.reset();

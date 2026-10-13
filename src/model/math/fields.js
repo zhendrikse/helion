@@ -304,7 +304,7 @@ export class DiscreteScalarField extends ScalarField {
      * @param {{
      *  nx?: number,
      *  ny?: number,
-     *  gridSpacing: number
+     *  gridSpacing?: number
      * }} [options] 
      */
     constructor({

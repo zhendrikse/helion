@@ -186,11 +186,11 @@ export class Circle extends Renderable2D {
         borderColor.asThreeJsColor(this._outlineMaterial.color);
 
         this._fillMesh = new Mesh(new CircleGeometry(1, segments), this._fillMaterial);
-        this._outlineMesh = new Mesh(
+        this._borderMesh = new Mesh(
             new RingGeometry(1, 1 + borderWidth, segments),
             this._outlineMaterial
         );
-        this.add(this._fillMesh, this._outlineMesh);
+        this.add(this._fillMesh, this._borderMesh);
     }
 
     set fillColor(/** @type {Colour} */ colour) { colour.asThreeJsColor(this._fillMaterial.color); }
@@ -206,7 +206,7 @@ export class Circle extends Renderable2D {
     synchronizeWith(/** @type {RadialSymmetricBody} */ obstacle) {
         const radius = obstacle.radius + this._radiusOffset;
         this._fillMesh.scale.setScalar(radius);
-        this._outlineMesh.scale.setScalar(radius);
+        this._borderMesh.scale.setScalar(radius);
         this.position.set(obstacle.position.x, obstacle.position.y, 0.01);
     }
 }
