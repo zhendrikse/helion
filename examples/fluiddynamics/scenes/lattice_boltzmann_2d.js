@@ -1,8 +1,8 @@
 import {
     ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer, DiscreteFieldSurfaceView,
-    Interval, ShapeConfiguration, ShapeMask, Simulation, Vec3, DiscreteScalarField, Vec2, Shapes, StreamlinesView,
+    Interval, ShapeConfiguration, ShapeMask, Simulation, Vec3, DiscreteScalarField, Vec2, Shapes,
+    Solver, StreamlinesView, DiscreteVectorField, Checkbox
 } from '../../../src/index.js';
-import { Solver } from '../../../src/model/math/numerics/solvers/solvers.js';
 
 const NX = 160;
 const NY = 80;
@@ -25,20 +25,20 @@ class LatticeBoltzmannSolver extends Solver {
         this._barrierField = barrierField;
         this._viscosity = viscosity;
         this._flowSpeed = flowSpeed;
-        this._f = Array.from({ length: 9 }, () => new Float64Array(0));
+        this._flow = Array.from({ length: 9 }, () => new Float64Array(0));
         this._next = Array.from({ length: 9 }, () => new Float64Array(0));
         this._eq = new Float64Array(9);
     }
 
     reset(/** @type {DiscreteScalarField} */ field) {
-        this._f = Array.from({ length: 9 }, () => new Float64Array(field.nx * field.ny));
+        this._flow = Array.from({ length: 9 }, () => new Float64Array(field.nx * field.ny));
         this._next = Array.from({ length: 9 }, () => new Float64Array(field.nx * field.ny));
         for (let y = 0; y < field.ny; y++)
             for (let x = 0; x < field.nx; x++) {
                 const i = field.index(x, y);
                 this._equilibrium(1, this._flowSpeed, 0, this._eq);
                 for (let k = 0; k < 9; k++)
-                    this._f[k][i] = this._eq[k];
+                    this._flow[k][i] = this._eq[k];
             }
 
         field.reset();
@@ -71,18 +71,18 @@ class LatticeBoltzmannSolver extends Solver {
                     const ty = y + DY[k];
 
                     if (ty < 0 || ty >= ny || this._barrierField.valueAt(tx, ty) !== 0) {
-                        this._next[OPPOSITE[k]][sourceIndex] += this._f[k][sourceIndex];
+                        this._next[OPPOSITE[k]][sourceIndex] += this._flow[k][sourceIndex];
                         continue;
                     }
 
                     if (tx < 0 || tx >= nx)
                         continue;
 
-                    this._next[k][field.index(tx, ty)] += this._f[k][sourceIndex];
+                    this._next[k][field.index(tx, ty)] += this._flow[k][sourceIndex];
                 }
             }
 
-        [this._f, this._next] = [this._next, this._f];
+        [this._flow, this._next] = [this._next, this._flow];
     }
 
     _collide(/** @type {DiscreteScalarField} */ field) {
@@ -99,7 +99,7 @@ class LatticeBoltzmannSolver extends Solver {
                 let uy = 0;
 
                 for (let k = 0; k < 9; k++) {
-                    const value = this._f[k][i];
+                    const value = this._flow[k][i];
                     rho += value;
                     ux += value * EX[k];
                     uy += value * EY[k];
@@ -115,7 +115,7 @@ class LatticeBoltzmannSolver extends Solver {
                 this._equilibrium(rho, ux, uy, this._eq);
 
                 for (let k = 0; k < 9; k++)
-                    this._f[k][i] += omega * (this._eq[k] - this._f[k][i]);
+                    this._flow[k][i] += omega * (this._eq[k] - this._flow[k][i]);
             }
     }
 
@@ -125,7 +125,7 @@ class LatticeBoltzmannSolver extends Solver {
             this._equilibrium(1, this._flowSpeed, 0, this._eq);
 
             for (let k = 0; k < 9; k++)
-                this._f[k][i] = this._eq[k];
+                this._flow[k][i] = this._eq[k];
         }
     }
 
@@ -135,7 +135,7 @@ class LatticeBoltzmannSolver extends Solver {
             const interior = field.index(field.nx - 2, y);
 
             for (let k = 0; k < 9; k++)
-                this._f[k][outlet] = this._f[k][interior];
+                this._flow[k][outlet] = this._flow[k][interior];
         }
     }
 
@@ -173,7 +173,7 @@ class LatticeBoltzmannSolver extends Solver {
         let momentum = 0;
 
         for (let k = 0; k < 9; k++) {
-            const value = this._f[k][index];
+            const value = this._flow[k][index];
             rho += value;
             momentum += value * EX[k];
         }
@@ -188,7 +188,7 @@ class LatticeBoltzmannSolver extends Solver {
         let momentum = 0;
 
         for (let k = 0; k < 9; k++) {
-            const value = this._f[k][index];
+            const value = this._flow[k][index];
             rho += value;
             momentum += value * EY[k];
         }
@@ -215,35 +215,17 @@ class LatticeBoltzmannSolver extends Solver {
  * vector field for StreamlinesView. Grid samples are located at cell centers;
  * the public interface uses centered world coordinates.
  */
-class LatticeBoltzmannVelocityField {
+class LatticeBoltzmannVelocityField extends DiscreteVectorField {
     constructor({ solver, nx, ny, gridSpacing }) {
+        super({nx, ny, gridSpacing});
         this._solver = solver;
-        this._nx = nx;
-        this._ny = ny;
-        this._gridSpacing = gridSpacing;
         this._v00 = new Vec2();
         this._v10 = new Vec2();
         this._v01 = new Vec2();
         this._v11 = new Vec2();
     }
 
-    get nx() { return this._nx; }
-    get ny() { return this._ny; }
-    get gridSpacing() { return this._gridSpacing; }
-
-    contains(position) {
-        const halfWidth = 0.5 * this._nx * this._gridSpacing;
-        const halfHeight = 0.5 * this._ny * this._gridSpacing;
-        return position.x >= -halfWidth && position.x < halfWidth &&
-            position.y >= -halfHeight && position.y < halfHeight;
-    }
-
     sample(position, target) {
-        if (!this.contains(position)) {
-            target.set(0, 0);
-            return target;
-        }
-
         // Convert centered world coordinates to grid-index coordinates.
         const gx = position.x / this._gridSpacing + 0.5 * this._nx - 0.5;
         const gy = position.y / this._gridSpacing + 0.5 * this._ny - 0.5;
@@ -299,17 +281,17 @@ configuration.onChangeEventListener = reset;
 reset();
 
 const curlView = new DiscreteFieldSurfaceView({
-    colorMapper: ColorMappers.get(ColorMappers.Inferno),
+    colorMapper: ColorMappers.get(ColorMappers.Viridis),
     scale: CELL_SIZE
     //opacityFunction: v => Math.min(1, Math.abs(v - 0.5) * 5)
 });
-
 const barrierView = new DiscreteFieldSurfaceView({
     scale: CELL_SIZE,
     colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: Colour.Black.asHexValue() }),
     normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
     opacityFunction: value => value
 });
+const streamLinesView = new StreamlinesView({ scaleFactor: CELL_SIZE, color: Colour.White});
 
 Simulation.with({
     htmlDivId: 'latticeBoltzmann2dContainer',
@@ -332,21 +314,14 @@ Simulation.with({
     .maxOutCpu(() => curlField.evolve(solver), 20, 30)
     .appendStartStopResetUI()
     .bind(curlField.alwaysWith(curlView))
-    .bind(new LatticeBoltzmannVelocityField({
-        solver,
-        nx: NX,
-        ny: NY,
-        gridSpacing: CELL_SIZE
-    }).alwaysWith(new StreamlinesView({
-        scaleFactor: CELL_SIZE,
-        seedSpacing: 5,
-        color: Colour.White
-    })))
+    .bind(new LatticeBoltzmannVelocityField({ solver, nx: NX, ny: NY, gridSpacing: CELL_SIZE})
+        .alwaysWith(streamLinesView))
     .bind(barrierField.onceWith(barrierView))
     .onReset(reset)
+    .append(new Checkbox("✈️ Streamlines").on(streamLinesView).withProperty("visible"))
     .append(new DropdownMenu()
         .for(new ColorMappers())
-        .withValue(ColorMappers.Inferno)
+        .withValue(ColorMappers.Viridis)
         .onChange(value => curlView.colorMapper = ColorMappers.get(value)))
     .append(configuration.ui())
     .start();
