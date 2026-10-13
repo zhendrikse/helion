@@ -1,5 +1,6 @@
 import {
-    Button, Circle, Colour, DropdownMenu, MathPhysicsModelBehavior, Range, Registry, Simulation, Slider, Vec2, Vec3
+    Button, Circle, Colour, DropdownMenu,
+    Interval, MathPhysicsModelBehavior, Range, Registry, Simulation, Slider, Vec2, Vec3
 } from '../../../src/index.js';
 
 //
@@ -31,13 +32,27 @@ let mu = 3;
 let gravity = new Vec2(0, -20);
 
 class Particle {
-    constructor(xmin, xmax, ymin, ymax) {
-        this.position = new Vec2(Math.random() * (xmax - xmin) + xmin, Math.random() * (ymax - ymin) + ymin);
+    /**
+     * @param {Interval} xRange
+     * @param {Interval} yRange
+     */
+    constructor(xRange, yRange) {
+        this.position = new Vec2(Math.random() * xRange.range + xRange.min, Math.random() * yRange.range + yRange.min);
         this.velocity = new Vec2(Math.random() - 0.5, Math.random() - 0.5);
         this.force = new Vec2(0, 0);
 
         this.rho = 0;
         this.P = 0;
+
+        this._acceleration = new Vec2();
+    }
+
+    integrate(dt) {
+        this._acceleration.set(this.force.x, this.force.y).multiplyScalar(1 / this.rho);
+        this._acceleration.add(gravity);
+        this.velocity.addScaledVector(this._acceleration, dt);
+        this.position.addScaledVector(this.velocity, dt);
+        this.position.addScaledVector(this._acceleration, .5 * dt * dt);
     }
 
     reset() {
@@ -160,19 +175,19 @@ function addForces(p1, p2) {
     }
 }
 
-function addWallForces(p1, xmin, xmax, ymin, ymax) {
-    if (p1.position.x < xmin + h) {
-        const r = p1.position.x - xmin;
+function addWallForces(p1, xRange, yRange) {
+    if (p1.position.x < xRange.min + h) {
+        const r = p1.position.x - xRange.min;
         p1.force.x -= mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
-    } else if (p1.position.x > xmax - h) {
-        const r = xmax - p1.position.x;
+    } else if (p1.position.x > xRange.max - h) {
+        const r = xRange.max - p1.position.x;
         p1.force.x += mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
     }
-    if (p1.position.y < ymin + h) {
-        const r = p1.position.y - ymin;
+    if (p1.position.y < yRange.min + h) {
+        const r = p1.position.y - yRange.min;
         p1.force.y -= mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
-    } else if (p1.position.y > ymax - h) {
-        const r = ymax - p1.position.y;
+    } else if (p1.position.y > yRange.max - h) {
+        const r = yRange.max - p1.position.y;
         p1.force.y += mass * p1.P / p1.rho * Wspiky_grad2(r) * r;
     }
 }
@@ -181,10 +196,9 @@ class Engine {
     constructor() {
         this.particles = [];
         this.grid = new Grid();
-        this.xmin = 0;
-        this.xmax = 0;
-        this.ymin = 0;
-        this.ymax = 0;
+        this._xRange = new Interval(0, 1);
+        this._yRange = new Interval(0, 1);
+
         this.xlimit = 0;
         this.ylimit = 0;
         this.lastTime = performance.now();
@@ -198,12 +212,10 @@ class Engine {
             width += width;
 
         this.xlimit = width / domainScale;
-        this.xmin = left / domainScale;
-        this.xmax = right / domainScale;
-
         this.ylimit = height / domainScale;
-        this.ymin = bottom / domainScale;
-        this.ymax = top / domainScale;
+
+        this._xRange = new Interval(left / domainScale, right / domainScale);
+        this._yRange = new Interval(bottom / domainScale, top / domainScale);
 
         const numGridCellsX = Math.floor(this.xlimit / gridCellSize);
         const numGridCellsY = Math.floor(this.ylimit / gridCellSize);
@@ -213,10 +225,8 @@ class Engine {
     }
 
     resize(left, right, bottom, top) {
-        this.xmin = Math.max(left / domainScale, 0);
-        this.xmax = Math.min(right / domainScale, this.xlimit);
-        this.ymin = Math.max(bottom / domainScale, 0);
-        this.ymax = Math.min(top / domainScale, this.ylimit);
+        this._xRange = new Interval(Math.max(left / domainScale, 0), Math.min(right / domainScale, this.xlimit));
+        this._yRange = new Interval(Math.max(bottom / domainScale, 0), Math.min(top / domainScale, this.ylimit));
     }
 
     setNumParticles(n) {
@@ -229,7 +239,7 @@ class Engine {
         i0 = this.particles.length;
 
         for (let i = i0; i < n; i++) {
-            this.particles[i] = new Particle(this.xmin, this.xmax, this.ymin, this.ymax);
+            this.particles[i] = new Particle(this._xRange, this._yRange);
             this.particles[i].rho = mass * Wpoly6(0);
         }
     }
@@ -242,12 +252,11 @@ class Engine {
                     const p2 = cell.particles[j];
                     addDensity(p1, p2);
                 }
-                for (const neighbor of cell.halfNeighbors) {
-                    for (let j = 0; j < neighbor.numParticles; j++) {
-                        const p2 = neighbor.particles[j];
-                        addDensity(p1, p2);
-                    }
-                }
+
+                for (const neighbor of cell.halfNeighbors)
+                    for (let j = 0; j < neighbor.numParticles; j++)
+                        addDensity(p1, neighbor.particles[j]);
+
                 p1.P = Math.max(k * (p1.rho - rho0), 0);
             }
         }
@@ -264,7 +273,7 @@ class Engine {
                     for (let j = 0; j < neighbor.numParticles; j++)
                         addForces(p1, neighbor.particles[j]);
                 }
-                addWallForces(p1, this.xmin, this.xmax, this.ymin, this.ymax);
+                addWallForces(p1, this._xRange, this._yRange);
             }
         }
     }
@@ -273,41 +282,34 @@ class Engine {
         if (!this.forceVelocityOn || this.forceVelocityCell == null)
             return;
         for (let i = 0; i < this.forceVelocityCell.numParticles; i++) {
-            const p = this.forceVelocityCell.particles[i];
-            p.velocity.copy(this.forceVelocity);
-            p.force.set(0, 0);
+            const particle = this.forceVelocityCell.particles[i];
+            particle.velocity.copy(this.forceVelocity);
+            particle.force.set(0, 0);
         }
         this.forceVelocityOn = false;
     }
 
-    updatePosition(dT) {
-        for (const p of this.particles) {
-            const ax = p.force.x / p.rho + gravity.x;
-            const ay = p.force.y / p.rho + gravity.y;
+    updatePosition(dt) {
+        for (const particle of this.particles) {
+            particle.integrate(dt);
 
-            p.velocity.x += ax * dT;
-            p.velocity.y += ay * dT;
-
-            p.position.x += (p.velocity.x + 0.5 * ax * dT) * dT;
-            p.position.y += (p.velocity.y + 0.5 * ay * dT) * dT;
-
-            if (p.position.x < this.xmin) {
-                p.position.x = this.xmin + 1e-6;
-                p.velocity.x *= -0.5;
-            } else if (p.position.x > this.xmax) {
-                p.position.x = this.xmax - 1e-6;
-                p.velocity.x *= -0.5;
+            if (particle.position.x < this._xRange.min) {
+                particle.position.x = this._xRange.min + 1e-6;
+                particle.velocity.x *= -0.5;
+            } else if (particle.position.x > this._xRange.max) {
+                particle.position.x = this._xRange.max - 1e-6;
+                particle.velocity.x *= -0.5;
             }
-            if (p.position.y < this.ymin) {
-                p.position.y = this.ymin + 1e-6;
-                p.velocity.y *= -0.5;
-            } else if (p.position.y > this.ymax) {
-                p.position.y = this.ymax - 1e-6;
-                p.velocity.y *= -0.5;
+            if (particle.position.y < this._yRange.min) {
+                particle.position.y = this._yRange.min + 1e-6;
+                particle.velocity.y *= -0.5;
+            } else if (particle.position.y > this._yRange.max) {
+                particle.position.y = this._yRange.max - 1e-6;
+                particle.velocity.y *= -0.5;
             }
 
-            this.grid.addParticleToCell(p);
-            p.reset();
+            this.grid.addParticleToCell(particle);
+            particle.reset();
         }
     }
 
@@ -329,12 +331,12 @@ class Engine {
     getParticlePosition(i, position) {
         const p = this.particles[i];
         position.x = p.position.x * domainScale;
-        position.y = p.position.y * domainScale - this.ymin;
+        position.y = p.position.y * domainScale - this._yRange.min;
     }
 
     forceVelocity(x, y, Vx, Vy) {
         this.forceVelocityOn = true;
-        this.forceVelocityCell = this.grid.getCellFromLocation(x / domainScale, this.ymax - y / domainScale);
+        this.forceVelocityCell = this.grid.getCellFromLocation(x / domainScale, this._yRange.max - y / domainScale);
         this.forceVelocity.set(Vx, -Vy);
     }
 
@@ -361,85 +363,6 @@ class ParticleRenderModel extends MathPhysicsModelBehavior {
         this.position.set(x, y);
     }
 }
-
-const simulation = Simulation
-    .with({
-        htmlDivId: 'sphHydrodynamicsContainer',
-        viewport: { aspectRatio: '2/3', parameterMenuCollapsed: true },
-        camera: {
-            position: new Vec3(0, 0, WORLD_HEIGHT),
-            orthographic: true,
-            controls: false
-        },
-        scene: { backgroundColor: new Colour(0x1a1a1a), scale: 1 },
-        lighting: { enabled: false },
-        infoPanel: {
-            text: '<strong>💧 Smoothed Particle Hydrodynamics</strong><br/>' +
-                'A particle-based fluid model using density, pressure, viscosity and a Verlet-style integrator.<br/>' +
-                'Drag the sliders to explore how the parameters affect the fluid.'
-        }
-    })
-    .withMouseClickEventListener()
-    .runsEvery(0.01)
-    .onStep(() => engine.doPhysics())
-    .onFrame(synchronizeParticlePositions)
-    .onReset(initializeEngine);
-
-const engine = new Engine();
-const particlePosition = new Vec2();
-const particleModels = [];
-const particleViews = [];
-let particleCount = DEFAULT_PARTICLE_COUNT;
-let particleColor = new Colour(0x00ff00);
-
-function initializeEngine() {
-    const width = simulation.width;
-    const height = simulation.height;
-
-    engine.init(width, height, 0, width, 0, height);
-    engine.setNumParticles(particleCount);
-    engine.unpause();
-}
-
-function synchronizeParticlePositions() {
-    const width = simulation.width;
-    const height = simulation.height;
-    const worldWidth = WORLD_HEIGHT * width / height;
-    const radius = PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / height;
-
-    for (let i = 0; i < particleModels.length; i++) {
-        const visible = i < particleCount;
-        particleViews[i].visible = visible;
-        if (!visible)
-            continue;
-        engine.getParticlePosition(i, particlePosition);
-        particleModels[i].updatePosition(
-            particlePosition.x / width * worldWidth - worldWidth / 2,
-            particlePosition.y / height * WORLD_HEIGHT - WORLD_HEIGHT / 2
-        );
-        particleModels[i].radius = radius;
-    }
-}
-
-function createParticleViews(count = particleCount) {
-    for (let i = particleModels.length; i < count; i++) {
-        const model = new ParticleRenderModel(PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / simulation.height);
-        const view = new Circle({
-            fillColor: particleColor,
-            borderColor: Colour.Black,
-            borderWidth: 0.05,
-            segments: 8
-        });
-
-        particleModels.push(model);
-        particleViews.push(view);
-        view.visible = i < particleCount;
-        simulation.bind(model.alwaysWith(view));
-    }
-}
-
-initializeEngine();
-createParticleViews();
 
 const controls = {
     particleCount: new Slider('Num particles')
@@ -489,10 +412,6 @@ const controls = {
         .onInput(value => engine.setGravity(gravity.x, value))
 };
 
-function updateFluidProperties() {
-    engine.setFluidProperties(mass, k, rho0, mu);
-}
-
 const colorRegistry = new Registry({
     label: 'Particle color',
     entries: {
@@ -513,7 +432,27 @@ const colorControl = new DropdownMenu()
             view.fillColor = particleColor;
     });
 
-simulation
+const simulation = Simulation
+    .with({
+        htmlDivId: 'sphHydrodynamicsContainer',
+        viewport: { aspectRatio: '5/6', parameterMenuCollapsed: false },
+        camera: {
+            position: new Vec3(0, 0, WORLD_HEIGHT * 1.025),
+            orthographic: true,
+            controls: false
+        },
+        lighting: { enabled: false },
+        infoPanel: {
+            text: '<strong>💧 Smoothed Particle Hydrodynamics</strong><br/>' +
+                '📌 A particle-based fluid model using density, pressure, viscosity and a Verlet-style integrator.<br/>' +
+                '©️  Hydrodynamics based on <a href="https://github.com/mjwatkins2/WebGL-SPH">Smoothed Particle Hydrodynamics Fluid Simulation with WebGL</a><br/>.'
+        }
+    })
+    .withMouseClickEventListener()
+    .runsEvery(0.01)
+    .onStep(() => engine.doPhysics())
+    .onFrame(synchronizeParticlePositions)
+    .onReset(initializeEngine)
     .append(controls.particleCount)
     .append(controls.mass)
     .append(controls.gasConstant)
@@ -547,5 +486,63 @@ simulation
             synchronizeParticlePositions();
         }));
 
+const engine = new Engine();
+const particlePosition = new Vec2();
+const particleModels = [];
+const particleViews = [];
+let particleCount = DEFAULT_PARTICLE_COUNT;
+let particleColor = new Colour(0x00ff00);
+
+function updateFluidProperties() {
+    engine.setFluidProperties(mass, k, rho0, mu);
+}
+
+function initializeEngine() {
+    const width = simulation.width;
+    const height = simulation.height;
+
+    engine.init(width, height, 0, width, 0, height);
+    engine.setNumParticles(particleCount);
+    engine.unpause();
+}
+
+function synchronizeParticlePositions() {
+    const width = simulation.width;
+    const height = simulation.height;
+    const worldWidth = WORLD_HEIGHT * width / height;
+    const radius = PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / height;
+
+    for (let i = 0; i < particleModels.length; i++) {
+        const visible = i < particleCount;
+        particleViews[i].visible = visible;
+        if (!visible)
+            continue;
+        engine.getParticlePosition(i, particlePosition);
+        particleModels[i].updatePosition(
+            particlePosition.x / width * worldWidth - worldWidth / 2,
+            particlePosition.y / height * WORLD_HEIGHT - WORLD_HEIGHT / 2
+        );
+        particleModels[i].radius = radius;
+    }
+}
+
+function createParticleViews(count = particleCount) {
+    for (let i = particleModels.length; i < count; i++) {
+        const model = new ParticleRenderModel(PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / simulation.height);
+        const view = new Circle({
+            fillColor: particleColor,
+            borderColor: Colour.Black,
+            borderWidth: 0.05,
+            segments: 8
+        });
+
+        particleModels.push(model);
+        particleViews.push(view);
+        view.visible = i < particleCount;
+        simulation.bind(model.alwaysWith(view));
+    }
+}
+
+initializeEngine();
+createParticleViews();
 updateFluidProperties();
-simulation.appendStartStopResetUI().start();

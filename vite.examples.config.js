@@ -60,6 +60,7 @@ export default defineConfig({
                 orbitals: path.resolve(__dirname, 'examples/quantumphysics/scenes/orbitals.js'),
                 orbits: path.resolve(__dirname, 'examples/mathematics/scenes/orbits.js'),
                 parametric_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/parametric_surfaces.js'),
+                particle_hydrodynamics: path.resolve(__dirname, 'examples/fluiddynamics/scenes/particle_hydrodynamics.js'),
                 pendulum_wave: path.resolve(__dirname, 'examples/waves/scenes/pendulum_wave.js'),
                 phyllotaxis: path.resolve(__dirname, 'examples/nature/scenes/phyllotaxis.js'),
                 plane_wave: path.resolve(__dirname, 'examples/quantumphysics/scenes/plane_wave.js'),
