@@ -1,3 +1,10 @@
+/*
+ * Adapted from scripts/simulation.js in
+ * https://github.com/krispy-kenay/particle-hydrodynamics
+ * Original project copyright and licensing: GNU GPL v3.0 (see LICENSE-GPL-3.0.txt
+ * in this directory). This file is a modified version; Helion rendering is new.
+ */
+
 import { Color, BufferGeometry, Float32BufferAttribute, Points, PointsMaterial } from 'three';
 import {
     Button, Checkbox, MathPhysicsModelBehavior, Range, Simulation, Slider, Vec3
