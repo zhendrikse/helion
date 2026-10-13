@@ -1,3 +1,11 @@
+import {
+    Circle, Colour, MathPhysicsModelBehavior, Simulation, Vec2, Vec3
+} from '../../../src/index.js';
+
+//
+// https://github.com/mjwatkins2/WebGL-SPH
+//
+
 let Engine = (function() {
 
     function Particle() {
@@ -12,7 +20,6 @@ let Engine = (function() {
 
         // Note that making these properties into an array did not improve performance,
         // at least not as benchmarked in Chrome.
-
         this.reset = function() {
             this.Fx = 0;
             this.Fy = 0;
@@ -44,12 +51,12 @@ let Engine = (function() {
             this.cells = new Array(numCells);
             for (let i = 0; i < numCells; i++)
                 this.cells[i] = new Cell();
-            for (let i = 0; i < nx; i++) {
+
+            for (let i = 0; i < nx; i++)
                 for (let j = 0; j < ny; j++) {
                     let c = this.cells[i+j*nx]
                     this.computeNeighbors(i, j, c);
                 }
-            }
         }
 
         /* References are stored to half of the neighboring cells of center cell C:
@@ -61,9 +68,9 @@ let Engine = (function() {
         */
         this.computeNeighbors = function(i, j, c) {
             let idx = i + j*this.nx;
-            if (i != this.nx - 1)
+            if (i !== this.nx - 1)
                 c.halfNeighbors.push(this.cells[idx + 1]);
-            if (j != this.ny - 1) {
+            if (j !== this.ny - 1) {
                 for (let i2 = Math.max(0, i-1); i2 <= Math.min(this.nx-1, i+1); i2++)
                     c.halfNeighbors.push(this.cells[idx + this.nx + i2 - i]);
             }
@@ -200,18 +207,18 @@ let Engine = (function() {
 
     function AddWallForces(p1) {
         if (p1.x < xmin + h) {
-            let r = p1.x - xmin;
+            const r = p1.x - xmin;
             p1.Fx -= m * p1.P / p1.rho * Wspiky_grad2(r) * r;
         }
         else if (p1.x > xmax - h) {
-            let r = xmax - p1.x;
+            const r = xmax - p1.x;
             p1.Fx += m * p1.P / p1.rho * Wspiky_grad2(r) * r;
         }
         if (p1.y < ymin + h) {
-            let r = p1.y - ymin;
+            const r = p1.y - ymin;
             p1.Fy -= m * p1.P / p1.rho * Wspiky_grad2(r) * r;
         } else if (p1.y > ymax - h) {
-            let r = ymax - p1.y;
+            const r = ymax - p1.y;
             p1.Fy += m * p1.P / p1.rho * Wspiky_grad2(r) * r;
         }
     }
@@ -314,9 +321,9 @@ let Engine = (function() {
 
         setNumParticles: function(n) {
             let i0 = 0;
-            if (particles === undefined) {
+
+            if (particles === undefined)
                 particles = new Array(n);
-            }
             else {
                 if (n < particles.length) {
                     grid.hardreset();
@@ -324,6 +331,7 @@ let Engine = (function() {
                 }
                 i0 = particles.length;
             }
+
             for (let i = i0; i < n; i++) {
                 particles[i] = new Particle();
                 particles[i].rho = m * Wpoly6(0);
@@ -372,11 +380,6 @@ let Engine = (function() {
     }
 })();
 
-
-import {
-    Circle, Colour, MathPhysicsModelBehavior, Simulation, Vec2, Vec3
-} from '../../../src/index.js';
-
 const PARTICLE_COUNT = 1000;
 const WORLD_HEIGHT = 20;
 const PARTICLE_RADIUS_IN_PIXELS = 5;
@@ -393,23 +396,28 @@ class ParticleRenderModel extends MathPhysicsModelBehavior {
     }
 }
 
-const simulation = Simulation.with({
-    htmlDivId: 'sphHydrodynamicsContainer',
-    viewport: { aspectRatio: '3/2', parameterMenuCollapsed: true },
-    camera: {
-        position: new Vec3(0, 0, WORLD_HEIGHT),
-        orthographic: true,
-        controls: false
-    },
-    scene: { backgroundColor: new Colour(0x1a1a1a), scale: 1 },
-    lighting: { enabled: false },
-    headUpDisplay: true,
-    infoPanel: {
-        text:
-            '<strong>SPH particle hydrodynamics</strong><br/>' +
-            'A particle-based fluid simulation using smoothed particle hydrodynamics.'
-    }
-});
+const simulation = Simulation
+    .with({
+        htmlDivId: 'sphHydrodynamicsContainer',
+        viewport: { aspectRatio: '2/3', parameterMenuCollapsed: true },
+        camera: {
+            position: new Vec3(0, 0, WORLD_HEIGHT),
+            orthographic: true,
+            controls: false
+        },
+        scene: { backgroundColor: new Colour(0x1a1a1a), scale: 1 },
+        lighting: { enabled: false },
+        infoPanel: {
+            text: '<strong>💧 Smoothed Particle Hydrodynamics</strong><br/>' +
+                'A particle-based fluid model using density, pressure, viscosity and a Verlet-style integrator.<br/>' +
+                'Drag the sliders to explore how the parameters affect the fluid.'
+        }
+    })
+    .withMouseClickEventListener()
+    .runsEvery(0.01)
+    .onStep(() => engine.doPhysics())
+    .onFrame(synchronizeParticlePositions)
+    .onReset(initializeEngine);
 
 const engine = Engine;
 const particlePosition = new Vec2();
@@ -461,10 +469,3 @@ function createParticleViews() {
 initializeEngine();
 createParticleViews();
 
-simulation
-    .runsEvery(0.01)
-    .onStep(() => engine.doPhysics())
-    .onFrame(synchronizeParticlePositions)
-    .appendStartStopResetUI()
-    .onReset(initializeEngine)
-    .start();
