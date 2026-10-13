@@ -258,7 +258,7 @@ Simulation.with({
     .maxOutCpu(() => curlField.evolve(solver), 20, 30)
     .appendStartStopResetUI()
     .bind(curlField.alwaysWith(curlView))
-    //.bind(curlField.alwaysWith(new StreamlinesView({scaleFactor: CELL_SIZE, color: Colour.White})))
+    .bind(curlField.alwaysWith(new StreamlinesView({scaleFactor: CELL_SIZE, color: Colour.White})))
     .bind(barrierField.onceWith(barrierView))
     .onReset(reset)
     .append(new DropdownMenu()
