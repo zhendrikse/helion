@@ -1,5 +1,5 @@
 import {
-    AxialSymmetricBody, Button, Circle, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
+    RadialSymmetricBody, Button, Circle, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
     Interval, Range, Registry, Simulation, Slider, Vec2, Vec3
 } from '../../../src/index.js';
 import { LinearSRGBColorSpace} from "three";
@@ -95,19 +95,22 @@ class Grid {
         return this._cells[Symbol.iterator]();
     }
 
-    init(nx, ny, width, height) {
-        this._nx = nx;
-        this._ny = ny;
-        this._width = width;
-        this._height = height;
-        const numCells = nx * ny;
+    init() {
+        const xlimit = simulation.width / domainScale;
+        const ylimit = simulation.height / domainScale;
+
+        this._nx = Math.floor(xlimit / gridCellSize);
+        this._ny = Math.floor(ylimit / gridCellSize);
+        this._width = xlimit;
+        this._height = ylimit;
+        const numCells = this._nx * this._ny;
         this._cells = new Array(numCells);
         for (let i = 0; i < numCells; i++)
             this._cells[i] = new Cell();
 
-        for (let i = 0; i < nx; i++)
-            for (let j = 0; j < ny; j++)
-                this._computeNeighbors(i, j, this._cells[i + j * nx]);
+        for (let i = 0; i < this._nx; i++)
+            for (let j = 0; j < this._ny; j++)
+                this._computeNeighbors(i, j, this._cells[i + j * this._nx]);
     }
 
     /**
@@ -182,8 +185,6 @@ class SPHSolver {
         this._xRange = new Interval(0, 1);
         this._yRange = new Interval(0, 1);
 
-        this.xlimit = 0;
-        this.ylimit = 0;
         this.forceVelocityOn = false;
         this.forceVelocityCell = null;
         this.forceVelocityVector = new Vec2(0, 0);
@@ -199,37 +200,30 @@ class SPHSolver {
     entries() { return this._particles.entries(); }
 
     initialize() {
-        const width = simulation.width;
-        const height = simulation.height;
-        this.xlimit = width / domainScale;
-        this.ylimit = height / domainScale;
-
         const left = 0;
         const bottom = 0;
-        this._xRange = new Interval(left / domainScale, width / domainScale);
-        this._yRange = new Interval(bottom / domainScale, height / domainScale);
-
-        const numGridCellsX = Math.floor(this.xlimit / gridCellSize);
-        const numGridCellsY = Math.floor(this.ylimit / gridCellSize);
-        grid.init(numGridCellsX, numGridCellsY, this.xlimit, this.ylimit); // TODO haal dit uit de solver
+        const xlimit = simulation.width / domainScale;
+        const ylimit = simulation.height / domainScale;
+        this._xRange = new Interval(left / domainScale, xlimit);
+        this._yRange = new Interval(bottom / domainScale, ylimit);
 
         this._particles = [];
         this.setNumParticles(grid, particleCount);
     }
 
     resize(left, right, bottom, top) {
-        this._xRange = new Interval(Math.max(left / domainScale, 0), Math.min(right / domainScale, this.xlimit));
-        this._yRange = new Interval(Math.max(bottom / domainScale, 0), Math.min(top / domainScale, this.ylimit));
+        const xlimit = simulation.width / domainScale;
+        const ylimit = simulation.height / domainScale;
+        this._xRange = new Interval(Math.max(left / domainScale, 0), Math.min(right / domainScale, xlimit));
+        this._yRange = new Interval(Math.max(bottom / domainScale, 0), Math.min(top / domainScale, ylimit));
     }
 
     setNumParticles(grid, n) {
-        let i0 = 0;
-
         if (n < this._particles.length) {
             grid.hardReset();
             this._particles.length = n;
         }
-        i0 = this._particles.length;
+        const i0 = this._particles.length;
 
         for (let i = i0; i < n; i++) {
             this._particles[i] = new Particle({
@@ -490,7 +484,10 @@ const simulation = Simulation
         const pointerY = Math.max(0, Math.min(simulation.height - 1, (0.5 - y) * simulation.height));
         solver.forceVelocity(grid, pointerX, pointerY, e.movementX, e.movementY);
     })
-    .onReset(() => solver.initialize())
+    .onReset(() => {
+        solver.initialize();
+        grid.init();
+    })
     .append(controls.gravityX)
     .append(controls.gravityY)
     .append(controls.particleCount)
@@ -526,7 +523,7 @@ const simulation = Simulation
         }));
 
 const particlePosition = new Vec2();
-/** @type {AxialSymmetricBody[]} */
+/** @type {RadialSymmetricBody[]} */
 const particleModels = [];
 /** @type {Circle[]} */
 const particleViews = [];
@@ -570,7 +567,7 @@ function synchronizeParticlePositions() {
 
 function createParticleViews(count = particleCount) {
     for (let i = particleModels.length; i < count; i++) {
-        const model = new AxialSymmetricBody({
+        const model = new RadialSymmetricBody({
             radius: PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / simulation.height
         });
         const view = new Circle({
@@ -588,6 +585,7 @@ function createParticleViews(count = particleCount) {
 }
 
 solver.initialize();
+grid.init();
 createParticleViews();
 updateFluidProperties();
 synchronizeParticlePositions();
