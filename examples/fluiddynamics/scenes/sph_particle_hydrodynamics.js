@@ -7,7 +7,7 @@
 
 import { Color, BufferGeometry, Float32BufferAttribute, Points, PointsMaterial } from 'three';
 import {
-    Button, Checkbox, MathPhysicsModelBehavior, Range, Simulation, Slider, Vec3
+    Button, MathPhysicsModelBehavior, Range, Simulation, Slider, Vec3
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
 
