@@ -1,4 +1,3 @@
-import { VelocityNode } from 'three/src/nodes/Nodes.js';
 import {
     AxialSymmetricBody, Button, Circle, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
     Interval, Range, Registry, Simulation, Slider, Vec2, Vec3
@@ -158,7 +157,6 @@ function Wspiky_grad2(r) {
     return Wspiky_grad_coeff * temp * temp / r;
 }
 
-
 const Wvisc_lapl= (/** @type {number} */ r) => Wvisc_lapl_coeff * (1 - r / h);
 
 class Engine {
@@ -181,9 +179,9 @@ class Engine {
         this._forceVector = new Vec2();
     }
 
-    /** @returns {ArrayIterator<Particle>} */
-    [Symbol.iterator]() {
-        return this._particles[Symbol.iterator]();
+    /** @returns {ArrayIterator<[number, Particle]>} */
+    entries() {
+        return this._particles.entries();
     }
 
     init(width, height, left, right, bottom, top) {
@@ -529,8 +527,9 @@ const normalizer = new FixedIntervalNormalizer(new Interval(0, SPEED_COLOR_MAX))
 const colorMapper = ColorMappers.get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace});
 const colour = new Colour();
 function updateParticleColors() {
-    for (let i = 0; i < particleCount; i++) {
-        colorMapper.map(normalizer.normalize(engine._particles[i].speed), colour)
+    let i, particle;
+    for ([i, particle] of engine.entries()) {
+        colorMapper.map(normalizer.normalize(particle.speed), colour)
         particleViews[i].fillColor = colour;
     }
 }
