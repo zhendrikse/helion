@@ -15,20 +15,6 @@ const domainScale = 30;
 const gridCellSize = 1;
 const INIT_MAX_PARTICLES_IN_CELL = 50;
 
-const h = 1;
-const h2 = h * h;
-const h5 = Math.pow(h, 5);
-const h6 = Math.pow(h, 6);
-const h9 = Math.pow(h, 9);
-const Wpoly6_coeff = 315.0 / (64 * Math.PI * h9);
-const Wspiky_grad_coeff = -45.0 / (Math.PI * h6);
-const Wvisc_lapl_coeff = 45.0 / (Math.PI * h5);
-
-let mass = 1.0;
-let k = 120;
-let rho0 = 3.75;
-let mu = 3;
-
 class Particle {
     /**
      * @param {{
@@ -59,11 +45,6 @@ class Particle {
     }
 
     get speed() { return Math.hypot(this.velocity.x, this.velocity.y); }
-
-    reset() {
-        this.force.set(0, 0);
-        this.rho = mass * Wpoly6(0);
-    }
 }
 
 class Cell {
@@ -160,41 +141,61 @@ class Grid {
     evolve(solver, dt) { solver.step(this, dt); }
 }
 
-function Wpoly6(rSquared) {
-    const temp = h2 - rSquared;
-    return Wpoly6_coeff * temp * temp * temp;
-}
-
-function Wspiky_grad2(r) {
-    const temp = h - r;
-    return Wspiky_grad_coeff * temp * temp / r;
-}
-
-const Wvisc_lapl= (/** @type {number} */ r) => Wvisc_lapl_coeff * (1 - r / h);
-
 const grid = new Grid();
 
 class SPHSolver {
+    static Wpoly6(hSquared, rSquared, coefficient) {
+        const temp = hSquared - rSquared;
+        return coefficient * temp * temp * temp;
+    }
+
+    static Wvisc_lapl = (h, r, coefficient) => coefficient * (1 - r / h);
+
+    static Wspiky_grad2(smoothingLength, r, coefficient) {
+        const temp = smoothingLength - r;
+        return coefficient * temp * temp / r;
+    }
+
     constructor({
-        gravity = new Vec2(0, -20)
+        gravity = new Vec2(0, -20),
+        restDensity = 4.5,
+        smoothingLength = 1,
+        viscosity = 3,
+        gasConstant = 120,
+        mass = 1
     } = {}) {
         this._gravity = gravity;
+        this._rho_0 = restDensity;
+        this._mu = viscosity;
+        this._k = gasConstant;
+        this._mass = mass;
+
+        this._h = smoothingLength;
+        this._hSquared = smoothingLength * smoothingLength;
+        this._Wpoly6_coeff = 315.0 / (64 * Math.PI * Math.pow(smoothingLength, 9));
+        this._Wspiky_grad_coeff = -45.0 / (Math.PI * Math.pow(smoothingLength, 6));
+        this._Wvisc_lapl_coeff = 45.0 / (Math.PI * Math.pow(smoothingLength, 5));
 
         /** @type {Particle[]} */
         this._particles = [];
         this._xRange = new Interval(0, 1);
         this._yRange = new Interval(0, 1);
 
+        // For interaction with mouse movements
         this.forceVelocityOn = false;
         this.forceVelocityCell = null;
         this.forceVelocityVector = new Vec2(0, 0);
 
+        // Scratch vectors
         this._positionVector = new Vec2();
         this._velocityVector = new Vec2();
         this._forceVector = new Vec2();
     }
 
     get gravity() { return this._gravity; }
+    set restDensity(value) { this._rho_0 = value; }
+    set viscosity(value) { this._mu = value; }
+    set gasConstant(value) {this._k = value; }
 
     /** @returns {ArrayIterator<[number, Particle]>} */
     entries() { return this._particles.entries(); }
@@ -230,12 +231,12 @@ class SPHSolver {
                 position: new Vec2(Math.random() * this._xRange.range + this._xRange.min, Math.random() * this._yRange.range + this._yRange.min),
                 velocity: new Vec2(Math.random() - 0.5, Math.random() - 0.5)
             });
-            this._particles[i].rho = mass * Wpoly6(0);
+            this._particles[i].rho = this._mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
         }
     }
 
     _calcDensity(grid) {
-        for (const cell of grid) {
+        for (const cell of grid)
             for (let i = 0; i < cell.numParticles; i++) {
                 const particle = cell._particles[i];
                 for (let j = i + 1; j < cell.numParticles; j++)
@@ -245,31 +246,31 @@ class SPHSolver {
                     for (let j = 0; j < neighbor.numParticles; j++)
                         this._addDensity(particle, neighbor._particles[j]);
 
-                particle.P = Math.max(k * (particle.rho - rho0), 0);
+                particle.P = Math.max(this._k * (particle.rho - this._rho_0), 0);
             }
-        }
     }
 
     _addDensity(particle1, particle2) {
         this._positionVector.copy(particle2.position).sub(particle1.position);
-        const r2 = this._positionVector.dot(this._positionVector);
-        if (r2 >= h2)
+        const rSquared = this._positionVector.dot(this._positionVector);
+        if (rSquared >= this._hSquared)
             return;
 
-        const temp = mass * Wpoly6(r2);
+        const temp = this._mass * SPHSolver.Wpoly6(this._hSquared, rSquared, this._Wpoly6_coeff);
         particle1.rho += temp;
         particle2.rho += temp;
     }
 
     _addForces(particle1, particle2) {
         this._positionVector.copy(particle2.position).sub(particle1.position);
-        const r2 = this._positionVector.dot(this._positionVector);
-        if (r2 >= h2)
+        const rSquared = this._positionVector.dot(this._positionVector);
+        if (rSquared >= this._hSquared)
             return;
 
-        const r = Math.sqrt(r2) + 1e-6;
-        const temp1 = mass * (particle2.P + particle1.P) / (2 * particle2.rho) * Wspiky_grad2(r);
-        const temp2 = mu * mass * Wvisc_lapl(r) / particle2.rho;
+        const r = Math.sqrt(rSquared) + 1e-6;
+        const temp1 = this._mass * (particle2.P + particle1.P) / (2 * particle2.rho) *
+            SPHSolver.Wspiky_grad2(this._h, r, this._Wspiky_grad_coeff);
+        const temp2 = this._mu * this._mass * SPHSolver.Wvisc_lapl(this._h, r, this._Wvisc_lapl_coeff) / particle2.rho;
         this._positionVector.copy(particle2.position);
         this._velocityVector.copy(particle2.velocity);
         this._forceVector.copy(this._positionVector.sub(particle1.position).multiplyScalar(temp1));
@@ -294,19 +295,21 @@ class SPHSolver {
     }
 
     _addWallForces(particle) {
+        const h = this._h;
+        const c = this._Wspiky_grad_coeff;
         if (particle.position.x < this._xRange.min + h) {
             const r = particle.position.x - this._xRange.min;
-            particle.force.x -= mass * particle.P / particle.rho * Wspiky_grad2(r) * r;
+            particle.force.x -= this._mass * particle.P / particle.rho * SPHSolver.Wspiky_grad2(h, r, c) * r;
         } else if (particle.position.x > this._xRange.max - h) {
             const r = this._xRange.max - particle.position.x;
-            particle.force.x += mass * particle.P / particle.rho * Wspiky_grad2(r) * r;
+            particle.force.x += this._mass * particle.P / particle.rho * SPHSolver.Wspiky_grad2(h, r, c) * r;
         }
         if (particle.position.y < this._yRange.min + h) {
             const r = particle.position.y - this._yRange.min;
-            particle.force.y -= mass * particle.P / particle.rho * Wspiky_grad2(r) * r;
+            particle.force.y -= this._mass * particle.P / particle.rho * SPHSolver.Wspiky_grad2(h, r, c) * r;
         } else if (particle.position.y > this._yRange.max - h) {
             const r = this._yRange.max - particle.position.y;
-            particle.force.y += mass * particle.P / particle.rho * Wspiky_grad2(r) * r;
+            particle.force.y += this._mass * particle.P / particle.rho * SPHSolver.Wspiky_grad2(h, r, c) * r;
         }
     }
 
@@ -350,7 +353,8 @@ class SPHSolver {
             particle.integrate(this._gravity, dt);
             this._boxBounce(particle);
             grid.addParticleToCell(particle);
-            particle.reset();
+            particle.force.set(0, 0);
+            particle.rho = this._mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
         }
     }
 
@@ -365,13 +369,6 @@ class SPHSolver {
     getParticlePosition(i, position) {
         position.copy(this._particles[i].position).multiplyScalar(domainScale);
         position.y -= this._yRange.min;
-    }
-
-    setFluidProperties(mass_, gasConstant, restDensity, viscosity) {
-        mass = mass_;
-        k = gasConstant;
-        rho0 = restDensity;
-        mu = viscosity;
     }
 }
 
@@ -389,31 +386,19 @@ const controls = {
     mass: new Slider('Particle mass')
         .withRange(new Range(1, 1000, 1))
         .withValue(1)
-        .onInput(value => {
-            mass = value;
-            updateFluidProperties();
-        }),
+        .onInput(value => solver.mass = value),
     gasConstant: new Slider('Gas constant')
         .withRange(new Range(1, 1000, 1))
         .withValue(120)
-        .onInput(value => {
-            k = value;
-            updateFluidProperties();
-        }),
+        .onInput(value => solver.gasConstant = value),
     restDensity: new Slider('Rest density')
         .withRange(new Range(0, 10, 0.1))
         .withValue(3.75)
-        .onInput(value => {
-            rho0 = value;
-            updateFluidProperties();
-        }),
+        .onInput(value => solver.restDensity = value),
     viscosity: new Slider('Viscosity')
         .withRange(new Range(0, 10, 0.1))
         .withValue(3)
-        .onInput(value => {
-            mu = value;
-            updateFluidProperties();
-        }),
+        .onInput(value => solver.viscosity = value),
     gravityX: new Slider('Gravity X')
         .withRange(new Range(-100, 100, 10))
         .withValue(0)
@@ -500,10 +485,6 @@ const simulation = Simulation
         .withText('Set defaults')
         .onClick(() => {
             particleCount = DEFAULT_PARTICLE_COUNT;
-            mass = 1;
-            k = 120;
-            rho0 = 3.75;
-            mu = 3;
             solver.gravity.set(0, -20);
             controls.particleCount.withValue(DEFAULT_PARTICLE_COUNT);
             controls.mass.withValue(1);
@@ -517,8 +498,12 @@ const simulation = Simulation
             colorUpdateCounter = 0;
             for (const view of particleViews)
                 view.fillColor = particleColor;
+
             solver.setNumParticles(grid, particleCount);
-            updateFluidProperties();
+            solver.restDensity = 4.5;
+            solver.viscosity = 3;
+            solver.gasConstant = 120;
+            solver.mass = 1;
             synchronizeParticlePositions();
         }));
 
@@ -531,8 +516,6 @@ let particleCount = DEFAULT_PARTICLE_COUNT;
 let particleColor = colorRegistry.get('Blue');
 let speedColoring = true;
 let colorUpdateCounter = 0;
-
-const updateFluidProperties = () => solver.setFluidProperties(mass, k, rho0, mu);
 
 const normalizer = new FixedIntervalNormalizer(new Interval(0, SPEED_COLOR_MAX));
 const colorMapper = ColorMappers.get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace});
@@ -574,7 +557,7 @@ function createParticleViews(count = particleCount) {
             fillColor: particleColor,
             borderColor: new Colour(0x131313),
             borderWidth: 0.15,
-            segments: 16
+            segments: 10
         });
 
         particleModels.push(model);
@@ -587,5 +570,4 @@ function createParticleViews(count = particleCount) {
 solver.initialize();
 grid.init();
 createParticleViews();
-updateFluidProperties();
 synchronizeParticlePositions();
