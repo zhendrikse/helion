@@ -30,6 +30,8 @@ class SPHParticle extends RadialSymmetricBody {
         this._acceleration = new Vec2();
     }
     get force() { return this._sphForce; }
+    get mass() { return this._state.mass; }
+    set mass(value) { this._state.mass = value; }
     get speed() { return Math.hypot(this.velocity.x, this.velocity.y); }
     integrate(gravity, dt) {
         this._acceleration.copy(this.force).multiplyScalar(1 / this.rho).add(gravity);
@@ -124,15 +126,18 @@ class Grid {
     getCellFromLocation(position) {
         const i = Math.floor(this._nx * position.x / this._width);
         const j = Math.floor(this._ny * position.y / this._height);
-        return this._cells[i + j * this._nx];
+        if (i < 0 || i >= this._nx || j < 0 || j >= this._ny)
+            return null;
+        return this._cells[i + j * this._nx] ?? null;
     }
 
     addParticleToCell(particle) {
         const cell = this.getCellFromLocation(particle.position);
-        if (cell === null)
-            console.warn("Undefined grid cell!");
-        else
-            cell._particles[cell.numParticles++] = particle;
+        if (!cell) {
+            console.warn("Particle is outside the SPH grid.", particle.position);
+            return;
+        }
+        cell._particles[cell.numParticles++] = particle;
     }
 
     evolve(solver, dt) { solver.step(this, dt); }
@@ -197,7 +202,7 @@ class SPHSolver {
     set viscosity(value) { this._mu = value; }
     set gasConstant(value) { this._k = value; }
 
-    /** @returns {ArrayIterator<[number, Particle]>} */
+    /** @returns {ArrayIterator<[number, SPHParticle]>} */
     entries() { return this._particles.entries(); }
 
     initialize() {
@@ -513,6 +518,7 @@ const simulation = Simulation
                 view.fillColor = particleColor;
 
             solver.setNumParticles(grid, particleCount);
+            createParticleViews();
             solver.restDensity = 3.75;
             solver.viscosity = 3;
             solver.gasConstant = 120;
