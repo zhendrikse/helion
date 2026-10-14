@@ -15,36 +15,33 @@ const domainScale = 30;
 const gridCellSize = 1;
 const INIT_MAX_PARTICLES_IN_CELL = 50;
 
-class Particle {
-    /**
-     * @param {{
-     * position?: Vec2
-     * velocity?: Vec2
-     * }} options
-     */
+class SPHParticle extends RadialSymmetricBody {
+    /** @param {{ position?: Vec2, velocity?: Vec2, mass?: number, radius?: number }} options */
     constructor({
         position = new Vec2(),
         velocity = new Vec2(),
+        mass = 1,
+        radius = PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / simulation.height
     } = {}) {
-        this.position = position.clone();
-        this.velocity = velocity.clone();
-        this.force = new Vec2(0, 0);
-
+        super({ position: position.clone(), velocity: velocity.clone(), mass, radius });
+        this._sphForce = new Vec2();
         this.rho = 0;
         this.P = 0;
-
         this._acceleration = new Vec2();
     }
-
+    get force() { return this._sphForce; }
+    get speed() { return Math.hypot(this.velocity.x, this.velocity.y); }
     integrate(gravity, dt) {
-        this._acceleration.set(this.force.x, this.force.y).multiplyScalar(1 / this.rho);
-        this._acceleration.add(gravity);
+        this._acceleration.copy(this.force).multiplyScalar(1 / this.rho).add(gravity);
         this.velocity.addScaledVector(this._acceleration, dt);
         this.position.addScaledVector(this.velocity, dt);
         this.position.addScaledVector(this._acceleration, .5 * dt * dt);
     }
-
-    get speed() { return Math.hypot(this.velocity.x, this.velocity.y); }
+    resetSphState() {
+        this.force.set(0, 0);
+        this.rho = 0;
+        this.P = 0;
+    }
 }
 
 class Cell {
@@ -176,8 +173,9 @@ class SPHSolver {
         this._Wspiky_grad_coeff = -45.0 / (Math.PI * Math.pow(smoothingLength, 6));
         this._Wvisc_lapl_coeff = 45.0 / (Math.PI * Math.pow(smoothingLength, 5));
 
-        /** @type {Particle[]} */
+        /** @type {SPHParticle[]} */
         this._particles = [];
+        this._activeParticleCount = 0;
         this._xRange = new Interval(0, 1);
         this._yRange = new Interval(0, 1);
 
@@ -193,9 +191,11 @@ class SPHSolver {
     }
 
     get gravity() { return this._gravity; }
+    get particleCount() { return this._activeParticleCount; }
+    set mass(value) { this._mass = value; }
     set restDensity(value) { this._rho_0 = value; }
     set viscosity(value) { this._mu = value; }
-    set gasConstant(value) {this._k = value; }
+    set gasConstant(value) { this._k = value; }
 
     /** @returns {ArrayIterator<[number, Particle]>} */
     entries() { return this._particles.entries(); }
@@ -208,8 +208,7 @@ class SPHSolver {
         this._xRange = new Interval(left / domainScale, xlimit);
         this._yRange = new Interval(bottom / domainScale, ylimit);
 
-        this._particles = [];
-        this.setNumParticles(grid, particleCount);
+        this.setNumParticles(grid, particleCount, true);
     }
 
     resize(left, right, bottom, top) {
@@ -219,19 +218,34 @@ class SPHSolver {
         this._yRange = new Interval(Math.max(bottom / domainScale, 0), Math.min(top / domainScale, ylimit));
     }
 
-    setNumParticles(grid, n) {
-        if (n < this._particles.length) {
-            grid.hardReset();
-            this._particles.length = n;
-        }
-        const i0 = this._particles.length;
+    setNumParticles(grid, n, reset = false) {
+        grid.hardReset();
+        const previousCount = this._activeParticleCount;
+        this._activeParticleCount = n;
 
-        for (let i = i0; i < n; i++) {
-            this._particles[i] = new Particle({
-                position: new Vec2(Math.random() * this._xRange.range + this._xRange.min, Math.random() * this._yRange.range + this._yRange.min),
-                velocity: new Vec2(Math.random() - 0.5, Math.random() - 0.5)
-            });
-            this._particles[i].rho = this._mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
+        for (let i = this._particles.length; i < n; i++)
+            this._particles.push(new SPHParticle({
+                position: new Vec2(
+                    Math.random() * this._xRange.range + this._xRange.min,
+                    Math.random() * this._yRange.range + this._yRange.min
+                ),
+                velocity: new Vec2(Math.random() - 0.5, Math.random() - 0.5),
+                mass: this._mass
+            }));
+
+        for (let i = 0; i < n; i++) {
+            const particle = this._particles[i];
+            if (reset || i >= previousCount) {
+                particle.position.set(
+                    Math.random() * this._xRange.range + this._xRange.min,
+                    Math.random() * this._yRange.range + this._yRange.min
+                );
+                particle.velocity.set(Math.random() - 0.5, Math.random() - 0.5);
+                particle.resetSphState();
+            }
+            particle.mass = this._mass;
+            particle.rho = this._mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
+            grid.addParticleToCell(particle);
         }
     }
 
@@ -349,7 +363,8 @@ class SPHSolver {
     }
 
     _updatePosition(grid, dt) {
-        for (const particle of this._particles) {
+        for (let i = 0; i < this._activeParticleCount; i++) {
+            const particle = this._particles[i];
             particle.integrate(this._gravity, dt);
             this._boxBounce(particle);
             grid.addParticleToCell(particle);
@@ -366,10 +381,7 @@ class SPHSolver {
         this._updatePosition(grid, dt);
     }
 
-    getParticlePosition(i, position) {
-        position.copy(this._particles[i].position).multiplyScalar(domainScale);
-        position.y -= this._yRange.min;
-    }
+    particleAt(index) { return this._particles[index]; }
 }
 
 const solver = new SPHSolver();
@@ -379,9 +391,9 @@ const controls = {
         .withValue(DEFAULT_PARTICLE_COUNT)
         .onChange(value => {
             particleCount = Math.round(value / 10) * 10;
-            createParticleViews(particleCount);
             solver.setNumParticles(grid, particleCount);
-            synchronizeParticlePositions();
+            createParticleViews();
+            synchronizeParticleViews();
         }),
     mass: new Slider('Particle mass')
         .withRange(new Range(1, 1000, 1))
@@ -458,7 +470,6 @@ const simulation = Simulation
     .runsEvery(0.01)
     .onStep((_clock, dt) => {
         grid.evolve(solver, dt);
-        synchronizeParticlePositions();
         if (speedColoring && ++colorUpdateCounter % COLOR_UPDATE_INTERVAL === 0)
             updateParticleColors();
     })
@@ -470,8 +481,10 @@ const simulation = Simulation
         solver.forceVelocity(grid, pointerX, pointerY, e.movementX, e.movementY);
     })
     .onReset(() => {
-        solver.initialize();
         grid.init();
+        solver.initialize();
+        createParticleViews();
+        synchronizeParticleViews();
     })
     .append(controls.gravityX)
     .append(controls.gravityY)
@@ -500,17 +513,14 @@ const simulation = Simulation
                 view.fillColor = particleColor;
 
             solver.setNumParticles(grid, particleCount);
-            solver.restDensity = 4.5;
+            solver.restDensity = 3.75;
             solver.viscosity = 3;
             solver.gasConstant = 120;
             solver.mass = 1;
-            synchronizeParticlePositions();
+            synchronizeParticleViews();
         }));
 
-const particlePosition = new Vec2();
-/** @type {RadialSymmetricBody[]} */
-const particleModels = [];
-/** @type {Circle[]} */
+/** @type {SPHParticleView[]} */
 const particleViews = [];
 let particleCount = DEFAULT_PARTICLE_COUNT;
 let particleColor = colorRegistry.get('Blue');
@@ -528,46 +538,38 @@ function updateParticleColors() {
     }
 }
 
-function synchronizeParticlePositions() {
-    const width = simulation.width;
-    const height = simulation.height;
-    const worldWidth = WORLD_HEIGHT * width / height;
-    const radius = PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / height;
-
-    for (let i = 0; i < particleModels.length; i++) {
-        const visible = i < particleCount;
-        particleViews[i].visible = visible;
-        if (!visible)
-            continue;
-        solver.getParticlePosition(i, particlePosition);
-        particleModels[i].position.set(
-            particlePosition.x / width * worldWidth - worldWidth / 2,
-            particlePosition.y / height * WORLD_HEIGHT - WORLD_HEIGHT / 2
+class SPHParticleView extends Circle {
+    synchronizeWith(particle) {
+        const worldWidth = WORLD_HEIGHT * simulation.width / simulation.height;
+        const position = new Vec2(
+            particle.position.x * domainScale * WORLD_HEIGHT / simulation.height - worldWidth / 2,
+            particle.position.y * domainScale * WORLD_HEIGHT / simulation.height - WORLD_HEIGHT / 2
         );
-        particleModels[i].radius = radius;
+        super.synchronizeWith({ position, radius: particle.radius });
     }
 }
 
-function createParticleViews(count = particleCount) {
-    for (let i = particleModels.length; i < count; i++) {
-        const model = new RadialSymmetricBody({
-            radius: PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / simulation.height
-        });
-        const view = new Circle({
+function synchronizeParticleViews() {
+    for (let i = 0; i < particleViews.length; i++)
+        particleViews[i].visible = i < solver.particleCount;
+}
+
+function createParticleViews() {
+    for (let i = particleViews.length; i < solver.particleCount; i++) {
+        const particle = solver.particleAt(i);
+        const view = new SPHParticleView({
             fillColor: particleColor,
             borderColor: new Colour(0x131313),
             borderWidth: 0.15,
             segments: 10
         });
-
-        particleModels.push(model);
         particleViews.push(view);
         view.visible = i < particleCount;
-        simulation.bind(model.alwaysWith(view));
+        simulation.bind(particle.alwaysWith(view));
     }
+    synchronizeParticleViews();
 }
 
-solver.initialize();
 grid.init();
+solver.initialize();
 createParticleViews();
-synchronizeParticlePositions();
