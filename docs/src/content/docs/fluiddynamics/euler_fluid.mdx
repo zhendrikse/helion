@@ -31,7 +31,6 @@ layout: ../../../layouts/DocsLayout.astro
 <div id="eulerFluidContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/euler_fluid.js"}></script>
 
-
 ### Implementation
 <div class="header_line"><br/></div>
 
@@ -44,33 +43,33 @@ Let's first assert that:
 - We also assume the liquid to be inviscid (i.e. non-viscous).
 
 ```text
- ┌───────────────────────────────────────────────┐
- │              Fluid model (Demo)               │
- │                     │                         │
- │         DiscreteVectorField (Helion)          │
- │                     │                         │
- │ Velocities, pressure, smoke, streaming values │
- └───────────────────────────────────────────────┘
+ +-----------------------------------------------+
+ |              Fluid model (Demo)               |
+ |                     │                         |
+ |         DiscreteVectorField (Helion)          |
+ |                     │                         |
+ | Velocities, pressure, smoke, streaming values |
+ +-----------------------------------------------+
                        │
                        │
                        ▼
- ┌───────────────────────────────────────────────┐
- │                  Adapter                      │
- │                     │                         │
- │   PressureFieldAdapter / SmokeFieldAdapter    │
- │                     │                         │
- │      Fluid values ==> surface view values     │
- └───────────────────────────────────────────────┘
+ +-----------------------------------------------+
+ |                  Adapter                      |
+ |                     │                         |
+ |   PressureFieldAdapter / SmokeFieldAdapter    |
+ |                     │                         |
+ |      Fluid values ==> surface view values     |
+ +-----------------------------------------------+
                        │
                        │
                        ▼
- ┌───────────────────────────────────────────────┐
- │      DiscreteFieldSurfaceView (Helion)        │
- │                     │                         │
- │        Generic existing visualisation         │
- │                     │                         │
- │    Velocities, pressure, smoke, streamlines   │
- └───────────────────────────────────────────────┘
+ +-----------------------------------------------+
+ |      DiscreteFieldSurfaceView (Helion)        |
+ |                     │                         |
+ |        Generic existing visualisation         |
+ |                     │                         |
+ |    Velocities, pressure, smoke, streamlines   |
+ +-----------------------------------------------+
 ```
 
 ### The three main steps 

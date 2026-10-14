@@ -28,3 +28,38 @@ layout: ../../../layouts/DocsLayout.astro
 <div id="sphHydrodynamicsContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/particle_hydrodynamics.js"}></script>
 
+
+### Implementation
+<div class="header_line"><br/></div>
+
+There are two coordinate frames:
+
+- SPH-domein: coordinates for the physics and calculations for neighbor cells.
+- Helion-world: coordinates with which Circle and camera render particles.
+
+These coordinates need not be identical. The view translates the `SPHParticle.position`
+during synchronization.
+
+```text
+ +---------------------------------------------+
+ |                SPHParticle                  |
+ |                     │                       |
+ | Velocity, pressure, mass, density, position |
+ +---------------------------------------------+
+                       │
+                       │
+                       ▼
+       +-----------------------------------+
+       | SPHParticleView.synchronizeWith() |
+       |               │                   |
+       |    SPH-domein → Helion-wereld     |
+       +-----------------------------------+
+                       │
+                       │
+                       ▼
+    +---------------------------------------+
+    |               Circle                  |
+    |                  │                    |
+    | Draw particle at transformed position |
+    +---------------------------------------+
+```
