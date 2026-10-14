@@ -15,39 +15,6 @@ const domainScale = 30;
 const gridCellSize = 1;
 const INIT_MAX_PARTICLES_IN_CELL = 50;
 
-/**
- * Converts between the SPH domain (origin at bottom-left, y upwards),
- * canvas pixels (origin at top-left), and Helion's centered world space.
- */
-class SPHCoordinateTransform {
-    get domainWidth() { return simulation.width / domainScale; }
-    get domainHeight() { return simulation.height / domainScale; }
-    get worldWidth() { return WORLD_HEIGHT * simulation.width / simulation.height; }
-
-    /** @param {Vec2} position */
-    domainToWorld(position) {
-        const unitsPerDomainUnit = domainScale * WORLD_HEIGHT / simulation.height;
-        return new Vec2(
-            position.x * unitsPerDomainUnit - this.worldWidth / 2,
-            position.y * unitsPerDomainUnit - WORLD_HEIGHT / 2
-        );
-    }
-
-    /** @param {number} x Canvas pixel x, measured from the left */
-    /** @param {number} y Canvas pixel y, measured from the top */
-    canvasToDomain(x, y) {
-        return new Vec2(x / domainScale, this.domainHeight - y / domainScale);
-    }
-
-    /** @param {number} dx Horizontal movement in canvas pixels */
-    /** @param {number} dy Vertical movement in canvas pixels */
-    canvasMovementToDomain(dx, dy) {
-        return new Vec2(dx / domainScale, -dy / domainScale);
-    }
-}
-
-const coordinateTransform = new SPHCoordinateTransform();
-
 class SPHParticle extends RadialSymmetricBody {
     /** @param {{ position?: Vec2, velocity?: Vec2, mass?: number, radius?: number }} options */
     constructor({
@@ -155,7 +122,7 @@ class Grid {
     }
 
     hardReset() {
-        for (const cell of this._cells) 
+        for (const cell of this._cells)
             cell.reset();
     }
 
@@ -383,12 +350,11 @@ class SPHSolver {
         this.forceVelocityOn = false;
     }
 
-    /** @param {Vec2} domainPosition @param {Vec2} domainVelocity */
-    forceVelocity(grid, domainPosition, domainVelocity) {
+    forceVelocity(grid, x, y, Vx, Vy) {
         this.forceVelocityOn = true;
-        this._positionVector.copy(domainPosition);
+        this._positionVector.set(x / domainScale, this._yRange.max - y / domainScale);
         this.forceVelocityCell = grid.getCellFromLocation(this._positionVector);
-        this.forceVelocityVector.copy(domainVelocity);
+        this.forceVelocityVector.set(Vx, -Vy);
     }
 
     /** @param {SPHParticle} particle */
@@ -546,15 +512,11 @@ const simulation = Simulation
             updateParticleColors();
     })
     .onMouse("mousemove", (x, y, e) => {
-        // Simulation.onMouse supplies normalized coordinates; convert them to canvas
-        // pixels first, then use the same transform as the particle views.
+        // Simulation.onMouse supplies normalized canvas coordinates in [-0.5, 0.5].
+        // Engine.forceVelocity expects canvas pixels, with the origin at the top-left.
         const pointerX = Math.max(0, Math.min(simulation.width - 1, (x + 0.5) * simulation.width));
         const pointerY = Math.max(0, Math.min(simulation.height - 1, (0.5 - y) * simulation.height));
-        solver.forceVelocity(
-            grid,
-            coordinateTransform.canvasToDomain(pointerX, pointerY),
-            coordinateTransform.canvasMovementToDomain(e.movementX, e.movementY)
-        );
+        solver.forceVelocity(grid, pointerX, pointerY, e.movementX, e.movementY);
     })
     .onReset(() => {
         grid.init();
@@ -607,10 +569,12 @@ function updateParticleColors() {
 
 class SPHParticleView extends Circle {
     synchronizeWith(particle) {
-        super.synchronizeWith({
-            position: coordinateTransform.domainToWorld(particle.position),
-            radius: particle.radius
-        });
+        const worldWidth = WORLD_HEIGHT * simulation.width / simulation.height;
+        const position = new Vec2(
+            particle.position.x * domainScale * WORLD_HEIGHT / simulation.height - worldWidth / 2,
+            particle.position.y * domainScale * WORLD_HEIGHT / simulation.height - WORLD_HEIGHT / 2
+        );
+        super.synchronizeWith({ position, radius: particle.radius });
     }
 }
 
