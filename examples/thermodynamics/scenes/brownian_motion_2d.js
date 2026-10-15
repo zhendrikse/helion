@@ -122,7 +122,7 @@ const simulation = Simulation
  */
 function bindParticle(particle, index) {
     const particleView = new Circle({
-        colorFunction: () => index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow,
+        fillColor: index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow,
         segments: index === 0 ? 32 : 16
     });
     particleViews.push(particleView);
