@@ -1,6 +1,6 @@
 import {
     Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
-    BoxGeometry, Object3D, Vector2, Material
+    BoxGeometry, Object3D, Vector2
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
@@ -9,7 +9,7 @@ import { Renderable3D } from "../../renderer.js";
 import { Interval } from "../../../model/math/math.js";
 import { Vec2, Vec3 } from "../../../model/math/objects.js";
 import { LineSegment, Segments } from "../../../model/math/objects.js";
-import { ColorMapper, ColorMappers } from "../../colormappers.js";
+import { ColorMappers } from "../../colormappers.js";
 
 class InstancedSegmentsView extends Renderable3D {
     /**

@@ -1,8 +1,9 @@
 import {
-    Simulation, Vec3, DiscreteScalarField, ArrowField2D, Colour, StreamlinesView,
+    Simulation, Vec3, DiscreteScalarField, Colour, StreamlinesView,
     Interval, Range, Slider, FixedIntervalNormalizer, DirichletBoundaryCondition,
-    JacobiSolver, ColorMapper, Checkbox, Arrow2D, Button, DiscreteElectricField, DiscreteFieldSurfaceView
+    JacobiSolver, ColorMapper, Checkbox, Button, DiscreteElectricField, DiscreteFieldSurfaceView, ArrowField
 } from '../../../src/index.js';
+import {Color, LinearSRGBColorSpace} from "three";
 
 const N = 250;
 const h = 1e-2 / (N - 1);
@@ -99,20 +100,16 @@ const potentialView = new DiscreteFieldSurfaceView({
     opacityFunction: value => Math.log(1 + 2 * Math.abs(value - 0.5))
 });
 
-const arrowSpacing = 1.5;
+const arrowSpacing = 1.75;
 const width = 0.5 * N * gridSpacing;
 const height = 0.5 * N * gridSpacing;
-const arrowField = new ArrowField2D({
+const arrowField = new ArrowField({
     xRange: new Range((2 + .5) * gridSpacing - width, (N - 2 + .5) * gridSpacing - width, arrowSpacing),
     yRange: new Range((2 + .5) * gridSpacing - height, (N - 2 + .5) * gridSpacing - height, arrowSpacing),
-    scaleFactor: 1,
-    magnitudeMap: m => Math.min(m * 1e-4, 2.5),
-    size: 0.25,
-    headLength: 0.5,
-    headWidth: 0.4,
-    colorMap: (_dir, _mag) => new Colour(0x666666),
-    headStyle: Arrow2D.HeadStyle.Filled,
-    visible: false
+    zRange: new Range(0, 0, 1),
+    magnitudeMap: mag => Math.log(1 + 1e-4 * mag),
+    visible: false,
+    colorMap: () => new Color().setHex(0xcccc00, LinearSRGBColorSpace)
 });
 
 let solvedIterations = 0;

@@ -62,7 +62,7 @@ export { TangentFrameView } from './view/3d/surfaces/tangentframe.js';
 export { DifferentialGeometry, DifferentialFrame } from './model/math/numerics/diffgeometry.js';
 export { Matrix2D, RotationMatrix2D, linspace, meshgrid } from './model/math/linearalgebra.js';
 export { Arrow2D, Circle } from './view/2d/primitives.js';
-export { ArrowField2D, OneDimensionalWaveFunctionView, StreamlinesView, VelocitiesView } from './view/2d/composites.js';
+export { OneDimensionalWaveFunctionView, StreamlinesView, VelocitiesView } from './view/2d/composites.js';
 export { WaveEquationSolver, JacobiSolver, Solver } from './model/math/numerics/solvers/solvers.js';
 export { WaveFunction } from './model/phys/quantum/wavefunction.js';
 export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js';
