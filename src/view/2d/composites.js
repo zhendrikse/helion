@@ -1,7 +1,10 @@
 import {
-    MeshBasicMaterial, Color, BufferGeometry, LineSegments, DoubleSide,
-    LineBasicMaterial, Line, Mesh, Float32BufferAttribute, Vector3, BufferAttribute
+    MeshBasicMaterial, Color, BufferGeometry, DoubleSide,
+    LineBasicMaterial, Line, Mesh, Float32BufferAttribute, Vector2
 } from "three";
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 import { Vec2 } from "../../model/math/objects.js";
 import { Renderable, Renderable2D } from "../renderer.js";
 import { ComplexFunctionSample } from "../../model/math/fields.js";
@@ -12,29 +15,35 @@ import { RadioGroup } from "../../core/controls.js";
 
 export class StreamlinesView extends Renderable2D {
     /**
-     * @param {{
-     * color?: {Colour}
-     * scaleFactor:? {number}
-     * seedSpacing?: {number}
-     * numberOfSegments?: {number}
-     * visible:? {boolean}
-     * }} [options]
+    * @param {{
+    * color?: Colour,
+    * scaleFactor?: number,
+    * seedSpacing?: number,
+    * numberOfSegments?: number,
+    * visible?: boolean,
+    * lineWidth?: number
+    * }} [options]
      */
     constructor({
         numberOfSegments = 15,
         seedSpacing = 5,
         scaleFactor = 1e-2,
         color = new Colour(.175, .175, .175),
-        visible = true
+        visible = true,
+        lineWidth = 1
     } = {}) {
         super();
         this._scaleFactor = scaleFactor;
         this._numberOfSegments = numberOfSegments;
         this._seedSpacing = seedSpacing;
-        this._geometry = new BufferGeometry();
-        this._material = new LineBasicMaterial();
+        this._geometry = new LineSegmentsGeometry();
+        this._material = new LineMaterial({
+            linewidth: lineWidth,
+            vertexColors: false,
+            resolution: new Vector2(window.innerWidth, window.innerHeight)
+        });
         color.asThreeJsColor(this._material.color);
-        this._lines = new LineSegments(this._geometry, this._material);
+        this._lines = new LineSegments2(this._geometry, this._material);
         this.add(this._lines);
         this._allocatedSegmentCount = 0;
         this._position = new Vec2();
@@ -45,7 +54,9 @@ export class StreamlinesView extends Renderable2D {
         this.visible = visible;
     }
 
-    set seedSpacing(seedSpacing) { this._seedSpacing = seedSpacing; }
+    set seedSpacing(/** @type {number} */ seedSpacing) { this._seedSpacing = seedSpacing; }
+
+    set lineWidth(/** @type {number} */ lineWidth) { this._material.linewidth = lineWidth; }
 
     canBindTo(/** @type {{nx: number, ny: number, gridSpacing: number}} */ model) {
         if (model.nx === undefined ||
@@ -58,11 +69,8 @@ export class StreamlinesView extends Renderable2D {
 
     _newGeometry(/** @type {number} */ maxSegmentCount) {
         this._geometry.dispose();
-        this._geometry = new BufferGeometry();
-        this._geometry.setAttribute(
-            'position',
-            new BufferAttribute(new Float32Array(maxSegmentCount * 2 * 3), 3)
-        );
+        this._geometry = new LineSegmentsGeometry();
+        this._geometry.setPositions(new Float32Array(maxSegmentCount * 2 * 3));
         this._lines.geometry = this._geometry;
         this._allocatedSegmentCount = maxSegmentCount;
     }
@@ -88,7 +96,7 @@ export class StreamlinesView extends Renderable2D {
         if (maxSegmentCount !== this._allocatedSegmentCount)
             this._newGeometry(maxSegmentCount);
 
-        const positions = this._geometry.getAttribute('position').array;
+        const positions = new Float32Array(maxSegmentCount * 2 * 3);
         let segmentCount = 0;
 
         const halfWidth = .5 * fluid.nx;
@@ -106,7 +114,7 @@ export class StreamlinesView extends Renderable2D {
                 }
             }
 
-        this._geometry.getAttribute('position').needsUpdate = true;
+        this._geometry.setPositions(positions);
         this._geometry.setDrawRange(0, segmentCount * 2);
         this._geometry.computeBoundingSphere();
     }
@@ -134,32 +142,40 @@ export class StreamlinesView extends Renderable2D {
 export class VelocitiesView extends Renderable2D {
     /**
      * @param{{
-     * stepSize?: {number}
-     * color?: {Colour}
-     * scaleFactor?: {number}
-     * visible?: {boolean}
+     * stepSize?: number
+     * color?: Colour
+     * scaleFactor?: number
+     * visible?: boolean
+     * lineWidth?: number
      * }} [options]
      */
     constructor({
         scaleFactor = 1.5e-2,
         visible = true,
         color = new Colour(0.0, 0.125, 0.125),
-        stepSize = 1
+        stepSize = 1,
+        lineWidth = 1
     } = {}) {
         super();
         this._scaleFactor = scaleFactor;
         this._stepSize = stepSize;
-        this._geometry = new BufferGeometry();
-        this._material = new LineBasicMaterial();
+        this._geometry = new LineSegmentsGeometry();
+        this._material = new LineMaterial({
+            linewidth: lineWidth,
+            vertexColors: false,
+            resolution: new Vector2(window.innerWidth, window.innerHeight)
+        });
         color.asThreeJsColor(this._material.color);
-        this._lines = new LineSegments(this._geometry, this._material);
+        this._lines = new LineSegments2(this._geometry, this._material);
         this.add(this._lines);
         this._allocatedSegmentCount = 0;
         this._velocity = new Vec2();
         this.visible = visible;
     }
 
-    set stepSize(stepSize) { this._stepSize = stepSize; }
+    set stepSize(/** @type {number} */ stepSize) { this._stepSize = stepSize; }
+
+    set lineWidth(/** @type {number} */ lineWidth) { this._material.linewidth = lineWidth; }
 
     canBindTo(/** @type {{nx: number, ny: number, gridSpacing: number, valueAt:(i: number, j:number, target: Vec2) => Vec2}} */ model) {
         if (model.valueAt === undefined ||
@@ -173,21 +189,18 @@ export class VelocitiesView extends Renderable2D {
 
     _newGeometry(/** @type {number} */ maxSegmentCount) {
         this._geometry.dispose();
-        this._geometry = new BufferGeometry();
-        this._geometry.setAttribute(
-            'position',
-            new BufferAttribute(new Float32Array(maxSegmentCount * 2 * 3), 3)
-        );
+        this._geometry = new LineSegmentsGeometry();
+        this._geometry.setPositions(new Float32Array(maxSegmentCount * 2 * 3));
         this._lines.geometry = this._geometry;
         this._allocatedSegmentCount = maxSegmentCount;
     }
 
-    synchronizeWith(/** @type {{nx: number, ny: number, gridSpacing: number, velocityAt:(i: number, j: number, target: Vec2) => Vec2}} */ fluid) {
+    synchronizeWith(/** @type {{nx: number, ny: number, gridSpacing: number, valueAt:(i: number, j: number, target: Vec2) => Vec2}} */ fluid) {
         const maxSegmentCount = fluid.nx * fluid.ny * 2;
         if (maxSegmentCount !== this._allocatedSegmentCount)
             this._newGeometry(maxSegmentCount);
 
-        const positions = this._geometry.getAttribute('position').array;
+        const positions = new Float32Array(maxSegmentCount * 2 * 3);
         const h = fluid.gridSpacing;
         let segmentCount = 0;
 
@@ -211,7 +224,7 @@ export class VelocitiesView extends Renderable2D {
                 this._writeSegment(positions, segmentCount++, x, y0, x, y1);
             }
         }
-        this._geometry.getAttribute('position').needsUpdate = true;
+        this._geometry.setPositions(positions);
         this._geometry.setDrawRange(0, segmentCount * 2);
         this._geometry.computeBoundingSphere();
     }
