@@ -369,10 +369,10 @@ export class HexValueColorMapper extends ColorMapper {
 
 class UniformColorMapper extends ColorMapper {
     constructor({
-        color = new Color().setRGB( 1, 1, 0.0, SRGBColorSpace)
+        color = new Color().setRGB(1, 1, 0.0, SRGBColorSpace)
     }={}) {
         super();
-        this.color = color;
+        this.color = color instanceof Color ? color : new Color().setHex(color);
     }
 
     /**
