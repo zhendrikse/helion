@@ -90,7 +90,8 @@ const streamlinesView = new StreamlinesView({
     numberOfSegments: 20,
     seedSpacing: 5,
     scaleFactor: 3.5e-6,
-    color: new Colour(0x131313)
+    color: new Colour(0x131313),
+    lineWidth: 1.5
 });
 
 const potentialView = new DiscreteFieldSurfaceView({
