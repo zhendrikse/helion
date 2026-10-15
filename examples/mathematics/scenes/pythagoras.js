@@ -18,9 +18,9 @@ class Pythagoras extends Segments {
         this._B = new Vec2();
         this._C = new Vec2();
 
-        this._ab = new LineSegment(this._A, this._B);
-        this._ac = new LineSegment(this._A, this._C);
-        this._bc = new LineSegment(this._B, this._C);
+        this._ab = new LineSegment(this._A, this._B, 0xffffff);
+        this._ac = new LineSegment(this._A, this._C, 0xffffff);
+        this._bc = new LineSegment(this._B, this._C, 0xffffff);
 
         this.generate();
     }
@@ -101,9 +101,9 @@ Simulation
     })
     .setLatexTitle('\\Huge{a^2 = b^2 + c^2}')
     .bind(pythagoras.onceWith(segmentsView))
-    .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3})))
-    .bind(pythagoras.ac.onceWith(new LineSegmentView({lineWidth: 3})))
-    .bind(pythagoras.bc.onceWith(new LineSegmentView({lineWidth: 3})))
+    .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))
+    .bind(pythagoras.ac.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))
+    .bind(pythagoras.bc.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))
     .bind(pythagoras.ab.onceWith(new Label({
         text: model => 'a=' + pythagoras.a,
         offset: model => new Vec2(0, -.5),

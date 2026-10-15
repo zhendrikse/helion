@@ -12,11 +12,21 @@
 
 - https://websvg.github.io/voronoi/
 
+- New simulation ideas: [https://www.emergentmind.com/labs](https://www.emergentmind.com/labs)
+
+- Elliptic curve explorer [Elliptic curve explorer](https://github.com/wgxli/elliptic-curve-explorer/tree/master?tab=readme-ov-file) en [https://github.com/alozanoroble/MATH5020-Elliptic_Curves](https://github.com/alozanoroble/MATH5020-Elliptic_Curves)
+
+- Complex function plotter functionality [https://github.com/wgxli/complex-function-plotter](https://github.com/wgxli/complex-function-plotter)
+
 - https://www.reddit.com/r/threejs/comments/1cr2a57/implementing_voronoi_fractures/
 
 - https://discourse.threejs.org/t/three-js-voronoi/26386
 
 - GLSL crash course: https://www.youtube.com/watch?v=oKbCaj1J6EI
+
+- [Movement of particle along cuved surface](https://www.glowscript.org/#/user/Luinthoron/folder/NR/program/negativecurvature)
+
+- [Penrose tiling](https://github.com/jeffvun/fractals/blob/main/PenroseTilingDrawing.py)
 
 - Water shader https://www.jotform.com/blog/20-exceptional-three-js-experiments-98740/,
 https://www.reddit.com/r/threejs/comments/thx35q/water_simulation_in_three_js/
