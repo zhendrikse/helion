@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Button, Circle, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
-    Interval, Range, Registry, Simulation, Slider, Vec2, Vec3
+    Interval, PairForce, Range, Registry, Simulation, Slider, Vec2, Vec3
 } from '../../../src/index.js';
 import { LinearSRGBColorSpace} from "three";
 
@@ -14,6 +14,70 @@ const SPEED_COLOR_MAX = 30;
 const domainScale = 30;
 const gridCellSize = 1;
 const INIT_MAX_PARTICLES_IN_CELL = 50;
+
+class SPHForce extends PairForce {
+    constructor({mass = 1, viscosity = 3, smoothingLength = 1} = {}) {
+        super();
+        this.mass = mass;
+        this.viscosity = viscosity;
+        this._h = smoothingLength;
+        this._hSquared = smoothingLength * smoothingLength;
+        this._WspikyGradCoeff = -45.0 / (Math.PI * Math.pow(smoothingLength, 6));
+        this._WviscLaplCoeff = 45.0 / (Math.PI * Math.pow(smoothingLength, 5));
+        this._forceVector = new Vec2();
+        this._positionVector = new Vec2();
+        this._velocityVector = new Vec2();
+    }
+
+    /** @param {import('../../../src/model/phys/bodies.js').BodyPair} pair */
+    _calculateForceOn(pair) {
+        const particle1 = pair.body1;
+        const particle2 = pair.body2;
+        this._positionVector.copy(particle2.position).sub(particle1.position);
+        const rSquared = this._positionVector.lengthSq();
+        if (rSquared >= this._hSquared) {
+            this._forceVector.set(0, 0);
+            return;
+        }
+
+        const r = Math.sqrt(rSquared) + 1e-6;
+        const pressureTerm = this.mass * (particle2.pressure + particle1.pressure) /
+            (2 * particle2.rho) *
+            SPHSolver.Wspiky_grad2(this._h, r, this._WspikyGradCoeff);
+        const viscosityTerm = this.viscosity * this.mass *
+            SPHSolver.Wvisc_lapl(this._h, r, this._WviscLaplCoeff) / particle2.rho;
+
+        // PairForce applies -force to body1 and +force to body2. Negate the
+        // original SPH vector so the resulting particle forces keep their signs.
+        this._forceVector.copy(this._positionVector).multiplyScalar(pressureTerm);
+        this._velocityVector.copy(particle2.velocity).sub(particle1.velocity);
+        this._forceVector.add(this._velocityVector.multiplyScalar(viscosityTerm)).negate();
+    }
+
+    /** @param {SPHParticle} particle */
+    applyWallForce(particle, xRange, yRange) {
+        const h = this._h;
+        const c = this._WspikyGradCoeff;
+        if (particle.position.x < xRange.min + h) {
+            const r = particle.position.x - xRange.min;
+            particle.force.x -= this.mass * particle.pressure / particle.rho *
+                SPHSolver.Wspiky_grad2(h, r, c) * r;
+        } else if (particle.position.x > xRange.max - h) {
+            const r = xRange.max - particle.position.x;
+            particle.force.x += this.mass * particle.pressure / particle.rho *
+                SPHSolver.Wspiky_grad2(h, r, c) * r;
+        }
+        if (particle.position.y < yRange.min + h) {
+            const r = particle.position.y - yRange.min;
+            particle.force.y -= this.mass * particle.pressure / particle.rho *
+                SPHSolver.Wspiky_grad2(h, r, c) * r;
+        } else if (particle.position.y > yRange.max - h) {
+            const r = yRange.max - particle.position.y;
+            particle.force.y += this.mass * particle.pressure / particle.rho *
+                SPHSolver.Wspiky_grad2(h, r, c) * r;
+        }
+    }
+}
 
 class SPHParticle extends RadialSymmetricBody {
     /** @param {{
@@ -186,6 +250,7 @@ class SPHSolver {
         this._Wpoly6_coeff = 315.0 / (64 * Math.PI * Math.pow(smoothingLength, 9));
         this._Wspiky_grad_coeff = -45.0 / (Math.PI * Math.pow(smoothingLength, 6));
         this._Wvisc_lapl_coeff = 45.0 / (Math.PI * Math.pow(smoothingLength, 5));
+        this._sphForce = new SPHForce({mass, viscosity, smoothingLength});
 
         /** @type {SPHParticle[]} */
         this._particles = [];
@@ -200,15 +265,13 @@ class SPHSolver {
 
         // Scratch vectors
         this._positionVector = new Vec2();
-        this._velocityVector = new Vec2();
-        this._forceVector = new Vec2();
     }
 
     get gravity() { return this._gravity; }
     get particleCount() { return this._activeParticleCount; }
-    set mass(/** @type {number} */ value) { this._mass = value; }
+    set mass(/** @type {number} */ value) { this._mass = value; this._sphForce.mass = value; }
     set restDensity(/** @type {number} */ value) { this._rho_0 = value; }
-    set viscosity(/** @type {number} */ value) { this._mu = value; }
+    set viscosity(/** @type {number} */ value) { this._mu = value; this._sphForce.viscosity = value; }
     set gasConstant(/** @type {number} */ value) { this._k = value; }
 
     /** @returns {ArrayIterator<[number, SPHParticle]>} */
@@ -291,21 +354,7 @@ class SPHSolver {
     }
 
     _addForces(particle1, particle2) {
-        this._positionVector.copy(particle2.position).sub(particle1.position);
-        const rSquared = this._positionVector.dot(this._positionVector);
-        if (rSquared >= this._hSquared)
-            return;
-
-        const r = Math.sqrt(rSquared) + 1e-6;
-        const temp1 = this._mass * (particle2.pressure + particle1.pressure) / (2 * particle2.rho) *
-            SPHSolver.Wspiky_grad2(this._h, r, this._Wspiky_grad_coeff);
-        const temp2 = this._mu * this._mass * SPHSolver.Wvisc_lapl(this._h, r, this._Wvisc_lapl_coeff) / particle2.rho;
-        this._positionVector.copy(particle2.position);
-        this._velocityVector.copy(particle2.velocity);
-        this._forceVector.copy(this._positionVector.sub(particle1.position).multiplyScalar(temp1));
-        this._forceVector.add(this._velocityVector.sub(particle1.velocity).multiplyScalar(temp2));
-        particle1.force.add(this._forceVector);
-        particle2.force.sub(this._forceVector);
+        particle1.and(particle2).apply(this._sphForce);
     }
 
     _calcForces(grid) {
@@ -324,22 +373,7 @@ class SPHSolver {
     }
 
     _addWallForces(particle) {
-        const h = this._h;
-        const c = this._Wspiky_grad_coeff;
-        if (particle.position.x < this._xRange.min + h) {
-            const r = particle.position.x - this._xRange.min;
-            particle.force.x -= this._mass * particle.pressure / particle.rho * SPHSolver.Wspiky_grad2(h, r, c) * r;
-        } else if (particle.position.x > this._xRange.max - h) {
-            const r = this._xRange.max - particle.position.x;
-            particle.force.x += this._mass * particle.pressure / particle.rho * SPHSolver.Wspiky_grad2(h, r, c) * r;
-        }
-        if (particle.position.y < this._yRange.min + h) {
-            const r = particle.position.y - this._yRange.min;
-            particle.force.y -= this._mass * particle.pressure / particle.rho * SPHSolver.Wspiky_grad2(h, r, c) * r;
-        } else if (particle.position.y > this._yRange.max - h) {
-            const r = this._yRange.max - particle.position.y;
-            particle.force.y += this._mass * particle.pressure / particle.rho * SPHSolver.Wspiky_grad2(h, r, c) * r;
-        }
+        this._sphForce.applyWallForce(particle, this._xRange, this._yRange);
     }
 
     _calcForcedVelocity() {
