@@ -106,22 +106,22 @@ export class BindableCollection {
         this._bindings.forEach(binding => binding.addTo(simulationBindings, renderer));
     }
 
-    /** @returns {ArrayIterator<Bindable>} */
+    /** @returns {ArrayIterator<Binding>} */
     [Symbol.iterator]() {
-        return this._bindables[Symbol.iterator]();
+        return this._bindings[Symbol.iterator]();
     }
 
-    /** @returns {ArrayIterator<[number, Bindable]>} */
+    /** @returns {ArrayIterator<[number, Binding]>} */
     entries() {
-        return this._bindables.entries();
+        return this._bindings.entries();
     }
 
     /**
-     * @param {(body: Bindable, index: number, bodies: Bindable[]) => void} callback
+     * @param {(body: Binding, index: number, bodies: Binding[]) => void} callback
      * @param {*} [thisArg]
      */
     forEach(callback, thisArg) {
-        this._bindables.forEach(callback, thisArg);
+        this._bindings.forEach(callback, thisArg);
     }
 
     /**
@@ -143,6 +143,7 @@ export class BindableCollection {
         return this;
     }
 
+    /** @param {Transformation} transformation */
     apply(transformation) {
         this._bindables.forEach(bindable => transformation.applyTo(bindable));
     }
