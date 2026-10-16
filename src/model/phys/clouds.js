@@ -119,7 +119,6 @@ export class Gas extends BindableCollection{
     get tracer() { return this._bindables[0]; }
 
     get temperature() { return this._temperature; }
-    get particleCount() { return this._bindables.length; }
 
     /** @param {number} numberOfParticles */
     addParticles(numberOfParticles = 50) {
