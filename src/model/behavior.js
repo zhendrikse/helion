@@ -1,5 +1,4 @@
 import {Renderer} from "../view/renderer.js";
-import {Simulation} from "../core/helion.js";
 
 export class Transformation {
     /**
