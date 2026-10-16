@@ -2,7 +2,7 @@ import { Color, LinearSRGBColorSpace } from 'three';
 import {
     Checkbox, ColorMappers, DiscreteScalarField, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView,
-    DiscreteFieldSurfaceView, FixedIntervalNormalizer, MathPhysicsModelBehavior
+    DiscreteFieldSurfaceView, FixedIntervalNormalizer, Bindable
 } from '../../../src/index.js';
 
 const SOLID = 0.0;
@@ -307,7 +307,7 @@ class EulerFluid extends DiscreteVectorField {
     evolve(solver, dt) { solver.step(this, dt); }
 }
 
-class PressureFieldAdapter extends MathPhysicsModelBehavior {
+class PressureFieldAdapter extends Bindable {
     constructor(fluid) {
         super();
         this.fluid = fluid;
@@ -320,7 +320,7 @@ class PressureFieldAdapter extends MathPhysicsModelBehavior {
     valueAt(i, j) { return this.fluid.pressureAt(j, i); }
 }
 
-class SmokeFieldAdapter extends MathPhysicsModelBehavior {
+class SmokeFieldAdapter extends Bindable {
     constructor(fluid) {
         super();
         this.fluid = fluid;

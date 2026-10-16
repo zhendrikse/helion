@@ -1,4 +1,4 @@
-import { MathPhysicsModelBehavior, Transformation} from '../behavior.js';
+import { Bindable, Transformation} from '../behavior.js';
 import { Matrix2D } from './linearalgebra.js';
 import { Interval, degToRad} from './math.js';
 import { Integrators} from './numerics/integrators/integrators.js';
@@ -309,7 +309,7 @@ export class VecN {
  *
  *     γ : I → R²
  */
-export class ParametricCurve extends MathPhysicsModelBehavior {
+export class ParametricCurve extends Bindable {
     /**
      * @param {{
      *   domain?: Interval
@@ -348,7 +348,7 @@ export class ParametricCurve extends MathPhysicsModelBehavior {
 /**
  * A vector model.
  */
-export class VectorModel extends MathPhysicsModelBehavior {
+export class VectorModel extends Bindable {
     /**
      * @param {Vec2 | Vec3 } position 
      * @param {Vec2 | Vec3} axis 
@@ -381,7 +381,7 @@ export class VectorModel extends MathPhysicsModelBehavior {
 /**
  * A line (segment) between two points.
  */
-export class LineSegment extends MathPhysicsModelBehavior {
+export class LineSegment extends Bindable {
     /**
      * @param {Vec2 | Vec3} fromVec coordinates of from-point.
      * @param {Vec2 | Vec3} toVec coordinates of to-point.
@@ -418,10 +418,10 @@ export class LineSegment extends MathPhysicsModelBehavior {
     }
 }
 
-export class Segments extends MathPhysicsModelBehavior {
+export class Segments extends Bindable {
     constructor() {
         super();
-        /** @type {MathPhysicsModelBehavior[]} */
+        /** @type {Bindable[]} */
         this._segments = [];
     }
 
@@ -435,7 +435,7 @@ export class Segments extends MathPhysicsModelBehavior {
         this._segments.length = 0;
     }
 
-    /** @param {MathPhysicsModelBehavior} segment */
+    /** @param {Bindable} segment */
     push(segment) {
         this._segments.push(segment);
     }

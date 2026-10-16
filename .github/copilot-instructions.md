@@ -35,7 +35,7 @@ src/
 ### Key Classes and Patterns
 
 **Model-View Separation:**
-- Models inherit from `MathPhysicsModelBehavior` (all physics/math models)
+- Models inherit from `Bindable` (all physics/math models)
 - Views inherit from `Renderable3D` (3D views) or implement 2D view interfaces
 - Binding is unidirectional: models notify views when state changes
 - Use `model.alwaysWith(view)` for continuous synchronization, `model.onceWith(view)` for one-time binding
@@ -260,7 +260,7 @@ For N-body problems and long simulations, symplectic integrators (Euler or RK2) 
 5. Consider adding 2D/3D view in `src/view/` to visualize results
 
 ### Adding a Physical Model
-1. Create class extending `MathPhysicsModelBehavior` in `src/model/phys/`
+1. Create class extending `Bindable` in `src/model/phys/`
 2. Implement `apply(transformation)` to allow transformations
 3. Implement `bind()` pattern for view synchronization
 4. Export from `src/index.js`

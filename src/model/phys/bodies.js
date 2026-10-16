@@ -1,6 +1,6 @@
 import { Vec3, Vec2 } from '../math/objects.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
-import { MathPhysicsModelBehavior, Transformation } from '../behavior.js';
+import { Bindable, Transformation } from '../behavior.js';
 import { SpringForce} from './forces.js';
 
 export class PhysicsState {
@@ -42,7 +42,7 @@ export class PhysicsState {
 // Bodies to do physics with
 //
 
-export class BodyPairs extends MathPhysicsModelBehavior {
+export class BodyPairs extends Bindable {
     /**
      * @param {BodyPair} bodyPair1 
      * @param {BodyPair} bodyPair2 
@@ -64,7 +64,7 @@ export class BodyPairs extends MathPhysicsModelBehavior {
     }
 }
 
-export class BodyPair extends MathPhysicsModelBehavior {
+export class BodyPair extends Bindable {
     /**
      * @param {Body} body1 
      * @param {Body} body2 
@@ -118,7 +118,7 @@ class Configuration {
     }
 }
 
-export class Body extends MathPhysicsModelBehavior{
+export class Body extends Bindable{
     /**
      * @param {{
      *  position?: Vec3 | Vec2
@@ -439,7 +439,7 @@ export class Block extends Body {
     }
 }
 
-export class Lattice extends MathPhysicsModelBehavior {
+export class Lattice extends Bindable {
     /**
      * @param {{
      * k?: number,

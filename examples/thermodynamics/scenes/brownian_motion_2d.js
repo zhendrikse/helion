@@ -39,6 +39,12 @@ const graph = new UPlotGraph({
     yLabel: 'Particles'
 });
 
+for (let i = 0; i < gas.particleCount; i++)
+    particleViews.push(new Circle({
+        fillColor: i === 0 ? Colour.Red : i > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow,
+        segments: i === 0 ? 32 : 16
+    }));
+
 const simulation = Simulation
     .with({
         htmlDivId: 'brownianMotionContainer',
@@ -51,6 +57,8 @@ const simulation = Simulation
         }
     })
     .runsEvery(0.01)
+    .bind(gas.alwaysWith(particleViews))
+    .bind(gas.tracer.alwaysWith(tracerTrail))
     .onStep((_, dt) => gas.evolve(dt))
     .appendStartStopResetUI()
     .append(new Button()
@@ -122,13 +130,9 @@ const simulation = Simulation
  */
 function bindParticle(particle, index) {
     const particleView = new Circle({
-        fillColor: index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow,
-        segments: index === 0 ? 32 : 16
+        fillColor: index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow
     });
     particleViews.push(particleView);
     simulation.bind(particle.alwaysWith(particleView));
-    if (index === 0)
-        simulation.bind(particle.alwaysWith(tracerTrail));
 }
 
-Array.from(gas).forEach(bindParticle);

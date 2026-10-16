@@ -2,13 +2,13 @@ import { DiscreteScalarField, Domain, MultivariateFunction } from './fields.js';
 import { Interval } from './math.js';
 import { Vec2, Vec3 } from './objects.js';
 import { DifferentialFrame, DifferentialGeometry} from './numerics/diffgeometry.js';
-import {MathPhysicsModelBehavior} from '../behavior.js';
+import {Bindable} from '../behavior.js';
 import { SurfaceResolution } from '../../view/3d/surfaces/visualization.js';
 
 /**
  * Mathematical definition of a surface.
  */
-export class Surface extends MathPhysicsModelBehavior {
+export class Surface extends Bindable {
 }
 
 export class DifferentiableSurface extends Surface {
