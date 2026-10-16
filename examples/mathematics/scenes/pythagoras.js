@@ -18,9 +18,9 @@ class Pythagoras extends Segments {
         this._B = new Vec2();
         this._C = new Vec2();
 
-        this._ab = new LineSegment(this._A, this._B, 0xffffff);
-        this._ac = new LineSegment(this._A, this._C, 0xffffff);
-        this._bc = new LineSegment(this._B, this._C, 0xffffff);
+        this._ab = new LineSegment(this._A, this._B, Colour.White.asHexValue());
+        this._ac = new LineSegment(this._A, this._C, Colour.White.asHexValue());
+        this._bc = new LineSegment(this._B, this._C, Colour.White.asHexValue());
 
         this.generate();
     }

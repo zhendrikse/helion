@@ -38,6 +38,56 @@ export class Bindable {
     reset() {}
 }
 
+export class ViewsCollection {
+    static of = viewConstructor => {
+        return new ViewsCollection(viewConstructor);
+    }
+
+    constructor(viewConstructor) {
+        this._viewConstructor = viewConstructor;
+        this._options = {};
+        /** @type {Renderable[]} */
+        this._views = [];
+    }
+
+    /** @returns {ArrayIterator<Renderable>} */
+    [Symbol.iterator]() {
+        return this._views[Symbol.iterator]();
+    }
+
+    /**
+     * @param {(view: Renderable, index: number, views: Renderable[]) => void} callback
+     * @param {*} [thisArg]
+     */
+    forEach(callback, thisArg) {
+        this._views.forEach(callback, thisArg);
+    }
+
+    /** @returns {ArrayIterator<[number, Renderable]>} */
+    entries() {
+        return this._views.entries();
+    }
+
+    with(options) {
+        this._options = options;
+        return this;
+    }
+
+    reset() {
+        this._views.forEach(view => {
+            view.visible = false;
+            view.dispose();
+        });
+        this._views = [];
+    }
+
+    createView() {
+        const view = new this._viewConstructor(this._options);
+        this._views.push(view);
+        return view;
+    }
+}
+
 export class BindableCollection {
     constructor() {
         /** @type {Bindable[]} */
@@ -47,9 +97,11 @@ export class BindableCollection {
     }
 
     /** @param {Bindable} bindable */
-    push(bindable) {
+    add(bindable) {
         this._bindables.push(bindable);
     }
+
+    get size() { return this._bindables.length; }
 
     addTo(simulationBindings, renderer) {
         this._bindings.forEach(binding => binding.addTo(simulationBindings, renderer));
@@ -66,24 +118,29 @@ export class BindableCollection {
     }
 
     /**
+     * @param {(body: Bindable, index: number, bodies: Bindable[]) => void} callback
+     * @param {*} [thisArg]
+     */
+    forEach(callback, thisArg) {
+        this._bindables.forEach(callback, thisArg);
+    }
+
+    /**
      * Synchronize model only once with the view. Important: the
      * model is also synchronized with the view at every user interaction!!
-     * @param {Renderable[]} viewCollection views to synchronize the models with.
+     * @param {ViewsCollection} viewsCollection views to synchronize the models with.
      */
-    onceWith(viewCollection) {
-        this._bindables.forEach((bindable, index) =>
-            this._bindings.push(bindable.onceWith(viewCollection[index])));
+    onceWith(viewsCollection) {
+        this._bindables.forEach(bindable=> this._bindings.push(bindable.onceWith(viewsCollection.createView())));
         return this;
     }
 
     /**
      * Keeps the models and views synchronized at all times!
-     * @param {Renderable[]} viewCollection views to synchronize the models with.
+     * @param {ViewsCollection} viewsCollection views to synchronize the models with.
      */
-    alwaysWith(viewCollection) {
-        /** @type {Binding[]} */
-        this._bindables.forEach((bindable, index) =>
-            this._bindings.push(bindable.alwaysWith(viewCollection[index])));
+    alwaysWith(viewsCollection) {
+        this._bindables.forEach(bindable => this._bindings.push(bindable.alwaysWith(viewsCollection.createView())));
         return this;
     }
 
@@ -132,13 +189,11 @@ export class Binding {
 
             // Replace existing binding
             bindings[existingIndex] = this;
-
-            this.initialize();
         } else {
             renderer.add(this.view);
             bindings.push(this);
-            this.initialize();
         }
+        this.initialize();
     }
 
     forceSynchronize() {

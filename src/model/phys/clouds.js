@@ -1,4 +1,4 @@
-import {Bindable, BindableCollection} from '../behavior.js';
+import { Bindable, BindableCollection } from '../behavior.js';
 import { PhysicsState, RadialSymmetricBody } from './bodies.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
 import { SphereSphereCollision } from '../transformations/interactions.js';
@@ -103,7 +103,7 @@ export class Gas extends BindableCollection{
         this._k = 1;
         this._limitToContainer = containerFunction;
 
-        this.push(new RadialSymmetricBody({
+        this.add(new RadialSymmetricBody({
             velocity: this.#newInitialVelocity(this._temperature),
             radius: tracerRadius,
             mass: tracerMass
@@ -123,12 +123,15 @@ export class Gas extends BindableCollection{
 
     /** @param {number} numberOfParticles */
     addParticles(numberOfParticles = 50) {
+        const newParticles = new BindableCollection();
         for (let i = 0; i < numberOfParticles; i++)
-            this._bindables.push(new RadialSymmetricBody({
+            newParticles.add(new RadialSymmetricBody({
                 velocity: this.#newInitialVelocity(this._temperature),
                 radius: this._particleRadius,
                 mass: this._particleMass
             }));
+        newParticles.forEach(particle => this.add(particle));
+        return newParticles;
     }
 
     /** @param {number} temperature */

@@ -1,7 +1,7 @@
 import {
     RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule,
     BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, SpringForce, UPlotGraph,
-    Interval
+    Interval, ViewsCollection
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 import {BindableCollection} from "../../../src/model/behavior.js";
@@ -148,16 +148,16 @@ class CarbonMonoxideGas extends BindableCollection {
             const pos = new Vec3(Math.random() - .5, Math.random() - .5, Math.random() - .5)
                 .multiplyScalar(boxSize);
             const molecule = new CarbonMonoxide(pos, Math.sqrt(3 * k * temperature / mass));
-            this._bindables.push(molecule);
+            this.add(molecule);
         }
     }
 
     /** @param {number} dt */
     evolve(dt) {
-        for (const molecule of this._bindables)
+        for (const molecule of this)
             molecule.apply(bondForce);
 
-        for (const molecule of this._bindables) {
+        for (const molecule of this) {
             molecule.integrate(dt);
             molecule.checkBoxBounce(this._boxSize * 2);
         }
@@ -223,11 +223,7 @@ const graph = new UPlotGraph({
     yRange: new Interval(0, 1.1e-14)
 });
 
-/** @type {DiatomicMolecule[]} */
-const moleculeViews = [];
-for (const molecule of gas)
-    moleculeViews.push(new DiatomicMolecule());
-
+const moleculesView = ViewsCollection.of(DiatomicMolecule);
 const simulation = Simulation
     .with({
         htmlDivId: 'energyEquipartitionContainer',
@@ -236,7 +232,7 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .addGraph(graph)
-    .bind(gas.alwaysWith(moleculeViews))
+    .bind(gas.alwaysWith(moleculesView))
     .runsEvery(0.003)
     .advancesBy(5e-16)
     .substeps(3)
@@ -269,7 +265,7 @@ const simulation = Simulation
     })
     .addObject3D(new Aquarium({ size: new Vec3(1, 1, 1).multiplyScalar(2 * L) }))
     .append(new RadioGroup()
-        .add('Springs', () => moleculeViews.forEach(view => view.bondType = SwitchableBondView.Type.Spring))
-        .add('Cylinders', () => moleculeViews.forEach(view => view.bondType = SwitchableBondView.Type.Cylinder))
+        .add('Springs', () => moleculesView.forEach(view => view.bondType = SwitchableBondView.Type.Spring))
+        .add('Cylinders', () => moleculesView.forEach(view => view.bondType = SwitchableBondView.Type.Cylinder))
         .checked(1)
     );
