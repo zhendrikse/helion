@@ -16,7 +16,12 @@ const gridCellSize = 1;
 const INIT_MAX_PARTICLES_IN_CELL = 50;
 
 class SPHParticle extends RadialSymmetricBody {
-    /** @param {{ position?: Vec2, velocity?: Vec2, mass?: number, radius?: number }} options */
+    /** @param {{
+     * position?: Vec2,
+     * velocity?: Vec2,
+     * mass?: number,
+     * radius?: number
+     * }} options */
     constructor({
         position = new Vec2(),
         velocity = new Vec2(),
@@ -24,13 +29,11 @@ class SPHParticle extends RadialSymmetricBody {
         radius = PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / (simulation.height * Math.min(window.devicePixelRatio || 1, 2))
     } = {}) {
         super({ position: position.clone(), velocity: velocity.clone(), mass, radius });
-        this._sphForce = new Vec2();
         this.rho = 0;
         this.P = 0;
         this._acceleration = new Vec2();
     }
 
-    get force() { return this._sphForce; }
     set mass(/** @type {number} */ value) { this._state.mass = value; }
     get speed() { return Math.hypot(this.velocity.x, this.velocity.y); }
 
