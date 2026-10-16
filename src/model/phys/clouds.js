@@ -123,13 +123,15 @@ export class Gas extends BindableCollection{
     /** @param {number} numberOfParticles */
     addParticles(numberOfParticles = 50) {
         const newParticles = new BindableCollection();
-        for (let i = 0; i < numberOfParticles; i++)
-            newParticles.add(new RadialSymmetricBody({
+        for (let i = 0; i < numberOfParticles; i++) {
+            const particle = new RadialSymmetricBody({
                 velocity: this.#newInitialVelocity(this._temperature),
                 radius: this._particleRadius,
                 mass: this._particleMass
-            }));
-        newParticles.forEach(particle => this.add(particle));
+            });
+            newParticles.add(particle);
+            this.add(particle);
+        }
         return newParticles;
     }
 
@@ -153,9 +155,10 @@ export class Gas extends BindableCollection{
     }
 
     reset(temperature = this._temperature) {
-        this._bindables.length = this._baseParticleCount;
+        // Keep the tracer plus the configured number of gas particles.
+        this._bindables.length = this._baseParticleCount + 1;
         this._temperature = temperature;
-        for (let i = 0; i < this._baseParticleCount; i++)
+        for (let i = 0; i < this._bindables.length; i++)
             this.#resetParticle(this._bindables[i], i === 0 ? 0 : this._temperature);
     }
 
