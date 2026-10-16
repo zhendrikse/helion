@@ -243,3 +243,4 @@ const simulation = Simulation
     });
 
 reset();
+simulation.start();
