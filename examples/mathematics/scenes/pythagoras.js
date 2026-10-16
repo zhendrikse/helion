@@ -99,7 +99,7 @@ Simulation
             controls: false
         }
     })
-    .setLatexTitle('\\Huge{a^2 = b^2 + c^2}')
+    .setLatexTitle('\\Large{a^2 = b^2 + c^2}')
     .bind(pythagoras.onceWith(segmentsView))
     .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))
     .bind(pythagoras.ac.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))
