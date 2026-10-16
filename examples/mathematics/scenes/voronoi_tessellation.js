@@ -224,10 +224,18 @@ const simulation = Simulation
         .withText('Restart growth')
         .onClick(reset))
     .withMouseClickEventListener(() => {
-        if (growthRadius >= maximumGrowthRadius)
+        // A custom click handler replaces Simulation's default start/pause handler.
+        // Explicitly start/stop the simulation as well as the radial growth.
+        if (growthRadius >= maximumGrowthRadius) {
             reset();
-        else
-            isGrowing = !isGrowing;
+            simulation.start();
+        } else if (simulation.isRunning) {
+            isGrowing = false;
+            simulation.stop();
+        } else {
+            isGrowing = true;
+            simulation.start();
+        }
     });
 
 reset();
