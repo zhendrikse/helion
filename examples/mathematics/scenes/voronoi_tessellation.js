@@ -185,6 +185,7 @@ const seedSlider = new Slider('🌱 Number of seeds')
     .onChange(value => {
         seedCount = Math.round(value);
         reset();
+simulation.start();
     });
 
 const speedSlider = new Slider('⏩ Growth speed')
@@ -222,7 +223,10 @@ const simulation = Simulation
     .append(speedSlider)
     .append(new Button('↻ Restart growth')
         .withText('Restart growth')
-        .onClick(reset))
+        .onClick(() => {
+            reset();
+            simulation.start();
+        }))
     .withMouseClickEventListener(() => {
         // A custom click handler replaces Simulation's default start/pause handler.
         // Explicitly start/stop the simulation as well as the radial growth.
