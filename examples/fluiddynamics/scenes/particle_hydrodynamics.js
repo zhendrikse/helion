@@ -7,7 +7,7 @@ import { LinearSRGBColorSpace} from "three";
 const DEFAULT_PARTICLE_COUNT = 1000;
 const MAX_PARTICLE_COUNT = 5000;
 const WORLD_HEIGHT = 20;
-const PARTICLE_RADIUS_IN_PIXELS = 5;
+const PARTICLE_RADIUS_IN_PIXELS = 6;
 const COLOR_UPDATE_INTERVAL = 10;
 const SPEED_COLOR_MAX = 30;
 
