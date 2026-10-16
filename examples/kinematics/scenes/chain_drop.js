@@ -1,7 +1,7 @@
 import {
     Vec3, Simulation, Sphere, Box, Slider, Range, SwitchableBondView, RadialSymmetricBody,
     Bindable, SpringForce, Force, UniformGravitationalForce, Block, G, UPlotGraph,
-    BodyPair, Colour
+    BodyPair, Colour, BindableCollection, ViewsCollection
 } from '../../../src/index.js';
 import {g} from '../../../src/model/phys/forces.js';
 
@@ -48,7 +48,7 @@ class PivotForce extends Force {
 }
 
 const gravitationalForce = new UniformGravitationalForce();
-class Chain extends Bindable {
+class Chain extends BindableCollection {
     constructor({
         totalBalls = 20,
         length = 1,
@@ -63,8 +63,6 @@ class Chain extends Bindable {
         this._mass = mass;
         this._amountHanging = amountHanging;
         this._interBallLength = length / (totalBalls - 1);
-        /** @type {RadialSymmetricBody[]} */
-        this._balls = [];
         /** @type {BodyPair[]} */
         this._bonds = [];
 
@@ -82,10 +80,9 @@ class Chain extends Bindable {
         this._createBonds();
     }
 
-    get balls() { return this._balls; }
     get bonds() { return this._bonds; }
     get springConstant() { return this._springForce.k; }
-    get endBall() { return this._balls[this._balls.length - 1]; }
+    get endBall() { return this._bindables[this.size - 1]; }
     get ballRadius() { return this._length / 40; }
     set damping(value) { this._springForce.damping = value; }
     get damping() { return this._springForce.damping }
@@ -105,7 +102,7 @@ class Chain extends Bindable {
             if (position.x > 0)
                 break;
 
-            this._balls.push(new RadialSymmetricBody({
+            this.add(new RadialSymmetricBody({
                 position: position.clone(),
                 mass: bodyMass,
                 radius: this.ballRadius
@@ -121,10 +118,10 @@ class Chain extends Bindable {
      * @param {number} bodyMass
      */
     _createVerticalChainSection(position, spacing, bodyMass) {
-        position = this._balls[this._balls.length - 1].position.clone();
+        position = this._bindables[this.size - 1].position.clone();
         while (position.y > -this._amountHanging) {
             position.y -= spacing;
-            this._balls.push(new RadialSymmetricBody({
+            this.add(new RadialSymmetricBody({
                 position: position.clone(),
                 mass: bodyMass,
                 radius: this.ballRadius
@@ -142,8 +139,8 @@ class Chain extends Bindable {
     }
 
     _createBonds() {
-        for (let i = 0; i < this._balls.length - 1; i++)
-            this._bonds.push(this._balls[i].and(this._balls[i + 1]));
+        for (let i = 0; i < this.size - 1; i++)
+            this._bonds.push(this._bindables[i].and(this._bindables[i + 1]));
     }
 
     /** @param {number} dt */
@@ -151,14 +148,14 @@ class Chain extends Bindable {
         for (const bond of this._bonds)
             bond.apply(this._springForce);
 
-        for (const ball of this._balls)
+        for (const ball of this)
             ball.apply(gravitationalForce)
                 .apply(this._pivotForce)
                 .integrate(dt);
     }
 
     reset() {
-        for (const ball of this._balls)
+        for (const ball of this)
             ball.reset();
 
         for (const bond of this._bonds)
@@ -206,6 +203,7 @@ const simulation = Simulation
         }
     })
     .withMouseClickEventListener()
+    .bind(chain.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Cyan, segments: 20})))
     .runsEvery(1e-3)
     .substeps(20)
     .advancesBy(1e-4)
@@ -231,9 +229,6 @@ const simulation = Simulation
             .withProperty('damping')
             .withValue(chain.damping)
     );
-
-for (const ball of chain.balls)
-    simulation.bind(ball.alwaysWith(new Sphere({ color: Colour.Cyan, segments: 20})));
 
 for (const bond of chain.bonds)
     simulation.bind(bond.alwaysWith(
