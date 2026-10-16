@@ -377,7 +377,16 @@ class UniformColorMapper extends ColorMapper {
         color = Colour.Yellow
     }={}) {
         super();
-        this.color = color;
+        if (!(color instanceof Colour))
+            throw new Error("Uniform color mapper requires a Colour instance");
+        this._color = color;
+    }
+
+    set color(colour) {
+        if (!(colour instanceof Colour))
+            throw new Error("Uniform color mapper requires a Colour instance");
+
+        this._color = colour;
     }
 
     /**
@@ -385,7 +394,7 @@ class UniformColorMapper extends ColorMapper {
      * @param {Color} targetColor
      */
     map(value, targetColor) {
-        this.color.asThreeJsColor(targetColor);
+        this._color.asThreeJsColor(targetColor);
     }
 }
 

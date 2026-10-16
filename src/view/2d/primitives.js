@@ -144,9 +144,9 @@ export class Arrow2D extends Renderable3D {
         line.geometry.computeBoundingSphere();
     }
 
-    set color(/** @type {Color} */ color) {
-        this._material.color.set(color);
-        this._headMaterial.color.set(color);
+    set color(/** @type {Colour} */ color) {
+        color.asThreeJsColor(this._material.color);
+        color.asThreeJsColor(this._headMaterial.color.set(color));
     }
 
     dispose() {

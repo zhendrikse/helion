@@ -1,4 +1,3 @@
-import { Color } from 'three';
 import {
     Segments, LineSegment, LineSegmentsView, Simulation, Vec3, Slider, Range, Label,
     VectorModel, ColorMappers, SegmentedCircle, LineSegmentView, Arrow2D, Vec2, Colour
@@ -127,7 +126,7 @@ function updateRoots(simulation, n) {
 
         const angle = 2 * Math.PI * k / n;
         vector.axis.set(unitCircleRadius * Math.cos(angle), unitCircleRadius * Math.sin(angle), 0);
-        rootVectorViews[k].color = new Color().setHSL(0.92 - 0.65 * (angle + Math.PI) / (2 * Math.PI), 1, .5);
+        rootVectorViews[k].color = new Colour().setHSL(0.92 - 0.65 * (angle + Math.PI) / (2 * Math.PI), 1, .5);
     }
 
     simulation.setLatexTitle(`z^{${n}}=1\\Rightarrow z_k=\\exp(\\dfrac{2\\pi ik}{${n}}),\\ k=0,\\cdots, ${n-1}`);
