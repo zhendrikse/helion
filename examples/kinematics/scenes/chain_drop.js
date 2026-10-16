@@ -148,7 +148,7 @@ class Chain extends BindableCollection {
         for (const bond of this._bonds)
             bond.apply(this._springForce);
 
-        for (const ball of this)
+        for (const ball of this._bindables)
             ball.apply(gravitationalForce)
                 .apply(this._pivotForce)
                 .integrate(dt);

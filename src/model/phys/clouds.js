@@ -157,6 +157,7 @@ export class Gas extends BindableCollection{
     reset(temperature = this._temperature) {
         // Keep the tracer plus the configured number of gas particles.
         this._bindables.length = this._baseParticleCount + 1;
+        this._bindings.length = 0;
         this._temperature = temperature;
         for (let i = 0; i < this._bindables.length; i++)
             this.#resetParticle(this._bindables[i], i === 0 ? 0 : this._temperature);

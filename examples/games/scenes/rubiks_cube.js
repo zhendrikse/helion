@@ -269,7 +269,8 @@ const simulation = Simulation.with({
     );
 
 // Bind view to model
-for (const cubie of cube) {
+for (const binding of cube) {
+    const cubie = binding.model;
     cubie.stickers.forEach(sticker => simulation.bind(sticker.alwaysWith(
         new Box({
             color: Colors[sticker.side],

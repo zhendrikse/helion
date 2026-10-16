@@ -57,14 +57,16 @@ const simulation = Simulation
         .withText(`Add ${PARTICLES_TO_ADD}`)
         .onClick(() => {
             const newParticles = gas.addParticles(PARTICLES_TO_ADD);
-            simulation.bind(newParticles.alwaysWith(circles));
-            gas.forEach((binding, index) =>
-                binding.view.fillColor = index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow);
+            const bindingCollection = newParticles.alwaysWith(circles);
+            simulation.bind(bindingCollection);
+            newParticles.forEach(binding => binding.view.fillColor = Colour.Cyan);
+            bindingCollection.forEach(binding => gas._bindings.push(binding));
         }))
     .append(new Checkbox('Gas particles')
         .checked(true)
         .onChange(checked => {
             gas.forEach((binding, index) => {
+                console.log(gas._bindings.length);
                 if (index !== 0)
                     binding.view.visible = checked;
             })

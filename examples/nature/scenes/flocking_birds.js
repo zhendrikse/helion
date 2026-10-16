@@ -70,7 +70,7 @@ class Flock extends BindableCollection {
         this._center.set(0, 0, 0);
         this._direction.set(0, 0, 0);
 
-        this.forEach(bird => {
+        this._bindables.forEach(bird => {
             this._center.add(bird.position);
             this._direction.add(bird.velocity);
         });
@@ -89,8 +89,8 @@ class Flock extends BindableCollection {
     set avoidWeight(number) { this._avoid_weight = number; }
 
     startleBirds() {
-        for (const bird of this)
-            bird.velocity.copy(new Vec3().random().multiplyScalar(2 * speed));
+        for (const birdBinding of this)
+            birdBinding.model.velocity.copy(new Vec3().random().multiplyScalar(2 * speed));
     }
 }
 

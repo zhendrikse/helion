@@ -172,7 +172,7 @@ class CarbonMonoxideGas extends BindableCollection {
     updateToNewTemperature(newTemperature) {
         // Modify the speed of all molecules according to equipartition: v ~ sqrt(T)
         const scaleFactor = Math.sqrt(newTemperature / this._temperature); // ratio new temp / old temp
-        for (const molecule of this)
+        for (const molecule of this._bindables)
             molecule.scaleVelocity(scaleFactor);
         this._temperature = newTemperature;
     }
