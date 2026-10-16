@@ -287,7 +287,7 @@ const curlView = new DiscreteFieldSurfaceView({
 });
 const barrierView = new DiscreteFieldSurfaceView({
     scale: CELL_SIZE,
-    colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: Colour.Black.asHexValue() }),
+    colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: Colour.Black }),
     normalizer: new FixedIntervalNormalizer(new Interval(0, 1)),
     opacityFunction: value => value
 });
