@@ -368,11 +368,16 @@ export class HexValueColorMapper extends ColorMapper {
 }
 
 class UniformColorMapper extends ColorMapper {
+    /**
+     * @param param {{
+     *     color?: Colour
+     * }} [options]
+     */
     constructor({
-        color = new Color().setRGB(1, 1, 0.0, SRGBColorSpace)
+        color = Colour.Yellow
     }={}) {
         super();
-        this.color = color instanceof Color ? color : new Color().setHex(color);
+        this.color = color;
     }
 
     /**
@@ -380,7 +385,7 @@ class UniformColorMapper extends ColorMapper {
      * @param {Color} targetColor
      */
     map(value, targetColor) {
-        targetColor.copy(this.color);
+        this.color.asThreeJsColor(targetColor);
     }
 }
 

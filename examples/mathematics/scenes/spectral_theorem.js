@@ -166,11 +166,11 @@ simulation
         dashed: true,
         dashSize: 0.15,
         gapSize: 0.15,
-        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffaa55 })
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: new Colour(0xffaa55) })
     })))
     .bind(transformedCircle.onceWith(new LineSegmentsView({
         lineWidth: 2,
-        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0x44aaff })
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: new Colour(0x44aaff) })
     })))
     .bind(eigenvector1.onceWith(new Arrow2D({ color: new Colour(0xff4444), size: 0.5 })))
     .bind(eigenvector2.onceWith(new Arrow2D({ color: new Colour(0x44dd88), size: 0.5 })))
