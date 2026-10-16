@@ -7,7 +7,7 @@ import { LinearSRGBColorSpace} from "three";
 const DEFAULT_PARTICLE_COUNT = 1000;
 const MAX_PARTICLE_COUNT = 5000;
 const WORLD_HEIGHT = 20;
-const PARTICLE_RADIUS_IN_PIXELS = 6;
+const PARTICLE_RADIUS_IN_PIXELS = 7.5;
 const COLOR_UPDATE_INTERVAL = 10;
 const SPEED_COLOR_MAX = 30;
 
@@ -404,7 +404,7 @@ class SPHSolver {
     particleAt = index => this._particles[index];
 
     reset() {
-        this.restDensity = 3.75;
+        this.restDensity = 4.75;
         this.viscosity = 3;
         this.gasConstant = 120;
         this.mass = 1;
@@ -433,7 +433,7 @@ class ParameterControls {
             .onInput(value => solver.gasConstant = value);
         this.restDensity = new Slider('Rest density')
             .withRange(new Range(0, 10, 0.1))
-            .withValue(3.75)
+            .withValue(4.75)
             .onInput(value => solver.restDensity = value);
         this.viscosity = new Slider('Viscosity')
             .withRange(new Range(0, 10, 0.1))
@@ -453,7 +453,7 @@ class ParameterControls {
         this.particleCount.withValue(DEFAULT_PARTICLE_COUNT);
         this.mass.withValue(1);
         this.gasConstant.withValue(120);
-        this.restDensity.withValue(3.75);
+        this.restDensity.withValue(4.75);
         this.viscosity.withValue(3);
         this.gravityX.withValue(0);
         this.gravityY.withValue(-20);
