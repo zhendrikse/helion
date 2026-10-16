@@ -1,11 +1,11 @@
-import { MathPhysicsModelBehavior } from '../behavior.js';
+import {Bindable, BindableCollection} from '../behavior.js';
 import { PhysicsState, RadialSymmetricBody } from './bodies.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
 import { SphereSphereCollision } from '../transformations/interactions.js';
 import { Vec2, Vec3 } from '../math/objects.js';
 import { Colour } from "../../view/colormappers.js";
 
-export class PointCloud extends MathPhysicsModelBehavior {
+export class PointCloud extends Bindable {
     /**
      * @param {{
      *     positions?: Vec3[],
@@ -58,7 +58,7 @@ export class PointCloud extends MathPhysicsModelBehavior {
     sizeAt(index) { return this._sizes[index]; }
 }
 
-export class Gas {
+export class Gas extends BindableCollection{
     static bounceWithinSphere = (particle, limit) => {
         if (particle.position.lengthSq() > limit * limit)
             particle.state.velocity.negate();
@@ -93,7 +93,7 @@ export class Gas {
         initialSpeed = 2,
         containerFunction = Gas.bounceWithinBox
     } = {}) {
-        this._particles = [];
+        super();
         this._baseParticleCount = particleCount;
         this._containerSize = containerSize;
         this._particleRadius = particleRadius;
@@ -103,7 +103,7 @@ export class Gas {
         this._k = 1;
         this._limitToContainer = containerFunction;
 
-        this._particles.push(new RadialSymmetricBody({
+        this.push(new RadialSymmetricBody({
             velocity: this.#newInitialVelocity(this._temperature),
             radius: tracerRadius,
             mass: tracerMass
@@ -113,26 +113,18 @@ export class Gas {
 
     /** @param {number} mass */
     set tracerMass(mass) {
-        this._particles[0].state.mass = mass;
+        this._bindables[0].state.mass = mass;
     }
 
-    /** @returns {ArrayIterator<RadialSymmetricBody>} */
-    [Symbol.iterator]() {
-        return this._particles[Symbol.iterator]();
-    }
-
-    /** @returns {ArrayIterator<[number, RadialSymmetricBody]>} */
-    entries() {
-        return this._particles.entries();
-    }
+    get tracer() { return this._bindables[0]; }
 
     get temperature() { return this._temperature; }
-    get particleCount() { return this._particles.length; }
+    get particleCount() { return this._bindables.length; }
 
     /** @param {number} numberOfParticles */
     addParticles(numberOfParticles = 50) {
         for (let i = 0; i < numberOfParticles; i++)
-            this._particles.push(new RadialSymmetricBody({
+            this._bindables.push(new RadialSymmetricBody({
                 velocity: this.#newInitialVelocity(this._temperature),
                 radius: this._particleRadius,
                 mass: this._particleMass
@@ -153,16 +145,16 @@ export class Gas {
             throw new Error('Temperature must be greater than zero.');
 
         const scale = Math.sqrt(newTemperature / this._temperature);
-        for (const particle of this._particles.slice(1, this._particles.length))
+        for (const particle of this._bindables.slice(1, this._bindables.length))
             particle.velocity.multiplyScalar(scale);
         this._temperature = newTemperature;
     }
 
     reset(temperature = this._temperature) {
-        this._particles.length = this._baseParticleCount;
+        this._bindables.length = this._baseParticleCount;
         this._temperature = temperature;
         for (let i = 0; i < this._baseParticleCount; i++)
-            this.#resetParticle(this._particles[i], i === 0 ? 0 : this._temperature);
+            this.#resetParticle(this._bindables[i], i === 0 ? 0 : this._temperature);
     }
 
     /**
@@ -183,7 +175,7 @@ export class Gas {
 
         // normalize so that area is equal to histogram
         const sumTheory = theory.reduce((a, b) => a + b, 0);
-        const scale = this._particles.length / sumTheory;
+        const scale = this._bindables.length / sumTheory;
         return theory.map(v => v * scale);
     }
 
@@ -197,14 +189,14 @@ export class Gas {
         const binSize = maxSpeed / binCount;
         let sumV2 = 0;
 
-        for (const particle of this._particles.slice(1)) { // Skip tracer
+        for (const particle of this._bindables.slice(1)) { // Skip tracer
             sumV2 += particle.velocity.lengthSq();
             const speed = particle.velocity.length();
             const index = Math.min(Math.floor(speed / binSize), binCount - 1);
             bins[index]++;
         }
 
-        const meanV2 = sumV2 / this._particles.length;
+        const meanV2 = sumV2 / this._bindables.length;
         return {
             speeds: Array.from({ length: binCount }, (_, i) => (i + 0.5) * binSize),
             bins,
@@ -214,7 +206,7 @@ export class Gas {
 
     /** @param {number} dt */
     evolve(dt) {
-        const particles = this._particles.slice(0, this._particles.length);
+        const particles = this._bindables.slice(0, this._bindables.length);
         const limit = this._containerSize * .5 - this._particleRadius;
         for (const particle of particles) {
             this._limitToContainer(particle, limit);

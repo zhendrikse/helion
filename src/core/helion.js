@@ -11,7 +11,7 @@ import { ThreeJsScene } from '../view/3d/scene.js';
 import { Renderable, Renderer } from '../view/renderer.js';
 import { Colour } from '../view/colormappers.js';
 import { Object3D } from 'three/src/Three.js';
-import { Binding } from "../model/behavior.js";
+import {BindableCollection, Binding} from "../model/behavior.js";
 
 class SimulationClock {
     /**
@@ -258,29 +258,13 @@ export class Simulation {
         return this;
     }
 
-    /** @param {Binding} binding */
+    /**
+     * Bind model to view.
+     *
+     * @param {Binding | BindableCollection } binding
+     */
     bind(binding) {
-        // See if this view is already attached to some binding
-        const existingIndex = this._bindings.findIndex(
-            b => b.view === binding.view
-        );
-
-        if (existingIndex >= 0) {
-            const old = this._bindings[existingIndex];
-
-            // Reset old view before it is being reused
-            old.view.reset?.();
-
-            // Replace existing binding
-            this._bindings[existingIndex] = binding;
-
-            binding.initialize();
-        } else {
-            this._renderer.add(binding.view);
-            this._bindings.push(binding);
-            binding.initialize();
-        }
-
+        binding.addTo(this._bindings, this._renderer);
         return this;
     }
 

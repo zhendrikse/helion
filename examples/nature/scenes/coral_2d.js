@@ -1,5 +1,5 @@
 import {
-    Circle, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, MathPhysicsModelBehavior
+    Circle, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, Bindable
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
 import { Colour, ColorMapper } from '../../../src/view/colormappers.js';
@@ -16,7 +16,7 @@ function normalize(value, minVal, maxVal) {
     return range === 0.0 ? 0.5 : (clampedValue - minVal) / range;
 }
 
-export class ParticleCloud extends MathPhysicsModelBehavior {
+export class ParticleCloud extends Bindable {
     static areColliding(position1, position2) {
         return position1.distanceSquaredTo(position2) < thresholdDistanceSquared;
     }
@@ -88,7 +88,7 @@ export class ParticleCloud extends MathPhysicsModelBehavior {
 }
 
 // Per-particle wrapper zodat Circle (Renderable2D) kan binden.
-class CoralParticle extends MathPhysicsModelBehavior {
+class CoralParticle extends Bindable {
     constructor(field, index) {
         super();
         this._field = field;

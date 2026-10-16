@@ -1,4 +1,4 @@
-import { MathPhysicsModelBehavior } from '../behavior.js';
+import { Bindable } from '../behavior.js';
 import { Complex, Interval } from './math.js';
 import { Vec2, Vec3 } from './objects.js';
 import { Solver } from './numerics/solvers/solvers.js';
@@ -34,7 +34,7 @@ export class Domain {
  * ComplexField (composition) ──────► ComplexSurface
  * VectorField  (composition) ──────► VectorVisualization
  */
-export class Field extends MathPhysicsModelBehavior {
+export class Field extends Bindable {
     /**
      * @abstract
      * @param {number} u normalized coordinate one.
@@ -74,7 +74,7 @@ export class ComplexField extends Field {
     }
 }
 
-export class VectorField extends MathPhysicsModelBehavior {
+export class VectorField extends Bindable {
     /**
      * @param {Vec2 | Vec3} positionVector 
      * @param {Vec2 | Vec3} target
@@ -204,7 +204,7 @@ export class MultivariateFunction extends ScalarField {
 /**
  * Real function f: R → R
  */
-export class RealFunction extends MathPhysicsModelBehavior {
+export class RealFunction extends Bindable {
     /** 
      * @param {{
      *  func?: (x: number) => number,

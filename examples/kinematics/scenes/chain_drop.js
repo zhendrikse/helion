@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Box, Slider, Range, SwitchableBondView, RadialSymmetricBody,
-    MathPhysicsModelBehavior, SpringForce, Force, UniformGravitationalForce, Block, G, UPlotGraph,
+    Bindable, SpringForce, Force, UniformGravitationalForce, Block, G, UPlotGraph,
     BodyPair, Colour
 } from '../../../src/index.js';
 import {g} from '../../../src/model/phys/forces.js';
@@ -48,7 +48,7 @@ class PivotForce extends Force {
 }
 
 const gravitationalForce = new UniformGravitationalForce();
-class Chain extends MathPhysicsModelBehavior {
+class Chain extends Bindable {
     constructor({
         totalBalls = 20,
         length = 1,

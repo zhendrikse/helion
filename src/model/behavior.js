@@ -1,3 +1,6 @@
+import {Renderer} from "../view/renderer.js";
+import {Simulation} from "../core/helion.js";
+
 export class Transformation {
     /**
      * @abstract
@@ -6,7 +9,7 @@ export class Transformation {
     applyTo(body) {}
 }
 
-export class MathPhysicsModelBehavior {
+export class Bindable {
     /**
      * Keeps the model and view synchronized at all times!
      * @param {Renderable} view view to synchronize the model with.
@@ -35,6 +38,64 @@ export class MathPhysicsModelBehavior {
     reset() {}
 }
 
+export class BindableCollection {
+    constructor() {
+        /** @type {Bindable[]} */
+        this._bindables = [];
+        /** @type {Binding[]} */
+        this._bindings = [];
+    }
+
+    /** @param {Bindable} bindable */
+    push(bindable) {
+        this._bindables.push(bindable);
+    }
+
+    addTo(simulationBindings, renderer) {
+        this._bindings.forEach(binding => binding.addTo(simulationBindings, renderer));
+    }
+
+    /** @returns {ArrayIterator<Bindable>} */
+    [Symbol.iterator]() {
+        return this._bindables[Symbol.iterator]();
+    }
+
+    /** @returns {ArrayIterator<[number, Bindable]>} */
+    entries() {
+        return this._bindables.entries();
+    }
+
+    /**
+     * Synchronize model only once with the view. Important: the
+     * model is also synchronized with the view at every user interaction!!
+     * @param {Renderable[]} viewCollection views to synchronize the models with.
+     */
+    onceWith(viewCollection) {
+        this._bindables.forEach((bindable, index) =>
+            this._bindings.push(bindable.onceWith(viewCollection[index])));
+        return this;
+    }
+
+    /**
+     * Keeps the models and views synchronized at all times!
+     * @param {Renderable[]} viewCollection views to synchronize the models with.
+     */
+    alwaysWith(viewCollection) {
+        /** @type {Binding[]} */
+        this._bindables.forEach((bindable, index) =>
+            this._bindings.push(bindable.alwaysWith(viewCollection[index])));
+        return this;
+    }
+
+    apply(transformation) {
+        this._bindables.forEach(bindable => transformation.applyTo(bindable));
+    }
+
+    reset() {
+        this._bindables.forEach(bindable => bindable.reset());
+    }
+}
+
 /**
  * Binding between the phys/math model and view.
  */
@@ -45,7 +106,7 @@ export class Binding {
     });
 
     /**
-     * @param {MathPhysicsModelBehavior} model
+     * @param {Bindable} model
      * @param {Renderable} view
      * @param {string} mode
      */
@@ -53,6 +114,31 @@ export class Binding {
         this.model = model;
         this.view = view;
         this.mode = mode;
+    }
+
+    /**
+     * @param {Binding[]} bindings
+     * @param {Renderer} renderer
+     */
+    addTo(bindings, renderer) {
+        // See if this view is already attached to some binding
+        const existingIndex = bindings.findIndex(binding => binding.view === this.view);
+
+        if (existingIndex >= 0) {
+            const old = bindings[existingIndex];
+
+            // Reset old view before it is being reused
+            old.view.reset?.();
+
+            // Replace existing binding
+            bindings[existingIndex] = this;
+
+            this.initialize();
+        } else {
+            renderer.add(this.view);
+            bindings.push(this);
+            this.initialize();
+        }
     }
 
     forceSynchronize() {

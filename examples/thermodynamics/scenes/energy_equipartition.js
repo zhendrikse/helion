@@ -4,6 +4,7 @@ import {
     Interval
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
+import {BindableCollection} from "../../../src/model/behavior.js";
 
 // Simulation constants
 const SCALE = 1e10;
@@ -136,9 +137,9 @@ export class CarbonMonoxide extends BodyPair {
     get mass() { return this.body2.mass + this.body1.mass; }
 }
 
-class CarbonMonoxideGas {
+class CarbonMonoxideGas extends BindableCollection {
     constructor(moleculeCount = MOLECULES_COUNT, temperature = 298, boxSize = L) {
-        this._molecules = [];
+        super();
         this._boxSize = boxSize;
         this._temperature = temperature;
         const mass = 14E-3 / 6E23; // Average mass of Oxygen and Carbon
@@ -147,30 +148,26 @@ class CarbonMonoxideGas {
             const pos = new Vec3(Math.random() - .5, Math.random() - .5, Math.random() - .5)
                 .multiplyScalar(boxSize);
             const molecule = new CarbonMonoxide(pos, Math.sqrt(3 * k * temperature / mass));
-            this._molecules.push(molecule);
+            this._bindables.push(molecule);
         }
-    }
-
-    /**  @returns {Iterator<CarbonMonoxide>} */
-    [Symbol.iterator]() {
-        return this._molecules[Symbol.iterator]();
     }
 
     /** @param {number} dt */
     evolve(dt) {
-        for (const molecule of this._molecules)
+        for (const molecule of this._bindables)
             molecule.apply(bondForce);
 
-        for (const molecule of this._molecules) {
+        for (const molecule of this._bindables) {
             molecule.integrate(dt);
             molecule.checkBoxBounce(this._boxSize * 2);
         }
 
-        for (let i = 0; i < this._molecules.length; i++)
-            for (let j = i + 1; j < this._molecules.length; j++)
-                this._molecules[i].resolveCollisionWith(this._molecules[j]);
+        for (let i = 0; i < this._bindables.length; i++)
+            for (let j = i + 1; j < this._bindables.length; j++)
+                this._bindables[i].resolveCollisionWith(this._bindables[j]);
     }
 
+    // TODO Add temperature slider to demo
     /** @param {number} newTemperature */
     updateToNewTemperature(newTemperature) {
         // Modify the speed of all molecules according to equipartition: v ~ sqrt(T)
@@ -181,25 +178,23 @@ class CarbonMonoxideGas {
     }
 
     get translationalKineticEnergy() {
-        return this._molecules.reduce((sum, molecule) => sum + molecule.translationalKineticEnergy, 0);
+        return this._bindables.reduce((sum, molecule) => sum + molecule.translationalKineticEnergy, 0);
     }
 
     get vibrationalKineticEnergy() {
-        return this._molecules.reduce((sum, molecule) => sum + molecule.vibrationalKineticEnergy, 0);
+        return this._bindables.reduce((sum, molecule) => sum + molecule.vibrationalKineticEnergy, 0);
     }
 
     get vibrationalPotentialEnergy() {
-        return this._molecules.reduce((sum, molecule) => sum + molecule.vibrationalPotentialEnergy, 0);
+        return this._bindables.reduce((sum, molecule) => sum + molecule.vibrationalPotentialEnergy, 0);
     }
 
     get rotationalKineticEnergy() {
-        return this._molecules.reduce((sum, molecule) => sum + molecule.rotationalKineticEnergy, 0);
+        return this._bindables.reduce((sum, molecule) => sum + molecule.rotationalKineticEnergy, 0);
     }
 }
 
 const gas = new CarbonMonoxideGas();
-/** @type {DiatomicMolecule[]} */
-const moleculeViews = [];
 
 let t = 0;
 let steps = 0;
@@ -228,6 +223,11 @@ const graph = new UPlotGraph({
     yRange: new Interval(0, 1.1e-14)
 });
 
+/** @type {DiatomicMolecule[]} */
+const moleculeViews = [];
+for (const molecule of gas)
+    moleculeViews.push(new DiatomicMolecule());
+
 const simulation = Simulation
     .with({
         htmlDivId: 'energyEquipartitionContainer',
@@ -236,6 +236,7 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .addGraph(graph)
+    .bind(gas.alwaysWith(moleculeViews))
     .runsEvery(0.003)
     .advancesBy(5e-16)
     .substeps(3)
@@ -245,22 +246,19 @@ const simulation = Simulation
 
         if (!simulation.isRunning) return;
 
-        // 1-op-1 oude logica: cumulatief gemiddelde, decimated plot
         totalTranslational += gas.translationalKineticEnergy;
         totalVibrationalKE += gas.vibrationalKineticEnergy;
         totalVibrationalPE += gas.vibrationalPotentialEnergy;
         totalRotational += gas.rotationalKineticEnergy;
         steps++;
 
-        if (steps % 150 === 0) {
-            graph.push([
-                t * 1e12,
+        if (steps % 150 === 0)
+            graph.push([t * 1e12,
                 totalTranslational / steps,
                 totalVibrationalKE / steps,
                 totalVibrationalPE / steps,
                 totalRotational / steps,
             ]);
-        }
     })
     .onReset(() => {
         t = 0;
@@ -275,9 +273,3 @@ const simulation = Simulation
         .add('Cylinders', () => moleculeViews.forEach(view => view.bondType = SwitchableBondView.Type.Cylinder))
         .checked(1)
     );
-
-for (const molecule of gas) {
-    const moleculeView = new DiatomicMolecule();
-    moleculeViews.push(moleculeView);
-    simulation.bind(molecule.alwaysWith(moleculeView));
-}

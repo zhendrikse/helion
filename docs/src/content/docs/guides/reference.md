@@ -75,7 +75,7 @@ Simulation.with({ htmlDivId: "container", scale: 1e-9, headUpDisplay: true })
 
 `runsEvery` vs `advancesBy`: scheduling interval vs simulated time. `maxOutCpu(fn, minFrameRate=30, iterationsPerFrame=10)` is the adaptive alternative to `onStep`.
 
-### `MathPhysicsModelBehavior` / `Binding` / `Transformation`
+### `Bindable` / `Binding` / `Transformation`
 
 ```js
 class Transformation { applyTo(model) {} }
