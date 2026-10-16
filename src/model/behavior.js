@@ -49,24 +49,6 @@ export class ViewsCollection {
         this._views = [];
     }
 
-    /** @returns {ArrayIterator<Renderable>} */
-    [Symbol.iterator]() {
-        return this._views[Symbol.iterator]();
-    }
-
-    /**
-     * @param {(view: Renderable, index: number, views: Renderable[]) => void} callback
-     * @param {*} [thisArg]
-     */
-    forEach(callback, thisArg) {
-        this._views.forEach(callback, thisArg);
-    }
-
-    /** @returns {ArrayIterator<[number, Renderable]>} */
-    entries() {
-        return this._views.entries();
-    }
-
     with(options) {
         this._options = options;
         return this;
@@ -150,6 +132,10 @@ export class BindableCollection {
 
     reset() {
         this._bindables.forEach(bindable => bindable.reset());
+        this._bindings.forEach(binding => {
+            binding.model.reset();
+            binding.view.reset();
+        });
     }
 }
 

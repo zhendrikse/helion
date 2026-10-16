@@ -58,15 +58,15 @@ const simulation = Simulation
         .onClick(() => {
             const newParticles = gas.addParticles(PARTICLES_TO_ADD);
             simulation.bind(newParticles.alwaysWith(circles));
-            circles.forEach((circle, index) =>
-                circle.fillColor = index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow);
+            gas.forEach((binding, index) =>
+                binding.view.fillColor = index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow);
         }))
     .append(new Checkbox('Gas particles')
         .checked(true)
         .onChange(checked => {
-            circles.forEach((circle, index) => {
+            gas.forEach((binding, index) => {
                 if (index !== 0)
-                    circle.visible = checked;
+                    binding.view.visible = checked;
             })
         })
         .togetherWith(new RadioGroup()
@@ -116,8 +116,8 @@ function reset() {
     gas.reset(temperatureSlider.value);
     circles.reset();
     simulation.bind(gas.alwaysWith(circles));
-    circles.forEach((circle, index) =>
-        circle.fillColor = index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow
+    gas.forEach((binding, index) =>
+        binding.view.fillColor = index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow
     );
     tracerTrail.reset();
     histogramBuffer.length = 0;

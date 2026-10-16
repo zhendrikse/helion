@@ -53,7 +53,6 @@ const colorSchemes = [
 ];
 
 const flowerSeeds = new BindableCollection();
-const flowerSeedsView = ViewsCollection.of(Circle).with({ fillColor: Colour.Yellow });
 for (let index = 0; index <= numberOfDots; index++)
     flowerSeeds.add(new FlowerParticle(c, index));
 
@@ -67,16 +66,16 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .onReset(() => {
         n = 0;
-        flowerSeeds.forEach(seed => seed.updateWith(c));
+        flowerSeeds.forEach(seedBinding => seedBinding.model.updateWith(c));
         updateTitle(c, n);
     })
-    .bind(flowerSeeds.alwaysWith(flowerSeedsView))
+    .bind(flowerSeeds.alwaysWith(ViewsCollection.of(Circle).with({ fillColor: Colour.Yellow })))
     .runsEvery(0.02)
     .onStep(() => {
         if (n > numberOfDots)
             return; 
 
-        flowerSeedsView.forEach((view, index) => view.visible = index <=n);
+        flowerSeeds.forEach((binding, index) => binding.view.visible = index <=n);
         updateTitle(c, n);
         n++;
     })

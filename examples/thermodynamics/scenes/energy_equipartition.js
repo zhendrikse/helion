@@ -154,16 +154,16 @@ class CarbonMonoxideGas extends BindableCollection {
 
     /** @param {number} dt */
     evolve(dt) {
-        for (const molecule of this)
-            molecule.apply(bondForce);
+        for (const binding of this)
+            binding.model.apply(bondForce);
 
-        for (const molecule of this) {
-            molecule.integrate(dt);
-            molecule.checkBoxBounce(this._boxSize * 2);
+        for (const binding of this) {
+            binding.model.integrate(dt);
+            binding.model.checkBoxBounce(this._boxSize * 2);
         }
 
-        for (let i = 0; i < this._bindables.length; i++)
-            for (let j = i + 1; j < this._bindables.length; j++)
+        for (let i = 0; i < this.size; i++)
+            for (let j = i + 1; j < this.size; j++)
                 this._bindables[i].resolveCollisionWith(this._bindables[j]);
     }
 
@@ -223,7 +223,6 @@ const graph = new UPlotGraph({
     yRange: new Interval(0, 1.1e-14)
 });
 
-const moleculesView = ViewsCollection.of(DiatomicMolecule);
 const simulation = Simulation
     .with({
         htmlDivId: 'energyEquipartitionContainer',
@@ -232,7 +231,7 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .addGraph(graph)
-    .bind(gas.alwaysWith(moleculesView))
+    .bind(gas.alwaysWith(ViewsCollection.of(DiatomicMolecule)))
     .runsEvery(0.003)
     .advancesBy(5e-16)
     .substeps(3)
@@ -265,7 +264,7 @@ const simulation = Simulation
     })
     .addObject3D(new Aquarium({ size: new Vec3(1, 1, 1).multiplyScalar(2 * L) }))
     .append(new RadioGroup()
-        .add('Springs', () => moleculesView.forEach(view => view.bondType = SwitchableBondView.Type.Spring))
-        .add('Cylinders', () => moleculesView.forEach(view => view.bondType = SwitchableBondView.Type.Cylinder))
+        .add('Springs', () => gas.forEach(binding => binding.view.bondType = SwitchableBondView.Type.Spring))
+        .add('Cylinders', () => gas.forEach(binding => binding.view.bondType = SwitchableBondView.Type.Cylinder))
         .checked(1)
     );

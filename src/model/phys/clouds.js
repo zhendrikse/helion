@@ -147,7 +147,7 @@ export class Gas extends BindableCollection{
             throw new Error('Temperature must be greater than zero.');
 
         const scale = Math.sqrt(newTemperature / this._temperature);
-        for (const particle of this._bindables.slice(1, this._bindables.length))
+        for (const particle of this._bindables.slice(1, this.size))
             particle.velocity.multiplyScalar(scale);
         this._temperature = newTemperature;
     }
@@ -177,7 +177,7 @@ export class Gas extends BindableCollection{
 
         // normalize so that area is equal to histogram
         const sumTheory = theory.reduce((a, b) => a + b, 0);
-        const scale = this._bindables.length / sumTheory;
+        const scale = this.size / sumTheory;
         return theory.map(v => v * scale);
     }
 
@@ -198,7 +198,7 @@ export class Gas extends BindableCollection{
             bins[index]++;
         }
 
-        const meanV2 = sumV2 / this._bindables.length;
+        const meanV2 = sumV2 / this.size;
         return {
             speeds: Array.from({ length: binCount }, (_, i) => (i + 0.5) * binSize),
             bins,
@@ -208,7 +208,7 @@ export class Gas extends BindableCollection{
 
     /** @param {number} dt */
     evolve(dt) {
-        const particles = this._bindables.slice(0, this._bindables.length);
+        const particles = this._bindables.slice(0, this.size);
         const limit = this._containerSize * .5 - this._particleRadius;
         for (const particle of particles) {
             this._limitToContainer(particle, limit);
