@@ -1,19 +1,56 @@
 import {
     RadialSymmetricBody, Button, Circle, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
-    Interval, PairForce, Range, Registry, Simulation, Slider, Vec2, Vec3
+    Interval, PairForce, Range, Registry, Simulation, Slider, Vec2, Vec3, ViewsCollection,
+    BindableCollection, Force
 } from '../../../src/index.js';
-import { LinearSRGBColorSpace} from "three";
+import { LinearSRGBColorSpace } from "three";
 
 const DEFAULT_PARTICLE_COUNT = 1000;
-const MAX_PARTICLE_COUNT = 5000;
+const MAX_PARTICLE_COUNT = 2500;
 const WORLD_HEIGHT = 20;
 const PARTICLE_RADIUS_IN_PIXELS = 7.5;
 const COLOR_UPDATE_INTERVAL = 10;
-const SPEED_COLOR_MAX = 30;
+const SPEED_COLOR_MAX = 40;
 
 const domainScale = 30;
 const gridCellSize = 1;
 const INIT_MAX_PARTICLES_IN_CELL = 50;
+const PI = Math.PI;
+
+class WallForce extends Force {
+    constructor(xRange, yRange, smoothingLength, mass) {
+        super();
+        this._xRange = xRange;
+        this._yRange = yRange;
+        this._h = smoothingLength;
+        this._mass = mass;
+        this._WspikyGradCoeff = -45.0 / (PI * Math.pow(smoothingLength, 6));
+    }
+
+    /** @param {SPHParticle} particle */
+    _calculateForceOn(particle) {
+        const h = this._h;
+        const c = this._WspikyGradCoeff;
+        if (particle.position.x < this._xRange.min + h) {
+            const r = particle.position.x - this._xRange.min;
+            particle.force.x -= this._mass * particle.pressure / particle.rho *
+                SPHSolver.Wspiky_grad2(h, r, c) * r;
+        } else if (particle.position.x > this._xRange.max - h) {
+            const r = this._xRange.max - particle.position.x;
+            particle.force.x += this._mass * particle.pressure / particle.rho *
+                SPHSolver.Wspiky_grad2(h, r, c) * r;
+        }
+        if (particle.position.y < this._yRange.min + h) {
+            const r = particle.position.y - this._yRange.min;
+            particle.force.y -= this._mass * particle.pressure / particle.rho *
+                SPHSolver.Wspiky_grad2(h, r, c) * r;
+        } else if (particle.position.y > this._yRange.max - h) {
+            const r = this._yRange.max - particle.position.y;
+            particle.force.y += this._mass * particle.pressure / particle.rho *
+                SPHSolver.Wspiky_grad2(h, r, c) * r;
+        }
+    }
+}
 
 class SPHForce extends PairForce {
     constructor({mass = 1, viscosity = 3, smoothingLength = 1} = {}) {
@@ -22,8 +59,8 @@ class SPHForce extends PairForce {
         this.viscosity = viscosity;
         this._h = smoothingLength;
         this._hSquared = smoothingLength * smoothingLength;
-        this._WspikyGradCoeff = -45.0 / (Math.PI * Math.pow(smoothingLength, 6));
-        this._WviscLaplCoeff = 45.0 / (Math.PI * Math.pow(smoothingLength, 5));
+        this._WspikyGradCoeff = -45.0 / (PI * Math.pow(smoothingLength, 6));
+        this._WviscLaplCoeff = 45.0 / (PI * Math.pow(smoothingLength, 5));
         this._forceVector = new Vec2();
         this._positionVector = new Vec2();
         this._velocityVector = new Vec2();
@@ -53,30 +90,6 @@ class SPHForce extends PairForce {
         this._velocityVector.copy(particle2.velocity).sub(particle1.velocity);
         this._forceVector.add(this._velocityVector.multiplyScalar(viscosityTerm)).negate();
     }
-
-    /** @param {SPHParticle} particle */
-    applyWallForce(particle, xRange, yRange) {
-        const h = this._h;
-        const c = this._WspikyGradCoeff;
-        if (particle.position.x < xRange.min + h) {
-            const r = particle.position.x - xRange.min;
-            particle.force.x -= this.mass * particle.pressure / particle.rho *
-                SPHSolver.Wspiky_grad2(h, r, c) * r;
-        } else if (particle.position.x > xRange.max - h) {
-            const r = xRange.max - particle.position.x;
-            particle.force.x += this.mass * particle.pressure / particle.rho *
-                SPHSolver.Wspiky_grad2(h, r, c) * r;
-        }
-        if (particle.position.y < yRange.min + h) {
-            const r = particle.position.y - yRange.min;
-            particle.force.y -= this.mass * particle.pressure / particle.rho *
-                SPHSolver.Wspiky_grad2(h, r, c) * r;
-        } else if (particle.position.y > yRange.max - h) {
-            const r = yRange.max - particle.position.y;
-            particle.force.y += this.mass * particle.pressure / particle.rho *
-                SPHSolver.Wspiky_grad2(h, r, c) * r;
-        }
-    }
 }
 
 class SPHParticle extends RadialSymmetricBody {
@@ -94,7 +107,7 @@ class SPHParticle extends RadialSymmetricBody {
     } = {}) {
         super({ position: position.clone(), velocity: velocity.clone(), mass, radius });
         this.rho = 0;
-        this.P = 0;
+        this.pressure = 0;
         this._acceleration = new Vec2();
     }
 
@@ -110,12 +123,6 @@ class SPHParticle extends RadialSymmetricBody {
         this.velocity.addScaledVector(this._acceleration, dt);
         this.position.addScaledVector(this.velocity, dt);
         this.position.addScaledVector(this._acceleration, .5 * dt * dt);
-    }
-
-    resetSphState() {
-        this.force.set(0, 0);
-        this.rho = 0;
-        this.pressure = 0;
     }
 }
 
@@ -217,7 +224,7 @@ class Grid {
 
 const grid = new Grid();
 
-class SPHSolver {
+class SPHSolver extends BindableCollection {
     static Wpoly6(hSquared, rSquared, coefficient) {
         const temp = hSquared - rSquared;
         return coefficient * temp * temp * temp;
@@ -238,6 +245,7 @@ class SPHSolver {
         gasConstant = 120,
         mass = 1
     } = {}) {
+        super();
         this._gravity = gravity;
         this._rho_0 = restDensity;
         this._mu = viscosity;
@@ -247,16 +255,15 @@ class SPHSolver {
         // Precomputed smoothing-related constants
         this._h = smoothingLength;
         this._hSquared = smoothingLength * smoothingLength;
-        this._Wpoly6_coeff = 315.0 / (64 * Math.PI * Math.pow(smoothingLength, 9));
-        this._Wspiky_grad_coeff = -45.0 / (Math.PI * Math.pow(smoothingLength, 6));
-        this._Wvisc_lapl_coeff = 45.0 / (Math.PI * Math.pow(smoothingLength, 5));
+        this._Wpoly6_coeff = 315.0 / (64 * PI * Math.pow(smoothingLength, 9));
+        this._Wspiky_grad_coeff = -45.0 / (PI * Math.pow(smoothingLength, 6));
+        this._Wvisc_lapl_coeff = 45.0 / (PI * Math.pow(smoothingLength, 5));
         this._sphForce = new SPHForce({mass, viscosity, smoothingLength});
 
-        /** @type {SPHParticle[]} */
-        this._particles = [];
         this._activeParticleCount = 0;
         this._xRange = new Interval(0, 1);
         this._yRange = new Interval(0, 1);
+        this._wallForce = new WallForce(this._xRange, this._yRange, smoothingLength, mass);
 
         // For interaction with mouse movements
         this.forceVelocityOn = false;
@@ -274,9 +281,6 @@ class SPHSolver {
     set viscosity(/** @type {number} */ value) { this._mu = value; this._sphForce.viscosity = value; }
     set gasConstant(/** @type {number} */ value) { this._k = value; }
 
-    /** @returns {ArrayIterator<[number, SPHParticle]>} */
-    entries() { return this._particles.entries(); }
-
     _limits () {
         return { xLimit: simulation.width / domainScale, yLimit: simulation.height / domainScale }
     };
@@ -287,6 +291,7 @@ class SPHSolver {
         const {xLimit, yLimit} = this._limits();
         this._xRange = new Interval(left / domainScale, xLimit);
         this._yRange = new Interval(bottom / domainScale, yLimit);
+        this._wallForce = new WallForce(this._xRange, this._yRange, this._h, this._mass);
         this.setNumParticles(grid, particleCount, true);
     }
 
@@ -294,6 +299,7 @@ class SPHSolver {
         const {xLimit, yLimit} = this._limits();
         this._xRange = new Interval(Math.max(left / domainScale, 0), Math.min(right / domainScale, xLimit));
         this._yRange = new Interval(Math.max(bottom / domainScale, 0), Math.min(top / domainScale, yLimit));
+        this._wallForce = new WallForce(this._xRange, this._yRange, this._h, this._mass);
     }
 
     setNumParticles(grid, n, reset = false) {
@@ -301,8 +307,8 @@ class SPHSolver {
         const previousCount = this._activeParticleCount;
         this._activeParticleCount = n;
 
-        for (let i = this._particles.length; i < n; i++)
-            this._particles.push(new SPHParticle({
+        for (let i = this.size; i < n; i++)
+            this._bindables.push(new SPHParticle({
                 position: new Vec2(
                     Math.random() * this._xRange.range + this._xRange.min,
                     Math.random() * this._yRange.range + this._yRange.min
@@ -312,14 +318,14 @@ class SPHSolver {
             }));
 
         for (let i = 0; i < n; i++) {
-            const particle = this._particles[i];
+            const particle = this._bindables[i];
             if (reset || i >= previousCount) {
                 particle.position.set(
                     Math.random() * this._xRange.range + this._xRange.min,
                     Math.random() * this._yRange.range + this._yRange.min
                 );
                 particle.velocity.set(Math.random() - 0.5, Math.random() - 0.5);
-                particle.resetSphState();
+                particle.reset();
             }
             particle.mass = this._mass;
             particle.rho = this._mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
@@ -353,27 +359,19 @@ class SPHSolver {
         particle2.rho += temp;
     }
 
-    _addForces(particle1, particle2) {
-        particle1.and(particle2).apply(this._sphForce);
-    }
-
     _calcForces(grid) {
         for (const cell of grid)
             for (let i = 0; i < cell.numParticles; i++) {
                 const particle = cell._particles[i];
                 for (let j = i + 1; j < cell.numParticles; j++)
-                    this._addForces(particle, cell._particles[j]);
+                    particle.and(cell._particles[j]).apply(this._sphForce);
 
                 for (const neighbor of cell.halfNeighbors)
                     for (let j = 0; j < neighbor.numParticles; j++)
-                        this._addForces(particle, neighbor._particles[j]);
+                        particle.and(neighbor._particles[j]).apply(this._sphForce);
 
-                this._addWallForces(particle);
+                particle.apply(this._wallForce);
             }
-    }
-
-    _addWallForces(particle) {
-        this._sphForce.applyWallForce(particle, this._xRange, this._yRange);
     }
 
     _calcForcedVelocity() {
@@ -414,7 +412,7 @@ class SPHSolver {
 
     _updatePosition(grid, dt) {
         for (let i = 0; i < this._activeParticleCount; i++) {
-            const particle = this._particles[i];
+            const particle = this._bindables[i];
             particle.integrate(this._gravity, dt);
             this._boxBounce(particle);
             grid.addParticleToCell(particle);
@@ -435,8 +433,6 @@ class SPHSolver {
         this._updatePosition(grid, dt);
     }
 
-    particleAt = index => this._particles[index];
-
     reset() {
         this.restDensity = 4.75;
         this.viscosity = 3;
@@ -447,6 +443,18 @@ class SPHSolver {
 }
 
 class ParameterControls {
+    static colorRegistry = new Registry({
+        label: 'Particle color',
+        entries: {
+            Green: Colour.Green,
+            Cyan: Colour.Cyan,
+            Blue: Colour.LightBlue,
+            Orange: Colour.Orange,
+            White: Colour.White,
+            Speed: Colour.LightBlue
+        }
+    });
+    
     constructor(solver) {
         this.particleCount = new Slider('Num particles')
             .withRange(new Range(0, MAX_PARTICLE_COUNT, 10))
@@ -481,6 +489,21 @@ class ParameterControls {
             .withRange(new Range(-100, 100, 10))
             .withValue(-20)
             .onInput(value => solver.gravity.set(solver.gravity.x, value));
+        this.colorControl = new DropdownMenu()
+            .for(ParameterControls.colorRegistry)
+            .withValue('Speed')
+            .onChange(name => {
+                speedColoring = name === 'Speed';
+                colorUpdateCounter = 0;
+
+                if (speedColoring)
+                    updateParticleColors();
+                else {
+                    particleColor = ParameterControls.colorRegistry.get(name);
+                    for (const binding of solver)
+                        binding.view.fillColor = particleColor;
+                }
+            });
     }
 
     reset() {
@@ -494,33 +517,6 @@ class ParameterControls {
     }
 }
 
-const colorRegistry = new Registry({
-    label: 'Particle color',
-    entries: {
-        Green: Colour.Green,
-        Cyan: Colour.Cyan,
-        Blue: Colour.LightBlue,
-        Orange: Colour.Orange,
-        White: Colour.White,
-        Speed: Colour.LightBlue
-    }
-});
-
-const colorControl = new DropdownMenu()
-    .for(colorRegistry)
-    .withValue('Speed')
-    .onChange(name => {
-        speedColoring = name === 'Speed';
-        colorUpdateCounter = 0;
-
-        if (speedColoring)
-            updateParticleColors();
-        else {
-            particleColor = colorRegistry.get(name);
-            for (const view of particleViews)
-                view.fillColor = particleColor;
-        }
-    });
 
 const solver = new SPHSolver();
 const controls = new ParameterControls(solver);
@@ -568,17 +564,17 @@ const simulation = Simulation
     .append(controls.gasConstant)
     .append(controls.restDensity)
     .append(controls.viscosity)
-    .append(colorControl)
+    .append(controls.colorControl)
     .append(new Button('Defaults')
         .withText('Set defaults')
         .onClick(() => {
             particleCount = DEFAULT_PARTICLE_COUNT;
             controls.reset();
-            colorControl.withValue('Speed');
+            controls.colorControl.withValue('Speed');
             speedColoring = true;
             colorUpdateCounter = 0;
-            for (const view of particleViews)
-                view.fillColor = particleColor;
+            for (const binding of solver)
+                binding.view.fillColor = particleColor;
 
             createParticleViews();
             solver.setNumParticles(grid, particleCount);
@@ -589,18 +585,17 @@ const simulation = Simulation
 /** @type {SPHParticleView[]} */
 const particleViews = [];
 let particleCount = DEFAULT_PARTICLE_COUNT;
-let particleColor = colorRegistry.get('Blue');
+let particleColor = ParameterControls.colorRegistry.get('Blue');
 let speedColoring = true;
 let colorUpdateCounter = 0;
 
 const normalizer = new FixedIntervalNormalizer(new Interval(0, SPEED_COLOR_MAX));
-const colorMapper = ColorMappers.get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace});
+const colorMapper = ColorMappers.get(ColorMappers.Seismic, {colorSpace: LinearSRGBColorSpace});
 const colour = new Colour();
 function updateParticleColors() {
-    let i, particle;
-    for ([i, particle] of solver.entries()) {
-        colorMapper.map(normalizer.normalize(particle.speed), colour)
-        particleViews[i].fillColor = colour;
+    for (const binding of solver) {
+        colorMapper.map(normalizer.normalize(binding.model.speed), colour)
+        binding.view.fillColor = colour;
     }
 }
 
@@ -616,23 +611,16 @@ class SPHParticleView extends Circle {
 }
 
 function synchronizeParticleViews() {
-    for (let i = 0; i < particleViews.length; i++)
-        particleViews[i].visible = i < solver.particleCount;
+    solver.forEach((binding, index) => binding.view.visible = index < solver.particleCount);
 }
 
 function createParticleViews() {
-    for (let i = particleViews.length; i < solver.particleCount; i++) {
-        const particle = solver.particleAt(i);
-        const view = new SPHParticleView({
-            fillColor: particleColor,
-            borderColor: new Colour(0x131313),
-            borderWidth: 0.15,
-            segments: 10
-        });
-        particleViews.push(view);
-        view.visible = i < particleCount;
-        simulation.bind(particle.alwaysWith(view));
-    }
+    simulation.bind(solver.alwaysWith(ViewsCollection.of(SPHParticleView).with({
+        fillColor: particleColor,
+        borderColor: new Colour(0, 0, 0, LinearSRGBColorSpace),
+        borderWidth: 0.25,
+        segments: 8
+    })))
     synchronizeParticleViews();
 }
 
