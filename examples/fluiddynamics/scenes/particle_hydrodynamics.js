@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Button, Circle, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
-    Interval, Range, Registry, Simulation, Slider, Vec2, Vec3, Force
+    Interval, Range, Registry, Simulation, Slider, Vec2, Vec3, Force, PairForce
 } from '../../../src/index.js';
 import { LinearSRGBColorSpace} from "three";
 
@@ -15,6 +15,46 @@ const domainScale = 30;
 const gridCellSize = 1;
 const INIT_MAX_PARTICLES_IN_CELL = 50;
 const PI = Math.PI;
+
+class SPHForce extends PairForce {
+    constructor({mass = 1, viscosity = 3, smoothingLength = 1} = {}) {
+        super();
+        this.mass = mass;
+        this.viscosity = viscosity;
+        this._h = smoothingLength;
+        this._hSquared = smoothingLength * smoothingLength;
+        this._WspikyGradCoeff = -45.0 / (PI * Math.pow(smoothingLength, 6));
+        this._WviscLaplCoeff = 45.0 / (PI * Math.pow(smoothingLength, 5));
+        this._forceVector = new Vec2();
+        this._positionVector = new Vec2();
+        this._velocityVector = new Vec2();
+    }
+
+    /** @param {import('../../../src/model/phys/bodies.js').BodyPair} pair */
+    _calculateForceOn(pair) {
+        const particle1 = pair.body1;
+        const particle2 = pair.body2;
+        this._positionVector.copy(particle2.position).sub(particle1.position);
+        const rSquared = this._positionVector.lengthSq();
+        if (rSquared >= this._hSquared) {
+            this._forceVector.set(0, 0);
+            return;
+        }
+
+        const r = Math.sqrt(rSquared) + 1e-6;
+        const pressureTerm = this.mass * (particle2.pressure + particle1.pressure) /
+            (2 * particle2.rho) *
+            SPHSolver.Wspiky_grad2(this._h, r, this._WspikyGradCoeff);
+        const viscosityTerm = this.viscosity * this.mass *
+            SPHSolver.Wvisc_lapl(this._h, r, this._WviscLaplCoeff) / particle2.rho;
+
+        // PairForce applies -force to body1 and +force to body2. Negate the
+        // original SPH vector so the resulting particle forces keep their signs.
+        this._forceVector.copy(this._positionVector).multiplyScalar(pressureTerm);
+        this._velocityVector.copy(particle2.velocity).sub(particle1.velocity);
+        this._forceVector.add(this._velocityVector.multiplyScalar(viscosityTerm)).negate();
+    }
+}
 
 class WallForce extends Force {
     constructor(xRange, yRange, smoothingLength, mass) {
@@ -203,16 +243,15 @@ class SPHSolver {
     }
 
     constructor({
-                    gravity = new Vec2(0, -20),
-                    restDensity = 4.5,
-                    smoothingLength = 1,
-                    viscosity = 3,
-                    gasConstant = 120,
-                    mass = 1
-                } = {}) {
+        gravity = new Vec2(0, -20),
+        restDensity = 4.5,
+        smoothingLength = 1,
+        viscosity = 3,
+        gasConstant = 120,
+        mass = 1
+    } = {}) {
         this._gravity = gravity;
         this._rho_0 = restDensity;
-        this._mu = viscosity;
         this._k = gasConstant;
         this._mass = mass;
 
@@ -220,8 +259,6 @@ class SPHSolver {
         this._h = smoothingLength;
         this._hSquared = smoothingLength * smoothingLength;
         this._Wpoly6_coeff = 315.0 / (64 * Math.PI * Math.pow(smoothingLength, 9));
-        this._Wspiky_grad_coeff = -45.0 / (Math.PI * Math.pow(smoothingLength, 6));
-        this._Wvisc_lapl_coeff = 45.0 / (Math.PI * Math.pow(smoothingLength, 5));
 
         /** @type {SPHParticle[]} */
         this._particles = [];
@@ -229,6 +266,7 @@ class SPHSolver {
         this._xRange = new Interval(0, 1);
         this._yRange = new Interval(0, 1);
         this._wallForce = new WallForce(this._xRange, this._yRange, smoothingLength, mass);
+        this._sphForce = new SPHForce({mass, viscosity, smoothingLength});
 
         // For interaction with mouse movements
         this.forceVelocityOn = false;
@@ -237,15 +275,13 @@ class SPHSolver {
 
         // Scratch vectors
         this._positionVector = new Vec2();
-        this._velocityVector = new Vec2();
-        this._forceVector = new Vec2();
     }
 
     get gravity() { return this._gravity; }
     get particleCount() { return this._activeParticleCount; }
     set mass(/** @type {number} */ value) { this._mass = value; }
     set restDensity(/** @type {number} */ value) { this._rho_0 = value; }
-    set viscosity(/** @type {number} */ value) { this._mu = value; }
+    set viscosity(/** @type {number} */ value) { this._sphForce.viscosity = value; }
     set gasConstant(/** @type {number} */ value) { this._k = value; }
 
     /** @returns {ArrayIterator<[number, SPHParticle]>} */
@@ -329,34 +365,16 @@ class SPHSolver {
         particle2.rho += temp;
     }
 
-    _addForces(particle1, particle2) {
-        this._positionVector.copy(particle2.position).sub(particle1.position);
-        const rSquared = this._positionVector.dot(this._positionVector);
-        if (rSquared >= this._hSquared)
-            return;
-
-        const r = Math.sqrt(rSquared) + 1e-6;
-        const temp1 = this._mass * (particle2.pressure + particle1.pressure) / (2 * particle2.rho) *
-            SPHSolver.Wspiky_grad2(this._h, r, this._Wspiky_grad_coeff);
-        const temp2 = this._mu * this._mass * SPHSolver.Wvisc_lapl(this._h, r, this._Wvisc_lapl_coeff) / particle2.rho;
-        this._positionVector.copy(particle2.position);
-        this._velocityVector.copy(particle2.velocity);
-        this._forceVector.copy(this._positionVector.sub(particle1.position).multiplyScalar(temp1));
-        this._forceVector.add(this._velocityVector.sub(particle1.velocity).multiplyScalar(temp2));
-        particle1.force.add(this._forceVector);
-        particle2.force.sub(this._forceVector);
-    }
-
     _calcForces(grid) {
         for (const cell of grid)
             for (let i = 0; i < cell.numParticles; i++) {
                 const particle = cell._particles[i];
                 for (let j = i + 1; j < cell.numParticles; j++)
-                    this._addForces(particle, cell._particles[j]);
+                    particle.and(cell._particles[j]).apply(this._sphForce);
 
                 for (const neighbor of cell.halfNeighbors)
                     for (let j = 0; j < neighbor.numParticles; j++)
-                        this._addForces(particle, neighbor._particles[j]);
+                        particle.and(neighbor._particles[j]).apply(this._sphForce);
 
                 particle.apply(this._wallForce);
             }
@@ -431,7 +449,6 @@ class SPHSolver {
         this.gravity.set(0, -20);
     }
 }
-
 
 class ParameterControls {
     static colorRegistry = new Registry({
