@@ -44,19 +44,21 @@ export class Colour {
      * @param {number} rOrHexValue hex value or 0 <= red <= 1
      * @param {number} g 0 <= green <= 1
      * @param {number} b 0 <= blue <=1
+     * @param {string} colorSpace
      */
-    constructor(rOrHexValue = 0, g = -1, b = -1) {
+    constructor(rOrHexValue = 0, g = -1, b = -1, colorSpace = SRGBColorSpace) {
         this._color = new Color();
-        (g < 0 || b < 0) ? this._color.setHex(rOrHexValue) : this._color.setRGB(rOrHexValue, g, b, SRGBColorSpace);
+        (g < 0 || b < 0) ? this._color.setHex(rOrHexValue) : this._color.setRGB(rOrHexValue, g, b, colorSpace);
     }
 
     /**
      * @param {number} r 0 <= red <= 1
      * @param {number} g 0 <= green <= 1
      * @param {number} b 0 <= blue <=1
+     * @param {string} colorSpace
      */
-    setRGB(r, g, b) {
-        this._color.setRGB(r, g, b, SRGBColorSpace);
+    setRGB(r, g, b, colorSpace = SRGBColorSpace) {
+        this._color.setRGB(r, g, b, colorSpace);
         return this;
     }
 

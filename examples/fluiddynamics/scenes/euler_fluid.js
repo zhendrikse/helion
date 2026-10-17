@@ -413,8 +413,8 @@ const pressureView = new DiscreteFieldSurfaceView({
     colorSpace: LinearSRGBColorSpace,
 });
 
-const smokePressureColor = new Colour().setRGB( 1.2e-2, 1.2e-2, 1.2e-2);
-const smokeColor = new Colour().setRGB( 1 - 1.2e-2, 1 - 1.2e-2, 1 - 1.2e-2);
+const smokePressureColor = new Colour( 1.1e-2, 1.1e-2, 1.1e-2, LinearSRGBColorSpace);
+const smokeColor = new Colour( 1 - 1.2e-2, 1 - 1.2e-2, 1 - 1.2e-2, LinearSRGBColorSpace);
 const smokeMapper = ColorMappers.get(ColorMappers.Uniform, { color: smokePressureColor });
 const smokeView = new DiscreteFieldSurfaceView({
     colorMapper: smokeMapper,
