@@ -1,11 +1,11 @@
 import {
     DropdownMenu, HexValueColorMapper, LineSegmentsView, Registry,
-    Simulation, Slider, Range, Turtle, Vec3, Colour
+    Simulation, Slider, Range, Turtle, Vec3, Colour, Vec2
 } from '../../../src/index.js';
 
 const standardRules = {
     '1' : '',
-    '|' : '|',		
+    '|' : '|',
     '+' : '+',
     '-' : '-',
     '[' : '[',
@@ -19,7 +19,22 @@ const standardRules = {
  * in the final generation.
  */
 const SYSTEMS = {
+    'Hilbert curve': {
+        iterations: 6,
+        startPosition: new Vec2(-5, 10),
+        angle: 90,
+        stepLength: .4,
+        textContent: '<h3>Hilbert curve</h3>Angle: 90°<br/>Axiom: <code>A</code<br/>Rules:  <code>A → -BF+AFA+FB-<br/>  B → +AF-BFB-FA+<br/>  F → F</code>',
+        axiom: 'A',
+        rules: {
+            'A' : '-BF+AFA+FB-',
+            'B' : '+AF-BFB-FA+',
+            'F' : 'F',
+            ...standardRules
+        }
+    },
     'Gosper curve': {
+        startPosition: new Vec2(0, -10),
         angle: 60,
         iterations: 3,
         textContent: '<h3>Gosper curve</h3>Angle: 60°<br/>Axiom: <code>XF</code><br/>Rules: <code>F → F<br/>  X → X+YF++YF-FX--FXFX-YF+<br/> Y → -FX+YFYF++YF+FX--FX-Y</code>',
@@ -32,6 +47,7 @@ const SYSTEMS = {
         }
     },
     'Koch curve': {
+        startPosition: new Vec2(-12.5, -5),
         axiom: 'F',
         rules: { F: 'F+F--F+F' },
         textContent: '<h3>Koch curve</h3>Angle: 60°<br/>Axiom: <code>F</code><br/>Rules: <code>F → F+F--F+F</code>',
@@ -40,6 +56,7 @@ const SYSTEMS = {
         iterations: 4,
     },
     'Koch snowflake': {
+        startPosition: new Vec2(-10, 5),
         axiom: 'F--F--F',
         rules: { F: 'F+F--F+F' },
         textContent: '<h3>Koch snow flake</h3>Angle: 60°<br/>Axiom: <code>F--F--F</code><br/>Rules: <code>F → F+F--F+F</code>',
@@ -56,6 +73,7 @@ const SYSTEMS = {
         stepLength: 2,
     },
     'Fractal plant': {
+        startPosition: new Vec2(0, -10),
         axiom: 'X',
         rules: {
             X: 'F+[[X]-X]-F[-FX]+X',
@@ -67,22 +85,37 @@ const SYSTEMS = {
         stepLength: 0.5,
         startAngle: 270
     },
-    'Binary tree': {
+    'Plant 3': {
+        startPosition: new Vec2(-2, -12),
+        iterations: 4,
+        angle: 22.5,
+        startAngle: 270,
+        stepLength: .8,
+        textContent: '<h3>Plant 3</h3>Angle: 22.5°<br/>Axiom: <code>F</code><br/>Rules:  F → <code></code>FF-[-F+F+F]+[+F-F-F]</code>',
         axiom: 'F',
-        textContent: 'Binary tree\n\nangle: 10°\naxiom: F\nrules:\n  F → FF[-F+F+F]+[+F-F-F]',
+        rules: {
+            'F' : 'FF-[-F+F+F]+[+F-F-F]',
+            ...standardRules
+        }
+    },
+    'Binary tree': {
+        startPosition: new Vec2(7.5, -5),
+        axiom: 'F',
+        textContent: '<h3>Binary tree</h3>Angle: 10°<br/>Axiom: <code>F</code><br/>Rules:  <code>F → FF[-F+F+F]+[+F-F-F]</code>',
         rules: { F: 'FF[-F+F+F]+[+F-F-F]' },
         angle: 10,
         iterations: 3,
         startAngle: 270
     },
     'Dragon curve': {
+        startPosition: new Vec2(-2.5, 5),
         axiom: 'FX',
         rules: { F: 'F', X: 'X+YF+', Y: '-FX-Y' },
         angle: 90,
         textContent: '<h3>Dragon curve</h3>Angle: 90°<br/>Axiom: <code>FX</code><br/>Rules: <code>F → F\n  X → X+YF+\n  Y → -FX-Y</code>',
         iterations: 10,
         startAngle: 90,
-        stepLength: .5,
+        stepLength: .55,
     },
     'Penrose tiling': {
 		angle: 36,
@@ -107,37 +140,58 @@ const turtleView = new LineSegmentsView({
     colorMapper: new HexValueColorMapper()
 });
 
-let selectedSystem = 'Koch snowflake';
-let iterationCount = SYSTEMS[selectedSystem].iterations;
-let turnAngle = SYSTEMS[selectedSystem].angle;
-let startAngle = 0;
-let scaleFactor = 1;
-let stepLength = SYSTEMS[selectedSystem].stepLength;
-
-function rewrite(sentence, rules) {
-    let next = '';
-    for (const symbol of sentence) {
-        if (symbol === '1')
-            continue;
-        next += rules[symbol] ?? symbol;
-        if (next.length > MAX_SYMBOLS)
-            throw new Error(`This generation exceeds the ${MAX_SYMBOLS.toLocaleString()} symbol limit.`);
+class LSystemDefinition {
+    constructor({
+        name = '',
+        axiom = '',
+        iterations = 0,
+        angle = 0,
+        startAngle = 0,
+        scaleFactor = 1,
+        stepLength = 1,
+        textContent = '',
+        startPosition = new Vec2(),
+        rules = {}
+    } = {}) {
+        this.startPosition = startPosition;
+        this.name = name;
+        this.iterationCount = iterations;
+        this.turnAngle = angle;
+        this.startAngle = startAngle;
+        this.scaleFactor = scaleFactor;
+        this.stepLength = stepLength;
+        this.rules = rules;
+        this.textContent = textContent;
+        this.axiom = axiom;
     }
-    return next;
+
+    _rewrite(sentence) {
+        let next = '';
+        for (const symbol of sentence) {
+            if (symbol === '1')
+                continue;
+            next += this.rules[symbol] ?? symbol;
+            if (next.length > MAX_SYMBOLS)
+                throw new Error(`This generation exceeds the ${MAX_SYMBOLS.toLocaleString()} symbol limit.`);
+        }
+        return next;
+    }
+
+    expandLSystem() {
+        let sentence = this.axiom;
+        for (let i = 0; i < this.iterationCount; i++)
+            sentence = this._rewrite(sentence);
+        return sentence;
+    }
 }
 
-function expandLSystem(system, iterations) {
-    let sentence = system.axiom;
-    for (let i = 0; i < iterations; i++)
-        sentence = rewrite(sentence, system.rules);
-    return sentence;
-}
+let lSystemDefinition = new LSystemDefinition(SYSTEMS['Koch snowflake']);
 
-function interpret(sentence, startAngle, angle, stepLength, scaleFactor) {
+function interpret(sentence, system) {
     turtle.reset()
         .penUp()
-        .right(startAngle)
-        .goto(0, 0);
+        .right(system.startAngle)
+        .goto(system.startPosition.x, system.startPosition.y);
     const stack = [];
     const color = new Colour();
     let drawnSegments = 0;
@@ -149,18 +203,18 @@ function interpret(sentence, startAngle, angle, stepLength, scaleFactor) {
             case 'F':
             case '1': {
                 color.setHSL((drawnSegments / Math.max(1, sentence.length)) % 1, 0.85, 0.58);
-                turtle.color(color).penDown().forward(stepLength);
+                turtle.color(color).penDown().forward(system.stepLength);
                 drawnSegments++;
                 break;
             }
             case 'f':
-                turtle.penUp().forward(stepLength);
+                turtle.penUp().forward(system.stepLength);
                 break;
             case '+':
-                turtle.left(angle);
+                turtle.left(system.turnAngle);
                 break;
             case '-':
-                turtle.right(angle);
+                turtle.right(system.turnAngle);
                 break;
             case '|':
                 turtle.right(180);
@@ -173,7 +227,7 @@ function interpret(sentence, startAngle, angle, stepLength, scaleFactor) {
                     penState: turtle.penState,
                     color: turtle.currentColor
                 });
-                stepLength *= scaleFactor;
+                system.stepLength *= system.scaleFactor;
                 break;
             case ']': {
                 const state = stack.pop();
@@ -183,7 +237,7 @@ function interpret(sentence, startAngle, angle, stepLength, scaleFactor) {
                     turtle.penState = state.penState;
                     turtle.color(state.color);
                 }
-                stepLength /= scaleFactor;
+                system.stepLength /= system.scaleFactor;
                 break;
             }
             default:
@@ -191,42 +245,12 @@ function interpret(sentence, startAngle, angle, stepLength, scaleFactor) {
                 break;
         }
     }
-
-    centerDrawing();
-}
-
-function centerDrawing() {
-    if (turtle.count === 0)
-        return;
-
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minY = Infinity;
-    let maxY = -Infinity;
-
-    for (const segment of turtle) {
-        minX = Math.min(minX, segment.from.x, segment.to.x);
-        maxX = Math.max(maxX, segment.from.x, segment.to.x);
-        minY = Math.min(minY, segment.from.y, segment.to.y);
-        maxY = Math.max(maxY, segment.from.y, segment.to.y);
-    }
-
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-
-    for (const segment of turtle) {
-        segment.from.x -= centerX;
-        segment.from.y -= centerY;
-        segment.to.x -= centerX;
-        segment.to.y -= centerY;
-    }
 }
 
 function redraw() {
-    const system = SYSTEMS[selectedSystem];
     try {
-        const sentence = expandLSystem(system, iterationCount);
-        interpret(sentence, startAngle, turnAngle, stepLength, scaleFactor);
+        const sentence = lSystemDefinition.expandLSystem();
+        interpret(sentence, lSystemDefinition);
         simulation.setBottomText(`${sentence.length.toLocaleString()} symbols`);
     } catch (error) {
         console.warn('Unable to generate L-system:', error);
@@ -240,43 +264,38 @@ const systemMenu = new DropdownMenu()
         label: 'Pick a fractal',
         entries: Object.fromEntries(Object.keys(SYSTEMS).map(name => [name, name]))
     }))
-    .withValue(selectedSystem)
+    .withValue(lSystemDefinition.name)
     .onChange(name => {
-        selectedSystem = name;
-        iterationCount = SYSTEMS[name].iterations;
-        turnAngle = SYSTEMS[name].angle;
-        startAngle = "startAngle" in SYSTEMS[name] ? SYSTEMS[name].startAngle : 0;
-        scaleFactor = "scaleFactor" in SYSTEMS[name] ? SYSTEMS[name].scaleFactor : 1;
-        stepLength = "stepLength" in SYSTEMS[name]? SYSTEMS[name].stepLength : 1;
-        iterationsSlider.withValue(iterationCount);
-        angleSlider.withValue(turnAngle);
-        simulation.setHtmlTitle(SYSTEMS[name].textContent);
-        stepLengthSlider.withValue(stepLength);
+        lSystemDefinition = new LSystemDefinition({name, ...SYSTEMS[name]});
+        iterationsSlider.withValue(lSystemDefinition.iterationCount);
+        angleSlider.withValue(lSystemDefinition.turnAngle);
+        simulation.setHtmlTitle(lSystemDefinition.textContent);
+        stepLengthSlider.withValue(lSystemDefinition.stepLength);
         redraw();
     });
 
 const iterationsSlider = new Slider('Iterations')
     .withRange(new Range(0, 10, 1))
-    .withValue(iterationCount)
+    .withValue(lSystemDefinition.iterationCount)
     .onChange(value => {
-        iterationCount = Math.round(value);
+        lSystemDefinition.iterationCount = Math.round(value);
         redraw();
     });
 
 const angleSlider = new Slider('Turn angle')
     .withRange(new Range(5, 180, 1))
-    .withValue(turnAngle)
+    .withValue(lSystemDefinition.turnAngle)
     .withUnits('°')
     .onInput(value => {
-        turnAngle = value;
+        lSystemDefinition.turnAngle = value;
         redraw();
     });
 
 const stepLengthSlider = new Slider('Step length')
     .withRange(new Range(0.1, 3, 0.1))
-    .withValue(stepLength)
+    .withValue(lSystemDefinition.stepLength)
     .onInput(value => {
-        stepLength = value;
+        lSystemDefinition.stepLength = value;
         redraw();
     });
 
@@ -285,20 +304,18 @@ const simulation = Simulation
         htmlDivId: 'lSystemsContainer',
         viewport: { parameterMenuCollapsed: false },
         camera: {
-            position: new Vec3(0, 0, 25),
-            orthographic: true,
-            controls: false
+            position: new Vec3(0, 0, 25), orthographic: true
         },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: '<strong>🌿 L-systems</strong><br/>' +
-                '👉 Learn more about <a href=\"https://en.wikipedia.org/wiki/L-system\">L-systems</a><br/>' +
+                '👉 Learn more about <a href=\'https://en.wikipedia.org/wiki/L-system\'>L-systems</a><br/>' +
                 '👉 Choose a fractal, change the number of generations, and adjust the turn angle.'
         }
     })
     .bind(turtle.alwaysWith(turtleView))
-    .setHtmlTitle(SYSTEMS[selectedSystem].textContent)
+    .setHtmlTitle(lSystemDefinition.textContent)
     .append(systemMenu)
     .append(iterationsSlider)
     .append(angleSlider)
