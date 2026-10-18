@@ -494,7 +494,8 @@ function stirLiquid() {
     stirredCells[0].halfNeighbors.forEach(cell => stirredCells.push(cell));
 
     for (const cell of stirredCells)
-        for (const particle of cell._particles) {
+        for (let i = 0; i < cell.numParticles; i++) {
+            const particle = cell._particles[i];
             particle.velocity.copy(mouseVelocity);
             particle.force.set(0, 0);
         }
