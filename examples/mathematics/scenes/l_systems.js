@@ -45,8 +45,8 @@ const SYSTEMS = {
         iterations: 4
     },
     'Dragon curve': {
-        axiom: 'F',
-        rules: { F: 'F+1', 1: 'F-1' },
+        axiom: 'FX',
+        rules: { F: 'F', X: 'X+YF+', Y: '-FX-Y' },
         angle: 90,
         iterations: 10
     }
@@ -127,7 +127,7 @@ function interpret(sentence, angle, stepLength) {
             case ']': {
                 const state = stack.pop();
                 if (state) {
-                    turtle.goto(state.x, state.y);
+                    turtle.penUp().goto(state.x, state.y);
                     turtle.angle = state.angle;
                     turtle.penState = state.penState;
                     turtle.color(state.color);
@@ -162,7 +162,7 @@ function centerDrawing() {
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
     const span = Math.max(maxX - minX, maxY - minY, 1);
-    const scale = 16 / span;
+    const scale = 16 / span * drawingScale;
 
     for (const segment of turtle) {
         segment.from.x = (segment.from.x - centerX) * scale;
@@ -201,6 +201,8 @@ const systemMenu = new DropdownMenu()
         selectedSystem = name;
         iterationCount = SYSTEMS[name].iterations;
         turnAngle = SYSTEMS[name].angle;
+        iterationsSlider.withValue(iterationCount);
+        angleSlider.withValue(turnAngle);
         redraw();
     });
 
