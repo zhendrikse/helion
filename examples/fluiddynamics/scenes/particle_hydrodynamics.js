@@ -13,6 +13,9 @@ const SPEED_COLOR_MAX = 30;
 
 const domainScale = 30;
 const gridCellSize = 1;
+let xRange = new Interval(0, 1);
+let yRange = new Interval(0, 1);
+let worldWidth = 0;
 const INIT_MAX_PARTICLES_IN_CELL = 50;
 const PI = Math.PI;
 
@@ -57,10 +60,8 @@ class SPHForce extends PairForce {
 }
 
 class WallForce extends Force {
-    constructor(xRange, yRange, smoothingLength, mass) {
+    constructor(smoothingLength, mass) {
         super();
-        this._xRange = xRange;
-        this._yRange = yRange;
         this._h = smoothingLength;
         this._mass = mass;
         this._WspikyGradCoeff = -45.0 / (PI * Math.pow(smoothingLength, 6));
@@ -70,21 +71,21 @@ class WallForce extends Force {
     _calculateForceOn(particle) {
         const h = this._h;
         const c = this._WspikyGradCoeff;
-        if (particle.position.x < this._xRange.min + h) {
-            const r = particle.position.x - this._xRange.min;
+        if (particle.position.x < xRange.min + h) {
+            const r = particle.position.x - xRange.min;
             particle.force.x -= this._mass * particle.pressure / particle.rho *
                 SPHSolver.Wspiky_grad2(h, r, c) * r;
-        } else if (particle.position.x > this._xRange.max - h) {
-            const r = this._xRange.max - particle.position.x;
+        } else if (particle.position.x > xRange.max - h) {
+            const r = xRange.max - particle.position.x;
             particle.force.x += this._mass * particle.pressure / particle.rho *
                 SPHSolver.Wspiky_grad2(h, r, c) * r;
         }
-        if (particle.position.y < this._yRange.min + h) {
-            const r = particle.position.y - this._yRange.min;
+        if (particle.position.y < yRange.min + h) {
+            const r = particle.position.y - yRange.min;
             particle.force.y -= this._mass * particle.pressure / particle.rho *
                 SPHSolver.Wspiky_grad2(h, r, c) * r;
-        } else if (particle.position.y > this._yRange.max - h) {
-            const r = this._yRange.max - particle.position.y;
+        } else if (particle.position.y > yRange.max - h) {
+            const r = yRange.max - particle.position.y;
             particle.force.y += this._mass * particle.pressure / particle.rho *
                 SPHSolver.Wspiky_grad2(h, r, c) * r;
         }
@@ -128,6 +129,23 @@ class SPHParticle extends RadialSymmetricBody {
         this.force.set(0, 0);
         this.rho = 0;
         this.pressure = 0;
+    }
+
+    confineToBox() {
+        if (this.position.x < xRange.min) {
+            this.position.x = xRange.min + 1e-6;
+            this.velocity.x *= -0.5;
+        } else if (this.position.x > xRange.max) {
+            this.position.x = xRange.max - 1e-6;
+            this.velocity.x *= -0.5;
+        }
+        if (this.position.y < yRange.min) {
+            this.position.y = yRange.min + 1e-6;
+            this.velocity.y *= -0.5;
+        } else if (this.position.y > yRange.max) {
+            this.position.y = yRange.max - 1e-6;
+            this.velocity.y *= -0.5;
+        }
     }
 }
 
@@ -256,22 +274,14 @@ class SPHSolver {
         this._mass = mass;
 
         // Precomputed smoothing-related constants
-        this._h = smoothingLength;
         this._hSquared = smoothingLength * smoothingLength;
         this._Wpoly6_coeff = 315.0 / (64 * Math.PI * Math.pow(smoothingLength, 9));
 
         /** @type {SPHParticle[]} */
         this._particles = [];
         this._activeParticleCount = 0;
-        this._xRange = new Interval(0, 1);
-        this._yRange = new Interval(0, 1);
-        this._wallForce = new WallForce(this._xRange, this._yRange, smoothingLength, mass);
+        this._wallForce = new WallForce(smoothingLength, mass);
         this._sphForce = new SPHForce({mass, viscosity, smoothingLength});
-
-        // For interaction with mouse movements
-        this.forceVelocityOn = false;
-        this.forceVelocityCell = null;
-        this.forceVelocityVector = new Vec2(0, 0);
 
         // Scratch vectors
         this._positionVector = new Vec2();
@@ -287,27 +297,6 @@ class SPHSolver {
     /** @returns {ArrayIterator<[number, SPHParticle]>} */
     entries() { return this._particles.entries(); }
 
-    _limits () {
-        return { xLimit: simulation.width / domainScale, yLimit: simulation.height / domainScale }
-    };
-
-    initialize() {
-        const left = 0;
-        const bottom = 0;
-        const {xLimit, yLimit} = this._limits();
-        this._xRange = new Interval(left / domainScale, xLimit);
-        this._yRange = new Interval(bottom / domainScale, yLimit);
-        this._wallForce = new WallForce(this._xRange, this._yRange, this._h, this._mass);
-        this.setNumParticles(grid, particleCount, true);
-    }
-
-    resize(left, right, bottom, top) {
-        const {xLimit, yLimit} = this._limits();
-        this._xRange = new Interval(Math.max(left / domainScale, 0), Math.min(right / domainScale, xLimit));
-        this._yRange = new Interval(Math.max(bottom / domainScale, 0), Math.min(top / domainScale, yLimit));
-        this._wallForce = new WallForce(this._xRange, this._yRange, this._h, this._mass);
-    }
-
     setNumParticles(grid, n, reset = false) {
         grid.hardReset();
         const previousCount = this._activeParticleCount;
@@ -316,8 +305,8 @@ class SPHSolver {
         for (let i = this._particles.length; i < n; i++)
             this._particles.push(new SPHParticle({
                 position: new Vec2(
-                    Math.random() * this._xRange.range + this._xRange.min,
-                    Math.random() * this._yRange.range + this._yRange.min
+                    Math.random() * xRange.range + xRange.min,
+                    Math.random() * yRange.range + yRange.min
                 ),
                 velocity: new Vec2(Math.random() - 0.5, Math.random() - 0.5),
                 mass: this._mass
@@ -327,8 +316,8 @@ class SPHSolver {
             const particle = this._particles[i];
             if (reset || i >= previousCount) {
                 particle.position.set(
-                    Math.random() * this._xRange.range + this._xRange.min,
-                    Math.random() * this._yRange.range + this._yRange.min
+                    Math.random() * xRange.range + xRange.min,
+                    Math.random() * yRange.range + yRange.min
                 );
                 particle.velocity.set(Math.random() - 0.5, Math.random() - 0.5);
                 particle.reset();
@@ -380,61 +369,20 @@ class SPHSolver {
             }
     }
 
-    _calcForcedVelocity() {
-        if (!this.forceVelocityOn || this.forceVelocityCell == null)
-            return;
-        for (let i = 0; i < this.forceVelocityCell.numParticles; i++) {
-            const particle = this.forceVelocityCell._particles[i];
-            particle.velocity.copy(this.forceVelocityVector);
-            particle.force.set(0, 0);
-        }
-        this.forceVelocityOn = false;
-    }
-
-    forceVelocity(grid, x, y, Vx, Vy) {
-        this.forceVelocityOn = true;
-        this._positionVector.set(x / domainScale, this._yRange.max - y / domainScale);
-        this.forceVelocityCell = grid.getCellFromLocation(this._positionVector);
-        this.forceVelocityVector.set(Vx, -Vy);
-    }
-
-    /** @param {SPHParticle} particle */
-    _boxBounce(particle) {
-        if (particle.position.x < this._xRange.min) {
-            particle.position.x = this._xRange.min + 1e-6;
-            particle.velocity.x *= -0.5;
-        } else if (particle.position.x > this._xRange.max) {
-            particle.position.x = this._xRange.max - 1e-6;
-            particle.velocity.x *= -0.5;
-        }
-        if (particle.position.y < this._yRange.min) {
-            particle.position.y = this._yRange.min + 1e-6;
-            particle.velocity.y *= -0.5;
-        } else if (particle.position.y > this._yRange.max) {
-            particle.position.y = this._yRange.max - 1e-6;
-            particle.velocity.y *= -0.5;
-        }
-    }
-
     _updatePosition(grid, dt) {
         for (let i = 0; i < this._activeParticleCount; i++) {
             const particle = this._particles[i];
             particle.integrate(this._gravity, dt);
-            this._boxBounce(particle);
+            particle.confineToBox();
             grid.addParticleToCell(particle);
             particle.force.set(0, 0);
             particle.rho = this._mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
         }
     }
 
-    /**
-     * @param {Grid} grid
-     * @param {number} dt
-     */
     step(grid, dt) {
         this._calcDensity(grid);
         this._calcForces(grid);
-        this._calcForcedVelocity();
         grid.reset();
         this._updatePosition(grid, dt);
     }
@@ -447,6 +395,17 @@ class SPHSolver {
         this.gasConstant = 120;
         this.mass = 1;
         this.gravity.set(0, -20);
+    }
+}
+
+const scaledPositionVector = new Vec2();
+class SPHParticleView extends Circle {
+    synchronizeWith(particle) {
+        const position = scaledPositionVector.set(
+            particle.position.x * domainScale * WORLD_HEIGHT / simulation.height - worldWidth / 2,
+            particle.position.y * domainScale * WORLD_HEIGHT / simulation.height - WORLD_HEIGHT / 2
+        );
+        super.synchronizeWith({ position, radius: particle.radius });
     }
 }
 
@@ -525,12 +484,38 @@ class ParameterControls {
     }
 }
 
+let mouseMovedInLiquid = false;
+let mousePosition = new Vec2();
+let mouseVelocity = new Vec2();
+let stirredCells = [];
+function stirLiquid() {
+    mousePosition.set(mousePosition.x / domainScale, yRange.max - mousePosition.y / domainScale);
+    stirredCells.push(grid.getCellFromLocation(mousePosition));
+    stirredCells[0].halfNeighbors.forEach(cell => stirredCells.push(cell));
+
+    for (const cell of stirredCells)
+        for (const particle of cell._particles) {
+            particle.velocity.copy(mouseVelocity);
+            particle.force.set(0, 0);
+        }
+    mouseMovedInLiquid = false;
+    stirredCells = [];
+}
+
+function initScreenSize() {
+    const xLimit = simulation.width / domainScale;
+    const yLimit = simulation.height / domainScale;
+    xRange = new Interval(0, xLimit);
+    yRange = new Interval(0, yLimit);
+    worldWidth = WORLD_HEIGHT * simulation.width / simulation.height;
+}
+
 const solver = new SPHSolver();
 const controls = new ParameterControls(solver);
 const simulation = Simulation
     .with({
         htmlDivId: 'sphHydrodynamicsContainer',
-        viewport: { aspectRatio: '5/6', parameterMenuCollapsed: false },
+        viewport: { aspectRatio: '4/3', parameterMenuCollapsed: false },
         camera: {
             position: new Vec3(0, 0, WORLD_HEIGHT * 1.025),
             orthographic: true,
@@ -541,26 +526,32 @@ const simulation = Simulation
             text: '<strong>💧 Smoothed Particle Hydrodynamics</strong><br/>' +
                 '📌 A particle-based fluid model using density, pressure, viscosity and a Verlet-style integrator.<br/>' +
                 '©️  Hydrodynamics based on <a href="https://github.com/mjwatkins2/WebGL-SPH">Smoothed Particle Hydrodynamics Fluid Simulation with WebGL</a><br/>' +
-                '👉 Particles colors indicate speed.'
+                '👉 Move mouse or resize window to stir fluid.<br/>'
         }
     })
     .withMouseClickEventListener()
     .runsEvery(0.01)
     .onStep((_clock, dt) => {
+        if (mouseMovedInLiquid)
+            stirLiquid();
         grid.evolve(solver, dt);
         if (speedColoring && ++colorUpdateCounter % COLOR_UPDATE_INTERVAL === 0)
             updateParticleColors();
     })
     .onMouse("mousemove", (x, y, e) => {
-        // Simulation.onMouse supplies normalized canvas coordinates in [-0.5, 0.5].
-        // Engine.forceVelocity expects canvas pixels, with the origin at the top-left.
-        const pointerX = Math.max(0, Math.min(simulation.width - 1, (x + 0.5) * simulation.width));
-        const pointerY = Math.max(0, Math.min(simulation.height - 1, (0.5 - y) * simulation.height));
-        solver.forceVelocity(grid, pointerX, pointerY, e.movementX, e.movementY);
+        mousePosition.set(
+            // Simulation.onMouse supplies normalized canvas coordinates in [-0.5, 0.5].
+            // Engine.forceVelocity expects canvas pixels, with the origin at the top-left.
+            Math.max(0, Math.min(simulation.width - 1, (x + 0.5) * simulation.width)),
+            Math.max(0, Math.min(simulation.height - 1, (0.5 - y) * simulation.height))
+        );
+        mouseVelocity.set(e.movementX, -e.movementY);
+        mouseMovedInLiquid = true;
     })
     .onReset(() => {
+        initScreenSize();
         grid.init();
-        solver.initialize();
+        solver.setNumParticles(grid, particleCount, true);
         createParticleViews();
         synchronizeParticleViews();
     })
@@ -607,17 +598,6 @@ function updateParticleColors() {
     }
 }
 
-class SPHParticleView extends Circle {
-    synchronizeWith(particle) {
-        const worldWidth = WORLD_HEIGHT * simulation.width / simulation.height;
-        const position = new Vec2(
-            particle.position.x * domainScale * WORLD_HEIGHT / simulation.height - worldWidth / 2,
-            particle.position.y * domainScale * WORLD_HEIGHT / simulation.height - WORLD_HEIGHT / 2
-        );
-        super.synchronizeWith({ position, radius: particle.radius });
-    }
-}
-
 function synchronizeParticleViews() {
     for (let i = 0; i < particleViews.length; i++)
         particleViews[i].visible = i < solver.particleCount;
@@ -639,6 +619,9 @@ function createParticleViews() {
     synchronizeParticleViews();
 }
 
+initScreenSize();
 grid.init();
-solver.initialize();
+solver.setNumParticles(grid, particleCount, true);
 createParticleViews();
+
+window.addEventListener('resize', _ => initScreenSize());
