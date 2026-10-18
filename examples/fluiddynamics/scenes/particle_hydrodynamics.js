@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Button, Circle, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
-    Interval, Range, Registry, Simulation, Slider, Vec2, Vec3, Force, PairForce
+    Interval, Range, Registry, Simulation, Slider, Vec2, Vec3, Force, PairForce, BindableCollection, ViewsCollection
 } from '../../../src/index.js';
 import { LinearSRGBColorSpace} from "three";
 
@@ -177,13 +177,10 @@ class Grid {
     [Symbol.iterator] = () => this._cells[Symbol.iterator]();
 
     init() {
-        const xlimit = simulation.width / domainScale;
-        const ylimit = simulation.height / domainScale;
-
-        this._nx = Math.floor(xlimit / gridCellSize);
-        this._ny = Math.floor(ylimit / gridCellSize);
-        this._width = xlimit;
-        this._height = ylimit;
+        this._nx = Math.floor(xRange.to / gridCellSize);
+        this._ny = Math.floor(yRange.to / gridCellSize);
+        this._width = xRange.to;
+        this._height = yRange.to;
         const numCells = this._nx * this._ny;
         this._cells = new Array(numCells);
         for (let i = 0; i < numCells; i++)
@@ -232,14 +229,10 @@ class Grid {
         return this._cells[i + j * this._nx] ?? null;
     }
 
-    /** @param {SPHParticle} particle */
     addParticleToCell(particle) {
         const cell = this.getCellFromLocation(particle.position);
-        if (!cell) {
-            console.warn("Particle is outside the SPH grid.", particle.position);
-            return;
-        }
-        cell._particles[cell.numParticles++] = particle;
+        if (cell) // cell can be null after the window has been resized
+            cell._particles[cell.numParticles++] = particle;
     }
 
     evolve(solver, dt) { solver.step(this, dt); }
@@ -277,8 +270,7 @@ class SPHSolver {
         this._hSquared = smoothingLength * smoothingLength;
         this._Wpoly6_coeff = 315.0 / (64 * Math.PI * Math.pow(smoothingLength, 9));
 
-        /** @type {SPHParticle[]} */
-        this._particles = [];
+        this._particles = new BindableCollection();
         this._activeParticleCount = 0;
         this._wallForce = new WallForce(smoothingLength, mass);
         this._sphForce = new SPHForce({mass, viscosity, smoothingLength});
@@ -294,16 +286,13 @@ class SPHSolver {
     set viscosity(/** @type {number} */ value) { this._sphForce.viscosity = value; }
     set gasConstant(/** @type {number} */ value) { this._k = value; }
 
-    /** @returns {ArrayIterator<[number, SPHParticle]>} */
-    entries() { return this._particles.entries(); }
-
     setNumParticles(grid, n, reset = false) {
         grid.hardReset();
         const previousCount = this._activeParticleCount;
         this._activeParticleCount = n;
 
-        for (let i = this._particles.length; i < n; i++)
-            this._particles.push(new SPHParticle({
+        for (let i = this._particles.size; i < n; i++)
+            this._particles._bindables.push(new SPHParticle({
                 position: new Vec2(
                     Math.random() * xRange.range + xRange.min,
                     Math.random() * yRange.range + yRange.min
@@ -313,7 +302,7 @@ class SPHSolver {
             }));
 
         for (let i = 0; i < n; i++) {
-            const particle = this._particles[i];
+            const particle = this._particles._bindables[i];
             if (reset || i >= previousCount) {
                 particle.position.set(
                     Math.random() * xRange.range + xRange.min,
@@ -370,14 +359,17 @@ class SPHSolver {
     }
 
     _updatePosition(grid, dt) {
-        for (let i = 0; i < this._activeParticleCount; i++) {
-            const particle = this._particles[i];
+        this._particles.forEach((particleBinding, index) => {
+            if (index >= this._activeParticleCount)
+                return;
+
+            const particle = particleBinding.model;
             particle.integrate(this._gravity, dt);
             particle.confineToBox();
             grid.addParticleToCell(particle);
             particle.force.set(0, 0);
             particle.rho = this._mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
-        }
+        });
     }
 
     step(grid, dt) {
@@ -386,8 +378,6 @@ class SPHSolver {
         grid.reset();
         this._updatePosition(grid, dt);
     }
-
-    particleAt = index => this._particles[index];
 
     reset() {
         this.restDensity = 4.75;
@@ -467,8 +457,7 @@ class ParameterControls {
                     updateParticleColors();
                 else {
                     particleColor = ParameterControls.colorRegistry.get(name);
-                    for (const view of particleViews)
-                        view.fillColor = particleColor;
+                    solver._particles.forEach(binding => binding.view.fillColor = particleColor);
                 }
             });
     }
@@ -490,8 +479,12 @@ let mouseVelocity = new Vec2();
 let stirredCells = [];
 function stirLiquid() {
     mousePosition.set(mousePosition.x / domainScale, yRange.max - mousePosition.y / domainScale);
-    stirredCells.push(grid.getCellFromLocation(mousePosition));
-    stirredCells[0].halfNeighbors.forEach(cell => stirredCells.push(cell));
+    const cell = grid.getCellFromLocation(mousePosition);
+    if (!cell) // cell can be null after the window has been resized
+        return;
+
+    stirredCells.push(cell);
+    cell.halfNeighbors.forEach(neighborCell => stirredCells.push(neighborCell));
 
     for (const cell of stirredCells)
         for (let i = 0; i < cell.numParticles; i++) {
@@ -572,9 +565,6 @@ const simulation = Simulation
             controls.colorControl.withValue('Speed');
             speedColoring = true;
             colorUpdateCounter = 0;
-            for (const view of particleViews)
-                view.fillColor = particleColor;
-
             createParticleViews();
             solver.setNumParticles(grid, particleCount);
             solver.reset();
@@ -592,31 +582,24 @@ const normalizer = new FixedIntervalNormalizer(new Interval(0, SPEED_COLOR_MAX))
 const colorMapper = ColorMappers.get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace});
 const colour = new Colour();
 function updateParticleColors() {
-    let i, particle;
-    for ([i, particle] of solver.entries()) {
-        colorMapper.map(normalizer.normalize(particle.speed), colour)
-        particleViews[i].fillColor = colour;
-    }
+    solver._particles.forEach(particleBinding => {
+        colorMapper.map(normalizer.normalize(particleBinding.model.speed), colour)
+        particleBinding.view.fillColor = colour;
+    });
 }
 
 function synchronizeParticleViews() {
-    for (let i = 0; i < particleViews.length; i++)
-        particleViews[i].visible = i < solver.particleCount;
+    solver._particles.forEach((particleBinding, index) =>
+        particleBinding.view.visible = index < solver.particleCount);
 }
 
 function createParticleViews() {
-    for (let i = particleViews.length; i < solver.particleCount; i++) {
-        const particle = solver.particleAt(i);
-        const view = new SPHParticleView({
-            fillColor: particleColor,
-            borderColor: Colour.LightBlue,
-            borderWidth: 0.2,
-            segments: 8
-        });
-        particleViews.push(view);
-        view.visible = i < particleCount;
-        simulation.bind(particle.alwaysWith(view));
-    }
+    simulation.bind(solver._particles.alwaysWith(ViewsCollection.of(SPHParticleView).with({
+        fillColor: particleColor,
+        borderColor: Colour.LightBlue,
+        borderWidth: 0.2,
+        segments: 8
+    })));
     synchronizeParticleViews();
 }
 
@@ -625,4 +608,8 @@ grid.init();
 solver.setNumParticles(grid, particleCount, true);
 createParticleViews();
 
-window.addEventListener('resize', _ => initScreenSize());
+window.addEventListener('resize', _ => {
+    initScreenSize();
+    solver._particles.forEach(particleBinding =>
+        particleBinding.model.radius = PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / (simulation.height * Math.min(window.devicePixelRatio || 1, 2)));
+});
