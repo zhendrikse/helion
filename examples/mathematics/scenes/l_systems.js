@@ -176,7 +176,7 @@ function redraw() {
     const system = SYSTEMS[selectedSystem];
     try {
         const sentence = expandLSystem(system, iterationCount);
-        interpret(sentence, turnAngle, drawingScale);
+        interpret(sentence, turnAngle, 1);
         generateButtonLabel = `Generate (${sentence.length.toLocaleString()} symbols)`;
         generateButton.withText(generateButtonLabel);
     } catch (error) {
