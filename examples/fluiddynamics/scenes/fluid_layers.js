@@ -75,6 +75,12 @@ const blueParticles = new BindableCollection();
 const yellowParticles = new BindableCollection();
 const greenParticles = new BindableCollection();
 const redParticles = new BindableCollection();
+const allParticles = [];
+
+function addParticle(collection, particle) {
+    collection.add(particle);
+    allParticles.push(particle);
+}
 
 const blueViews = ViewsCollection.of(Sphere).with({ color: Colour.Blue, segments: 16 });
 const yellowViews = ViewsCollection.of(Sphere).with({ color: Colour.Yellow, segments: 16 });
@@ -83,7 +89,7 @@ const redViews = ViewsCollection.of(Box).with({ color: Colour.Red, opacity: 1 })
 
 function createParticles() {
     for (let i = 0; i < 40; i++)
-        blueParticles.add(new ChargedParticle({
+        addParticle(blueParticles, new ChargedParticle({
             position: randomPosition(),
             radius: 0.6 / 1.5,
             mass: 0.3,
@@ -93,13 +99,13 @@ function createParticles() {
     // These smaller particles are deliberately seeded around the membrane
     // so their diffusion through the layer can be compared.
     for (let i = 0; i < 30; i++) {
-        yellowParticles.add(new ChargedParticle({
+        addParticle(yellowParticles, new ChargedParticle({
             position: randomPosition({ xMin: -1, xMax: 1 }),
             radius: 0.5 / 1.5,
             mass: 0.03,
             color: Colour.Yellow
         }));
-        greenParticles.add(new ChargedParticle({
+        addParticle(greenParticles, new ChargedParticle({
             position: randomPosition({ xMin: -1, xMax: 1 }),
             radius: 0.4 / 1.5,
             mass: 0.01,
@@ -111,7 +117,7 @@ function createParticles() {
     // these cubes. Seed a small population on the right so the selective
     // membrane interaction is visible.
     for (let i = 0; i < 12; i++)
-        redParticles.add(new RedParticle(randomPosition({ xMin: 0.35, xMax: CAVITY_HALF_SIZE.x })));
+        addParticle(redParticles, new RedParticle(randomPosition({ xMin: 0.35, xMax: CAVITY_HALF_SIZE.x })));
 }
 
 function applyParticleForces(particles, allParticles) {
@@ -164,11 +170,7 @@ function applyWallAndMembraneForces(particle) {
         particle.force.x += K_WALL * (LAYER_SIZE.x / 2 - r.x);
 }
 
-const allParticles = [];
 createParticles();
-for (const collection of [blueParticles, yellowParticles, greenParticles, redParticles])
-    for (const particle of collection._bindables)
-        allParticles.push(particle);
 
 const simulation = Simulation
     .with({
@@ -206,11 +208,8 @@ const simulation = Simulation
     });
 
 simulation.append(new Button('↻ Restart').withText('↻ Restart').onClick(() => {
-    // A restart creates a fresh particle distribution, preserving the scene bindings.
-    for (const collection of [blueParticles, yellowParticles, greenParticles, redParticles]) {
-        for (const particle of collection._bindables)
-            particle.position.set(0, 0, 0);
-    }
+    for (const particle of allParticles)
+        particle.reset();
     simulation.start();
 }));
 
