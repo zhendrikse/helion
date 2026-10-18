@@ -217,8 +217,8 @@ export class Simulation {
         return this;
     }
 
-    setTextTitle(/** @type {string} */ text) {
-        this._viewport.titleDiv.textContent = text;
+    setHtmlTitle(/** @type {string} */ text) {
+        this._viewport.titleDiv.innerHTML = text;
         return this;
     }
 

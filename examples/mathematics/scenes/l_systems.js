@@ -1,5 +1,5 @@
 import {
-    Button, DropdownMenu, HexValueColorMapper, LineSegmentsView, Registry,
+    DropdownMenu, HexValueColorMapper, LineSegmentsView, Registry,
     Simulation, Slider, Range, Turtle, Vec3, Colour
 } from '../../../src/index.js';
 
@@ -19,23 +19,41 @@ const standardRules = {
  * in the final generation.
  */
 const SYSTEMS = {
+    'Gosper curve': {
+        angle: 60,
+        iterations: 3,
+        textContent: '<h3>Gosper curve</h3>Angle: 60°<br/>Axiom: <code>XF</code><br/>Rules: <code>F → F<br/>  X → X+YF++YF-FX--FXFX-YF+<br/> Y → -FX+YFYF++YF+FX--FX-Y</code>',
+        axiom: 'XF',
+        rules: {
+            'F' : 'F',
+            'X' : 'X+YF++YF-FX--FXFX-YF+',
+            'Y' : '-FX+YFYF++YF+FX--FX-Y',
+            ...standardRules
+        }
+    },
     'Koch curve': {
         axiom: 'F',
         rules: { F: 'F+F--F+F' },
+        textContent: '<h3>Koch curve</h3>Angle: 60°<br/>Axiom: <code>F</code><br/>Rules: <code>F → F+F--F+F</code>',
         angle: 60,
-        iterations: 4
+        stepLength: .3,
+        iterations: 4,
     },
     'Koch snowflake': {
         axiom: 'F--F--F',
         rules: { F: 'F+F--F+F' },
+        textContent: '<h3>Koch snow flake</h3>Angle: 60°<br/>Axiom: <code>F--F--F</code><br/>Rules: <code>F → F+F--F+F</code>',
         angle: 60,
+        stepLength: .25,
         iterations: 4
     },
     'Quadratic Koch island': {
         axiom: 'F+F+F+F',
         rules: { F: 'F-F+F+F+F-F-F+F' },
+        textContent: '<h3>Koch island</h3>Angle: 20°<br/>Axiom: <code>F+F+F+F</code><br/>Rules: <code>F → F-F+F+F+F-F-F+F</code>',
         angle: 90,
-        iterations: 3
+        iterations: 3,
+        stepLength: 2,
     },
     'Fractal plant': {
         axiom: 'X',
@@ -44,22 +62,31 @@ const SYSTEMS = {
             F: 'FF'
         },
         angle: 25,
-        iterations: 4
+        textContent: '<h3>Plant</h3>Angle: 20°<br/>Axiom: <code>X</code><br/>Rules: <code>X → F[+X]F[-X]+X<br/>  F → FF</code>',
+        iterations: 4,
+        stepLength: 0.5,
+        startAngle: 270
     },
     'Binary tree': {
         axiom: 'F',
+        textContent: 'Binary tree\n\nangle: 10°\naxiom: F\nrules:\n  F → FF[-F+F+F]+[+F-F-F]',
         rules: { F: 'FF[-F+F+F]+[+F-F-F]' },
         angle: 10,
-        iterations: 3
+        iterations: 3,
+        startAngle: 270
     },
     'Dragon curve': {
         axiom: 'FX',
         rules: { F: 'F', X: 'X+YF+', Y: '-FX-Y' },
         angle: 90,
-        iterations: 10
+        textContent: '<h3>Dragon curve</h3>Angle: 90°<br/>Axiom: <code>FX</code><br/>Rules: <code>F → F\n  X → X+YF+\n  Y → -FX-Y</code>',
+        iterations: 10,
+        startAngle: 90,
+        stepLength: .5,
     },
     'Penrose tiling': {
-		angle: 36, 
+		angle: 36,
+        textContent: '<h3>Penrose tiling</h3>Angle: 36°<br/>Axiom: <code>[B]++[B]++[B]++[B]++[B]</code><br/>Rules:  <code>A → C1++D1----B1[-C1----A1]++<br/>  B → +C1--D1[---A1--B1]+<br/>  C → -A1++B1[+++C1++D1]-<br/>  D → --C1++++A1[+D1++++B1]--B1</code>',
 		axiom: '[B]++[B]++[B]++[B]++[B]',
 		rules: {
 			'A' : 'C1++D1----B1[-C1----A1]++',
@@ -68,6 +95,7 @@ const SYSTEMS = {
 			'D' : '--C1++++A1[+D1++++B1]--B1',
             ...standardRules
 		},
+        stepLength: 2,
         iterations: 3
     }
 };
@@ -82,7 +110,9 @@ const turtleView = new LineSegmentsView({
 let selectedSystem = 'Koch snowflake';
 let iterationCount = SYSTEMS[selectedSystem].iterations;
 let turnAngle = SYSTEMS[selectedSystem].angle;
-let drawingScale = 1;
+let startAngle = 0;
+let scaleFactor = 1;
+let stepLength = SYSTEMS[selectedSystem].stepLength;
 
 function rewrite(sentence, rules) {
     let next = '';
@@ -103,9 +133,10 @@ function expandLSystem(system, iterations) {
     return sentence;
 }
 
-function interpret(sentence, angle, stepLength) {
+function interpret(sentence, startAngle, angle, stepLength, scaleFactor) {
     turtle.reset()
         .penUp()
+        .right(startAngle)
         .goto(0, 0);
     const stack = [];
     const color = new Colour();
@@ -142,6 +173,7 @@ function interpret(sentence, angle, stepLength) {
                     penState: turtle.penState,
                     color: turtle.currentColor
                 });
+                stepLength *= scaleFactor;
                 break;
             case ']': {
                 const state = stack.pop();
@@ -151,6 +183,7 @@ function interpret(sentence, angle, stepLength) {
                     turtle.penState = state.penState;
                     turtle.color(state.color);
                 }
+                stepLength /= scaleFactor;
                 break;
             }
             default:
@@ -180,14 +213,12 @@ function centerDrawing() {
 
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
-    const span = Math.max(maxX - minX, maxY - minY, 1);
-    const scale = 16 / span * drawingScale;
 
     for (const segment of turtle) {
-        segment.from.x = (segment.from.x - centerX) * scale;
-        segment.from.y = (segment.from.y - centerY) * scale;
-        segment.to.x = (segment.to.x - centerX) * scale;
-        segment.to.y = (segment.to.y - centerY) * scale;
+        segment.from.x -= centerX;
+        segment.from.y -= centerY;
+        segment.to.x -= centerX;
+        segment.to.y -= centerY;
     }
 }
 
@@ -195,20 +226,14 @@ function redraw() {
     const system = SYSTEMS[selectedSystem];
     try {
         const sentence = expandLSystem(system, iterationCount);
-        interpret(sentence, turnAngle, 1);
-        generateButtonLabel = `Generate (${sentence.length.toLocaleString()} symbols)`;
-        generateButton.withText(generateButtonLabel);
+        interpret(sentence, startAngle, turnAngle, stepLength, scaleFactor);
+        simulation.setBottomText(`${sentence.length.toLocaleString()} symbols`);
     } catch (error) {
         console.warn('Unable to generate L-system:', error);
         turtle.clear();
-        generateButton.withText('Generation too large — reduce iterations');
+        simulation.setBottomText('Generation too large — reduce iterations');
     }
 }
-
-let generateButtonLabel = 'Generate';
-const generateButton = new Button()
-    .withText(generateButtonLabel)
-    .onClick(() => redraw());
 
 const systemMenu = new DropdownMenu()
     .for(new Registry({
@@ -220,8 +245,13 @@ const systemMenu = new DropdownMenu()
         selectedSystem = name;
         iterationCount = SYSTEMS[name].iterations;
         turnAngle = SYSTEMS[name].angle;
+        startAngle = "startAngle" in SYSTEMS[name] ? SYSTEMS[name].startAngle : 0;
+        scaleFactor = "scaleFactor" in SYSTEMS[name] ? SYSTEMS[name].scaleFactor : 1;
+        stepLength = "stepLength" in SYSTEMS[name]? SYSTEMS[name].stepLength : 1;
         iterationsSlider.withValue(iterationCount);
         angleSlider.withValue(turnAngle);
+        simulation.setHtmlTitle(SYSTEMS[name].textContent);
+        stepLengthSlider.withValue(stepLength);
         redraw();
     });
 
@@ -242,22 +272,22 @@ const angleSlider = new Slider('Turn angle')
         redraw();
     });
 
-const scaleSlider = new Slider('Step length')
-    .withRange(new Range(0.5, 2, 0.1))
-    .withValue(drawingScale)
+const stepLengthSlider = new Slider('Step length')
+    .withRange(new Range(0.1, 3, 0.1))
+    .withValue(stepLength)
     .onInput(value => {
-        drawingScale = value;
+        stepLength = value;
         redraw();
     });
 
-Simulation
+const simulation = Simulation
     .with({
         htmlDivId: 'lSystemsContainer',
         viewport: { parameterMenuCollapsed: false },
         camera: {
             position: new Vec3(0, 0, 25),
             orthographic: true,
-            controls: true
+            controls: false
         },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
@@ -268,10 +298,10 @@ Simulation
         }
     })
     .bind(turtle.alwaysWith(turtleView))
+    .setHtmlTitle(SYSTEMS[selectedSystem].textContent)
     .append(systemMenu)
     .append(iterationsSlider)
     .append(angleSlider)
-    .append(scaleSlider)
-    .append(generateButton);
+    .append(stepLengthSlider);
 
 redraw();
