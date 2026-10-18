@@ -1,5 +1,6 @@
 import {
-    Button, LineSegmentsView, Simulation, Vec3, Turtle, HexValueColorMapper
+    Button, LineSegmentsView, Simulation, Vec3, Turtle, HexValueColorMapper,
+    Colour
 } from '../../../src/index.js';
 import {Color} from 'three';
 
@@ -23,10 +24,10 @@ function kochSnowflake(turtle, length, depth) {
 }
 
 function drawSnowflake(turtle) {
-    turtle.reset();
-    turtle.goto(-300, -100);
-    turtle.penDown();
-    turtle.color(0xffff00);
+    turtle.reset()
+        .goto(-300, -100)
+        .penDown()
+        .color(Colour.Yellow);
 
     for (let i = 0; i < 3; i++)
         kochSnowflake(turtle, 200, 4);
@@ -48,10 +49,10 @@ function cesaroFractal(turtle, depth, length) {
 }
 
 function drawCesaro(turtle) {
-    turtle.reset();
-    turtle.goto(-300, -200);
-    turtle.penDown();
-    turtle.color(0x00ff00);
+    turtle.reset()
+        .goto(-300, -200)
+        .penDown()
+        .color(Colour.Green);
 
     cesaroFractal(turtle, 6, 4000);
 }
@@ -69,24 +70,24 @@ function sierpinskiTriangle(turtle, length, depth) {
 
         sierpinskiTriangle(turtle, length / 2, depth - 1);
 
-        turtle.backward(length / 2);
-        turtle.left(60);
-        turtle.forward(length / 2);
-        turtle.right(60);
+        turtle.backward(length / 2)
+            .left(60)
+            .forward(length / 2)
+            .right(60);
 
         sierpinskiTriangle(turtle, length / 2, depth - 1);
 
-        turtle.left(60);
-        turtle.backward(length / 2);
-        turtle.right(60);
+        turtle.left(60)
+            .backward(length / 2)
+            .right(60);
     }
 }
 
 function drawSierpinskiTriangle(turtle) {
-    turtle.reset();
-    turtle.goto(-200, -150);
-    turtle.penDown();
-    turtle.color(0xffffff);
+    turtle.reset()
+        .goto(-200, -150)
+        .penDown()
+        .color(Colour.Cyan);
 
     sierpinskiTriangle(turtle, 400, 5);
 }
@@ -140,15 +141,15 @@ function drawDragonCurve(turtle) {
 
     const [x0, y0] = points[0];
 
-    turtle.penUp();
-    turtle.goto(x0 * scale + offsetX, y0 * scale + offsetY);
-    turtle.penDown();
+    turtle.penUp()
+        .goto(x0 * scale + offsetX, y0 * scale + offsetY)
+        .penDown();
 
-    const color = new Color();
+    const color = new Colour();
     for (let i = 1; i < points.length; i++) {
         const [x, y] = points[i];
         color.setHSL(i / points.length, 1, .5);
-        turtle.color(color.getHex());
+        turtle.color(color);
         turtle.goto(
             x * scale + offsetX,
             y * scale + offsetY
@@ -160,19 +161,17 @@ function tSquare(turtle, n, x, y, w) {
     if (n === 0)
         return;
 
-    const color = new Color();
+    const color = new Colour();
     color.setHSL(w * .25, 1, .5);
-    turtle.color(color.getHex());
 
-    turtle.goto(x, y);
-    turtle.penDown();
-
-    turtle.goto(x + w, y);
-    turtle.goto(x + w, y + w);
-    turtle.goto(x, y + w);
-    turtle.goto(x, y);
-
-    turtle.penUp();
+    turtle.color(color)
+        .goto(x, y)
+        .penDown()
+        .goto(x + w, y)
+        .goto(x + w, y + w)
+        .goto(x, y + w)
+        .goto(x, y)
+        .penUp();
 
     const newW = w / 3;
 
@@ -187,16 +186,14 @@ function drawTSquare(turtle) {
     const n = 8;
     const w = 2 ** n;
 
-    turtle.color(0xff0000);
-    turtle.penUp();
+    turtle.color(Colour.Yellow)
+        .penUp();
 
     tSquare(turtle, n, -150, -150, w);
 }
 
 const turtle = new Turtle();
-const turtleView = new LineSegmentsView({
-    colorMapper: new HexValueColorMapper()
-});
+const turtleView = new LineSegmentsView({ colorMapper: new HexValueColorMapper() });
 
 drawDragonCurve(turtle);
 Simulation

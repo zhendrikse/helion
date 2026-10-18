@@ -63,7 +63,7 @@ Simulation.with({ htmlDivId: "container", scale: 1e-9, headUpDisplay: true })
     .setOrthographic(true)                      // switch to orthographic top-down for 2D
     .removeAxes() / setAxesVisible(false)       // hide axes for 2D
     .setLatexTitle("\\phi = n\\cdot137.5\\pi/180") // MathJax/KaTeX via renderMath in titleDiv
-    .setTextTitle("plain text")
+    .setHtmlTitle("<h2>plain text</h2")
     .clearTitle()
    .setupGraphWith({ dataDefinition, title })
    .plot([t, value])

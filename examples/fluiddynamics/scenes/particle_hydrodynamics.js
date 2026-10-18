@@ -510,7 +510,7 @@ const simulation = Simulation
         infoPanel: {
             text: '<strong>💧 Smoothed Particle Hydrodynamics</strong><br/>' +
                 '📌 A particle-based fluid model using density, pressure, viscosity and a Verlet-style integrator.<br/>' +
-                '©️  Hydrodynamics based on <a href="https://github.com/mjwatkins2/WebGL-SPH">Smoothed Particle Hydrodynamics Fluid Simulation with WebGL</a><br/>' +
+                '©️  Hydrodynamics based on <a href="https://github.com/mjwatkins2/WebGL-SPH">Fluid Simulation with WebGL</a><br/>' +
                 '👉 Move mouse or resize window to stir fluid.<br/>'
         }
     })
