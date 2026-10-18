@@ -420,7 +420,6 @@ class ParameterControls {
                 particleCount = Math.round(value / 10) * 10;
                 solver.setNumParticles(grid, particleCount);
                 createParticleViews();
-                synchronizeParticleViews();
             });
         this.mass = new Slider('Particle mass')
             .withRange(new Range(1, 1000, 1))
@@ -547,7 +546,6 @@ const simulation = Simulation
         grid.init();
         solver.setNumParticles(grid, particleCount, true);
         createParticleViews();
-        synchronizeParticleViews();
     })
     .append(controls.gravityX)
     .append(controls.gravityY)
@@ -568,11 +566,8 @@ const simulation = Simulation
             createParticleViews();
             solver.setNumParticles(grid, particleCount);
             solver.reset();
-            synchronizeParticleViews();
         }));
 
-/** @type {SPHParticleView[]} */
-const particleViews = [];
 let particleCount = DEFAULT_PARTICLE_COUNT;
 let particleColor = ParameterControls.colorRegistry.get('Blue');
 let speedColoring = true;
@@ -588,11 +583,6 @@ function updateParticleColors() {
     });
 }
 
-function synchronizeParticleViews() {
-    solver._particles.forEach((particleBinding, index) =>
-        particleBinding.view.visible = index < solver.particleCount);
-}
-
 function createParticleViews() {
     simulation.bind(solver._particles.alwaysWith(ViewsCollection.of(SPHParticleView).with({
         fillColor: particleColor,
@@ -600,7 +590,9 @@ function createParticleViews() {
         borderWidth: 0.2,
         segments: 8
     })));
-    synchronizeParticleViews();
+
+    solver._particles.forEach((particleBinding, index) =>
+        particleBinding.view.visible = index < solver.particleCount);
 }
 
 initScreenSize();
