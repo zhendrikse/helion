@@ -102,7 +102,7 @@ class SPHParticle extends RadialSymmetricBody {
         position = new Vec2(),
         velocity = new Vec2(),
         mass = 1,
-        radius = PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / (simulation.height * Math.min(window.devicePixelRatio || 1, 2))
+        radius = .14
     } = {}) {
         super({ position: position.clone(), velocity: velocity.clone(), mass, radius });
         this.rho = 0;
@@ -592,8 +592,4 @@ grid.init();
 solver.setNumParticles(grid, particleCount, true);
 createParticleViews();
 
-window.addEventListener('resize', _ => {
-    initScreenSize();
-    solver._particles.forEach(particleBinding =>
-        particleBinding.model.radius = PARTICLE_RADIUS_IN_PIXELS * WORLD_HEIGHT / (simulation.height * Math.min(window.devicePixelRatio || 1, 2)));
-});
+window.addEventListener('resize', _ => initScreenSize());
