@@ -1,8 +1,16 @@
 import {
     Button, DropdownMenu, HexValueColorMapper, LineSegmentsView, Registry,
-    Simulation, Slider, Range, Turtle, Vec3
+    Simulation, Slider, Range, Turtle, Vec3, Colour
 } from '../../../src/index.js';
-import { Color } from 'three';
+
+const standardRules = {
+    '1' : '',
+    '|' : '|',		
+    '+' : '+',
+    '-' : '-',
+    '[' : '[',
+    ']' : ']'
+};
 
 /**
  * L-system presets use the notation from the original L-system plotter:
@@ -41,14 +49,26 @@ const SYSTEMS = {
     'Binary tree': {
         axiom: 'F',
         rules: { F: 'FF[-F+F+F]+[+F-F-F]' },
-        angle: 25,
-        iterations: 4
+        angle: 10,
+        iterations: 3
     },
     'Dragon curve': {
         axiom: 'FX',
         rules: { F: 'F', X: 'X+YF+', Y: '-FX-Y' },
         angle: 90,
         iterations: 10
+    },
+    'Penrose tiling': {
+		angle: 36, 
+		axiom: '[B]++[B]++[B]++[B]++[B]',
+		rules: {
+			'A' : 'C1++D1----B1[-C1----A1]++',
+			'B' : '+C1--D1[---A1--B1]+',
+			'C' : '-A1++B1[+++C1++D1]-',
+			'D' : '--C1++++A1[+D1++++B1]--B1',
+            ...standardRules
+		},
+        iterations: 3
     }
 };
 
@@ -84,11 +104,11 @@ function expandLSystem(system, iterations) {
 }
 
 function interpret(sentence, angle, stepLength) {
-    turtle.reset();
-    turtle.penUp();
-    turtle.goto(0, 0);
+    turtle.reset()
+        .penUp()
+        .goto(0, 0);
     const stack = [];
-    const color = new Color();
+    const color = new Colour();
     let drawnSegments = 0;
 
     for (let i = 0; i < sentence.length; i++) {
@@ -98,8 +118,7 @@ function interpret(sentence, angle, stepLength) {
             case 'F':
             case '1': {
                 color.setHSL((drawnSegments / Math.max(1, sentence.length)) % 1, 0.85, 0.58);
-                turtle.color(color.getHex());
-                turtle.penDown().forward(stepLength);
+                turtle.color(color).penDown().forward(stepLength);
                 drawnSegments++;
                 break;
             }
@@ -234,7 +253,7 @@ const scaleSlider = new Slider('Step length')
 Simulation
     .with({
         htmlDivId: 'lSystemsContainer',
-        viewport: { parameterMenuCollapsed: false, aspectRatio: '1/1' },
+        viewport: { parameterMenuCollapsed: false },
         camera: {
             position: new Vec3(0, 0, 25),
             orthographic: true,
@@ -243,9 +262,9 @@ Simulation
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
         infoPanel: {
-            text: '<strong>L-systems</strong><br/>' +
-                'Rewrite the axiom using production rules, then interpret the result with turtle graphics. ' +
-                'Use the controls to choose a fractal, change the number of generations, and adjust the turn angle.'
+            text: '<strong>🌿 L-systems</strong><br/>' +
+                '👉 Learn more about <a href=\"https://en.wikipedia.org/wiki/L-system\">L-systems</a><br/>' +
+                '👉 Choose a fractal, change the number of generations, and adjust the turn angle.'
         }
     })
     .bind(turtle.alwaysWith(turtleView))

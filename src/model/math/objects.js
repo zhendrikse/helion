@@ -1,3 +1,4 @@
+import { Colour } from '../../view/colormappers.js';
 import { Bindable, Transformation} from '../behavior.js';
 import { Matrix2D } from './linearalgebra.js';
 import { Interval, degToRad} from './math.js';
@@ -588,12 +589,12 @@ export class Turtle extends Segments {
     /**
      * @param {{
      * penState?: boolean
-     * color?: number
+     * color?: Colour
      * }} param0 
      */
     constructor({
         penState = Turtle.PenState.UP,
-        color =0xffff00
+        color = Colour.Yellow
     } = {}) {
         super();
 
@@ -614,6 +615,7 @@ export class Turtle extends Segments {
         this.currentColor = this._initialColor;
         this.penState = this._initialPenState;
         this.clear();
+        return this;
     }
 
     /** @param {number} angle */
@@ -643,7 +645,7 @@ export class Turtle extends Segments {
         return this;
     }
 
-    /** @param {number} color */
+    /** @param {Colour} color */
     color(color) {
         this.currentColor = color;
         return this;
@@ -667,7 +669,7 @@ export class Turtle extends Segments {
         const to = new Vec2(x, y);
 
         if (this.penState === Turtle.PenState.DOWN)
-            this.push(new LineSegment(from, to, this.currentColor));
+            this.push(new LineSegment(from, to, this.currentColor.asHexValue()));
 
         this.x = x;
         this.y = y;
