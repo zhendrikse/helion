@@ -67,7 +67,6 @@ class WallForce extends Force {
         this._WspikyGradCoeff = -45.0 / (PI * Math.pow(smoothingLength, 6));
     }
 
-    /** @param {SPHParticle} particle */
     _calculateForceOn(particle) {
         const h = this._h;
         const c = this._WspikyGradCoeff;
@@ -261,10 +260,10 @@ class SPHSolver {
         gasConstant = 120,
         mass = 1
     } = {}) {
-        this._gravity = gravity;
-        this._rho_0 = restDensity;
-        this._k = gasConstant;
-        this._mass = mass;
+        this.gravity = gravity;
+        this.restDensity = restDensity;
+        this.gasConstant = gasConstant;
+        this.mass = mass;
 
         // Precomputed smoothing-related constants
         this._hSquared = smoothingLength * smoothingLength;
@@ -275,16 +274,12 @@ class SPHSolver {
         this._wallForce = new WallForce(smoothingLength, mass);
         this._sphForce = new SPHForce({mass, viscosity, smoothingLength});
 
-        // Scratch vectors
-        this._positionVector = new Vec2();
+        this._positionVector = new Vec2(); // Scratch vector
     }
 
-    get gravity() { return this._gravity; }
     get particleCount() { return this._activeParticleCount; }
-    set mass(/** @type {number} */ value) { this._mass = value; }
-    set restDensity(/** @type {number} */ value) { this._rho_0 = value; }
     set viscosity(/** @type {number} */ value) { this._sphForce.viscosity = value; }
-    set gasConstant(/** @type {number} */ value) { this._k = value; }
+    get viscosity() { return this._sphForce.viscosity; }
 
     setNumParticles(grid, n, reset = false) {
         grid.hardReset();
@@ -298,7 +293,7 @@ class SPHSolver {
                     Math.random() * yRange.range + yRange.min
                 ),
                 velocity: new Vec2(Math.random() - 0.5, Math.random() - 0.5),
-                mass: this._mass
+                mass: this.mass
             }));
 
         for (let i = 0; i < n; i++) {
@@ -311,8 +306,8 @@ class SPHSolver {
                 particle.velocity.set(Math.random() - 0.5, Math.random() - 0.5);
                 particle.reset();
             }
-            particle.mass = this._mass;
-            particle.rho = this._mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
+            particle.mass = this.mass;
+            particle.rho = this.mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
             grid.addParticleToCell(particle);
         }
     }
@@ -328,7 +323,7 @@ class SPHSolver {
                     for (let j = 0; j < neighbor.numParticles; j++)
                         this._addDensity(particle, neighbor._particles[j]);
 
-                particle.pressure = Math.max(this._k * (particle.rho - this._rho_0), 0);
+                particle.pressure = Math.max(this.gasConstant * (particle.rho - this.restDensity), 0);
             }
     }
 
@@ -338,7 +333,7 @@ class SPHSolver {
         if (rSquared >= this._hSquared)
             return;
 
-        const temp = this._mass * SPHSolver.Wpoly6(this._hSquared, rSquared, this._Wpoly6_coeff);
+        const temp = this.mass * SPHSolver.Wpoly6(this._hSquared, rSquared, this._Wpoly6_coeff);
         particle1.rho += temp;
         particle2.rho += temp;
     }
@@ -364,11 +359,11 @@ class SPHSolver {
                 return;
 
             const particle = particleBinding.model;
-            particle.integrate(this._gravity, dt);
+            particle.integrate(this.gravity, dt);
             particle.confineToBox();
             grid.addParticleToCell(particle);
             particle.force.set(0, 0);
-            particle.rho = this._mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
+            particle.rho = this.mass * SPHSolver.Wpoly6(this._hSquared, 0, this._Wpoly6_coeff);
         });
     }
 
@@ -423,20 +418,20 @@ class ParameterControls {
             });
         this.mass = new Slider('Particle mass')
             .withRange(new Range(1, 1000, 1))
-            .withValue(1)
-            .onInput(value => solver.mass = value);
+            .on(solver)
+            .withProperty("mass")
         this.gasConstant = new Slider('Gas constant')
             .withRange(new Range(1, 1000, 1))
-            .withValue(120)
-            .onInput(value => solver.gasConstant = value);
+            .on(solver)
+            .withProperty("gasConstant")
         this.restDensity = new Slider('Rest density')
             .withRange(new Range(0, 10, 0.1))
-            .withValue(4.75)
-            .onInput(value => solver.restDensity = value);
+            .on(solver)
+            .withProperty("restDensity")
         this.viscosity = new Slider('Viscosity')
             .withRange(new Range(0, 10, 0.1))
-            .withValue(3)
-            .onInput(value => solver.viscosity = value);
+            .on(solver)
+            .withProperty("viscosity")
         this.gravityX = new Slider('Gravity X')
             .withRange(new Range(-100, 100, 10))
             .withValue(0)
@@ -484,7 +479,6 @@ function stirLiquid() {
 
     stirredCells.push(cell);
     cell.halfNeighbors.forEach(neighborCell => stirredCells.push(neighborCell));
-
     for (const cell of stirredCells)
         for (let i = 0; i < cell.numParticles; i++) {
             const particle = cell._particles[i];
@@ -496,10 +490,8 @@ function stirLiquid() {
 }
 
 function initScreenSize() {
-    const xLimit = simulation.width / domainScale;
-    const yLimit = simulation.height / domainScale;
-    xRange = new Interval(0, xLimit);
-    yRange = new Interval(0, yLimit);
+    xRange = new Interval(0, simulation.width / domainScale);
+    yRange = new Interval(0, simulation.height / domainScale);
     worldWidth = WORLD_HEIGHT * simulation.width / simulation.height;
 }
 
