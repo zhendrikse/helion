@@ -81,7 +81,7 @@ simulation
         dashed: true,
         dashSize: .05,
         gapSize: .1,
-        colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0xffaa55})
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: new Colour(0xffaa55) })
     })))
     .bind(xAxis.onceWith(new Arrow2D({
         size: .2,
@@ -108,7 +108,7 @@ simulation
     .bind(orbit.alwaysWith(new CurveView({
         resolution: samples,
         lineWidth: 2,
-        colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: 0x44dd88})
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: new Colour(0x44dd88)})
     })))
     .bind(point.onceWith(new Arrow2D({
         color: new Colour(0xff991c),

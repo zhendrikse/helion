@@ -1,10 +1,10 @@
 import {
     Circle, Simulation, Vec3, Vec2, Slider, Range, Button, Checkbox,
-    HueColorMapper, RadialSymmetricBody, Colour
+    RadialSymmetricBody, Colour, BindableCollection, ViewsCollection
 } from '../../../src/index.js';
 
 const numberOfDots = 360;
-let c = 15;
+let c = 13;
 let n = 0; // number of seeds
 let drawBorderAroundDots = false;
 
@@ -52,10 +52,9 @@ const colorSchemes = [
     (/** @type {{ angle: number; }} */ _p) => 65 / 360 // monochrome 65°
 ];
 
-/** @type {FlowerParticle[]} */
-const flowerSeeds = [];
-/** @type {Circle[]} */
-const particleViews = [];
+const flowerSeeds = new BindableCollection();
+for (let index = 0; index <= numberOfDots; index++)
+    flowerSeeds.add(new FlowerParticle(c, index));
 
 const simulation = Simulation
     .with({
@@ -67,15 +66,16 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .onReset(() => {
         n = 0;
-        flowerSeeds.forEach(seed => seed.updateWith(c));
+        flowerSeeds.forEach(seedBinding => seedBinding.model.updateWith(c));
         updateTitle(c, n);
     })
+    .bind(flowerSeeds.alwaysWith(ViewsCollection.of(Circle).with({ fillColor: Colour.Yellow })))
     .runsEvery(0.02)
     .onStep(() => {
         if (n > numberOfDots)
             return; 
 
-        particleViews[n].visible = true;
+        flowerSeeds.forEach((binding, index) => binding.view.visible = index <=n);
         updateTitle(c, n);
         n++;
     })
@@ -85,7 +85,7 @@ const simulation = Simulation
         .onInput(value => {
             c = value;
             n = 0;
-            flowerSeeds.forEach(seed => seed.updateWith(c));
+            flowerSeeds.forEach(seedBinding => seedBinding.model.updateWith(c));
             updateTitle(c, n);
         })
     )
@@ -104,15 +104,6 @@ const simulation = Simulation
     )
     .start();
 
-for (let index = 0; index <= numberOfDots; index++) {
-    flowerSeeds.push(new FlowerParticle(c, index));
-    const view = new Circle({
-        fillColor: Colour.Yellow
-    });
-    particleViews.push(view);
-    simulation.bind(flowerSeeds[index].alwaysWith(view));
-}
-
 let currentScheme = 0
 let showBorder = false
 updateFlowerSeeds();
@@ -121,11 +112,10 @@ updateFlowerSeeds();
 function updateFlowerSeeds(schemeNr= currentScheme) {
     currentScheme = schemeNr;
     n = 0;
-    particleViews.forEach(view => view.visible = false);
-    flowerSeeds.forEach((seed, index) => {
-        const seedColour = new Colour().setHSL(colorSchemes[schemeNr](seed), 1, .5);
-        particleViews[index].fillColor = seedColour;
-        particleViews[index].borderColor = showBorder ? Colour.White : seedColour;
+    flowerSeeds.forEach((seedBinding, index) => {
+        const seedColour = new Colour().setHSL(colorSchemes[schemeNr](seedBinding.model), 1, .5);
+        seedBinding.view.fillColor = seedColour;
+        seedBinding.view.borderColor = showBorder ? Colour.White : seedColour;
     });
     updateTitle(c, n);
 }

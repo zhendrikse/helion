@@ -1,5 +1,6 @@
-import {Body, Simulation, Vec3, Slider, Range, Button, VectorView, Colour} from '../../../src/index.js';
-import {BindableCollection} from "../../../src/model/behavior.js";
+import {
+    Body, Simulation, Vec3, Slider, Range, Button, VectorView, Colour, BindableCollection, ViewsCollection
+} from '../../../src/index.js';
 
 // Simulation parameters
 const speed = 6;  // initial horizontal speed
@@ -20,7 +21,7 @@ class Flock extends BindableCollection {
 
         const initialPhysicalFlockRadius = 3;
         for (let i = 0; i < bird_count; i++)
-            this._bindables.push(new Body({
+            this.add(new Body({
                 position: new Vec3().random().multiplyScalar(initialPhysicalFlockRadius),
                 velocity: new Vec3(speed, 0, 0).add(new Vec3().random().multiplyScalar(speed)),
             }));
@@ -29,7 +30,7 @@ class Flock extends BindableCollection {
     // avoid nearest birds (A BETTER VERSION WOULD ANTICIPATE COLLISIONS)
     avoidNearestBirds() {
         const avoid = [];
-        for (let i = 0; i < this._bindables.length; i++) {
+        for (let i = 0; i < this.size; i++) {
             avoid.push(new Vec3(0, 0, 0));
             for (let j = 0; j < i; j++) {
                 const distanceSquared = this._bindables[i].distanceToSquared(this._bindables[j]);
@@ -69,10 +70,10 @@ class Flock extends BindableCollection {
         this._center.set(0, 0, 0);
         this._direction.set(0, 0, 0);
 
-        for (const bird of this._bindables) {
+        this._bindables.forEach(bird => {
             this._center.add(bird.position);
             this._direction.add(bird.velocity);
-        }
+        });
 
         this._center.divideScalar(this._bindables.length);
         this._direction.divideScalar(this._bindables.length);
@@ -88,23 +89,13 @@ class Flock extends BindableCollection {
     set avoidWeight(number) { this._avoid_weight = number; }
 
     startleBirds() {
-        for (const bird of this._bindables)
-            bird.velocity.copy(new Vec3().random().multiplyScalar(2 * speed));
+        for (const birdBinding of this)
+            birdBinding.model.velocity.copy(new Vec3().random().multiplyScalar(2 * speed));
     }
 }
 
 const birdCount = 250;
 const flock = new Flock(birdCount);
-
-/** @type {VectorView[]} */
-const birds = [];
-for (let i = 0; i < birdCount; i++)
-    birds.push(new VectorView({
-        vectorProperty: body => body.velocity,
-        color: new Colour(0x77ff77),
-        size: 0.2,
-        magnitudeMap: _mag => .7
-    }));
 
 Simulation
     .with({
@@ -117,7 +108,12 @@ Simulation
             enabled: false
         }
     })
-    .bind(flock.alwaysWith(birds))
+    .bind(flock.alwaysWith(ViewsCollection.of(VectorView).with({
+        vectorProperty: body => body.velocity,
+        color: new Colour(0x77ff77),
+        size: 0.2,
+        magnitudeMap: _mag => .7
+    })))
     .withMouseClickEventListener()
     .runsEvery(0.01)
     .onStep((_, dt) => flock.update(dt))

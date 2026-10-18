@@ -100,7 +100,7 @@ simulation
         dashed: true,
         dashSize: .05,
         gapSize: .1,
-        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xffaa55 })
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: new Colour(0xffaa55) })
     })))
     .bind(xAxis.onceWith(new Arrow2D({
         size: .25,
@@ -127,12 +127,12 @@ simulation
     .bind(exactFunction.onceWith(new CurveView({
         resolution: samples,
         lineWidth: 3,
-        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0x00ff00 })
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: Colour.Green })
     })))
     .bind(approximatedFunction.onceWith(new CurveView({
         resolution: samples,
         lineWidth: 2,
-        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: 0xff0000 })
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: Colour.Red })
     })))
     .append(new Slider('Maximum frequency')
         .withRange(new Range(0, maximumFrequency, 1))

@@ -1,4 +1,4 @@
-import {Bindable, BindableCollection} from '../behavior.js';
+import { Bindable, BindableCollection } from '../behavior.js';
 import { PhysicsState, RadialSymmetricBody } from './bodies.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
 import { SphereSphereCollision } from '../transformations/interactions.js';
@@ -103,7 +103,7 @@ export class Gas extends BindableCollection{
         this._k = 1;
         this._limitToContainer = containerFunction;
 
-        this.push(new RadialSymmetricBody({
+        this.add(new RadialSymmetricBody({
             velocity: this.#newInitialVelocity(this._temperature),
             radius: tracerRadius,
             mass: tracerMass
@@ -119,16 +119,20 @@ export class Gas extends BindableCollection{
     get tracer() { return this._bindables[0]; }
 
     get temperature() { return this._temperature; }
-    get particleCount() { return this._bindables.length; }
 
     /** @param {number} numberOfParticles */
     addParticles(numberOfParticles = 50) {
-        for (let i = 0; i < numberOfParticles; i++)
-            this._bindables.push(new RadialSymmetricBody({
+        const newParticles = new BindableCollection();
+        for (let i = 0; i < numberOfParticles; i++) {
+            const particle = new RadialSymmetricBody({
                 velocity: this.#newInitialVelocity(this._temperature),
                 radius: this._particleRadius,
                 mass: this._particleMass
-            }));
+            });
+            newParticles.add(particle);
+            this.add(particle);
+        }
+        return newParticles;
     }
 
     /** @param {number} temperature */
@@ -145,15 +149,17 @@ export class Gas extends BindableCollection{
             throw new Error('Temperature must be greater than zero.');
 
         const scale = Math.sqrt(newTemperature / this._temperature);
-        for (const particle of this._bindables.slice(1, this._bindables.length))
+        for (const particle of this._bindables.slice(1, this.size))
             particle.velocity.multiplyScalar(scale);
         this._temperature = newTemperature;
     }
 
     reset(temperature = this._temperature) {
-        this._bindables.length = this._baseParticleCount;
+        // Keep the tracer plus the configured number of gas particles.
+        this._bindables.length = this._baseParticleCount + 1;
+        this._bindings.length = 0;
         this._temperature = temperature;
-        for (let i = 0; i < this._baseParticleCount; i++)
+        for (let i = 0; i < this._bindables.length; i++)
             this.#resetParticle(this._bindables[i], i === 0 ? 0 : this._temperature);
     }
 
@@ -175,7 +181,7 @@ export class Gas extends BindableCollection{
 
         // normalize so that area is equal to histogram
         const sumTheory = theory.reduce((a, b) => a + b, 0);
-        const scale = this._bindables.length / sumTheory;
+        const scale = this.size / sumTheory;
         return theory.map(v => v * scale);
     }
 
@@ -196,7 +202,7 @@ export class Gas extends BindableCollection{
             bins[index]++;
         }
 
-        const meanV2 = sumV2 / this._bindables.length;
+        const meanV2 = sumV2 / this.size;
         return {
             speeds: Array.from({ length: binCount }, (_, i) => (i + 0.5) * binSize),
             bins,
@@ -206,7 +212,7 @@ export class Gas extends BindableCollection{
 
     /** @param {number} dt */
     evolve(dt) {
-        const particles = this._bindables.slice(0, this._bindables.length);
+        const particles = this._bindables.slice(0, this.size);
         const limit = this._containerSize * .5 - this._particleRadius;
         for (const particle of particles) {
             this._limitToContainer(particle, limit);

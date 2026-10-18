@@ -1,4 +1,4 @@
-import { Color, LinearSRGBColorSpace } from 'three';
+import { LinearSRGBColorSpace } from 'three';
 import {
     Checkbox, ColorMappers, DiscreteScalarField, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView,
@@ -413,8 +413,8 @@ const pressureView = new DiscreteFieldSurfaceView({
     colorSpace: LinearSRGBColorSpace,
 });
 
-const smokePressureColor = new Color().setRGB( 1.2e-2, 1.2e-2, 1.2e-2);
-const smokeColor = new Color().setRGB( 1 - 1.2e-2, 1 - 1.2e-2, 1 - 1.2e-2);
+const smokePressureColor = new Colour( 1.1e-2, 1.1e-2, 1.1e-2, LinearSRGBColorSpace);
+const smokeColor = new Colour( 1 - 1.2e-2, 1 - 1.2e-2, 1 - 1.2e-2, LinearSRGBColorSpace);
 const smokeMapper = ColorMappers.get(ColorMappers.Uniform, { color: smokePressureColor });
 const smokeView = new DiscreteFieldSurfaceView({
     colorMapper: smokeMapper,

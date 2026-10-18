@@ -238,10 +238,13 @@ export class Slider extends HtmlControl {
         if (!this._targetObject)
             throw new Error('Set target object first with the checkbox.on() method');
 
+        if (!name in this._targetObject)
+            throw new Error(`${name} is not a member of ${this._targetObject}`);
+
         if (this._targetObject[name])
             this.withValue(this._targetObject[name]);
         else
-            console.info(`Helion cannot set initial state of slider control: no getter for property ${name}`);
+            console.info(`Cannot retrieve value of ${name} in ${this._targetObject.constructor.name} (no getter?)`);
 
         this.addEventListener('input', (event) => {
             // @ts-ignore
@@ -314,10 +317,13 @@ export class Checkbox extends HtmlControl {
         if (!this._targetObject)
             throw new Error('Set target object first with the checkbox.on() method');
 
+        if (!name in this._targetObject)
+            throw new Error(`${name} is not a member of ${this._targetObject}`);
+
         if (this._targetObject[name])
             this._inputControl.checked = this._targetObject[name];
         else
-            console.info(`Helion cannot set initial state of checkbox control: no getter for property ${name}`);
+            console.info(`Cannot retrieve value of ${name} in ${this._targetObject.constructor.name} (no getter?)`);
 
         // @ts-ignore
         this.addEventListener('change', (event) => this._targetObject[name] = event.target.checked);

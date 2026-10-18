@@ -9,7 +9,7 @@ import { Renderable3D } from "../../renderer.js";
 import { Interval } from "../../../model/math/math.js";
 import { Vec2, Vec3 } from "../../../model/math/objects.js";
 import { LineSegment, Segments } from "../../../model/math/objects.js";
-import { ColorMappers } from "../../colormappers.js";
+import {ColorMappers, Colour} from "../../colormappers.js";
 
 class InstancedSegmentsView extends Renderable3D {
     /**
@@ -144,7 +144,7 @@ export class LineSegmentView extends Renderable3D {
         dashSize = 1,
         gapSize = 1,
         visible = true,
-        colorMapper = ColorMappers.get(ColorMappers.Uniform, {color: 0xffffff})
+        colorMapper = ColorMappers.get(ColorMappers.Uniform, {color: Colour.White})
     } = {}) {
         super();
 

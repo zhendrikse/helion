@@ -1,5 +1,16 @@
 import { MeshStandardMaterial } from 'three';
-import {Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation, Colour} from '../../../src/index.js';
+import {
+    Block,
+    Box,
+    Simulation,
+    Slider,
+    Vec3,
+    Range,
+    Button,
+    Transformation,
+    Colour,
+    BindableCollection, ViewsCollection
+} from '../../../src/index.js';
 
 const SIZE = 1;
 const GAP = 0.06;
@@ -158,13 +169,13 @@ class Rotation {
     }
 }
 
-class Cube {
+class Cube extends BindableCollection {
     constructor() {
-        this._cubies = [];
+        super();
         for (let x = -1; x <= 1; x++)
             for (let y = -1; y <= 1; y++)
                 for (let z = -1; z <= 1; z++)
-                    this._cubies.push(new Cubie(x, y, z));
+                    this.add(new Cubie(x, y, z));
 
         /** @type {Move[]} */
         this._queue = [];
@@ -178,12 +189,7 @@ class Cube {
 
     addToQueue = (/** @type {Move} */ move) => this._queue.push(move);
 
-    /** @returns {ArrayIterator<Cubie>} */
-    [Symbol.iterator]() {
-        return this._cubies[Symbol.iterator]();
-    }
-
-    #cubiesFor = (/** @type {Move} */ move) => this._cubies.filter(cubie => cubie.isPartOfMove(move));
+    #cubiesFor = (/** @type {Move} */ move) => this._bindables.filter(cubie => cubie.isPartOfMove(move));
 
     processQueue() {
         if (this._currentMove || this._queue.length === 0) // We cannot process a new move when a move is ongoing
@@ -239,6 +245,7 @@ const simulation = Simulation.with({
         },
         headUpDisplay: false
         })
+    .bind(cube.alwaysWith(ViewsCollection.of(Box).with({ color: new Colour(0x111111) })))
     .onFrame(timeStamp => cube.evolve(timeStamp))
     .append(new Button('Forward: ').withText('F').onClick(() => cube.apply(new Move('f')))
         .togetherWith(new Button().withText('B').onClick(() => cube.apply(new Move('b')))
@@ -262,8 +269,8 @@ const simulation = Simulation.with({
     );
 
 // Bind view to model
-for (const cubie of cube) {
-    simulation.bind(cubie.alwaysWith(new Box({ color: new Colour(0x111111) })));
+for (const binding of cube) {
+    const cubie = binding.model;
     cubie.stickers.forEach(sticker => simulation.bind(sticker.alwaysWith(
         new Box({
             color: Colors[sticker.side],

@@ -1,6 +1,6 @@
 import {
     Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, Checkbox,
-    RadialSymmetricBody, UPlotGraph, Colour, Circle
+    RadialSymmetricBody, UPlotGraph, Colour, Circle, ViewsCollection
 } from '../../../src/index.js';
 
 const CONTAINER_SIZE = 10;
@@ -15,8 +15,6 @@ const gas = new Gas({
     tracerMass: 50,
     tracerRadius: 0.3
 });
-/** @type {Circle[]} */
-const particleViews = [];
 const tracerTrail = new Trail({ maxPoints: 500, trailStep: 5, color: new Colour(0xBF40BF) });
 /** @type {number[][]} */
 const histogramBuffer = [];
@@ -39,12 +37,7 @@ const graph = new UPlotGraph({
     yLabel: 'Particles'
 });
 
-for (let i = 0; i < gas.particleCount; i++)
-    particleViews.push(new Circle({
-        fillColor: i === 0 ? Colour.Red : i > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow,
-        segments: i === 0 ? 32 : 16
-    }));
-
+const circles = ViewsCollection.of(Circle);
 const simulation = Simulation
     .with({
         htmlDivId: 'brownianMotionContainer',
@@ -52,37 +45,40 @@ const simulation = Simulation
         lighting: { enabled: false },
         infoPanel: {
             text: '<strong>🚶🏻‍➡️️ Random walk / Brownian motion</strong><br/>Maxwell velocity distribution of an ideal two-dimensional gas' +
-            ' in a square container.\n $$ A=\\frac{m}{2 \\pi k_B T}$$\n $$f(\\overrightarrow{v}) d^2\\overrightarrow{v} =' +
-            'e^{(-Av^2)} d^2\\overrightarrow{v}$$'
+                ' in a square container.\n $$ A=\\frac{m}{2 \\pi k_B T}$$\n $$f(\\overrightarrow{v}) d^2\\overrightarrow{v} =' +
+                'e^{(-Av^2)} d^2\\overrightarrow{v}$$'
         }
     })
     .runsEvery(0.01)
-    .bind(gas.alwaysWith(particleViews))
     .bind(gas.tracer.alwaysWith(tracerTrail))
     .onStep((_, dt) => gas.evolve(dt))
     .appendStartStopResetUI()
     .append(new Button()
         .withText(`Add ${PARTICLES_TO_ADD}`)
         .onClick(() => {
-            const startIndex = gas.particleCount;
-            gas.addParticles(PARTICLES_TO_ADD);
-            for (const [index, particle] of gas.entries())
-                if (index >= startIndex)
-                    bindParticle(particle, index);
+            const newParticles = gas.addParticles(PARTICLES_TO_ADD);
+            const bindingCollection = newParticles.alwaysWith(circles);
+            simulation.bind(bindingCollection);
+            newParticles.forEach(binding => binding.view.fillColor = Colour.Cyan);
+            bindingCollection.forEach(binding => gas._bindings.push(binding));
         }))
     .append(new Checkbox('Gas particles')
         .checked(true)
-        .onChange(checked => particleViews.slice(1).forEach(view => view.visible = checked))
+        .onChange(checked => {
+            gas.forEach((binding, index) => {
+                console.log(gas._bindings.length);
+                if (index !== 0)
+                    binding.view.visible = checked;
+            })
+        })
         .togetherWith(new RadioGroup()
             .add('Box', _event => {
                 gas.limitToContainer = Gas.bounceWithinBox;
-                gas.reset();
-                tracerTrail.reset();
+                reset();
             })
             .add('Sphere', _event => {
                 gas.limitToContainer = Gas.bounceWithinSphere;
-                gas.reset();
-                tracerTrail.reset();
+                reset();
             }).checked(0)))
     .append(new Slider('Tracer mass')
         .withRange(new Range(1, 100, 1))
@@ -115,24 +111,20 @@ const simulation = Simulation
         }
         graph.update();
     })
-    .onReset(() => {
-        gas.reset(temperatureSlider.value);
-        particleViews.slice(PARTICLE_COUNT).forEach(view => view.visible = false);
-        particleViews.slice(0, PARTICLE_COUNT).forEach(view => view.visible = true);
-        tracerTrail.reset();
-        histogramBuffer.length = 0;
-    })
+    .onReset(reset)
     .start();
 
-/**
- * @param {RadialSymmetricBody} particle 
- * @param {number} index 
- */
-function bindParticle(particle, index) {
-    const particleView = new Circle({
-        fillColor: index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow
-    });
-    particleViews.push(particleView);
-    simulation.bind(particle.alwaysWith(particleView));
+function reset() {
+    gas.reset(temperatureSlider.value);
+    circles.reset();
+    simulation.bind(gas.alwaysWith(circles));
+    gas.forEach((binding, index) =>
+        binding.view.fillColor = index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow
+    );
+    tracerTrail.reset();
+    histogramBuffer.length = 0;
 }
+reset();
+
+
 

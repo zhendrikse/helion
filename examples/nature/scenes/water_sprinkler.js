@@ -98,9 +98,7 @@ class Sprinkler extends Block {
         ];
     }
 
-    /**
-     * @returns {Iterator<Droplet>}
-     */
+    /** @returns {Iterator<Droplet>} */
     [Symbol.iterator]() {
         const allDroplets = [
             ...this._waterBeams[0].droplets,
@@ -167,7 +165,6 @@ class Sprinkler extends Block {
         return velocities;
     }
 
-    set omega(value) { this._omega = value; }
     set dropletFrequency(value) { this._frequency = value; }
     set waterVelocity(value) { this._waterVelocity = value; }
     set shootOutward(value) { this._shootOutward = value; }

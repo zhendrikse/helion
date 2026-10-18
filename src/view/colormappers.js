@@ -44,19 +44,21 @@ export class Colour {
      * @param {number} rOrHexValue hex value or 0 <= red <= 1
      * @param {number} g 0 <= green <= 1
      * @param {number} b 0 <= blue <=1
+     * @param {string} colorSpace
      */
-    constructor(rOrHexValue = 0, g = -1, b = -1) {
+    constructor(rOrHexValue = 0, g = -1, b = -1, colorSpace = SRGBColorSpace) {
         this._color = new Color();
-        (g < 0 || b < 0) ? this._color.setHex(rOrHexValue) : this._color.setRGB(rOrHexValue, g, b, SRGBColorSpace);
+        (g < 0 || b < 0) ? this._color.setHex(rOrHexValue) : this._color.setRGB(rOrHexValue, g, b, colorSpace);
     }
 
     /**
      * @param {number} r 0 <= red <= 1
      * @param {number} g 0 <= green <= 1
      * @param {number} b 0 <= blue <=1
+     * @param {string} colorSpace
      */
-    setRGB(r, g, b) {
-        this._color.setRGB(r, g, b, SRGBColorSpace);
+    setRGB(r, g, b, colorSpace = SRGBColorSpace) {
+        this._color.setRGB(r, g, b, colorSpace);
         return this;
     }
 
@@ -368,11 +370,25 @@ export class HexValueColorMapper extends ColorMapper {
 }
 
 class UniformColorMapper extends ColorMapper {
+    /**
+     * @param param {{
+     *     color?: Colour
+     * }} [options]
+     */
     constructor({
-        color = new Color().setRGB(1, 1, 0.0, SRGBColorSpace)
+        color = Colour.Yellow
     }={}) {
         super();
-        this.color = color instanceof Color ? color : new Color().setHex(color);
+        if (!(color instanceof Colour))
+            throw new Error("Uniform color mapper requires a Colour instance");
+        this._color = color;
+    }
+
+    set color(colour) {
+        if (!(colour instanceof Colour))
+            throw new Error("Uniform color mapper requires a Colour instance");
+
+        this._color = colour;
     }
 
     /**
@@ -380,7 +396,7 @@ class UniformColorMapper extends ColorMapper {
      * @param {Color} targetColor
      */
     map(value, targetColor) {
-        targetColor.copy(this.color);
+        this._color.asThreeJsColor(targetColor);
     }
 }
 

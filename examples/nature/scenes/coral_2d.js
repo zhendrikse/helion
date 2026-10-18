@@ -1,9 +1,7 @@
 import {
-    Circle, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, Bindable
+    Circle, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, Bindable, Colour, ColorMapper
 } from '../../../src/index.js';
-import { Renderable2D } from '../../../src/view/renderer.js';
-import { Colour, ColorMapper } from '../../../src/view/colormappers.js';
-import {Box3, LinearSRGBColorSpace, Vector3} from 'three';
+import { LinearSRGBColorSpace } from 'three';
 
 const swarmSize = 1500;
 const width = 500;
@@ -122,7 +120,7 @@ class CoralParticleView extends Circle {
         super.synchronizeWith(particle);
         const value = this._colorFunction(particle);
         this._colorMapper.map(value, this._color);
-        this._fillMaterial.color.set(this._color.asThreeJsColor());
+        this._color.asThreeJsColor(this._fillMaterial.color);
     }
 }
 

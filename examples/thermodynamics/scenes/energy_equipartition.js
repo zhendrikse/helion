@@ -1,7 +1,7 @@
 import {
     RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule,
     BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, SpringForce, UPlotGraph,
-    Interval
+    Interval, ViewsCollection
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 import {BindableCollection} from "../../../src/model/behavior.js";
@@ -148,22 +148,22 @@ class CarbonMonoxideGas extends BindableCollection {
             const pos = new Vec3(Math.random() - .5, Math.random() - .5, Math.random() - .5)
                 .multiplyScalar(boxSize);
             const molecule = new CarbonMonoxide(pos, Math.sqrt(3 * k * temperature / mass));
-            this._bindables.push(molecule);
+            this.add(molecule);
         }
     }
 
     /** @param {number} dt */
     evolve(dt) {
-        for (const molecule of this._bindables)
-            molecule.apply(bondForce);
+        for (const binding of this)
+            binding.model.apply(bondForce);
 
-        for (const molecule of this._bindables) {
-            molecule.integrate(dt);
-            molecule.checkBoxBounce(this._boxSize * 2);
+        for (const binding of this) {
+            binding.model.integrate(dt);
+            binding.model.checkBoxBounce(this._boxSize * 2);
         }
 
-        for (let i = 0; i < this._bindables.length; i++)
-            for (let j = i + 1; j < this._bindables.length; j++)
+        for (let i = 0; i < this.size; i++)
+            for (let j = i + 1; j < this.size; j++)
                 this._bindables[i].resolveCollisionWith(this._bindables[j]);
     }
 
@@ -172,7 +172,7 @@ class CarbonMonoxideGas extends BindableCollection {
     updateToNewTemperature(newTemperature) {
         // Modify the speed of all molecules according to equipartition: v ~ sqrt(T)
         const scaleFactor = Math.sqrt(newTemperature / this._temperature); // ratio new temp / old temp
-        for (const molecule of this)
+        for (const molecule of this._bindables)
             molecule.scaleVelocity(scaleFactor);
         this._temperature = newTemperature;
     }
@@ -223,11 +223,6 @@ const graph = new UPlotGraph({
     yRange: new Interval(0, 1.1e-14)
 });
 
-/** @type {DiatomicMolecule[]} */
-const moleculeViews = [];
-for (const molecule of gas)
-    moleculeViews.push(new DiatomicMolecule());
-
 const simulation = Simulation
     .with({
         htmlDivId: 'energyEquipartitionContainer',
@@ -236,7 +231,7 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .addGraph(graph)
-    .bind(gas.alwaysWith(moleculeViews))
+    .bind(gas.alwaysWith(ViewsCollection.of(DiatomicMolecule)))
     .runsEvery(0.003)
     .advancesBy(5e-16)
     .substeps(3)
@@ -269,7 +264,7 @@ const simulation = Simulation
     })
     .addObject3D(new Aquarium({ size: new Vec3(1, 1, 1).multiplyScalar(2 * L) }))
     .append(new RadioGroup()
-        .add('Springs', () => moleculeViews.forEach(view => view.bondType = SwitchableBondView.Type.Spring))
-        .add('Cylinders', () => moleculeViews.forEach(view => view.bondType = SwitchableBondView.Type.Cylinder))
+        .add('Springs', () => gas.forEach(binding => binding.view.bondType = SwitchableBondView.Type.Spring))
+        .add('Cylinders', () => gas.forEach(binding => binding.view.bondType = SwitchableBondView.Type.Cylinder))
         .checked(1)
     );

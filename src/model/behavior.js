@@ -1,5 +1,4 @@
 import {Renderer} from "../view/renderer.js";
-import {Simulation} from "../core/helion.js";
 
 export class Transformation {
     /**
@@ -38,6 +37,38 @@ export class Bindable {
     reset() {}
 }
 
+export class ViewsCollection {
+    static of = viewConstructor => {
+        return new ViewsCollection(viewConstructor);
+    }
+
+    constructor(viewConstructor) {
+        this._viewConstructor = viewConstructor;
+        this._options = {};
+        /** @type {Renderable[]} */
+        this._views = [];
+    }
+
+    with(options) {
+        this._options = options;
+        return this;
+    }
+
+    reset() {
+        this._views.forEach(view => {
+            view.visible = false;
+            view.dispose();
+        });
+        this._views = [];
+    }
+
+    createView() {
+        const view = new this._viewConstructor(this._options);
+        this._views.push(view);
+        return view;
+    }
+}
+
 export class BindableCollection {
     constructor() {
         /** @type {Bindable[]} */
@@ -47,52 +78,64 @@ export class BindableCollection {
     }
 
     /** @param {Bindable} bindable */
-    push(bindable) {
+    add(bindable) {
         this._bindables.push(bindable);
     }
+
+    get size() { return this._bindables.length; }
 
     addTo(simulationBindings, renderer) {
         this._bindings.forEach(binding => binding.addTo(simulationBindings, renderer));
     }
 
-    /** @returns {ArrayIterator<Bindable>} */
+    /** @returns {ArrayIterator<Binding>} */
     [Symbol.iterator]() {
-        return this._bindables[Symbol.iterator]();
+        return this._bindings[Symbol.iterator]();
     }
 
-    /** @returns {ArrayIterator<[number, Bindable]>} */
+    /** @returns {ArrayIterator<[number, Binding]>} */
     entries() {
-        return this._bindables.entries();
+        return this._bindings.entries();
+    }
+
+    /**
+     * @param {(body: Binding, index: number, bodies: Binding[]) => void} callback
+     * @param {*} [thisArg]
+     */
+    forEach(callback, thisArg) {
+        this._bindings.forEach(callback, thisArg);
     }
 
     /**
      * Synchronize model only once with the view. Important: the
      * model is also synchronized with the view at every user interaction!!
-     * @param {Renderable[]} viewCollection views to synchronize the models with.
+     * @param {ViewsCollection} viewsCollection views to synchronize the models with.
      */
-    onceWith(viewCollection) {
-        this._bindables.forEach((bindable, index) =>
-            this._bindings.push(bindable.onceWith(viewCollection[index])));
+    onceWith(viewsCollection) {
+        this._bindables.forEach(bindable=> this._bindings.push(bindable.onceWith(viewsCollection.createView())));
         return this;
     }
 
     /**
      * Keeps the models and views synchronized at all times!
-     * @param {Renderable[]} viewCollection views to synchronize the models with.
+     * @param {ViewsCollection} viewsCollection views to synchronize the models with.
      */
-    alwaysWith(viewCollection) {
-        /** @type {Binding[]} */
-        this._bindables.forEach((bindable, index) =>
-            this._bindings.push(bindable.alwaysWith(viewCollection[index])));
+    alwaysWith(viewsCollection) {
+        this._bindables.forEach(bindable => this._bindings.push(bindable.alwaysWith(viewsCollection.createView())));
         return this;
     }
 
+    /** @param {Transformation} transformation */
     apply(transformation) {
         this._bindables.forEach(bindable => transformation.applyTo(bindable));
     }
 
     reset() {
         this._bindables.forEach(bindable => bindable.reset());
+        this._bindings.forEach(binding => {
+            binding.model.reset();
+            binding.view.reset();
+        });
     }
 }
 
@@ -132,13 +175,11 @@ export class Binding {
 
             // Replace existing binding
             bindings[existingIndex] = this;
-
-            this.initialize();
         } else {
             renderer.add(this.view);
             bindings.push(this);
-            this.initialize();
         }
+        this.initialize();
     }
 
     forceSynchronize() {
