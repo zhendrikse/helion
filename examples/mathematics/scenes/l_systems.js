@@ -20,11 +20,11 @@ const standardRules = {
  */
 const SYSTEMS = {
     'Hilbert curve': {
-        iterations: 6,
+        iterations: 4,
         startPosition: new Vec2(-5, 10),
         angle: 90,
-        stepLength: .4,
-        textContent: '<h3>Hilbert curve</h3>Angle: 90°<br/>Axiom: <code>A</code<br/>Rules:  <code>A → -BF+AFA+FB-<br/>  B → +AF-BFB-FA+<br/>  F → F</code>',
+        stepLength: 1,
+        textContent: '<h3>Hilbert curve</h3>Angle: 90°<br/>Axiom: <code>A</code><br/>Rules:  <code>A → -BF+AFA+FB-<br/>  B → +AF-BFB-FA+<br/>  F → F</code>',
         axiom: 'A',
         rules: {
             'A' : '-BF+AFA+FB-',
