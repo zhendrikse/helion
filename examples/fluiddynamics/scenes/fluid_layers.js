@@ -1,6 +1,6 @@
 import {
     Block, Box, Button, Colour, RadialSymmetricBody, BindableCollection, ViewsCollection,
-    Range, Simulation, Slider, Sphere, Vec3
+    Simulation, Sphere, Vec3
 } from '../../../src/index.js';
 
 const K_WALL = 100000;
