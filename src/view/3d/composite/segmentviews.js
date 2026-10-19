@@ -1,6 +1,6 @@
 import {
     Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
-    BoxGeometry, Object3D, Vector2
+    BoxGeometry, Object3D, Vector2, Box3
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
@@ -184,6 +184,7 @@ export class LineSegmentView extends Renderable3D {
             segment.to.x, segment.to.y, this._3d ? segment.to.z : 0
         ]);
 
+        this._geometry.computeBoundingBox();
         this._colorMapper.map(segment.scalar, this._color);
         this._geometry.setColors([
             this._color.r, this._color.g, this._color.b,
@@ -193,6 +194,13 @@ export class LineSegmentView extends Renderable3D {
         this._geometry.computeBoundingSphere();
         if (this._material.dashed)
             this._line.computeLineDistances();
+    }
+
+    get boundingBox() {
+        // LineSegmentsGeometry stores endpoints in instanceStart/instanceEnd,
+        // so compute its bounds after every geometry update before framing.
+        this._geometry.computeBoundingBox();
+        return new Box3().setFromObject(this);
     }
 
     dispose() {
