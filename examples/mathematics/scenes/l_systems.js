@@ -20,8 +20,8 @@ const standardRules = {
  */
 const SYSTEMS = {
     'Hilbert curve': {
-        iterations: 4,
-        startPosition: new Vec2(-5, 10),
+        iterations: 7,
+        startPosition: new Vec2(-50, 50),
         angle: 90,
         stepLength: 1,
         textContent: '<h3>Hilbert curve</h3>Angle: 90°<br/>Axiom: <code>A</code><br/>Rules:  <code>A → -BF+AFA+FB-<br/>  B → +AF-BFB-FA+<br/>  F → F</code>',
@@ -185,7 +185,7 @@ class LSystemDefinition {
     }
 }
 
-let lSystemDefinition = new LSystemDefinition(SYSTEMS['Koch snowflake']);
+let lSystemDefinition = new LSystemDefinition(SYSTEMS['Hilbert curve']);
 
 function interpret(sentence, system) {
     turtle.reset()
@@ -202,7 +202,7 @@ function interpret(sentence, system) {
         switch (symbol) {
             case 'F':
             case '1': {
-                color.setHSL((drawnSegments / Math.max(1, sentence.length)) % 1, 0.85, 0.58);
+                color.setHSL(i / sentence.length, 0.85, 0.58);
                 turtle.color(color).penDown().forward(system.stepLength);
                 drawnSegments++;
                 break;
@@ -245,13 +245,44 @@ function interpret(sentence, system) {
                 break;
         }
     }
+
+    centerDrawing();
+}
+
+function centerDrawing() {
+    if (turtle.count === 0)
+        return;
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    for (const segment of turtle) {
+        minX = Math.min(minX, segment.from.x, segment.to.x);
+        maxX = Math.max(maxX, segment.from.x, segment.to.x);
+        minY = Math.min(minY, segment.from.y, segment.to.y);
+        maxY = Math.max(maxY, segment.from.y, segment.to.y);
+    }
+
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+
+    for (const segment of turtle) {
+        segment.from.x -= centerX;
+        segment.from.y -= centerY;
+        segment.to.x -= centerX;
+        segment.to.y -= centerY;
+    }
 }
 
 function redraw() {
+    turtleView.reset();
     try {
         const sentence = lSystemDefinition.expandLSystem();
         interpret(sentence, lSystemDefinition);
         simulation.setBottomText(`${sentence.length.toLocaleString()} symbols`);
+        simulation.frameSceneOn(turtleView);
     } catch (error) {
         console.warn('Unable to generate L-system:', error);
         turtle.clear();
@@ -304,7 +335,7 @@ const simulation = Simulation
         htmlDivId: 'lSystemsContainer',
         viewport: { parameterMenuCollapsed: false },
         camera: {
-            position: new Vec3(0, 0, 25), orthographic: true
+            position: new Vec3(0, 0, 100), orthographic: true
         },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
