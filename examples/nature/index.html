@@ -4,13 +4,13 @@
     <link rel="stylesheet" href="../../docs/src/assets/styles.css" />
     <title>Testing nature</title>
 </head>
-<body style="width: 750px; height: 750px; background: #1a1a1a;">    
+<body style="width: 750px; height: 750px; background: #1a1a1a;">
    <!-- B A R N S L E Y  F E R N
     <script type="module" src="scenes/barnsley_fern.js"></script>
        -->
      <!-- 2 D  C O R A L  G R O W T H
-        -->
     <script type="module" src="scenes/coral_2d.js"></script>
+        -->
      <!-- P H Y L L O T A X I S  F L O W E R
     <script type="module" src="scenes/phyllotaxis.js"></script>
         -->
@@ -32,6 +32,73 @@
     <!-- - F I R E
     <script type="module" src="scenes/fire.js"></script>
       -->
+
+   <section id="canvascontainer">
+       <h2>Application canvas</h2>
+       <canvas role="img" aria-label="The drawn Pythagoras tree"></canvas>
+   </section>
+   <section id="controlswindow" >
+       <div id="controls" class="controls">
+           <h2>Control panel</h2>
+           <form action="">
+               <fieldset><input id="reset" type="button" value="Reset" /></fieldset>
+               <fieldset>
+                   <legend>Number of iterations:</legend>
+                   <label class="inputnumber" for="n">
+                       n:
+                       <input id="n" type="number" name="number_of_iterations" min="1" max="15" step="1" value="12" />
+                   </label>
+               </fieldset>
+               <fieldset>
+                   <legend>Angle:</legend>
+                   <label class="inputnumber" for="alpha">
+                       α (°):
+                       <input id="alpha" type="number" name="angle" min="20" max="70" step="1" value="40" />
+                   </label>
+               </fieldset>
+               <fieldset>
+                   <legend>Transform:</legend>
+                   <ul>
+                       <li>
+                           <label class="inputnumber" for="scale">
+                               Scale:
+                               <input id="scale" type="number" name="scale" min="0.5" max="2.5" step="0.1" value="1" />
+                           </label>
+                       </li>
+                       <li>
+                           <label class="inputnumber" for="xpos">
+                               x-pos:
+                               <input id="xpos" type="number" name="x-pos" min="-500" max="500" step="1" value="0" />
+                           </label>
+                       </li>
+                       <li>
+                           <label class="inputnumber" for="ypos">
+                               y-pos:
+                               <input id="ypos" type="number" name="y-pos" min="-500" max="500" step="1" value="0" />
+                           </label>
+                       </li>
+                   </ul>
+               </fieldset>
+               <fieldset>
+                   <label class="inputcheckbox" for="triangles">
+                       <input id="triangles" type="checkbox" checked="checked" />
+                       <span></span>
+                       Draw triangles
+                   </label>
+               </fieldset>
+               <fieldset>
+                   <legend>Color:</legend>
+                   <label id="changehue" class="inputrange" for="hue">Hue (between 0 and 360):
+                       <input type="range" id="hue" name="hue" min="0" max="360" value="50">
+                       <span>x</span>
+                       <div></div>
+                   </label>
+               </fieldset>
+               <input id="drawtree" type="button" value="Draw tree" />
+           </form>
+       </div>
+       <script type="module" src="scenes/pythagoras_tree.js"></script>
+   </section>
 </body>
 </html>
 
