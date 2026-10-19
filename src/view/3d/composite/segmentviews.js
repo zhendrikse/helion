@@ -242,6 +242,7 @@ export class LineSegmentsView extends LineSegmentView {
         return true;
     }
 
+    /** @param {Segments} segments */
     synchronizeWith(segments) {
         const positions = [];
         const colors = [];

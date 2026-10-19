@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 /** !! D O   N O T   S H O R T E N   T H E S E   I M P O R T S  !! */
-import { Vec3, VecN } from '../src/model/math/objects.js';
+import {LindenmayerSystem, Turtle, Vec3, VecN} from '../src/model/math/objects.js';
 
 test('Vec3 cross product', () => {
     const vec1 = new Vec3(1, 2, 3);
@@ -94,4 +94,17 @@ test('VecN scaling', () => {
     assert.equal(vec1[1], 2 * 3);
     assert.equal(vec1[2], 3 * 3);
     assert.equal(vec1[3], 4 * 3);
+});
+
+test('Lindenmayer system', () => {
+   const lindenmayer = new LindenmayerSystem({
+       name: 'Dragon curve',
+        axiom: 'FX',
+        rules: { F: 'F', X: 'X+YF+', Y: '-FX-Y' },
+        angle: 90,
+        maxIterations: 15,
+        order: 4,
+        startAngle: 90
+    });
+   assert.equal(lindenmayer.passOnTo(new Turtle()), 'FX+YF++-FX-YF++-FX+YF+--FX-YF++-FX+YF++-FX-YF+--FX+YF+--FX-YF+', 'Expansion');
 });

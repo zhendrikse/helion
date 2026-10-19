@@ -428,6 +428,7 @@ export class Segments extends Bindable {
 
     get count() { return this._segments.length; }
 
+    /** @returns {ArrayIterator<Segment>} */
     [Symbol.iterator]() {
         return this._segments[Symbol.iterator]();
     }
@@ -675,5 +676,116 @@ export class Turtle extends Segments {
         this.y = y;
 
         return this;
+    }
+}
+
+export class LindenmayerSystem  {
+    static MAX_SYMBOLS = 500000;
+
+    constructor({
+        name = '',
+        axiom = '',
+        maxIterations = 0,
+        order = 0,
+        angle = 0,
+        startAngle = 0,
+        scaleFactor = 1,
+        textContent = '',
+        rules = {}
+    } = {}) {
+        this.name = name;
+        this.maxIterations = maxIterations;
+        this.order = order;
+        this.turnAngle = angle;
+        this.startAngle = startAngle;
+        this.scaleFactor = scaleFactor;
+        this.rules = rules;
+        this.textContent = textContent;
+        this._axiom = axiom;
+        this._stack = [];
+        this._color = new Colour();
+        this._stepLength = 1;
+    }
+
+    _rewrite(sentence) {
+        let next = '';
+        for (const symbol of sentence) {
+            if (symbol === '1')
+                continue;
+            next += this.rules[symbol] ?? symbol;
+            if (next.length > LindenmayerSystem.MAX_SYMBOLS)
+                throw new Error(`This generation exceeds the ${LindenmayerSystem.MAX_SYMBOLS.toLocaleString()} symbol limit.`);
+        }
+        return next;
+    }
+
+    _expandLSystem() {
+        let sentence = this._axiom;
+        for (let i = 0; i < this.order; i++)
+            sentence = this._rewrite(sentence);
+        return sentence;
+    }
+
+    passOnTo(turtle) {
+        const sentence = this._expandLSystem();
+        turtle.reset()
+            .penUp()
+            .right(this.startAngle)
+            .goto(0, 0);
+        this._stack = [];
+        this._color = new Colour();
+        this._stepLength = 1;
+        let drawnSegments = 0;
+        for (let i = 0; i < sentence.length; i++) {
+            const symbol = sentence[i];
+            if (symbol === '1' || symbol === 'F') {
+                this._color.setHSL((drawnSegments / Math.max(1, sentence.length))%1, 0.85, 0.58);
+                turtle.color(this._color).penDown().forward(this._stepLength);
+                drawnSegments++;
+            } else
+                this._translateSymbol(symbol, turtle);
+        }
+
+        return sentence;
+    }
+
+    _translateSymbol(symbol, turtle) {
+        switch (symbol) {
+            case 'f':
+                turtle.penUp().forward(this._stepLength);
+                break;
+            case '+':
+                turtle.left(this.turnAngle);
+                break;
+            case '-':
+                turtle.right(this.turnAngle);
+                break;
+            case '|':
+                turtle.right(180);
+                break;
+            case '[':
+                this._stack.push({
+                    x: turtle.x,
+                    y: turtle.y,
+                    angle: turtle.angle,
+                    penState: turtle.penState,
+                    color: turtle.currentColor
+                });
+                this._stepLength *= this.scaleFactor;
+                break;
+            case ']': {
+                const state = this._stack.pop();
+                if (state) {
+                    turtle.penUp().goto(state.x, state.y);
+                    turtle.angle = state.angle;
+                    turtle.penState = state.penState;
+                    turtle.color(state.color);
+                }
+                this._stepLength /= this.scaleFactor;
+                break;
+            }
+            default: // Other uppercase letters are grammar variables only.
+                break;
+        }
     }
 }

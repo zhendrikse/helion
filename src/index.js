@@ -28,8 +28,8 @@ export {
 } from './model/phys/forces.js';
 
 export {
-    Turtle, StrangeAttractor, LineSegment, Segments, VectorModel, Grid, LinearCombination,
-    SegmentedCircle, ParametricCurve, Vec2, Vec3, VecN
+    Turtle, LindenmayerSystem, StrangeAttractor, LineSegment, Segments, VectorModel, Grid,
+    LinearCombination, SegmentedCircle, ParametricCurve, Vec2, Vec3, VecN
 } from './model/math/objects.js';
 
 export {
