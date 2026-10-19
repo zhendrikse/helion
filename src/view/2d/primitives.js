@@ -1,4 +1,4 @@
-import {Renderable2D, Renderable3D} from '../renderer.js';
+import { Renderable2D } from '../renderer.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
@@ -7,10 +7,10 @@ import { Colour } from '../colormappers.js';
 import { RadialSymmetricBody } from '../../model/phys/bodies.js'
 import {
     Float32BufferAttribute, DoubleSide, MeshBasicMaterial, BufferGeometry, Mesh, Color,
-    CircleGeometry, RingGeometry
+    CircleGeometry, RingGeometry, Shape, ShapeGeometry, LineLoop, LineBasicMaterial, Vector2, Vector3
 } from 'three';
 
-export class Arrow2D extends Renderable3D {
+export class Arrow2D extends Renderable2D {
     static HeadStyle = Object.freeze({
         Open: 'open',
         Filled: 'filled'
@@ -209,4 +209,87 @@ export class Circle extends Renderable2D {
         this._borderMesh.scale.setScalar(radius);
         this.position.set(obstacle.position.x, obstacle.position.y, 0.01);
     }
+}
+
+
+/**
+ * Reusable filled polygon primitive for 2D models that expose an array of vertices.
+ * The model vertices can be Vec2 instances or plain {x, y} objects.
+ */
+class PolygonPrimitive extends Renderable2D {
+    /**
+     * @param {{fillColor?: Colour, borderColor?: Colour, borderWidth?: number}} [options]
+     */
+    constructor({ fillColor = new Colour(0x131313), borderColor = Colour.White, borderWidth = 0.025 } = {}) {
+        super();
+        this._fillMaterial = new MeshBasicMaterial({ side: DoubleSide });
+        this._borderMaterial = new LineBasicMaterial({ linewidth: borderWidth });
+        fillColor.asThreeJsColor(this._fillMaterial.color);
+        borderColor.asThreeJsColor(this._borderMaterial.color);
+        this._fillMesh = new Mesh(new BufferGeometry(), this._fillMaterial);
+        this._outline = new LineLoop(new BufferGeometry(), this._borderMaterial);
+        this.add(this._fillMesh, this._outline);
+    }
+
+    /** @param {Colour} colour */
+    set fillColor(colour) { colour.asThreeJsColor(this._fillMaterial.color); }
+    /** @param {Colour} colour */
+    set borderColor(colour) { colour.asThreeJsColor(this._borderMaterial.color); }
+
+    canBindTo(model) {
+        if (!Array.isArray(model.vertices))
+            throw new Error('Polygon primitives can only bind to models with a vertices array.');
+        return model.vertices.length === this.vertexCount;
+    }
+
+    /** @param {{vertices: Array<{x:number,y:number}>}} model */
+    synchronizeWith(model) {
+        const points = model.vertices.map(point => new Vector2(point.x, point.y));
+        const shape = new Shape(points);
+        shape.closePath();
+
+        const oldFill = this._fillMesh.geometry;
+        const oldOutline = this._outline.geometry;
+        this._fillMesh.geometry = new ShapeGeometry(shape);
+        this._outline.geometry = new BufferGeometry().setFromPoints(
+            points.map(point => new Vector3(point.x, point.y, 0.01))
+        );
+        oldFill.dispose();
+        oldOutline.dispose();
+        this._fillMesh.position.z = 0;
+        this._outline.position.z = 0.01;
+    }
+
+    dispose() {
+        this._fillMesh.geometry.dispose();
+        this._outline.geometry.dispose();
+        this._fillMaterial.dispose();
+        this._borderMaterial.dispose();
+        this.clear();
+    }
+
+    get vertexCount() { return 0; }
+
+    /**
+     * Append a convex polygon as a triangle fan to a flat xyz position array.
+     * Used by aggregate views to batch many shapes into a single draw call.
+     * @param {number[]} target
+     * @param {Array<{x:number,y:number}>} vertices
+     */
+    static appendTriangles(target, vertices) {
+        for (let i = 1; i < vertices.length - 1; i++) {
+            for (const vertex of [vertices[0], vertices[i], vertices[i + 1]])
+                target.push(vertex.x, vertex.y, 0);
+        }
+    }
+}
+
+/** Filled square primitive. Bind to a model with four ordered vertices. */
+export class Square extends PolygonPrimitive {
+    get vertexCount() { return 4; }
+}
+
+/** Filled triangle primitive. Bind to a model with three ordered vertices. */
+export class Triangle extends PolygonPrimitive {
+    get vertexCount() { return 3; }
 }
