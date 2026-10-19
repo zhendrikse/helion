@@ -282,6 +282,9 @@ function redraw() {
         const sentence = lSystemDefinition.expandLSystem();
         interpret(sentence, lSystemDefinition);
         simulation.setBottomText(`${sentence.length.toLocaleString()} symbols`);
+
+        // frameSceneOn() needs the view geometry to reflect the newly generated segments.
+        turtleView.synchronizeWith(turtle);
         simulation.frameSceneOn(turtleView);
     } catch (error) {
         console.warn('Unable to generate L-system:', error);
