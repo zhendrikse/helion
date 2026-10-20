@@ -6,7 +6,8 @@ import {
 const K_WALL = 100000;
 const DRAG = 800;
 const COULOMB_K = 9e9;
-const CHARGE = 1e-4;
+const CHARGE = 1e-6;
+const MIN_PAIR_DISTANCE = 0.25;
 const GRAVITY = new Vec3(0, -5000, 0);
 const TIME_STEP = 0.001;
 
@@ -135,8 +136,13 @@ function applyParticleForces(particles, allParticles) {
             if (distance < 0.01 || distance >= 1.5)
                 continue;
 
+            // The original inverse-power force becomes unbounded as particles
+            // approach each other. A softened distance prevents one close pair
+            // from launching the particles out of the visible cavity.
+            const effectiveDistance = Math.max(distance, MIN_PAIR_DISTANCE);
             const magnitude = COULOMB_K * particle.q0 * other.q0 *
-                (1 / (distance * distance) - 3 / (distance * distance * distance));
+                (1 / (effectiveDistance * effectiveDistance) -
+                    3 / (effectiveDistance * effectiveDistance * effectiveDistance));
             particle.force.add(displacement.normalize().multiplyScalar(magnitude));
         }
 
