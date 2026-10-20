@@ -108,3 +108,18 @@ test('Lindenmayer system', () => {
     });
    assert.equal(lindenmayer.passOnTo(new Turtle()), 'FX+YF++-FX-YF++-FX+YF+--FX-YF++-FX+YF++-FX-YF+--FX+YF+--FX-YF+', 'Expansion');
 });
+
+test('Turtle system', () => {
+    const lindenmayer = new LindenmayerSystem({
+        name: 'Dragon curve',
+        axiom: 'FX',
+        rules: { F: 'F', X: 'X+[Y]F+', Y: '-FX-Y' },
+        angle: 90,
+        maxIterations: 15,
+        order: 5,
+        startAngle: 90
+    });
+    const turtle = new Turtle();
+    lindenmayer.passOnTo(turtle);
+    assert.equal(turtle.count, 32, 'Number of generated line segments');
+});
