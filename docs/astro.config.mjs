@@ -15,6 +15,7 @@ export default defineConfig({
 		sitemap(),
 		starlight({
 			title: '☀️ Helion',
+			favicon: '/favicon.ico',
 			social: [
 				{ icon: 'github', label: 'GitHub', href: 'https://github.com/zhendrikse/' },
 			],
