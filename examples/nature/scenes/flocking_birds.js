@@ -58,8 +58,11 @@ class Flock extends BindableCollection {
         diff = this._direction.clone().sub(bird.velocity);
         this._acceleration.add(diff.multiplyScalar(this._direction_weight));
 
-        diff = avoid[count].clone().normalize().sub(bird.position);
-        this._acceleration.add(diff.multiplyScalar(this._avoid_weight));
+        const avoidVec = avoid[count];
+        if (avoidVec.lengthSq() > 0) {
+            diff = avoidVec.clone().normalize().sub(bird.position);
+            this._acceleration.add(diff.multiplyScalar(this._avoid_weight));
+        }
 
         bird.force.copy(this._acceleration); // Since the bird mass = 1, the force F = m a = a!
         bird.integrate(dt);

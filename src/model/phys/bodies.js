@@ -666,6 +666,17 @@ export class CubicLatticeTopology {
      * @param {number} j 
      * @param {number} k 
      */
+    isSurface(i, j, k) { 
+        return i === 0 || i === this._nx - 1 ||
+                j === 0 || j === this._ny - 1 ||
+                k === 0 || k === this._nz - 1;
+    }
+
+    /** 
+     * @param {number} i 
+     * @param {number} j 
+     * @param {number} k 
+     */
     index(i, j, k) {
         return i + this._nx * (j + this._ny * k);
     }
