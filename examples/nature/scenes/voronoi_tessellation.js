@@ -6,9 +6,13 @@ import {
 const DOMAIN_WIDTH = 18;
 const DOMAIN_HEIGHT = 18;
 const EDGE_EPSILON = 1e-5;
+const CIRCLE_SEGMENTS = 48;
 
 let seedCount = 50;
+let growthSpeed = 4.5;
+let growthRadius = 0.125;
 let maximumGrowthRadius = 0;
+let growthCells = [];
 
 class VoronoiCellModel extends Bindable {
     constructor({ vertices = [], seedIndex = 0 } = {}) {
@@ -50,6 +54,7 @@ function clipPolygon(polygon, r, c) {
 }
 
 function buildVoronoiCells(seeds) {
+    growthCells = [];
     cells.reset();
     cellCores.reset();
     cellCoresView.reset();
@@ -79,8 +84,10 @@ function buildVoronoiCells(seeds) {
             for (const vertex of polygon)
                 maximumGrowthRadius = Math.max(maximumGrowthRadius, Math.hypot(vertex.x - seed.position.x, vertex.y - seed.position.y));
 
-            cells.add(new VoronoiCellModel({ vertices: polygon, seedIndex: seedIndex }));
+            const model = new VoronoiCellModel({ vertices: polygon, seedIndex: seedIndex });
+            cells.add(model);
             cellCores.add(seed);
+            growthCells.push({ model, seed, vertices: polygon });
         }
     });
 
@@ -105,7 +112,30 @@ function reset() {
         ),
         radius: .125
     }));
+    growthRadius = 0.125;
     buildVoronoiCells(seeds);
+    updateGrowthGeometry();
+}
+
+
+function updateGrowthGeometry() {
+    for (const cell of growthCells) {
+        let polygon = cell.vertices;
+
+        // Intersect the final Voronoi cell with an expanding regular polygon
+        // approximating a circle centered on the cell nucleus.
+        for (let i = 0; i < CIRCLE_SEGMENTS && polygon.length > 0; i++) {
+            const angle = (2 * Math.PI * i) / CIRCLE_SEGMENTS;
+            const normal = new Vec2(Math.cos(angle), Math.sin(angle));
+            const c = growthRadius + normal.dot(cell.seed.position);
+            polygon = clipPolygon(polygon, normal, c);
+        }
+
+        cell.model.vertices = polygon;
+    }
+
+    // Polygon views use onceWith, so explicitly refresh their geometry.
+    cells.forEach(binding => binding.forceSynchronize());
 }
 
 function updateViews() {
@@ -139,6 +169,11 @@ const simulation = Simulation
         reset();
         updateViews();
     })
+    .onStep((_clock, dt) => {
+        if (growthRadius >= maximumGrowthRadius) return;
+        growthRadius = Math.min(maximumGrowthRadius, growthRadius + growthSpeed * dt);
+        updateGrowthGeometry();
+    })
     .append(new Slider('🧫 Number of seeds')
         .withRange(new Range(4, 250, 0.95))
         .withValue(seedCount)
@@ -147,10 +182,10 @@ const simulation = Simulation
             reset();
             updateViews();
         }))
-    // .append(new Slider('🏃 Growth speed')
-    //     .withRange(new Range(0.5, 10, 0.5))
-    //     .withValue(growthSpeed)
-    //     .onInput(value => growthSpeed = value))
+    .append(new Slider('🏃 Growth speed')
+        .withRange(new Range(0.5, 10, 0.5))
+        .withValue(growthSpeed)
+        .onInput(value => growthSpeed = value))
     .append(new DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.Gradient)
@@ -166,4 +201,4 @@ const simulation = Simulation
 reset();
 updateViews();
 updateCellColors();
-simulation.frameSceneOn(cellViews, { padding: 1.0 })
+simulation.frameSceneOn(cellViews, { padding: 1.0 }).start()
