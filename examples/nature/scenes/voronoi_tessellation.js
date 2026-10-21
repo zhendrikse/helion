@@ -181,6 +181,7 @@ function createCellViews() {
 
     // onceWith bindings need an explicit synchronization after model geometry changes.
     cellBindings.forEach(binding => binding?.forceSynchronize());
+    cellCoreBindings.forEach(binding => binding?.forceSynchronize());
     updateCellColors();
 }
 
