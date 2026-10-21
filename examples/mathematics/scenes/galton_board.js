@@ -98,6 +98,7 @@ const simulation = new Simulation
     }).alwaysWith(new Box({ color: new Colour(0x855E42) })))
     .bind(bars.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0xDEB887) })))
     .bind(pins.onceWith(ViewsCollection.of(Sphere).with({ color: new Colour(0xcccccc) })))
+    .runsEvery(0.005) // 200 steps/s at the default animation speed, as in the VPython demo
     .onStep((_clock, _dt) => {
         simulationStep++;
 
