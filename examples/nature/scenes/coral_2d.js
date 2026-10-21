@@ -122,7 +122,7 @@ const particleCloudView = ViewsCollection.of(CoralParticleView).with({
 Simulation
     .with({
         htmlDivId: 'coralContainer',
-        camera: { orthographic: true }
+        camera: { orthographic: true, controls: false }
     })
     .withMouseClickEventListener()
     .onReset(() => particleCloud.reset())

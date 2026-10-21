@@ -22,7 +22,7 @@ class BoundaryCondition extends Transformation {
         // Target an inner atom (not on the surface)
         // For 4x4x4, use (1,1,1) - first inner layer
         const targetIndex = this._topology 
-            ? this._topology.index(2, 2, 2) 
+            ? this._topology.index(3, 3, 3)
             : lattice.bodyCount - 1;
         const targetBall = lattice.bodyAt(targetIndex);
 
@@ -39,7 +39,7 @@ class BoundaryCondition extends Transformation {
     set amplitude(value) { this._amplitude = value; }
 }
 
-const topology = new CubicLatticeTopology({ nx: 4, ny: 4, nz: 4 });
+const topology = new CubicLatticeTopology({ nx: 5, ny: 5, nz: 5 });
 const boundaryCondition = new BoundaryCondition({ topology });
 const crystal = new Lattice({
     damping: 5e-3,
@@ -58,13 +58,13 @@ const latticeView = LatticeView.from({
     bodyView: Sphere,
     bondView: SwitchableBondView,
     bodyArgs: {
-        color: new Colour(0x44eeee),
+        color: Colour.Yellow,
         castShadow: true
     },
     bondArgs: {
         thickness: 0.075,
         coils: 20,
-        color: new Colour(0xffbb00),
+        color: Colour.White,
         castShadow: true,
         tubularSegments: 400,
         bondType: SwitchableBondView.Type.Spring
@@ -75,7 +75,7 @@ Simulation
     .with({
         htmlDivId: "cubicLatticeContainer",
         camera: {
-            position: new Vec3(2, 1.25, 2.25).multiplyScalar(0.9),
+            position: new Vec3(2, .75, 2.25).multiplyScalar(1.2),
             fieldOfView: 30,
         }
     })

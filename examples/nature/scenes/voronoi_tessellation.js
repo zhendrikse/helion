@@ -153,7 +153,7 @@ function createCellViews() {
     updateCellColors();
 }
 
-let colorMapper = ColorMappers.get(ColorMappers.Scientific);
+let colorMapper = ColorMappers.get(ColorMappers.Gradient);
 function updateCellColors() {
     cells.forEach(binding => {
         const model = binding.model;
