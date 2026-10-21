@@ -7,7 +7,9 @@ const num_nails = 10;
 const num_balls = 200;
 const binCount = num_nails + 1;
 const stepsPerRow = 25;
-const fallSpeedDefault = 4;
+const animationSpeedDefault = 200;
+const stepDistance = 0.04;
+const totalFallSteps = stepsPerRow * (num_nails + 1);
 
 const bars = new BindableCollection()
     .add(new AxialSymmetricBody({ // Left
@@ -51,7 +53,7 @@ const balls = /** @type {{ body: RadialSymmetricBody, steps: number, direction: 
 let spawnedBalls = 0;
 let settledBalls = 0;
 let simulationStep = 0;
-let fallSpeed = fallSpeedDefault;
+
 
 const histogram = new UPlotBarGraph({
     values: bins,
@@ -108,23 +110,23 @@ const simulation = new Simulation
                 continue;
 
             ball.steps++;
-            ball.body.position.y -= fallSpeed * dt;
+            // Keep the spatial step fixed; the slider changes simulation speed, not the physics.
+            ball.body.position.y -= stepDistance;
+            ball.body.position.x += ball.direction * stepDistance;
 
-            // One left/right decision per row of pins.
+            // Match the original VPython sequence: decide the next direction after each 25-step row.
             if (ball.steps % stepsPerRow === 0)
                 ball.direction = Math.random() < 0.5 ? -1 : 1;
 
-            ball.body.position.x += ball.direction * fallSpeed * dt;
-
-            if (ball.steps >= stepsPerRow * num_nails)
+            if (ball.steps >= totalFallSteps)
                 settleBall(ball);
         }
     })
     .withMouseClickEventListener()
-    .append(new Slider("Ball speed ")
-        .withRange(new Range(1, 10, 0.5))
-        .withValue(fallSpeedDefault)
-        .onInput(value => fallSpeed = value)
+    .append(new Slider("Animation speed ")
+        .withRange(new Range(50, 500, 10))
+        .withValue(animationSpeedDefault)
+        .onInput(value => simulation.atSpeed(value / animationSpeedDefault))
     )
     .addGraph(histogram)
     .addGraph(normalCurve);
