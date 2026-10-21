@@ -1,5 +1,6 @@
 import {Color, DataTexture, RGBFormat, LinearFilter, SRGBColorSpace, LinearSRGBColorSpace} from 'three';
 import { Registry } from '../core/utils.js';
+import { color } from 'three/src/nodes/tsl/TSLCore.js';
 
 /**
  *  ┌── RGB input ────────┐
@@ -37,7 +38,7 @@ export class Colour {
         return c;
     };
 
-    static toHex = (/** @type {number} */ value) => 
+    static toHex = (/** @type {number} */ value) =>
         Math.round(value * 255).toString(16).padStart(2, '0');
 
     /**
@@ -63,6 +64,14 @@ export class Colour {
     }
 
     /**
+     * @param {Color} color
+     * @param {number} alpha
+     */
+    lerp(color, alpha) {
+        this._color.lerp(color, alpha);
+    }
+
+    /**
      * Linear (!!!) RGB component. Meant for internal Helion usage only.
      *
      * @returns {number}
@@ -83,7 +92,7 @@ export class Colour {
 
     /** @param {Colour} otherColour */
     copy(otherColour) {
-        this._color.copy(otherColour._color);
+        this._color.setRGB(otherColour.r, otherColour.g, otherColour.b);
         return this;
     }
 
@@ -225,17 +234,17 @@ export class WavelengthColorMapper extends ColorMapper {
      * }}
      */
     constructor({
-        lambdaInNanos = 590,
-        showSpectralColor = true,
-        colorSpace = SRGBColorSpace,
-    } = {}) {
+                    lambdaInNanos = 590,
+                    showSpectralColor = true,
+                    colorSpace = SRGBColorSpace,
+                } = {}) {
         super({colorSpace});
         this._showSpectralColor = showSpectralColor;
         this._lambdaInNanos = lambdaInNanos;
     }
 
     /**
-     * @param {number} intensity 
+     * @param {number} intensity
      * @param {Color} targetColor
      */
     map(intensity, targetColor) {
@@ -376,8 +385,8 @@ class UniformColorMapper extends ColorMapper {
      * }} [options]
      */
     constructor({
-        color = Colour.Yellow
-    }={}) {
+                    color = Colour.Yellow
+                }={}) {
         super();
         if (!(color instanceof Colour))
             throw new Error("Uniform color mapper requires a Colour instance");

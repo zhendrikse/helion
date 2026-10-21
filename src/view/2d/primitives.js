@@ -27,13 +27,13 @@ export class Arrow2D extends Renderable2D {
      */
     /** @param {Arrow2DOptions} [options] */
     constructor({
-        color = Colour.Red,
-        size = 0.1,
-        headLength = size,
-        headWidth = size * 0.6,
-        lineWidth = 2,
-        headStyle = Arrow2D.HeadStyle.Open
-    } = {}) {
+                    color = Colour.Red,
+                    size = 0.1,
+                    headLength = size,
+                    headWidth = size * 0.6,
+                    lineWidth = 2,
+                    headStyle = Arrow2D.HeadStyle.Open
+                } = {}) {
         super();
 
         this._size = size;
@@ -170,12 +170,12 @@ export class Circle extends Renderable2D {
      * @param {number} [param0.segments]
      */
     constructor({
-        radiusOffset = 0,
-        fillColor = new Colour(0x131313),
-        borderColor = Colour.Black,
-        borderWidth = 0.05,
-        segments = 64
-    } = {}) {
+                    radiusOffset = 0,
+                    fillColor = new Colour(0x131313),
+                    borderColor = Colour.Black,
+                    borderWidth = 0.05,
+                    segments = 64
+                } = {}) {
         super();
         this._radiusOffset = radiusOffset;
         this._radius = -1;
@@ -216,7 +216,7 @@ export class Circle extends Renderable2D {
  * Reusable filled polygon primitive for 2D models that expose an array of vertices.
  * The model vertices can be Vec2 instances or plain {x, y} objects.
  */
-class PolygonPrimitive extends Renderable2D {
+export class PolygonPrimitive extends Renderable2D {
     /**
      * @param {{fillColor?: Colour, borderColor?: Colour, borderWidth?: number}} [options]
      */
@@ -236,10 +236,11 @@ class PolygonPrimitive extends Renderable2D {
     /** @param {Colour} colour */
     set borderColor(colour) { colour.asThreeJsColor(this._borderMaterial.color); }
 
+    /** @param {{ vertices: Vec2[]}} model */
     canBindTo(model) {
-        if (!Array.isArray(model.vertices))
+        if (model.vertices === undefined || !Array.isArray(model.vertices))
             throw new Error('Polygon primitives can only bind to models with a vertices array.');
-        return model.vertices.length === this.vertexCount;
+        return true;
     }
 
     /** @param {{vertices: Array<{x:number,y:number}>}} model */
