@@ -6,7 +6,7 @@ import {
 import { Renderable3D } from '../../renderer.js';
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { Vec2, Vec3 } from '../../../model/math/objects.js';
-import { Body } from '../../../model/phys/bodies.js';
+import { Body, BodyPair } from '../../../model/phys/bodies.js';
 import {Colour} from '../../colormappers.js';
 
 //
@@ -411,7 +411,7 @@ export class Cylinder extends Renderable3D {
      *     opacity?: number,
      *     segments?: number,
      *     castShadow?: boolean,
-     *     material: Material,
+     *     material?: Material,
      *     radiusFunction?: (body: any) => number,
      * }} param0
      */
@@ -428,7 +428,7 @@ export class Cylinder extends Renderable3D {
     } = {}) {
         super();
         const geometry = new CylinderGeometry(1, 1, 1, segments);
-        material.color.copy(color.asThreeJsColor());
+        color.asThreeJsColor(material.color);
         this._mesh = new Mesh(geometry, material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
@@ -597,10 +597,10 @@ export class Helix extends Renderable3D {
      *     coils?: number,
      *     tubularSegments?: number,
      *     longitudinalOscillation?: boolean,
-     *     radialSegments: number,
+    *     radialSegments?: number,
      *     thickness?: number,
      *     visible?: boolean,
-     *     castShadow: boolean,
+    *     castShadow?: boolean,
      *     radiusFunction?: (body: BodyPair) => number,
      * }} param0
      */
@@ -653,9 +653,8 @@ export class Helix extends Renderable3D {
             false
         );
 
-        const material = new MeshStandardMaterial({
-            color: this._color, metalness: 0.3, roughness: 0.4
-        });
+        const material = new MeshStandardMaterial({ metalness: 0.3, roughness: 0.4 });
+        this._color.asThreeJsColor(material.color);
         this._mesh = new Mesh(geometry, material);
         this._mesh.castShadow = this._castShadow;
         this.add(this._mesh);

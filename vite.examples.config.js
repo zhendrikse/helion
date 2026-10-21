@@ -9,6 +9,7 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 antenna: path.resolve(__dirname, 'examples/electromagnetism/scenes/antenna.js'),
+                barnsley_fern: path.resolve(__dirname, 'examples/nature/scenes/barnsley_fern.js'),
                 boltzmann_gas_2d: path.resolve(__dirname, 'examples/thermodynamics/scenes/boltzmann_gas_2d.js'),
                 black_hole_ray_tracer: path.resolve(__dirname, 'examples/astrophysics/scenes/black_hole_ray_tracer.js'),
                 black_hole_space_time: path.resolve(__dirname, 'examples/relativity/scenes/black_hole_space_time.js'),
@@ -101,6 +102,7 @@ export default defineConfig({
                 travelling_wave: path.resolve(__dirname, 'examples/waves/scenes/travelling_wave.js'),
                 vector_fields: path.resolve(__dirname, 'examples/mathematics/scenes/vector_fields.js'),
                 vibrating_membrane: path.resolve(__dirname, 'examples/waves/scenes/vibrating_membrane.js'),
+                voronoi_tessellation: path.resolve(__dirname, 'examples/nature/scenes/voronoi_tessellation.js'),
                 water_molecule: path.resolve(__dirname, 'examples/molecularphysics/scenes/water_molecule.js'),
                 water_sprinkler: path.resolve(__dirname, 'examples/nature/scenes/water_sprinkler.js'),
                 wave_scattering: path.resolve(__dirname, 'examples/waves/scenes/wave_scattering.js')

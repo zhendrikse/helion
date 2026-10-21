@@ -1,6 +1,7 @@
 import {
     Simulation, Vec3, Slider, Range, Button, ColorMappers, DiscreteFieldSurfaceView,
-    DiscreteScalarField, ColorMapper, Transformation, FixedIntervalNormalizer
+    DiscreteScalarField, ColorMapper, Transformation, FixedIntervalNormalizer,
+    AdaptiveNormalizer
 } from '../../../src/index.js';
 
 const NX = 1000;
@@ -15,18 +16,15 @@ class HitCountColorMapper extends ColorMapper {
     } = {}) {
         super();
         this._palette = palette;
-        this._scale = scale;
+        this.scale = scale;
         this._log = log;
     }
-
-    /** @param {number} value */
-    set scale(value) { this._scale = value; }
 
     map(normalized, targetColor) {
         // Gamma correction for low hit-count visibility: scale controls gamma
         // scale=1 → linear, scale=5 → pow(0.2) makes 1% hits → 40% brightness
         const t = this._log
-            ? Math.pow(Math.max(0, normalized), 1 / Math.max(1, this._scale))
+            ? Math.pow(Math.max(0, normalized), 1 / Math.max(1, this.scale))
             : normalized;
         this._palette.map(Math.max(0, Math.min(1, t)), targetColor);
     }
@@ -34,7 +32,7 @@ class HitCountColorMapper extends ColorMapper {
 
 const colorMapper = new HitCountColorMapper({
     palette: ColorMappers.get(ColorMappers.Viridis),
-    scale: 5,
+    scale: 15,
     log: true
 });
 
@@ -43,7 +41,7 @@ const field = new DiscreteScalarField({ nx: NX, ny: NY });
 const view = new DiscreteFieldSurfaceView({
     colorMapper,
     opacityFunction: intensity => intensity === 0 ? 0 : .8,
-    normalizer: new FixedIntervalNormalizer()
+    normalizer: new AdaptiveNormalizer()
 });
 
 class SierpinskiTriangle extends Transformation {
@@ -283,8 +281,7 @@ Simulation
             currentFractal = fractals.TSquare; 
         }))
     .append(new Slider('Contrast')
-        .withRange(new Range(0, 20, .1))
-        .withValue(5)
+        .withRange(new Range(0, 40, .1))
         .on(colorMapper)
         .withProperty("scale"))
     .append(new Button('Clear')

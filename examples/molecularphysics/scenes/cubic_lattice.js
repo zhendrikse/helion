@@ -6,53 +6,68 @@ import 'uplot/dist/uPlot.min.css';
 
 class BoundaryCondition extends Transformation {
     constructor({
-        amplitude = 0.1,
+        amplitude = 4,
         omega = 45,
+        topology
     } = {}) {
         super();
         this._amplitude = amplitude;
         this._omega = omega;
         this._time = 0;
+        this._topology = topology;
     }
 
+    /** @param {Lattice} lattice */
     applyTo(lattice) {
-        const cornerBall = lattice.bodyAt(lattice.bodyCount - 1);
+        // Target an inner atom (not on the surface)
+        // For 4x4x4, use (1,1,1) - first inner layer
+        const targetIndex = this._topology 
+            ? this._topology.index(3, 3, 3)
+            : lattice.bodyCount - 1;
+        const targetBall = lattice.bodyAt(targetIndex);
 
         if (this._time < this.pulseDuration)
-            cornerBall.state.velocity.y = this._amplitude * Math.sin(this._omega * this._time);
+            targetBall.state.velocity.y = this._amplitude * Math.sin(this._omega * this._time);
     }
 
+    /** @param {number} time */
     set time(time) { this._time = time; }
     get pulseDuration() { return 2 * Math.PI / this._omega; }
+    /** @param {number} value */
     set omega(value) { this._omega = value; }
+    /** @param {number} value */
     set amplitude(value) { this._amplitude = value; }
 }
 
-const boundaryCondition = new BoundaryCondition();
+const topology = new CubicLatticeTopology({ nx: 5, ny: 5, nz: 5 });
+const boundaryCondition = new BoundaryCondition({ topology });
 const crystal = new Lattice({
-        damping: 0.05,
-        bodySize: 0.07
-    })
-    .apply(new CubicLatticeTopology({
-        nx: 3,
-        ny: 3,
-        nz: 3
-    }));
+    damping: 5e-3,
+    bodySize: 0.07
+})
+.apply(topology);
+
+// Fixate all surface atoms (outer layer)
+for (let k = 0; k < topology._nz; k++)
+    for (let j = 0; j < topology._ny; j++)
+        for (let i = 0; i < topology._nx; i++)
+            if (topology.isSurface(i, j, k)) 
+                crystal.fixateBodyAt(topology.index(i, j, k));
 
 const latticeView = LatticeView.from({
     bodyView: Sphere,
     bondView: SwitchableBondView,
     bodyArgs: {
-        color: new Colour(0x44eeee),
+        color: Colour.Yellow,
         castShadow: true
     },
     bondArgs: {
-        thickness: 0.05,
+        thickness: 0.075,
         coils: 20,
-        color: new Colour(0xffffaa),
+        color: Colour.White,
         castShadow: true,
         tubularSegments: 400,
-        bondType: SwitchableBondView.Type.Cylinder
+        bondType: SwitchableBondView.Type.Spring
     }
 });
 
@@ -60,7 +75,7 @@ Simulation
     .with({
         htmlDivId: "cubicLatticeContainer",
         camera: {
-            position: new Vec3(2, 1.5, 2.25).multiplyScalar(.625),
+            position: new Vec3(2, .75, 2.25).multiplyScalar(1.2),
             fieldOfView: 30,
         }
     })

@@ -358,10 +358,14 @@ export class SurfaceVisualization extends Renderable3D {
         this._meshLayer?.reset();
         for (const layer of this._overlayLayers) layer.reset?.();
     }
+    
     get boundingBox() {
         const box = new Box3();
-        if (this._meshLayer) box.union(this._meshLayer.boundingBox);
-        for (const layer of this._overlayLayers) box.union(layer.boundingBox ?? new Box3());
+        if (this._meshLayer) 
+            box.union(this._meshLayer.boundingBox);
+        
+        for (const layer of this._overlayLayers) 
+            box.union(layer.boundingBox ?? new Box3());
         return box;
     }
 }

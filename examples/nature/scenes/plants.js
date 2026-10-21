@@ -14,19 +14,6 @@ const SYSTEMS = {
         scaleFactor: 0.45,
         startAngle: 270
     },
-    'Pythagoras tree': {
-        order: 10,
-        maxIterations: 12,
-        scaleFactor: 1 / Math.sqrt(2),
-        angle: 45,
-        textContent: '<h4>Pythagoras tree</h4>Angle: 45° || Axiom: <code>F++F++FX++F</code> || Rules:<br/>  <code>F → F<br/>  X → [-FY--F--FF++F++FX++FF]<br/>  Y → [+FY--F--FF++F++FX++FF]</code>',
-        axiom: 'F++F++FX++F',
-        rules: {
-            'F' : 'F',
-            'X' : '[-FY--F--FF++F++FX++FF]',
-            'Y' : '[+FY--F--FF++F++FX++FF]',
-        }
-    },
     'Plant 1': {
         order: 4,
         startAngle: 270,

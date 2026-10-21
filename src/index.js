@@ -29,7 +29,7 @@ export {
 
 export {
     Turtle, LindenmayerSystem, StrangeAttractor, LineSegment, Segments, VectorModel, Grid,
-    LinearCombination, SegmentedCircle, ParametricCurve, Vec2, Vec3, VecN
+    LinearCombination, SegmentedCircle, ParametricCurve, Vec2, Vec3, VecN, Polygon
 } from './model/math/objects.js';
 
 export {
@@ -51,17 +51,17 @@ export { Saturn } from './view/3d/astro/saturn.js';
 export { Planets, Sun } from './model/phys/planets.js';
 export { DropdownMenu, Checkbox, Button, Slider, RadioGroup, TextInput } from './core/controls.js';
 export { Simulation } from './core/helion.js';
-export { Bindable, Transformation, BindableCollection, ViewsCollection } from './model/behavior.js';
+export { Bindable, Transformation, BindableCollection } from './model/behavior.js';
 export { Registry } from './core/utils.js';
 export { UPlotGraph, UPlotBarGraph } from './core/uplot.js';
 export { Floor, Aquarium, Ceiling } from './view/3d/primitives/decorations.js';
-export { Renderable3D } from './view/renderer.js';
+export { Renderable3D, Renderable2D, ViewsCollection } from './view/renderer.js';
 export { DiscreteFieldBoxView } from './view/3d/views.js';
 export { ContoursLayer, PrincipalDirectionsLayer, GlyphLayer } from './view/3d/surfaces/layers.js';
 export { TangentFrameView } from './view/3d/surfaces/tangentframe.js';
 export { DifferentialGeometry, DifferentialFrame } from './model/math/numerics/diffgeometry.js';
 export { Matrix2D, RotationMatrix2D, linspace, meshgrid } from './model/math/linearalgebra.js';
-export { Arrow2D, Circle, Triangle, Square } from './view/2d/primitives.js';
+export { Arrow2D, Circle, Triangle, Square, PolygonView } from './view/2d/primitives.js';
 export { OneDimensionalWaveFunctionView, StreamlinesView, VelocitiesView } from './view/2d/composites.js';
 export { WaveEquationSolver, JacobiSolver, Solver } from './model/math/numerics/solvers/solvers.js';
 export { WaveFunction } from './model/phys/quantum/wavefunction.js';
