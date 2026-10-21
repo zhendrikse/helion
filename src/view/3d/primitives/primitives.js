@@ -411,7 +411,7 @@ export class Cylinder extends Renderable3D {
      *     opacity?: number,
      *     segments?: number,
      *     castShadow?: boolean,
-     *     material: Material,
+     *     material?: Material,
      *     radiusFunction?: (body: any) => number,
      * }} param0
      */
@@ -428,7 +428,7 @@ export class Cylinder extends Renderable3D {
     } = {}) {
         super();
         const geometry = new CylinderGeometry(1, 1, 1, segments);
-        material.color.copy(color.asThreeJsColor());
+        color.asThreeJsColor(material.color);
         this._mesh = new Mesh(geometry, material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);

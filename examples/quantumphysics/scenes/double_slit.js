@@ -1,7 +1,7 @@
 import {
-    AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider, Sphere, Vec3,
+    AxialSymmetricBody, Checkbox, Cylinder, RadialSymmetricBody, Range, Simulation, Slider,
     DiscreteScalarField, WavelengthColorMapper, DiscreteFieldSurfaceView, DoubleSlitOperator,
-    FieldEdgeIntensityPixelRaster, Colour, FixedIntervalNormalizer
+    FieldEdgeIntensityPixelRaster, Colour, FixedIntervalNormalizer, Sphere, Vec3
 } from '../../../src/index.js';
 
 const resolution = 50;
@@ -9,13 +9,14 @@ const xMax = 4;
 const wavelengthColorMapper = new WavelengthColorMapper({ lambdaInNanos: 525 });
 
 const slitSize = .5;
+let slitSeparation = 2; // Distance between slit centers
 const slit1 = new AxialSymmetricBody({
-    position: new Vec3(-1, -3 - slitSize * .5, 0).multiplyScalar(resolution),
+    position: new Vec3(-slitSeparation * .5, -3 - slitSize * .5, 0).multiplyScalar(resolution),
     axis: new Vec3(0, slitSize * resolution,0),
     radius: .15 * resolution,
 });
 const slit2 = new AxialSymmetricBody({
-    position: new Vec3( 1, -3 - slitSize * .5, 0).multiplyScalar(resolution),
+    position: new Vec3( slitSeparation * .5, -3 - slitSize * .5, 0).multiplyScalar(resolution),
     axis: new Vec3(0, slitSize * resolution,0),
     radius: .15 * resolution,
 });
@@ -67,6 +68,18 @@ const simulation = Simulation
             doubleSlitOperator.wavelength = value;
             field.apply(doubleSlitOperator);
         })
+    )
+    .append(new Slider('Slit separation ')
+        .withRange(new Range(0.5, 5, 0.1))
+        .withValue(slitSeparation)
+        .onInput(value => {
+            slitSeparation = value;
+            slit1.position.x = -slitSeparation * .5 * resolution;
+            slit2.position.x =  slitSeparation * .5 * resolution;
+            doubleSlitOperator._positionSlit1.copy(slit1.position);
+            doubleSlitOperator._positionSlit2.copy(slit2.position);
+            field.apply(doubleSlitOperator);
+        })
     );
 
 let spawnParticles = true;
@@ -74,8 +87,8 @@ simulation.append(new Checkbox('Particles: ')
     .checked(true)
     .onChange(checked => spawnParticles = checked)
     .togetherWith(new Checkbox('↻ Rotate: ')
-        .withProperty('autoRotate')
-        .on(simulation))
+        .on(simulation)
+        .withProperty('autoRotate'))
 );
 
 /** @param {Vec3} slitPos */
