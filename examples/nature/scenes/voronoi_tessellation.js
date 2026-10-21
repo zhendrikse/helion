@@ -179,12 +179,15 @@ function createCellViews() {
         });
     }
 
+    // onceWith bindings need an explicit synchronization after model geometry changes.
+    cellBindings.forEach(binding => binding?.forceSynchronize());
     updateCellColors();
 }
 
 let colorMapper = ColorMappers.get(ColorMappers.Gradient);
 function updateCellColors() {
-    cells.forEach(binding => {
+    cellBindings.forEach(binding => {
+        if (!binding) return;
         const model = binding.model;
         // Color based on distance from seed or just use hue
         const color = new Colour();
@@ -198,7 +201,7 @@ createCellViews();
 
 simulation
     .bind(cells.onceWith(cellViews))
-    .bind(cellCores.onceWith(cellCoresView)
+    .bind(cellCores.onceWith(cellCoresView))
     // .onStep(step => {
     //     if (isGrowing)
     //         return;
