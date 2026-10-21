@@ -98,7 +98,7 @@ const simulation = new Simulation
     }).alwaysWith(new Box({ color: new Colour(0x855E42) })))
     .bind(bars.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0xDEB887) })))
     .bind(pins.onceWith(ViewsCollection.of(Sphere).with({ color: new Colour(0xcccccc) })))
-    .onStep((_clock, dt) => {
+    .onStep((_clock, _dt) => {
         simulationStep++;
 
         // Release balls one by one, so several balls travel through the board simultaneously.
@@ -122,7 +122,6 @@ const simulation = new Simulation
                 settleBall(ball);
         }
     })
-    .withMouseClickEventListener()
     .append(new Slider("Animation speed ")
         .withRange(new Range(50, 500, 10))
         .withValue(animationSpeedDefault)
