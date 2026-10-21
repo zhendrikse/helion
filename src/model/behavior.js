@@ -1,4 +1,4 @@
-import {Renderable, Renderer} from "../view/renderer.js";
+import {Renderable, Renderer, ViewsCollection} from "../view/renderer.js";
 
 export class Transformation {
     /**
@@ -52,6 +52,12 @@ export class BindableCollection {
 
     get size() { return this._bindables.length; }
 
+    /**
+     * Method that is meant to be called internally within the Helion library.
+     * 
+     * @param {Binding[]} simulationBindings 
+     * @param {Renderer} renderer 
+     */
     addTo(simulationBindings, renderer) {
         this._bindings.forEach(binding => binding.addTo(simulationBindings, renderer));
     }
