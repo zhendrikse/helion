@@ -110,12 +110,13 @@ const cellCoresView = ViewsCollection.of(Circle).with({
     fillColor: new Colour(0x444444)
 });
 const cellModels = [];
+const cellCoreModels = [];
+const cellBindings = [];
+const cellCoreBindings = [];
 let cellsAreBound = false;
 
 function reset() {
     seeds = randomSeeds(seedCount);
-    cellCores.reset();
-    cellCoresView.reset();
     buildVoronoiCells();
 }
 
@@ -131,22 +132,50 @@ function createCellViews() {
             });
             cellModels[index] = model;
             cells.add(model);
-            cellCores.add(cell.seed);
+
+            // Keep a stable core model per index so resets update the existing view.
+            let coreModel = cellCoreModels[index];
+            if (!coreModel) {
+                coreModel = cell.seed;
+                cellCoreModels[index] = coreModel;
+                cellCores.add(coreModel);
+                if (cellsAreBound) {
+                    const binding = coreModel.alwaysWith(cellCoresView.createView());
+                    cellCoreBindings[index] = binding;
+                    simulation.bind(binding);
+                }
+            } else {
+                coreModel.position.x = cell.seed.position.x;
+                coreModel.position.y = cell.seed.position.y;
+                coreModel.radius = cell.seed.radius;
+            }
 
             // Models added after initial setup need their own binding.
-            if (cellsAreBound)
-                simulation.bind(model.alwaysWith(cellViews.createView()));
+            if (cellsAreBound) {
+                const binding = model.onceWith(cellViews.createView());
+                cellBindings[index] = binding;
+                simulation.bind(binding);
+            }
         } else {
             model.vertices = cell.vertices;
             model.seedIndex = cell.seedIndex;
             model.hue = cell.hue;
+            const coreModel = cellCoreModels[index];
+            if (coreModel) {
+                coreModel.position.x = cell.seed.position.x;
+                coreModel.position.y = cell.seed.position.y;
+                coreModel.radius = cell.seed.radius;
+            }
         }
     });
 
     // Keep any leftover views hidden when the seed count is reduced.
     if (cellsAreBound) {
-        cells.forEach((binding, index) => {
-            binding.view.visible = index < voronoiCells.length;
+        cellBindings.forEach((binding, index) => {
+            if (binding) binding.view.visible = index < voronoiCells.length;
+        });
+        cellCoreBindings.forEach((binding, index) => {
+            if (binding) binding.view.visible = index < voronoiCells.length;
         });
     }
 
@@ -169,7 +198,7 @@ createCellViews();
 
 simulation
     .bind(cells.onceWith(cellViews))
-    .bind(cellCores.onceWith(cellCoresView))
+    .bind(cellCores.onceWith(cellCoresView)
     // .onStep(step => {
     //     if (isGrowing)
     //         return;
@@ -210,4 +239,7 @@ simulation
     .start();
 
 cellsAreBound = true;
+// Record the initial bindings so later resets and slider changes can update every view.
+cells.forEach((binding, index) => { cellBindings[index] = binding; });
+cellCores.forEach((binding, index) => { cellCoreBindings[index] = binding; });
 updateCellColors();
