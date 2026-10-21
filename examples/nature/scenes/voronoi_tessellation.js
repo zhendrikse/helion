@@ -6,7 +6,7 @@ import {
 const DOMAIN_WIDTH = 18;
 const DOMAIN_HEIGHT = 18;
 const EDGE_EPSILON = 1e-5;
-const CIRCLE_SEGMENTS = 48;
+const CIRCLE_SEGMENTS = 32;
 
 let seedCount = 50;
 let growthSpeed = 4.5;
@@ -20,16 +20,6 @@ class VoronoiCellModel extends Bindable {
         this.vertices = vertices;
         this.seedIndex = seedIndex;
     }
-}
-
-function randomSeeds(count) {
-    return Array.from({ length: count }, () => new RadialSymmetricBody({
-        position: new Vec2(
-            (Math.random() - 0.5) * DOMAIN_WIDTH * 0.92,
-            (Math.random() - 0.5) * DOMAIN_HEIGHT * 0.92
-            ),
-        radius: .125
-    }));
 }
 
 function clipPolygon(polygon, r, c) {
@@ -117,7 +107,6 @@ function reset() {
     updateGrowthGeometry();
 }
 
-
 function updateGrowthGeometry() {
     for (const cell of growthCells) {
         let polygon = cell.vertices;
@@ -169,9 +158,12 @@ const simulation = Simulation
         reset();
         updateViews();
     })
+    .runsEvery(0.02)
     .onStep((_clock, dt) => {
-        if (growthRadius >= maximumGrowthRadius) return;
-        growthRadius = Math.min(maximumGrowthRadius, growthRadius + growthSpeed * dt);
+        if (growthRadius >= maximumGrowthRadius)
+            return;
+
+        growthRadius = Math.min(maximumGrowthRadius, growthRadius + growthSpeed * dt * .25);
         updateGrowthGeometry();
     })
     .append(new Slider('🧫 Number of seeds')
