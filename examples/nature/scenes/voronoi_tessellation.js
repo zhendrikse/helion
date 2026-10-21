@@ -5,19 +5,16 @@ import {
 
 const DOMAIN_WIDTH = 18;
 const DOMAIN_HEIGHT = 18;
-const GROWTH_SPEED = 4.5;
 const EDGE_EPSILON = 1e-5;
 
-let seedCount = 100;
-let growthSpeed = GROWTH_SPEED;
+let seedCount = 50;
 let maximumGrowthRadius = 0;
 
 class VoronoiCellModel extends Bindable {
-    constructor({ vertices = [], seedIndex = 0, hue = 0 } = {}) {
+    constructor({ vertices = [], seedIndex = 0 } = {}) {
         super();
         this.vertices = vertices;
         this.seedIndex = seedIndex;
-        this.hue = hue;
     }
 }
 
@@ -53,7 +50,10 @@ function clipPolygon(polygon, r, c) {
 }
 
 function buildVoronoiCells(seeds) {
-    const voronoiCells = [];
+    cells.reset();
+    cellCores.reset();
+    cellCoresView.reset();
+    cellViews.reset();
     maximumGrowthRadius = 0;
 
     seeds.forEach((seed, seedIndex) => {
@@ -79,11 +79,48 @@ function buildVoronoiCells(seeds) {
             for (const vertex of polygon)
                 maximumGrowthRadius = Math.max(maximumGrowthRadius, Math.hypot(vertex.x - seed.position.x, vertex.y - seed.position.y));
 
-            voronoiCells.push({ vertices: polygon, seed, seedIndex, hue: seedIndex / seeds.length });
+            cells.add(new VoronoiCellModel({ vertices: polygon, seedIndex: seedIndex }));
+            cellCores.add(seed);
         }
     });
 
-    return voronoiCells;
+    simulation.bind(cells.onceWith(cellViews));
+    simulation.bind(cellCores.onceWith(cellCoresView));
+}
+
+const cells = new BindableCollection();
+const cellCores = new BindableCollection();
+const cellViews = ViewsCollection.of(PolygonPrimitive).with({
+    borderColor: Colour.White,
+    borderWidth: 0.02
+});
+const cellCoresView = ViewsCollection.of(Circle);
+
+let seeds;
+function reset() {
+    seeds = Array.from({ length: seedCount }, () => new RadialSymmetricBody({
+        position: new Vec2(
+            (Math.random() - 0.5) * DOMAIN_WIDTH * 0.92,
+            (Math.random() - 0.5) * DOMAIN_HEIGHT * 0.92
+        ),
+        radius: .125
+    }));
+    buildVoronoiCells(seeds);
+}
+
+function updateViews() {
+    cells.forEach((binding, index) => binding.view.visible = index < seedCount);
+    cellCores.forEach((binding, index) => binding.view.visible = index < seedCount);
+    updateCellColors();
+}
+
+let colorMapper = ColorMappers.get(ColorMappers.Gradient);
+function updateCellColors() {
+    const color = new Colour();
+    cells.forEach(binding => {
+        colorMapper.map((binding.model.seedIndex + 2) / seedCount, color);
+        binding.view.fillColor = color;
+    });
 }
 
 const simulation = Simulation
@@ -97,86 +134,18 @@ const simulation = Simulation
                 'Random seeds grow radially. Wherever two growth fronts meet, a Voronoi edge appears. ' +
                 'Each cell contains the points closest to its seed.'
         }
-    });
-
-const cells = new BindableCollection();
-const cellCores = new BindableCollection();
-const cellViews = ViewsCollection.of(PolygonPrimitive).with({
-    borderColor: Colour.White,
-    borderWidth: 0.02
-});
-const cellCoresView = ViewsCollection.of(Circle).with({
-    fillColor: new Colour(0x131313)
-});
-
-let seeds = randomSeeds(seedCount);
-let voronoiCells = buildVoronoiCells(seeds); // each cell: { vertices: [], seed, hue, seedIndex }
-function reset() {
-    seeds = randomSeeds(seedCount);
-    voronoiCells = buildVoronoiCells(seeds);
-}
-
-function createCellViews() {
-    voronoiCells.forEach((cell, index) => {
-        let model = cells._bindables[index];
-        model.vertices = cell.vertices;
-        model.seedIndex = cell.seedIndex;
-        model.hue = cell.hue;
-        const coreModel = cellCores._bindables[index];
-        coreModel.position.copy(cell.seed.position);
-        coreModel.radius = cell.seed.radius;
-    });
-
-    // Keep any leftover views hidden when the seed count is reduced.
-    cells.forEach((binding, index) => binding.view.visible = index < voronoiCells.length);
-    cellCores.forEach((binding, index) => binding.view.visible = index < voronoiCells.length);
-    updateCellColors();
-}
-
-let colorMapper = ColorMappers.get(ColorMappers.Gradient);
-function updateCellColors() {
-    cells.forEach(binding => {
-        // Color based on distance from seed or just use hue
-        const color = new Colour();
-        colorMapper.map(binding.model.hue, color);
-        binding.view.fillColor = color;
-    });
-}
-
-reset();
-voronoiCells.forEach(cell => {
-    cells.add(new VoronoiCellModel({
-        vertices: cell.vertices,
-        seedIndex: cell.seedIndex,
-        hue: cell.hue
-    }));
-    cellCores.add(cell.seed);
-});
-createCellViews();
-
-simulation
-    .bind(cells.onceWith(cellViews))
-    .bind(cellCores.onceWith(cellCoresView))
-    // .onStep(step => {
-    //     if (isGrowing)
-    //         return;
-    //
-    //     isGrowing = true;
-    //     createCellViews();
-    //     isGrowing = false;
-    // })
+    })
     .onReset(() => {
         reset();
-        createCellViews();
+        updateViews();
     })
-    .frameSceneOn(cellViews, { padding: 1.0 })
     .append(new Slider('🧫 Number of seeds')
-        .withRange(new Range(4, 100, 0.95))
+        .withRange(new Range(4, 250, 0.95))
         .withValue(seedCount)
         .onChange(value => {
             seedCount = Math.round(value);
             reset();
-            createCellViews();
+            updateViews();
         }))
     // .append(new Slider('🏃 Growth speed')
     //     .withRange(new Range(0.5, 10, 0.5))
@@ -191,8 +160,10 @@ simulation
         }))
     .append(new Button().withText("Reset").onClick(() => {
         reset();
-        createCellViews();
-    }))
-    .start();
+        updateViews();
+    }));
 
+reset();
+updateViews();
 updateCellColors();
+simulation.frameSceneOn(cellViews, { padding: 1.0 })

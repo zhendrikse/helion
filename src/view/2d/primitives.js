@@ -218,7 +218,11 @@ export class Circle extends Renderable2D {
  */
 export class PolygonPrimitive extends Renderable2D {
     /**
-     * @param {{fillColor?: Colour, borderColor?: Colour, borderWidth?: number}} [options]
+     * @param {{
+     * fillColor?: Colour,
+     * borderColor?: Colour,
+     * borderWidth?: number
+     * }} [options]
      */
     constructor({ fillColor = new Colour(0x131313), borderColor = Colour.White, borderWidth = 0.025 } = {}) {
         super();
