@@ -43,6 +43,7 @@ export default defineConfig({
                 fractal_terrain: path.resolve(__dirname, 'examples/nature/scenes/fractal_terrain.js'),
                 fractals: path.resolve(__dirname, 'examples/mathematics/scenes/fractals.js'),
                 fraunhofer_diffraction: path.resolve(__dirname, 'examples/optics/scenes/fraunhofer_diffraction.js'),
+                galton_board: path.resolve(__dirname, 'examples/mathematics/scenes/galton_board.js'),
                 game_of_life: path.resolve(__dirname, 'examples/games/scenes/game_of_life.js'),
                 harmonograph: path.resolve(__dirname, 'examples/mathematics/scenes/harmonograph.js'),
                 harmonic_oscillator: path.resolve(__dirname, 'examples/quantumphysics/scenes/harmonic_oscillator.js'),
