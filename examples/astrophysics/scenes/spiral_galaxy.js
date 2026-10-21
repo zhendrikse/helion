@@ -1,5 +1,5 @@
 import {
-    normalDistribution, uniform, randomInt, Vec3, Simulation, PointCloud,
+    sampleNormalDistribution, uniform, randomInt, Vec3, Simulation, PointCloud,
     PointCloudMaterial, PointCloudView, ThreeJsScene, Colour
 } from '../../../src/index.js';
 
@@ -59,9 +59,9 @@ class SpiralGalaxy extends PointCloud {
         const coreStars = [];
         for (let i = 0; i < numRimStars; i++)
             coreStars.push(new Vec3(
-                normalDistribution(0, 1),
-                normalDistribution(0, 1),
-                normalDistribution(0, 1)).multiplyScalar(coreRadius));
+                sampleNormalDistribution(0, 1),
+                sampleNormalDistribution(0, 1),
+                sampleNormalDistribution(0, 1)).multiplyScalar(coreRadius));
         return coreStars;
     }
 

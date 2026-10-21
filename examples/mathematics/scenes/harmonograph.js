@@ -1,5 +1,5 @@
 import {
-    LineSegment, Segments, LineSegmentsView, normalDistribution, randomInt, Simulation, uniform, Vec3,
+    LineSegment, Segments, LineSegmentsView, sampleNormalDistribution, randomInt, Simulation, uniform, Vec3,
     HueColorMapper
 } from "../../../src/index.js";
 
@@ -46,12 +46,12 @@ export class Harmonograph extends Segments {
         const [ay1, ay2, yscale] = scale(this._width);
         const [az1, az2, zscale] = scale(this._depth);
 
-        const fx1 = randomInt(1, mx) + normalDistribution(0, standardDeviation);
-        const fx2 = randomInt(1, mx) + normalDistribution(0, standardDeviation);
-        const fy1 = randomInt(1, mx) + normalDistribution(0, standardDeviation);
-        const fy2 = randomInt(1, mx) + normalDistribution(0, standardDeviation);
-        const fz1 = randomInt(1, mx) + normalDistribution(0, standardDeviation);
-        const fz2 = randomInt(1, mx) + normalDistribution(0, standardDeviation);
+        const fx1 = randomInt(1, mx) + sampleNormalDistribution(0, standardDeviation);
+        const fx2 = randomInt(1, mx) + sampleNormalDistribution(0, standardDeviation);
+        const fy1 = randomInt(1, mx) + sampleNormalDistribution(0, standardDeviation);
+        const fy2 = randomInt(1, mx) + sampleNormalDistribution(0, standardDeviation);
+        const fz1 = randomInt(1, mx) + sampleNormalDistribution(0, standardDeviation);
+        const fz2 = randomInt(1, mx) + sampleNormalDistribution(0, standardDeviation);
 
         const px1 = uniform(0, 2 * Math.PI);
         const px2 = uniform(0, 2 * Math.PI);

@@ -72,6 +72,11 @@ export function generateUUID() {
     });
 }
 
+export function normalDistribution(x, mean, sigma) {
+    return Math.exp(-((x - mean) ** 2) / (2 * sigma * sigma)) /
+        Math.sqrt(2 * Math.PI * sigma * sigma);
+}
+
 /**
  * Pick a number from a normal distribution using Box-Muller transform.
  *
@@ -79,7 +84,7 @@ export function generateUUID() {
  * @param {number} sigma Standard deviation
  * @returns A normally distributed number.
  */
-export function normalDistribution(mu, sigma) {
+export function sampleNormalDistribution(mu, sigma) {
     const u1 = Math.random();
     const u2 = Math.random();
     return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2) * sigma + mu;

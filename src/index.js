@@ -5,7 +5,7 @@ export {
 
 export {
     Range, factorial, Interval, generateUUID, degToRad, BESSEL_ZEROS, besselJ,
-    normalDistribution, uniform, randomInt, Complex, toCartesian
+    sampleNormalDistribution, uniform, randomInt, Complex, toCartesian, normalDistribution
 } from './model/math/math.js';
 
 export {
