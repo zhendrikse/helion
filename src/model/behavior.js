@@ -48,6 +48,7 @@ export class BindableCollection {
     /** @param {Bindable} bindable */
     add(bindable) {
         this._bindables.push(bindable);
+        return this;
     }
 
     get size() { return this._bindables.length; }

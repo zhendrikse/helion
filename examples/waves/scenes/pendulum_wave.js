@@ -1,5 +1,6 @@
 import {
-    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody, ThreeJsScene, Colour
+    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody, ThreeJsScene, Colour,
+    ViewsCollection, BindableCollection
 } from '../../../src/index.js';
 import {MeshStandardMaterial} from 'three';
 
@@ -88,6 +89,26 @@ for (let i = 0; i < total; i++) {
     }));
 }
 
+const frame = new BindableCollection()
+    .add(new AxialSymmetricBody({
+        axis: new Vec3(0, -3 - 0.04 , 2),
+        position: new Vec3(-1.5, -2, 0),
+        radius: 0.04
+    }))
+    .add(new AxialSymmetricBody({
+        axis: new Vec3(0, -3 - 0.04 , -2),
+        position: new Vec3(-1.5, -2, 0),
+        radius: 0.04
+    })).add(new AxialSymmetricBody({
+        axis: new Vec3(0, -3 - 0.04 , 2),
+        position: new Vec3(1.5, -2, 0),
+        radius: 0.04
+    })).add(new AxialSymmetricBody({
+        axis: new Vec3(0, -3 - 0.04 , -2),
+        position: new Vec3(1.5, -2, 0),
+        radius: 0.04
+    }));
+
 const simulation = Simulation
     .with({
         htmlDivId: 'pendulumWaveContainer',
@@ -116,26 +137,7 @@ const simulation = Simulation
             position: new Vec3(-1.5, -2, 0),
             radius: 0.04
         }).alwaysWith(new Cylinder({ color: new Colour(0xDEB887) })))
-    .bind(new AxialSymmetricBody({
-            axis: new Vec3(0, -3 - 0.04 , 2),
-            position: new Vec3(-1.5, -2, 0),
-            radius: 0.04
-        }).alwaysWith(new Cylinder({ color: new Colour(0x855E42) })))
-    .bind(new AxialSymmetricBody({
-            axis: new Vec3(0, -3 - 0.04 , -2),
-            position: new Vec3(-1.5, -2, 0),
-            radius: 0.04
-        }).alwaysWith(new Cylinder({ color: new Colour(0x855E42) })))
-    .bind(new AxialSymmetricBody({
-            axis: new Vec3(0, -3 - 0.04 , 2),
-            position: new Vec3(1.5, -2, 0),
-            radius: 0.04
-        }).alwaysWith(new Cylinder({ color: new Colour(0x855E42) })))
-    .bind(new AxialSymmetricBody({
-            axis: new Vec3(0, -3 - 0.04 , -2),
-            position: new Vec3(1.5, -2, 0),
-            radius: 0.04
-        }).alwaysWith(new Cylinder({ color: new Colour(0x855E42) })))
+    .bind(frame.onceWith(ViewsCollection.of(Cylinder).with({color: new Colour(0x855E42) })))
     .onReset(() => pendulums.forEach(pendulum => pendulum.reset()))
     .onStep((clock, dt) => {
         for (const pendulum of pendulums)
