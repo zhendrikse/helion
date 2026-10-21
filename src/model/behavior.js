@@ -1,4 +1,4 @@
-import {Renderer} from "../view/renderer.js";
+import {Renderable, Renderer} from "../view/renderer.js";
 
 export class Transformation {
     /**
@@ -35,38 +35,6 @@ export class Bindable {
     }
 
     reset() {}
-}
-
-export class ViewsCollection {
-    static of = viewConstructor => {
-        return new ViewsCollection(viewConstructor);
-    }
-
-    constructor(viewConstructor) {
-        this._viewConstructor = viewConstructor;
-        this._options = {};
-        /** @type {Renderable[]} */
-        this._views = [];
-    }
-
-    with(options) {
-        this._options = options;
-        return this;
-    }
-
-    reset() {
-        this._views.forEach(view => {
-            view.visible = false;
-            view.dispose();
-        });
-        this._views = [];
-    }
-
-    createView() {
-        const view = new this._viewConstructor(this._options);
-        this._views.push(view);
-        return view;
-    }
 }
 
 export class BindableCollection {

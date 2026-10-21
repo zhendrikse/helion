@@ -84,3 +84,47 @@ export class Renderer {
      */
     provideAxesAround(anObject, options) {}
 }
+
+
+export class ViewsCollection extends Renderable {
+    /** @param {Renderable} viewConstructor */
+    static of = viewConstructor => {
+        return new ViewsCollection(viewConstructor);
+    }
+
+    /** @param {Renderable} viewConstructor */
+    constructor(viewConstructor) {
+        super();
+        this._viewConstructor = viewConstructor;
+        this._options = {};
+        /** @type {Renderable[]} */
+        this._views = [];
+    }
+
+    with(options) {
+        this._options = options;
+        return this;
+    }
+
+    reset() {
+        this._views.forEach(view => {
+            view.visible = false;
+            view.dispose();
+        });
+        this._views = [];
+    }
+
+    createView() {
+        const view = new this._viewConstructor(this._options);
+        this._views.push(view);
+        return view;
+    }
+        
+    get boundingBox() {
+        const box = new Box3();
+        
+        for (const view of this._views) 
+            box.union(view.boundingBox ?? new Box3());
+        return box;
+    }
+}

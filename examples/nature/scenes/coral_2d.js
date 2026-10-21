@@ -1,5 +1,6 @@
 import {
-    Circle, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, Bindable, Colour, ColorMapper
+    Circle, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, Colour, ColorMapper,
+    BindableCollection, ViewsCollection, RadialSymmetricBody
 } from '../../../src/index.js';
 import { LinearSRGBColorSpace } from 'three';
 
@@ -14,106 +15,20 @@ function normalize(value, minVal, maxVal) {
     return range === 0.0 ? 0.5 : (clampedValue - minVal) / range;
 }
 
-export class ParticleCloud extends Bindable {
-    static areColliding(position1, position2) {
-        return position1.distanceSquaredTo(position2) < thresholdDistanceSquared;
-    }
+const thresholdDistance = 7;
+const thresholdDistanceSquared = thresholdDistance * thresholdDistance;
+const noise = 10;
+const verticalDrift = 1.5;
 
-    /**  @param {number} N  */
-    constructor(N) {
-        super();
-        this._count = N;
-        /** @type {boolean[]} */
-        this._frozen = [];
-        /** @type {Vec2[]} */
-        this._positions = [];
-        this._sizes = [];
-        this._initialize();
-    }
-
-    _initialize() {
-        this._frozen.length = 0;
-        this._positions.length = 0;
-        this._sizes.length = 0;
-        for (let i = 0; i < swarmSize; i++) {
-            this._frozen.push(false);
-            this._sizes.push(3);
-            this._positions.push(new Vec2(width * Math.random(), height * Math.random()));
-        }
-        this._frozen[0] = true;
-        this._positions[0].set(width * .5, 2);
-    }
-
-    reset() {
-        this._initialize();
-    }
-
-    update() {
-        for (let i = 0; i < this._count; i++)
-            this._updateParticleAt(i);
-    }
-
-    _updateParticleAt(i) {
-        if (this._frozen[i])
-            return;
-
-        const dx = Math.random() * noise;
-        const dy = Math.random() * noise;
-        this._positions[i].x += Math.random() < 0.5 ? dx : -dx;
-        this._positions[i].y -= verticalDrift + (Math.random() < 0.5 ? dy : -dy);
-        this._positions[i].x = (this._positions[i].x + width) % width;
-        if (this._positions[i].y < 0) {
-            this._positions[i].y = height;
-            this._positions[i].x = width * Math.random();
-        }
-
-        this.checkForFreezing(i);
-    }
-
-    checkForFreezing(index) {
-        for (let i = 0; i < swarmSize; i++) {
-            if (!this._frozen[i])
-                continue;
-
-            if (ParticleCloud.areColliding(this._positions[index], this._positions[i])) {
-                this._frozen[index] = true;
-                return;
-            }
-        }
-    }
-
-    get size() { return this._count; }
-}
-
-// Per-particle wrapper zodat Circle (Renderable2D) kan binden.
-class CoralParticle extends Bindable {
-    constructor(field, index) {
-        super();
-        this._field = field;
-        this._index = index;
-    }
-
-    get position() { return this._field._positions[this._index]; }
-    get radius() { return this._field._sizes[this._index]; }
-    get size() { return this._field._sizes[this._index]; }
-    get frozen() { return this._field._frozen[this._index]; }
-}
-
-// CoralParticleView extends Circle with colorFunction/colorMapper support
 class CoralParticleView extends Circle {
-    /**
-     * @param {{
-     *   colorFunction: (particle: CoralParticle) => number,
-     *   colorMapper: ColorMapper
-     * }} param0
-     */
-    constructor({ colorFunction, colorMapper }) {
+    constructor({ colorFunction, colorMapper } = {}) {
         super({ segments: 16 });
         this._colorFunction = colorFunction;
         this._colorMapper = colorMapper;
         this._color = new Colour();
     }
 
+    /** @param {ColorMapper} mapper */
     set colorMapper(mapper) { this._colorMapper = mapper; }
 
     synchronizeWith(particle) {
@@ -124,48 +39,103 @@ class CoralParticleView extends Circle {
     }
 }
 
-const thresholdDistance = 7;
-const thresholdDistanceSquared = thresholdDistance * thresholdDistance;
-const noise = 10;
-const verticalDrift = 1.5;
-const particleField = new ParticleCloud(swarmSize);
+class ParticleCloud extends BindableCollection {
+    /** @param {number} N */
+    constructor(N) {
+        super();
+        this._count = N;
+        this._seedPosition = new Vec2(width * 0.5, 2);
+        this._initialize();
+    }
 
+    _initialize() {
+        for (let i = 0; i < this._count; i++) {
+            const pos = new Vec2(width * Math.random(), height * Math.random());
+            const particle = new RadialSymmetricBody({ position: pos, radius: 3, fixed: false });
+            this.add(particle);
+        }
+
+        // First particle is the seed at top center
+        const seed = this._bindables[0];
+        seed.fixed = true;
+        seed.position.copy(this._seedPosition);
+    }
+
+    reset() {
+        this._bindables.forEach(particle => {
+            particle.position.set(width * Math.random(), height * Math.random());
+            particle.fixed = false;
+        });
+        const seed = this._bindables[0];
+        seed.fixed = true;
+        seed.position.copy(this._seedPosition);
+    }
+
+    update() {
+        this.forEach(particleBinding => {        
+            const particle = particleBinding.model;
+            if (particle.fixed)
+                return;
+
+            const dx = Math.random() * noise;
+            const dy = Math.random() * noise;
+            particle.position.x += Math.random() < 0.5 ? dx : -dx;
+            particle.position.y -= verticalDrift + (Math.random() < 0.5 ? dy : -dy);
+            particle.position.x = (particle.position.x + width) % width;
+            if (particle.position.y < 0) {
+                particle.position.y = height;
+                particle.position.x = width * Math.random();
+            }
+
+            this.checkForFreezing(particle);
+        });
+    }
+
+/** @param {RadialSymmetricBody} particle */
+    checkForFreezing(particle) {
+        for (let i = 0; i < this._count; i++) {
+            const other = this._bindables[i];
+            if (!other.fixed)
+                continue;
+
+            if (particle.distanceToSquared(other) < thresholdDistanceSquared) {
+                particle.fixed = true;
+                return;
+            }
+        }
+    }
+}
+
+/** @param {RadialSymmetricBody} particle */
 const colorFunction = (particle) => {
-    if (!particle.frozen)
+    if (!particle.fixed)
         return normalize(0, 0, maxDistance);
-    return normalize(1.75 * particle.position.distanceTo(particleField._positions[0]), 0, maxDistance);
+    return normalize(1.75 * particle.position.distanceTo(particleCloud._seedPosition), 0, maxDistance);
 };
 
-/** @type {CoralParticleView[]} */
-const particleViews = [];
+const particleCloud = new ParticleCloud(swarmSize);
+const particleCloudView = ViewsCollection.of(CoralParticleView).with({
+    colorFunction,
+    colorMapper: ColorMappers.get(ColorMappers.Scientific, { colorSpace: LinearSRGBColorSpace })
+});
 
-const simulation = Simulation
+Simulation
     .with({
         htmlDivId: 'coralContainer',
-        camera: {
-            position: new Vec3(0, 0, width),
-            orthographic: true
-        }
+        camera: { orthographic: true }
     })
     .withMouseClickEventListener()
-    .onReset(() => particleField.reset())
+    .onReset(() => particleCloud.reset())
     .runsEvery(0.05)
-    .onStep(() => particleField.update())
+    .onStep(() => particleCloud.update())
+    .bind(particleCloud.alwaysWith(particleCloudView))
+    .frameSceneOn(particleCloudView, {padding: 1})
     .append(new DropdownMenu()
         .for(new ColorMappers())
         .withValue(ColorMappers.Scientific)
         .onChange(value => {
-            const mapper = ColorMappers.get(value, {colorSpace: LinearSRGBColorSpace});
-            particleViews.forEach(view => view.colorMapper = mapper);
+            const mapper = ColorMappers.get(value, { colorSpace: LinearSRGBColorSpace });
+            particleCloud.forEach(binding => binding.view.colorMapper = mapper);
         }));
 
-const colorMapper = new ColorMappers().get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace})();
-for (let i = 0; i < swarmSize; i++) {
-    const view = new CoralParticleView({ colorFunction, colorMapper });
-    view._fillMesh.position.set(-width / 2, -height / 2, 0);
-    view._borderMesh.position.set(-width / 2, -height / 2, 0);
-    particleViews.push(view);
-    simulation.bind(new CoralParticle(particleField, i).alwaysWith(view));
-}
-
-particleField.reset();
+particleCloud.reset();
