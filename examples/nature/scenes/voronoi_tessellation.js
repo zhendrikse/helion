@@ -54,6 +54,7 @@ function clipPolygon(polygon, a, b, c) {
 }
 
 function buildVoronoiCells() {
+    voronoiCells = [];
     maximumGrowthRadius = 0;
 
     seeds.forEach((seed, seedIndex) => {
@@ -103,29 +104,48 @@ const simulation = Simulation
         }
     });
 
-let cells;
-let cellViews;
+const cells = new BindableCollection();
+const cellViews = ViewsCollection.of(PolygonPrimitive).with({
+    borderColor: Colour.White,
+    borderWidth: 0.02
+});
+const cellModels = [];
+let cellsAreBound = false;
 
 function reset() {
-    cells = new BindableCollection();
-    cellViews = ViewsCollection.of(PolygonPrimitive).with({
-        borderColor: Colour.White,
-        borderWidth: 0.02
-    });
     seeds = randomSeeds(seedCount);
     buildVoronoiCells();
-    simulation.bind(cells.alwaysWith(cellViews));
 }
 
 function createCellViews() {
-    for (const cell of voronoiCells) {
-        const model = new VoronoiCellModel({
-            vertices: cell.vertices,
-            seedIndex: cell.seedIndex,
-            hue: cell.hue
+    voronoiCells.forEach((cell, index) => {
+        let model = cellModels[index];
+        if (!model) {
+            model = new VoronoiCellModel({
+                vertices: cell.vertices,
+                seedIndex: cell.seedIndex,
+                hue: cell.hue
+            });
+            cellModels[index] = model;
+            cells.add(model);
+
+            // Models added after initial setup need their own binding.
+            if (cellsAreBound)
+                simulation.bind(model.alwaysWith(cellViews.createView()));
+        } else {
+            model.vertices = cell.vertices;
+            model.seedIndex = cell.seedIndex;
+            model.hue = cell.hue;
+        }
+    });
+
+    // Keep any leftover views hidden when the seed count is reduced.
+    if (cellsAreBound) {
+        cells.forEach((binding, index) => {
+            binding.view.visible = index < voronoiCells.length;
         });
-        cells.add(model);
     }
+
     updateCellColors();
 }
 
@@ -156,7 +176,6 @@ simulation
     .onReset(() => {
         reset();
         createCellViews();
-        updateCellColors();
     })
     .frameSceneOn(cellViews, {padding: 1.0})
     .append(new Slider('🧫 Number of seeds')
@@ -185,4 +204,5 @@ simulation
     }))
     .start();
 
+cellsAreBound = true;
 updateCellColors();
