@@ -10,8 +10,6 @@ const EDGE_EPSILON = 1e-5;
 
 let seedCount = 100;
 let growthSpeed = GROWTH_SPEED;
-let seeds = [];
-let voronoiCells = []; // each cell: { vertices: [], seed, hue, seedIndex }
 let maximumGrowthRadius = 0;
 
 class VoronoiCellModel extends Bindable {
@@ -54,8 +52,8 @@ function clipPolygon(polygon, r, c) {
     return result;
 }
 
-function buildVoronoiCells() {
-    voronoiCells = [];
+function buildVoronoiCells(seeds) {
+    const voronoiCells = [];
     maximumGrowthRadius = 0;
 
     seeds.forEach((seed, seedIndex) => {
@@ -84,6 +82,8 @@ function buildVoronoiCells() {
             voronoiCells.push({ vertices: polygon, seed, seedIndex, hue: seedIndex / seeds.length });
         }
     });
+
+    return voronoiCells;
 }
 
 const simulation = Simulation
@@ -100,6 +100,7 @@ const simulation = Simulation
     });
 
 const cells = new BindableCollection();
+const cellCores = new BindableCollection();
 const cellViews = ViewsCollection.of(PolygonPrimitive).with({
     borderColor: Colour.White,
     borderWidth: 0.02
@@ -107,58 +108,23 @@ const cellViews = ViewsCollection.of(PolygonPrimitive).with({
 const cellCoresView = ViewsCollection.of(Circle).with({
     fillColor: new Colour(0x131313)
 });
-const cellModels = [];
-const cellCoreModels = [];
-let cellsAreBound = false;
 
+let seeds = randomSeeds(seedCount);
+let voronoiCells = buildVoronoiCells(seeds); // each cell: { vertices: [], seed, hue, seedIndex }
 function reset() {
     seeds = randomSeeds(seedCount);
-    buildVoronoiCells();
+    voronoiCells = buildVoronoiCells(seeds);
 }
 
-const cellCores = new BindableCollection();
 function createCellViews() {
     voronoiCells.forEach((cell, index) => {
-        let model = cellModels[index];
-        if (!model) {
-            model = new VoronoiCellModel({
-                vertices: cell.vertices,
-                seedIndex: cell.seedIndex,
-                hue: cell.hue
-            });
-            cellModels[index] = model;
-            cells.add(model);
-
-            // Keep a stable core model per index so resets update the existing view.
-            let coreModel = cellCoreModels[index];
-            if (!coreModel) {
-                coreModel = cell.seed;
-                cellCoreModels[index] = coreModel;
-                cellCores.add(coreModel);
-                if (cellsAreBound) {
-                    const binding = coreModel.alwaysWith(cellCoresView.createView());
-                    simulation.bind(binding);
-                }
-            } else {
-                coreModel.position.x = cell.seed.position.x;
-                coreModel.position.y = cell.seed.position.y;
-                coreModel.radius = cell.seed.radius;
-            }
-
-            // Models added after initial setup need their own binding.
-            if (cellsAreBound)
-                simulation.bind(model.onceWith(cellViews.createView()));
-        } else {
-            model.vertices = cell.vertices;
-            model.seedIndex = cell.seedIndex;
-            model.hue = cell.hue;
-            const coreModel = cellCoreModels[index];
-            if (coreModel) {
-                coreModel.position.x = cell.seed.position.x;
-                coreModel.position.y = cell.seed.position.y;
-                coreModel.radius = cell.seed.radius;
-            }
-        }
+        let model = cells._bindables[index];
+        model.vertices = cell.vertices;
+        model.seedIndex = cell.seedIndex;
+        model.hue = cell.hue;
+        const coreModel = cellCores._bindables[index];
+        coreModel.position.copy(cell.seed.position);
+        coreModel.radius = cell.seed.radius;
     });
 
     // Keep any leftover views hidden when the seed count is reduced.
@@ -170,8 +136,6 @@ function createCellViews() {
 let colorMapper = ColorMappers.get(ColorMappers.Gradient);
 function updateCellColors() {
     cells.forEach(binding => {
-        if (!binding)
-            return;
         // Color based on distance from seed or just use hue
         const color = new Colour();
         colorMapper.map(binding.model.hue, color);
@@ -180,6 +144,14 @@ function updateCellColors() {
 }
 
 reset();
+voronoiCells.forEach(cell => {
+    cells.add(new VoronoiCellModel({
+        vertices: cell.vertices,
+        seedIndex: cell.seedIndex,
+        hue: cell.hue
+    }));
+    cellCores.add(cell.seed);
+});
 createCellViews();
 
 simulation
@@ -199,7 +171,7 @@ simulation
     })
     .frameSceneOn(cellViews, { padding: 1.0 })
     .append(new Slider('🧫 Number of seeds')
-        .withRange(new Range(4, 250, 0.95))
+        .withRange(new Range(4, 100, 0.95))
         .withValue(seedCount)
         .onChange(value => {
             seedCount = Math.round(value);
@@ -223,5 +195,4 @@ simulation
     }))
     .start();
 
-cellsAreBound = true;
 updateCellColors();
