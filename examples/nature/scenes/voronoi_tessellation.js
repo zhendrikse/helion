@@ -99,19 +99,6 @@ function reset() {
 
 const cells = new BindableCollection();
 
-function createCellViews() {
-    cells.reset();
-    for (const cell of voronoiCells) {
-        const model = new VoronoiCellModel({
-            vertices: cell.vertices,
-            seedIndex: cell.seedIndex,
-            hue: cell.hue
-        });
-        cells.add(model);
-    }
-    updateCellColors()
-}
-
 let colorMapper = ColorMappers.get(ColorMappers.Scientific);
 function updateCellColors() {
     cells.forEach(binding => {
@@ -123,8 +110,6 @@ function updateCellColors() {
     });
 }
 
-reset();
-createCellViews();
 const cellViews = ViewsCollection.of(PolygonPrimitive).with({
     borderColor: Colour.White,
     borderWidth: 0.02
@@ -143,10 +128,21 @@ Simulation
         }
     })
     .bind(cells.alwaysWith(cellViews))
-    .onReset(() => {
-        reset();
-        createCellViews();
-    })
+    .runsEvery(1 / growthSpeed)
+    .onStep(() => function createCellViews() {
+            cells.reset();
+            for (const cell of voronoiCells) {
+                const model = new VoronoiCellModel({
+                    vertices: cell.vertices,
+                    seedIndex: cell.seedIndex,
+                    hue: cell.hue
+                });
+                cells.add(model);
+            }
+            updateCellColors()
+        }
+    )
+    .onReset(reset)
     .frameSceneOn(cellViews, {padding: 1.0})
     .append(new Slider('🧫 Number of seeds')
         .withRange(new Range(4, 250, 0.95))
@@ -154,7 +150,6 @@ Simulation
         .onChange(value => {
             seedCount = Math.round(value);
             reset();
-            createCellViews();
         }))
     .append(new Slider('🏃 Growth speed')
         .withRange(new Range(0.5, 10, 0.5))
@@ -162,7 +157,7 @@ Simulation
         .onInput(value => growthSpeed = value))
     .append(new DropdownMenu()
         .for(new ColorMappers())
-        .withValue(ColorMappers.Scientific)
+        .withValue(ColorMappers.Gradient)
         .onChange(value => {
             colorMapper = ColorMappers.get(value);
             updateCellColors();
