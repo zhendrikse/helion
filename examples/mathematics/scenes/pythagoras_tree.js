@@ -1,5 +1,5 @@
 import {
-    Bindable, Checkbox, Range, Simulation, Slider, Square, Triangle, Vec2
+    Bindable, Checkbox, Polygon, Range, Simulation, Slider, Square, Triangle, Vec2
 } from '../../../src/index.js';
 import { Renderable2D } from '../../../src/view/renderer.js';
 import {
@@ -14,7 +14,7 @@ class PythagorasTree extends Bindable {
         this.iterations = 12;
         this.angle = 40;
         this.showTriangles = true;
-        /** @type {{ kind: string, depth: number, vertices: Vec2[] }[]} */
+        /** @type {{ kind: string, depth: number, polygon: Polygon }[]} */
         this.shapes = [];
         this.rebuild();
     }
@@ -38,14 +38,14 @@ class PythagorasTree extends Bindable {
         const p1 = origin.clone().add(u);
         const p2 = p1.clone().add(v);
         const p3 = origin.clone().add(v);
-        this.shapes.push({ kind: 'square', depth, vertices: [p0, p1, p2, p3] });
+        this.shapes.push({ kind: 'square', depth, polygon: new Polygon([p0, p1, p2, p3]) });
 
         const apex = origin.clone()
             .add(u.clone().multiplyScalar(cosAlpha * cosAlpha))
             .add(v.clone().multiplyScalar(1 + sinAlpha * cosAlpha));
 
         if (this.showTriangles && depth < this.iterations - 1)
-            this.shapes.push({ kind: 'triangle', depth, vertices: [p2, p3, apex] });
+            this.shapes.push({ kind: 'triangle', depth, polygon: new Polygon([p2, p3, apex]) });
 
         this._grow(p3, rotation + alpha, side * cosAlpha, alpha, cosAlpha, sinAlpha, depth + 1);
         this._grow(apex, rotation + alpha - Math.PI / 2, side * sinAlpha, alpha, cosAlpha, sinAlpha, depth + 1);
@@ -90,13 +90,13 @@ class PythagorasTreeView extends Renderable2D {
             );
             const polygon = shape.kind === 'square' ? Square : Triangle;
             const before = positions.length / 3;
-            polygon.appendTriangles(positions, shape.vertices);
+            polygon.appendTriangles(positions, shape.polygon);
             for (let i = before; i < positions.length / 3; i++)
                 colors.push(depthColor.r, depthColor.g, depthColor.b);
 
-            for (let i = 0; i < shape.vertices.length; i++) {
-                const from = shape.vertices[i];
-                const to = shape.vertices[(i + 1) % shape.vertices.length];
+            for (let i = 0; i < shape.polygon.vertexCount; i++) {
+                const from = shape.polygon.vertexAt(i);
+                const to = shape.polygon.vertexAt((i + 1) % shape.polygon.vertexCount);
                 linePositions.push(from.x, from.y, 0.02, to.x, to.y, 0.02);
             }
         }

@@ -2,7 +2,7 @@ import { Renderable2D } from '../renderer.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
-import { Vec2 } from '../../model/math/objects.js';
+import {Polygon, Vec2} from '../../model/math/objects.js';
 import { Colour } from '../colormappers.js';
 import { RadialSymmetricBody } from '../../model/phys/bodies.js'
 import {
@@ -213,10 +213,10 @@ export class Circle extends Renderable2D {
 
 
 /**
- * Reusable filled polygon primitive for 2D models that expose an array of vertices.
- * The model vertices can be Vec2 instances or plain {x, y} objects.
+ * Reusable filled polygon primitive for 2D models that expose
+ * a Polygon object containing an array of vertices.
  */
-export class PolygonPrimitive extends Renderable2D {
+export class PolygonView extends Renderable2D {
     /**
      * @param {{
      * fillColor?: Colour,
@@ -240,19 +240,16 @@ export class PolygonPrimitive extends Renderable2D {
     /** @param {Colour} colour */
     set borderColor(colour) { colour.asThreeJsColor(this._borderMaterial.color); }
 
-    /** @param {{ vertices: Vec2[]}} model */
     canBindTo(model) {
-        if (model.vertices === undefined || !Array.isArray(model.vertices))
-            throw new Error('Polygon primitives can only bind to models with a vertices array.');
+        if (model.polygon === undefined || !Array.isArray(model.polygon._vertices))
+            throw new Error('Polygon primitives can only bind to models with Polygon data.');
         return true;
     }
 
-    /** @param {{vertices: Array<{x:number,y:number}>}} model */
     synchronizeWith(model) {
-        const points = model.vertices.map(point => new Vector2(point.x, point.y));
+        const points = model.polygon.asVector2Array();
         const shape = new Shape(points);
         shape.closePath();
-
         const oldFill = this._fillMesh.geometry;
         const oldOutline = this._outline.geometry;
         this._fillMesh.geometry = new ShapeGeometry(shape);
@@ -273,28 +270,26 @@ export class PolygonPrimitive extends Renderable2D {
         this.clear();
     }
 
-    get vertexCount() { return 0; }
-
     /**
      * Append a convex polygon as a triangle fan to a flat xyz position array.
      * Used by aggregate views to batch many shapes into a single draw call.
      * @param {number[]} target
-     * @param {Array<{x:number,y:number}>} vertices
+     * @param {Polygon} polygon
      */
-    static appendTriangles(target, vertices) {
-        for (let i = 1; i < vertices.length - 1; i++) {
-            for (const vertex of [vertices[0], vertices[i], vertices[i + 1]])
+    static appendTriangles(target, polygon) {
+        for (let i = 1; i < polygon.vertexCount - 1; i++) {
+            for (const vertex of [polygon.vertexAt(0), polygon.vertexAt(i), polygon.vertexAt(i + 1)])
                 target.push(vertex.x, vertex.y, 0);
         }
     }
 }
 
 /** Filled square primitive. Bind to a model with four ordered vertices. */
-export class Square extends PolygonPrimitive {
+export class Square extends PolygonView {
     get vertexCount() { return 4; }
 }
 
 /** Filled triangle primitive. Bind to a model with three ordered vertices. */
-export class Triangle extends PolygonPrimitive {
+export class Triangle extends PolygonView {
     get vertexCount() { return 3; }
 }

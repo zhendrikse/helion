@@ -3,6 +3,7 @@ import { Bindable, Transformation} from '../behavior.js';
 import { Matrix2D } from './linearalgebra.js';
 import { Interval, degToRad} from './math.js';
 import { Integrators} from './numerics/integrators/integrators.js';
+import {Vector2} from "three";
 
 export class Vec3 {
     /**
@@ -303,6 +304,36 @@ export class VecN {
     }
 }
 
+export class Polygon {
+    /** @param {Vec2[]} vertices */
+    constructor(vertices = []) {
+        this._vertices = vertices;
+    }
+
+    /** @returns {ArrayIterator<Vec2>} */
+    [Symbol.iterator]() {
+        return this._vertices[Symbol.iterator]();
+    }
+
+    asVector2Array() {
+        return this._vertices.map(point => new Vector2(point.x, point.y));
+    }
+
+    /** @param {number} index */
+    vertexAt(index) { return this._vertices[index]; }
+
+    /** @param {Vec2} vertex */
+    add(vertex) {
+        this._vertices.push(vertex);
+    }
+
+    get vertexCount() { return this._vertices.length; }
+
+    reset() {
+        this._vertices = [];
+    }
+}
+
 /**
  * Mathematical definition of a parametrically defined curve.
  *
@@ -428,7 +459,7 @@ export class Segments extends Bindable {
 
     get count() { return this._segments.length; }
 
-    /** @returns {ArrayIterator<Segment>} */
+    /** @returns {ArrayIterator<Bindable>} */
     [Symbol.iterator]() {
         return this._segments[Symbol.iterator]();
     }
