@@ -1,6 +1,6 @@
 import {
-    Range, Bindable, Simulation, Slider, DropdownMenu,
-    BindableCollection, ViewsCollection, Colour, ColorMappers, PolygonPrimitive, Vec2, Button
+    Range, Bindable, Simulation, Slider, DropdownMenu, BindableCollection, ViewsCollection,
+    Colour, ColorMappers, PolygonPrimitive, Vec2, Button, RadialSymmetricBody, Circle
 } from '../../../src/index.js';
 
 const DEFAULT_SEED_COUNT = 100;
@@ -14,7 +14,6 @@ let growthSpeed = GROWTH_SPEED;
 let seeds = [];
 let voronoiCells = []; // each cell: { vertices: [], seed, hue, seedIndex }
 let maximumGrowthRadius = 0;
-let isGrowing = false;
 
 class VoronoiCellModel extends Bindable {
     constructor({ vertices = [], seedIndex = 0, hue = 0 } = {}) {
@@ -26,10 +25,13 @@ class VoronoiCellModel extends Bindable {
 }
 
 function randomSeeds(count) {
-    return Array.from({ length: count }, () => new Vec2(
-        (Math.random() - 0.5) * DOMAIN_WIDTH * 0.92,
-        (Math.random() - 0.5) * DOMAIN_HEIGHT * 0.92
-    ));
+    return Array.from({ length: count }, () => new RadialSymmetricBody({
+        position: new Vec2(
+            (Math.random() - 0.5) * DOMAIN_WIDTH * 0.92,
+            (Math.random() - 0.5) * DOMAIN_HEIGHT * 0.92
+            ),
+        radius: .1
+    }))
 }
 
 function clipPolygon(polygon, a, b, c) {
@@ -71,22 +73,17 @@ function buildVoronoiCells() {
 
             // Points in this cell are closer to seed than to other:
             // 2 p·(other-seed) <= |other|² - |seed|².
-            const a = 2 * (other.x - seed.x);
-            const b = 2 * (other.y - seed.y);
-            const c = other.x * other.x + other.y * other.y - seed.x * seed.x - seed.y * seed.y;
+            const a = 2 * (other.position.x - seed.position.x);
+            const b = 2 * (other.position.y - seed.position.y);
+            const c = other.position.dot(other.position) - seed.position.dot(seed.position);
             polygon = clipPolygon(polygon, a, b, c);
         });
 
         if (polygon.length >= 3) {
             for (const vertex of polygon)
-                maximumGrowthRadius = Math.max(maximumGrowthRadius, Math.hypot(vertex.x - seed.x, vertex.y - seed.y));
+                maximumGrowthRadius = Math.max(maximumGrowthRadius, Math.hypot(vertex.x - seed.position.x, vertex.y - seed.position.y));
 
-            voronoiCells.push({
-                vertices: polygon,
-                seed,
-                seedIndex,
-                hue: seedIndex / seeds.length
-            });
+            voronoiCells.push({ vertices: polygon, seed, seedIndex, hue: seedIndex / seeds.length });
         }
     });
 }
@@ -109,14 +106,20 @@ const cellViews = ViewsCollection.of(PolygonPrimitive).with({
     borderColor: Colour.White,
     borderWidth: 0.02
 });
+const cellCoresView = ViewsCollection.of(Circle).with({
+    fillColor: new Colour(0x444444)
+});
 const cellModels = [];
 let cellsAreBound = false;
 
 function reset() {
     seeds = randomSeeds(seedCount);
+    cellCores.reset();
+    cellCoresView.reset();
     buildVoronoiCells();
 }
 
+const cellCores = new BindableCollection();
 function createCellViews() {
     voronoiCells.forEach((cell, index) => {
         let model = cellModels[index];
@@ -128,6 +131,7 @@ function createCellViews() {
             });
             cellModels[index] = model;
             cells.add(model);
+            cellCores.add(cell.seed);
 
             // Models added after initial setup need their own binding.
             if (cellsAreBound)
@@ -164,7 +168,8 @@ reset();
 createCellViews();
 
 simulation
-    .bind(cells.alwaysWith(cellViews))
+    .bind(cells.onceWith(cellViews))
+    .bind(cellCores.onceWith(cellCoresView))
     // .onStep(step => {
     //     if (isGrowing)
     //         return;

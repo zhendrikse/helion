@@ -170,12 +170,12 @@ export class Circle extends Renderable2D {
      * @param {number} [param0.segments]
      */
     constructor({
-                    radiusOffset = 0,
-                    fillColor = new Colour(0x131313),
-                    borderColor = Colour.Black,
-                    borderWidth = 0.05,
-                    segments = 64
-                } = {}) {
+        radiusOffset = 0,
+        fillColor = new Colour(0x131313),
+        borderColor = Colour.Black,
+        borderWidth = 0.05,
+        segments = 64
+    } = {}) {
         super();
         this._radiusOffset = radiusOffset;
         this._radius = -1;

@@ -110,6 +110,8 @@ export class BindableCollection {
             binding.model.reset();
             binding.view.reset();
         });
+        this._bindables = [];
+        this._bindings = [];
     }
 }
 
