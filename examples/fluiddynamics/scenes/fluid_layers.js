@@ -48,20 +48,16 @@ class Particle extends RadialSymmetricBody {
          this._force.set(0, 0, 0);
      }
 
-     distance_to(other_ball) {
-         return other_ball.distance(this._sphere);
-     }
-     
     collide_with(other_ball) {
-        const rt = this.distanceTo(other_ball);
+        const rt = this.positionVectorTo(other_ball);
         const length = rt.length();
         if (length < 0.01) {
             this._force.set(0, 0, 0);
         } else if (length < 1.5) {
             const mag_rt_squared = this.distanceToSquared(other_ball);
             const mag_rt_cubed = mag_rt_squared * length;
-            this._force.add(rt.clone.normalize().multiplyScalar(k * this._q0 * other_ball._q0 / mag_rt_squared));
-            this._force.add(rt.clone.normalize().multiplyScalar(-3 * k * this._q0 * other_ball._q0 / mag_rt_cubed));
+            this._force.add(rt.clone().normalize().multiplyScalar(k * this._q0 * other_ball._q0 / mag_rt_squared));
+            this._force.add(rt.clone().normalize().multiplyScalar(-3 * k * this._q0 * other_ball._q0 / mag_rt_cubed));
         }
     }
     
@@ -80,7 +76,7 @@ class Particle extends RadialSymmetricBody {
         if (r.z < -box_size.z)
             this._force.z += K * (Math.abs(r.z) - box_size.z);
 
-        this._momentum += new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1).multiplyScalar(7);
+        this._momentum.add(new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1).multiplyScalar(7));
         let left_count = 0;
         let right_count = 0;
 
@@ -94,6 +90,10 @@ class Particle extends RadialSymmetricBody {
 
         this._momentum.add(this._force.clone().multiplyScalar(dt));
         this.position.add(this._momentum.clone().multiplyScalar(dt / this._mass));
+    }
+
+    isLayerSensitive() {
+        return true;
     }
 }
 
@@ -159,7 +159,8 @@ jar.balls.forEach(ball => balls.add(ball));
 
 Simulation
     .with({
-        htmlDivId: 'fluidLayersContainer'
+        htmlDivId: 'fluidLayersContainer',
+        camera: { position: new Vec3(10, 10, 10) }
     })
     .bind(balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Yellow })))
     .runsEvery(0.001)
