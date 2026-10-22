@@ -167,6 +167,9 @@ Simulation
         camera: { position: new Vec3(10, 10, 10) }
     })
     .bind(balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Yellow })))
+    .bind(hollow.onceWith(new Box({color: Colour.Yellow, opacity: 0.1 })))
+    .bind(permeable_layer.onceWith(new Box({color: Colour.Red, opacity: 0.5 })))
+    .bind(bowl.onceWith(new Box({color: Colour.Yellow, opacity: 0.1 })))
     .runsEvery(0.001)
     .onStep((clock, dt) => {
         // Advance the simulation once per step. A while-loop here would
