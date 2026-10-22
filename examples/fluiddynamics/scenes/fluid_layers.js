@@ -124,7 +124,8 @@ class Jar {
                 Math.abs(rt.x) <= box_size.x &&
                 Math.abs(rt.y) <= box_size.y &&
                 Math.abs(rt.z) <= box_size.z)
-                this._balls.push(new Block({position: rt.clone(), size: new Vec3(0.7, 0.7, 0.7)}));
+                console.log("TODO: put red blocks back")
+                //this._balls.push(new Block({position: rt.clone(), size: new Vec3(0.7, 0.7, 0.7)}));
             else if (Math.abs(rt.x) <= box_size.x &&
                 Math.abs(rt.y) <= box_size.y &&
                 Math.abs(rt.z) <= box_size.z)
