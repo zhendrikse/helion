@@ -1,7 +1,8 @@
 import {
     Simulation, AxialSymmetricBody, BindableCollection, Cylinder, Sphere, RadialSymmetricBody, Vec3, ViewsCollection,
-    Colour, Block, Box, Range, Slider, UPlotBarGraph, UPlotGraph, normalDistribution
+    Colour, Block, Box, Range, Slider, UPlotGraph, normalDistribution
 } from '../../../src/index.js';
+import uPlot from 'uplot';
 
 const num_nails = 10;
 const num_balls = 200;
@@ -56,30 +57,26 @@ let spawnedBalls = 0;
 let settledBalls = 0;
 let simulationStep = 0;
 
-const histogram = new UPlotBarGraph({
-    values: bins,
-    title: 'Galton board: observed distribution',
-    xLabel: 'Bin',
-    yLabel: 'Balls',
-    color: new Colour(0x22aa55),
-    labelColor: Colour.White
-});
-
-// For ten rows of pins, the number of right/left deflections follows B(10, 0.5).
+// Plot the measured histogram and theoretical normal curve on the same axes.
 const binPositions = Array.from({ length: binCount }, (_, index) => index);
 const sigma = Math.sqrt(num_nails * 0.5 * 0.5);
-const normalCurve = new UPlotGraph({
+const normalValues = binPositions.map(x => num_balls * normalDistribution(x, num_nails / 2, sigma));
+const histogram = new UPlotGraph({
     dataDefinition: [
         { label: 'Bin' },
+        { label: 'Observed distribution', color: new Colour(0x22aa55), fill: new Colour(0x22aa55) },
         { label: 'Normal distribution', color: new Colour(0xff4444) }
     ],
-    title: 'Expected normal distribution',
+    title: 'Galton board: observed and theoretical distributions',
     xLabel: 'Bin',
-    yLabel: 'Expected balls',
+    yLabel: 'Balls',
     labelColor: Colour.White
 });
-normalCurve.graphData[0].push(...binPositions);
-normalCurve.graphData[1].push(...binPositions.map(x => num_balls * normalDistribution(x, num_nails / 2, sigma)));
+// Use bars for the observed counts and retain a line for the normal approximation.
+histogram._uPlotOptionsArgs[6][1].paths = uPlot.paths.bars({ size: [0.7, Infinity] });
+histogram.graphData[0].push(...binPositions);
+histogram.graphData[1].push(...bins);
+histogram.graphData[2].push(...normalValues);
 
 const simulation = Simulation
     .with({
@@ -125,7 +122,6 @@ const simulation = Simulation
         .onInput(value => simulation.atSpeed(value / animationSpeedDefault))
     )
     .addGraph(histogram)
-    .addGraph(normalCurve)
     .start();
 
 function spawnBall() {
@@ -153,5 +149,6 @@ function settleBall(ball) {
     // Snap the ball to its discrete outcome and stack it in that bin.
     ball.body.position.x = 2 * bin - num_nails;
     ball.body.position.y = bins[bin] / 2.5 - num_balls * .175 + 18.25;
-    histogram.updateValues(bins);
+    histogram.graphData[1][bin] = bins[bin];
+    histogram.update();
 }
