@@ -24,7 +24,7 @@ class Particle extends RadialSymmetricBody {
         this._momentum = new Vec3(0, 0, 0);
         this._force = new Vec3(0, 0, 0);
     }
-    
+
     initialize(v0) {
         const v = sampleNormalDistribution(v0, 1)
         if (this.radius === 0.5)
@@ -37,7 +37,7 @@ class Particle extends RadialSymmetricBody {
             .multiplyScalar(v * this._mass);
         this.radius = this.radius / 1.5;
     }
-    
+
     initialize_force() {
         // Keep the force terms separate, as in the original VPython demo:
         // F = -drag * momentum + q * E + mass * g.
@@ -45,7 +45,7 @@ class Particle extends RadialSymmetricBody {
             .add(E.clone().multiplyScalar(this._q0))
             .add(g.clone().multiplyScalar(this._mass));
     }
-    
+
      update(dt) {
          this._momentum.add(this._force.clone().multiplyScalar(dt));
          this.position.add(this._momentum.clone().multiplyScalar(dt / this._mass));
@@ -64,7 +64,7 @@ class Particle extends RadialSymmetricBody {
             this._force.add(rt.clone().normalize().multiplyScalar(-3 * k * this._q0 * other_ball._q0 / mag_rt_cubed));
         }
     }
-    
+
     process_box_collisions(dt) {
         const r = this.position;
         if (r.x > box_size.x)
@@ -114,7 +114,7 @@ class Jar {
         for (const particle of this._balls)
             particle.initialize(v0);
     }
-    
+
     _create_balls(total_balls) {
         while (this._balls.size < total_balls) {
             const rt = new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 0).multiplyScalar(10);
@@ -173,7 +173,7 @@ Simulation
     .onStep((clock, dt) => {
         // Advance the simulation once per step. A while-loop here would
         // never finish because simulatedTime advances outside this callback.
-        if (clock.simulatedTime < 300)
+        //if (clock.simulatedTime < 300)
             jar.update(dt);
     })
     .start();
