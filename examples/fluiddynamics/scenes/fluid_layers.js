@@ -39,7 +39,11 @@ class Particle extends RadialSymmetricBody {
     }
     
     initialize_force() {
-        this._force = this._momentum.clone().multiplyScalar(-drag).add(E).multiplyScalar(this._q0).add(g).multiplyScalar(this._mass);
+        // Keep the force terms separate, as in the original VPython demo:
+        // F = -drag * momentum + q * E + mass * g.
+        this._force = this._momentum.clone().multiplyScalar(-drag)
+            .add(E.clone().multiplyScalar(this._q0))
+            .add(g.clone().multiplyScalar(this._mass));
     }
     
      update(dt) {
