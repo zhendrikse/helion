@@ -63,22 +63,19 @@ export class BindableCollection {
         this._bindings.forEach(binding => binding.addTo(simulationBindings, renderer));
     }
 
-    /** @returns {ArrayIterator<Binding>} */
+    /** @returns {ArrayIterator<Bindable>} */
     [Symbol.iterator]() {
-        return this._bindings[Symbol.iterator]();
+        return this._bindables[Symbol.iterator]();
     }
 
-    /** @returns {ArrayIterator<[number, Binding]>} */
-    entries() {
-        return this._bindings.entries();
-    }
+    bindableAt(index) { return this._bindables[index]; }
 
     /**
-     * @param {(body: Binding, index: number, bodies: Binding[]) => void} callback
+     * @param {(body: Bindable, index: number, bodies: Bindable[]) => void} callback
      * @param {*} [thisArg]
      */
     forEach(callback, thisArg) {
-        this._bindings.forEach(callback, thisArg);
+        this._bindables.forEach(callback, thisArg);
     }
 
     /**

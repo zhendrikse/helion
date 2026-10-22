@@ -39,41 +39,42 @@ class CoralParticleView extends Circle {
     }
 }
 
-class ParticleCloud extends BindableCollection {
+class ParticleCloud {
     /** @param {number} N */
     constructor(N) {
-        super();
         this._count = N;
+        this._seeds = new BindableCollection();
         this._seedPosition = new Vec2(width * 0.5, 2);
         this._initialize();
     }
+
+    get seeds() { return this._seeds; }
 
     _initialize() {
         for (let i = 0; i < this._count; i++) {
             const pos = new Vec2(width * Math.random(), height * Math.random());
             const particle = new RadialSymmetricBody({ position: pos, radius: 3, fixed: false });
-            this.add(particle);
+            this._seeds.add(particle);
         }
 
         // First particle is the seed at top center
-        const seed = this._bindables[0];
+        const seed = this._seeds.bindableAt(0);
         seed.fixed = true;
         seed.position.copy(this._seedPosition);
     }
 
     reset() {
-        this._bindables.forEach(particle => {
+        this._seeds.forEach(particle => {
             particle.position.set(width * Math.random(), height * Math.random());
             particle.fixed = false;
         });
-        const seed = this._bindables[0];
+        const seed = this._seeds.bindableAt(0);
         seed.fixed = true;
         seed.position.copy(this._seedPosition);
     }
 
     update() {
-        this.forEach(particleBinding => {        
-            const particle = particleBinding.model;
+        this._seeds.forEach(particle => {
             if (particle.fixed)
                 return;
 
@@ -94,7 +95,7 @@ class ParticleCloud extends BindableCollection {
 /** @param {RadialSymmetricBody} particle */
     checkForFreezing(particle) {
         for (let i = 0; i < this._count; i++) {
-            const other = this._bindables[i];
+            const other = this._seeds.bindableAt(i);
             if (!other.fixed)
                 continue;
 
@@ -128,7 +129,7 @@ Simulation
     .onReset(() => particleCloud.reset())
     .runsEvery(0.05)
     .onStep(() => particleCloud.update())
-    .bind(particleCloud.alwaysWith(particleCloudView))
+    .bind(particleCloud.seeds.alwaysWith(particleCloudView))
     .frameSceneOn(particleCloudView, {padding: 1})
     .append(new DropdownMenu()
         .for(new ColorMappers())

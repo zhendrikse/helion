@@ -1,15 +1,6 @@
 import { MeshStandardMaterial } from 'three';
 import {
-    Block,
-    Box,
-    Simulation,
-    Slider,
-    Vec3,
-    Range,
-    Button,
-    Transformation,
-    Colour,
-    BindableCollection, ViewsCollection
+    Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation, Colour, BindableCollection, ViewsCollection
 } from '../../../src/index.js';
 
 const SIZE = 1;
@@ -169,13 +160,13 @@ class Rotation {
     }
 }
 
-class Cube extends BindableCollection {
+class Cube {
     constructor() {
-        super();
+        this._cubies = new BindableCollection();
         for (let x = -1; x <= 1; x++)
             for (let y = -1; y <= 1; y++)
                 for (let z = -1; z <= 1; z++)
-                    this.add(new Cubie(x, y, z));
+                    this._cubies.add(new Cubie(x, y, z));
 
         /** @type {Move[]} */
         this._queue = [];
@@ -185,11 +176,22 @@ class Cube extends BindableCollection {
         this._rotationStartTime = 0;
     }
 
+    get cubies() { return this._cubies; }
+
+    applyFormula = (/** @type {String} */ formula) => {
+        for (let i = 0; i < formula.length; i++) {
+            const move = formula[i];
+            if (move === ' ') continue;
+            const isUpperCase = move === move.toUpperCase() && move !== move.toLowerCase();
+            this.apply(new Move(move, !isUpperCase));
+        }
+    }
+
     apply = (/** @type {Move} */ move) => move.applyTo(this);
 
     addToQueue = (/** @type {Move} */ move) => this._queue.push(move);
 
-    #cubiesFor = (/** @type {Move} */ move) => this._bindables.filter(cubie => cubie.isPartOfMove(move));
+    #cubiesFor = (/** @type {Move} */ move) => this.cubies._bindables.filter(cubie => cubie.isPartOfMove(move));
 
     processQueue() {
         if (this._currentMove || this._queue.length === 0) // We cannot process a new move when a move is ongoing
@@ -245,7 +247,7 @@ const simulation = Simulation.with({
         },
         headUpDisplay: false
         })
-    .bind(cube.alwaysWith(ViewsCollection.of(Box).with({ color: new Colour(0x111111) })))
+    .bind(cube.cubies.alwaysWith(ViewsCollection.of(Box).with({ color: new Colour(0x111111) })))
     .onFrame(timeStamp => cube.evolve(timeStamp))
     .append(new Button('Forward: ').withText('F').onClick(() => cube.apply(new Move('f')))
         .togetherWith(new Button().withText('B').onClick(() => cube.apply(new Move('b')))
@@ -254,23 +256,36 @@ const simulation = Simulation.with({
                     .togetherWith(new Button().withText('R').onClick(() => cube.apply(new Move('r')))
                         .togetherWith(new Button().withText('L').onClick(() => cube.apply(new Move('l'))))))))
     )
-    .append(new Button('Backward: ').withText('F').onClick(() => cube.apply(new Move('f', true)))
-        .togetherWith(new Button().withText('B').onClick(() => cube.apply(new Move('b', true)))
-            .togetherWith(new Button().withText('U').onClick(() => cube.apply(new Move('u', true)))
-                .togetherWith(new Button().withText('D').onClick(() => cube.apply(new Move('d', true)))
-                    .togetherWith(new Button().withText('R').onClick(() => cube.apply(new Move('r', true)))
-                        .togetherWith(new Button().withText('L').onClick(() => cube.apply(new Move('l', true))))))))
+    .append(new Button('Backward: ').withText('F\'').onClick(() => cube.apply(new Move('f', true)))
+        .togetherWith(new Button().withText('B\'').onClick(() => cube.apply(new Move('b', true)))
+            .togetherWith(new Button().withText('U\'').onClick(() => cube.apply(new Move('u', true)))
+                .togetherWith(new Button().withText('D\'').onClick(() => cube.apply(new Move('d', true)))
+                    .togetherWith(new Button().withText('R\'').onClick(() => cube.apply(new Move('r', true)))
+                        .togetherWith(new Button().withText('L\'').onClick(() => cube.apply(new Move('l', true))))))))
     )
     .append(new Slider('Rotation period')
         .withRange(new Range(10, 1000, 1))
         .on(cube)
         .withProperty('duration')
         .withValue(500)
-    );
+    )
+    .append(new Button()
+        .withText('Flower')
+        .onClick(() => cube.applyFormula('F b U d L r F b'))
+        .togetherWith(new Button()
+            .withText('Cross')
+            .onClick(() => cube.applyFormula('F F B B U U D D R R L L'))
+    ))
+    .append(new Button()
+        .withText('Cube in cube')
+        .onClick(() => cube.applyFormula('F L F u R U F F L L u l B d b L L U'))
+        .togetherWith(new Button()
+            .withText('Tetris')
+            .onClick(() => cube.applyFormula('L R F B u d l r'))
+    ));
 
 // Bind view to model
-for (const binding of cube) {
-    const cubie = binding.model;
+for (const cubie of cube.cubies) {
     cubie.stickers.forEach(sticker => simulation.bind(sticker.alwaysWith(
         new Box({
             color: Colors[sticker.side],

@@ -53,6 +53,7 @@ const colorSchemes = [
 ];
 
 const flowerSeeds = new BindableCollection();
+const flowerSeedsViews = ViewsCollection.of(Circle).with({ fillColor: Colour.Yellow });
 for (let index = 0; index <= numberOfDots; index++)
     flowerSeeds.add(new FlowerParticle(c, index));
 
@@ -66,16 +67,16 @@ const simulation = Simulation
     .withMouseClickEventListener()
     .onReset(() => {
         n = 0;
-        flowerSeeds.forEach(seedBinding => seedBinding.model.updateWith(c));
+        flowerSeeds.forEach(seed => seed.updateWith(c));
         updateTitle(c, n);
     })
-    .bind(flowerSeeds.alwaysWith(ViewsCollection.of(Circle).with({ fillColor: Colour.Yellow })))
+    .bind(flowerSeeds.alwaysWith(flowerSeedsViews))
     .runsEvery(0.02)
     .onStep(() => {
         if (n > numberOfDots)
             return; 
 
-        flowerSeeds.forEach((binding, index) => binding.view.visible = index <=n);
+        flowerSeedsViews.forEach((view, index) => view.visible = index <=n);
         updateTitle(c, n);
         n++;
     })
@@ -85,7 +86,7 @@ const simulation = Simulation
         .onInput(value => {
             c = value;
             n = 0;
-            flowerSeeds.forEach(seedBinding => seedBinding.model.updateWith(c));
+            flowerSeeds.forEach(seed => seed.updateWith(c));
             updateTitle(c, n);
         })
     )
@@ -112,10 +113,10 @@ updateFlowerSeeds();
 function updateFlowerSeeds(schemeNr= currentScheme) {
     currentScheme = schemeNr;
     n = 0;
-    flowerSeeds.forEach((seedBinding, index) => {
-        const seedColour = new Colour().setHSL(colorSchemes[schemeNr](seedBinding.model), 1, .5);
-        seedBinding.view.fillColor = seedColour;
-        seedBinding.view.borderColor = showBorder ? Colour.White : seedColour;
+    flowerSeeds.forEach((seed, index) => {
+        const seedColour = new Colour().setHSL(colorSchemes[schemeNr](seed), 1, .5);
+        flowerSeedsViews.viewAt(index).fillColor = seedColour;
+        flowerSeedsViews.viewAt(index).borderColor = showBorder ? Colour.White : seedColour;
     });
     updateTitle(c, n);
 }

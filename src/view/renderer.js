@@ -101,6 +101,19 @@ export class ViewsCollection extends Renderable {
         this._views = [];
     }
 
+    /** @returns {ArrayIterator<Renderable>} */
+    [Symbol.iterator]() {
+        return this._views[Symbol.iterator]();
+    }
+
+    /**
+     * @param {(body: Renderable, index: number, bodies: Renderable[]) => void} callback
+     * @param {*} [thisArg]
+     */
+    forEach(callback, thisArg) {
+        this._views.forEach(callback, thisArg);
+    }
+
     with(options) {
         this._options = options;
         return this;
@@ -126,5 +139,9 @@ export class ViewsCollection extends Renderable {
         for (const view of this._views) 
             box.union(view.boundingBox ?? new Box3());
         return box;
+    }
+
+    viewAt(index) {
+        return this._views[index];
     }
 }

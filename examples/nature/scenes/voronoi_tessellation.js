@@ -107,8 +107,8 @@ function reset() {
     growthRadius = 0.125;
     buildVoronoiCells(seeds);
     // Update views
-    cells.forEach((binding, index) => binding.view.visible = index < seedCount);
-    cellCores.forEach((binding, index) => binding.view.visible = index < seedCount);
+    cellViews.forEach((view, index) => view.visible = index < seedCount);
+    cellCoresView.forEach((view, index) => view.visible = index < seedCount);
     updateCellColors();
 }
 
@@ -132,9 +132,9 @@ function updateGrowthGeometry() {
 let colorMapper = ColorMappers.get(ColorMappers.Gradient);
 function updateCellColors() {
     const color = new Colour();
-    cells.forEach(binding => {
-        colorMapper.map((binding.model.seedIndex + 2) / seedCount, color);
-        binding.view.fillColor = color;
+    cells.forEach((cell, index) => {
+        colorMapper.map((cell.seedIndex + 2) / seedCount, color);
+        cellViews.viewAt(index).fillColor = color;
     });
 }
 

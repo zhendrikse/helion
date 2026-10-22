@@ -7,9 +7,8 @@ const speed = 6;  // initial horizontal speed
 const size = 1;   // length of a bird vector
 const threshold = (5 * size) ** 2;
 
-class Flock extends BindableCollection {
+class Flock {
     constructor(bird_count) {
-        super();
         this._random_weight = 5;
         this._center_weight = 0.1;
         this._direction_weight = 0.05;
@@ -19,39 +18,39 @@ class Flock extends BindableCollection {
         this._center = new Vec3();
         this._direction = new Vec3();
 
+        this._birds = new BindableCollection();
         const initialPhysicalFlockRadius = 3;
         for (let i = 0; i < bird_count; i++)
-            this.add(new Body({
+            this._birds.add(new Body({
                 position: new Vec3().random().multiplyScalar(initialPhysicalFlockRadius),
                 velocity: new Vec3(speed, 0, 0).add(new Vec3().random().multiplyScalar(speed)),
             }));
     }
 
+    get birds() { return this._birds; }
+
     // avoid nearest birds (A BETTER VERSION WOULD ANTICIPATE COLLISIONS)
     avoidNearestBirds() {
         const avoid = [];
-        for (let i = 0; i < this.size; i++) {
+        this._birds.forEach((bird, i) => {
             avoid.push(new Vec3(0, 0, 0));
             for (let j = 0; j < i; j++) {
-                const distanceSquared = this._bindables[i].distanceToSquared(this._bindables[j]);
+                const distanceSquared = bird.distanceToSquared(this._birds.bindableAt(j));
                 if (distanceSquared < threshold) {
-                    const separation_dist = this._bindables[i].positionVectorTo(this._bindables[j]);
+                    const separation_dist = bird.positionVectorTo(this._birds.bindableAt(j));
                     avoid[i].sub(separation_dist.divideScalar(distanceSquared));
                     avoid[j].add(separation_dist.divideScalar(distanceSquared));
                 }
             }
-        }
+        })
         return avoid;
     }
 
-    updateBird(count, avoid, dt) {
-        const bird = this._bindables[count];
+    _updateBird(bird, count, avoid, dt) {
+        this._acceleration.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
+            .normalize()
+            .multiplyScalar(this._random_weight);
 
-        this._acceleration.set(
-            Math.random() - 0.5,
-            Math.random() - 0.5,
-            Math.random() - 0.5
-        ).normalize().multiplyScalar(this._random_weight);
         let diff = this._center.clone().sub(bird.position);
         this._acceleration.add(diff.multiplyScalar(this._center_weight));
 
@@ -73,17 +72,16 @@ class Flock extends BindableCollection {
         this._center.set(0, 0, 0);
         this._direction.set(0, 0, 0);
 
-        this._bindables.forEach(bird => {
+        this._birds.forEach(bird => {
             this._center.add(bird.position);
             this._direction.add(bird.velocity);
         });
 
-        this._center.divideScalar(this._bindables.length);
-        this._direction.divideScalar(this._bindables.length);
+        this._center.divideScalar(this._birds.size);
+        this._direction.divideScalar(this._birds.size);
 
         const avoid = this.avoidNearestBirds();
-        for (let count = 0; count < this._bindables.length; count++)
-            this.updateBird(count, avoid, dt);
+        this._birds.forEach((bird, i) => this._updateBird(bird, i, avoid, dt));
     }
 
     set randomWeight(value) { this._random_weight = value; }
@@ -92,8 +90,8 @@ class Flock extends BindableCollection {
     set avoidWeight(number) { this._avoid_weight = number; }
 
     startleBirds() {
-        for (const birdBinding of this)
-            birdBinding.model.velocity.copy(new Vec3().random().multiplyScalar(2 * speed));
+        for (const bird of this._birds)
+            bird.velocity.copy(new Vec3().random().multiplyScalar(2 * speed));
     }
 }
 
@@ -111,7 +109,7 @@ Simulation
             enabled: false
         }
     })
-    .bind(flock.alwaysWith(ViewsCollection.of(VectorView).with({
+    .bind(flock.birds.alwaysWith(ViewsCollection.of(VectorView).with({
         vectorProperty: body => body.velocity,
         color: new Colour(0x77ff77),
         size: 0.2,

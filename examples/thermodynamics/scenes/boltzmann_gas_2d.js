@@ -1,6 +1,6 @@
 import {
     Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, Checkbox,
-    RadialSymmetricBody, UPlotGraph, Colour, Circle, ViewsCollection
+    UPlotGraph, Colour, Circle, ViewsCollection
 } from '../../../src/index.js';
 
 const CONTAINER_SIZE = 10;
@@ -53,18 +53,20 @@ const simulation = Simulation
     .appendStartStopResetUI()
     .append(new Button()
         .withText(`Add ${PARTICLES_TO_ADD}`)
-        .onClick(() => {            const newParticles = gas.addParticles(PARTICLES_TO_ADD);
-            const bindingCollection = newParticles.alwaysWith(circles);
-            simulation.bind(bindingCollection);
-            newParticles.forEach(binding => binding.view.fillColor = Colour.Cyan);
-            bindingCollection.forEach(binding => gas._bindings.push(binding));
+        .onClick(() => {
+            const newParticles = gas.addParticles(PARTICLES_TO_ADD);
+            const newBindings = newParticles.alwaysWith(circles);
+            simulation.bind(newBindings);
+            circles.forEach((circle, index) =>
+                circle.fillColor = index === 0 ? Colour.Red : index >= PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow);
+            newBindings._bindings.forEach(binding => gas._bindings.push(binding));
         }))
     .append(new Checkbox('Tracer particle')
         .checked(true)
         .onChange(checked => {
-            gas.forEach((binding, index) => {
+            circles.forEach((circle, index) => {
                 if (index === 0)
-                    binding.view.visible = checked;
+                    circle.visible = checked;
             });
             tracerTrail.visible = checked;
         })
@@ -112,8 +114,8 @@ function reset() {
     gas.reset(temperatureSlider.value);
     circles.reset();
     simulation.bind(gas.alwaysWith(circles));
-    gas.forEach((binding, index) =>
-        binding.view.fillColor = index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow
+    circles.forEach((circle, index) =>
+        circle.fillColor = index === 0 ? Colour.Red : index > PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow
     );
     tracerTrail.reset();
     histogramBuffer.length = 0;

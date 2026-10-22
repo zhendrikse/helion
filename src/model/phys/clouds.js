@@ -112,15 +112,15 @@ export class Gas extends BindableCollection{
     }
 
     /** @param {number} mass */
-    set tracerMass(mass) {
-        this._bindables[0].state.mass = mass;
-    }
-
+    set tracerMass(mass) { this._bindables[0].state.mass = mass; }
+    get tracerMass() { return this._bindables[0].state.mass; }
     get tracer() { return this._bindables[0]; }
-
     get temperature() { return this._temperature; }
 
-    /** @param {number} numberOfParticles */
+    /**
+     * @param {number} numberOfParticles
+     * @return {BindableCollection}
+     */
     addParticles(numberOfParticles = 50) {
         const newParticles = new BindableCollection();
         for (let i = 0; i < numberOfParticles; i++) {

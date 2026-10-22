@@ -287,7 +287,7 @@ class SPHSolver {
         this._activeParticleCount = n;
 
         for (let i = this._particles.size; i < n; i++)
-            this._particles._bindables.push(new SPHParticle({
+            this._particles.add(new SPHParticle({
                 position: new Vec2(
                     Math.random() * xRange.range + xRange.min,
                     Math.random() * yRange.range + yRange.min
@@ -297,7 +297,7 @@ class SPHSolver {
             }));
 
         for (let i = 0; i < n; i++) {
-            const particle = this._particles._bindables[i];
+            const particle = this._particles.bindableAt(i);
             if (reset || i >= previousCount) {
                 particle.position.set(
                     Math.random() * xRange.range + xRange.min,
@@ -354,11 +354,10 @@ class SPHSolver {
     }
 
     _updatePosition(grid, dt) {
-        this._particles.forEach((particleBinding, index) => {
+        this._particles.forEach((particle, index) => {
             if (index >= this._activeParticleCount)
                 return;
 
-            const particle = particleBinding.model;
             particle.integrate(this.gravity, dt);
             particle.confineToBox();
             grid.addParticleToCell(particle);
@@ -393,6 +392,12 @@ class SPHParticleView extends Circle {
         super.synchronizeWith({ position, radius: particle.radius });
     }
 }
+const particleViews = ViewsCollection.of(SPHParticleView).with({
+    fillColor: particleColor,
+    borderColor: Colour.LightBlue,
+    borderWidth: 0.2,
+    segments: 8
+});
 
 class ParameterControls {
     static colorRegistry = new Registry({
@@ -451,7 +456,7 @@ class ParameterControls {
                     updateParticleColors();
                 else {
                     particleColor = ParameterControls.colorRegistry.get(name);
-                    solver._particles.forEach(binding => binding.view.fillColor = particleColor);
+                    particleViews.forEach(view => view.fillColor = particleColor);
                 }
             });
     }
@@ -569,22 +574,15 @@ const normalizer = new FixedIntervalNormalizer(new Interval(0, SPEED_COLOR_MAX))
 const colorMapper = ColorMappers.get(ColorMappers.Scientific, {colorSpace: LinearSRGBColorSpace});
 const colour = new Colour();
 function updateParticleColors() {
-    solver._particles.forEach(particleBinding => {
-        colorMapper.map(normalizer.normalize(particleBinding.model.speed), colour)
-        particleBinding.view.fillColor = colour;
+    solver._particles.forEach((particle, index) => {
+        colorMapper.map(normalizer.normalize(particle.speed), colour)
+        particleViews.viewAt(index).fillColor = colour;
     });
 }
 
 function createParticleViews() {
-    simulation.bind(solver._particles.alwaysWith(ViewsCollection.of(SPHParticleView).with({
-        fillColor: particleColor,
-        borderColor: Colour.LightBlue,
-        borderWidth: 0.2,
-        segments: 8
-    })));
-
-    solver._particles.forEach((particleBinding, index) =>
-        particleBinding.view.visible = index < solver.particleCount);
+    simulation.bind(solver._particles.alwaysWith(particleViews));
+    particleViews.forEach((view, index) => view.visible = index < solver.particleCount);
 }
 
 initScreenSize();

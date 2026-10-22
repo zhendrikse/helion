@@ -1,10 +1,8 @@
 import {
-    RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule,
+    RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule, Interval, ViewsCollection, BindableCollection,
     BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, SpringForce, UPlotGraph,
-    Interval, ViewsCollection
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
-import {BindableCollection} from "../../../src/model/behavior.js";
 
 // Simulation constants
 const SCALE = 1e10;
@@ -137,9 +135,9 @@ export class CarbonMonoxide extends BodyPair {
     get mass() { return this.body2.mass + this.body1.mass; }
 }
 
-class CarbonMonoxideGas extends BindableCollection {
+class CarbonMonoxideGas {
     constructor(moleculeCount = MOLECULES_COUNT, temperature = 298, boxSize = L) {
-        super();
+        this._molecules = new BindableCollection();
         this._boxSize = boxSize;
         this._temperature = temperature;
         const mass = 14E-3 / 6E23; // Average mass of Oxygen and Carbon
@@ -148,23 +146,26 @@ class CarbonMonoxideGas extends BindableCollection {
             const pos = new Vec3(Math.random() - .5, Math.random() - .5, Math.random() - .5)
                 .multiplyScalar(boxSize);
             const molecule = new CarbonMonoxide(pos, Math.sqrt(3 * k * temperature / mass));
-            this.add(molecule);
+            this._molecules.add(molecule);
         }
     }
 
+    get molecules() { return this._molecules; }
+
     /** @param {number} dt */
     evolve(dt) {
-        for (const binding of this)
-            binding.model.apply(bondForce);
+        for (const molecule of this._molecules)
+            molecule.apply(bondForce);
 
-        for (const binding of this) {
-            binding.model.integrate(dt);
-            binding.model.checkBoxBounce(this._boxSize * 2);
+        for (const molecule of this._molecules) {
+            molecule.integrate(dt);
+            molecule.checkBoxBounce(this._boxSize * 2);
         }
 
-        for (let i = 0; i < this.size; i++)
-            for (let j = i + 1; j < this.size; j++)
-                this._bindables[i].resolveCollisionWith(this._bindables[j]);
+        this._molecules.forEach((molecule, index) => {
+            for (let j = index + 1; j < this._molecules.size; j++)
+                molecule.resolveCollisionWith(this._molecules.bindableAt(j));
+        });
     }
 
     // TODO Add temperature slider to demo
@@ -172,30 +173,29 @@ class CarbonMonoxideGas extends BindableCollection {
     updateToNewTemperature(newTemperature) {
         // Modify the speed of all molecules according to equipartition: v ~ sqrt(T)
         const scaleFactor = Math.sqrt(newTemperature / this._temperature); // ratio new temp / old temp
-        for (const molecule of this._bindables)
-            molecule.scaleVelocity(scaleFactor);
+        this._molecules.forEach(molecule => molecule.scaleVelocity(scaleFactor));
         this._temperature = newTemperature;
     }
 
     get translationalKineticEnergy() {
-        return this._bindables.reduce((sum, molecule) => sum + molecule.translationalKineticEnergy, 0);
+        return this._molecules._bindables.reduce((sum, molecule) => sum + molecule.translationalKineticEnergy, 0);
     }
 
     get vibrationalKineticEnergy() {
-        return this._bindables.reduce((sum, molecule) => sum + molecule.vibrationalKineticEnergy, 0);
+        return this._molecules._bindables.reduce((sum, molecule) => sum + molecule.vibrationalKineticEnergy, 0);
     }
 
     get vibrationalPotentialEnergy() {
-        return this._bindables.reduce((sum, molecule) => sum + molecule.vibrationalPotentialEnergy, 0);
+        return this._molecules._bindables.reduce((sum, molecule) => sum + molecule.vibrationalPotentialEnergy, 0);
     }
 
     get rotationalKineticEnergy() {
-        return this._bindables.reduce((sum, molecule) => sum + molecule.rotationalKineticEnergy, 0);
+        return this._molecules._bindables.reduce((sum, molecule) => sum + molecule.rotationalKineticEnergy, 0);
     }
 }
 
 const gas = new CarbonMonoxideGas();
-
+const gasView = ViewsCollection.of(DiatomicMolecule);
 let t = 0;
 let steps = 0;
 let totalTranslational = 0;
@@ -231,7 +231,7 @@ const simulation = Simulation
     })
     .withMouseClickEventListener()
     .addGraph(graph)
-    .bind(gas.alwaysWith(ViewsCollection.of(DiatomicMolecule)))
+    .bind(gas.molecules.alwaysWith(gasView))
     .runsEvery(0.003)
     .advancesBy(5e-16)
     .substeps(3)
@@ -264,7 +264,9 @@ const simulation = Simulation
     })
     .addObject3D(new Aquarium({ size: new Vec3(1, 1, 1).multiplyScalar(2 * L) }))
     .append(new RadioGroup()
-        .add('Springs', () => gas.forEach(binding => binding.view.bondType = SwitchableBondView.Type.Spring))
-        .add('Cylinders', () => gas.forEach(binding => binding.view.bondType = SwitchableBondView.Type.Cylinder))
+        .add('Springs', () => gasView.forEach(view =>
+            view.bondType = SwitchableBondView.Type.Spring))
+        .add('Cylinders', () => gasView.forEach(view =>
+            view.bondType = SwitchableBondView.Type.Cylinder))
         .checked(1)
     );
