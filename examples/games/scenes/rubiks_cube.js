@@ -271,7 +271,7 @@ const simulation = Simulation.with({
     )
     .append(new Button()
         .withText('Flower')
-        .onClick(() => cube.applyFormula('F b U d L r F b'))
+        .onClick(() => cube.applyFormula('F b U d R l F b'))
         .togetherWith(new Button()
             .withText('Cross')
             .onClick(() => cube.applyFormula('F F B B U U D D R R L L'))
