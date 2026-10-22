@@ -103,9 +103,9 @@ class Particle extends RadialSymmetricBody {
 
 class Jar {
     constructor(total_balls=40, v0=0) {
-        this._balls = []
-        this._create_balls(total_balls)
-        this._initialize_ball_movements(v0)
+        this._balls = new BindableCollection();
+        this._create_balls(total_balls);
+        this._initialize_ball_movements(v0);
     }
 
     get balls() { return this._balls; }
@@ -116,7 +116,7 @@ class Jar {
     }
     
     _create_balls(total_balls) {
-        while (this._balls.length < total_balls) {
+        while (this._balls.size < total_balls) {
             const rt = new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 0).multiplyScalar(10);
             const decider = Math.random();
             if (decider < 0.0 &&
@@ -129,28 +129,28 @@ class Jar {
             else if (Math.abs(rt.x) <= box_size.x &&
                 Math.abs(rt.y) <= box_size.y &&
                 Math.abs(rt.z) <= box_size.z)
-                this._balls.push(new Particle(rt, 0.6));
+                this._balls.add(new Particle(rt, 0.6));
         }
 
         const extra_balls = 30
         for (let i = 0; i < extra_balls; i++) {
             let position = new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 0);
-            this._balls.push(new Particle(position, 0.5, 0.03));
+            this._balls.add(new Particle(position, 0.5, 0.03));
             position = new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 0)
-            this._balls.push(new Particle(position, 0.4, 0.01));
+            this._balls.add(new Particle(position, 0.4, 0.01));
         }
     }
 
     update(dt) {
-        for (let i = 0; i < this._balls.length; i++) {
-            this._balls[i].initialize_force();
-            for (let j = 0; j < this._balls.length; j++) {
+        for (let i = 0; i < this._balls.size; i++) {
+            this._balls.bindableAt(i).initialize_force();
+            for (let j = 0; j < this._balls.size; j++) {
                 if (i === j)
                     continue;
 
-                this._balls[i].collide_with(this._balls[j]);
+                this._balls.bindableAt(i).collide_with(this._balls.bindableAt(j));
             }
-            this._balls[i].update(dt);
+            this._balls.bindableAt(i).update(dt);
         }
 
         for (const particle of this._balls)
@@ -159,15 +159,13 @@ class Jar {
 }
 
 const jar = new Jar();
-const balls = new BindableCollection();
-jar.balls.forEach(ball => balls.add(ball));
 
 Simulation
     .with({
         htmlDivId: 'fluidLayersContainer',
         camera: { position: new Vec3(10, 10, 10) }
     })
-    .bind(balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Yellow })))
+    .bind(jar.balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Yellow })))
     .bind(hollow.onceWith(new Box({color: Colour.Yellow, opacity: 0.1 })))
     .bind(permeable_layer.onceWith(new Box({color: Colour.Red, opacity: 0.5 })))
     .bind(bowl.onceWith(new Box({color: Colour.Yellow, opacity: 0.1 })))
