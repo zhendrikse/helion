@@ -165,8 +165,9 @@ Simulation
     .bind(balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Yellow })))
     .runsEvery(0.001)
     .onStep((clock, dt) => {
-        while (clock.simulatedTime < 300)
+        // Advance the simulation once per step. A while-loop here would
+        // never finish because simulatedTime advances outside this callback.
+        if (clock.simulatedTime < 300)
             jar.update(dt);
-
     })
     .start();
