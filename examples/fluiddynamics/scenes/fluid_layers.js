@@ -1,222 +1,168 @@
 import {
-    Block, Box, Button, Colour, RadialSymmetricBody, BindableCollection, ViewsCollection,
-    Simulation, Sphere, Vec3
-} from '../../../src/index.js';
+    Block, Box, Colour, RadialSymmetricBody, sampleNormalDistribution, Simulation, Sphere,
+    Vec3, ViewsCollection
+} from "../../../src/index.js";
 
-const K_WALL = 100000;
-const DRAG = 800;
-const COULOMB_K = 9e9;
-const CHARGE = 1e-6;
-const MIN_PAIR_DISTANCE = 0.25;
-const GRAVITY = new Vec3(0, -5000, 0);
-const TIME_STEP = 0.001;
+const hollowSize = new Vec3(5, 12, .01);
+const permeableLayerSize = new Vec3(0.2, 12, 1);
+const hollow = new Block({ size: hollowSize });
+const bowl = new Block({ size: new Vec3(22, 12, 7) });
+const permeable_layer = new Block({ size: permeableLayerSize });
 
-const CAVITY_SIZE = new Vec3(5, 12, 0.01);
-const BOWL_SIZE = new Vec3(22, 12, 7);
-const LAYER_SIZE = new Vec3(0.2, 12, 1);
-const CAVITY_HALF_SIZE = CAVITY_SIZE.clone().multiplyScalar(0.5);
+const box_size = new Vec3(hollowSize.x, hollowSize.y, hollowSize.z).multiplyScalar(.5);
+const K = 100000;
+const drag = 800;
+const E = new Vec3(0, 0, 0);
+const k = 9e9;
+const g = new Vec3(0, -5000, 0);
 
-const cavity = new Block({ size: CAVITY_SIZE.clone(), position: new Vec3() });
-const bowl = new Block({ size: BOWL_SIZE.clone(), position: new Vec3() });
-const permeableLayer = new Block({ size: LAYER_SIZE.clone(), position: new Vec3() });
+class Particle extends RadialSymmetricBody {
+    constructor(position, radius, mass=0.3) {
+        super({ position, radius });
+        this._q0 = 1e-4;
+        this._mass = mass;
+        this._momentum = new Vec3(0, 0, 0);
+        this._force = new Vec3(0, 0, 0);
+    }
+    
+    initialize(v0) {
+        const v = sampleNormalDistribution(v0, 1)
+        if (this.radius === 0.5)
+            this._mass = 0.13
+        else if (this.radius === 0.4)
+            this._mass = 0.08
 
-function gaussian(mean = 0, standardDeviation = 1) {
-    let u1 = Math.random();
-    while (u1 === 0)
-        u1 = Math.random();
-    const u2 = Math.random();
-    return mean + standardDeviation * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-}
+        this._momentum = new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1)
+            .normalize()
+            .multiplyScalar(v * this._mass);
+        this.radius = this.radius / 1.5;
+    }
+    
+    initialize_force() {
+        this._force = this._momentum.clone().multiplyScalar(-drag).add(E).multiplyScalar(this._q0).add(g).multiplyScalar(this._mass);
+    }
+    
+     update(dt) {
+         this._momentum.add(this._force.clone().multiplyScalar(dt));
+         this.position.add(this._momentum.clone().multiplyScalar(dt / this._mass));
+         this._force.set(0, 0, 0);
+     }
 
-function randomDirection() {
-    const direction = new Vec3(
-        2 * Math.random() - 1,
-        2 * Math.random() - 1,
-        2 * Math.random() - 1
-    );
-    if (direction.lengthSq() < 1e-12)
-        return direction.set(1, 0, 0);
-    return direction.normalize();
-}
+     distance_to(other_ball) {
+         return other_ball.distance(this._sphere);
+     }
+     
+    collide_with(other_ball) {
+        const rt = this.distanceTo(other_ball);
+        const length = rt.length();
+        if (length < 0.01) {
+            this._force.set(0, 0, 0);
+        } else if (length < 1.5) {
+            const mag_rt_squared = this.distanceToSquared(other_ball);
+            const mag_rt_cubed = mag_rt_squared * length;
+            this._force.add(rt.clone.normalize().multiplyScalar(k * this._q0 * other_ball._q0 / mag_rt_squared));
+            this._force.add(rt.clone.normalize().multiplyScalar(-3 * k * this._q0 * other_ball._q0 / mag_rt_cubed));
+        }
+    }
+    
+    process_box_collisions(dt) {
+        const r = this.position;
+        if (r.x > box_size.x)
+            this._force.x += -K * (Math.abs(r.x) - box_size.x);
+        if (r.x < -box_size.x)
+            this._force.x += K * (Math.abs(r.x) - box_size.x);
+        if (r.y > box_size.y)
+            this._force.y += -K * (Math.abs(r.y) - box_size.y);
+        if (r.y < -box_size.y)
+            this._force.y += K * (Math.abs(r.y) - box_size.y);
+        if (r.z > box_size.z)
+            this._force.z += -K * (Math.abs(r.z) - box_size.z);
+        if (r.z < -box_size.z)
+            this._force.z += K * (Math.abs(r.z) - box_size.z);
 
-function randomPosition({ xMin = -CAVITY_HALF_SIZE.x, xMax = CAVITY_HALF_SIZE.x } = {}) {
-    return new Vec3(
-        xMin + Math.random() * (xMax - xMin),
-        (2 * Math.random() - 1) * CAVITY_HALF_SIZE.y,
-        0
-    );
-}
+        this._momentum += new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1).multiplyScalar(7);
+        let left_count = 0;
+        let right_count = 0;
 
-class ChargedParticle extends RadialSymmetricBody {
-    constructor({ position, radius, mass, color, initialSpeed = 0 } = {}) {
-        super({
-            position,
-            radius,
-            mass,
-            velocity: randomDirection().multiplyScalar(gaussian(initialSpeed, 1))
-        });
-        this.q0 = CHARGE;
-        this.particleColor = color;
+        if (this.isLayerSensitive() && r.x < permeableLayerSize.x)
+            this._force.x += -K * (r.x - permeableLayerSize.x);
+
+        if (this.position.x > permeableLayerSize.x)
+            right_count += 1;
+        else
+            left_count += 1;
+
+        this._momentum.add(this._force.clone().multiplyScalar(dt));
+        this.position.add(this._momentum.clone().multiplyScalar(dt / this._mass));
     }
 }
 
-class RedParticle extends Block {
-    constructor(position) {
-        super({
-            position,
-            size: new Vec3(0.7, 0.7, 0.7),
-            mass: 0.13
-        });
-        this.q0 = CHARGE;
-        this.isLayerSensitive = true;
-    }
-}
-
-const blueParticles = new BindableCollection();
-const yellowParticles = new BindableCollection();
-const greenParticles = new BindableCollection();
-const redParticles = new BindableCollection();
-const allParticles = [];
-
-function addParticle(collection, particle) {
-    collection.add(particle);
-    allParticles.push(particle);
-}
-
-const blueViews = ViewsCollection.of(Sphere).with({ color: Colour.Blue, segments: 16 });
-const yellowViews = ViewsCollection.of(Sphere).with({ color: Colour.Yellow, segments: 16 });
-const greenViews = ViewsCollection.of(Sphere).with({ color: Colour.Green, segments: 16 });
-const redViews = ViewsCollection.of(Box).with({ color: Colour.Red, opacity: 1 });
-
-function createParticles() {
-    for (let i = 0; i < 40; i++)
-        addParticle(blueParticles, new ChargedParticle({
-            position: randomPosition(),
-            radius: 0.6 / 1.5,
-            mass: 0.3,
-            color: Colour.Blue
-        }));
-
-    // These smaller particles are deliberately seeded around the membrane
-    // so their diffusion through the layer can be compared.
-    for (let i = 0; i < 30; i++) {
-        addParticle(yellowParticles, new ChargedParticle({
-            position: randomPosition({ xMin: -1, xMax: 1 }),
-            radius: 0.5 / 1.5,
-            mass: 0.03,
-            color: Colour.Yellow
-        }));
-        addParticle(greenParticles, new ChargedParticle({
-            position: randomPosition({ xMin: -1, xMax: 1 }),
-            radius: 0.4 / 1.5,
-            mass: 0.01,
-            color: Colour.Green
-        }));
+class Jar {
+    constructor(total_balls=40, v0=0) {
+        this._balls = []
+        this._create_balls(total_balls)
+        this._initialize_ball_movements(v0)
     }
 
-    // The source Python used an impossible condition (random() < 0) for
-    // these cubes. Seed a small population on the right so the selective
-    // membrane interaction is visible.
-    for (let i = 0; i < 12; i++)
-        addParticle(redParticles, new RedParticle(randomPosition({ xMin: 0.35, xMax: CAVITY_HALF_SIZE.x })));
-}
+    get balls() { return this._balls; }
 
-function applyParticleForces(particles, allParticles) {
-    for (const particle of particles) {
-        particle.force.set(0, 0, 0);
-        particle.force.add(particle.velocity.clone().multiplyScalar(-DRAG));
-        particle.force.add(GRAVITY.clone().multiplyScalar(particle.mass));
-
-        for (const other of allParticles) {
-            if (particle === other)
-                continue;
-
-            const displacement = other.position.clone().sub(particle.position);
-            const distance = displacement.length();
-            if (distance < 0.01 || distance >= 1.5)
-                continue;
-
-            // The original inverse-power force becomes unbounded as particles
-            // approach each other. A softened distance prevents one close pair
-            // from launching the particles out of the visible cavity.
-            const effectiveDistance = Math.max(distance, MIN_PAIR_DISTANCE);
-            const magnitude = COULOMB_K * particle.q0 * other.q0 *
-                (1 / (effectiveDistance * effectiveDistance) -
-                    3 / (effectiveDistance * effectiveDistance * effectiveDistance));
-            particle.force.add(displacement.normalize().multiplyScalar(magnitude));
+    _initialize_ball_movements(v0) {
+        for (const particle of this._balls)
+            particle.initialize(v0);
+    }
+    
+    _create_balls(total_balls) {
+        while (this._balls.length < total_balls) {
+            const rt = new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 0).multiplyScalar(10);
+            const decider = Math.random();
+            if (decider < 0.0 &&
+                rt.x > permeable_layer.size.x &&
+                Math.abs(rt.x) <= box_size.x &&
+                Math.abs(rt.y) <= box_size.y &&
+                Math.abs(rt.z) <= box_size.z)
+                this._balls.push(new Block({position: rt.clone(), size: new Vec3(0.7, 0.7, 0.7)}));
+            else if (Math.abs(rt.x) <= box_size.x &&
+                Math.abs(rt.y) <= box_size.y &&
+                Math.abs(rt.z) <= box_size.z)
+                this._balls.push(new Particle(rt, 0.6));
         }
 
-        // A small stochastic kick models the agitation in the original demo
-        // without the unbounded momentum growth caused by adding 7 each step.
-        particle.velocity.add(new Vec3(
-            2 * Math.random() - 1,
-            2 * Math.random() - 1,
-            2 * Math.random() - 1
-        ).multiplyScalar(0.005));
+        const extra_balls = 30
+        for (let i = 0; i < extra_balls; i++) {
+            let position = new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 0);
+            this._balls.push(new Particle(position, 0.5, 0.03));
+            position = new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 0)
+            this._balls.push(new Particle(position, 0.4, 0.01));
+        }
+    }
+
+    update(dt) {
+        for (let i = 0; i < this._balls.length; i++) {
+            this._balls[i].initialize_force();
+            for (let j = 0; j < this._balls.length; j++) {
+                if (i === j)
+                    continue;
+
+                this._balls[i].collide_with(this._balls[j]);
+            }
+            this._balls[i].update(dt);
+        }
+
+        for (const particle of this._balls)
+            particle.process_box_collisions(dt);
     }
 }
 
-function applyWallAndMembraneForces(particle) {
-    const r = particle.position;
-    if (r.x > CAVITY_HALF_SIZE.x)
-        particle.force.x -= K_WALL * (r.x - CAVITY_HALF_SIZE.x);
-    if (r.x < -CAVITY_HALF_SIZE.x)
-        particle.force.x += K_WALL * (-CAVITY_HALF_SIZE.x - r.x);
-    if (r.y > CAVITY_HALF_SIZE.y)
-        particle.force.y -= K_WALL * (r.y - CAVITY_HALF_SIZE.y);
-    if (r.y < -CAVITY_HALF_SIZE.y)
-        particle.force.y += K_WALL * (-CAVITY_HALF_SIZE.y - r.y);
-    if (r.z > CAVITY_HALF_SIZE.z)
-        particle.force.z -= K_WALL * (r.z - CAVITY_HALF_SIZE.z);
-    if (r.z < -CAVITY_HALF_SIZE.z)
-        particle.force.z += K_WALL * (-CAVITY_HALF_SIZE.z - r.z);
-
-    // The red cubes are too large to pass through the permeable layer.
-    if (particle.isLayerSensitive && r.x < LAYER_SIZE.x / 2)
-        particle.force.x += K_WALL * (LAYER_SIZE.x / 2 - r.x);
-}
-
-createParticles();
-
-const simulation = Simulation
+const jar = new Jar();
+Simulation
     .with({
-        htmlDivId: 'fluidLayersContainer',
-        viewport: { aspectRatio: '16/9', parameterMenuCollapsed: false },
-        camera: {
-            position: new Vec3(0, 1, 28),
-            target: new Vec3(0, 0, 0),
-            orthographic: true,
-            controls: true
-        },
-        lighting: { enabled: true },
-        infoPanel: {
-            text: '<strong>Fluid layers</strong><br/>' +
-                'Particles move under gravity, drag and short-range pair forces. ' +
-                'The red membrane selectively blocks the larger red particles, while the smaller colored particles diffuse around it.'
-        },
-        headUpDisplay: { enabled: false }
+        htmlDivId: 'fluidLayersContainer'
     })
-    .bind(cavity.alwaysWith(new Box({ color: Colour.White, opacity: 0.1 })))
-    .bind(bowl.alwaysWith(new Box({ color: Colour.White, opacity: 0.08 })))
-    .bind(permeableLayer.alwaysWith(new Box({ color: Colour.Red, opacity: 0.22 })))
-    .bind(blueParticles.alwaysWith(blueViews))
-    .bind(yellowParticles.alwaysWith(yellowViews))
-    .bind(greenParticles.alwaysWith(greenViews))
-    .bind(redParticles.alwaysWith(redViews))
-    .runsEvery(TIME_STEP)
-    .advancesBy(TIME_STEP)
-    .onStep((_clock, dt) => {
-        applyParticleForces(allParticles, allParticles);
-        for (const particle of allParticles)
-            applyWallAndMembraneForces(particle);
-        for (const particle of allParticles)
-            particle.integrate(dt);
-    });
+    .bind(jar.balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Yellow })))
+    .runsEvery(0.001)
+    .onStep((clock, dt) => {
+        while (clock.simulatedTime < 300)
+            jar.update(dt);
 
-simulation.append(new Button('↻ Restart').withText('↻ Restart').onClick(() => {
-    for (const particle of allParticles)
-        particle.reset();
-    simulation.start();
-}));
-
-simulation.start();
+    })
+    .start();
