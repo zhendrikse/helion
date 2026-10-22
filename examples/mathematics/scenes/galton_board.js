@@ -9,42 +9,44 @@ const binCount = num_nails + 1;
 const stepsPerRow = 25;
 const animationSpeedDefault = 200;
 const stepDistance = 0.04;
-const totalFallSteps = stepsPerRow * (num_nails + 1);
+const totalPinSteps = stepsPerRow * (num_nails + 1);
+const totalFallSteps = totalPinSteps + stepsPerRow * 2;
 
 const bars = new BindableCollection()
     .add(new AxialSymmetricBody({ // Left
-        position: new Vec3(-1 - num_nails, 18.25, 0),
+        position: new Vec3(-1 - num_nails, 19.75, 0),
         axis: new Vec3(0, -.1825 * num_balls, 0),
-        radius: 0.175
+        radius: 0.2
     }))
     .add(new AxialSymmetricBody({ // Right
-        position: new Vec3(num_nails + 1, 18.25, 0),
+        position: new Vec3(num_nails + 1, 19.75, 0),
         axis: new Vec3(0, -.1825 * num_balls, 0),
-        radius: 0.175
+        radius: 0.2
     }))
     .add(new AxialSymmetricBody({ // Bottom
-        position: new Vec3(-num_nails - 1, 16.75 - .175 * num_balls, 0),
+        position: new Vec3(-num_nails - 1, 18.25 - .175 * num_balls, 0),
         axis: new Vec3(22, 0, 0),
-        radius: 0.175
+        radius: 0.2
     }))
     .add(new AxialSymmetricBody({ // Top
-        position: new Vec3(-num_nails - 1, 18.25, 0),
+        position: new Vec3(-num_nails - 1, 19.75, 0),
         axis: new Vec3(22, 0, 0),
-        radius: 0.175
+        radius: 0.2
     }));
 
 const pins = new BindableCollection();
 for (let i = 0; i < num_nails; i++) {
     bars.add(new AxialSymmetricBody({
-        position: new Vec3(i + .5 - num_nails / 2, 3.5, 0).multiplyScalar(2),
+        position: new Vec3(i + .5 - num_nails / 2, 4.1, 0).multiplyScalar(2),
         axis: new Vec3(0, -.125 * num_balls, 0),
-        radius: 0.175
+        radius: 0.2
     }));
 
     for (let j = -i; j < i + 1; j += 2)
-        pins.add(new RadialSymmetricBody({
-            position: new Vec3(j, 16.7 - i, 0),
-            radius: 0.2
+        pins.add(new AxialSymmetricBody({
+            position: new Vec3(j, 18.2 - i, 0),
+            radius: 0.2,
+            axis: new Vec3(0, 0, 0.5),
         }));
 }
 
@@ -84,14 +86,14 @@ const simulation = Simulation
         htmlDivId: 'galtonBoardContainer',
         headUpDisplay: false,
         viewport: { aspectRatio: '3/4' },
-        camera: { fieldOfView: 30, position: new Vec3(0, 0, 37), orthographic: true, controls: false }
+        camera: { fieldOfView: 30, position: new Vec3(0, -32, 56) }
     })
     .bind(new Block({
-        position: new Vec3(0, 0, -0.05),
+        position: new Vec3(0, 1.5, -0.3),
         size: new Vec3(2 * (num_nails + 1.1), num_balls * .1825, .1)
     }).alwaysWith(new Box({ color: new Colour(0x855E42) })))
     .bind(bars.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0xDEB887) })))
-    .bind(pins.onceWith(ViewsCollection.of(Sphere).with({ color: Colour.White })))
+    .bind(pins.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0xDEB887) })))
     .runsEvery(0.01)
     .onStep((_clock, _dt) => {
         simulationStep++;
@@ -107,7 +109,7 @@ const simulation = Simulation
             ball.steps++;
             // Keep the spatial step fixed; the slider changes simulation speed, not the physics.
             ball.body.position.y -= stepDistance;
-            ball.body.position.x += ball.direction * stepDistance;
+            ball.body.position.x += ball.steps > totalPinSteps ? 0 : ball.direction * stepDistance;
 
             // Match the original VPython sequence: decide the next direction after each 25-step row.
             if (ball.steps % stepsPerRow === 0)
@@ -128,7 +130,7 @@ const simulation = Simulation
 
 function spawnBall() {
     const body = new RadialSymmetricBody({
-        position: new Vec3(0, 18, 0),
+        position: new Vec3(0, 19.5, 0),
         radius: 0.3
     });
     const ball = { body, steps: 0, direction: 0, settled: false };
@@ -136,7 +138,7 @@ function spawnBall() {
     spawnedBalls++;
 
     // Same dynamic model/view binding pattern as the double-slit particle demo.
-    simulation.bind(body.alwaysWith(new Sphere({ color: Colour.Orange })));
+    simulation.bind(body.alwaysWith(new Sphere({ color: Colour.Green })));
     simulation.setHtmlTitle(`Ball ${spawnedBalls} of ${num_balls}`)
 }
 
@@ -150,6 +152,6 @@ function settleBall(ball) {
 
     // Snap the ball to its discrete outcome and stack it in that bin.
     ball.body.position.x = 2 * bin - num_nails;
-    ball.body.position.y = bins[bin] / 2.5 - num_balls * .175 + 17;
+    ball.body.position.y = bins[bin] / 2.5 - num_balls * .175 + 18.25;
     histogram.updateValues(bins);
 }
