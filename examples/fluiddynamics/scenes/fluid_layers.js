@@ -1,5 +1,5 @@
 import {
-    Block, Box, Colour, RadialSymmetricBody, sampleNormalDistribution, Simulation, Sphere,
+    Block, Box, Colour, RadialSymmetricBody, sampleNormalDistribution, Simulation, Sphere, BindableCollection,
     Vec3, ViewsCollection
 } from "../../../src/index.js";
 
@@ -154,11 +154,14 @@ class Jar {
 }
 
 const jar = new Jar();
+const balls = new BindableCollection();
+jar.balls.forEach(ball => balls.add(ball));
+
 Simulation
     .with({
         htmlDivId: 'fluidLayersContainer'
     })
-    .bind(jar.balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Yellow })))
+    .bind(balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Yellow })))
     .runsEvery(0.001)
     .onStep((clock, dt) => {
         while (clock.simulatedTime < 300)
