@@ -79,6 +79,7 @@ export default defineConfig({
                 pulsar: path.resolve(__dirname, 'examples/astrophysics/scenes/pulsar.js'),
                 pythagoras: path.resolve(__dirname, 'examples/mathematics/scenes/pythagoras.js'),
                 pythagoras_tree: path.resolve(__dirname, 'examples/mathematics/scenes/pythagoras_tree.js'),
+                pythagoras_tree_demo: path.resolve(__dirname, 'examples/mathematics/scenes/pythagoras_tree_demo.js'),
                 quantum_particle_2d: path.resolve(__dirname, 'examples/quantumphysics/scenes/quantum_particle_2d.js'),
                 quantum_wave_scattering: path.resolve(__dirname, 'examples/quantumphysics/scenes/quantum_wave_scattering.js'),
                 raindrops: path.resolve(__dirname, 'examples/nature/scenes/raindrops.js'),
