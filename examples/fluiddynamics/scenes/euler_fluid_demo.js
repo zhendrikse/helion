@@ -461,7 +461,7 @@ const simulation = Simulation
         infoPanel: {
             text:
                 '<strong>🍃 Euler fluid</strong><br/>&nbsp;<br/>' +
-                '©️ Fluid dynamics: ' +
+                '🧠 Demo inspired by site of ' +
                 '<a href=\"https://www.matthiasMueller.info/tenMinutePhysics\">Matthias Müller</a></br>' +
                 '👉 Use mouse to move obstacle.'
         }
