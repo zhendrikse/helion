@@ -36,9 +36,13 @@ const rocheBulge2 = new RadialSymmetricBody({
     position: new Vec3(-0.05, 0, 0),
     radius: 0.049
 });
+
+const initialDStart = 0.05 - rocheBulge2.radius + 0.01;
+const initialStreamStart = new Vec3(-initialDStart, 0, 0);
+const initialStreamEnd = new Vec3(whiteDwarfDistance - diskRadius * Math.cos(spotAngle), 0, diskRadius * Math.sin(spotAngle));
 const stream = new AxialSymmetricBody({
-    position: new Vec3(),
-    axis: new Vec3(),
+    position: initialStreamStart,
+    axis: initialStreamEnd.sub(initialStreamStart),
     radius: streamRadius
 });
 
