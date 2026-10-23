@@ -1,7 +1,6 @@
 import {
-    Bindable, Checkbox, Polygon, Range, Simulation, Slider, Square, Triangle, Vec2
+    Bindable, Checkbox, Polygon, Range, Simulation, Slider, Square, Triangle, Vec2, Renderable2D
 } from '../../../src/index.js';
-import { Renderable2D } from '../../../src/view/renderer.js';
 import {
     BufferGeometry, Color, DoubleSide, Float32BufferAttribute,
     LineBasicMaterial, LineSegments as ThreeLineSegments, Mesh, MeshBasicMaterial
