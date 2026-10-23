@@ -1,6 +1,6 @@
 import {
     Block, Box, Button, Colour, RadialSymmetricBody, BindableCollection, ViewsCollection,
-    Simulation, Sphere, Vec3
+    Simulation, Sphere, Vec3, sampleNormalDistribution
 } from '../../../src/index.js';
 
 const K_WALL = 100000;
@@ -16,47 +16,30 @@ const BOWL_SIZE = new Vec3(22, 12, 7);
 const LAYER_SIZE = new Vec3(0.2, 12, 1);
 const CAVITY_HALF_SIZE = CAVITY_SIZE.clone().multiplyScalar(0.5);
 
-const cavity = new Block({ size: CAVITY_SIZE.clone(), position: new Vec3() });
-const bowl = new Block({ size: BOWL_SIZE.clone(), position: new Vec3() });
-const permeableLayer = new Block({ size: LAYER_SIZE.clone(), position: new Vec3() });
-
-function gaussian(mean = 0, standardDeviation = 1) {
-    let u1 = Math.random();
-    while (u1 === 0)
-        u1 = Math.random();
-    const u2 = Math.random();
-    return mean + standardDeviation * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-}
+const cavity = new Block({ size: CAVITY_SIZE.clone() });
+const bowl = new Block({ size: BOWL_SIZE.clone() });
+const permeableLayer = new Block({ size: LAYER_SIZE.clone() });
 
 function randomDirection() {
-    const direction = new Vec3(
-        2 * Math.random() - 1,
-        2 * Math.random() - 1,
-        2 * Math.random() - 1
-    );
+    const direction = new Vec3(2 * Math.random() - 1, 2 * Math.random() - 1, 2 * Math.random() - 1);
     if (direction.lengthSq() < 1e-12)
         return direction.set(1, 0, 0);
     return direction.normalize();
 }
 
 function randomPosition({ xMin = -CAVITY_HALF_SIZE.x, xMax = CAVITY_HALF_SIZE.x } = {}) {
-    return new Vec3(
-        xMin + Math.random() * (xMax - xMin),
-        (2 * Math.random() - 1) * CAVITY_HALF_SIZE.y,
-        0
-    );
+    return new Vec3(xMin + Math.random() * (xMax - xMin), (2 * Math.random() - 1) * CAVITY_HALF_SIZE.y, 0);
 }
 
 class ChargedParticle extends RadialSymmetricBody {
-    constructor({ position, radius, mass, color, initialSpeed = 0 } = {}) {
+    constructor({ position, radius, mass, initialSpeed = 0 } = {}) {
         super({
             position,
             radius,
             mass,
-            velocity: randomDirection().multiplyScalar(gaussian(initialSpeed, 1))
+            velocity: randomDirection().multiplyScalar(sampleNormalDistribution(initialSpeed, 1))
         });
         this.q0 = CHARGE;
-        this.particleColor = color;
     }
 }
 
@@ -93,8 +76,7 @@ function createParticles() {
         addParticle(blueParticles, new ChargedParticle({
             position: randomPosition(),
             radius: 0.6 / 1.5,
-            mass: 0.3,
-            color: Colour.Blue
+            mass: 0.3
         }));
 
     // These smaller particles are deliberately seeded around the membrane
@@ -103,14 +85,12 @@ function createParticles() {
         addParticle(yellowParticles, new ChargedParticle({
             position: randomPosition({ xMin: -1, xMax: 1 }),
             radius: 0.5 / 1.5,
-            mass: 0.03,
-            color: Colour.Yellow
+            mass: 0.03
         }));
         addParticle(greenParticles, new ChargedParticle({
             position: randomPosition({ xMin: -1, xMax: 1 }),
             radius: 0.4 / 1.5,
-            mass: 0.01,
-            color: Colour.Green
+            mass: 0.01
         }));
     }
 
@@ -184,11 +164,8 @@ const simulation = Simulation
         viewport: { aspectRatio: '16/9', parameterMenuCollapsed: false },
         camera: {
             position: new Vec3(0, 1, 28),
-            target: new Vec3(0, 0, 0),
-            orthographic: true,
-            controls: true
+            target: new Vec3(0, 0, 0)
         },
-        lighting: { enabled: true },
         infoPanel: {
             text: '<strong>Fluid layers</strong><br/>' +
                 'Particles move under gravity, drag and short-range pair forces. ' +
@@ -198,7 +175,7 @@ const simulation = Simulation
     })
     .bind(cavity.alwaysWith(new Box({ color: Colour.White, opacity: 0.1 })))
     .bind(bowl.alwaysWith(new Box({ color: Colour.White, opacity: 0.08 })))
-    .bind(permeableLayer.alwaysWith(new Box({ color: Colour.Red, opacity: 0.22 })))
+    .bind(permeableLayer.alwaysWith(new Box({ color: Colour.Red, opacity: 0.5 })))
     .bind(blueParticles.alwaysWith(blueViews))
     .bind(yellowParticles.alwaysWith(yellowViews))
     .bind(greenParticles.alwaysWith(greenViews))
@@ -211,12 +188,9 @@ const simulation = Simulation
             applyWallAndMembraneForces(particle);
         for (const particle of allParticles)
             particle.integrate(dt);
-    });
-
-simulation.append(new Button('↻ Restart').withText('↻ Restart').onClick(() => {
-    for (const particle of allParticles)
-        particle.reset();
-    simulation.start();
-}));
-
-simulation.start();
+    })
+    .append(new Button('↻ Restart').withText('↻ Restart').onClick(() => {
+        for (const particle of allParticles)
+            particle.reset();
+    }))
+    .start();
