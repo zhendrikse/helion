@@ -1,4 +1,7 @@
-import { DoubleSide, MeshBasicMaterial, PointLight } from 'three';
+import {
+    AdditiveBlending, CanvasTexture, DoubleSide, Mesh, MeshBasicMaterial,
+    PlaneGeometry, PointLight
+} from 'three';
 import {
     AxialSymmetricBody, Colour, Cylinder, Range, RadialSymmetricBody,
     Simulation, Slider, Sphere, ThreeJsScene, Vec3
@@ -46,8 +49,37 @@ const stream = new AxialSymmetricBody({
     radius: streamRadius
 });
 
-const whiteDwarfLight1 = new PointLight(0xcc66ff, 1.8, 0.45);
-const whiteDwarfLight2 = new PointLight(0xcc66ff, 1.8, 0.45);
+const whiteDwarfLight1 = new PointLight(0xcc66ff, 3.5, 0.5);
+const whiteDwarfLight2 = new PointLight(0xcc66ff, 3.5, 0.5);
+
+// A radial purple glow on the disk, matching the original VPython local lights.
+const glowCanvas = document.createElement('canvas');
+glowCanvas.width = 128;
+glowCanvas.height = 128;
+const glowContext = glowCanvas.getContext('2d');
+const radialGradient = glowContext.createRadialGradient(64, 64, 2, 64, 64, 64);
+radialGradient.addColorStop(0, 'rgba(220, 100, 255, 0.9)');
+radialGradient.addColorStop(0.22, 'rgba(180, 60, 255, 0.55)');
+radialGradient.addColorStop(0.58, 'rgba(130, 35, 230, 0.18)');
+radialGradient.addColorStop(1, 'rgba(100, 20, 200, 0)');
+glowContext.fillStyle = radialGradient;
+glowContext.fillRect(0, 0, 128, 128);
+
+const glowTexture = new CanvasTexture(glowCanvas);
+const diskGlow = new Mesh(
+    new PlaneGeometry(0.095, 0.095),
+    new MeshBasicMaterial({
+        map: glowTexture,
+        color: 0xffffff,
+        transparent: true,
+        blending: AdditiveBlending,
+        depthWrite: false,
+        side: DoubleSide,
+        toneMapped: false
+    })
+);
+diskGlow.rotation.x = -Math.PI / 2;
+diskGlow.position.set(whiteDwarfDistance, 0.0022, 0);
 
 function updateSystem() {
     angle += dTheta;
@@ -59,6 +91,7 @@ function updateSystem() {
     );
     whiteDwarf.position.copy(whiteDwarfPosition);
     accretionDisk.position.copy(whiteDwarfPosition);
+    diskGlow.position.set(whiteDwarfPosition.x, 0.0022, whiteDwarfPosition.z);
 
     const orbitingPosition = distance => new Vec3(
         distance * Math.cos(angle),
@@ -136,6 +169,7 @@ Simulation.with({
     })))
     .addObject3D(whiteDwarfLight1)
     .addObject3D(whiteDwarfLight2)
+    .addObject3D(diskGlow)
     .append(new Slider('Orbital speed')
         .withUnits(' rad/frame')
         .withRange(new Range(-0.01, -0.001, 0.001))
