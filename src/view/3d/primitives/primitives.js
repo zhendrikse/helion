@@ -1,7 +1,7 @@
 import {
     Vector3, BufferAttribute, TorusGeometry, LineBasicMaterial, Line, TubeGeometry,
     MeshStandardMaterial, SphereGeometry, Mesh, BufferGeometry,
-    CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion, Material
+    CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion, Material, DoubleSide
 } from 'three';
 import { Renderable3D } from '../../renderer.js';
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
@@ -398,6 +398,101 @@ export class VectorView extends Renderable3D {
     synchronizeWith(body) {
         this._arrow.visible = this.visible;
         this._arrow.setVector(body.position, this._vectorPropertyOf(body));
+    }
+}
+
+
+//
+// Cone
+//
+export class Cone extends Renderable3D {
+    /**
+     * A cone whose base starts at body.position and whose tip is at
+     * body.position + body.axis. The width is the diameter of its base.
+     *
+     * @param {{
+     *     color?: Colour,
+     *     opacity?: number,
+     *     width?: number,
+     *     segments?: number,
+     *     visible?: boolean,
+     *     material?: Material
+     * }} options
+     */
+    constructor({
+        color = Colour.Yellow,
+        opacity = 1,
+        width = 1,
+        segments = 32,
+        visible = true,
+        material = null
+    } = {}) {
+        super();
+
+        const threeColor = color.asThreeJsColor();
+        this._material = material ?? new MeshStandardMaterial({
+            color: threeColor,
+            emissive: threeColor,
+            emissiveIntensity: 0.7,
+            opacity,
+            transparent: true,
+            depthWrite: false,
+            side: DoubleSide,
+            roughness: 0.35,
+            metalness: 0.1
+        });
+        this._material.color.copy(threeColor);
+        if (this._material.emissive)
+            this._material.emissive.copy(threeColor);
+        this._material.opacity = opacity;
+        this._material.transparent = true;
+
+        this._mesh = new Mesh(new ConeGeometry(1, 1, segments), this._material);
+        this.add(this._mesh);
+        this._width = width;
+        this._direction = new Vector3();
+        this.visible = visible;
+    }
+
+    /** @param {{position:Vec3, axis:Vec3, opacity?:number}} body */
+    canBindTo(body) {
+        if (!body.position || !body.axis)
+            throw new Error('Cone can only bind to bodies with a position and an axis.');
+        return true;
+    }
+
+    /** @param {{position:Vec3, axis:Vec3, opacity?:number}} body */
+    synchronizeWith(body) {
+        this.position.copy(body.position);
+        this._direction.set(body.axis.x, body.axis.y, body.axis.z);
+        const length = this._direction.length();
+
+        this.position.add(this._direction.clone().multiplyScalar(0.5));
+        this.scale.set(this._width * 0.5, length, this._width * 0.5);
+
+        if (length > 0)
+            this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
+
+        if (body.opacity !== undefined)
+            this._material.opacity = body.opacity;
+    }
+
+    /** @param {Colour} color */
+    set color(color) {
+        this._material.color.copy(color.asThreeJsColor());
+        if (this._material.emissive)
+            this._material.emissive.copy(color.asThreeJsColor());
+    }
+
+    /** @param {number} opacity */
+    set opacity(opacity) {
+        this._material.opacity = opacity;
+    }
+
+    dispose() {
+        this._mesh.geometry.dispose();
+        this._material.dispose();
+        this.remove(this._mesh);
     }
 }
 
