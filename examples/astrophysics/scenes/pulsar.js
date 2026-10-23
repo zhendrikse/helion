@@ -135,9 +135,9 @@ function updatePulsar() {
 }
 
 const speedSlider = new Slider('Animation speed')
+    .withUnits(' rad/frame')
     .withRange(new Range(0.01, 0.1, 0.01))
     .withValue(dTheta)
-    .withUnits(' rad/frame')
     .addEventListener('input', event => {
         dTheta = Number(event.target.value);
     });
