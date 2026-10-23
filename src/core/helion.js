@@ -11,7 +11,7 @@ import { ThreeJsScene } from '../view/3d/scene.js';
 import { Renderable, Renderer } from '../view/renderer.js';
 import { Colour } from '../view/colormappers.js';
 import { Object3D } from 'three/src/Three.js';
-import {BindableCollection, Binding} from "../model/behavior.js";
+import {ModelsCollection, Binding} from "../model/behavior.js";
 
 class SimulationClock {
     /**
@@ -70,12 +70,13 @@ export class Simulation {
     });
 
     /**
-     * @param {string} htmlDivId 
+     * @param {string} htmlDivId
+     * @param {boolean} parameterMenu
      * @param {boolean} parameterMenuCollapsed 
      * @param {string} aspectRatio 
      * @returns {Viewport}
      */
-    static viewportFromHtmlDiv = (htmlDivId, parameterMenuCollapsed, aspectRatio) => {
+    static viewportFromHtmlDiv = (htmlDivId, parameterMenu, parameterMenuCollapsed, aspectRatio) => {
         let canvasWrapper = document.getElementById(htmlDivId);
         if (!canvasWrapper) {
             console.warn(`No HTML div with ID = \'${htmlDivId}\' found: creating Helion div automatically!`);
@@ -84,7 +85,7 @@ export class Simulation {
             document.body.appendChild(canvasWrapper);
         }
 
-        return new Viewport(canvasWrapper, parameterMenuCollapsed, aspectRatio);
+        return new Viewport(canvasWrapper, parameterMenu, parameterMenuCollapsed, aspectRatio);
     };
 
     static with(
@@ -118,6 +119,7 @@ export class Simulation {
             htmlDivId,
             viewport = {
                 aspectRatio: '1 / 1',
+                parameterMenu: true,
                 parameterMenuCollapsed: true
             },
             camera = {
@@ -144,7 +146,7 @@ export class Simulation {
                 text: ''
             }
         } = {htmlDivId: '', camera: {}, viewport: {}, scene: {}, lighting: {}, headUpDisplay: {}, infoPanel: {}}) {
-        const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, viewport.parameterMenuCollapsed ?? true, viewport.aspectRatio ?? '1 / 1');
+        const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, viewport.parameterMenu ?? true, viewport.parameterMenuCollapsed ?? true, viewport.aspectRatio ?? '1 / 1');
         const renderer = new ThreeJsRenderer({ camera, viewport, lighting, scene });
         renderer.attach(viewPort);
         return new Simulation(viewPort, renderer, headUpDisplay.enabled, infoPanel);
@@ -261,7 +263,7 @@ export class Simulation {
     /**
      * Bind model to view.
      *
-     * @param {Binding | BindableCollection } binding
+     * @param {Binding | ModelsCollection } binding
      */
     bind(binding) {
         binding.addTo(this._bindings, this._renderer);

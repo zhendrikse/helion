@@ -51,7 +51,7 @@ export { Saturn } from './view/3d/astro/saturn.js';
 export { Planets, Sun } from './model/phys/planets.js';
 export { DropdownMenu, Checkbox, Button, Slider, RadioGroup, TextInput } from './core/controls.js';
 export { Simulation } from './core/helion.js';
-export { Bindable, Transformation, BindableCollection } from './model/behavior.js';
+export { Bindable, Transformation, ModelsCollection } from './model/behavior.js';
 export { Registry } from './core/utils.js';
 export { UPlotGraph, UPlotBarGraph } from './core/uplot.js';
 export { Floor, Aquarium, Ceiling } from './view/3d/primitives/decorations.js';
@@ -82,7 +82,7 @@ export {
 } from './model/phys/quantum/potentials.js';
 
 export {
-    Cylinder, Cone, Sphere, Box, Arrow, Ring, Helix, Trail, VectorView, Label
+    Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail, VectorView, Label, Cone
 } from './view/3d/primitives/primitives.js';
 
 export {

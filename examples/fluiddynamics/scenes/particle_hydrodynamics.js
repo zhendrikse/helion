@@ -1,6 +1,6 @@
 import {
     RadialSymmetricBody, Button, Circle, ColorMappers, Colour, DropdownMenu, FixedIntervalNormalizer,
-    Interval, Range, Registry, Simulation, Slider, Vec2, Vec3, Force, PairForce, BindableCollection, ViewsCollection
+    Interval, Range, Registry, Simulation, Slider, Vec2, Vec3, Force, PairForce, ModelsCollection, ViewsCollection
 } from '../../../src/index.js';
 import { LinearSRGBColorSpace} from "three";
 
@@ -269,7 +269,7 @@ class SPHSolver {
         this._hSquared = smoothingLength * smoothingLength;
         this._Wpoly6_coeff = 315.0 / (64 * Math.PI * Math.pow(smoothingLength, 9));
 
-        this._particles = new BindableCollection();
+        this._particles = new ModelsCollection();
         this._activeParticleCount = 0;
         this._wallForce = new WallForce(smoothingLength, mass);
         this._sphForce = new SPHForce({mass, viscosity, smoothingLength});

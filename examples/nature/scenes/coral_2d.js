@@ -1,6 +1,6 @@
 import {
     Circle, Simulation, Vec3, Vec2, DropdownMenu, ColorMappers, Colour, ColorMapper,
-    BindableCollection, ViewsCollection, RadialSymmetricBody
+    ModelsCollection, ViewsCollection, RadialSymmetricBody
 } from '../../../src/index.js';
 import { LinearSRGBColorSpace } from 'three';
 
@@ -43,7 +43,7 @@ class ParticleCloud {
     /** @param {number} N */
     constructor(N) {
         this._count = N;
-        this._seeds = new BindableCollection();
+        this._seeds = new ModelsCollection();
         this._seedPosition = new Vec2(width * 0.5, 2);
         this._initialize();
     }

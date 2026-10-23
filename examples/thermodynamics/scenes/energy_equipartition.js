@@ -1,5 +1,5 @@
 import {
-    RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule, Interval, ViewsCollection, BindableCollection,
+    RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule, Interval, ViewsCollection, ModelsCollection,
     BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, SpringForce, UPlotGraph,
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
@@ -137,7 +137,7 @@ export class CarbonMonoxide extends BodyPair {
 
 class CarbonMonoxideGas {
     constructor(moleculeCount = MOLECULES_COUNT, temperature = 298, boxSize = L) {
-        this._molecules = new BindableCollection();
+        this._molecules = new ModelsCollection();
         this._boxSize = boxSize;
         this._temperature = temperature;
         const mass = 14E-3 / 6E23; // Average mass of Oxygen and Carbon

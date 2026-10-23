@@ -1,15 +1,13 @@
 import {
     Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody, ThreeJsScene, Colour,
-    ViewsCollection, BindableCollection
+    ViewsCollection, ModelsCollection
 } from '../../../src/index.js';
 import {MeshStandardMaterial} from 'three';
 
 const g = 9.8;
 
-class Pendulum extends AxialSymmetricBody {
-    /**
-    * @param {{T?: number, position?: number, theta0?: number, mass?: number, pivotY?: number}} options
-     */
+class Pendulum {
+    /** @param {{T?: number, position?: number, theta0?: number, mass?: number, pivotY?: number}} options */
     constructor({
         T = 1,
         position = 0,
@@ -18,11 +16,6 @@ class Pendulum extends AxialSymmetricBody {
         pivotY = -2
     } = {}) {
         const length = (T * T * 9.8) / (4 * Math.PI * Math.PI);
-        super({
-            position: new Vec3(position, pivotY - length * Math.cos(theta0), length * Math.sin(theta0)),
-            axis: new Vec3(),
-            radius: 0.01
-        });
         this._xPosition = position;
         this._length = length;
 
@@ -30,23 +23,32 @@ class Pendulum extends AxialSymmetricBody {
             position: this.position,
             radius: 0.1
         });
+        this._rod = new AxialSymmetricBody({
+            position: new Vec3(position, pivotY - length * Math.cos(theta0), length * Math.sin(theta0)),
+            axis: new Vec3(),
+            radius: 0.0125,
+            mass
+        });
+
         this._omega = 0;
         this._theta = theta0;
-        this._mass = mass;
         this._pivotY = pivotY;
 
-        this.updatePosition();
+        this._updatePosition();
     }
+
+    get rod() { return this._rod; }
+    get ball() { return this._ball; }
 
     /** @param {number} dt */
     update(dt) {
         const alpha = (-g / this._length) * Math.sin(this._theta);
         this._omega += alpha * dt;
         this._theta += this._omega * dt;
-        this.updatePosition();
+        this._updatePosition();
     }
 
-    updatePosition() {
+    _updatePosition() {
         const newPos = new Vec3(
             this._xPosition,
             this._pivotY - this._length * Math.cos(this._theta),
@@ -54,8 +56,8 @@ class Pendulum extends AxialSymmetricBody {
         );
 
         const pivot = new Vec3(this._xPosition, this._pivotY, 0);
-        this.axis.copy(newPos.clone().sub(pivot).negate());
-        this.state.position.copy(newPos);
+        this._rod.axis.copy(newPos.clone().sub(pivot).negate());
+        this._rod.position.copy(newPos);
         this._ball.position.copy(newPos);
     }
 
@@ -63,53 +65,74 @@ class Pendulum extends AxialSymmetricBody {
         super.reset();
         this._omega = 0;
         this._theta = Math.PI / 6;
-        this.updatePosition();
+        this._updatePosition();
         this._ball.reset();
         this._ball.position.copy(this.position);
     }
 }
 
-const Tpw = 50;
-const N = 15;
-const total = 20;
+class Cradle {
+    constructor({
+        Tpw = 50,
+        N = 15,
+        total = 20,
+        Tmax = Tpw / N,
+        Lmax = (Tmax ** 2 * 9.8) / (4 * Math.PI ** 2),
+        width = Lmax
+    } = {}) {
+        /** @type {Pendulum[]} */
+        this._pendulums = [];
+        for (let i = 0; i < total; i++) {
+            const T = Tpw / (N + i);
+            const x = width * (-0.5 + i / (total - 1));
+            this._pendulums.push(new Pendulum({ T, position: x, pivotY: -2 }));
+        }
 
-const Tmax = Tpw / N;
-const Lmax = (Tmax ** 2 * 9.8) / (4 * Math.PI ** 2);
-const width = Lmax;
+        this._frame = new ModelsCollection()
+            .add(new AxialSymmetricBody({
+                axis: new Vec3(0, -3 - 0.04 , 2),
+                position: new Vec3(-1.5, -2, 0),
+                radius: 0.04
+            }))
+            .add(new AxialSymmetricBody({
+                axis: new Vec3(0, -3 - 0.04 , -2),
+                position: new Vec3(-1.5, -2, 0),
+                radius: 0.04
+            })).add(new AxialSymmetricBody({
+                axis: new Vec3(0, -3 - 0.04 , 2),
+                position: new Vec3(1.5, -2, 0),
+                radius: 0.04
+            })).add(new AxialSymmetricBody({
+                axis: new Vec3(0, -3 - 0.04 , -2),
+                position: new Vec3(1.5, -2, 0),
+                radius: 0.04
+            })).add(new AxialSymmetricBody({ // Top
+                axis: new Vec3(3, 0 , 0),
+                position: new Vec3(-1.5, -2, 0),
+                radius: 0.04
+            }));
+    }
 
-/** @type {Pendulum[]} */
-const pendulums = [];
-for (let i = 0; i < total; i++) {
-    const T = Tpw / (N + i);
-    const x = width * (-0.5 + i / (total - 1));
-    pendulums.push(new Pendulum({
-        T,
-        position: x,
-        pivotY: -2
-    }));
+    reset() {
+        this._pendulums.forEach(pendulum => pendulum.reset());
+    }
+
+    update(dt) {
+        this._pendulums.forEach(pendulum => pendulum.update(dt));
+    }
+
+    get balls() { return this._pendulums.map(pendulum => pendulum.ball); }
+    get rods() { return this._pendulums.map(pendulum => pendulum.rod); }
+    get frame() { return this._frame; }
 }
 
-const frame = new BindableCollection()
-    .add(new AxialSymmetricBody({
-        axis: new Vec3(0, -3 - 0.04 , 2),
-        position: new Vec3(-1.5, -2, 0),
-        radius: 0.04
-    }))
-    .add(new AxialSymmetricBody({
-        axis: new Vec3(0, -3 - 0.04 , -2),
-        position: new Vec3(-1.5, -2, 0),
-        radius: 0.04
-    })).add(new AxialSymmetricBody({
-        axis: new Vec3(0, -3 - 0.04 , 2),
-        position: new Vec3(1.5, -2, 0),
-        radius: 0.04
-    })).add(new AxialSymmetricBody({
-        axis: new Vec3(0, -3 - 0.04 , -2),
-        position: new Vec3(1.5, -2, 0),
-        radius: 0.04
-    }));
+const total = 20;
+const cradle = new Cradle({ total });
+const balls = new ModelsCollection(cradle.balls);
+const rods = new ModelsCollection(cradle.rods);
+const spheres = ViewsCollection.of(Sphere).with({ castShadow: true });
 
-const simulation = Simulation
+Simulation
     .with({
         htmlDivId: 'pendulumWaveContainer',
         camera: {
@@ -117,12 +140,8 @@ const simulation = Simulation
             fieldOfView: 50,
             position: new Vec3(-5.5, -3.3, 0.4)
         },
-        scene: {
-            background: ThreeJsScene.Background.FOG,
-        },
-        lighting: {
-            shadows: true
-        }
+        scene: { background: ThreeJsScene.Background.FOG },
+        lighting: { shadows: true }
     })
     .withMouseClickEventListener()
     .runsEvery(0.01)
@@ -132,36 +151,15 @@ const simulation = Simulation
         granularity: 15,
         type: Floor.Type.WOOD_WICKER
     }))
-    .bind(new AxialSymmetricBody({
-            axis: new Vec3(3, 0 , 0),
-            position: new Vec3(-1.5, -2, 0),
-            radius: 0.04
-        }).alwaysWith(new Cylinder({ color: new Colour(0xDEB887) })))
-    .bind(frame.onceWith(ViewsCollection.of(Cylinder).with({color: new Colour(0x855E42) })))
-    .onReset(() => pendulums.forEach(pendulum => pendulum.reset()))
-    .onStep((clock, dt) => {
-        for (const pendulum of pendulums)
-         pendulum.update(dt);
-    });
+    .bind(cradle.frame.onceWith(ViewsCollection.of(Cylinder).with({color: new Colour(0x855E42) })))
+    .bind(balls.alwaysWith(spheres))
+    .bind(rods.alwaysWith(ViewsCollection.of(Cylinder).with({
+        color: new Colour(0xDEB887),
+        material: new MeshStandardMaterial({ roughness: 0.8, metalness: 0.2 }),
+        castShadow: true
+    })))
+    .onReset(() => cradle.reset())
+    .onStep((_, dt) => cradle.update(dt));
 
-pendulums.forEach((pendulum, i) =>
-    simulation.bind(pendulum._ball.alwaysWith(
-        new Sphere({
-            castShadow: true,
-            color: new Colour().setHSL(i / (total - 1), 1, 0.5)
-        }))
-    )
-);
-
-pendulums.forEach(pendulum =>
-    simulation.bind(pendulum.alwaysWith(
-        new Cylinder({
-            color: new Colour(0xBB8F68),
-            material: new MeshStandardMaterial({
-                roughness: 0.8,
-                metalness: 0.2
-            }),
-            castShadow: true
-        }))
-    )
-);
+spheres.forEach((sphere, index) =>
+    sphere.color =  new Colour().setHSL(index / (total - 1), 1, 0.5));

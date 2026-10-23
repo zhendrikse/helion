@@ -1,6 +1,6 @@
 import { MeshStandardMaterial } from 'three';
 import {
-    Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation, Colour, BindableCollection, ViewsCollection
+    Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation, Colour, ModelsCollection, ViewsCollection
 } from '../../../src/index.js';
 
 const SIZE = 1;
@@ -162,7 +162,7 @@ class Rotation {
 
 class Cube {
     constructor() {
-        this._cubies = new BindableCollection();
+        this._cubies = new ModelsCollection();
         for (let x = -1; x <= 1; x++)
             for (let y = -1; y <= 1; y++)
                 for (let z = -1; z <= 1; z++)
@@ -234,19 +234,19 @@ class Cube {
 const cube = new Cube();
 
 const simulation = Simulation.with({
-        htmlDivId: 'rubiksCubeContainer',
-        viewport: { parameterMenuCollapsed: false },
-        infoPanel: {
-            text: '<strong>Rubik\'s cube 🧊</strong><br>\n' +
-                'R L B U F D = turn forward<br>\n' +
-                'Shift + key = opposite direction'
-        },
-        camera: {
-            position: new Vec3(9, 8, 11).multiplyScalar(.5),
-            fieldOfView: 45
-        },
-        headUpDisplay: false
-        })
+    htmlDivId: 'rubiksCubeContainer',
+    viewport: { parameterMenuCollapsed: false },
+    infoPanel: {
+        text: '<strong>Rubik\'s cube 🧊</strong><br>\n' +
+            'R L B U F D = turn forward<br>\n' +
+            'Shift + key = opposite direction'
+    },
+    camera: {
+        position: new Vec3(9, 8, 11).multiplyScalar(.5),
+        fieldOfView: 45
+    },
+    headUpDisplay: false
+})
     .bind(cube.cubies.alwaysWith(ViewsCollection.of(Box).with({ color: new Colour(0x111111) })))
     .onFrame(timeStamp => cube.evolve(timeStamp))
     .append(new Button('Forward: ').withText('F').onClick(() => cube.apply(new Move('f')))
@@ -275,14 +275,14 @@ const simulation = Simulation.with({
         .togetherWith(new Button()
             .withText('Cross')
             .onClick(() => cube.applyFormula('F F B B U U D D R R L L'))
-    ))
+        ))
     .append(new Button()
         .withText('Cube in cube')
         .onClick(() => cube.applyFormula('F L F u R U F F L L u l B d b L L U'))
         .togetherWith(new Button()
             .withText('Tetris')
             .onClick(() => cube.applyFormula('L R F B u d l r'))
-    ));
+        ));
 
 // Bind view to model
 for (const cubie of cube.cubies) {
@@ -293,7 +293,7 @@ for (const cubie of cube.cubies) {
                 emissive: Colors[sticker.side],
                 emissiveIntensity: 0.2,
                 roughness: 0.45
-        })})
+            })})
     )));
 }
 

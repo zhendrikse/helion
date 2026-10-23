@@ -47,7 +47,7 @@ const beam2 = new AxialSymmetricBody();
 const flareMaterial = new MeshBasicMaterial({
     color: 0xff33ff,
     transparent: true,
-    opacity: 0.3,
+    opacity: 0.5,
     depthWrite: false,
     side: DoubleSide
 });
@@ -62,23 +62,20 @@ const ambientLight = new AmbientLight(0xffffff, 0.2);
 const beamLight1 = new PointLight(0xff33ff, 1.5, 12);
 const beamLight2 = new PointLight(0xff33ff, 1.5, 12);
 const beamLength = 20;
-const beamOffset = 1.5 * beamLength;
+const beamOffset = 1.575 * beamLength; // Makes the beam pass right through our field of view
 
 Simulation.with({
-        htmlDivId: 'pulsarContainer',
-        viewport: { aspectRatio: '16 / 9' },
-        camera: {
-            position: cameraPosition,
-            target: new Vec3(0, 0, 0),
-            fieldOfView: 50,
-            controls: true
-        },
-        infoPanel: {
-            text: '<strong>🎇 Pulsar</strong><br/>🧠 Original idea by <a href="https://www.mso.anu.edu.au/pfrancis/simulations/pulsar.py">pulsar.py</a> by\n    <a href="https://www.mso.anu.edu.au/pfrancis/simulations/">Paul Francis</a><br>\n    &#x2022; Helion port based on the original VPython simulation'
-        },
-        scene: { background: ThreeJsScene.Background.STARS },
-        lighting: { enabled: true, shadows: false }
-    })
+    htmlDivId: 'pulsarContainer',
+    viewport: { aspectRatio: '16 / 9' },
+    camera: {
+        position: cameraPosition,
+        target: new Vec3(0, 0, 0),
+        fieldOfView: 50,
+        controls: true
+    },
+    scene: { background: ThreeJsScene.Background.STARS },
+    lighting: { enabled: true, shadows: false }
+})
     .bind(neutronStar.alwaysWith(new Sphere({
         color: new Colour(0x777777),
         segments: 32
@@ -105,4 +102,3 @@ Simulation.with({
     .runsEvery(1/60)
     .onStep(updatePulsar)
     .start();
-
