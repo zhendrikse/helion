@@ -146,7 +146,7 @@ export class Simulation {
                 text: ''
             }
         } = {htmlDivId: '', camera: {}, viewport: {}, scene: {}, lighting: {}, headUpDisplay: {}, infoPanel: {}}) {
-        const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, viewport.ParameterMenu ?? true, viewport.parameterMenuCollapsed ?? true, viewport.aspectRatio ?? '1 / 1');
+        const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, viewport.parameterMenu ?? true, viewport.parameterMenuCollapsed ?? true, viewport.aspectRatio ?? '1 / 1');
         const renderer = new ThreeJsRenderer({ camera, viewport, lighting, scene });
         renderer.attach(viewPort);
         return new Simulation(viewPort, renderer, headUpDisplay.enabled, infoPanel);

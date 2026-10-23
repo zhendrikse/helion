@@ -5,7 +5,7 @@ import {
 
 // Simulation constants
 const SCALE = 1e10;
-const MOLECULES_COUNT = 150;
+const MOLECULES_COUNT = 80;
 const one_third = 1. / 3.;
 const L = ((24.4E-3 / 6E23) * MOLECULES_COUNT) ** one_third / 50; // 2L is the length of the cubic container box
 const radius = 31E-12;
@@ -119,7 +119,7 @@ Simulation
         htmlDivId: 'energyEquipartitionDemo',
         scene: { scale: SCALE },
         headUpDisplay: false,
-        camera: { position: new Vec3(4.25, 1.25, 7.25).multiplyScalar(1.5) },
+        camera: { position: new Vec3(4.25, 1.25, 7.25).multiplyScalar(1.2) },
         viewport: { parameterMenu: false, controls: false }
     })
     .bind(gas.molecules.alwaysWith(gasView))

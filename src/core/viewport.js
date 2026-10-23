@@ -85,15 +85,15 @@ export class Viewport {
         this._simulationButtonsDiv.style.width = '100%';
         this._container.appendChild(this._simulationButtonsDiv);
 
-        this._addOnsDiv = document.createElement('div');
-        this._addOnsDiv.classList.add('helionAddOns');
-        this._addOnsDiv.style.position = 'relative';
-        this._addOnsDiv.style.display = 'block';
-        this._addOnsDiv.style.backgroundColor = 'transparent';
-        this._addOnsDiv.style.width = '100%';
-        this._container.appendChild(this._addOnsDiv);
-
         if (parameterMenu) {
+            this._addOnsDiv = document.createElement('div');
+            this._addOnsDiv.classList.add('helionAddOns');
+            this._addOnsDiv.style.position = 'relative';
+            this._addOnsDiv.style.display = 'block';
+            this._addOnsDiv.style.backgroundColor = 'transparent';
+            this._addOnsDiv.style.width = '100%';
+            this._container.appendChild(this._addOnsDiv);
+
             this._details = document.createElement('details');
             this._details.classList.add('helionControlGroup');
             const summary = document.createElement('summary');
