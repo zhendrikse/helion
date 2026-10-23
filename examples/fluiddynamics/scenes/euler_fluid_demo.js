@@ -463,8 +463,7 @@ const simulation = Simulation
                 '<strong>🍃 Euler fluid</strong><br/>&nbsp;<br/>' +
                 '©️ Fluid dynamics: ' +
                 '<a href=\"https://www.matthiasMueller.info/tenMinutePhysics\">Matthias Müller</a></br>' +
-                '👉 Use mouse to move obstacle.<br>' +
-                '👉 Use \"p\" and \"m\" keys to pause and/or step'
+                '👉 Use mouse to move obstacle.'
         }
     })
     .runsEvery(3e-2)
