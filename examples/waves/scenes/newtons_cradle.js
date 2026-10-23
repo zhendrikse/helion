@@ -87,9 +87,9 @@ class NewtonsCradle {
         this._frame = new ModelsCollection()
             // Top crossbar
             .add(new AxialSymmetricBody({
-                position: new Vec3(-0.82, PIVOT_Y, 0),
-                axis: new Vec3(1.64, 0, 0),
-                radius: 0.045
+                position: new Vec3(-0.85, PIVOT_Y - .025, 0),
+                axis: new Vec3(1.7, 0, 0),
+                radius: 0.035
             }))
             // Side supports, extending down to the feet
             .add(new AxialSymmetricBody({
@@ -163,10 +163,11 @@ const rods = new ModelsCollection(cradle.rods);
 Simulation
     .with({
         htmlDivId: 'newtonsCradleContainer',
+        viewport: { aspectRatio: '1 / 1' },
         camera: {
-            target: new Vec3(0, 0.1, 0),
-            fieldOfView: 42,
-            position: new Vec3(-0.8, 0.25, 5.8)
+            target: new Vec3(0, -0.5, 0),
+            fieldOfView: 30,
+            position: new Vec3(-0.8, 0.25, 6)
         },
         scene: { background: ThreeJsScene.Background.FOG },
         lighting: { shadows: true }
@@ -177,7 +178,7 @@ Simulation
         position: new Vec3(0, -1.65, 0),
         planeSizeXy: new Vec2(100, 100),
         granularity: 15,
-        type: Floor.Type.WOOD_WICKER
+        type: Floor.Type.GRASS
     }))
     .bind(cradle.frame.onceWith(ViewsCollection.of(Cylinder).with({
         color: new Colour(0x855E42),
