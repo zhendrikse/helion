@@ -26,10 +26,11 @@ import {renderMathInHtml} from '../view/mathrenderer.js';
 export class Viewport {
     /**
      * @param {HTMLElement} containerDiv
+     * @param {boolean} parameterMenu
      * @param {boolean} parameterMenuCollapsed
      * @param {string} aspectRatio
      */
-    constructor(containerDiv, parameterMenuCollapsed, aspectRatio) {
+    constructor(containerDiv, parameterMenu, parameterMenuCollapsed, aspectRatio) {
         this._container = containerDiv;
         this._container.classList.add('helionContainer');
         this._container.style.position = 'relative';
@@ -92,17 +93,18 @@ export class Viewport {
         this._addOnsDiv.style.width = '100%';
         this._container.appendChild(this._addOnsDiv);
 
-        this._details = document.createElement('details');
-        this._details.classList.add('helionControlGroup');
-        const summary = document.createElement('summary');
-        summary.classList.add('helionControlSummary');
-        summary.textContent = '⚙️ Settings';
-        this._details.appendChild(summary);
-        this._details.style.visibility = 'hidden';
-        this._details.style.paddingBottom = '15px';
-        this._details.open = !parameterMenuCollapsed;
-        this._addOnsDiv.appendChild(this._details);
-
+        if (parameterMenu) {
+            this._details = document.createElement('details');
+            this._details.classList.add('helionControlGroup');
+            const summary = document.createElement('summary');
+            summary.classList.add('helionControlSummary');
+            summary.textContent = '⚙️ Settings';
+            this._details.appendChild(summary);
+            this._details.style.visibility = 'hidden';
+            this._details.style.paddingBottom = '15px';
+            this._details.open = !parameterMenuCollapsed;
+            this._addOnsDiv.appendChild(this._details);
+        }
         this.#createInfoPanel();
         this.#createFullScreenButton();
         this.#createBottomLeftOverlay();
