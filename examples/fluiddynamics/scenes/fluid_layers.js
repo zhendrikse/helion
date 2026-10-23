@@ -1,5 +1,5 @@
 import {
-    Block, Box, Button, Colour, RadialSymmetricBody, BindableCollection, ViewsCollection,
+    Block, Box, Button, Colour, RadialSymmetricBody, ModelsCollection, ViewsCollection,
     Simulation, Sphere, Vec3, sampleNormalDistribution
 } from '../../../src/index.js';
 
@@ -55,10 +55,10 @@ class RedParticle extends Block {
     }
 }
 
-const blueParticles = new BindableCollection();
-const yellowParticles = new BindableCollection();
-const greenParticles = new BindableCollection();
-const redParticles = new BindableCollection();
+const blueParticles = new ModelsCollection();
+const yellowParticles = new ModelsCollection();
+const greenParticles = new ModelsCollection();
+const redParticles = new ModelsCollection();
 const allParticles = [];
 
 function addParticle(collection, particle) {

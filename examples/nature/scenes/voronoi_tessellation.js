@@ -1,5 +1,5 @@
 import {
-    Range, Bindable, Simulation, Slider, DropdownMenu, BindableCollection, ViewsCollection,
+    Range, Bindable, Simulation, Slider, DropdownMenu, ModelsCollection, ViewsCollection,
     Colour, ColorMappers, PolygonView, Vec2, Button, RadialSymmetricBody, Circle, Polygon
 } from '../../../src/index.js';
 
@@ -80,8 +80,8 @@ function buildVoronoiCells(seeds) {
     simulation.bind(cellCores.onceWith(cellCoresView));
 }
 
-const cells = new BindableCollection();
-const cellCores = new BindableCollection();
+const cells = new ModelsCollection();
+const cellCores = new ModelsCollection();
 const cellViews = ViewsCollection.of(PolygonView).with({
     borderColor: Colour.White,
     borderWidth: 0.02

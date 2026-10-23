@@ -1,6 +1,6 @@
 import { MeshStandardMaterial } from 'three';
 import {
-    Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation, Colour, BindableCollection, ViewsCollection
+    Block, Box, Simulation, Slider, Vec3, Range, Button, Transformation, Colour, ModelsCollection, ViewsCollection
 } from '../../../src/index.js';
 
 const SIZE = 1;
@@ -162,7 +162,7 @@ class Rotation {
 
 class Cube {
     constructor() {
-        this._cubies = new BindableCollection();
+        this._cubies = new ModelsCollection();
         for (let x = -1; x <= 1; x++)
             for (let y = -1; y <= 1; y++)
                 for (let z = -1; z <= 1; z++)

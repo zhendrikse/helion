@@ -11,7 +11,7 @@ import { ThreeJsScene } from '../view/3d/scene.js';
 import { Renderable, Renderer } from '../view/renderer.js';
 import { Colour } from '../view/colormappers.js';
 import { Object3D } from 'three/src/Three.js';
-import {BindableCollection, Binding} from "../model/behavior.js";
+import {ModelsCollection, Binding} from "../model/behavior.js";
 
 class SimulationClock {
     /**
@@ -263,7 +263,7 @@ export class Simulation {
     /**
      * Bind model to view.
      *
-     * @param {Binding | BindableCollection } binding
+     * @param {Binding | ModelsCollection } binding
      */
     bind(binding) {
         binding.addTo(this._bindings, this._renderer);

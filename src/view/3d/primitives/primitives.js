@@ -207,7 +207,7 @@ export class Sphere extends Renderable3D {
     get color() { return Colour.fromThreeJsColor(this._mesh.material.color); }
     /** @param {Colour} newColor */
     set color(newColor) {
-        this._mesh.material.color.copy(newColor.asThreeJsColor());
+        newColor.asThreeJsColor(this._mesh.material.color);
     }
 }
 

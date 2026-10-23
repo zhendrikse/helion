@@ -37,10 +37,10 @@ export class Bindable {
     reset() {}
 }
 
-export class BindableCollection {
-    constructor() {
-        /** @type {Bindable[]} */
-        this._bindables = [];
+export class ModelsCollection {
+    /** @param {Bindable[]} modelObjects */
+    constructor(modelObjects = []) {
+        this._bindables = modelObjects;
         /** @type {Binding[]} */
         this._bindings = [];
     }
