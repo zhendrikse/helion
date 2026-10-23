@@ -1,5 +1,5 @@
 import {
-    Block, Box, Colour, RadialSymmetricBody, sampleNormalDistribution, Simulation, Sphere, BindableCollection,
+    Block, Box, Colour, RadialSymmetricBody, sampleNormalDistribution, Simulation, Sphere, ModelsCollection,
     Vec3, ViewsCollection
 } from "../../../src/index.js";
 
@@ -103,7 +103,7 @@ class Particle extends RadialSymmetricBody {
 
 class Jar {
     constructor(total_balls=40, v0=0) {
-        this._balls = new BindableCollection();
+        this._balls = new ModelsCollection();
         this._create_balls(total_balls);
         this._initialize_ball_movements(v0);
     }

@@ -9,7 +9,7 @@ const BALL_COUNT = 7;
 const BALL_RADIUS = 0.1;
 const BALL_SPACING = BALL_RADIUS * 2.04;
 const PENDULUM_LENGTH = 1.45;
-const PIVOT_Y = 1.5;
+const PIVOT_Y = 0.5;
 const INITIAL_ANGLE = -Math.PI / 5;
 const RESTITUTION = 0.985;
 
@@ -104,13 +104,13 @@ class NewtonsCradle {
             }))
             // Feet
             .add(new AxialSymmetricBody({
-                position: new Vec3(-1.0, -1.55, 0),
-                axis: new Vec3(0.36, 0, 0),
+                position: new Vec3(-0.82, -1.55, -.2),
+                axis: new Vec3(0, 0, 0.4),
                 radius: 0.05
             }))
             .add(new AxialSymmetricBody({
-                position: new Vec3(0.64, -1.55, 0),
-                axis: new Vec3(0.36, 0, 0),
+                position: new Vec3(0.82, -1.55, -.2),
+                axis: new Vec3(0, 0, 0.4),
                 radius: 0.05
             }));
     }
@@ -159,7 +159,6 @@ class NewtonsCradle {
 const cradle = new NewtonsCradle();
 const balls = new ModelsCollection(cradle.balls);
 const rods = new ModelsCollection(cradle.rods);
-const spheres = ViewsCollection.of(Sphere).with({ castShadow: true });
 
 Simulation
     .with({
@@ -185,15 +184,11 @@ Simulation
         material: new MeshStandardMaterial({ roughness: 0.75, metalness: 0.15 }),
         castShadow: true
     })))
-    .bind(balls.alwaysWith(spheres))
+    .bind(balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: new Colour(0xc0c0c0), castShadow: true })))
     .bind(rods.alwaysWith(ViewsCollection.of(Cylinder).with({
-        color: new Colour(0xC0C0C0),
-        material: new MeshStandardMaterial({ color: 0xC0C0C0, roughness: 0.25, metalness: 0.85 }),
+        color: Colour.Yellow,
+        material: new MeshStandardMaterial({ roughness: 0.25, metalness: 0.85 }),
         castShadow: true
     })))
     .onReset(() => cradle.reset())
     .onStep((_, dt) => cradle.update(dt));
-
-spheres.forEach(sphere => {
-    sphere.color = new Colour(0xD8DDE5);
-});
