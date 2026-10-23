@@ -74,6 +74,7 @@ export default defineConfig({
                 potential_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/potential_field.js'),
                 proton_helical_motion: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_helical_motion.js'),
                 proton_in_magnetic_field: path.resolve(__dirname, 'examples/electromagnetism/scenes/proton_in_magnetic_field.js'),
+                pulsar: path.resolve(__dirname, 'examples/astrophysics/scenes/pulsar.js'),
                 pythagoras: path.resolve(__dirname, 'examples/mathematics/scenes/pythagoras.js'),
                 pythagoras_tree: path.resolve(__dirname, 'examples/mathematics/scenes/pythagoras_tree.js'),
                 quantum_particle_2d: path.resolve(__dirname, 'examples/quantumphysics/scenes/quantum_particle_2d.js'),

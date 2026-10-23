@@ -1,6 +1,6 @@
 import {
     Vector3, BufferAttribute, TorusGeometry, LineBasicMaterial, Line, TubeGeometry,
-    MeshStandardMaterial, SphereGeometry, Mesh, BufferGeometry,
+    MeshStandardMaterial, SphereGeometry, Mesh, BufferGeometry, DoubleSide,
     CylinderGeometry, ConeGeometry, BoxGeometry, Color, Curve, Quaternion, Material
 } from 'three';
 import { Renderable3D } from '../../renderer.js';
@@ -60,7 +60,7 @@ export class Trail extends Renderable3D {
     *   color?: Colour
     *   lineWidth?: number
     *   trailStep?: number
-     * }} param0 
+     * }} param0
      */
     constructor({
         maxPoints = 200,
@@ -162,7 +162,7 @@ export class Sphere extends Renderable3D {
      * material?: Material | null,
      * segments?: number,
      * castShadow?: boolean
-     * }} param0 
+     * }} param0
      */
     constructor({
         color = Colour.Yellow,
@@ -315,7 +315,7 @@ export class Arrow extends Renderable3D {
      * @param {Vec3} position
      * @param {Vec3} vector
      */
-    setVector(position, vector) {        
+    setVector(position, vector) {
         this.position.copy(position);
         this._tempAxis.copy(vector);
         const magnitude = this._tempAxis.length();
@@ -453,6 +453,89 @@ export class Cylinder extends Renderable3D {
         this.scale.set(scale, length, scale);
         this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
         this.position.add(this._direction.multiplyScalar(length * .5));
+    }
+}
+
+/**
+ * A cone whose base starts at body.position and whose tip is at
+ * body.position + body.axis. The width is the diameter of its base.
+ */
+export class Cone extends Renderable3D {
+    /**
+     * @param {{
+     *     color?: Colour,
+     *     opacity?: number,
+     *     width?: number,
+     *     segments?: number,
+     *     visible?: boolean,
+     *     material?: Material
+     * }} options
+     */
+    constructor({
+        color = Colour.Yellow,
+        opacity = 1,
+        width = 1,
+        segments = 32,
+        visible = true,
+        material = new MeshStandardMaterial({
+            emissive: color.asThreeJsColor(),
+            emissiveIntensity: 0.7,
+            transparent: true,
+            depthWrite: false,
+            side: DoubleSide,
+            roughness: 0.35,
+            metalness: 0.1
+        })
+    } = {}) {
+        super();
+        this._material = material;
+        color.asThreeJsColor(this._material.color);
+        if (this._material.emissive)
+            color.asThreeJsColor(this._material.emissive);
+        this._material.opacity = opacity;
+        this._material.transparent = true;
+
+        this._mesh = new Mesh(new ConeGeometry(1, 1, segments), this._material);
+        this.add(this._mesh);
+        this._width = width;
+        this._direction = new Vector3();
+        this.visible = visible;
+    }
+
+    /** @param {AxialSymmetricBody} body */
+    canBindTo(body) {
+        if (!body.position || !body.axis)
+            throw new Error('Cone can only bind to bodies with a position and an axis.');
+        return true;
+    }
+
+    /** @param {AxialSymmetricBody} body */
+    synchronizeWith(body) {
+        this.position.copy(body.position);
+        this._direction.copy(body.axis);
+        const length = this._direction.length();
+
+        this.position.add(this._direction.clone().multiplyScalar(0.5));
+        this.scale.set(this._width * 0.5, length, this._width * 0.5);
+
+        if (length > 0)
+            this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
+    }
+
+    /** @param {Colour} color */
+    set color(color) {
+        this._material.color.copy(color.asThreeJsColor());
+        if (this._material.emissive)
+            this._material.emissive.copy(color.asThreeJsColor());
+    }
+
+    /** @param {number} opacity */
+    set opacity(opacity) { this._material.opacity = opacity; }
+
+    dispose() {
+        this._mesh.geometry.dispose();
+        this._material.dispose();
+        this.remove(this._mesh);
     }
 }
 
@@ -700,8 +783,8 @@ export class Label extends Renderable3D {
      *     offset?: (model: Body) => Vec3
      *     color?: Colour
      *     fontSize?: string
-     *     visible?: boolean 
-     * }} param0 
+     *     visible?: boolean
+     * }} param0
      */
     constructor({
         text = model => '' ,
@@ -733,9 +816,9 @@ export class Label extends Renderable3D {
         this.visible = visible;
     }
 
-    /** 
+    /**
      * @param {Body} model
-     * returns {boolean} 
+     * returns {boolean}
      */
     canBindTo(model) {
         if(model.position === undefined)

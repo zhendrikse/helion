@@ -82,7 +82,7 @@ export {
 } from './model/phys/quantum/potentials.js';
 
 export {
-    Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail, VectorView, Label
+    Cylinder, Sphere, Box, Arrow, Ring, Helix, Trail, VectorView, Label, Cone
 } from './view/3d/primitives/primitives.js';
 
 export {
