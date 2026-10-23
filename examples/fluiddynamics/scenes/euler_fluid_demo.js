@@ -445,13 +445,9 @@ function simulate() {
     frameNr++;
     fluid.integrate(gravity, dt);
     fluid.evolve(solver, dt);
-
-    if (frameNr % 10 === 0)
-        simulation.setBottomText( showPressure ?
-            `Pressure: [${fluid.pressureRange.min.toFixed(0)}, ${fluid.pressureRange.max.toFixed(0)}] Pa` : '');
 }
 
-const simulation = Simulation
+Simulation
     .with({
         htmlDivId: 'eulerFluidDemo',
         viewport: { parameterMenu: false },
