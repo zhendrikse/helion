@@ -6,7 +6,7 @@ import {
 import { Renderable3D } from '../../renderer.js';
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { Vec2, Vec3 } from '../../../model/math/objects.js';
-import { Body, BodyPair } from '../../../model/phys/bodies.js';
+import {AxialSymmetricBody, Body, BodyPair, RadialSymmetricBody} from '../../../model/phys/bodies.js';
 import {Colour} from '../../colormappers.js';
 
 //
@@ -401,15 +401,15 @@ export class VectorView extends Renderable3D {
     }
 }
 
-
 //
 // Cone
 //
+/**
+ * A cone whose base starts at body.position and whose tip is at
+ * body.position + body.axis. The width is the diameter of its base.
+ */
 export class Cone extends Renderable3D {
     /**
-     * A cone whose base starts at body.position and whose tip is at
-     * body.position + body.axis. The width is the diameter of its base.
-     *
      * @param {{
      *     color?: Colour,
      *     opacity?: number,
@@ -429,21 +429,18 @@ export class Cone extends Renderable3D {
     } = {}) {
         super();
 
-        const threeColor = color.asThreeJsColor();
         this._material = material ?? new MeshStandardMaterial({
-            color: threeColor,
-            emissive: threeColor,
+            emissive: color.asThreeJsColor(),
             emissiveIntensity: 0.7,
-            opacity,
             transparent: true,
             depthWrite: false,
             side: DoubleSide,
             roughness: 0.35,
             metalness: 0.1
         });
-        this._material.color.copy(threeColor);
+        color.asThreeJsColor(this._material.color);
         if (this._material.emissive)
-            this._material.emissive.copy(threeColor);
+            color.asThreeJsColor(this._material.emissive);
         this._material.opacity = opacity;
         this._material.transparent = true;
 
@@ -454,17 +451,17 @@ export class Cone extends Renderable3D {
         this.visible = visible;
     }
 
-    /** @param {{position:Vec3, axis:Vec3, opacity?:number}} body */
+    /** @param {AxialSymmetricBody} body */
     canBindTo(body) {
         if (!body.position || !body.axis)
             throw new Error('Cone can only bind to bodies with a position and an axis.');
         return true;
     }
 
-    /** @param {{position:Vec3, axis:Vec3, opacity?:number}} body */
+    /** @param {AxialSymmetricBody} body */
     synchronizeWith(body) {
         this.position.copy(body.position);
-        this._direction.set(body.axis.x, body.axis.y, body.axis.z);
+        this._direction.copy(body.axis);
         const length = this._direction.length();
 
         this.position.add(this._direction.clone().multiplyScalar(0.5));
@@ -472,9 +469,6 @@ export class Cone extends Renderable3D {
 
         if (length > 0)
             this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());
-
-        if (body.opacity !== undefined)
-            this._material.opacity = body.opacity;
     }
 
     /** @param {Colour} color */
