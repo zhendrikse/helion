@@ -464,15 +464,30 @@ export class Simulation {
      * @returns {Simulation}
      */
     onPointer(action, callback, options = {}) {
+        const canvas = this._viewport.canvas;
+
+        // Pointer events unify mouse, pen, and touch. Disable browser gestures on
+        // this interactive surface so touch movement is delivered as pointer events.
+        canvas.style.touchAction = 'none';
+
         const eventHandler = event => {
-            const bounds = event.currentTarget.getBoundingClientRect();
+            const bounds = canvas.getBoundingClientRect();
+            if (!bounds.width || !bounds.height)
+                return;
+
             const x = (event.clientX - bounds.left - bounds.width / 2) / bounds.width;
             const y = (bounds.top + bounds.height / 2 - event.clientY) / bounds.height;
+            if (!Number.isFinite(x) || !Number.isFinite(y))
+                return;
+
+            // Keep drag interactions alive when the pointer moves beyond the canvas.
+            if (action === 'pointerdown' && event.pointerId !== undefined)
+                canvas.setPointerCapture?.(event.pointerId);
+
             callback(x, y, event);
         };
 
-        this._viewport.canvas.addEventListener(action, eventHandler, options);
-
+        canvas.addEventListener(action, eventHandler, options);
         return this;
     }
 
