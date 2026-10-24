@@ -111,7 +111,8 @@ export default defineConfig({
                 voronoi_tessellation: path.resolve(__dirname, 'examples/nature/scenes/voronoi_tessellation.js'),
                 water_molecule: path.resolve(__dirname, 'examples/molecularphysics/scenes/water_molecule.js'),
                 water_sprinkler: path.resolve(__dirname, 'examples/nature/scenes/water_sprinkler.js'),
-                wave_scattering: path.resolve(__dirname, 'examples/waves/scenes/wave_scattering.js')
+                wave_scattering: path.resolve(__dirname, 'examples/waves/scenes/wave_scattering.js'),
+                xray_binary: path.resolve(__dirname, 'examples/astrophysics/scenes/xray_binary.js')
             },
             output: {
                 entryFileNames: 'examples/[name].js',
