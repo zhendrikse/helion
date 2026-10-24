@@ -131,8 +131,8 @@ const simulation = Simulation
         magnitudeMap: magnitude => magnitude
     })))
     .append(new Slider('Analyzer angle θ: ')
-        .withValue(0)
         .withUnits('°')
+        .withValue(0)
         .withRange(new Range(0, 90, 1))
         .onInput(degrees => {
             analyzerAngle = degrees * Math.PI / 180;
