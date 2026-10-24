@@ -154,15 +154,11 @@ const simulation = Simulation
         polarizedWave.time = time;
         transmittedWave.time = time;
 
-        // A smooth, deterministic pseudo-random walk in polarization angle.
-        // This is a visual approximation of unpolarized light, not a
-        // microscopic model of optical coherence or bandwidth.
-        incomingPolarizationAngle = Math.PI * (
-            0.5
-            + 0.22 * Math.sin(0.73 * time)
-            + 0.18 * Math.sin(1.37 * time + 1.4)
-            + 0.10 * Math.sin(2.11 * time + 2.2)
-        );
+        // Sweep smoothly through all electric-field directions. Uniform
+        // angular motion makes the time-average of cos²(phi - alpha) exactly
+        // 1/2 over a complete cycle. This is a visual approximation of
+        // unpolarized light, not a microscopic model of optical coherence.
+        incomingPolarizationAngle = 2 * Math.PI * ((time / 8) % 1);
 
         incomingView.polarizationAngle = incomingPolarizationAngle;
 
