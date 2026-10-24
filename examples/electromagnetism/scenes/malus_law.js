@@ -154,11 +154,21 @@ const simulation = Simulation
         polarizedWave.time = time;
         transmittedWave.time = time;
 
-        // Sweep smoothly through all electric-field directions. Uniform
-        // angular motion makes the time-average of cos²(phi - alpha) exactly
-        // 1/2 over a complete cycle. This is a visual approximation of
-        // unpolarized light, not a microscopic model of optical coherence.
-        incomingPolarizationAngle = 2 * Math.PI * ((time / 8) % 1);
+        // Smoothly wander between pseudo-random field directions. Sampling
+        // directions uniformly gives an approximately 1/2 mean of
+        // cos²(phi - alpha), as expected for unpolarized input. This is a
+        // visual approximation, not a microscopic coherence model.
+        const interval = 1.1;
+        const segment = Math.floor(time / interval);
+        const fraction = (time / interval) - segment;
+        const smoothFraction = fraction * fraction * (3 - 2 * fraction);
+        const angleA = randomAngle(segment);
+        const angleB = randomAngle(segment + 1);
+        const angleDifference = Math.atan2(
+            Math.sin(angleB - angleA),
+            Math.cos(angleB - angleA)
+        );
+        incomingPolarizationAngle = angleA + smoothFraction * angleDifference;
 
         incomingView.polarizationAngle = incomingPolarizationAngle;
 
@@ -168,6 +178,12 @@ const simulation = Simulation
         polarizedWave.amplitude = projectedAmplitude;
         transmittedWave.amplitude = projectedAmplitude * Math.cos(analyzerAngle);
     });
+
+function randomAngle(seed) {
+    // Deterministic pseudo-random angle in [0, 2π), stable across frames.
+    const value = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
+    return 2 * Math.PI * (value - Math.floor(value));
+}
 
 function updateWavesAndAxes() {
     // After the first polarizer, the transmitted field has the polarizer's
