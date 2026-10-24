@@ -50,10 +50,12 @@ const incomingWave = new MalusWave(1);
 const polarizedWave = new MalusWave(1);
 const transmittedWave = new MalusWave(1);
 
-// The incoming wave is polarized along y (0°). The first filter can be
-// rotated relative to it; the analyzer angle is relative to the first filter.
+// The incoming light is modelled as unpolarized: its instantaneous linear
+// polarization direction wanders continuously. The first polarizer selects
+// one fixed direction; the analyzer angle is relative to that direction.
 let polarizerAngle = Math.PI / 4;
 let analyzerAngle = 0;
+let incomingPolarizationAngle = 0;
 
 const waveViewOptions = {
     numArrows: 35,
@@ -146,19 +148,37 @@ const simulation = Simulation
         })
     )
     .onStep(clock => {
-        incomingWave.time = clock.simulatedTime;
-        polarizedWave.time = clock.simulatedTime;
-        transmittedWave.time = clock.simulatedTime;
+        const time = clock.simulatedTime;
+
+        incomingWave.time = time;
+        polarizedWave.time = time;
+        transmittedWave.time = time;
+
+        // A smooth, deterministic pseudo-random walk in polarization angle.
+        // This is a visual approximation of unpolarized light, not a
+        // microscopic model of optical coherence or bandwidth.
+        incomingPolarizationAngle = Math.PI * (
+            0.5
+            + 0.22 * Math.sin(0.73 * time)
+            + 0.18 * Math.sin(1.37 * time + 1.4)
+            + 0.10 * Math.sin(2.11 * time + 2.2)
+        );
+
+        incomingView.polarizationAngle = incomingPolarizationAngle;
+
+        // Project the instantaneous electric field onto the first axis.
+        // Its time-averaged intensity is 1/2 for an unpolarized source.
+        const projectedAmplitude = Math.cos(incomingPolarizationAngle - polarizerAngle);
+        polarizedWave.amplitude = projectedAmplitude;
+        transmittedWave.amplitude = projectedAmplitude * Math.cos(analyzerAngle);
     });
 
 function updateWavesAndAxes() {
-    // A polarizer transmits the component parallel to its axis.
-    polarizedWave.amplitude = Math.cos(polarizerAngle);
+    // After the first polarizer, the transmitted field has the polarizer's
+    // fixed direction, even though its instantaneous amplitude fluctuates.
     polarizedView.polarizationAngle = polarizerAngle;
 
-    // The second polarizer applies Malus' law to the light that survived
-    // the first one. Its angle is relative to the first polarizer's axis.
-    transmittedWave.amplitude = Math.cos(polarizerAngle) * Math.cos(analyzerAngle);
+    // The analyzer transmits the component along its own axis.
     transmittedView.polarizationAngle = polarizerAngle + analyzerAngle;
 
     polarizerAxis.axis.set(
@@ -176,12 +196,14 @@ function updateWavesAndAxes() {
 function updateReadout() {
     const alphaDegrees = polarizerAngle * 180 / Math.PI;
     const thetaDegrees = analyzerAngle * 180 / Math.PI;
-    const afterFirst = Math.cos(polarizerAngle) ** 2;
+    // Mean intensities for unpolarized input. The first ideal polarizer
+    // always transmits half the incident intensity, independent of alpha.
+    const afterFirst = 0.5;
     const afterSecond = afterFirst * Math.cos(analyzerAngle) ** 2;
 
     simulation.setHtmlTitle(
-        `After first filter: ${(100 * afterFirst).toFixed(1)}% | After second: ${(100 * afterSecond).toFixed(1)}% ` +
-        `(cos²${alphaDegrees.toFixed(0)}° × cos²${thetaDegrees.toFixed(0)}°)`
+        `Mean after first filter: ${(100 * afterFirst).toFixed(1)}% | Mean after second: ${(100 * afterSecond).toFixed(1)}% ` +
+        `(½ × cos²${thetaDegrees.toFixed(0)}°; first axis α = ${alphaDegrees.toFixed(0)}°)`
     );
 }
 
