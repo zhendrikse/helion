@@ -1,5 +1,5 @@
 import {
-    Range, Bindable, Simulation, Slider, DropdownMenu, ModelsCollection, ViewsCollection,
+    Range, ModelObject, Simulation, Slider, DropdownMenu, ModelsCollection, ViewsCollection,
     Colour, ColorMappers, PolygonView, Vec2, Button, RadialSymmetricBody, Circle, Polygon
 } from '../../../src/index.js';
 
@@ -15,7 +15,7 @@ let maximumGrowthRadius = 0;
 /** @type {{model: VoronoiCellModel, seed: RadialSymmetricBody, polygon: Polygon}[]} */
 let growthCells = [];
 
-class VoronoiCellModel extends Bindable {
+class VoronoiCellModel extends ModelObject {
     constructor({ polygon, seedIndex = 0 } = {}) {
         super();
         this.polygon = polygon;

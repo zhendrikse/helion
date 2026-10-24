@@ -1,9 +1,9 @@
 import { DiscreteScalarField } from '../math/fields.js';
 import { Vec2, Vec3 } from '../math/objects.js';
 import { ScalarFieldCalculus } from '../math/numerics/discretecalc.js';
-import { Bindable } from "../behavior.js";
+import { ModelObject } from "../behavior.js";
 
-export class PlaneWave1D extends Bindable {
+export class PlaneWave1D extends ModelObject {
     /**
      * @param {number} amplitude
      * @param {number} lambda

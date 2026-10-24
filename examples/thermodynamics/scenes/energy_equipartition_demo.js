@@ -102,7 +102,7 @@ class CarbonMonoxideGas {
 
         this._molecules.forEach((molecule, index) => {
             for (let j = index + 1; j < this._molecules.size; j++)
-                molecule.resolveCollisionWith(this._molecules.bindableAt(j));
+                molecule.resolveCollisionWith(this._molecules.modelObject(j));
         });
     }
 }
@@ -120,7 +120,7 @@ Simulation
         scene: { scale: SCALE },
         headUpDisplay: false,
         camera: { position: new Vec3(4.25, 1.25, 7.25).multiplyScalar(1.2) },
-        viewport: { parameterMenu: false, controls: false }
+        viewport: { controls: false }
     })
     .bind(gas.molecules.alwaysWith(gasView))
     .runsEvery(0.003)

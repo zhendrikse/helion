@@ -8,7 +8,7 @@ export class Transformation {
     applyTo(body) {}
 }
 
-export class Bindable {
+export class ModelObject {
     /**
      * Keeps the model and view synchronized at all times!
      * @param {Renderable} view view to synchronize the model with.
@@ -38,14 +38,14 @@ export class Bindable {
 }
 
 export class ModelsCollection {
-    /** @param {Bindable[]} modelObjects */
+    /** @param {ModelObject[]} modelObjects */
     constructor(modelObjects = []) {
         this._bindables = modelObjects;
         /** @type {Binding[]} */
         this._bindings = [];
     }
 
-    /** @param {Bindable} bindable */
+    /** @param {ModelObject} bindable */
     add(bindable) {
         this._bindables.push(bindable);
         return this;
@@ -63,15 +63,15 @@ export class ModelsCollection {
         this._bindings.forEach(binding => binding.addTo(simulationBindings, renderer));
     }
 
-    /** @returns {ArrayIterator<Bindable>} */
+    /** @returns {ArrayIterator<ModelObject>} */
     [Symbol.iterator]() {
         return this._bindables[Symbol.iterator]();
     }
 
-    bindableAt(index) { return this._bindables[index]; }
+    modelObject(index) { return this._bindables[index]; }
 
     /**
-     * @param {(body: Bindable, index: number, bodies: Bindable[]) => void} callback
+     * @param {(body: ModelObject, index: number, bodies: ModelObject[]) => void} callback
      * @param {*} [thisArg]
      */
     forEach(callback, thisArg) {
@@ -123,7 +123,7 @@ export class Binding {
     });
 
     /**
-     * @param {Bindable} model
+     * @param {ModelObject} model
      * @param {Renderable} view
      * @param {string} mode
      */

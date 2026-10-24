@@ -1,5 +1,5 @@
 import {
-    DiscreteComplexField3D, DiscreteScalarField3D, Bindable, Renderable3D,
+    DiscreteComplexField3D, DiscreteScalarField3D, ModelObject, Renderable3D,
     SchrodingerEigenstateSolver3D, Simulation, Transformation, Vec3, WaveFunctionOrbital3D
 } from '../../../src/index.js';
 
@@ -35,7 +35,7 @@ class HydrogenPotential extends Transformation {
     }
 }
 
-class Hydrogen2PStates extends Bindable {
+class Hydrogen2PStates extends ModelObject {
     constructor(fields) {
         super();
         this.orbitals = fields;

@@ -1,11 +1,11 @@
-import { Bindable, ModelsCollection } from '../behavior.js';
+import { ModelObject, ModelsCollection } from '../behavior.js';
 import { PhysicsState, RadialSymmetricBody } from './bodies.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
 import { SphereSphereCollision } from '../transformations/interactions.js';
 import { Vec2, Vec3 } from '../math/objects.js';
 import { Colour } from "../../view/colormappers.js";
 
-export class PointCloud extends Bindable {
+export class PointCloud extends ModelObject {
     /**
      * @param {{
      *     positions?: Vec3[],

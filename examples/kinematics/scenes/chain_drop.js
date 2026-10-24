@@ -58,12 +58,11 @@ class Chain {
     } = {}) {
         this._totalBalls = totalBalls;
         this._balls = new ModelsCollection();
+        this._bonds = new ModelsCollection();
         this._length = length;
         this._mass = mass;
         this._amountHanging = amountHanging;
         this._interBallLength = length / (totalBalls - 1);
-        /** @type {BodyPair[]} */
-        this._bonds = [];
 
         this._pivotForce = new PivotForce({
             springConstant: .5 * 300,
@@ -82,7 +81,7 @@ class Chain {
     get bonds() { return this._bonds; }
     get balls() { return this._balls; }
     get springConstant() { return this._springForce.k; }
-    get endBall() { return this._balls.bindableAt(this._balls.size - 1); }
+    get endBall() { return this._balls.modelObject(this._balls.size - 1); }
     get ballRadius() { return this._length / 40; }
     set damping(value) { this._springForce.damping = value; }
     get damping() { return this._springForce.damping }
@@ -118,7 +117,7 @@ class Chain {
      * @param {number} bodyMass
      */
     _createVerticalChainSection(position, spacing, bodyMass) {
-        position = this._balls.bindableAt(this._balls.size - 1).position.clone();
+        position = this._balls.modelObject(this._balls.size - 1).position.clone();
         while (position.y > -this._amountHanging) {
             position.y -= spacing;
             this._balls.add(new RadialSymmetricBody({
@@ -140,7 +139,7 @@ class Chain {
 
     _createBonds() {
         for (let i = 0; i < this._balls.size - 1; i++)
-            this._bonds.push(this._balls.bindableAt(i).and(this._balls.bindableAt(i + 1)));
+            this._bonds.add(this._balls.modelObject(i).and(this._balls.modelObject(i + 1)));
     }
 
     /** @param {number} dt */
@@ -197,13 +196,17 @@ const simulation = Simulation
             position: new Vec3(1, 0.5, 2).multiplyScalar(1.75),
             target: new Vec3(.2, -0.7, 0),
             fieldOfView: 30,
-        },
-        scene: {
-            scale: 1
         }
     })
     .withMouseClickEventListener()
     .bind(chain.balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Cyan, segments: 20})))
+    .bind(chain.bonds.alwaysWith(ViewsCollection.of(SwitchableBondView).with({
+        bondType: SwitchableBondView.Type.Spring,
+        coils: 15,
+        thickness: 0.04,
+        tubularSegments: 400,
+        color: new Colour(0xffff66)
+    })))
     .runsEvery(1e-3)
     .substeps(20)
     .advancesBy(1e-4)
@@ -215,29 +218,16 @@ const simulation = Simulation
     })
     .bind(table.onceWith(new Box({ color: new Colour(0x888888), opacity: 0.3 })))
     .addGraph(graph)
-    .append(
-        new Slider('Spring force ')
-            .withRange(new Range(1, 100, 1))
-            .on(chain)
-            .withProperty('springConstant')
-            .withValue(chain.springConstant)
+    .append(new Slider('Spring force ')
+        .withRange(new Range(1, 100, 1))
+        .on(chain)
+        .withProperty('springConstant')
+        .withValue(chain.springConstant)
     )
-    .append(
-        new Slider('Damping ')
-            .withRange(new Range(0, 1, 0.01))
-            .on(chain)
-            .withProperty('damping')
-            .withValue(chain.damping)
-    );
-
-for (const bond of chain.bonds)
-    simulation.bind(bond.alwaysWith(
-        new SwitchableBondView({
-            bondType: SwitchableBondView.Type.Spring,
-            coils: 15,
-            thickness: 0.04,
-            tubularSegments: 400,
-            color: new Colour(0xffff66)
-        }))
+    .append(new Slider('Damping ')
+        .withRange(new Range(0, 1, 0.01))
+        .on(chain)
+        .withProperty('damping')
+        .withValue(chain.damping)
     );
 

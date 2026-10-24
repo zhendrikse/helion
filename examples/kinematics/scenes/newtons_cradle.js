@@ -13,7 +13,7 @@ const PIVOT_Y = 0.5;
 const INITIAL_ANGLE = -Math.PI / 5;
 const RESTITUTION = 0.985;
 
-class CradleBall {
+class Pendulum {
     constructor(index) {
         this._anchorX = (index - (BALL_COUNT - 1) / 2) * BALL_SPACING;
         this._length = PENDULUM_LENGTH;
@@ -82,8 +82,8 @@ class CradleBall {
 
 class NewtonsCradle {
     constructor() {
-        /** @type {CradleBall[]} */
-        this._balls = Array.from({ length: BALL_COUNT }, (_, i) => new CradleBall(i));
+        /** @type {Pendulum[]} */
+        this._balls = Array.from({ length: BALL_COUNT }, (_, i) => new Pendulum(i));
         this._frame = new ModelsCollection()
             // Top crossbar
             .add(new AxialSymmetricBody({
@@ -93,23 +93,43 @@ class NewtonsCradle {
             }))
             // Side supports, extending down to the feet
             .add(new AxialSymmetricBody({
-                position: new Vec3(-0.82, -1.55, 0),
-                axis: new Vec3(0, PIVOT_Y + 1.55, 0),
+                axis: new Vec3(0, -2.1 , 1.25),
+                position: new Vec3(-0.82, PIVOT_Y, 0),
                 radius: 0.04
             }))
             .add(new AxialSymmetricBody({
-                position: new Vec3(0.82, -1.55, 0),
-                axis: new Vec3(0, PIVOT_Y + 1.55, 0),
+                axis: new Vec3(0, -2.1 , -1.25),
+                position: new Vec3(-0.82, PIVOT_Y, 0),
+                radius: 0.04
+            }))
+            .add(new AxialSymmetricBody({
+                axis: new Vec3(0, -2.1 , 1.25),
+                position: new Vec3(0.82, PIVOT_Y, 0),
+                radius: 0.04
+            }))
+            .add(new AxialSymmetricBody({
+                axis: new Vec3(0, -2.1 , -1.25),
+                position: new Vec3(0.82, PIVOT_Y, 0),
                 radius: 0.04
             }))
             // Feet
             .add(new AxialSymmetricBody({
-                position: new Vec3(-0.82, -1.55, -.2),
+                position: new Vec3(-0.82, -3.225 * PIVOT_Y, -1.45),
                 axis: new Vec3(0, 0, 0.4),
                 radius: 0.05
             }))
             .add(new AxialSymmetricBody({
-                position: new Vec3(0.82, -1.55, -.2),
+                position: new Vec3(0.82, -3.225 * PIVOT_Y, -1.45),
+                axis: new Vec3(0, 0, 0.4),
+                radius: 0.05
+            }))
+            .add(new AxialSymmetricBody({
+                position: new Vec3(-0.82, -3.225 * PIVOT_Y, 1.05),
+                axis: new Vec3(0, 0, 0.4),
+                radius: 0.05
+            }))
+            .add(new AxialSymmetricBody({
+                position: new Vec3(0.82, -3.225 * PIVOT_Y, 1.05),
                 axis: new Vec3(0, 0, 0.4),
                 radius: 0.05
             }));
@@ -167,7 +187,7 @@ Simulation
         camera: {
             target: new Vec3(0, -.75, 0),
             fieldOfView: 30,
-            position: new Vec3(1, 0.25, -.5).multiplyScalar(5)
+            position: new Vec3(1, 0.25, -.5).multiplyScalar(5.25)
         },
         scene: { background: ThreeJsScene.Background.FOG },
         lighting: { shadows: true }

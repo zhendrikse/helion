@@ -1,11 +1,11 @@
-import { Bindable, Polygon, Simulation, Square, Triangle, Vec2, Renderable2D } from '../../../src/index.js';
+import { ModelObject, Polygon, Simulation, Square, Triangle, Vec2, Renderable2D } from '../../../src/index.js';
 import {
     BufferGeometry, Color, DoubleSide, Float32BufferAttribute,
     LineBasicMaterial, LineSegments as ThreeLineSegments, Mesh, MeshBasicMaterial
 } from 'three';
 
 /** Model for a Pythagoras tree, independent of the renderer. */
-class PythagorasTree extends Bindable {
+class PythagorasTree extends ModelObject {
     constructor() {
         super();
         this.iterations = 12;
@@ -120,7 +120,7 @@ const treeView = new PythagorasTreeView();
 Simulation
     .with({
         htmlDivId: 'pythagorasTreeDemo',
-        viewport: { aspectRatio: '4 / 3', parameterMenu: false },
+        viewport: { aspectRatio: '4 / 3' },
         camera: {
             orthographic: true,
             controls: false

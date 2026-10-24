@@ -1,9 +1,9 @@
-import { Simulation, Vec3, Renderable3D, Bindable, Slider, Range, Colour } from "../../../src/index.js";
+import { Simulation, Vec3, Renderable3D, ModelObject, Slider, Range, Colour } from "../../../src/index.js";
 import { Arrow } from "../../../src/view/3d/primitives/primitives.js";
 import { Color, MeshBasicMaterial, Mesh, ConeGeometry, RingGeometry, DoubleSide, Vector3, Box3 } from "three";
 
 // Eén model dat tijd en boost-snelheid bijhoudt — Helion vervangt de losse `t` en `v` globals
-class Spacetime extends Bindable {
+class Spacetime extends ModelObject {
     constructor({ v = 0.5, maxHeight = 3 } = {}) {
         super();
         this.v = v;

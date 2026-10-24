@@ -74,7 +74,7 @@ This also allows one solver to evolve multiple fields.
 ## State, Operator, Equation, Solver
 <div class="header_line"></div>
 
-**State** — the thing that changes. All states extend `Bindable` and share `apply()` / `alwaysWith()` / `onceWith()`.
+**State** — the thing that changes. All states extend `ModelObject` and share `apply()` / `alwaysWith()` / `onceWith()`.
 
 ```js
 DiscreteScalarField

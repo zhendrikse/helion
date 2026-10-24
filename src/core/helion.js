@@ -71,12 +71,11 @@ export class Simulation {
 
     /**
      * @param {string} htmlDivId
-     * @param {boolean} parameterMenu
-     * @param {boolean} parameterMenuCollapsed 
+     * @param {boolean} parameterMenuCollapsed
      * @param {string} aspectRatio 
      * @returns {Viewport}
      */
-    static viewportFromHtmlDiv = (htmlDivId, parameterMenu, parameterMenuCollapsed, aspectRatio) => {
+    static viewportFromHtmlDiv = (htmlDivId, parameterMenuCollapsed, aspectRatio) => {
         let canvasWrapper = document.getElementById(htmlDivId);
         if (!canvasWrapper) {
             console.warn(`No HTML div with ID = \'${htmlDivId}\' found: creating Helion div automatically!`);
@@ -85,7 +84,7 @@ export class Simulation {
             document.body.appendChild(canvasWrapper);
         }
 
-        return new Viewport(canvasWrapper, parameterMenu, parameterMenuCollapsed, aspectRatio);
+        return new Viewport(canvasWrapper, parameterMenuCollapsed, aspectRatio);
     };
 
     static with(
@@ -119,7 +118,6 @@ export class Simulation {
             htmlDivId,
             viewport = {
                 aspectRatio: '1 / 1',
-                parameterMenu: true,
                 parameterMenuCollapsed: true
             },
             camera = {
@@ -146,7 +144,7 @@ export class Simulation {
                 text: ''
             }
         } = {htmlDivId: '', camera: {}, viewport: {}, scene: {}, lighting: {}, headUpDisplay: {}, infoPanel: {}}) {
-        const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, viewport.parameterMenu ?? true, viewport.parameterMenuCollapsed ?? true, viewport.aspectRatio ?? '1 / 1');
+        const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, viewport.parameterMenuCollapsed ?? true, viewport.aspectRatio ?? '1 / 1');
         const renderer = new ThreeJsRenderer({ camera, viewport, lighting, scene });
         renderer.attach(viewPort);
         return new Simulation(viewPort, renderer, headUpDisplay.enabled, infoPanel);
@@ -161,6 +159,8 @@ export class Simulation {
     constructor(viewport, renderer, headUpDisplay, infoPanel) {
         this._viewport = viewport;
         this._renderer = renderer;
+        this._parameterDivExists = false;
+        this._addOnsDivExists = false;
         /** @type {Binding[]} */
         this._bindings = [];
         this._plot = null;                   // No plot by default
@@ -456,44 +456,23 @@ export class Simulation {
     }
 
     /**
-     * Interaction / control with mouse.
+     * Interaction / control with pointer (mouse, touch, pen).
      *
      * @param {string} action
-     * @param {(x: number, y: number, event: Event) => void} callback
-     * @param {{}} options
+     * @param {(x: number, y: number, event: PointerEvent) => void} callback
+     * @param {AddEventListenerOptions} options
      * @returns {Simulation}
      */
-    onMouse(action, callback, options= {}) {
+    onPointer(action, callback, options = {}) {
         const eventHandler = event => {
             const bounds = event.currentTarget.getBoundingClientRect();
             const x = (event.clientX - bounds.left - bounds.width / 2) / bounds.width;
             const y = (bounds.top + bounds.height / 2 - event.clientY) / bounds.height;
             callback(x, y, event);
         };
-        this._viewport.canvas.addEventListener(action, eventHandler, options);
-        return this;
-    }
 
-    /**
-     * Interaction / control on screens (mobile devices).
-     *
-     * @param {string} action
-     * @param {(x: number, y: number, event: Event) => void} callback
-     * @param {{}} options
-     * @returns {Simulation}
-     */
-    onTouch(action, callback, options = {}) {
-        const eventHandler = event => {
-            if (!event.touches.length)
-                return;
-
-            const bounds = event.currentTarget.getBoundingClientRect();
-            const touch = event.touches[0];
-            const x = (touch.clientX - bounds.left - bounds.width / 2) / bounds.width;
-            const y = (bounds.top + bounds.height / 2 - touch.clientY) / bounds.height;
-            callback(x, y, event);
-        };
         this._viewport.canvas.addEventListener(action, eventHandler, options);
+
         return this;
     }
 
@@ -590,6 +569,10 @@ export class Simulation {
      * @returns {Simulation}
      */
     append(control) {
+        if (!this._parameterDivExists) {
+            this._viewport.createParameterDiv();
+            this._parameterDivExists = true;
+        }
         control.append(this._viewport.controlsDiv).to(this);
         this._viewport.enableParameterMenu();
         return this;
@@ -636,6 +619,10 @@ export class Simulation {
      * @returns {Simulation}
      */
     addGraph(graph) {
+        if (!this._addOnsDivExists) {
+            this._viewport.createAddOnsDiv();
+            this._addOnsDivExists = true;
+        }
         graph.attach(this._viewport.addOnsDiv);
         this._plot = graph;
         return this;

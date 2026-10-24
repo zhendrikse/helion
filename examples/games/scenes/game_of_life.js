@@ -1,5 +1,5 @@
 import {
-    Bindable, Simulation, Slider, Vec3, Range, Interval, ColorMapper, DiscreteFieldSurfaceView
+    ModelObject, Simulation, Slider, Vec3, Range, Interval, ColorMapper, DiscreteFieldSurfaceView
 } from "../../../src/index.js";
 
 class Game {
@@ -103,7 +103,7 @@ let dimension_y = 500;
 let cellsX = Math.floor(dimension_x / cellSize);
 let cellsY = Math.floor(dimension_y / cellSize);
 
-class GameOfLife extends Bindable {
+class GameOfLife extends ModelObject {
     constructor(nx = cellsX, ny = cellsY, randomStart = true) {
         super();
 

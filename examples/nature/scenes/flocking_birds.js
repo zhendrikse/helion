@@ -35,9 +35,9 @@ class Flock {
         this._birds.forEach((bird, i) => {
             avoid.push(new Vec3(0, 0, 0));
             for (let j = 0; j < i; j++) {
-                const distanceSquared = bird.distanceToSquared(this._birds.bindableAt(j));
+                const distanceSquared = bird.distanceToSquared(this._birds.modelObject(j));
                 if (distanceSquared < threshold) {
-                    const separation_dist = bird.positionVectorTo(this._birds.bindableAt(j));
+                    const separation_dist = bird.positionVectorTo(this._birds.modelObject(j));
                     avoid[i].sub(separation_dist.divideScalar(distanceSquared));
                     avoid[j].add(separation_dist.divideScalar(distanceSquared));
                 }

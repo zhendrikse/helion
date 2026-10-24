@@ -1,8 +1,8 @@
-import { Bindable } from '../../behavior.js';
+import { ModelObject } from '../../behavior.js';
 import { Vec3 } from '../objects.js';
 import { DifferentiableSurface } from '../surfaces.js';
 
-export class DifferentialFrame extends Bindable {
+export class DifferentialFrame extends ModelObject {
     constructor({
         position = new Vec3(),
         normal = new Vec3(),
