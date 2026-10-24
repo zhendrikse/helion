@@ -27,9 +27,7 @@ class PolarizedElectromagneticWave extends ElectromagneticWave {
         this._polarizationAngle = 0;
     }
 
-    set polarizationAngle(angle) {
-        this._polarizationAngle = angle;
-    }
+    set polarizationAngle(angle) { this._polarizationAngle = angle; }
 
     _updateFieldVectorsAt(index, wave) {
         const electric = this._electricFieldVectors[index];
@@ -57,7 +55,7 @@ const waveViewOptions = {
     numArrows: 35,
     arrowSize: 0.075,
     arrowDistance: 0.1,
-    scalingFunction: () => 1
+    scalingFunction: () => 1.5
 };
 
 const incomingView = new PolarizedElectromagneticWave({
@@ -73,41 +71,35 @@ const transmittedView = new PolarizedElectromagneticWave({
     position: new Vec3(9.7, 0, 0)
 });
 
-const polarizerAxis = new VectorModel(new Vec3(4.5, 0, 0), new Vec3(0, 1.0, 0));
+const polarizerAxis = new VectorModel(new Vec3(4.5, 0, 0), new Vec3(0, 2.25, 0));
 const analyzerAxis = new VectorModel(new Vec3(9.2, 0, 0), new Vec3(0, 1.0, 0));
 
 const polarizer = new AxialSymmetricBody({
     position: new Vec3(4.43, 0, 0),
     axis: new Vec3(0.14, 0, 0),
-    radius: 1.35
+    radius: 1.5
 });
 const analyzer = new AxialSymmetricBody({
     position: new Vec3(9.13, 0, 0),
     axis: new Vec3(0.14, 0, 0),
-    radius: 1.35
+    radius: 1.5
 });
 
 const simulation = Simulation
     .with({
         htmlDivId: 'malusLawContainer',
         camera: {
-            position: new Vec3(6.8, 4.2, 18),
-            target: new Vec3(6.8, 0, 0),
+            position: new Vec3(25, 5, 20).multiplyScalar(0.55),
+            target: new Vec3(8, 0, 0),
             fieldOfView: 34
         },
         viewport: {
-            aspectRatio: '16 / 9',
+            aspectRatio: '19 / 12',
             parameterMenuCollapsed: false
-        },
-        scene: {
-            backgroundColor: new Colour(0x101722)
-        },
-        infoPanel: {
-            text: 'The transmitted intensity follows Malus\' law.'
         }
     })
     .withMouseClickEventListener()
-    .runsEvery(1e-2)
+    .runsEvery(2e-2)
     .advancesBy(0.025)
     .bind(incomingWave.alwaysWith(incomingView))
     .bind(polarizedWave.alwaysWith(polarizedView))
@@ -121,14 +113,13 @@ const simulation = Simulation
         opacity: 0.32
     })))
     .bind(polarizerAxis.alwaysWith(new Arrow({
-        color: new Colour(0xffffff),
-        size: 0.06,
-        magnitudeMap: magnitude => magnitude
+        color: Colour.White,
+        size: 0.2,
+        round: true
     })))
     .bind(analyzerAxis.alwaysWith(new Arrow({
-        color: new Colour(0xffffff),
-        size: 0.06,
-        magnitudeMap: magnitude => magnitude
+        color: Colour.White,
+        size: 0.2
     })))
     .append(new Slider('Analyzer angle θ: ')
         .withUnits('°')
@@ -138,7 +129,7 @@ const simulation = Simulation
             analyzerAngle = degrees * Math.PI / 180;
             transmittedWave.amplitude = Math.cos(analyzerAngle);
             transmittedView.polarizationAngle = analyzerAngle;
-            analyzerAxis.axis.set(0, Math.cos(analyzerAngle), Math.sin(analyzerAngle));
+            analyzerAxis.axis.set(0, 2.25 * Math.cos(analyzerAngle), 2.25 * Math.sin(analyzerAngle));
             updateReadout();
         })
     )
@@ -157,5 +148,5 @@ function updateReadout() {
 }
 
 transmittedView.polarizationAngle = analyzerAngle;
-analyzerAxis.axis.set(0, Math.cos(analyzerAngle), Math.sin(analyzerAngle));
+analyzerAxis.axis.set(0, 2.25 * Math.cos(analyzerAngle), 2.25 * Math.sin(analyzerAngle));
 updateReadout();
