@@ -58,7 +58,7 @@ class ParticleCloud {
         }
 
         // First particle is the seed at top center
-        const seed = this._seeds.bindableAt(0);
+        const seed = this._seeds.modelObject(0);
         seed.fixed = true;
         seed.position.copy(this._seedPosition);
     }
@@ -68,7 +68,7 @@ class ParticleCloud {
             particle.position.set(width * Math.random(), height * Math.random());
             particle.fixed = false;
         });
-        const seed = this._seeds.bindableAt(0);
+        const seed = this._seeds.modelObject(0);
         seed.fixed = true;
         seed.position.copy(this._seedPosition);
     }
@@ -95,7 +95,7 @@ class ParticleCloud {
 /** @param {RadialSymmetricBody} particle */
     checkForFreezing(particle) {
         for (let i = 0; i < this._count; i++) {
-            const other = this._seeds.bindableAt(i);
+            const other = this._seeds.modelObject(i);
             if (!other.fixed)
                 continue;
 

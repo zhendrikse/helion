@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, SwitchableBondView, VectorView, RadioGroup, RadialSymmetricBody,
-    Bindable, VectorField, CoulombForce, SpringForce, Force, EC,
+    ModelObject, VectorField, CoulombForce, SpringForce, Force, EC,
     BodyPairs, Colour
 } from '../../../src/index.js';
 
@@ -121,7 +121,7 @@ class TorqueForce extends Force {
     }
 }
 
-class Water extends Bindable {
+class Water extends ModelObject {
     /** @param {number} bondAngle */
     constructor(bondAngle) {
         super();

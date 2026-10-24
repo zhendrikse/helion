@@ -297,7 +297,7 @@ class SPHSolver {
             }));
 
         for (let i = 0; i < n; i++) {
-            const particle = this._particles.bindableAt(i);
+            const particle = this._particles.modelObject(i);
             if (reset || i >= previousCount) {
                 particle.position.set(
                     Math.random() * xRange.range + xRange.min,
@@ -500,6 +500,17 @@ function initScreenSize() {
     worldWidth = WORLD_HEIGHT * simulation.width / simulation.height;
 }
 
+function updateMouse(x, y, vx, vy) {
+    mousePosition.set(
+        // Simulation.onMouse supplies normalized canvas coordinates in [-0.5, 0.5].
+        // Engine.forceVelocity expects canvas pixels, with the origin at the top-left.
+        Math.max(0, Math.min(simulation.width - 1, (x + 0.5) * simulation.width)),
+        Math.max(0, Math.min(simulation.height - 1, (0.5 - y) * simulation.height))
+    );
+    mouseVelocity.set(vx, vy);
+    mouseMovedInLiquid = true;
+}
+
 const solver = new SPHSolver();
 const controls = new ParameterControls(solver);
 const simulation = Simulation
@@ -528,16 +539,8 @@ const simulation = Simulation
         if (speedColoring && ++colorUpdateCounter % COLOR_UPDATE_INTERVAL === 0)
             updateParticleColors();
     })
-    .onMouse("mousemove", (x, y, e) => {
-        mousePosition.set(
-            // Simulation.onMouse supplies normalized canvas coordinates in [-0.5, 0.5].
-            // Engine.forceVelocity expects canvas pixels, with the origin at the top-left.
-            Math.max(0, Math.min(simulation.width - 1, (x + 0.5) * simulation.width)),
-            Math.max(0, Math.min(simulation.height - 1, (0.5 - y) * simulation.height))
-        );
-        mouseVelocity.set(e.movementX, -e.movementY);
-        mouseMovedInLiquid = true;
-    })
+    .onPointer("mousemove", (x, y, e) => updateMouse(x, y, e.movementX, -e.movementY))
+    .onPointer("touchmove", (x, y, e) => updateMouse(x, y, e.movementX, -e.movementY))
     .onReset(() => {
         initScreenSize();
         grid.init();

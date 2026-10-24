@@ -164,7 +164,7 @@ class CarbonMonoxideGas {
 
         this._molecules.forEach((molecule, index) => {
             for (let j = index + 1; j < this._molecules.size; j++)
-                molecule.resolveCollisionWith(this._molecules.bindableAt(j));
+                molecule.resolveCollisionWith(this._molecules.modelObject(j));
         });
     }
 

@@ -1,5 +1,5 @@
 import { Colour } from '../../view/colormappers.js';
-import { Bindable, Transformation} from '../behavior.js';
+import { ModelObject, Transformation} from '../behavior.js';
 import { Matrix2D } from './linearalgebra.js';
 import { Interval, degToRad} from './math.js';
 import { Integrators} from './numerics/integrators/integrators.js';
@@ -341,7 +341,7 @@ export class Polygon {
  *
  *     γ : I → R²
  */
-export class ParametricCurve extends Bindable {
+export class ParametricCurve extends ModelObject {
     /**
      * @param {{
      *   domain?: Interval
@@ -380,7 +380,7 @@ export class ParametricCurve extends Bindable {
 /**
  * A vector model.
  */
-export class VectorModel extends Bindable {
+export class VectorModel extends ModelObject {
     /**
      * @param {Vec2 | Vec3 } position 
      * @param {Vec2 | Vec3} axis 
@@ -413,7 +413,7 @@ export class VectorModel extends Bindable {
 /**
  * A line (segment) between two points.
  */
-export class LineSegment extends Bindable {
+export class LineSegment extends ModelObject {
     /**
      * @param {Vec2 | Vec3} fromVec coordinates of from-point.
      * @param {Vec2 | Vec3} toVec coordinates of to-point.
@@ -450,16 +450,16 @@ export class LineSegment extends Bindable {
     }
 }
 
-export class Segments extends Bindable {
+export class Segments extends ModelObject {
     constructor() {
         super();
-        /** @type {Bindable[]} */
+        /** @type {ModelObject[]} */
         this._segments = [];
     }
 
     get count() { return this._segments.length; }
 
-    /** @returns {ArrayIterator<Bindable>} */
+    /** @returns {ArrayIterator<ModelObject>} */
     [Symbol.iterator]() {
         return this._segments[Symbol.iterator]();
     }
@@ -468,7 +468,7 @@ export class Segments extends Bindable {
         this._segments.length = 0;
     }
 
-    /** @param {Bindable} segment */
+    /** @param {ModelObject} segment */
     push(segment) {
         this._segments.push(segment);
     }

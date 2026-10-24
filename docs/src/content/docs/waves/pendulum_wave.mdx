@@ -17,11 +17,8 @@ layout: ../../../layouts/DocsLayout.astro
 
 🎯 Illustration of a pendulum wave<br/>
 ⭐ Based on the VPython [PendulumWave](https://glowscript.org/#/user/yizhe/folder/Public/program/PendulumWave) and inspired by [www.dynamicmath.xyz](https://www.dynamicmath.xyz/)<br/>
-
-$$
-\theta(t)=\theta_0 \cos \bigg( \sqrt{  \frac {g} {L}} t \bigg)\text{, where }L = \frac{g T^2}{4\pi^2}
-$$
-
+🔗 Related to [Newton's cradle](../../kinematics/newtons_cradle/) demo<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Kinematics/program/PendulumWave) is available as well, see [pendulum_wave.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/pendulum_wave.py)<br/>
 
 ### Live experiment
 <div class="header_line"></div>
@@ -31,6 +28,10 @@ $$
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=pendulum_wave.js"/>
     </a>
 </div>
+
+$$
+\theta(t)=\theta_0 \cos \bigg( \sqrt{  \frac {g} {L}} t \bigg)\text{, where }L = \frac{g T^2}{4\pi^2}
+$$
 
 <div id="pendulumWaveContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/pendulum_wave.js"}></script>

@@ -1,5 +1,5 @@
 import {
-    Simulation, RadialSymmetricBody, Vec3, Sphere, Renderable3D, Bindable, ThreeJsScene, Colour} from "../../../src/index.js";
+    Simulation, RadialSymmetricBody, Vec3, Sphere, Renderable3D, ModelObject, ThreeJsScene, Colour} from "../../../src/index.js";
 import {AmbientLight, Color, PointLight} from "three";
 
 const vel0 = new Vec3(0, 0.65, 0);
@@ -23,7 +23,7 @@ class Ball extends RadialSymmetricBody {
     }
 }
 
-class Person extends Bindable {
+class Person extends ModelObject {
     constructor() {
         super();
         this._balls = [];

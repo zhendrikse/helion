@@ -1,5 +1,5 @@
 import {
-    Bindable, Checkbox, Polygon, Range, Simulation, Slider, Square, Triangle, Vec2, Renderable2D
+    ModelObject, Checkbox, Polygon, Range, Simulation, Slider, Square, Triangle, Vec2, Renderable2D
 } from '../../../src/index.js';
 import {
     BufferGeometry, Color, DoubleSide, Float32BufferAttribute,
@@ -7,7 +7,7 @@ import {
 } from 'three';
 
 /** Model for a Pythagoras tree, independent of the renderer. */
-class PythagorasTree extends Bindable {
+class PythagorasTree extends ModelObject {
     constructor() {
         super();
         this.iterations = 12;

@@ -2,7 +2,7 @@ import { LinearSRGBColorSpace } from 'three';
 import {
     Checkbox, ColorMappers, DiscreteScalarField, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
     DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView,
-    DiscreteFieldSurfaceView, FixedIntervalNormalizer, Bindable
+    DiscreteFieldSurfaceView, FixedIntervalNormalizer, ModelObject
 } from '../../../src/index.js';
 
 const SOLID = 0.0;
@@ -307,7 +307,7 @@ class EulerFluid extends DiscreteVectorField {
     evolve(solver, dt) { solver.step(this, dt); }
 }
 
-class PressureFieldAdapter extends Bindable {
+class PressureFieldAdapter extends ModelObject {
     constructor(fluid) {
         super();
         this.fluid = fluid;
@@ -320,7 +320,7 @@ class PressureFieldAdapter extends Bindable {
     valueAt(i, j) { return this.fluid.pressureAt(j, i); }
 }
 
-class SmokeFieldAdapter extends Bindable {
+class SmokeFieldAdapter extends ModelObject {
     constructor(fluid) {
         super();
         this.fluid = fluid;
@@ -450,7 +450,6 @@ function simulate() {
 Simulation
     .with({
         htmlDivId: 'eulerFluidDemo',
-        viewport: { parameterMenu: false },
         camera: { orthographic: true, controls: false },
         headUpDisplay: { enabled: false },
         lighting: { enabled: false },
@@ -470,28 +469,28 @@ Simulation
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
     .frameSceneOn(pressureView, { padding: 1.0 })
-    .onMouse('mouseup', () => mouseDown = false)
-    .onMouse('mouseleave', () => mouseDown = false)
-    .onMouse('mousedown', (x, y, _event) => {
+    .onPointer('mouseup', () => mouseDown = false)
+    .onPointer('mouseleave', () => mouseDown = false)
+    .onPointer('mousedown', (x, y, _event) => {
         mouseDown = true;
         fluid.setObstacle(x, y, true);
     })
-    .onMouse('mousemove', (x, y, _event) => {
+    .onPointer('mousemove', (x, y, _event) => {
         if (!mouseDown) return;
 
         fluid.setObstacle(x, y, false);
     })
-    .onTouch('touchstart', (x, y, event) => {
+    .onPointer('touchstart', (x, y, event) => {
         mouseDown = true;
         fluid.setObstacle(x, y, true);
     }, { passive: true })
-    .onTouch('touchmove', (x, y, event) => {
+    .onPointer('touchmove', (x, y, event) => {
         if (!mouseDown) return;
 
         event.preventDefault();
         fluid.setObstacle(x, y, false);
     }, { passive: false })
-    .onTouch('touchcancel', () => mouseDown = false)
-    .onTouch('touchend', () => mouseDown = false)
+    .onPointer('touchcancel', () => mouseDown = false)
+    .onPointer('touchend', () => mouseDown = false)
     .start();
 

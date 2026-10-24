@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, SwitchableBondView, EC, SpringForce, Force, VectorView,
-    RadioGroup, RadialSymmetricBody, Bindable, VectorField, CoulombForce, Colour, BodyPairs
+    RadioGroup, RadialSymmetricBody, ModelObject, VectorField, CoulombForce, Colour, BodyPairs
 } from '../../../src/index.js';
 
 const BOND_LENGTH     = 1.0E-10;
@@ -108,7 +108,7 @@ class BendForce extends Force {
     }
 }
 
-class CarbonDioxide extends Bindable {
+class CarbonDioxide extends ModelObject {
     constructor(theta) {
         super();
         const o1Pos = new Vec3(BOND_LENGTH * Math.cos(theta), BOND_LENGTH * Math.sin(theta), 0);

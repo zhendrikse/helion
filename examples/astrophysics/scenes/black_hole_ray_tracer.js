@@ -2,9 +2,9 @@ import { MathUtils, PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh }  fro
 import vertexShader from './black_hole_vertex_shader.glsl?raw';
 import fragmentShader from './black_hole_fragment_shader.glsl?raw';
 import {Checkbox, Colour, Renderable3D, Simulation, ThreeJsScene} from '../../../src/index.js';
-import {Bindable} from '../../../src/index.js';
+import {ModelObject} from '../../../src/index.js';
 
-export class BlackHoleModel extends Bindable {
+export class BlackHoleModel extends ModelObject {
     constructor({
         width = 160,
         height = 90,
