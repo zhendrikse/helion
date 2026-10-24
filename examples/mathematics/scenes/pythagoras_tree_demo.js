@@ -1,4 +1,4 @@
-import { ModelObject, Polygon, Simulation, Square, Triangle, Vec2, Renderable2D } from '../../../src/index.js';
+import {ModelObject, Polygon, Simulation, Square, Triangle, Vec2, Renderable2D, Vec3} from '../../../src/index.js';
 import {
     BufferGeometry, Color, DoubleSide, Float32BufferAttribute,
     LineBasicMaterial, LineSegments as ThreeLineSegments, Mesh, MeshBasicMaterial
@@ -21,7 +21,7 @@ class PythagorasTree extends ModelObject {
         const alpha = this.angle * Math.PI / 180;
         const cosAlpha = Math.cos(alpha);
         const sinAlpha = Math.sin(alpha);
-        this._grow(new Vec2(-0.5, 0), 0, 1, alpha, cosAlpha, sinAlpha, 0);
+        this._grow(new Vec2(-.25, -2.75), 0, 1, alpha, cosAlpha, sinAlpha, 0);
     }
 
     _grow(origin, rotation, side, alpha, cosAlpha, sinAlpha, depth) {
@@ -121,10 +121,7 @@ Simulation
     .with({
         htmlDivId: 'pythagorasTreeDemo',
         viewport: { aspectRatio: '4 / 3' },
-        camera: {
-            orthographic: true,
-            controls: false
-        },
+        camera: { controls: false, orthographic: true, position: new Vec3(0, 0, 5.25) },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
         infoPanel: {
@@ -133,7 +130,6 @@ Simulation
                 '🧠 Idea based on <a href=\"https://library.fridoverweij.com/codelab/pytagoras_tree/index.html\">library.fridoverweij.com</a><br/>'
         }
     })
-    .bind(tree.alwaysWith(treeView))
-    .frameSceneOn(treeView, { padding: .8 });
+    .bind(tree.alwaysWith(treeView));
 
 tree.rebuild();

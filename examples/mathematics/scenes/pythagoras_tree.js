@@ -1,5 +1,5 @@
 import {
-    ModelObject, Checkbox, Polygon, Range, Simulation, Slider, Square, Triangle, Vec2, Renderable2D
+    ModelObject, Checkbox, Polygon, Range, Simulation, Slider, Square, Triangle, Vec2, Renderable2D, Vec3
 } from '../../../src/index.js';
 import {
     BufferGeometry, Color, DoubleSide, Float32BufferAttribute,
@@ -23,7 +23,7 @@ class PythagorasTree extends ModelObject {
         const alpha = this.angle * Math.PI / 180;
         const cosAlpha = Math.cos(alpha);
         const sinAlpha = Math.sin(alpha);
-        this._grow(new Vec2(-0.5, 0), 0, 1, alpha, cosAlpha, sinAlpha, 0);
+        this._grow(new Vec2(-.25, -2.5), 0, 1, alpha, cosAlpha, sinAlpha, 0);
     }
 
     _grow(origin, rotation, side, alpha, cosAlpha, sinAlpha, depth) {
@@ -123,10 +123,7 @@ Simulation
     .with({
         htmlDivId: 'pythagorasTreeContainer',
         viewport: { aspectRatio: '4 / 3' },
-        camera: {
-            orthographic: true,
-            controls: false
-        },
+        camera: { controls: false, orthographic: true, position: new Vec3(0, 0, 5.25) },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
         infoPanel: {
@@ -156,7 +153,6 @@ Simulation
     .append(new Checkbox('Draw triangles')
         .on(tree)
         .withProperty('showTriangles')
-        .onChange(checked => tree.rebuild()))
-    .frameSceneOn(treeView, { padding: .8 });
+        .onChange(checked => tree.rebuild()));
 
 tree.rebuild();
