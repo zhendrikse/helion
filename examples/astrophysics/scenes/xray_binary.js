@@ -1,7 +1,4 @@
-import {
-    AdditiveBlending, CanvasTexture, DoubleSide, Mesh, MeshBasicMaterial,
-    PlaneGeometry, PointLight
-} from 'three';
+import { DoubleSide, MeshBasicMaterial, PointLight } from 'three';
 import {
     AxialSymmetricBody, Colour, Cylinder, Range, RadialSymmetricBody,
     Simulation, Slider, Sphere, ThreeJsScene, Vec3
@@ -49,75 +46,31 @@ const stream = new AxialSymmetricBody({
     radius: streamRadius
 });
 
-const whiteDwarfLight1 = new PointLight(0xcc66ff, 3.5, 0.5);
-const whiteDwarfLight2 = new PointLight(0xcc66ff, 3.5, 0.5);
-
-// A radial purple glow on the disk, matching the original VPython local lights.
-const glowCanvas = document.createElement('canvas');
-glowCanvas.width = 128;
-glowCanvas.height = 128;
-const glowContext = glowCanvas.getContext('2d');
-const radialGradient = glowContext.createRadialGradient(64, 64, 2, 64, 64, 64);
-radialGradient.addColorStop(0, 'rgba(220, 100, 255, 0.9)');
-radialGradient.addColorStop(0.22, 'rgba(180, 60, 255, 0.55)');
-radialGradient.addColorStop(0.58, 'rgba(130, 35, 230, 0.18)');
-radialGradient.addColorStop(1, 'rgba(100, 20, 200, 0)');
-glowContext.fillStyle = radialGradient;
-glowContext.fillRect(0, 0, 128, 128);
-
-const glowTexture = new CanvasTexture(glowCanvas);
-const diskGlow = new Mesh(
-    new PlaneGeometry(0.095, 0.095),
-    new MeshBasicMaterial({
-        map: glowTexture,
-        color: 0xffffff,
-        transparent: true,
-        blending: AdditiveBlending,
-        depthWrite: false,
-        side: DoubleSide,
-        toneMapped: false
-    })
-);
-diskGlow.rotation.x = -Math.PI / 2;
-diskGlow.position.set(whiteDwarfDistance, 0.0022, 0);
+const whiteDwarfLight1 = new PointLight(0xcc66ff, 1.8, 0.45);
+const whiteDwarfLight2 = new PointLight(0xcc66ff, 1.8, 0.45);
 
 function updateSystem() {
     angle += dTheta;
 
-    const whiteDwarfPosition = new Vec3(
-        whiteDwarfDistance * Math.cos(angle),
-        0,
-        whiteDwarfDistance * Math.sin(angle)
-    );
+    const whiteDwarfPosition = new Vec3(Math.cos(angle), 0, Math.sin(angle)).multiplyScalar(whiteDwarfDistance);
     whiteDwarf.position.copy(whiteDwarfPosition);
     accretionDisk.position.copy(whiteDwarfPosition);
-    diskGlow.position.set(whiteDwarfPosition.x, 0.0022, whiteDwarfPosition.z);
 
-    const orbitingPosition = distance => new Vec3(
-        distance * Math.cos(angle),
-        0,
-        distance * Math.sin(angle)
-    );
+    const orbitingPosition = distance => new Vec3(Math.cos(angle), 0, Math.sin(angle)).multiplyScalar(distance);
     mainStar.position.copy(orbitingPosition(-0.2));
     rocheBulge1.position.copy(orbitingPosition(-0.09));
     rocheBulge2.position.copy(orbitingPosition(-0.05));
 
     const dStart = 0.05 - rocheBulge2.radius + 0.01;
-    const streamStart = new Vec3(
-        -dStart * Math.cos(angle),
-        0,
-        -dStart * Math.sin(angle)
-    );
-    const streamEnd = whiteDwarfPosition.clone().sub(new Vec3(
-        diskRadius * Math.cos(angle - spotAngle),
-        0,
-        diskRadius * Math.sin(angle - spotAngle)
-    ));
+    const streamStart = new Vec3(Math.cos(angle), Math.sin(angle)).multiplyScalar(-dStart);
+    const streamEnd = whiteDwarfPosition.clone()
+        .sub(new Vec3(Math.cos(angle - spotAngle), 0, Math.sin(angle - spotAngle)))
+        .multiplyScalar(diskRadius);
     stream.position.copy(streamStart);
     stream.axis.copy(streamEnd.sub(streamStart));
 
-    whiteDwarfLight1.position.copy(whiteDwarfPosition).add(new Vec3(0, 0.01, 0));
-    whiteDwarfLight2.position.copy(whiteDwarfPosition).sub(new Vec3(0, 0.01, 0));
+    whiteDwarfLight1.position.set(whiteDwarfPosition.x, whiteDwarfPosition.y + .01, whiteDwarfPosition.z);
+    whiteDwarfLight2.position.set(whiteDwarfPosition.x, whiteDwarfPosition.y - .01, whiteDwarfPosition.z);
 }
 
 const streamMaterial = new MeshBasicMaterial({
@@ -128,27 +81,25 @@ const streamMaterial = new MeshBasicMaterial({
 });
 
 Simulation.with({
-    htmlDivId: 'xrayBinaryContainer',
-    viewport: { aspectRatio: '16 / 9' },
-    camera: {
-        position: cameraPosition,
-        target: new Vec3(0, 0, 0),
-        fieldOfView: 50,
-        controls: true
-    },
-    infoPanel: {
-        text: '<strong>🌌 X-ray binary</strong><br/>Original idea: <a href="https://www.mso.anu.edu.au/pfrancis/simulations/XRB.py">XRB.py</a> by <a href="https://www.mso.anu.edu.au/pfrancis/simulations/">Paul Francis</a><br/>Helion port based on <a href="https://github.com/zhendrikse/science/blob/main/astrophysics/code/xray_binary.py">xray_binary.py</a>'
-    },
-    scene: { background: ThreeJsScene.Background.STARS },
-    lighting: { enabled: true, shadows: false }
-})
+        htmlDivId: 'xrayBinaryContainer',
+        viewport: { aspectRatio: '16 / 9' },
+        camera: {
+            position: cameraPosition,
+            target: new Vec3(0, 0, 0),
+            fieldOfView: 40,
+        },
+        infoPanel: {
+            text: '<strong>🌌 X-ray binary</strong><br/>Original idea: <a href="https://www.mso.anu.edu.au/pfrancis/simulations/XRB.py">XRB.py</a> by <a href="https://www.mso.anu.edu.au/pfrancis/simulations/">Paul Francis</a><br/>Helion port based on <a href="https://github.com/zhendrikse/science/blob/main/astrophysics/code/xray_binary.py">xray_binary.py</a>'
+        },
+        scene: { background: ThreeJsScene.Background.STARS }
+    })
     .bind(whiteDwarf.alwaysWith(new Sphere({
         color: new Colour(0xcc66ff),
         material: new MeshBasicMaterial({ color: 0xcc66ff })
     })))
     .bind(accretionDisk.alwaysWith(new Cylinder({
-        color: new Colour(0xb3e6ff),
-        opacity: 0.8
+        color: new Colour(0xb396ff),
+        opacity: 0.7
     })))
     .bind(mainStar.alwaysWith(new Sphere({
         color: new Colour(0x73401a)
@@ -169,7 +120,6 @@ Simulation.with({
     })))
     .addObject3D(whiteDwarfLight1)
     .addObject3D(whiteDwarfLight2)
-    .addObject3D(diskGlow)
     .append(new Slider('Orbital speed')
         .withUnits(' rad/frame')
         .withRange(new Range(-0.01, -0.001, 0.001))
