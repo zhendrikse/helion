@@ -77,12 +77,12 @@ const polarizerAxis = new VectorModel(new Vec3(4.5, 0, 0), new Vec3(0, 1.0, 0));
 const analyzerAxis = new VectorModel(new Vec3(9.2, 0, 0), new Vec3(0, 1.0, 0));
 
 const polarizer = new AxialSymmetricBody({
-    position: new Vec3(4.43, -1.35, 0),
+    position: new Vec3(4.43, 0, 0),
     axis: new Vec3(0.14, 0, 0),
     radius: 1.35
 });
 const analyzer = new AxialSymmetricBody({
-    position: new Vec3(9.13, -1.35, 0),
+    position: new Vec3(9.13, 0, 0),
     axis: new Vec3(0.14, 0, 0),
     radius: 1.35
 });
