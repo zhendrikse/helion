@@ -49,6 +49,10 @@ class PolarizedElectromagneticWave extends ElectromagneticWave {
 const incomingWave = new MalusWave(1);
 const polarizedWave = new MalusWave(1);
 const transmittedWave = new MalusWave(1);
+
+// The incoming wave is polarized along y (0°). The first filter can be
+// rotated relative to it; the analyzer angle is relative to the first filter.
+let polarizerAngle = Math.PI / 4;
 let analyzerAngle = 0;
 
 const waveViewOptions = {
@@ -72,7 +76,7 @@ const transmittedView = new PolarizedElectromagneticWave({
 });
 
 const polarizerAxis = new VectorModel(new Vec3(4.5, 0, 0), new Vec3(0, 2.25, 0));
-const analyzerAxis = new VectorModel(new Vec3(9.2, 0, 0), new Vec3(0, 1.0, 0));
+const analyzerAxis = new VectorModel(new Vec3(9.2, 0, 0), new Vec3(0, 2.25, 0));
 
 const polarizer = new AxialSymmetricBody({
     position: new Vec3(4.43, 0, 0),
@@ -121,15 +125,23 @@ const simulation = Simulation
         color: Colour.White,
         size: 0.2
     })))
-    .append(new Slider('Analyzer angle θ: ')
+    .append(new Slider('First polarizer angle α: ')
+        .withUnits('°')
+        .withValue(45)
+        .withRange(new Range(0, 90, 1))
+        .onInput(degrees => {
+            polarizerAngle = degrees * Math.PI / 180;
+            updateWavesAndAxes();
+            updateReadout();
+        })
+    )
+    .append(new Slider('Analyzer angle θ (relative): ')
         .withUnits('°')
         .withValue(0)
         .withRange(new Range(0, 90, 1))
         .onInput(degrees => {
             analyzerAngle = degrees * Math.PI / 180;
-            transmittedWave.amplitude = Math.cos(analyzerAngle);
-            transmittedView.polarizationAngle = analyzerAngle;
-            analyzerAxis.axis.set(0, 2.25 * Math.cos(analyzerAngle), 2.25 * Math.sin(analyzerAngle));
+            updateWavesAndAxes();
             updateReadout();
         })
     )
@@ -139,14 +151,39 @@ const simulation = Simulation
         transmittedWave.time = clock.simulatedTime;
     });
 
-function updateReadout() {
-    const degrees = analyzerAngle * 180 / Math.PI;
-    const intensity = Math.cos(analyzerAngle) ** 2;
-    simulation.setHtmlTitle(
-        `Malus' law: I/I₀ = cos²θ = cos²(${degrees.toFixed(0)}°) = ${(100 * intensity).toFixed(1)}%`
+function updateWavesAndAxes() {
+    // A polarizer transmits the component parallel to its axis.
+    polarizedWave.amplitude = Math.cos(polarizerAngle);
+    polarizedView.polarizationAngle = polarizerAngle;
+
+    // The second polarizer applies Malus' law to the light that survived
+    // the first one. Its angle is relative to the first polarizer's axis.
+    transmittedWave.amplitude = Math.cos(polarizerAngle) * Math.cos(analyzerAngle);
+    transmittedView.polarizationAngle = polarizerAngle + analyzerAngle;
+
+    polarizerAxis.axis.set(
+        0,
+        2.25 * Math.cos(polarizerAngle),
+        2.25 * Math.sin(polarizerAngle)
+    );
+    analyzerAxis.axis.set(
+        0,
+        2.25 * Math.cos(polarizerAngle + analyzerAngle),
+        2.25 * Math.sin(polarizerAngle + analyzerAngle)
     );
 }
 
-transmittedView.polarizationAngle = analyzerAngle;
-analyzerAxis.axis.set(0, 2.25 * Math.cos(analyzerAngle), 2.25 * Math.sin(analyzerAngle));
+function updateReadout() {
+    const alphaDegrees = polarizerAngle * 180 / Math.PI;
+    const thetaDegrees = analyzerAngle * 180 / Math.PI;
+    const afterFirst = Math.cos(polarizerAngle) ** 2;
+    const afterSecond = afterFirst * Math.cos(analyzerAngle) ** 2;
+
+    simulation.setHtmlTitle(
+        `After first filter: ${(100 * afterFirst).toFixed(1)}% | After second: ${(100 * afterSecond).toFixed(1)}% ` +
+        `(cos²${alphaDegrees.toFixed(0)}° × cos²${thetaDegrees.toFixed(0)}°)`
+    );
+}
+
+updateWavesAndAxes();
 updateReadout();
