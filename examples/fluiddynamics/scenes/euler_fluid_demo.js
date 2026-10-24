@@ -469,28 +469,16 @@ Simulation
     .bind(fluid.alwaysWith(velocitiesView))
     .bind(obstacle.alwaysWith(obstacleView))
     .frameSceneOn(pressureView, { padding: 1.0 })
-    .onPointer('mouseup', () => mouseDown = false)
-    .onPointer('mouseleave', () => mouseDown = false)
-    .onPointer('mousedown', (x, y, _event) => {
+    .onPointer('pointerup', () => mouseDown = false)
+    .onPointer('pointercancel', () => mouseDown = false)
+    .onPointer('pointerdown', (x, y) => {
         mouseDown = true;
         fluid.setObstacle(x, y, true);
     })
-    .onPointer('mousemove', (x, y, _event) => {
+    .onPointer('pointermove', (x, y) => {
         if (!mouseDown) return;
 
         fluid.setObstacle(x, y, false);
     })
-    .onPointer('touchstart', (x, y, event) => {
-        mouseDown = true;
-        fluid.setObstacle(x, y, true);
-    }, { passive: true })
-    .onPointer('touchmove', (x, y, event) => {
-        if (!mouseDown) return;
-
-        event.preventDefault();
-        fluid.setObstacle(x, y, false);
-    }, { passive: false })
-    .onPointer('touchcancel', () => mouseDown = false)
-    .onPointer('touchend', () => mouseDown = false)
     .start();
 

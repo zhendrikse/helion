@@ -475,6 +475,7 @@ class ParameterControls {
 let mouseMovedInLiquid = false;
 let mousePosition = new Vec2();
 let mouseVelocity = new Vec2();
+let previousPointerPosition = null;
 let stirredCells = [];
 function stirLiquid() {
     mousePosition.set(mousePosition.x / domainScale, yRange.max - mousePosition.y / domainScale);
@@ -539,8 +540,22 @@ const simulation = Simulation
         if (speedColoring && ++colorUpdateCounter % COLOR_UPDATE_INTERVAL === 0)
             updateParticleColors();
     })
-    .onPointer("mousemove", (x, y, e) => updateMouse(x, y, e.movementX, -e.movementY))
-    .onPointer("touchmove", (x, y, e) => updateMouse(x, y, e.movementX, -e.movementY))
+    .onPointer("pointerdown", (x, y) => {
+        previousPointerPosition = new Vec2(x, y);
+    })
+    .onPointer("pointermove", (x, y) => {
+        if (!previousPointerPosition) {
+            previousPointerPosition = new Vec2(x, y);
+            return;
+        }
+
+        const vx = (x - previousPointerPosition.x) * simulation.width;
+        const vy = -(y - previousPointerPosition.y) * simulation.height;
+        updateMouse(x, y, vx, vy);
+        previousPointerPosition.set(x, y);
+    })
+    .onPointer("pointerup", () => previousPointerPosition = null)
+    .onPointer("pointercancel", () => previousPointerPosition = null)
     .onReset(() => {
         initScreenSize();
         grid.init();

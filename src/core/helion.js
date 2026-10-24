@@ -21,10 +21,10 @@ class SimulationClock {
      * @param {number} [options.maxAccumulatedTime=0.25]
      */
     constructor({
-        realTimeStep = 0.01,
-        simulationTimeStep = realTimeStep,
-        maxAccumulatedTime = 0.25
-    } = {}) {
+                    realTimeStep = 0.01,
+                    simulationTimeStep = realTimeStep,
+                    maxAccumulatedTime = 0.25
+                } = {}) {
         this.realTimeStep = realTimeStep;             // realtime scheduling interval
         this.simulationTimeStep = simulationTimeStep;   // simulated-time increment
 
@@ -49,8 +49,8 @@ class SimulationClock {
         this.simulatedTime += this.simulationTimeStep;
     }
 
-    /** 
-     * @param {number} clockTime 
+    /**
+     * @param {number} clockTime
      * @param {number} timeScale
      */
     updateWith(clockTime, timeScale) {
@@ -72,7 +72,7 @@ export class Simulation {
     /**
      * @param {string} htmlDivId
      * @param {boolean} parameterMenuCollapsed
-     * @param {string} aspectRatio 
+     * @param {string} aspectRatio
      * @returns {Viewport}
      */
     static viewportFromHtmlDiv = (htmlDivId, parameterMenuCollapsed, aspectRatio) => {
@@ -151,10 +151,10 @@ export class Simulation {
     }
 
     /**
-     * @param {Viewport} viewport 
-     * @param {Renderer} renderer 
-     * @param {boolean} headUpDisplay 
-     * @param {boolean} infoPanel 
+     * @param {Viewport} viewport
+     * @param {Renderer} renderer
+     * @param {boolean} headUpDisplay
+     * @param {boolean} infoPanel
      */
     constructor(viewport, renderer, headUpDisplay, infoPanel) {
         this._viewport = viewport;
@@ -392,8 +392,8 @@ export class Simulation {
         if (this._framesPerSecond <= this._minimumFrameRate)
             if (this._iterationsPerFrame > 5) // do not drop below 5 iterations per frame
                 this._iterationsPerFrame--;
-        else
-            this._iterationsPerFrame++;
+            else
+                this._iterationsPerFrame++;
         this._viewport.bottomLeftText = `${this._iterationsPerFrame} iterations @${this._framesPerSecond} fps`;
 
         // start new measurement time interval
@@ -464,15 +464,30 @@ export class Simulation {
      * @returns {Simulation}
      */
     onPointer(action, callback, options = {}) {
+        const canvas = this._viewport.canvas;
+
+        // Pointer events unify mouse, pen, and touch. Disable browser gestures on
+        // this interactive surface so touch movement is delivered as pointer events.
+        canvas.style.touchAction = 'none';
+
         const eventHandler = event => {
-            const bounds = event.currentTarget.getBoundingClientRect();
+            const bounds = canvas.getBoundingClientRect();
+            if (!bounds.width || !bounds.height)
+                return;
+
             const x = (event.clientX - bounds.left - bounds.width / 2) / bounds.width;
             const y = (bounds.top + bounds.height / 2 - event.clientY) / bounds.height;
+            if (!Number.isFinite(x) || !Number.isFinite(y))
+                return;
+
+            // Keep drag interactions alive when the pointer moves beyond the canvas.
+            if (action === 'pointerdown' && event.pointerId !== undefined)
+                canvas.setPointerCapture?.(event.pointerId);
+
             callback(x, y, event);
         };
 
-        this._viewport.canvas.addEventListener(action, eventHandler, options);
-
+        canvas.addEventListener(action, eventHandler, options);
         return this;
     }
 
@@ -614,7 +629,7 @@ export class Simulation {
     /**
      * Append a pre-built graph (new pattern, like controls).
      * Graph lives in its own file/class; Simulation only attaches it.
-     * 
+     *
      * @param {UPlotGraph} graph
      * @returns {Simulation}
      */
