@@ -58,6 +58,7 @@ export default defineConfig({
                 lattice_boltzmann_2d: path.resolve(__dirname, 'examples/fluiddynamics/scenes/lattice_boltzmann_2d.js'),
                 lorenz_attractor: path.resolve(__dirname, 'examples/mathematics/scenes/lorenz_attractor.js'),
                 l_systems: path.resolve(__dirname, 'examples/mathematics/scenes/l_systems.js'),
+                malus_law: path.resolve(__dirname, 'examples/optics/scenes/malus_law.js'),
                 matrix_transformation: path.resolve(__dirname, 'examples/mathematics/scenes/matrix_transformation.js'),
                 menger_sponge: path.resolve(__dirname, 'examples/mathematics/scenes/menger_sponge.js'),
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),
