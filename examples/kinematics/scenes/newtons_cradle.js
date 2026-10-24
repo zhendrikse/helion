@@ -37,25 +37,19 @@ class Pendulum {
 
     get ball() { return this._ball; }
     get rod() { return this._rod; }
-
-    _position() {
-        return new Vec3(
-            this._anchorX + this._length * Math.sin(this._theta),
-            PIVOT_Y - this._length * Math.cos(this._theta),
-            0
-        );
+    get mass() { return this._mass; }
+    get tangent () { return new Vec3(Math.cos(this._theta), Math.sin(this._theta), 0); }
+    get velocity() { return this.tangent.multiplyScalar(this._length * this._omega); }
+    get position() {
+        return new Vec3(this._anchorX + this._length * Math.sin(this._theta),
+        PIVOT_Y - this._length * Math.cos(this._theta),
+        0);
     }
 
-    _tangent() {
-        return new Vec3(Math.cos(this._theta), Math.sin(this._theta), 0);
-    }
-
-    _velocity() {
-        return this._tangent().multiplyScalar(this._length * this._omega);
-    }
+    positionVectorTo = otherPendulum => otherPendulum.position.clone().sub(this.position)
 
     _updatePosition() {
-        const position = this._position();
+        const position = this.position;
         const pivot = new Vec3(this._anchorX, PIVOT_Y, 0);
         this._ball.position.copy(position);
         this._rod.position.copy(position);
@@ -69,9 +63,7 @@ class Pendulum {
         this._updatePosition();
     }
 
-    applyVelocity(velocity) {
-        this._omega = velocity.dot(this._tangent()) / this._length;
-    }
+    applyVelocity = velocity => this._omega = velocity.dot(this.tangent) / this._length;
 
     reset(index) {
         this._theta = index === 0 ? INITIAL_ANGLE : 0;
@@ -82,97 +74,84 @@ class Pendulum {
 
 class NewtonsCradle {
     constructor() {
+        const radius = 0.04;
         /** @type {Pendulum[]} */
-        this._balls = Array.from({ length: BALL_COUNT }, (_, i) => new Pendulum(i));
+        this._pendulums = Array.from({ length: BALL_COUNT }, (_, i) => new Pendulum(i));
         this._frame = new ModelsCollection()
-            // Top crossbar
-            .add(new AxialSymmetricBody({
+            .add(new AxialSymmetricBody({ // Top crossbar
                 position: new Vec3(-0.85, PIVOT_Y - .025, 0),
-                axis: new Vec3(1.7, 0, 0),
-                radius: 0.035
+                axis: new Vec3(1.7, 0, 0), radius
             }))
-            // Side supports, extending down to the feet
-            .add(new AxialSymmetricBody({
+            .add(new AxialSymmetricBody({ // Side support
                 axis: new Vec3(0, -2.1 , 1.25),
-                position: new Vec3(-0.82, PIVOT_Y, 0),
-                radius: 0.04
+                position: new Vec3(-0.82, PIVOT_Y, 0), radius
             }))
-            .add(new AxialSymmetricBody({
+            .add(new AxialSymmetricBody({ // Side support
                 axis: new Vec3(0, -2.1 , -1.25),
-                position: new Vec3(-0.82, PIVOT_Y, 0),
-                radius: 0.04
+                position: new Vec3(-0.82, PIVOT_Y, 0), radius
             }))
-            .add(new AxialSymmetricBody({
+            .add(new AxialSymmetricBody({ // Side support
                 axis: new Vec3(0, -2.1 , 1.25),
-                position: new Vec3(0.82, PIVOT_Y, 0),
-                radius: 0.04
+                position: new Vec3(0.82, PIVOT_Y, 0), radius
             }))
-            .add(new AxialSymmetricBody({
+            .add(new AxialSymmetricBody({ // Side support
                 axis: new Vec3(0, -2.1 , -1.25),
-                position: new Vec3(0.82, PIVOT_Y, 0),
-                radius: 0.04
+                position: new Vec3(0.82, PIVOT_Y, 0), radius
             }))
-            // Feet
-            .add(new AxialSymmetricBody({
+            .add(new AxialSymmetricBody({ // Foot
                 position: new Vec3(-0.82, -3.225 * PIVOT_Y, -1.45),
-                axis: new Vec3(0, 0, 0.4),
-                radius: 0.05
+                axis: new Vec3(0, 0, 0.4), radius
             }))
-            .add(new AxialSymmetricBody({
+            .add(new AxialSymmetricBody({ // Foot
                 position: new Vec3(0.82, -3.225 * PIVOT_Y, -1.45),
-                axis: new Vec3(0, 0, 0.4),
-                radius: 0.05
+                axis: new Vec3(0, 0, 0.4), radius
             }))
-            .add(new AxialSymmetricBody({
+            .add(new AxialSymmetricBody({ // Foot
                 position: new Vec3(-0.82, -3.225 * PIVOT_Y, 1.05),
-                axis: new Vec3(0, 0, 0.4),
-                radius: 0.05
+                axis: new Vec3(0, 0, 0.4), radius
             }))
-            .add(new AxialSymmetricBody({
+            .add(new AxialSymmetricBody({ // Foot
                 position: new Vec3(0.82, -3.225 * PIVOT_Y, 1.05),
-                axis: new Vec3(0, 0, 0.4),
-                radius: 0.05
+                axis: new Vec3(0, 0, 0.4), radius
             }));
     }
 
-    get balls() { return this._balls.map(ball => ball.ball); }
-    get rods() { return this._balls.map(ball => ball.rod); }
+    get balls() { return this._pendulums.map(ball => ball.ball); }
+    get rods() { return this._pendulums.map(ball => ball.rod); }
     get frame() { return this._frame; }
 
-    reset() {
-        this._balls.forEach((ball, i) => ball.reset(i));
-    }
+    reset = () => this._pendulums.forEach((ball, i) => ball.reset(i));
 
     update(dt) {
-        this._balls.forEach(ball => ball.update(dt));
+        this._pendulums.forEach(pendulum => pendulum.update(dt));
 
         // Resolve nearly instantaneous, elastic collisions between adjacent balls.
-        for (let i = 0; i < this._balls.length - 1; i++) {
-            const left = this._balls[i];
-            const right = this._balls[i + 1];
-            const pLeft = left._position();
-            const pRight = right._position();
-            const delta = pRight.clone().sub(pLeft);
+        for (let i = 0; i < this._pendulums.length - 1; i++) {
+            const left = this._pendulums[i];
+            const right = this._pendulums[i + 1];
+
+            const delta= left.positionVectorTo(right);
             const distance = delta.length();
             const minDistance = BALL_RADIUS * 2;
+            if (distance >= minDistance || distance < 1e-9)
+                continue;
 
-            if (distance >= minDistance || distance < 1e-9) continue;
-
-            const normal = delta.multiplyScalar(1 / distance);
-            const vLeft = left._velocity();
-            const vRight = right._velocity();
+            const normal = delta.normalize();
+            const vLeft = left.velocity;
+            const vRight = right.velocity;
             const relativeSpeed = vRight.clone().sub(vLeft).dot(normal);
 
-            if (relativeSpeed >= 0) continue;
+            if (relativeSpeed >= 0)
+                continue;
 
-            const impulse = -(1 + RESTITUTION) * relativeSpeed / (1 / left._mass + 1 / right._mass);
-            vLeft.sub(normal.clone().multiplyScalar(impulse / left._mass));
-            vRight.add(normal.clone().multiplyScalar(impulse / right._mass));
-            left.applyVelocity(vLeft);
+            const impulse = -(1 + RESTITUTION) * relativeSpeed / (1 / left.mass + 1 / right.mass);
+            vLeft.sub( normal.clone().multiplyScalar(impulse / left.mass ));
+            vRight.add(normal.clone().multiplyScalar(impulse / right.mass));
+            left.applyVelocity( vLeft );
             right.applyVelocity(vRight);
         }
 
-        this._balls.forEach(ball => ball._updatePosition());
+        this._pendulums.forEach(ball => ball._updatePosition());
     }
 }
 
@@ -183,7 +162,6 @@ const rods = new ModelsCollection(cradle.rods);
 Simulation
     .with({
         htmlDivId: 'newtonsCradleContainer',
-        viewport: { aspectRatio: '1 / 1' },
         camera: {
             target: new Vec3(0, -.75, 0),
             fieldOfView: 30,
