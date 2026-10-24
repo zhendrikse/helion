@@ -1,6 +1,6 @@
 import {
     AxialSymmetricBody, Simulation, Vec3, Range, Cylinder,
-    ElectromagneticWave, Slider, Colour, ModelObject
+    ElectromagneticWave, Slider, Colour, ModelObject, Arrow, VectorModel
 } from '../../../src/index.js';
 
 const wavelength = 1.2;
@@ -73,6 +73,9 @@ const transmittedView = new PolarizedElectromagneticWave({
     position: new Vec3(9.7, 0, 0)
 });
 
+const polarizerAxis = new VectorModel(new Vec3(4.5, 0, 0), new Vec3(0, 1.0, 0));
+const analyzerAxis = new VectorModel(new Vec3(9.2, 0, 0), new Vec3(0, 1.0, 0));
+
 const polarizer = new AxialSymmetricBody({
     position: new Vec3(4.43, -1.35, 0),
     axis: new Vec3(0.14, 0, 0),
@@ -117,6 +120,16 @@ const simulation = Simulation
         color: new Colour(0xffaa44),
         opacity: 0.32
     })))
+    .bind(polarizerAxis.alwaysWith(new Arrow({
+        color: new Colour(0xffffff),
+        size: 0.06,
+        magnitudeMap: magnitude => magnitude
+    })))
+    .bind(analyzerAxis.alwaysWith(new Arrow({
+        color: new Colour(0xffffff),
+        size: 0.06,
+        magnitudeMap: magnitude => magnitude
+    })))
     .append(new Slider('Analyzer angle θ: ')
         .withValue(0)
         .withUnits('°')
@@ -125,6 +138,7 @@ const simulation = Simulation
             analyzerAngle = degrees * Math.PI / 180;
             transmittedWave.amplitude = Math.cos(analyzerAngle);
             transmittedView.polarizationAngle = analyzerAngle;
+            analyzerAxis.axis.set(0, Math.cos(analyzerAngle), Math.sin(analyzerAngle));
             updateReadout();
         })
     )
@@ -143,4 +157,5 @@ function updateReadout() {
 }
 
 transmittedView.polarizationAngle = analyzerAngle;
+analyzerAxis.axis.set(0, Math.cos(analyzerAngle), Math.sin(analyzerAngle));
 updateReadout();
