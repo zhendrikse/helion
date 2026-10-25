@@ -211,7 +211,6 @@ export class Circle extends Renderable2D {
     }
 }
 
-
 /**
  * Reusable filled polygon primitive for 2D models that expose
  * a Polygon object containing an array of vertices.
@@ -277,19 +276,9 @@ export class PolygonView extends Renderable2D {
      * @param {Polygon} polygon
      */
     static appendTriangles(target, polygon) {
-        for (let i = 1; i < polygon.vertexCount - 1; i++) {
+        for (let i = 1; i < polygon.vertexCount - 1; i++)
             for (const vertex of [polygon.vertexAt(0), polygon.vertexAt(i), polygon.vertexAt(i + 1)])
                 target.push(vertex.x, vertex.y, 0);
-        }
     }
 }
 
-/** Filled square primitive. Bind to a model with four ordered vertices. */
-export class Square extends PolygonView {
-    get vertexCount() { return 4; }
-}
-
-/** Filled triangle primitive. Bind to a model with three ordered vertices. */
-export class Triangle extends PolygonView {
-    get vertexCount() { return 3; }
-}
