@@ -12,7 +12,18 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-### Ising spin
+## Ising spin
+<div class="header_line"><br/></div>
+
+- The model walks through a temperature range between 0.1 and 4.9.
+Per temperature the programs executes 50 relaxation sweeps after which it
+determines the average of 100 measurements are being averaged.
+- Spins evolve with the [Metropolis-algorithm](https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm),
+including periodic boundary conditions.
+- The plot depicts the average absolute magnetization per spin as function of the temperature.
+- State is reinitialized at every new temperature, not after every sweep!
+
+### Demo
 <div class="header_line"><br/></div>
 
 <div class="badgeRow">
@@ -27,7 +38,7 @@ layout: ../../../layouts/DocsLayout.astro
 <div id="isingSpinArrowsContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/ising_spin_arrows.js"}></script>
 
-### Ising spin 2D
+## Ising spin 2D
 <div class="header_line"><br/></div>
 
 <div class="badgeRow">
