@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder,
-    RadialSymmetricBody, ThreeJsScene, Colour, ViewsCollection, ModelsCollection
+    RadialSymmetricBody, ThreeJsScene, Colour, ViewsCollection, ModelObjectsCollection
 } from '../../../src/index.js';
 import { MeshStandardMaterial } from 'three';
 
@@ -77,7 +77,7 @@ class NewtonsCradle {
         const radius = 0.04;
         /** @type {Pendulum[]} */
         this._pendulums = Array.from({ length: BALL_COUNT }, (_, i) => new Pendulum(i));
-        this._frame = new ModelsCollection()
+        this._frame = new ModelObjectsCollection()
             .add(new AxialSymmetricBody({ // Top crossbar
                 position: new Vec3(-0.85, PIVOT_Y - .025, 0),
                 axis: new Vec3(1.7, 0, 0), radius
@@ -156,8 +156,8 @@ class NewtonsCradle {
 }
 
 const cradle = new NewtonsCradle();
-const balls = new ModelsCollection(cradle.balls);
-const rods = new ModelsCollection(cradle.rods);
+const balls = new ModelObjectsCollection(cradle.balls);
+const rods = new ModelObjectsCollection(cradle.rods);
 
 Simulation
     .with({

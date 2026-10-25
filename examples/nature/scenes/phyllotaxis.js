@@ -1,6 +1,6 @@
 import {
     Circle, Simulation, Vec3, Vec2, Slider, Range, Button, Checkbox,
-    RadialSymmetricBody, Colour, ModelsCollection, ViewsCollection
+    RadialSymmetricBody, Colour, ModelObjectsCollection, ViewsCollection
 } from '../../../src/index.js';
 
 const numberOfDots = 360;
@@ -52,7 +52,7 @@ const colorSchemes = [
     (/** @type {{ angle: number; }} */ _p) => 65 / 360 // monochrome 65°
 ];
 
-const flowerSeeds = new ModelsCollection();
+const flowerSeeds = new ModelObjectsCollection();
 const flowerSeedsViews = ViewsCollection.of(Circle).with({ fillColor: Colour.Yellow });
 for (let index = 0; index <= numberOfDots; index++)
     flowerSeeds.add(new FlowerParticle(c, index));

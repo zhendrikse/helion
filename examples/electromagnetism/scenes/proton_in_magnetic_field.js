@@ -37,12 +37,11 @@ const lorentzForce = LorentzForce.in(magneticField);
 //
 const sphere = new Sphere({ color: Colour.Red });
 const arrowField = new ArrowField({
-    xRange: new Range(-6, 6, .5),
-    yRange: new Range(0, 0, .5),
-    zRange: new Range(-6, 6, .5),
-    scaleFactor: .9,
+    xRange: new Range(-6, 6, .3),
+    yRange: new Range(0, 0, .3),
+    zRange: new Range(-6, 6, .3),
     round: true,
-    magnitudeMap: (magnitude) => .5 * Math.sqrt(magnitude),
+    magnitudeMap: (magnitude) => .4 * Math.sqrt(magnitude),
     colorMap: (axis, magnitude) => new Color().setHSL(.5 * Math.sqrt(magnitude), 1, 0.5)
 });
 

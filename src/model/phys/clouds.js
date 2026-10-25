@@ -1,4 +1,4 @@
-import { ModelObject, ModelsCollection } from '../behavior.js';
+import { ModelObject, ModelObjectsCollection } from '../behavior.js';
 import { PhysicsState, RadialSymmetricBody } from './bodies.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
 import { SphereSphereCollision } from '../transformations/interactions.js';
@@ -58,7 +58,7 @@ export class PointCloud extends ModelObject {
     sizeAt(index) { return this._sizes[index]; }
 }
 
-export class Gas extends ModelsCollection{
+export class Gas extends ModelObjectsCollection{
     static bounceWithinSphere = (particle, limit) => {
         if (particle.position.lengthSq() > limit * limit)
             particle.state.velocity.negate();
@@ -119,10 +119,10 @@ export class Gas extends ModelsCollection{
 
     /**
      * @param {number} numberOfParticles
-     * @return {ModelsCollection}
+     * @return {ModelObjectsCollection}
      */
     addParticles(numberOfParticles = 50) {
-        const newParticles = new ModelsCollection();
+        const newParticles = new ModelObjectsCollection();
         for (let i = 0; i < numberOfParticles; i++) {
             const particle = new RadialSymmetricBody({
                 velocity: this.#newInitialVelocity(this._temperature),

@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody, ThreeJsScene, Colour,
-    ViewsCollection, ModelsCollection
+    ViewsCollection, ModelObjectsCollection
 } from '../../../src/index.js';
 import {MeshStandardMaterial} from 'three';
 
@@ -88,7 +88,7 @@ class Cradle {
             this._pendulums.push(new Pendulum({ T, position: x, pivotY: -2 }));
         }
 
-        this._frame = new ModelsCollection()
+        this._frame = new ModelObjectsCollection()
             .add(new AxialSymmetricBody({
                 axis: new Vec3(0, -3 - 0.04 , 2),
                 position: new Vec3(-1.5, -2, 0),
@@ -128,8 +128,8 @@ class Cradle {
 
 const total = 20;
 const cradle = new Cradle({ total });
-const balls = new ModelsCollection(cradle.balls);
-const rods = new ModelsCollection(cradle.rods);
+const balls = new ModelObjectsCollection(cradle.balls);
+const rods = new ModelObjectsCollection(cradle.rods);
 const spheres = ViewsCollection.of(Sphere).with({ castShadow: true });
 
 Simulation

@@ -1,5 +1,5 @@
 import {
-    Simulation, AxialSymmetricBody, ModelsCollection, Cylinder, Sphere, RadialSymmetricBody, Vec3, ViewsCollection,
+    Simulation, AxialSymmetricBody, ModelObjectsCollection, Cylinder, Sphere, RadialSymmetricBody, Vec3, ViewsCollection,
     Colour, Block, Box, Range, Slider, UPlotGraph, normalDistribution
 } from '../../../src/index.js';
 import uPlot from 'uplot';
@@ -13,7 +13,7 @@ const stepDistance = 0.04;
 const totalPinSteps = stepsPerRow * (num_nails + 1);
 const totalFallSteps = totalPinSteps + stepsPerRow * 2;
 
-const bars = new ModelsCollection()
+const bars = new ModelObjectsCollection()
     .add(new AxialSymmetricBody({ // Left
         position: new Vec3(-1 - num_nails, 19.75, 0),
         axis: new Vec3(0, -.1825 * num_balls, 0),
@@ -35,7 +35,7 @@ const bars = new ModelsCollection()
         radius: 0.2
     }));
 
-const pins = new ModelsCollection();
+const pins = new ModelObjectsCollection();
 for (let i = 0; i < num_nails; i++) {
     bars.add(new AxialSymmetricBody({
         position: new Vec3(i + .5 - num_nails / 2, 4.1, 0).multiplyScalar(2),

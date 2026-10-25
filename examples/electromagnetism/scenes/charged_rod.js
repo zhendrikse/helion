@@ -129,8 +129,7 @@ const magneticArrowField = new ArrowField({
     xRange: new Range(-0.4, 0.4, 0.12),
     yRange: new Range(-0.5, 0.5, 0.2),
     zRange: new Range(-0.4, 0.4, 0.12),
-    scaleFactor: 0.15,
-    magnitudeMap: m => m < 0.05 ? 0 : Math.sqrt(m), // set tiny arrows to zero
+    magnitudeMap: m => m < 0.05 ? 0 : .15 * Math.sqrt(m), // set tiny arrows to zero
     colorMap: () => Colour.Cyan,
     round: true
 });
@@ -139,8 +138,7 @@ const electricArrowField = new ArrowField({
     xRange: new Range(-0.4, 0.4, 0.12),
     yRange: new Range(-0.5, 0.5, 0.2),
     zRange: new Range(-0.4, 0.4, 0.12),
-    scaleFactor: 0.15,
-    magnitudeMap: m => m < 0.05 ? 0 : Math.sqrt(m), // set tiny arrows to zero
+    magnitudeMap: m => m < 0.05 ? 0 : .15 * Math.sqrt(m), // set tiny arrows to zero
     colorMap: () => Colour.Red,
     round: true
 });

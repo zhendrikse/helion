@@ -1,5 +1,5 @@
 import {
-    Range, ModelObject, Simulation, Slider, DropdownMenu, ModelsCollection, ViewsCollection,
+    Range, ModelObject, Simulation, Slider, DropdownMenu, ModelObjectsCollection, ViewsCollection,
     Colour, ColorMappers, PolygonView, Vec2, Button, RadialSymmetricBody, Circle, Polygon
 } from '../../../src/index.js';
 
@@ -80,8 +80,8 @@ function buildVoronoiCells(seeds) {
     simulation.bind(cellCores.onceWith(cellCoresView));
 }
 
-const cells = new ModelsCollection();
-const cellCores = new ModelsCollection();
+const cells = new ModelObjectsCollection();
+const cellCores = new ModelObjectsCollection();
 const cellViews = ViewsCollection.of(PolygonView).with({
     borderColor: Colour.White,
     borderWidth: 0.02

@@ -65,8 +65,7 @@ const arrowField = new ArrowField({
     yRange: new Range(-12 / scale, 12 / scale, 2 / scale),
     zRange: new Range(-12 / scale, 12 / scale, 2 / scale),
     round: true,
-    magnitudeMap: m => Math.sqrt(1e-7 * m),
-    scaleFactor: 1e-16,
+    magnitudeMap: m => 1e-16 * Math.sqrt(1e-7 * m),
     colorMap: (axis, magnitude) => hsvToRgb(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.75)
 });
 

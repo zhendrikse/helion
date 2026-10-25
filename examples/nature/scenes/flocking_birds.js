@@ -1,5 +1,5 @@
 import {
-    Body, Simulation, Vec3, Slider, Range, Button, VectorView, Colour, ModelsCollection, ViewsCollection
+    Body, Simulation, Vec3, Slider, Range, Button, VectorView, Colour, ModelObjectsCollection, ViewsCollection
 } from '../../../src/index.js';
 
 // Simulation parameters
@@ -18,7 +18,7 @@ class Flock {
         this._center = new Vec3();
         this._direction = new Vec3();
 
-        this._birds = new ModelsCollection();
+        this._birds = new ModelObjectsCollection();
         const initialPhysicalFlockRadius = 3;
         for (let i = 0; i < bird_count; i++)
             this._birds.add(new Body({

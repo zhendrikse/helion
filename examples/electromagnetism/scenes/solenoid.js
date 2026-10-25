@@ -106,7 +106,7 @@ const arrowField = new ArrowField({
     xRange: new Range(-20, 20, 4),
     yRange: new Range(-20, 20, 4),
     zRange: new Range(-20, 20, 4),
-    scaleFactor: 1.25
+    magnitudeMap: _m => 1.25
 });
 
 const simulation = Simulation

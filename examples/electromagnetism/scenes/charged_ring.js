@@ -95,8 +95,7 @@ const arrowField = new ArrowField({
     xRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     yRange: new Range(-radius * 1.5, radius * 1.5, radius / 4),
     zRange: new Range(-radius * 1.5, radius * 1.5, radius / 6),
-    scaleFactor: 2.5e-16,
-    magnitudeMap: magnitude => Math.sqrt(1 + 1e-3 * magnitude),
+    magnitudeMap: magnitude => 2.5e-16 * Math.sqrt(1 + 1e-3 * magnitude),
     colorMap: (axis, magnitude) => {
         const radial = axis.clone().normalize();
         const t = Math.min(Math.sqrt(1 + magnitude) * 1.25e-6, 1);

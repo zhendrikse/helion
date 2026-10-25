@@ -430,31 +430,30 @@ const headGeometrySquare = new ConeGeometry(1, 1, 4);
 
 export class ArrowField extends Renderable3D {
     /**
-     * @param {{
-     * xRange?: Range,
-     * yRange?: Range,
-     * zRange?: Range,
-     * scaleFactor?: number,
-     * round?: boolean,
-     * magnitudeMap?: (value: number) => number,
-     * colorMap?: (dir: Vec3, mag: number) => Color,
-     * shaftWidth?: number,
-     * headLength?: number,
-     * headWidth?: number,
-     * visible?: boolean
-     * }} options
+     * @param param0
+     * @param param0.xRange {Range} Range on x-axis
+     * @param param0.yRange {Range} Range on y-axis
+     * @param param0.zRange {Range} Range on z-axis
+     * @param param0.round {boolean} If true, arrow points are round instead of square
+     * @param param0.magnitudeMap {(value: number) => number} Maps the vector magnitude to its visual size. The result determines the arrow's length and geometry.
+     * @param param0.colorMap {(dir: Vec3, mag: number) => Color}
+     * @param param0.shaftWidth {number}
+     * @param param0.headWidth {number}
+     * @param param0.headLength {number}
+     * @param param0.centered {boolean}
+     * @param param0.visible {boolean}
      */
     constructor({
         xRange,
         yRange,
         zRange,
-        scaleFactor = 1,
         round = false,
         magnitudeMap = mag => Math.log(1 + mag),
         colorMap = (dir, mag) => hsvToRgb(Math.min(Math.log(1 + mag) / 5, 1), 0.7, 0.75),
         shaftWidth = 0.08,
         headWidth = 2.0,
         headLength = 4.0,
+        centered = false,
         visible = true
     } = {}) {
         super();
@@ -466,7 +465,6 @@ export class ArrowField extends Renderable3D {
         this._yRange = yRange;
         this._zRange = zRange;
 
-        this._scaleFactor = scaleFactor;
         this._matrixMagnitudeMap = magnitudeMap;
         this._colorMap = colorMap;
         this._color = new Color();
@@ -474,6 +472,7 @@ export class ArrowField extends Renderable3D {
         this._shaftWidth = shaftWidth;
         this._headWidth = headWidth;
         this._headLength = headLength;
+        this._centered = centered;
 
         const count = xRange.count * yRange.count * zRange.count;
         const shaftGeometry = round ? shaftGeometryRound : shaftGeometrySquare;
@@ -500,6 +499,7 @@ export class ArrowField extends Renderable3D {
         this._headOffset = new Vector3();
         this._target = new Vec3();
         this._position = new Vec3();
+        this._centeredOrigin = new Vector3();
     }
 
     /**  @param {VectorField} vectorField */
@@ -540,17 +540,22 @@ export class ArrowField extends Renderable3D {
         this._dir.set(this._target.x, this._target.y, this._target.z).normalize();
         this._q.setFromUnitVectors(UP, this._dir);
 
-        const visualMag = this._matrixMagnitudeMap(mag) * this._scaleFactor;
+        const visualMag = this._matrixMagnitudeMap(mag);
         const { shaftRadius, shaftLength, headLength } = this.#computeSizes(visualMag);
+        // By default, vectors start at the sample position. Centered vectors extend
+        // equally in both directions from it, so reversing a vector keeps its midpoint.
+        const origin = this._centered
+            ? this._centeredOrigin.copy(pos).addScaledVector(this._dir, -visualMag * 0.5)
+            : pos;
 
         // Shaft
-        this._shaftOffset.set(0, shaftLength * 0.5, 0).applyQuaternion(this._q).add(pos);
+        this._shaftOffset.set(0, shaftLength * 0.5, 0).applyQuaternion(this._q).add(origin);
         this._shape.set(shaftRadius, shaftLength, shaftRadius);
         this._matrix.compose(this._shaftOffset, this._q, this._shape);
         this._shaftMesh.setMatrixAt(index, this._matrix);
 
         // Head
-        this._headOffset.set(0, shaftLength + headLength * 0.5, 0).applyQuaternion(this._q).add(pos);
+        this._headOffset.set(0, shaftLength + headLength * 0.5, 0).applyQuaternion(this._q).add(origin);
         this._shape.set(shaftRadius * this._headWidth, headLength, shaftRadius * this._headWidth);
         this._matrix.compose(this._headOffset, this._q, this._shape);
         this._headMesh.setMatrixAt(index, this._matrix);
@@ -559,7 +564,7 @@ export class ArrowField extends Renderable3D {
     }
 
     /**
-     * @param {VectorField} vectorField 
+     * @param {VectorField} vectorField
      */
     synchronizeWith(vectorField) {
         let index = 0;

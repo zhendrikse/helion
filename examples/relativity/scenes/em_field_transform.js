@@ -182,43 +182,37 @@ simulation.bind(staticElectromagneticField.magneticField.onceWith(new ArrowField
     xRange: new Range(-8, 8, 4),
     yRange: new Range(-4, 4, 1),
     zRange: new Range(-4, 4, 1),
-    scaleFactor: 0.9,
     round: true,
     colorMap: () => Colour.Orange,
-    magnitudeMap: m => Math.log(1 + m)
+    magnitudeMap: m => 0.9 * Math.log(1 + m)
 })));
 simulation.bind(staticElectromagneticField.electricField.onceWith(new ArrowField({
     xRange: new Range(-8, 8, 4),
     yRange: new Range(-4, 4, 1),
     zRange: new Range(-4, 4, 1),
-    scaleFactor: 0.9,
     round: true,
     colorMap: () => Colour.Cyan,
-    magnitudeMap: m => Math.log(1 + m)
+    magnitudeMap: m => 0.9 * Math.log(1 + m)
 })));
 simulation.bind(electromagneticField.magneticField.onceWith(new ArrowField({
     xRange: new Range(-8, 8, 4),
     yRange: new Range(yOffsetSprime - 4, yOffsetSprime + 4, 1),
     zRange: new Range(-4, 4, 1),
-    scaleFactor: 0.9,
     round: true,
     colorMap: () => Colour.Orange,
-    magnitudeMap: m => Math.log(1 + m)
+    magnitudeMap: m => 0.9 * Math.log(1 + m)
 })));
 simulation.bind(electromagneticField.electricField.onceWith(new ArrowField({
     xRange: new Range(-8, 8, 4),
     yRange: new Range(yOffsetSprime - 4, yOffsetSprime + 4, 1),
     zRange: new Range(-4, 4, 1),
-    scaleFactor: 2,
     round: true,
     colorMap: () => Colour.Cyan,
-    magnitudeMap: m => Math.log(1 + m)
+    magnitudeMap: m => 2 * Math.log(1 + m)
 })));
 
 simulation
-    .onReset(() => {
-        setBeta(0.3)
-    })
+    .onReset(() => setBeta(0.3))
     .runsEvery(5e-3)
     .advancesBy(1e-2)
     .onStep((_, dt) => {

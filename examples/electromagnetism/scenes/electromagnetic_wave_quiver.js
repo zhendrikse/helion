@@ -115,8 +115,7 @@ const electricArrowField = new ArrowField({
     xRange: new Range(-6e-10, 6e-10, 1.25e-10),
     yRange: new Range(-6e-10, 6e-10, 1.25e-10),
     zRange: new Range(-6e-10, 6e-10, 1.25e-10),
-    scaleFactor: 2.5e-12,
-    magnitudeMap: magnitude => Math.log(magnitude + 1),
+    magnitudeMap: magnitude =>  2.5e-12 * Math.log(magnitude + 1),
     //colorMap: (axis, magnitude) => new Color().setHSL(0.15, 1, Math.min(Math.log(magnitude + 1), 0.6)),
     colorMap: (_axis, _magnitude) => new Colour(0xbbbb55),
     round: true
@@ -126,8 +125,7 @@ const magneticArrowField = new ArrowField({
     xRange: new Range(-6e-10, 6e-10, 1.25e-10),
     yRange: new Range(-6e-10, 6e-10, 1.25e-10),
     zRange: new Range(-6e-10, 6e-10, 1.25e-10),
-    scaleFactor: 2.5e-11,
-    magnitudeMap: magnitude => Math.log(magnitude + 1),
+    magnitudeMap: magnitude =>  3.5e-11 * Math.log(magnitude + 1),
     colorMap: () => Colour.Cyan,
     round: true
 });

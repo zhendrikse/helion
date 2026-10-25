@@ -39,7 +39,7 @@ const arrowField = new ArrowField({
     xRange: new Range(-1, 0.8, .2),
     yRange: new Range(-1, 0.8, .1),
     zRange: new Range(-1, 0.8, .2),
-    scaleFactor: .15,
+    magnitudeMap: _m => .15
 });
 
 Simulation.with({

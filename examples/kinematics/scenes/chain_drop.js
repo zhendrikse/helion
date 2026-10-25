@@ -1,7 +1,7 @@
 import {
     Vec3, Simulation, Sphere, Box, Slider, Range, SwitchableBondView, RadialSymmetricBody,
     SpringForce, Force, UniformGravitationalForce, Block, UPlotGraph,
-    BodyPair, Colour, ModelsCollection, ViewsCollection
+    BodyPair, Colour, ModelObjectsCollection, ViewsCollection
 } from '../../../src/index.js';
 import {g} from '../../../src/model/phys/forces.js';
 
@@ -57,8 +57,8 @@ class Chain {
         damping = 0.0
     } = {}) {
         this._totalBalls = totalBalls;
-        this._balls = new ModelsCollection();
-        this._bonds = new ModelsCollection();
+        this._balls = new ModelObjectsCollection();
+        this._bonds = new ModelObjectsCollection();
         this._length = length;
         this._mass = mass;
         this._amountHanging = amountHanging;

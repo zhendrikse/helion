@@ -54,6 +54,7 @@ export default defineConfig({
                 interference_2d: path.resolve(__dirname, 'examples/waves/scenes/interference_2d.js'),
                 interference_3d: path.resolve(__dirname, 'examples/waves/scenes/interference_3d.js'),
                 ising_spin: path.resolve(__dirname, 'examples/thermodynamics/scenes/ising_spin.js'),
+                ising_spin_arrows: path.resolve(__dirname, 'examples/thermodynamics/scenes/ising_spin_arrows.js'),
                 keplers_law: path.resolve(__dirname, 'examples/astrophysics/scenes/keplers_law.js'),
                 lattice_boltzmann_2d: path.resolve(__dirname, 'examples/fluiddynamics/scenes/lattice_boltzmann_2d.js'),
                 lorenz_attractor: path.resolve(__dirname, 'examples/mathematics/scenes/lorenz_attractor.js'),

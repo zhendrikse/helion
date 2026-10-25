@@ -53,8 +53,7 @@ const arrowField = new ArrowField({
     xRange: new Range(-boxSize, boxSize, 10),
     yRange: new Range(-boxSize, boxSize, 10),
     zRange: new Range(-boxSize, boxSize, 10),
-    scaleFactor: 3,
-    magnitudeMap: m => .25 + Math.sqrt(m * .1),
+    magnitudeMap: m => .75 + 3 * Math.sqrt(m * .1),
     colorMap: (axis, m) => {
         const normalized = (m - 0.5) / (5 - 0.5);
         const hue = 0.65 - normalized * 0.55; // blue -> cyan -> green -> yellow

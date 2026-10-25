@@ -1,7 +1,7 @@
 import { Color, AmbientLight, PointLight } from 'three';
 import {
     RadialSymmetricBody, EC, Range, Simulation, Trail, Vec3, Slider, Sphere, ArrowField, CoulombForce,
-    VectorField, Colour
+    VectorField, Colour, ModelObjectsCollection, ViewsCollection
 } from '../../../src/index.js';
 
 const K = 9e9;
@@ -9,28 +9,23 @@ const scale = 1e14;
 
 class Capacitor {
     constructor(topY = 10e-14, bottomY = -10e-14) {
-        this._charges = [];
+        this._charges = new ModelObjectsCollection();
 
         for (let x = -20; x <= 20; x += 2)
             for (let z = -20; z <= 20; z += 2)
                 for (const y of [topY, bottomY])
-                    this._charges.push(new RadialSymmetricBody({
+                    this._charges.add(new RadialSymmetricBody({
                         position: new Vec3(x / scale, y, z / scale),
                         radius: 1e-14,
                         charge: EC * (y > 0 ? 1 : -1)
                     }));
     }
 
-    /**
-     * @returns {Iterator<RadialSymmetricBody>}
-     */
-    [Symbol.iterator]() {
-        return this._charges[Symbol.iterator]();
-    }
+    get charges() { return this._charges; }
 
     fieldAt(position, target) {
         target.set(0, 0, 0);
-        for (const charge of this)
+        for (const charge of this._charges)
             target.add(charge.fieldAt(position).multiplyScalar(K));
     }
 }
@@ -65,9 +60,8 @@ const arrowField = new ArrowField({
     xRange: new Range(-18 / scale, 18 / scale, 8 / scale),
     yRange: new Range(-9 / scale, 9 / scale, 4 / scale),
     zRange: new Range(-18 / scale, 18 / scale, 8 / scale),
-    scaleFactor: 1e-15,
     round: false,
-    magnitudeMap: magnitude => Math.log(1 + magnitude),
+    magnitudeMap: magnitude => 1e-15 * Math.log(1 + magnitude),
     colorMap: (axis, magnitude) => new Color(1, Math.sqrt(magnitude) * 1e-10, 0)
 });
 
@@ -82,7 +76,8 @@ const speedSlider = new Slider('🚀 Speed: ')
     .withRange(new Range(1, 50, 1))
     .onInput(value => movingCharge.state.velocity.x = value / scale);
 
-const simulation = Simulation
+const chargesView = ViewsCollection.of(Sphere);
+Simulation
     .with({
         htmlDivId: 'movingChargeContainer',
         camera: {
@@ -105,6 +100,7 @@ const simulation = Simulation
     .bind(movingCharge.alwaysWith(sphere))
     .bind(movingCharge.alwaysWith(new Trail({ maxPoints: 400, color: sphere.color })))
     .bind(capacitorField.onceWith(arrowField))
+    .bind(capacitor.charges.alwaysWith(chargesView))
     .runsEvery(5e-3)
     .onStep((_, dt) => {
         if (movingCharge.position.x > 60 / scale)
@@ -121,8 +117,5 @@ const simulation = Simulation
     .append(chargeSlider)
     .append(speedSlider);
 
-for (const charge of capacitor)
-    simulation.bind(charge.onceWith(new Sphere({
-        color: charge.charge > 0 ? new Colour(0x4444ff) : Colour.Red
-    })));
-
+chargesView.forEach((view, index) =>
+    view.color = capacitor.charges.modelObject(index).charge > 0 ? new Colour(0x4444ff) : Colour.Red);

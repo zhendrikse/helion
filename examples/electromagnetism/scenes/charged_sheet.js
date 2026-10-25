@@ -79,8 +79,7 @@ const arrowField = new ArrowField({
     xRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
     yRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
     zRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
-    scaleFactor: 1e-16,
-    magnitudeMap: magnitude => Math.sqrt(1 + magnitude * 1e-3),
+    magnitudeMap: magnitude => 1e-16 * Math.sqrt(1 + magnitude * 1e-3),
     colorMap: (axis) =>
         axis.z > 0
             ? new Colour(0xff4444)

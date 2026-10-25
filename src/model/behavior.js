@@ -37,7 +37,7 @@ export class ModelObject {
     reset() {}
 }
 
-export class ModelsCollection {
+export class ModelObjectsCollection {
     /** @param {ModelObject[]} modelObjects */
     constructor(modelObjects = []) {
         this._bindables = modelObjects;

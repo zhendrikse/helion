@@ -86,7 +86,7 @@ export class Renderer {
 }
 
 
-export class ViewsCollection extends Renderable {
+export class ViewsCollection {
     /** @param {Renderable} viewConstructor */
     static of = viewConstructor => {
         return new ViewsCollection(viewConstructor);
@@ -94,7 +94,6 @@ export class ViewsCollection extends Renderable {
 
     /** @param {Renderable} viewConstructor */
     constructor(viewConstructor) {
-        super();
         this._viewConstructor = viewConstructor;
         this._options = {};
         /** @type {Renderable[]} */
@@ -139,6 +138,10 @@ export class ViewsCollection extends Renderable {
         for (const view of this._views) 
             box.union(view.boundingBox ?? new Box3());
         return box;
+    }
+
+    set visible(visible) {
+        this._views.forEach(view => view.visible = visible);
     }
 
     viewAt(index) {
