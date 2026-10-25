@@ -1,34 +1,23 @@
 import {
-    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder,
-    RadialSymmetricBody, ThreeJsScene, Colour, ViewsCollection, ModelObjectsCollection
+    Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, SphereSphereCollision,
+    RadialSymmetricBody, ThreeJsScene, Colour, ViewsCollection, ModelObjectsCollection,
 } from '../../../src/index.js';
 import { MeshStandardMaterial } from 'three';
 
 const g = 9.8;
-const BALL_COUNT = 7;
 const BALL_RADIUS = 0.1;
-const BALL_SPACING = BALL_RADIUS * 2.04;
-const PENDULUM_LENGTH = 1.45;
 const PIVOT_Y = 0.5;
 const INITIAL_ANGLE = -Math.PI / 5;
-const RESTITUTION = 0.985;
 
 class Pendulum {
-    constructor(index) {
-        this._anchorX = (index - (BALL_COUNT - 1) / 2) * BALL_SPACING;
-        this._length = PENDULUM_LENGTH;
-        this._theta = index === 0 ? INITIAL_ANGLE : 0;
+    constructor(anchorX, initialAngle, length = 1.45) {
+        this._anchorX = anchorX;
+        this._length = length;
+        this._theta = initialAngle;
         this._omega = 0;
-        this._mass = 1;
 
-        this._ball = new RadialSymmetricBody({
-            position: new Vec3(),
-            radius: BALL_RADIUS,
-            mass: this._mass
-        });
+        this._ball = new RadialSymmetricBody({ radius: BALL_RADIUS });
         this._rod = new AxialSymmetricBody({
-            position: new Vec3(),
-            axis: new Vec3(),
             radius: 0.012,
             mass: 0.1
         });
@@ -37,13 +26,12 @@ class Pendulum {
 
     get ball() { return this._ball; }
     get rod() { return this._rod; }
-    get mass() { return this._mass; }
     get tangent () { return new Vec3(Math.cos(this._theta), Math.sin(this._theta), 0); }
     get velocity() { return this.tangent.multiplyScalar(this._length * this._omega); }
     get position() {
         return new Vec3(this._anchorX + this._length * Math.sin(this._theta),
-        PIVOT_Y - this._length * Math.cos(this._theta),
-        0);
+            PIVOT_Y - this._length * Math.cos(this._theta),
+            0);
     }
 
     positionVectorTo = otherPendulum => otherPendulum.position.clone().sub(this.position)
@@ -61,6 +49,7 @@ class Pendulum {
         this._omega += alpha * dt;
         this._theta += this._omega * dt;
         this._updatePosition();
+        this._ball.velocity.copy(this.velocity);
     }
 
     applyVelocity = velocity => this._omega = velocity.dot(this.tangent) / this._length;
@@ -73,10 +62,14 @@ class Pendulum {
 }
 
 class NewtonsCradle {
-    constructor() {
+    constructor(ballCount = 7, ballSpacing = BALL_RADIUS * 2.04) {
         const radius = 0.04;
+        const anchorX = index => (index - (ballCount - 1) / 2) * ballSpacing;
+
+        this._collisionHandler = new SphereSphereCollision(0.985);
         /** @type {Pendulum[]} */
-        this._pendulums = Array.from({ length: BALL_COUNT }, (_, i) => new Pendulum(i));
+        this._pendulums = Array.from({ length: ballCount }, (_, index) =>
+            new Pendulum(anchorX(index), index === 0 ? INITIAL_ANGLE : 0));
         this._frame = new ModelObjectsCollection()
             .add(new AxialSymmetricBody({ // Top crossbar
                 position: new Vec3(-0.85, PIVOT_Y - .025, 0),
@@ -122,34 +115,22 @@ class NewtonsCradle {
 
     reset = () => this._pendulums.forEach((ball, i) => ball.reset(i));
 
+    _resolveCollisionsBetweenAdjecentSphericalBobs(left, right) {
+        left.ball.and(right.ball).apply(this._collisionHandler);
+
+        // The rods constrain each bob to its pendulum tangent. Project the
+        // collision-adjusted velocities back onto that allowed direction.
+        left.applyVelocity(left.ball.velocity);
+        right.applyVelocity(right.ball.velocity);
+        left.ball.velocity.copy(left.velocity);
+        right.ball.velocity.copy(right.velocity);
+    }
+
     update(dt) {
         this._pendulums.forEach(pendulum => pendulum.update(dt));
 
-        // Resolve nearly instantaneous, elastic collisions between adjacent balls.
-        for (let i = 0; i < this._pendulums.length - 1; i++) {
-            const left = this._pendulums[i];
-            const right = this._pendulums[i + 1];
-
-            const delta= left.positionVectorTo(right);
-            const distance = delta.length();
-            const minDistance = BALL_RADIUS * 2;
-            if (distance >= minDistance || distance < 1e-9)
-                continue;
-
-            const normal = delta.normalize();
-            const vLeft = left.velocity;
-            const vRight = right.velocity;
-            const relativeSpeed = vRight.clone().sub(vLeft).dot(normal);
-
-            if (relativeSpeed >= 0)
-                continue;
-
-            const impulse = -(1 + RESTITUTION) * relativeSpeed / (1 / left.mass + 1 / right.mass);
-            vLeft.sub( normal.clone().multiplyScalar(impulse / left.mass ));
-            vRight.add(normal.clone().multiplyScalar(impulse / right.mass));
-            left.applyVelocity( vLeft );
-            right.applyVelocity(vRight);
-        }
+        for (let i = 0; i < this._pendulums.length - 1; i++)
+            this._resolveCollisionsBetweenAdjecentSphericalBobs(this._pendulums[i], this._pendulums[i + 1]);
 
         this._pendulums.forEach(ball => ball._updatePosition());
     }
