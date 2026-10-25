@@ -52,8 +52,11 @@ class MomentOfInertiaCylinder {
         this._atoms.forEach(atom => {
             const pos = atom.position;
             const dot = axis.clone().dot(pos);
-            const cross = axis.clone().cross(pos);
-            const newPos = cross.multiplyScalar(sinA).addScaledVector(pos, cosA).addScaledVector(axis, dot * (1 - cosA));
+            const newPos = axis.clone()
+                .cross(pos)
+                .multiplyScalar(sinA)
+                .addScaledVector(pos, cosA)
+                .addScaledVector(axis, dot * (1 - cosA));
             pos.copy(newPos);
         });
     }
