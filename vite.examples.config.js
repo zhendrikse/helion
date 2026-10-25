@@ -62,6 +62,7 @@ export default defineConfig({
                 malus_law: path.resolve(__dirname, 'examples/optics/scenes/malus_law.js'),
                 matrix_transformation: path.resolve(__dirname, 'examples/mathematics/scenes/matrix_transformation.js'),
                 menger_sponge: path.resolve(__dirname, 'examples/mathematics/scenes/menger_sponge.js'),
+                moment_of_inertia: path.resolve(__dirname, 'examples/kinematics/scenes/moment_of_inertia.js'),
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),
                 n_body_oscillator: path.resolve(__dirname, 'examples/waves/scenes/n_body_oscillator.js'),
                 newtons_cradle: path.resolve(__dirname, 'examples/kinematics/scenes/newtons_cradle.js'),
