@@ -30,6 +30,7 @@ export class Viewport {
      * @param {string} aspectRatio
      */
     constructor(containerDiv, parameterMenuCollapsed, aspectRatio) {
+        this._parameterMenuCollapsed = parameterMenuCollapsed;
         this._container = containerDiv;
         this._container.classList.add('helionContainer');
         this._container.style.position = 'relative';
@@ -111,6 +112,7 @@ export class Viewport {
         this._details.appendChild(summary);
         this._details.style.visibility = 'hidden';
         this._details.style.paddingBottom = '15px';
+        this._details.open = !this._parameterMenuCollapsed;
         this._addOnsDiv.appendChild(this._details);
     }
 
@@ -247,7 +249,6 @@ export class Viewport {
         renderMathInHtml(this._infoPanelDiv, text);
         this._infoButton.style.visibility = 'visible';
     }
-
 
     enableParameterMenu() {
         this._details.style.visibility = 'visible';
