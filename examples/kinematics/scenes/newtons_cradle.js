@@ -7,13 +7,13 @@ import { MeshStandardMaterial } from 'three';
 const g = 9.8;
 const BALL_RADIUS = 0.1;
 const PIVOT_Y = 0.5;
-const INITIAL_ANGLE = -Math.PI / 5;
 
 class Pendulum {
     constructor(anchorX, initialAngle, length = 1.45) {
         this._anchorX = anchorX;
         this._length = length;
         this._theta = initialAngle;
+        this._initialAngle = initialAngle;
         this._omega = 0;
 
         this._ball = new RadialSymmetricBody({ radius: BALL_RADIUS });
@@ -54,22 +54,21 @@ class Pendulum {
 
     applyVelocity = velocity => this._omega = velocity.dot(this.tangent) / this._length;
 
-    reset(index) {
-        this._theta = index === 0 ? INITIAL_ANGLE : 0;
+    reset() {
+        this._theta = this._initialAngle;
         this._omega = 0;
         this._updatePosition();
     }
 }
 
 class NewtonsCradle {
-    constructor(ballCount = 7, ballSpacing = BALL_RADIUS * 2.04) {
+    constructor(ballCount = 7, ballSpacing = BALL_RADIUS * 2.04, swingAngle = -Math.PI / 5) {
         const radius = 0.04;
         const anchorX = index => (index - (ballCount - 1) / 2) * ballSpacing;
-
         this._collisionHandler = new SphereSphereCollision(0.985);
         /** @type {Pendulum[]} */
         this._pendulums = Array.from({ length: ballCount }, (_, index) =>
-            new Pendulum(anchorX(index), index === 0 ? INITIAL_ANGLE : 0));
+            new Pendulum(anchorX(index), index === 0 ? swingAngle : 0));
         this._frame = new ModelObjectsCollection()
             .add(new AxialSymmetricBody({ // Top crossbar
                 position: new Vec3(-0.85, PIVOT_Y - .025, 0),
@@ -113,7 +112,7 @@ class NewtonsCradle {
     get rods() { return this._pendulums.map(ball => ball.rod); }
     get frame() { return this._frame; }
 
-    reset = () => this._pendulums.forEach((ball, i) => ball.reset(i));
+    reset = () => this._pendulums.forEach(ball => ball.reset());
 
     _resolveCollisionsBetweenAdjacentSphericalBobs(left, right) {
         left.ball.and(right.ball).apply(this._collisionHandler);
