@@ -115,7 +115,7 @@ class NewtonsCradle {
 
     reset = () => this._pendulums.forEach((ball, i) => ball.reset(i));
 
-    _resolveCollisionsBetweenAdjecentSphericalBobs(left, right) {
+    _resolveCollisionsBetweenAdjacentSphericalBobs(left, right) {
         left.ball.and(right.ball).apply(this._collisionHandler);
 
         // The rods constrain each bob to its pendulum tangent. Project the
@@ -130,7 +130,7 @@ class NewtonsCradle {
         this._pendulums.forEach(pendulum => pendulum.update(dt));
 
         for (let i = 0; i < this._pendulums.length - 1; i++)
-            this._resolveCollisionsBetweenAdjecentSphericalBobs(this._pendulums[i], this._pendulums[i + 1]);
+            this._resolveCollisionsBetweenAdjacentSphericalBobs(this._pendulums[i], this._pendulums[i + 1]);
 
         this._pendulums.forEach(ball => ball._updatePosition());
     }
