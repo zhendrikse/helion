@@ -21,6 +21,17 @@ export class Vec3 {
         return new Vec3(this.x, this.y, this.z);
     }
 
+    rotateEuler(axis, angle) {
+        // Rodrigues' rotation formula: https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+        const dot = axis.clone().dot(this);
+        const newPos = axis.clone()
+            .cross(this)
+            .multiplyScalar(Math.sin(angle))
+            .addScaledVector(this, Math.cos(angle))
+            .addScaledVector(axis, dot * (1 - Math.cos(angle)));
+        this.copy(newPos);
+    }
+
     /**
      * Rotates the body around a world-space axis.
      *

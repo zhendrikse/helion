@@ -188,18 +188,7 @@ export class Body extends ModelObject{
     }
 
     rotateEuler(axis, angle) {
-        // Rodrigues' rotation formula: https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-        const pos = this.position;
-        const dot = axis.clone().dot(pos);
-        const newPos = axis.clone()
-            .cross(pos)
-            .multiplyScalar(Math.sin(angle))
-            .addScaledVector(pos, Math.cos(angle))
-            .addScaledVector(axis, dot * (1 - Math.cos(angle)));
-        pos.copy(newPos);
-        this.rotateChildren(axis, angle);
-        this._children.forEach(child =>
-            child.position.copy(this.position).add(child.localPosition));
+        this.position.rotateEuler(axis, angle);
     }
 
     /**
