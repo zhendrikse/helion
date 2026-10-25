@@ -17,10 +17,7 @@ class Pendulum {
         this._omega = 0;
 
         this._ball = new RadialSymmetricBody({ radius: BALL_RADIUS });
-        this._rod = new AxialSymmetricBody({
-            radius: 0.012,
-            mass: 0.1
-        });
+        this._rod = new AxialSymmetricBody({ radius: 0.012 });
         this._updatePosition();
     }
 

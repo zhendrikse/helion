@@ -22,13 +22,14 @@ class MomentOfInertiaCylinder {
         for (let z = -height / 2; z <= height / 2; z += ds) {
             let theta = 0;
             while (theta < Math.PI * 2) {
-                this._atoms.add(new RadialSymmetricBody({
+                const atom = new RadialSymmetricBody({
                     position: new Vec3(radius * Math.cos(theta), radius * Math.sin(theta), z),
                     radius: ATOM_RADIUS,
-                    mass: 1
-                } ));
+                    mass: 1e-3
+                });
+                this._atoms.add(atom);
                 theta += ds / radius;
-                this._momentOfInertia += radius * radius * 1e-3;
+                this._momentOfInertia += radius * radius * atom.mass;
             }
         }
     }
@@ -51,6 +52,7 @@ class MomentOfInertiaCylinder {
         const sinA = Math.sin(angle);
         this._atoms.forEach(atom => {
             const pos = atom.position;
+            // Rodrigues' rotation formula: https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
             const dot = axis.clone().dot(pos);
             const newPos = axis.clone()
                 .cross(pos)
