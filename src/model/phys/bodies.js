@@ -175,13 +175,28 @@ export class Body extends ModelObject{
         });
     }
 
-    /** 
+    /**
      * @param {'x'|'y'|'z'} axis
      * @param {number} angle
      */
     rotate(axis, angle) {
         this.position.rotate(axis, angle);
         this.rotateWorld(axis, angle);
+        this.rotateChildren(axis, angle);
+        this._children.forEach(child =>
+            child.position.copy(this.position).add(child.localPosition));
+    }
+
+    rotateEuler(axis, angle) {
+        // Rodrigues' rotation formula: https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+        const pos = this.position;
+        const dot = axis.clone().dot(pos);
+        const newPos = axis.clone()
+            .cross(pos)
+            .multiplyScalar(Math.sin(angle))
+            .addScaledVector(pos, Math.cos(angle))
+            .addScaledVector(axis, dot * (1 - Math.cos(angle)));
+        pos.copy(newPos);
         this.rotateChildren(axis, angle);
         this._children.forEach(child =>
             child.position.copy(this.position).add(child.localPosition));

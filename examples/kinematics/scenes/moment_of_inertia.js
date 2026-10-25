@@ -5,7 +5,6 @@ import {
 
 const CYLINDER_RADIUS = 1;
 const CYLINDER_HEIGHT = 2;
-const ATOM_RADIUS = 0.05;
 
 class MomentOfInertiaCylinder {
     constructor(radius = CYLINDER_RADIUS, height = CYLINDER_HEIGHT, ringSpacing = 0.1) {
@@ -16,15 +15,14 @@ class MomentOfInertiaCylinder {
         this._createAtoms(radius, height, ringSpacing);
     }
 
-    _createAtoms(radius, height, ringSpacing) {
+    _createAtoms(radius, height, ds) {
         this._momentOfInertia = 0;
-        const ds = ringSpacing;
         for (let z = -height / 2; z <= height / 2; z += ds) {
             let theta = 0;
             while (theta < Math.PI * 2) {
                 const atom = new RadialSymmetricBody({
                     position: new Vec3(radius * Math.cos(theta), radius * Math.sin(theta), z),
-                    radius: ATOM_RADIUS,
+                    radius: 0.05,
                     mass: 1e-3
                 });
                 this._atoms.add(atom);
@@ -39,28 +37,9 @@ class MomentOfInertiaCylinder {
 
     applyTorque(torque, dt) {
         this._omega.add(torque.clone().multiplyScalar(dt / this._momentOfInertia));
-
         const angle = this._omega.length() * dt;
-        if (angle > 0) {
-            const axis = this._omega.clone().normalize();
-            this._rotateAtoms(axis, angle);
-        }
-    }
-
-    _rotateAtoms(axis, angle) {
-        const cosA = Math.cos(angle);
-        const sinA = Math.sin(angle);
-        this._atoms.forEach(atom => {
-            const pos = atom.position;
-            // Rodrigues' rotation formula: https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-            const dot = axis.clone().dot(pos);
-            const newPos = axis.clone()
-                .cross(pos)
-                .multiplyScalar(sinA)
-                .addScaledVector(pos, cosA)
-                .addScaledVector(axis, dot * (1 - cosA));
-            pos.copy(newPos);
-        });
+        if (angle > 0)
+            this._atoms.forEach(atom => atom.rotateEuler(this._omega.clone().normalize(), angle));
     }
 }
 
