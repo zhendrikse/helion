@@ -40,16 +40,13 @@ class IsingField extends DiscreteScalarField {
             const i = Math.floor(Math.random() * this.nx);
             const j = Math.floor(Math.random() * this.ny);
             const dU = this.deltaU(i, j);
-            if (dU <= 0 || Math.random() < Math.exp(-dU / T)) {
+            if (dU <= 0 || Math.random() < Math.exp(-dU / T))
                 this.setValueAt(i, j, -this.valueAt(i, j));
-            }
         }
     }
 
     // TiledPlane calls rangeAt() for normalizer; keep fixed [-1,1] so #8000ff/#1a1a1a stay stable
-    rangeAt() {
-        return new Interval(-1, 1);
-    }
+    rangeAt() { return new Interval(-1, 1); }
 }
 
 class IsingColorMapper extends ColorMapper {
@@ -67,7 +64,7 @@ const field = new IsingField(latticeSize);
 const view = new DiscreteFieldSurfaceView({
     scale: 0.1,
     colorMapper: new IsingColorMapper(),
-    opacityFunction: v => v > 0.5 ? 1 : 0.1,
+    opacityFunction: v => v > 0.5 ? 1 : 0,
 });
 
 let T = 2.27; // around critical temperature Tc≈2.27 voor J=1

@@ -9,10 +9,6 @@ const MIN_TEMPERATURE = 0.1;
 const MAX_TEMPERATURE = 4.9;
 const TEMPERATURE_STEP = 0.075;
 
-const temperatures = [];
-for (let temperature = MIN_TEMPERATURE; temperature <= MAX_TEMPERATURE + 1e-9; temperature += TEMPERATURE_STEP)
-    temperatures.push(Number(temperature.toFixed(1)));
-
 /**
  * Two-dimensional Ising model with periodic boundary conditions.
  * Spins are ±1, with coupling J = 1 and Boltzmann constant kB = 1.
@@ -99,25 +95,23 @@ const graph = new UPlotGraph({
     yRange: { from: 0, to: 1 }
 });
 
-let temperatureIndex = 0;
 let sweepIndex = 0;
 let magnetizationSum = 0;
 let measuredSweeps = 0;
 let finished = false;
 let simulation;
 
-function updateReadout() {
+function updateReadout(temperature) {
     if (finished) {
         simulation.setHtmlTitle('Temperature sweep complete — press mouse for a new run.');
         return;
     }
 
-    simulation.setHtmlTitle(`T = ${temperatures[temperatureIndex].toFixed(1)}`);
+    simulation.setHtmlTitle(`T = ${Number(temperature).toFixed(1)}`);
     simulation.setBottomText(`Sweep ${sweepIndex + 1}/${RELAX_SWEEPS + MEASURE_SWEEPS}`);
 }
 
 function resetSweep() {
-    temperatureIndex = 0;
     sweepIndex = 0;
     magnetizationSum = 0;
     measuredSweeps = 0;
@@ -127,6 +121,7 @@ function resetSweep() {
     updateReadout();
 }
 
+let temperature = MIN_TEMPERATURE;
 simulation = Simulation
     .with({
         htmlDivId: 'isingSpinArrowsContainer',
@@ -136,12 +131,11 @@ simulation = Simulation
     .withMouseClickEventListener()
     .addGraph(graph)
     .bind(lattice.alwaysWith(spinView))
-    .runsEvery(1e-3)
+    .runsEvery(2e-3)
     .onStep(() => {
         if (finished)
             return;
 
-        const temperature = temperatures[temperatureIndex];
         lattice.sweep(temperature);
 
         // Discard the initial relaxation sweeps, then average measurements.
@@ -153,19 +147,16 @@ simulation = Simulation
         if (sweepIndex++ >= RELAX_SWEEPS + MEASURE_SWEEPS) {
             graph.push([temperature, magnetizationSum / measuredSweeps]);
 
-            temperatureIndex++;
-            if (temperatureIndex >= temperatures.length)
-                finished = true;
-            else {
-                // Reinitialize once per temperature (not after every sweep).
-                lattice.reset();
-                sweepIndex = 0;
-                magnetizationSum = 0;
-                measuredSweeps = 0;
-            }
+            finished = temperature >= MAX_TEMPERATURE;
+            // Reinitialize once per temperature (not after every sweep).
+            lattice.reset();
+            sweepIndex = 0;
+            magnetizationSum = 0;
+            measuredSweeps = 0;
+            temperature += TEMPERATURE_STEP;
         }
 
         if (sweepIndex % 10  === 0)
-            updateReadout();
+            updateReadout(temperature);
     })
     .onReset(resetSweep);
