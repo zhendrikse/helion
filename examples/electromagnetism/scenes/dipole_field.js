@@ -30,12 +30,16 @@ class Dipole {
 }
 
 class DipoleField extends VectorField {
-    /** @param {Dipole} dipole */
-    constructor(dipole) {
+    /**
+     * @param {Dipole} dipole
+     * @param {number} initialFieldStrength
+     */
+    constructor(dipole, initialFieldStrength=0.65) {
         super();
 
         this._dipole = dipole;
-        this._fieldStrength = 0.1;
+        this._fieldStrength = 0;
+        this.fieldStrength = initialFieldStrength;
     }
 
     sample(position, target) {
@@ -65,38 +69,28 @@ const arrowField = new ArrowField({
     yRange: new Range(-12 / scale, 12 / scale, 2 / scale),
     zRange: new Range(-12 / scale, 12 / scale, 2 / scale),
     round: true,
-    magnitudeMap: m => 1e-16 * Math.sqrt(1e-7 * m),
+    magnitudeMap: m => 1e-16 * Math.sqrt(5e-8 * m),
     colorMap: (axis, magnitude) => hsvToRgb(Math.min(Math.sqrt(1 + magnitude) * 5e-6, 1), 1, 0.75)
 });
 
 const simulation = Simulation
     .with({
         htmlDivId: 'dipoleContainer',
-        headUpDisplay: {
-            enabled: false
-        },
-        camera: {
-            position: new Vec3(32, 16, 48),
-            fieldOfView: 40
-        },
-        scene: {
-            scale: scale
-        }
+        headUpDisplay: { enabled: false },
+        camera: { position: new Vec3(32, 16, 48), fieldOfView: 40 },
+        scene: { scale: scale }
     })
     .bind(dipole.positive.onceWith(positiveSphere))
     .bind(dipole.negative.onceWith(negativeSphere))
     .bind(dipoleField.onceWith(arrowField));
 
-simulation.append(new Slider('️⚡ Field strength: ')
+simulation
+    .append(new Slider('️⚡ Field strength: ')
     .withRange(new Range(0, 1, 0.01))
-    .withValue(0.5)
     .on(dipoleField)
     .withProperty('fieldStrength')
+    .withValue(0.65)
     .togetherWith(new Checkbox('↻ Rotate: ')
         .on(simulation)
         .withProperty('autoRotate')
-    ));
-
-
-
-
+));

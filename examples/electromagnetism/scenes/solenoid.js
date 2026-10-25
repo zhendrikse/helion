@@ -1,6 +1,6 @@
 import {
     AxialSymmetricBody, VectorField, Range, Simulation, Vec3, Cylinder, ArrowField, Slider, Checkbox,
-    Colour
+    Colour, ModelObjectsCollection, ViewsCollection
 } from '../../../src/index.js';
 
 const MU0 = 4 * Math.PI * 1e-7;
@@ -31,13 +31,13 @@ class Solenoid {
                 radius * Math.sin(2 * Math.PI / totalSegments * turns * i)
             ));
 
-        const segments = [];
+        const segments = new ModelObjectsCollection();
         for (let i = 0; i < totalSegments - 1; i++) {
             const p1 = points[i];
             const p2 = points[i + 1];
             const position = p1.clone().add(p2).multiplyScalar(0.5);
             const axis = direct ? p2.clone().sub(p1) : p1.clone().sub(p2);
-            segments.push(new AxialSymmetricBody({ position, axis, radius: 0.5 }));
+            segments.add(new AxialSymmetricBody({ position, axis, radius: 0.5 }));
         }
 
         return segments;
@@ -74,7 +74,7 @@ class SolenoidField extends VectorField {
     constructor(solenoid) {
         super();
         this._solenoid = solenoid;
-        this._fieldStrength = 1;
+        this.fieldStrength = .5;
     }
 
     /**
@@ -82,16 +82,10 @@ class SolenoidField extends VectorField {
      * @param {Vec3} target
      */
     sample(position, target) {
-        target.copy(this._solenoid.fieldAt(position).multiplyScalar(this._fieldStrength));
+        target.copy(this._solenoid.fieldAt(position).multiplyScalar(this.fieldStrength));
     }
-
-    /** @param {number} value */
-    set fieldStrength(value) { this._fieldStrength = value; }
 }
 
-//
-// Physics model
-//
 const solenoid = new Solenoid({
     radius: 10,
     segments: 500,
@@ -99,38 +93,29 @@ const solenoid = new Solenoid({
 });
 const magneticField = new SolenoidField(solenoid);
 
-//
-// View
-//
-const arrowField = new ArrowField({
-    xRange: new Range(-20, 20, 4),
-    yRange: new Range(-20, 20, 4),
-    zRange: new Range(-20, 20, 4),
-    magnitudeMap: _m => 1.25
-});
-
 const simulation = Simulation
     .with({
         htmlDivId: 'solenoidContainer',
-        headUpDisplay: {
-            enabled: false
-        },
+        headUpDisplay: { enabled: false },
         camera: {
             position: new Vec3(32, 16, 48).multiplyScalar(1.25),
             fieldOfView: 45
         }
     })
-    .bind(magneticField.onceWith(arrowField));
+    .bind(solenoid.segments.onceWith(ViewsCollection.of(Cylinder).with({ color: Colour.Yellow })))
+    .bind(magneticField.onceWith(new ArrowField({
+        xRange: new Range(-20, 20, 4),
+        yRange: new Range(-20, 20, 4),
+        zRange: new Range(-20, 20, 4),
+        magnitudeMap: mag => Math.sqrt(mag)
+    })));
 
-for (const segment of solenoid.segments)
-    simulation.bind(segment.onceWith(new Cylinder({ color: Colour.Yellow })));
-
-simulation.append(new Slider('️⚡ Field strength: ')
+simulation
+    .append(new Slider('️⚡ Field strength: ')
     .withRange(new Range(0, 1, 0.01))
     .on(magneticField)
     .withProperty('fieldStrength')
     .withValue(0.5)
     .togetherWith(new Checkbox('↻ Rotate: ')
         .on(simulation)
-        .withProperty('autoRotate')
-    ));
+        .withProperty('autoRotate')));

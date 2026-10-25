@@ -236,7 +236,7 @@ export class Slider extends HtmlControl {
     /** @param {string} name */
     withProperty(name) {
         if (!this._targetObject)
-            throw new Error('Set target object first with the checkbox.on() method');
+            throw new Error('Set target object first with the Slider.on() method');
 
         if (!name in this._targetObject)
             throw new Error(`${name} is not a member of ${this._targetObject}`);
