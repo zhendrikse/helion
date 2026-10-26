@@ -92,13 +92,13 @@ class Cubie extends Block {
             this.add(new Sticker(this.position, Face.down, StickerData.down));
     }
 
-    isPartOfMove = (/** @type {Move} */ move) => this._grid[move.axis] === move.layer;
+    isPartOfMove = (/** @type {Move} */ move) => this._grid.dot(move.axis) === move.layer;
 
     get stickers() { return this._children; }
 
     /** @param {Move} move */
     commit(move) {
-        this._grid.rotate(move.axis, move.angle);
+        this._grid.rotateEuler(move.axis, move.angle);
         this._grid.set(Math.round(this._grid.x), Math.round(this._grid.y), Math.round(this._grid.z));
         this.rotate(move.axis, move.angle);
         this.position.set(this._grid.x * STEP, this._grid.y * STEP, this._grid.z * STEP);
@@ -107,15 +107,18 @@ class Cubie extends Block {
 
 class Move extends Transformation {
     static MovesGroup = Object.freeze({
-        r: { axis: Axis.x, layer:  1, direction: Direction.backward },
-        l: { axis: Axis.x, layer: -1, direction: Direction.forward  },
-        u: { axis: Axis.y, layer:  1, direction: Direction.backward },
-        d: { axis: Axis.y, layer: -1, direction: Direction.forward  },
-        f: { axis: Axis.z, layer:  1, direction: Direction.backward },
-        b: { axis: Axis.z, layer: -1, direction: Direction.forward  }
+        r: { axis: Vec3.X_UNIT_VECTOR, layer:  1, direction: Direction.backward },
+        l: { axis: Vec3.X_UNIT_VECTOR, layer: -1, direction: Direction.forward  },
+        u: { axis: Vec3.Y_UNIT_VECTOR, layer:  1, direction: Direction.backward },
+        d: { axis: Vec3.Y_UNIT_VECTOR, layer: -1, direction: Direction.forward  },
+        f: { axis: Vec3.Z_UNIT_VECTOR, layer:  1, direction: Direction.backward },
+        b: { axis: Vec3.Z_UNIT_VECTOR, layer: -1, direction: Direction.forward  }
     });
 
-    /** @param {string} key */
+    /**
+     * @param {string} key
+     * @param {boolean} reverse
+     */
     constructor(key, reverse=false) {
         super();
         const data = Move.MovesGroup[key.toLowerCase()];

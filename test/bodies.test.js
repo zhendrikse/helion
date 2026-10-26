@@ -35,7 +35,7 @@ function multiplyQuaternion(a, b) {
 /////////////////////////////////////////////////////////////////////
 
 
-for (const axis of ['x', 'y', 'z']) {
+for (const axis of [Vec3.X_UNIT_VECTOR, Vec3.Y_UNIT_VECTOR, Vec3.Z_UNIT_VECTOR]) {
     test(`Body rotates around world ${axis}`, () => {
         const body = new Body();
 
@@ -55,7 +55,7 @@ test('rotateWorld does not change position', () => {
     });
 
     const originalPosition = body.position.clone();
-    body.rotateWorld('y', Math.PI / 2);
+    body.rotateWorld(Vec3.Y_UNIT_VECTOR, Math.PI / 2);
     assert.deepEqual(body.position, originalPosition);
 });
 
@@ -64,7 +64,7 @@ test('rotate changes position', () => {
         position: new Vec3(1, 0, 0)
     });
 
-    body.rotate('y', Math.PI / 2);
+    body.rotate(Vec3.Y_UNIT_VECTOR, Math.PI / 2);
     assert.ok(body.position.distanceTo(new Vec3(0, 0, -1)) < 1e-10);
 });
 
@@ -73,7 +73,7 @@ test('Body world rotation preserves physical orientation', () => {
         orientation: new Vec3(0, 1, 0)
     });
 
-    body.rotateWorld('y', Math.PI / 2);
+    body.rotateWorld(Vec3.Y_UNIT_VECTOR, Math.PI / 2);
 
     const actual = quaternionFromEulerXYZ(body.orientation.x, body.orientation.y, body.orientation.z);
     const initial = quaternionFromEulerXYZ(0, 1, 0);
@@ -354,7 +354,7 @@ test('Rotating parent rotates child around parent', () => {
     child.localPosition.set(1, 0, 0);
     parent.add(child);
 
-    parent.rotate('y', Math.PI / 2);
+    parent.rotate(Vec3.Y_UNIT_VECTOR, Math.PI / 2);
 
     assert.ok(child.position.distanceTo(new Vec3(0, 0, -1)) < 1e-10);
     assert.ok(child.localPosition.distanceTo(new Vec3(0, 0, -1)) < 1e-10);

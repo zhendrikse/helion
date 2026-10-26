@@ -176,23 +176,28 @@ export class Body extends ModelObject{
     }
 
     /**
-     * @param {'x'|'y'|'z'} axis
+     * @param {Vec3}  axis
      * @param {number} angle
      */
     rotate(axis, angle) {
-        this.position.rotate(axis, angle);
+        this.position.rotateEuler(axis, angle);
         this.rotateWorld(axis, angle);
         this.rotateChildren(axis, angle);
+
         this._children.forEach(child =>
             child.position.copy(this.position).add(child.localPosition));
     }
 
+    /**
+     * @param {Vec3}  axis
+     * @param {number} angle
+     */
     rotateEuler(axis, angle) {
         this.position.rotateEuler(axis, angle);
     }
 
     /**
-     * @param {'x'|'y'|'z'}  axis
+     * @param {Vec3}  axis
      * @param {number} angle
      */
     rotateChildren(axis, angle) {
@@ -200,12 +205,12 @@ export class Body extends ModelObject{
             child.rotateWithParent(axis, angle);
     }
 
-    /** 
-     * @param {'x'|'y'|'z'} axis
+    /**
+     * @param {Vec3} axis
      * @param {number} angle
      */
     rotateWithParent(axis, angle) {
-        this.localPosition.rotate(axis, angle);
+        this.localPosition.rotateEuler(axis, angle);
         this.rotateWorld(axis, angle);
     }
 
@@ -258,7 +263,7 @@ export class Body extends ModelObject{
     /**
      * Rotates the body around a world-space axis.
      *
-     * @param {'x'|'y'|'z'} axis World-space rotation axis.
+     * @param {Vec3} axis World-space rotation axis.
      * @param {number} angle Rotation angle in radians.
      */
     rotateWorld(axis, angle) {
@@ -285,12 +290,14 @@ export class Body extends ModelObject{
         const c = Math.cos(halfAngle);
 
         let rotation;
-        if (axis === 'x')
+        if (axis === Vec3.X_UNIT_VECTOR)
             rotation = { x: s, y: 0, z: 0, w: c };
-        else if (axis === 'y')
+        else if (axis === Vec3.Y_UNIT_VECTOR)
             rotation = { x: 0, y: s, z: 0, w: c };
-        else
+        else if (axis === Vec3.Z_UNIT_VECTOR)
             rotation = { x: 0, y: 0, z: s, w: c };
+        else
+            throw new Error("World rotations are only supported around X, Y, or Z-axes");
 
         // rotation.multiply(start) = rotation * start
         const q = {

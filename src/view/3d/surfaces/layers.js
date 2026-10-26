@@ -13,7 +13,6 @@ import {Interval} from '../../../model/math/math.js';
 import {Vec3} from '../../../model/math/objects.js';
 
 export class Layer extends Renderable3D {
-    static UP = new Vector3(0, 1, 0);
     static material = () => new MeshStandardMaterial({
         side: DoubleSide,
         roughness: 0.45,
