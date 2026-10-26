@@ -1,4 +1,4 @@
-import test from 'node:test';
+import { describe, it, expect, beforeEach } from 'vitest';
 import assert from 'node:assert/strict';
 
 import { DiscreteComplexField } from '../src/model/math/fields.js';
@@ -6,153 +6,164 @@ import { Hamiltonian, SingleParticle } from '../src/model/phys/quantum/hamiltoni
 import { WaveFunction } from '../src/model/phys/quantum/wavefunction.js';
 import { SchrodingerSolver, LanczosEigenstateSolver, RelaxationEigenstateSolver } from "../src/model/phys/quantum/solvers.js";
 
-test('Hamiltonian samples a coordinate-based potential function', () => {
-    const H = new Hamiltonian({
-        particle: SingleParticle,
-        spatialNdim: 2,
-        N: 5,
-        extent: 4,
-        potential: particle => particle.x * particle.x + 2 * particle.y
+describe('Hamiltonian', () => {
+    it('samples a coordinate-based potential function', () => {
+        const H = new Hamiltonian({
+            particle: SingleParticle,
+            spatialNdim: 2,
+            N: 5,
+            extent: 4,
+            potential: particle => particle.x * particle.x + 2 * particle.y
+        });
+
+        assert.equal(H.potential.valueAt(2, 2), 0);
+        assert.equal(H.potential.valueAt(4, 2), 4);
+        assert.equal(H.potential.valueAt(2, 4), 4);
     });
 
-    assert.equal(H.potential.valueAt(2, 2), 0);
-    assert.equal(H.potential.valueAt(4, 2), 4);
-    assert.equal(H.potential.valueAt(2, 4), 4);
-});
+    it('solve returns stationary states and energies', async () => {
+        const H = new Hamiltonian({
+            potential: particle => 0.02 * particle.x * particle.x,
+            N: 25,
+            extent: 10
+        });
 
-test('Hamiltonian solve returns stationary states and energies', async () => {
-    const H = new Hamiltonian({
-        potential: particle => 0.02 * particle.x * particle.x,
-        N: 25,
-        extent: 10
+        const psi = new WaveFunction({ nx: 25, ny: 25 });
+        const solver = new LanczosEigenstateSolver({
+            hamiltonian: H,
+            states: 2,
+            iterations: 80,
+            calculateResiduals: false
+        });
+        const residuals = await solver.solveAsync(
+            psi,
+            (_text, _percent) => {}
+        );
+
+        assert.equal(psi.spectrum.length, 2);
+        assert.ok(Number.isFinite(psi.spectrum[0]));
+        assert.ok(Number.isFinite(psi.spectrum[1]));
+        assert.ok(Math.abs(psi.spectrum[0] - 0.1521374170) < 1e-10);
+        assert.ok(Math.abs(psi.spectrum[1] - 0.2991270610) < 1e-10);
     });
+});
 
-    const psi = new WaveFunction({ nx: 25, ny: 25 });
-    const solver = new LanczosEigenstateSolver({
-        hamiltonian: H,
-        states: 2,
-        iterations: 80,
-        calculateResiduals: false
+describe('RelaxationEigenstateSolver', () => {
+    it('returns the validated stationary-state energies', async () => {
+        const H = new Hamiltonian({
+            potential: particle => 0.02 * particle.x * particle.x,
+            N: 25,
+            extent: 10
+        });
+
+        const psi = new WaveFunction({nx: 25, ny: 25});
+        const solver = new RelaxationEigenstateSolver({
+            hamiltonian: H,
+            states: 2,
+            iterations: 1500,
+            stepSize: 0.01,
+            tolerance: 1e-10,
+            calculateResiduals: false
+        });
+        await solver.solveAsync(
+            psi,
+            (_text, _percent) => {
+            }
+        );
+
+        assert.equal(psi.spectrum.length, 2);
+        assert.ok(Number.isFinite(psi.spectrum[0]));
+        assert.ok(Number.isFinite(psi.spectrum[1]));
+        assert.ok(Math.abs(psi.spectrum[0] - 0.15) < 1e-2);
+        assert.ok(Math.abs(psi.spectrum[1] - 0.30) < 1e-2);
     });
-    const residuals = await solver.solveAsync(
-        psi,
-        (_text, _percent) => {}
-    );
-
-    assert.equal(psi.spectrum.length, 2);
-    assert.ok(Number.isFinite(psi.spectrum[0]));
-    assert.ok(Number.isFinite(psi.spectrum[1]));
-    assert.ok(Math.abs(psi.spectrum[0] - 0.1521374170) < 1e-10);
-    assert.ok(Math.abs(psi.spectrum[1] - 0.2991270610) < 1e-10);
 });
 
-test('RelaxationEigenstateSolver returns the validated stationary-state energies', async () => {
-    const H = new Hamiltonian({
-        potential: particle => 0.02 * particle.x * particle.x,
-        N: 25,
-        extent: 10
-    });
+describe('SchrodingerSolver', () => {
+    it('preserves the staggered leapfrog update', () => {
+        const H = new Hamiltonian({N: 5, extent: 4, potential: () => 0});
+        const psi = new DiscreteComplexField({nx: 5, ny: 5});
+        const solver = new SchrodingerSolver({hamiltonian: H});
+        const dt = 0.01;
 
-    const psi = new WaveFunction({ nx: 25, ny: 25 });
-    const solver = new RelaxationEigenstateSolver({
-        hamiltonian: H,
-        states: 2,
-        iterations: 1500,
-        stepSize: 0.01,
-        tolerance: 1e-10,
-        calculateResiduals: false
-    });
-    await solver.solveAsync(
-        psi,
-        (_text, _percent) => {}
-    );
+        psi.real[12] = 1;
+        psi.imag[12] = 0.25;
 
-    assert.equal(psi.spectrum.length, 2);
-    assert.ok(Number.isFinite(psi.spectrum[0]));
-    assert.ok(Number.isFinite(psi.spectrum[1]));
-    assert.ok(Math.abs(psi.spectrum[0] - 0.15) < 1e-2);
-    assert.ok(Math.abs(psi.spectrum[1] - 0.30) < 1e-2);
-});
+        // Solver does a half-step init on first step: imag += 0.5*dt*H(re)
+        solver.initialize(psi, dt);
+        const psiRealBeforeStep = new Float64Array(psi.real);
+        const psiImagBeforeStep = new Float64Array(psi.imag);
 
-test('SchrodingerSolver preserves the staggered leapfrog update', () => {
-    const H = new Hamiltonian({ N: 5, extent: 4, potential: () => 0 });
-    const psi = new DiscreteComplexField({ nx: 5, ny: 5 });
-    const solver = new SchrodingerSolver({ hamiltonian: H });
-    const dt = 0.01;
+        // Calculate the two staggered updates independently. This is the
+        // regression guard for the bug where the second line accidentally used
+        // H(Im(n)) instead of H(Im(n+1)).
+        const hRe = H.apply(psiRealBeforeStep);
+        const expectedIm = new Float64Array(psiImagBeforeStep);
+        for (let i = 0; i < expectedIm.length; i++)
+            expectedIm[i] -= dt * hRe[i];
 
-    psi.real[12] = 1;
-    psi.imag[12] = 0.25;
+        const hImNext = H.apply(expectedIm);
+        const expectedRe = new Float64Array(psiRealBeforeStep);
+        for (let i = 0; i < expectedRe.length; i++)
+            expectedRe[i] += dt * hImNext[i];
 
-    // Solver does a half-step init on first step: imag += 0.5*dt*H(re)
-    solver.initialize(psi, dt);
-    const psiRealBeforeStep = new Float64Array(psi.real);
-    const psiImagBeforeStep = new Float64Array(psi.imag);
+        solver.step(psi, dt);
 
-    // Calculate the two staggered updates independently. This is the
-    // regression guard for the bug where the second line accidentally used
-    // H(Im(n)) instead of H(Im(n+1)).
-    const hRe = H.apply(psiRealBeforeStep);
-    const expectedIm = new Float64Array(psiImagBeforeStep);
-    for (let i = 0; i < expectedIm.length; i++)
-        expectedIm[i] -= dt * hRe[i];
+        for (let i = 0; i < psi.imag.length; i++)
+            assert.ok(Math.abs(psi.imag[i] - expectedIm[i]) < 1e-12);
 
-    const hImNext = H.apply(expectedIm);
-    const expectedRe = new Float64Array(psiRealBeforeStep);
-    for (let i = 0; i < expectedRe.length; i++)
-        expectedRe[i] += dt * hImNext[i];
-
-    solver.step(psi, dt);
-
-    for (let i = 0; i < psi.imag.length; i++)
-        assert.ok(Math.abs(psi.imag[i] - expectedIm[i]) < 1e-12);
-
-    for (let i = 0; i < psi.real.length; i++)
-        assert.ok(Math.abs(psi.real[i] - expectedRe[i]) < 1e-12);
-});
-
-test('WaveFunction rotates eigenstates with both real and imaginary components', () => {
-    const psi = new WaveFunction({ nx: 5, ny: 5 });
-    const state = new DiscreteComplexField({ nx: 5, ny: 5 });
-    state.real.fill(1);
-    state.imag.fill(2);
-    psi.addEigenstate(state.real, state.imag, 0.75);
-    psi.setSuperposition([{ eigenstate: 0, coefficient: { re: 1, im: 0 } }]);
-
-    psi.time = 0.5;
-
-    // Correct quantum mechanics: psi(t) = psi(0) * e^(-iEt)
-    // psi(0) = 1 + 2i, E=0.75, t=0.5, Et=0.375
-    // psi(t) = (1+2i)(cos(0.375) - i*sin(0.375))
-    //        = cos(0.375) + 2*sin(0.375) + i*(2*cos(0.375) - sin(0.375))
-    const expectedReal = Math.cos(0.375) + 2 * Math.sin(0.375);
-    const expectedImag = 2 * Math.cos(0.375) - Math.sin(0.375);
-    assert.ok(Math.abs(psi.real[0] - expectedReal) < 1e-12);
-    assert.ok(Math.abs(psi.imag[0] - expectedImag) < 1e-12);
-});
-
-test('Hamiltonian-backed time evolution remains bounded for a stable timestep', () => {
-    const H = new Hamiltonian({ N: 25, extent: 10, potential: () => 0 });
-    const psi = new DiscreteComplexField({ nx: 25, ny: 25 })
-
-    for (let y = 1; y < psi.ny - 1; y++)
-        for (let x = 1; x < psi.nx - 1; x++) {
-            const dx = x - (psi.nx - 1) / 2;
-            const dy = y - (psi.ny - 1) / 2;
-            const i = psi.index(x, y);
-            psi.real[i] = Math.exp(-(dx * dx + dy * dy) / 12);
-        }
-
-    const norm = () => {
-        let sum = 0;
         for (let i = 0; i < psi.real.length; i++)
-            sum += psi.real[i] ** 2 + psi.imag[i] ** 2;
-        return sum;
-    };
+            assert.ok(Math.abs(psi.real[i] - expectedRe[i]) < 1e-12);
+    });
+});
 
-    const initialNorm = norm();
-    for (let step = 0; step < 100; step++)
-        H.evolve(psi, 0.01);
+describe('WaveFunction', () => {
+    it('rotates eigenstates with both real and imaginary components', () => {
+        const psi = new WaveFunction({nx: 5, ny: 5});
+        const state = new DiscreteComplexField({nx: 5, ny: 5});
+        state.real.fill(1);
+        state.imag.fill(2);
+        psi.addEigenstate(state.real, state.imag, 0.75);
+        psi.setSuperposition([{eigenstate: 0, coefficient: {re: 1, im: 0}}]);
 
-    const finalNorm = norm();
-    assert.ok(Math.abs(finalNorm - initialNorm) / initialNorm < 0.05);
+        psi.time = 0.5;
+
+        // Correct quantum mechanics: psi(t) = psi(0) * e^(-iEt)
+        // psi(0) = 1 + 2i, E=0.75, t=0.5, Et=0.375
+        // psi(t) = (1+2i)(cos(0.375) - i*sin(0.375))
+        //        = cos(0.375) + 2*sin(0.375) + i*(2*cos(0.375) - sin(0.375))
+        const expectedReal = Math.cos(0.375) + 2 * Math.sin(0.375);
+        const expectedImag = 2 * Math.cos(0.375) - Math.sin(0.375);
+        assert.ok(Math.abs(psi.real[0] - expectedReal) < 1e-12);
+        assert.ok(Math.abs(psi.imag[0] - expectedImag) < 1e-12);
+    });
+});
+
+describe('Hamiltonian-backed time evolution', () => {
+    it('remains bounded for a stable timestep', () => {
+        const H = new Hamiltonian({N: 25, extent: 10, potential: () => 0});
+        const psi = new DiscreteComplexField({nx: 25, ny: 25})
+
+        for (let y = 1; y < psi.ny - 1; y++)
+            for (let x = 1; x < psi.nx - 1; x++) {
+                const dx = x - (psi.nx - 1) / 2;
+                const dy = y - (psi.ny - 1) / 2;
+                const i = psi.index(x, y);
+                psi.real[i] = Math.exp(-(dx * dx + dy * dy) / 12);
+            }
+
+        const norm = () => {
+            let sum = 0;
+            for (let i = 0; i < psi.real.length; i++)
+                sum += psi.real[i] ** 2 + psi.imag[i] ** 2;
+            return sum;
+        };
+
+        const initialNorm = norm();
+        for (let step = 0; step < 100; step++)
+            H.evolve(psi, 0.01);
+
+        const finalNorm = norm();
+        assert.ok(Math.abs(finalNorm - initialNorm) / initialNorm < 0.05);
+    });
 });

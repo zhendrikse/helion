@@ -1,96 +1,98 @@
-import test from 'node:test';
+import { describe, it, expect, beforeEach } from 'vitest';
 import assert from 'node:assert/strict';
 
 /** !! D O   N O T   S H O R T E N   T H E S E   I M P O R T S  !! */
 import { DiscreteScalarField3D, DiscreteComplexField3D } from '../src/model/math/fields.js';
 import { SchrodingerEigenstateSolver3D } from '../src/model/phys/quantum/solvers.js';
 
-test('3D eigenstate diagnostics report spherical symmetry', () => {
-    const nx = 17;
-    const field = new DiscreteScalarField3D({ nx, ny: nx, nz: nx });
-    const psi = new DiscreteComplexField3D({ nx, ny: nx, nz: nx });
-    const center = (nx - 1) / 2;
+describe('3D eigenstate', () => {
+    it('3D eigenstate diagnostics report spherical symmetry', () => {
+        const nx = 17;
+        const field = new DiscreteScalarField3D({ nx, ny: nx, nz: nx });
+        const psi = new DiscreteComplexField3D({ nx, ny: nx, nz: nx });
+        const center = (nx - 1) / 2;
 
-    const state = new Float64Array(nx * nx * nx);
-    for (let z = 1; z < nx - 1; z++)
-        for (let y = 1; y < nx - 1; y++)
-            for (let x = 1; x < nx - 1; x++) {
-                const dx = x - center;
-                const dy = y - center;
-                const dz = z - center;
-                const r2 = dx * dx + dy * dy + dz * dz;
-                state[psi.index(x, y, z)] = Math.exp(-r2 / 8);
-            }
+        const state = new Float64Array(nx * nx * nx);
+        for (let z = 1; z < nx - 1; z++)
+            for (let y = 1; y < nx - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    const dx = x - center;
+                    const dy = y - center;
+                    const dz = z - center;
+                    const r2 = dx * dx + dy * dy + dz * dz;
+                    state[psi.index(x, y, z)] = Math.exp(-r2 / 8);
+                }
 
-    const solver = new SchrodingerEigenstateSolver3D({
-        potential: field,
-        spacing: 1,
-        states: 1
+        const solver = new SchrodingerEigenstateSolver3D({
+            potential: field,
+            spacing: 1,
+            states: 1
+        });
+
+        solver._eigenstates = [state];
+        solver._eigenvalues = [0];
+
+        const diagnostics = solver.diagnosticsFor(0, { radialBins: 64 });
+
+        assert.equal(diagnostics.energy, 0, 'Energy eigenvalue not 0');
+        assert.equal(diagnostics.residual > 0, true, 'Residual <= 0');
+        assert.ok(diagnostics.radialSymmetryError < 1e-12, 'RadiaSymmetryError >= 1e-12');
     });
 
-    solver._eigenstates = [state];
-    solver._eigenvalues = [0];
+    it('3D eigenstate diagnostics detect directional asymmetry', () => {
+        const nx = 17;
+        const field = new DiscreteScalarField3D({ nx, ny: nx, nz: nx });
+        const psi = new DiscreteComplexField3D({ nx, ny: nx, nz: nx });
+        const center = (nx - 1) / 2;
 
-    const diagnostics = solver.diagnosticsFor(0, { radialBins: 64 });
+        const state = new Float64Array(nx * nx * nx);
+        for (let z = 1; z < nx - 1; z++)
+            for (let y = 1; y < nx - 1; y++)
+                for (let x = 1; x < nx - 1; x++) {
+                    const dx = x - center;
+                    const dy = y - center;
+                    const dz = z - center;
+                    const r2 = dx * dx + dy * dy + dz * dz;
+                    state[psi.index(x, y, z)] = Math.exp(-r2 / 8) * (1 + 0.5 * dx / center);
+                }
 
-    assert.equal(diagnostics.energy, 0, 'Energy eigenvalue not 0');
-    assert.equal(diagnostics.residual > 0, true, 'Residual <= 0');
-    assert.ok(diagnostics.radialSymmetryError < 1e-12, 'RadiaSymmetryError >= 1e-12');
-});
+        const solver = new SchrodingerEigenstateSolver3D({
+            potential: field,
+            spacing: 1,
+            states: 1
+        });
 
-test('3D eigenstate diagnostics detect directional asymmetry', () => {
-    const nx = 17;
-    const field = new DiscreteScalarField3D({ nx, ny: nx, nz: nx });
-    const psi = new DiscreteComplexField3D({ nx, ny: nx, nz: nx });
-    const center = (nx - 1) / 2;
+        solver._eigenstates = [state];
+        solver._eigenvalues = [0];
 
-    const state = new Float64Array(nx * nx * nx);
-    for (let z = 1; z < nx - 1; z++)
-        for (let y = 1; y < nx - 1; y++)
-            for (let x = 1; x < nx - 1; x++) {
-                const dx = x - center;
-                const dy = y - center;
-                const dz = z - center;
-                const r2 = dx * dx + dy * dy + dz * dz;
-                state[psi.index(x, y, z)] = Math.exp(-r2 / 8) * (1 + 0.5 * dx / center);
-            }
+        const diagnostics = solver.diagnosticsFor(0, { radialBins: 64 });
 
-    const solver = new SchrodingerEigenstateSolver3D({
-        potential: field,
-        spacing: 1,
-        states: 1
+        assert.ok(diagnostics.radialSymmetryError > 0.01, 'RadiaSymmetryError >= 1e-2');
     });
 
-    solver._eigenstates = [state];
-    solver._eigenvalues = [0];
+    it('3D excited-state seeds preserve 2p nodal symmetry', () => {
+        const nx = 15;
+        const potential = new DiscreteScalarField3D({ nx, ny: nx, nz: nx });
+        const psi = new DiscreteComplexField3D({ nx, ny: nx, nz: nx });
+        const solver = new SchrodingerEigenstateSolver3D({
+            potential,
+            spacing: 1,
+            states: 2,
+            iterations: 180,
+            dt: 0.01
+        });
 
-    const diagnostics = solver.diagnosticsFor(0, { radialBins: 64 });
+        solver.initialize(psi);
 
-    assert.ok(diagnostics.radialSymmetryError > 0.01, 'RadiaSymmetryError >= 1e-2');
-});
+        const state = solver.eigenstateAt(1);
+        const center = (nx - 1) / 2;
 
-test('3D excited-state seeds preserve 2p nodal symmetry', () => {
-    const nx = 15;
-    const potential = new DiscreteScalarField3D({ nx, ny: nx, nz: nx });
-    const psi = new DiscreteComplexField3D({ nx, ny: nx, nz: nx });
-    const solver = new SchrodingerEigenstateSolver3D({
-        potential,
-        spacing: 1,
-        states: 2,
-        iterations: 180,
-        dt: 0.01
+        for (let y = 3; y < nx - 3; y++)
+            for (let z = 3; z < nx - 3; z++)
+                for (let dx = 1; dx <= 3; dx++) {
+                    const left = state[psi.index(center - dx, y, z)];
+                    const right = state[psi.index(center + dx, y, z)];
+                    assert.ok(Math.abs(left + right) < 1e-6);
+                }
     });
-
-    solver.initialize(psi);
-
-    const state = solver.eigenstateAt(1);
-    const center = (nx - 1) / 2;
-
-    for (let y = 3; y < nx - 3; y++)
-        for (let z = 3; z < nx - 3; z++)
-            for (let dx = 1; dx <= 3; dx++) {
-                const left = state[psi.index(center - dx, y, z)];
-                const right = state[psi.index(center + dx, y, z)];
-                assert.ok(Math.abs(left + right) < 1e-6);
-            }
 });
