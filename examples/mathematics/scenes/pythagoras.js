@@ -136,9 +136,9 @@ const simulation = Simulation
     );
 
 function resizeLabels() {
-    abSideLabel.fontSize = `${simulation.width / 20}px`
-    acSideLabel.fontSize = `${simulation.width / 20}px`
-    bcSideLabel.fontSize = `${simulation.width / 20}px`
+    abSideLabel.fontSize = `${simulation.width / 15}px`
+    acSideLabel.fontSize = `${simulation.width / 15}px`
+    bcSideLabel.fontSize = `${simulation.width / 15}px`
 }
 window.addEventListener('resize', resizeLabels);
 resizeLabels();
