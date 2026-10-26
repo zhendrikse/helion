@@ -66,6 +66,7 @@ export default defineConfig({
                 moving_charge: path.resolve(__dirname, 'examples/electromagnetism/scenes/moving_charge.js'),
                 n_body_oscillator: path.resolve(__dirname, 'examples/waves/scenes/n_body_oscillator.js'),
                 newtons_cradle: path.resolve(__dirname, 'examples/kinematics/scenes/newtons_cradle.js'),
+                night_sky: path.resolve(__dirname, 'examples/astrophysics/scenes/night_sky.js'),
                 orbitals: path.resolve(__dirname, 'examples/quantumphysics/scenes/orbitals.js'),
                 orbits: path.resolve(__dirname, 'examples/mathematics/scenes/orbits.js'),
                 parametric_surfaces: path.resolve(__dirname, 'examples/mathematics/scenes/parametric_surfaces.js'),
