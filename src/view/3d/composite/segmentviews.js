@@ -128,7 +128,7 @@ export class BoxSegmentsView extends InstancedSegmentsView {
 }
 
 export class LineSegmentView extends Renderable3D {
-    /** 
+    /**
      * @param {{
      *   lineWidth?: number
      *   dashed?: boolean
@@ -157,7 +157,6 @@ export class LineSegmentView extends Renderable3D {
             gapSize,
             resolution: new Vector2(window.innerWidth, window.innerHeight)
         });
-        this._3d = true;
         this._colorMapper = colorMapper;
         this._color = new Color();
         this._line = new LineSegments2(this._geometry, this._material);
@@ -167,7 +166,6 @@ export class LineSegmentView extends Renderable3D {
 
     /** @param {LineSegment} segment */
     initialize(segment) {
-        this._3d = segment.from.z !== undefined && segment.to.z !== undefined;
     }
 
     /** @param {LineSegment} model */
@@ -180,8 +178,8 @@ export class LineSegmentView extends Renderable3D {
     /** @param {LineSegment} segment */
     synchronizeWith(segment) {
         this._geometry.setPositions([
-            segment.from.x, segment.from.y, this._3d ? segment.from.z : 0,
-            segment.to.x, segment.to.y, this._3d ? segment.to.z : 0
+            segment.from.x, segment.from.y, segment.from.z,
+            segment.to.x, segment.to.y, segment.to.z
         ]);
 
         this._geometry.computeBoundingBox();
@@ -226,16 +224,6 @@ export class LineSegmentsView extends LineSegmentView {
         super({lineWidth, dashed, dashSize, gapSize, visible, colorMapper});
     }
 
-    initialize(segments) {
-        this._3d = true;
-
-        for (const segment of segments)
-            if (segment.from.z === undefined || segment.to.z === undefined) {
-                this._3d = false;
-                break;
-            }
-    }
-
     canBindTo(segments) {
         if (!(segments instanceof Segments))
             throw new Error("An instanced segments view can only be bound to a Segments collection.");
@@ -249,8 +237,8 @@ export class LineSegmentsView extends LineSegmentView {
 
         for (const segment of segments) {
             positions.push(
-                segment.from.x, segment.from.y, this._3d ? segment.from.z : 0,
-                segment.to.x, segment.to.y, this._3d ? segment.to.z : 0
+                segment.from.x, segment.from.y, segment.from.z,
+                segment.to.x, segment.to.y, segment.to.z
             );
 
             this._colorMapper.map(segment.scalar, this._color);
@@ -262,6 +250,11 @@ export class LineSegmentsView extends LineSegmentView {
 
         this._geometry.setPositions(positions);
         this._geometry.setColors(colors);
+
+        // The geometry can change from empty to populated (or vice versa).
+        // Refresh its bounds so Three.js frustum culling uses the current endpoints.
+        this._geometry.computeBoundingBox();
+        this._geometry.computeBoundingSphere();
 
         if (this._material.dashed)
             this._line.computeLineDistances();
@@ -284,13 +277,9 @@ export class CurveView extends LineSegmentsView {
     canBindTo(model) {
         // RealFunction: has Interval domain and sample(u, target)
         if (!(model.domain instanceof Interval) || typeof model.sample !== 'function')
-            throw new Error("A curve view can only be bound to a model with an Interval domain and a sample() method."); 
+            throw new Error("A curve view can only be bound to a model with an Interval domain and a sample() method.");
 
         return true;
-    }
-
-    initialize(model) {
-        this._3d = false;
     }
 
     synchronizeWith(model) {
