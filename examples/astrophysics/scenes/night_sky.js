@@ -1,14 +1,23 @@
 import {
-    Circle, Colour, HexValueColorMapper, LineSegment, LineSegmentsView, Range,
+    Checkbox, Circle, Colour, HexValueColorMapper, Label, LineSegment, LineSegmentsView, Range,
     RadialSymmetricBody, Segments, Simulation, Slider, ThreeJsScene, Vec2, Vec3
 } from '../../../src/index.js';
 
 const DATA_BASE_URL = 'https://raw.githubusercontent.com/ofrohn/d3-celestial/master/data/';
 const STAR_DATA_URL = DATA_BASE_URL + 'stars.6.json';
 const CONSTELLATION_DATA_URL = DATA_BASE_URL + 'constellations.lines.json';
-const STAR_MAGNITUDE_LIMIT = 4;
+const STAR_MAGNITUDE_LIMIT = 5;
 const INITIAL_SIDEREAL_TIME = 2;
 const INVISIBLE_POSITION = new Vec3(100, 100, 0);
+
+let latitudeDegrees = 52;
+let bearingDegrees = 0;
+let localSiderealTime = INITIAL_SIDEREAL_TIME;
+let stars = [];
+let constellationLines = [];
+let constellationLabels = [];
+let constellationsVisible = true;
+let constellationLabelsVisible = false;
 
 // Each pair is [right ascension in degrees, declination in degrees].
 const constellations = {
@@ -39,14 +48,10 @@ const constellations = {
     ]
 };
 
-let latitudeDegrees = 52;
-let bearingDegrees = 0;
-let localSiderealTime = INITIAL_SIDEREAL_TIME;
-let stars = [];
-
 const constellationSegments = new Segments();
 const constellationView = new LineSegmentsView({
     lineWidth: 1.5,
+    visible: constellationsVisible,
     colorMapper: new HexValueColorMapper()
 });
 
@@ -61,7 +66,7 @@ const simulation = Simulation
         },
         scene: {
             background: ThreeJsScene.Background.PLAIN,
-            backgroundColor: new Colour(0x000000)
+            backgroundColor: Colour.Black
         },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
@@ -71,12 +76,6 @@ const simulation = Simulation
         }
     })
     .bind(constellationSegments.alwaysWith(constellationView))
-    .runsEvery(1 / 60)
-    .onStep((clock, dt) => {
-        // Preserve the original demo's rate: one simulated sidereal minute per frame.
-        localSiderealTime = clock.simulatedTime;
-        updateSky();
-    })
     .append(new Slider('Latitude')
         .withUnits('°')
         .withRange(new Range(-89, 89, 1))
@@ -92,7 +91,26 @@ const simulation = Simulation
         .onInput(value => {
             bearingDegrees = value;
             updateSky();
-        })).start();
+        }))
+    .append(new Checkbox('Constellations')
+        .checked(constellationsVisible)
+        .onChange(checked => {
+            constellationsVisible = checked;
+            constellationView.visible = checked;
+        }))
+    .append(new Checkbox('Constellation labels')
+        .checked(constellationLabelsVisible)
+        .onChange(checked => {
+            constellationLabelsVisible = checked;
+            constellationLabels.forEach(label => label.view.visible = checked);
+        }))
+    .advancesBy(0.01)
+    .runsEvery(0.035)
+    .onStep((clock, dt) => {
+        // Preserve the original demo's rate: one simulated sidereal minute per frame.
+        localSiderealTime = clock.simulatedTime;
+        updateSky();
+    }).start();
 
 /**
  * Project equatorial coordinates onto the visible local sky.
@@ -114,7 +132,9 @@ function projectStar(raDegrees, decDegrees) {
     const cosDeclination = Math.cos(dec);
     const hourAngle = siderealAngle - ra;
 
-    const sinAltitude = sinDeclination * sinLatitude + cosDeclination * cosLatitude * Math.cos(hourAngle);
+    const sinAltitude = sinDeclination * sinLatitude
+        + cosDeclination * cosLatitude * Math.cos(hourAngle);
+
     if (sinAltitude <= 0)
         return null; // Below the horizon.
 
@@ -150,8 +170,13 @@ function projectStar(raDegrees, decDegrees) {
 
 /** Update all star positions and regenerate visible constellation segments. */
 function updateSky() {
-    for (const star of stars)
-        star.body.position.copy(projectStar(star.ra, star.dec) ?? INVISIBLE_POSITION);
+    for (const star of stars) {
+        const projected = projectStar(star.ra, star.dec);
+        star.body.position.copy(projected ?? INVISIBLE_POSITION);
+    }
+
+    for (const label of constellationLabels)
+        label.body.position.copy(projectStar(label.ra, label.dec) ?? INVISIBLE_POSITION);
 
     constellationSegments.clear();
     for (const [from, to] of constellationLines) {
@@ -177,19 +202,24 @@ function updateSky() {
 /** Convert GeoJSON's signed right ascension longitude to 0..360 degrees. */
 const longitudeToRightAscension = longitude => longitude < 0 ? longitude + 360 : longitude;
 
-/** Load the catalogue asynchronously so the scene can render immediately. */
-let constellationLines = [];
-async function loadStars() {
+/** Load the star catalogue and constellation line data from D3-Celestial. */
+async function loadData() {
     try {
-        const startDataResponse = await fetch(STAR_DATA_URL);
-        const constellationsResponse = await fetch(CONSTELLATION_DATA_URL);
+        const [starsResponse, constellationsResponse] = await Promise.all([
+            fetch(STAR_DATA_URL),
+            fetch(CONSTELLATION_DATA_URL)
+        ]);
 
-        if (!startDataResponse.ok)
-            throw new Error(`Star catalogue request failed: ${startDataResponse.status} ${startDataResponse.statusText}`);
+        if (!starsResponse.ok)
+            throw new Error(`Star catalogue request failed: ${starsResponse.status} ${starsResponse.statusText}`);
         if (!constellationsResponse.ok)
             throw new Error(`Constellation data request failed: ${constellationsResponse.status} ${constellationsResponse.statusText}`);
 
-        const constellationData = await constellationsResponse.json();
+        const [starData, constellationData] = await Promise.all([
+            starsResponse.json(),
+            constellationsResponse.json()
+        ]);
+
         constellationLines = constellationData.features.flatMap(feature =>
             feature.geometry.coordinates.flatMap(line =>
                 line.slice(1).map((point, index) => [
@@ -199,8 +229,35 @@ async function loadStars() {
             )
         );
 
-        const data = await startDataResponse.json();
-        stars = data.features
+        constellationLabels = constellationData.features.map(feature => {
+            const coordinates = feature.geometry.coordinates.flatMap(line =>
+                line.map(([longitude, declination]) => [
+                    longitudeToRightAscension(longitude),
+                    declination
+                ])
+            );
+            const meanSinRa = coordinates.reduce((sum, point) =>
+                sum + Math.sin(point[0] * Math.PI / 180), 0) / coordinates.length;
+            const meanCosRa = coordinates.reduce((sum, point) =>
+                sum + Math.cos(point[0] * Math.PI / 180), 0) / coordinates.length;
+            const ra = (Math.atan2(meanSinRa, meanCosRa) * 180 / Math.PI + 360) % 360;
+            const dec = coordinates.reduce((sum, point) => sum + point[1], 0) / coordinates.length;
+            const name = feature.properties.name || feature.properties.desig || feature.id;
+            const body = new RadialSymmetricBody({
+                position: INVISIBLE_POSITION.clone()
+            });
+            const view = new Label({
+                text: () => name,
+                color: new Colour(0x8ab4d6),
+                fontSize: '12px',
+                visible: constellationLabelsVisible
+            });
+
+            simulation.bind(body.alwaysWith(view));
+            return { ra, dec, body, view };
+        });
+
+        stars = starData.features
             .filter(feature => Number.isFinite(feature.properties.mag)
                 && feature.properties.mag <= STAR_MAGNITUDE_LIMIT)
             .map(feature => {
@@ -209,7 +266,7 @@ async function loadStars() {
                 const grey = Math.round(brightness * 255);
                 const body = new RadialSymmetricBody({
                     position: INVISIBLE_POSITION.clone(),
-                    radius: 0.0025 + brightness * 0.005
+                    radius: 0.0022 * ( 1 + brightness)
                 });
 
                 simulation.bind(body.alwaysWith(new Circle({
@@ -220,7 +277,7 @@ async function loadStars() {
                 })));
 
                 return {
-                    ra: feature.geometry.coordinates[0],
+                    ra: longitudeToRightAscension(feature.geometry.coordinates[0]),
                     dec: feature.geometry.coordinates[1],
                     body
                 };
@@ -228,10 +285,10 @@ async function loadStars() {
 
         updateSky();
     } catch (error) {
-        console.error('Unable to load the night-sky star catalogue.', error);
-        simulation.showHud('Could not load the star catalogue. Check the network connection and try again.');
+        console.error('Unable to load the night-sky data.', error);
+        simulation.showHud('Could not load the star or constellation data. Check the network connection and try again.');
     }
 }
 
+await loadData();
 updateSky();
-await loadStars();
