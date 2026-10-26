@@ -816,6 +816,8 @@ export class Label extends Renderable3D {
         this.visible = visible;
     }
 
+    set fontSize(fontSizeString) { this._element.style.fontSize = fontSizeString; }
+
     /**
      * @param {Body} model
      * returns {boolean}

@@ -89,38 +89,35 @@ const segmentsView = new LineSegmentsView({
     colorMapper: new HexValueColorMapper()
 });
 
-Simulation
+const abSideLabel = new Label({
+    text: model => 'a=' + pythagoras.a,
+    offset: model => new Vec2(0, -.5),
+    color: new Colour(0x44aaff),
+});
+const acSideLabel = new Label({
+    text: model => 'b=' + pythagoras.b,
+    offset: model => new Vec2(-.90, 0),
+    color: new Colour(0x44dd88),
+});
+const bcSideLabel = new Label({
+    text: model => 'c=' + pythagoras.c.toFixed(2),
+    offset: model => new Vec2(.75, .75),
+    color: new Colour(0xffaa44),
+});
+
+const simulation = Simulation
     .with({
         htmlDivId: 'pythagorasContainer',
-        headUpDisplay: {
-            enabled: false
-        },
-        camera: {
-            controls: false
-        }
+        headUpDisplay: { enabled: false },
+        camera: { controls: false }
     })
     .bind(pythagoras.onceWith(segmentsView))
     .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))
     .bind(pythagoras.ac.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))
     .bind(pythagoras.bc.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))
-    .bind(pythagoras.ab.onceWith(new Label({
-        text: model => 'a=' + pythagoras.a,
-        offset: model => new Vec2(0, -.5),
-        color: new Colour(0x44aaff),
-        fontSize: '30px'
-    })))
-    .bind(pythagoras.ac.onceWith(new Label({
-        text: model => 'b=' + pythagoras.b,
-        offset: model => new Vec2(-.90, 0),
-        color: new Colour(0x44dd88),
-        fontSize: '30px'
-    })))
-    .bind(pythagoras.bc.onceWith(new Label({
-        text: model => 'c=' + pythagoras.c.toFixed(2),
-        offset: model => new Vec2(.75, .75),
-        color: new Colour(0xffaa44),
-        fontSize: '30px'
-    })))
+    .bind(pythagoras.ab.onceWith(abSideLabel))
+    .bind(pythagoras.ac.onceWith(acSideLabel))
+    .bind(pythagoras.bc.onceWith(bcSideLabel))
     .frameSceneOn(segmentsView, {
         padding: 0.55,
         viewDirection: new Vec3(0, 0, 1)
@@ -137,3 +134,11 @@ Simulation
         .withProperty('b')
         .withValue(3)
     );
+
+function resizeLabels() {
+    abSideLabel.fontSize = `${simulation.width / 20}px`
+    acSideLabel.fontSize = `${simulation.width / 20}px`
+    bcSideLabel.fontSize = `${simulation.width / 20}px`
+}
+window.addEventListener('resize', resizeLabels);
+resizeLabels();
