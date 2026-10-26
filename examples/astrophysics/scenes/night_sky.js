@@ -17,7 +17,7 @@ let stars = [];
 let constellationLines = [];
 let constellationLabels = [];
 let constellationsVisible = true;
-let constellationLabelsVisible = false;
+let constellationLabelsVisible = true;
 
 // Each pair is [right ascension in degrees, declination in degrees].
 const constellations = {
