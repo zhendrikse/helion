@@ -4,14 +4,8 @@
 [![Pull requests](https://img.shields.io/github/issues-pr/zhendrikse/helion?logo=git&color=blue&logoColor=yellow)](https://github.com/zhendrikse/helion/pulls)
 
 # ✨ Helion
-<div class="header_line"><br/></div>
 
 #### ❤️ Visualizing the beauty of math &amp; physics
-<div class="header_line"></div>
-
-<div style="width: 50%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;" id="energyEquipartitionDemo">
-</div>
-<script type="module" src="https://www.hendrikse.name/helion/examples/energy_equipartition_demo.js"></script>
 
 [Helion](https://github.com/zhendrikse/helion) is a browser-native framework for interactive mathematics and physics.
 It turns the browser into a virtual laboratory where scientific ideas can be explored through code,
@@ -26,10 +20,6 @@ for building simulations that are both computationally
 meaningful and visually engaging.
 
 #### From scientific model to interactive visualization
-
-<div style="width: 50%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;" id="eulerFluidDemo">
-</div>
-<script type="module" src="https://www.hendrikse.name/helion/examples/euler_fluid_demo.js"></script>
 
 Helion separates a scientific model from the way it is visualized.
 A model describes the mathematical or
@@ -67,7 +57,6 @@ The goal is not to hide the mathematics, but to make the implementation reflect 
 📌 **Built for curiosity** — from individual mathematical objects to complex physical simulations
 
 ### 🧠 Core concepts
-<div class="header_line"></div>
 
 Helion organizes scientific simulations around a small set of complementary ideas. Each has a distinct responsibility.
 
@@ -112,7 +101,6 @@ This is a conceptual overview rather than a strict execution pipeline:
 transformations, solvers, and views play different roles and can be combined according to the problem.
 
 ### 🔬 One framework, many scientific domains
-<div class="header_line"></div>
 
 Helion is intended to support a broad range of mathematical and physical exploration.
 The same architectural ideas can be used to study very different systems:
@@ -130,8 +118,6 @@ can be used in practice, from compact mathematical demonstrations to more elabor
 
 ### 🎓 Designed for learning and exploration
 
-<div class="header_line"></div>
-
 Helion is particularly suited to situations where seeing a system evolve is as important as understanding its equations.
 
 - 👩🏻‍🎓 **Students** exploring mathematics and physics through experiments.
@@ -144,7 +130,6 @@ representation together throughout the experiment. Parameters can be changed, si
 and different representations can help reveal patterns that are difficult to see in equations alone.
 
 ### 🎯 Positioning
-<div class="header_line"></div>
 
 | Project         | Browser    | Nice 3D | Math semantics | Phys semantics | API        |
 | --------------- | ---------- | ------- | -------------- | -------------- | ---------- |
@@ -159,35 +144,8 @@ and different representations can help reveal patterns that are difficult to see
 
 
 ### 🧪 Explore the live demonstrations
-<div class="header_line"></div>
 
 Browse the examples and explore the mathematics and physics interactively.
-
-<div class="categoryGrid">
-    <a href="astrophysics/">💫 Astrophysics</a>
-    <a href="molecularphysics/">🧬 Atomic and molecular physics</a>
-    <a href="electromagnetism/">⚡ Electromagnetism</a>
-    <a href="kinematics/">🏃 Kinematics</a>
-    <a href="mathematics/">🧮 Mathematics</a>
-    <a href="nature/">🏕️ Nature</a>
-    <a href="optics/">🔦 Optics</a>
-    <a href="quantumphysics/">🔱 Quantum physics</a>
-    <a href="relativity/">🌃 Relativity</a>
-    <a href="thermodynamics/">🌡️ Thermodynamics</a>
-    <a href="waves/">🌊 Waves</a>
-</div>
-
-## 📚 Explore the code
-
-<div class="header_line"></div>
-
-Helion is an evolving open-source project. The source code, examples, and documentation provide a starting point for 
-understanding how the framework works and for experimenting with new scientific ideas.
-
-- [Source code on GitHub](https://github.com/zhendrikse/helion)
-- [Browse the examples](https://github.com/zhendrikse/helion/tree/main/examples)
-
-## 🧪 Live demos
 
 💫 [Astrophysics](https://www.hendrikse.name/helion/astrophysics/)<br/>
 🎮️ [Games](https://www.hendrikse.name/helion/electromagnetism/games/)<br/>
@@ -201,5 +159,14 @@ understanding how the framework works and for experimenting with new scientific 
 🌃 [Relativity](https://www.hendrikse.name/helion/relativity/)<br/>
 🌡️ [Thermodynamics](https://www.hendrikse.name/helion/thermodynamics/)<br/>
 🌊 [Waves](https://www.hendrikse.name/helion/waves/)<br/>
+
+### 📚 Explore the code
+
+Helion is an evolving open-source project. The source code, examples, and documentation provide a starting point for 
+understanding how the framework works and for experimenting with new scientific ideas.
+
+- [Source code on GitHub](https://github.com/zhendrikse/helion)
+- [Browse the examples](https://github.com/zhendrikse/helion/tree/main/examples)
+
 
 
