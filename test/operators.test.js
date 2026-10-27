@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import assert from 'node:assert/strict';
 
 import { DiscreteScalarField, DiscreteComplexField } from '../src/model/math/fields.js';
 import { DiamondSquareOperator, GaussianImpulse, GaussianImpulseComplex2D, PerlinNoiseOperator, DoubleSlitOperator, ShapeMask, ComplexShapeMask, Softness, ComplexSoftness, SineImpulseOperator, FFTShift2D, FFT2D, LaplaceOperator } from '../src/model/transformations/operators.js';
@@ -12,10 +11,10 @@ describe('DiamondSquareOperator', () => {
         op.applyTo(field);
 
         // Corners should be 0
-        assert.equal(field.valueAt(0, 0), 0);
-        assert.equal(field.valueAt(16, 0), 0);
-        assert.equal(field.valueAt(0, 16), 0);
-        assert.equal(field.valueAt(16, 16), 0);
+        expect(field.valueAt(0, 0)).toBe(0);
+        expect(field.valueAt(16, 0)).toBe(0);
+        expect(field.valueAt(0, 16)).toBe(0);
+        expect(field.valueAt(16, 16)).toBe(0);
 
         // Interior should have values
         let hasNonZero = false;
@@ -24,7 +23,7 @@ describe('DiamondSquareOperator', () => {
                 if (field.valueAt(x, y) !== 0) hasNonZero = true;
             }
         }
-        assert.ok(hasNonZero, 'Interior should have non-zero values');
+        expect(hasNonZero, 'Interior should have non-zero values').toBe(true);
     });
 });
 
@@ -35,10 +34,10 @@ describe('GaussianImpulse', () => {
         op.applyTo(field);
 
         // Center should have maximum value
-        assert.ok(Math.abs(field.valueAt(10, 10) - 5) < 1e-10);
+        expect(Math.abs(field.valueAt(10, 10) - 5) < 1e-10).toBe(true);
 
         // Far from center should be near 0
-        assert.ok(Math.abs(field.valueAt(0, 0)) < 1e-10);
+        expect(Math.abs(field.valueAt(0, 0)) < 1e-10).toBe(true);
     });
 
     it('GaussianImpulseComplex2D creates wave packet', () => {
@@ -55,7 +54,7 @@ describe('GaussianImpulse', () => {
                 }
             }
         }
-        assert.ok(hasNonZero, 'Wave packet should be present');
+        expect(hasNonZero, 'Wave packet should be present').toBe(true);
     });
 });
 
@@ -74,8 +73,8 @@ describe('PerlinNoiseOperator', () => {
                 max = Math.max(max, v);
             }
         }
-        assert.ok(max > min, 'Perlin noise should have variation');
-        assert.ok(max <= 10 && min >= -10, 'Values should be within scale range');
+        expect(max > min, 'Perlin noise should have variation').toBe(true);
+        expect(max <= 10 && min >= -10, 'Values should be within scale range').toBe(true);
     });
 });
 
@@ -97,7 +96,7 @@ describe('DoubleSlitOperator', () => {
             if ((curr > prev && curr > 0) || (curr < prev && curr < 0)) changes++;
             prev = curr;
         }
-        assert.ok(changes > 5, 'Should have multiple fringes');
+        expect(changes > 5, 'Should have multiple fringes').toBe(true);
     });
 });
 
@@ -109,9 +108,9 @@ describe('ShapeMask', () => {
         op.applyTo(field);
 
         // Inside circle should be 1
-        assert.equal(field.valueAt(10, 10), 1);
+        expect(field.valueAt(10, 10)).toBe(1);
         // Outside should be 0
-        assert.equal(field.valueAt(0, 0), 0);
+        expect(field.valueAt(0, 0)).toBe(0);
     });
 
     it('ComplexShapeMask applies shape to complex field', () => {
@@ -120,8 +119,8 @@ describe('ShapeMask', () => {
         const op = new ComplexShapeMask(shape);
         op.applyTo(field);
 
-        assert.equal(field.real[field.index(10, 10)], 1);
-        assert.equal(field.real[field.index(0, 0)], 0);
+        expect(field.real[field.index(10, 10)]).toBe(1);
+        expect(field.real[field.index(0, 0)]).toBe(0);
     });
 
     it('Softness modifies scalar field', () => {
@@ -132,12 +131,12 @@ describe('ShapeMask', () => {
         op.applyTo(field);
 
         // Center becomes average of 4 zero neighbors = 0
-        assert.equal(field.valueAt(5, 5), 0);
+        expect(field.valueAt(5, 5)).toBe(0);
         // Neighbors get 1/4 of center value = 25
-        assert.equal(field.valueAt(4, 5), 25);
-        assert.equal(field.valueAt(6, 5), 25);
-        assert.equal(field.valueAt(5, 4), 25);
-        assert.equal(field.valueAt(5, 6), 25);
+        expect(field.valueAt(4, 5)).toBe(25);
+        expect(field.valueAt(6, 5)).toBe(25);
+        expect(field.valueAt(5, 4)).toBe(25);
+        expect(field.valueAt(5, 6)).toBe(25);
     });
 
     it('ComplexSoftness modifies complex field', () => {
@@ -147,10 +146,10 @@ describe('ShapeMask', () => {
         op.applyTo(field);
 
         // Center becomes average of 4 zero neighbors = 0
-        assert.equal(field.real[field.index(5, 5)], 0);
+        expect(field.real[field.index(5, 5)]).toBe(0);
         // Neighbors get 1/4 of center value = 25
-        assert.equal(field.real[field.index(4, 5)], 25);
-        assert.equal(field.real[field.index(6, 5)], 25);
+        expect(field.real[field.index(4, 5)]).toBe(25);
+        expect(field.real[field.index(6, 5)]).toBe(25);
     });
 });
 
@@ -168,7 +167,7 @@ describe('SineImpulseOperator', () => {
             if (prev * curr < 0) zeroCrossings++;
             prev = curr;
         }
-        assert.ok(zeroCrossings >= 3, 'Should have multiple zero crossings');
+        expect(zeroCrossings >= 3, 'Should have multiple zero crossings').toBe(true);
     });
 });
 
@@ -182,7 +181,7 @@ describe('FFT', function () {
 
         // Should move to center (4,4)
         const centerIdx = 4 * 8 + 4;
-        assert.equal(field.real[centerIdx], 42);
+        expect(field.real[centerIdx]).toBe(42);
     });
 
     it('FFT2D forward and inverse are identity', () => {
@@ -195,9 +194,9 @@ describe('FFT', function () {
         op.applyTo(field);
         op.inverseTransform(field);
 
-        assert.ok(Math.abs(field.real[0] - 1) < 1e-10);
-        assert.ok(Math.abs(field.real[1] - 2) < 1e-10);
-        assert.ok(Math.abs(field.imag[5] - 3) < 1e-10);
+        expect(Math.abs(field.real[0] - 1) < 1e-10).toBe(true);
+        expect(Math.abs(field.real[1] - 2) < 1e-10).toBe(true);
+        expect(Math.abs(field.imag[5] - 3) < 1e-10).toBe(true);
     });
 });
 
@@ -210,7 +209,7 @@ describe('Laplace', () => {
                 field.setValueAt(x, y, 10);
             }
         }
-        assert.equal(LaplaceOperator.at(field, 2, 2), 0);
+        expect(LaplaceOperator.at(field, 2, 2)).toBe(0);
 
         // Parabolic field: f(x,y) = x^2 + y^2 -> Laplacian = 4
         for (let x = 0; x < 5; x++) {
@@ -218,6 +217,6 @@ describe('Laplace', () => {
                 field.setValueAt(x, y, x * x + y * y);
             }
         }
-        assert.equal(LaplaceOperator.at(field, 2, 2), 4);
+        expect(LaplaceOperator.at(field, 2, 2)).toBe(4);
     });
 });

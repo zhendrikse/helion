@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 /** !! D O   N O T   S H O R T E N   T H E S E   I M P O R T S  !! */
@@ -45,9 +44,9 @@ describe('Body', () => {
                     body.rotateWorld(axis, Math.PI / 2);
                     body.rotateWorld(axis, Math.PI / 2);
 
-                    assert.ok(Math.abs(body.orientation.x) < 1e-10);
-                    assert.ok(Math.abs(body.orientation.y) < 1e-10);
-                    assert.ok(Math.abs(body.orientation.z) < 1e-10);
+                    expect(Math.abs(body.orientation.x) < 1e-10).toBe(true);
+                    expect(Math.abs(body.orientation.y) < 1e-10).toBe(true);
+                    expect(Math.abs(body.orientation.z) < 1e-10).toBe(true);
                 });
             }
         });
@@ -59,7 +58,7 @@ describe('Body', () => {
 
             const originalPosition = body.position.clone();
             body.rotateWorld(Vec3.Y_UNIT_VECTOR, Math.PI / 2);
-            assert.deepEqual(body.position, originalPosition);
+            expect(body.position).toEqual(originalPosition);
         });
 
         it('preserves physical orientation', () => {
@@ -76,7 +75,7 @@ describe('Body', () => {
             const dot = actual.x * expected.x + actual.y * expected.y + actual.z * expected.z + actual.w * expected.w;
 
             // q and -q represent the same rotation.
-            assert.ok(Math.abs(Math.abs(dot) - 1) < 1e-10);
+            expect(Math.abs(Math.abs(dot) - 1) < 1e-10).toBe(true);
         });
     });
 
@@ -87,22 +86,22 @@ describe('Body', () => {
             });
 
             body.rotate(Vec3.Y_UNIT_VECTOR, Math.PI / 2);
-            assert.ok(body.position.distanceTo(new Vec3(0, 0, -1)) < 1e-10);
+            expect(body.position.distanceTo(new Vec3(0, 0, -1)) < 1e-10).toBe(true);
         })
     });
 
     it('has correct default state', () => {
         const body = new Body();
 
-        assert.deepEqual(body.position, new Vec3(0, 0, 0));
-        assert.deepEqual(body.velocity, new Vec3(0, 0, 0));
-        assert.deepEqual(body.acceleration, new Vec3(0, 0, 0));
+        expect(body.position).toEqual(new Vec3(0, 0, 0));
+        expect(body.velocity).toEqual(new Vec3(0, 0, 0));
+        expect(body.acceleration).toEqual(new Vec3(0, 0, 0));
 
-        assert.equal(body.mass, 1);
-        assert.equal(body.charge, 0);
-        assert.equal(body.fixed, false);
-        assert.deepEqual(body.orientation, new Vec3(0, 0, 0));
-        assert.deepEqual(body.force, new Vec3(0, 0, 0));
+        expect(body.mass).toBe(1);
+        expect(body.charge).toBe(0);
+        expect(body.fixed).toBe(false);
+        expect(body.orientation).toEqual(new Vec3(0, 0, 0));
+        expect(body.force).toEqual(new Vec3(0, 0, 0));
     });
 
     it('accepts initial state', () => {
@@ -119,12 +118,12 @@ describe('Body', () => {
             orientation
         });
 
-        assert.deepEqual(body.position, position);
-        assert.deepEqual(body.velocity, velocity);
-        assert.equal(body.mass, 5);
-        assert.equal(body.charge, -2);
-        assert.equal(body.fixed, true);
-        assert.deepEqual(body.orientation, orientation);
+        expect(body.position).toEqual(position);
+        expect(body.velocity).toEqual(velocity);
+        expect(body.mass).toBe(5);
+        expect(body.charge).toBe(-2);
+        expect(body.fixed).toBe(true);
+        expect(body.orientation).toEqual(orientation);
     });
 
     describe('reset', () => {
@@ -141,9 +140,9 @@ describe('Body', () => {
 
             body.reset();
 
-            assert.deepEqual(body.position, new Vec3(1, 2, 3));
-            assert.deepEqual(body.velocity, new Vec3(4, 5, 6));
-            assert.deepEqual(body.orientation, new Vec3(0.1, 0.2, 0.3));
+            expect(body.position).toEqual(new Vec3(1, 2, 3));
+            expect(body.velocity).toEqual(new Vec3(4, 5, 6));
+            expect(body.orientation).toEqual(new Vec3(0.1, 0.2, 0.3));
         });
 
         it('restores complete physics state', () => {
@@ -160,13 +159,13 @@ describe('Body', () => {
 
             body.reset();
 
-            assert.deepEqual(body.position, new Vec3(1, 2, 3));
-            assert.deepEqual(body.velocity, new Vec3(4, 5, 6));
-            assert.equal(body.mass, 7);
-            assert.equal(body.charge, -3);
+            expect(body.position).toEqual(new Vec3(1, 2, 3));
+            expect(body.velocity).toEqual(new Vec3(4, 5, 6));
+            expect(body.mass).toBe(7);
+            expect(body.charge).toBe(-3);
 
             // Acceleration was zero initially.
-            assert.deepEqual(body.acceleration, new Vec3(0, 0, 0));
+            expect(body.acceleration).toEqual(new Vec3(0, 0, 0));
         });
     });
 
@@ -175,7 +174,7 @@ describe('Body', () => {
             velocity: new Vec3(3, 4, 0)
         });
 
-        assert.equal(body.speed, 5);
+        expect(body.speed).toBe(5);
     });
 
     it('its momentum is mass times velocity', () => {
@@ -184,7 +183,7 @@ describe('Body', () => {
             mass: 5
         });
 
-        assert.deepEqual(body.momentum, new Vec3(10, -15, 20));
+        expect(body.momentum).toEqual(new Vec3(10, -15, 20));
     });
 
     it('momentum does not expose velocity', () => {
@@ -196,7 +195,7 @@ describe('Body', () => {
         const momentum = body.momentum;
         momentum.set(100, 100, 100);
 
-        assert.deepEqual(body.velocity, new Vec3(1, 2, 3));
+        expect(body.velocity).toEqual(new Vec3(1, 2, 3));
     });
 
     it('its kinetic energy', () => {
@@ -205,7 +204,7 @@ describe('Body', () => {
             mass: 2
         });
 
-        assert.equal(body.kineticEnergy, 25);
+        expect(body.kineticEnergy).toBe(25);
     });
 
     describe('Electric field', () => {
@@ -216,7 +215,7 @@ describe('Body', () => {
             });
 
             const field = body.fieldAt(new Vec3(2, 0, 0));
-            assert.ok(field.distanceTo(new Vec3(0.5, 0, 0)) < 1e-10);
+            expect(field.distanceTo(new Vec3(0.5, 0, 0)) < 1e-10).toBe(true);
         });
 
         it('points toward negative charge', () => {
@@ -226,7 +225,7 @@ describe('Body', () => {
             });
 
             const field = body.fieldAt(new Vec3(2, 0, 0));
-            assert.ok(field.distanceTo(new Vec3(-0.5, 0, 0)) < 1e-10);
+            expect(field.distanceTo(new Vec3(-0.5, 0, 0)) < 1e-10).toBe(true);
         });
 
         it('is zero at source position', () => {
@@ -236,7 +235,7 @@ describe('Body', () => {
             });
 
             const field = body.fieldAt(new Vec3(1, 2, 3));
-            assert.deepEqual(field, new Vec3(0, 0, 0));
+            expect(field).toEqual(new Vec3(0, 0, 0));
         });
 
         it('is zero for unchanged body', () => {
@@ -245,7 +244,7 @@ describe('Body', () => {
             });
 
             const field = body.fieldAt(new Vec3(10, 20, 30));
-            assert.deepEqual(field, new Vec3(0, 0, 0));
+            expect(field).toEqual(new Vec3(0, 0, 0));
         });
     });
 
@@ -259,10 +258,7 @@ describe('Body', () => {
             position: new Vec3(5, 7, 11)
         });
 
-        assert.deepEqual(
-            a.positionVectorTo(b),
-            new Vec3(4, 5, 8)
-        );
+        expect(a.positionVectorTo(b)).toEqual(new Vec3(4, 5, 8));
     });
 
     it('carries out distance calculations', () => {
@@ -274,8 +270,8 @@ describe('Body', () => {
             position: new Vec3(4, 6, 3)
         });
 
-        assert.equal(a.distanceToSquared(b), 25);
-        assert.equal(a.distanceTo(b), 5);
+        expect(a.distanceToSquared(b)).toBe(25);
+        expect(a.distanceTo(b)).toBe(5);
     });
 
     it('positionVectorTo does not mutate either body', () => {
@@ -289,8 +285,8 @@ describe('Body', () => {
 
         a.positionVectorTo(b);
 
-        assert.deepEqual(a.position, new Vec3(1, 2, 3));
-        assert.deepEqual(b.position, new Vec3(4, 5, 6));
+        expect(a.position).toEqual(new Vec3(1, 2, 3));
+        expect(b.position).toEqual(new Vec3(4, 5, 6));
     });
 
     it('integration calculates acceleration from force', () => {
@@ -302,7 +298,7 @@ describe('Body', () => {
 
         body.integrate(0);
 
-        assert.deepEqual(body.acceleration, new Vec3(5, 10, 15));
+        expect(body.acceleration).toEqual(new Vec3(5, 10, 15));
     });
 
     it('clears force after integration', () => {
@@ -311,7 +307,7 @@ describe('Body', () => {
         body.force.set(10, 20, 30);
         body.integrate(0);
 
-        assert.deepEqual(body.force, new Vec3(0, 0, 0));
+        expect(body.force).toEqual(new Vec3(0, 0, 0));
     });
 
     it('does not integrate when fixed', () => {
@@ -325,8 +321,8 @@ describe('Body', () => {
 
         body.integrate(1);
 
-        assert.deepEqual(body.position, new Vec3(1, 2, 3));
-        assert.deepEqual(body.velocity, new Vec3(4, 5, 6));
+        expect(body.position).toEqual(new Vec3(1, 2, 3));
+        expect(body.velocity).toEqual(new Vec3(4, 5, 6));
     });
 
     it('can have children', () => {
@@ -335,7 +331,7 @@ describe('Body', () => {
 
         parent.add(child);
 
-        assert.deepEqual([...parent], [child]);
+        expect([...parent]).toEqual([child]);
     });
 
     it('forEach visits all children', () => {
@@ -349,7 +345,7 @@ describe('Body', () => {
 
         parent.forEach(child => visited.push(child));
 
-        assert.deepEqual(visited, [a, b]);
+        expect(visited).toEqual([a, b]);
     });
 
     it('Rotating parent rotates child around parent', () => {
@@ -366,8 +362,8 @@ describe('Body', () => {
 
         parent.rotate(Vec3.Y_UNIT_VECTOR, Math.PI / 2);
 
-        assert.ok(child.position.distanceTo(new Vec3(0, 0, -1)) < 1e-10);
-        assert.ok(child.localPosition.distanceTo(new Vec3(0, 0, -1)) < 1e-10);
+        expect(child.position.distanceTo(new Vec3(0, 0, -1)) < 1e-10).toBe(true);
+        expect(child.localPosition.distanceTo(new Vec3(0, 0, -1)) < 1e-10).toBe(true);
     });
 
     it('reorient restores position and orientation', () => {
@@ -383,8 +379,8 @@ describe('Body', () => {
 
         body.reorient(configuration);
 
-        assert.deepEqual(body.position, new Vec3(1, 2, 3));
-        assert.deepEqual(body.orientation, new Vec3(0.1, 0.2, 0.3));
+        expect(body.position).toEqual(new Vec3(1, 2, 3));
+        expect(body.orientation).toEqual(new Vec3(0.1, 0.2, 0.3));
     });
 
     it('reorient restores child configuration', () => {
@@ -408,17 +404,9 @@ describe('Body', () => {
 
         parent.reorient(configuration);
 
-        assert.deepEqual(parent.position, new Vec3(1, 2, 3));
-        assert.deepEqual(child.position, new Vec3(2, 2, 3));
-        assert.deepEqual(child.orientation, new Vec3(0.1, 0.2, 0.3));
-        assert.deepEqual(child.localPosition, new Vec3(1, 0, 0));
+        expect(parent.position).toEqual(new Vec3(1, 2, 3));
+        expect(child.position).toEqual(new Vec3(2, 2, 3));
+        expect(child.orientation).toEqual(new Vec3(0.1, 0.2, 0.3));
+        expect(child.localPosition).toEqual(new Vec3(1, 0, 0));
     });
 });
-
-
-
-
-
-
-
-

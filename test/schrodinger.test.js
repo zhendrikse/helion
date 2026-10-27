@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import assert from 'node:assert/strict';
 
 import { DiscreteComplexField } from '../src/model/math/fields.js';
 import { Hamiltonian, SingleParticle } from '../src/model/phys/quantum/hamiltonian.js';
@@ -16,9 +15,9 @@ describe('Hamiltonian', () => {
             potential: particle => particle.x * particle.x + 2 * particle.y
         });
 
-        assert.equal(H.potential.valueAt(2, 2), 0);
-        assert.equal(H.potential.valueAt(4, 2), 4);
-        assert.equal(H.potential.valueAt(2, 4), 4);
+        expect(H.potential.valueAt(2, 2)).toBe(0);
+        expect(H.potential.valueAt(4, 2)).toBe(4);
+        expect(H.potential.valueAt(2, 4)).toBe(4);
     });
 
     it('solve returns stationary states and energies', async () => {
@@ -40,11 +39,11 @@ describe('Hamiltonian', () => {
             (_text, _percent) => {}
         );
 
-        assert.equal(psi.spectrum.length, 2);
-        assert.ok(Number.isFinite(psi.spectrum[0]));
-        assert.ok(Number.isFinite(psi.spectrum[1]));
-        assert.ok(Math.abs(psi.spectrum[0] - 0.1521374170) < 1e-10);
-        assert.ok(Math.abs(psi.spectrum[1] - 0.2991270610) < 1e-10);
+        expect(psi.spectrum.length).toBe(2);
+        expect(Number.isFinite(psi.spectrum[0])).toBe(true);
+        expect(Number.isFinite(psi.spectrum[1])).toBe(true);
+        expect(Math.abs(psi.spectrum[0] - 0.1521374170) < 1e-10).toBe(true);
+        expect(Math.abs(psi.spectrum[1] - 0.2991270610) < 1e-10).toBe(true);
     });
 });
 
@@ -71,11 +70,11 @@ describe('RelaxationEigenstateSolver', () => {
             }
         );
 
-        assert.equal(psi.spectrum.length, 2);
-        assert.ok(Number.isFinite(psi.spectrum[0]));
-        assert.ok(Number.isFinite(psi.spectrum[1]));
-        assert.ok(Math.abs(psi.spectrum[0] - 0.15) < 1e-2);
-        assert.ok(Math.abs(psi.spectrum[1] - 0.30) < 1e-2);
+        expect(psi.spectrum.length).toBe(2);
+        expect(Number.isFinite(psi.spectrum[0])).toBe(true);
+        expect(Number.isFinite(psi.spectrum[1])).toBe(true);
+        expect(Math.abs(psi.spectrum[0] - 0.15) < 1e-2).toBe(true);
+        expect(Math.abs(psi.spectrum[1] - 0.30) < 1e-2).toBe(true);
     });
 });
 
@@ -110,10 +109,10 @@ describe('SchrodingerSolver', () => {
         solver.step(psi, dt);
 
         for (let i = 0; i < psi.imag.length; i++)
-            assert.ok(Math.abs(psi.imag[i] - expectedIm[i]) < 1e-12);
+            expect(Math.abs(psi.imag[i] - expectedIm[i]) < 1e-12).toBe(true);
 
         for (let i = 0; i < psi.real.length; i++)
-            assert.ok(Math.abs(psi.real[i] - expectedRe[i]) < 1e-12);
+            expect(Math.abs(psi.real[i] - expectedRe[i]) < 1e-12).toBe(true);
     });
 });
 
@@ -134,8 +133,8 @@ describe('WaveFunction', () => {
         //        = cos(0.375) + 2*sin(0.375) + i*(2*cos(0.375) - sin(0.375))
         const expectedReal = Math.cos(0.375) + 2 * Math.sin(0.375);
         const expectedImag = 2 * Math.cos(0.375) - Math.sin(0.375);
-        assert.ok(Math.abs(psi.real[0] - expectedReal) < 1e-12);
-        assert.ok(Math.abs(psi.imag[0] - expectedImag) < 1e-12);
+        expect(Math.abs(psi.real[0] - expectedReal) < 1e-12).toBe(true);
+        expect(Math.abs(psi.imag[0] - expectedImag) < 1e-12).toBe(true);
     });
 });
 
@@ -164,6 +163,6 @@ describe('Hamiltonian-backed time evolution', () => {
             H.evolve(psi, 0.01);
 
         const finalNorm = norm();
-        assert.ok(Math.abs(finalNorm - initialNorm) / initialNorm < 0.05);
+        expect(Math.abs(finalNorm - initialNorm) / initialNorm < 0.05).toBe(true);
     });
 });

@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import assert from 'node:assert/strict';
 
 /** !! D O   N O T   S H O R T E N   T H E S E   I M P O R T S  !! */
 import { DiscreteScalarField3D, DiscreteComplexField3D } from '../src/model/math/fields.js';
@@ -34,9 +33,9 @@ describe('3D eigenstate', () => {
 
         const diagnostics = solver.diagnosticsFor(0, { radialBins: 64 });
 
-        assert.equal(diagnostics.energy, 0, 'Energy eigenvalue not 0');
-        assert.equal(diagnostics.residual > 0, true, 'Residual <= 0');
-        assert.ok(diagnostics.radialSymmetryError < 1e-12, 'RadiaSymmetryError >= 1e-12');
+        expect(diagnostics.energy, 'Energy eigenvalue not 0').toBe(0);
+        expect(diagnostics.residual > 0, 'Residual <= 0').toBe(true);
+        expect(diagnostics.radialSymmetryError < 1e-12, 'RadiaSymmetryError >= 1e-12').toBe(true);
     });
 
     it('3D eigenstate diagnostics detect directional asymmetry', () => {
@@ -67,7 +66,7 @@ describe('3D eigenstate', () => {
 
         const diagnostics = solver.diagnosticsFor(0, { radialBins: 64 });
 
-        assert.ok(diagnostics.radialSymmetryError > 0.01, 'RadiaSymmetryError >= 1e-2');
+        expect(diagnostics.radialSymmetryError > 0.01, 'RadiaSymmetryError >= 1e-2').toBe(true);
     });
 
     it('3D excited-state seeds preserve 2p nodal symmetry', () => {
@@ -92,7 +91,7 @@ describe('3D eigenstate', () => {
                 for (let dx = 1; dx <= 3; dx++) {
                     const left = state[psi.index(center - dx, y, z)];
                     const right = state[psi.index(center + dx, y, z)];
-                    assert.ok(Math.abs(left + right) < 1e-6);
+                    expect(Math.abs(left + right) < 1e-6).toBe(true);
                 }
     });
 });

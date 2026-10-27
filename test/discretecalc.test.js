@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 /** !! D O   N O T   S H O R T E N   T H E S E   I M P O R T S  !! */
@@ -15,9 +14,9 @@ describe('Discrete calc', () => {
         const calculator = new ScalarFieldCalculus(field);
         const div = new Vec2();
         calculator.gradient(0, 0, 1, div);
-        assert.deepEqual(div, new Vec2());
+        expect(div).toEqual(new Vec2());
 
         calculator.gradient(1, 1, 1, div);
-        assert.deepEqual(div, new Vec2(.5, .5));
+        expect(div).toEqual(new Vec2(.5, .5));
     });
 });

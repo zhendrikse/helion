@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { DifferentialGeometry, DifferentialFrame } from '../src/model/math/numerics/diffgeometry.js';
@@ -18,12 +17,12 @@ describe('DifferentialGeometry', () => {
 
         geo.differentialFrame(0.5, 0.5, frame);
 
-        assert.ok(Math.abs(frame.k1) < 1e-6, `k1 should be ~0 for plane, got ${frame.k1}`);
-        assert.ok(Math.abs(frame.k2) < 1e-6, `k2 should be ~0 for plane, got ${frame.k2}`);
+        expect(Math.abs(frame.k1) < 1e-6, `k1 should be ~0 for plane, got ${frame.k1}`).toBe(true);
+        expect(Math.abs(frame.k2) < 1e-6, `k2 should be ~0 for plane, got ${frame.k2}`).toBe(true);
         // Normal should be (0,1,0) or (0,-1,0) depending on orientation, but unit length
-        assert.ok(Math.abs(frame.normal.length() - 1) < 1e-6, 'Normal should be unit');
+        expect(Math.abs(frame.normal.length() - 1) < 1e-6, 'Normal should be unit').toBe(true);
         // For plane z=0, Xu=(1,0,0), Xv=(0,0,1), N = Xv x Xu = (0,-1,0) or (0,1,0) -> check is vertical
-        assert.ok(Math.abs(Math.abs(frame.normal.y) - 1) < 1e-6, `Normal should be vertical, got ${frame.normal.y}`);
+        expect(Math.abs(Math.abs(frame.normal.y) - 1) < 1e-6, `Normal should be vertical, got ${frame.normal.y}`).toBe(true);
     });
 
     it('on sphere has constant curvature 1/R', () => {
@@ -44,9 +43,9 @@ describe('DifferentialGeometry', () => {
 
         const expectedK = 1 / R;
         // Allow some numerical error due to finite differences (eps=1e-6), check absolute value
-        assert.ok(Math.abs(Math.abs(frame.k1) - expectedK) < 1e-6, `|k1| should be ~${expectedK}, got ${frame.k1}`);
-        assert.ok(Math.abs(Math.abs(frame.k2) - expectedK) < 1e-6, `|k2| should be ~${expectedK}, got ${frame.k2}`);
-        assert.ok(Math.abs(frame.normal.length() - 1) < 1e-6, 'Normal should be unit');
+        expect(Math.abs(Math.abs(frame.k1) - expectedK) < 1e-6, `|k1| should be ~${expectedK}, got ${frame.k1}`).toBe(true);
+        expect(Math.abs(Math.abs(frame.k2) - expectedK) < 1e-6, `|k2| should be ~${expectedK}, got ${frame.k2}`).toBe(true);
+        expect(Math.abs(frame.normal.length() - 1) < 1e-6, 'Normal should be unit').toBe(true);
     });
 
     it('returns null for degenerate point', () => {
@@ -63,6 +62,6 @@ describe('DifferentialGeometry', () => {
         const result = geo.differentialFrame(0.5, 0.5, frame);
         // Should return null for degenerate (detI < 1e-12)
         // For this degenerate case, Xu=(1,1,0), Xv=(1,1,0) -> detI = E*G - F*F = 2*2 -2*2=0
-        assert.equal(result, null, 'Should return null for degenerate point');
+        expect(result, 'Should return null for degenerate point').toBe(null);
     });
 });

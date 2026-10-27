@@ -56,7 +56,7 @@ const stars = [];
 /** @type {[Star, Star][]} [fromStar, toStar] */
 const constellationLines = [];
 /** @type {Star[]} */
-const dummyStarsForLabels = [];
+const constellationLabelAnchors = [];
 /** @type {Label[]} */
 const constellationLabelViews = [];
 const constellationSegments = new Segments();
@@ -100,14 +100,14 @@ const simulation = Simulation
         .onChange(checked => constellationLabelViews.forEach(label => label.visible = checked)))
     .advancesBy(0.01)
     .runsEvery(0.05)
-    .onStep((clock, dt) => updateSky(clock.simulatedTime))
-    .start();
+    .onStep((clock, dt) => updateSky(clock.simulatedTime));
 
 /**
  * Project equatorial coordinates onto the visible local sky.
  * The result is normalized to a dome radius of one, with the horizon at y = -0.5.
  * @param {Star} star
- * @param {number} localSiderealTime * @returns {Vec2 | null}
+ * @param {number} localSiderealTime
+ * @returns {Vec2 | null}
  */
 function projectStar(star, localSiderealTime) {
     const latitude = latitudeDegrees * Math.PI / 180;
@@ -158,7 +158,7 @@ function projectStar(star, localSiderealTime) {
 /** @param {number} localSiderealTime Update all star positions and regenerate visible constellation segments. */
 function updateSky(localSiderealTime = 2) {
     stars.forEach(star => star.position.copy(projectStar(star, localSiderealTime) ?? INVISIBLE_POSITION));
-    dummyStarsForLabels.forEach(star => star.position.copy(projectStar(star, localSiderealTime) ?? INVISIBLE_POSITION));
+    constellationLabelAnchors.forEach(star => star.position.copy(projectStar(star, localSiderealTime) ?? INVISIBLE_POSITION));
     constellationSegments.clear();
     for (const [fromStar, toStar] of constellationLines) {
         const projectedFrom = projectStar(fromStar, localSiderealTime);
@@ -183,17 +183,21 @@ async function loadData() {
 
     const [starData, constellationData] = await Promise.all([starsResponse.json(), constellationsResponse.json()]);
 
-    constellationData.features.flatMap(feature =>
-        feature.geometry.coordinates.flatMap(line =>
-            line.slice(1).map((point, index) => constellationLines.push([
-                new Star(0, longitudeToRightAscension(line[index][0]), line[index][1]),
-                new Star(0, longitudeToRightAscension(point[0]), point[1])
-            ]))));
+    constellationData.features.forEach(feature => {
+        feature.geometry.coordinates.forEach(line => {
+            line.slice(1).forEach((point, index) => {
+                constellationLines.push([
+                    new Star(0, longitudeToRightAscension(line[index][0]), line[index][1]),
+                    new Star(0, longitudeToRightAscension(point[0]), point[1])
+                ]);
+            });
+        });
+    });
 
-    constellationData.features.map(feature => dummyStarsForLabels.push(Star.labelFromD3CelestialData(feature)));
+    constellationData.features.forEach(feature => constellationLabelAnchors.push(Star.labelFromD3CelestialData(feature)));
     starData.features
         .filter(feature => Number.isFinite(feature.properties.mag) && feature.properties.mag <= STAR_MAGNITUDE_LIMIT)
-        .map(feature => stars.push(Star.fromD3CelestialData(feature)));
+        .forEach(feature => stars.push(Star.fromD3CelestialData(feature)));
 }
 
 try {
@@ -207,7 +211,7 @@ try {
             segments: 12
         })));
     });
-    dummyStarsForLabels.forEach(dummyStar => {
+    constellationLabelAnchors.forEach(dummyStar => {
         const view = new Label({
             text: () => dummyStar.name,
             color: new Colour(0x8ab4d6),
@@ -216,6 +220,8 @@ try {
         constellationLabelViews.push(view);
         simulation.bind(dummyStar.alwaysWith(view));
     });
+    simulation.start();
+
 } catch (error) {
     console.error('Unable to load the night-sky data.', error);
     simulation.showHud('Could not load the star or constellation data. Check the network connection and try again.');
