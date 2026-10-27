@@ -1,3 +1,4 @@
+import { PerspectiveCamera, Vector3 } from 'three';
 import {
     Arrow, AxialSymmetricBody, Block, Box, Colour, Cylinder, Helix, Range,
     Simulation, Slider, ThreeJsScene, Vec3
@@ -175,6 +176,17 @@ let pulling = false;
 let lastPointerX = 0;
 let pullForce = 0;
 
+const pointerCamera = new PerspectiveCamera(40, 3 / 2, 0.1, 100);
+pointerCamera.position.copy(new Vector3(-10, 0.25, 5).multiplyScalar(1.25));
+pointerCamera.lookAt(-0.07, -0.025, 0);
+pointerCamera.updateMatrixWorld();
+
+function pointerIsOverCart(x, y) {
+    const projected = new Vector3(cart.position.x, cart.position.y, cart.position.z)
+        .project(pointerCamera);
+    return Math.abs(x - projected.x / 2) < 0.06 && Math.abs(y - projected.y / 2) < 0.06;
+}
+
 const simulation = Simulation.with({
     htmlDivId: 'cartOnSpringContainer',
     viewport: { aspectRatio: '3 / 2' },
@@ -240,8 +252,8 @@ for (let i = 0; i < spring.elements.length - 1; i++)
     })));
 
 simulation
-    .onPointer('pointerdown', (x, _y, event) => {
-        if (event.button !== 0) return;
+    .onPointer('pointerdown', (x, y, event) => {
+        if (event.button !== 0 || !pointerIsOverCart(x, y)) return;
         pulling = true;
         lastPointerX = x;
     })
