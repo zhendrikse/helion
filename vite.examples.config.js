@@ -110,6 +110,7 @@ export default defineConfig({
                 taylor_expansion: path.resolve(__dirname, 'examples/mathematics/scenes/taylor_expansion.js'),
                 three_body: path.resolve(__dirname, 'examples/kinematics/scenes/three_body.js'),
                 travelling_wave: path.resolve(__dirname, 'examples/waves/scenes/travelling_wave.js'),
+                uranium_fission: path.resolve(__dirname, 'examples/molecularphysics/scenes/uranium_fission.js'),
                 vector_fields: path.resolve(__dirname, 'examples/mathematics/scenes/vector_fields.js'),
                 vibrating_membrane: path.resolve(__dirname, 'examples/waves/scenes/vibrating_membrane.js'),
                 voronoi_tessellation: path.resolve(__dirname, 'examples/nature/scenes/voronoi_tessellation.js'),
