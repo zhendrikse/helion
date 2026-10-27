@@ -64,10 +64,10 @@ function updateSystem() {
     rocheBulge2.position.copy(orbitingPosition(-0.05));
 
     const dStart = 0.05 - rocheBulge2.radius + 0.01;
-    const streamStart = new Vec3(cos(angle), sin(angle)).multiplyScalar(-dStart);
+    const streamStart = new Vec3(cos(angle), 0, sin(angle)).multiplyScalar(-dStart);
     const streamEnd = whiteDwarfPosition.clone()
-        .sub(new Vec3(cos(angle - spotAngle), 0, sin(angle - spotAngle)))
-        .multiplyScalar(diskRadius);
+        .sub(new Vec3(cos(angle - spotAngle), 0, sin(angle - spotAngle)).multiplyScalar(diskRadius));
+
     stream.position.copy(streamStart);
     stream.axis.copy(streamEnd.sub(streamStart));
 
