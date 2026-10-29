@@ -51,7 +51,7 @@ export { Saturn } from './view/3d/astro/saturn.js';
 export { Planets, Sun } from './model/phys/planets.js';
 export { DropdownMenu, Checkbox, Button, Slider, RadioGroup, TextInput } from './core/controls.js';
 export { Simulation } from './core/helion.js';
-export { ModelObject, Transformation, ModelObjectsCollection, BindingsCollection } from './model/behavior.js';
+export { ModelObject, Transformation, ModelObjectsCollection, BindingsCollection, Binding } from './model/behavior.js';
 export { Registry } from './core/utils.js';
 export { UPlotGraph, UPlotBarGraph } from './core/uplot.js';
 export { Floor, Aquarium, Ceiling } from './view/3d/primitives/decorations.js';

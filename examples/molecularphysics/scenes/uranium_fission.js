@@ -1,5 +1,6 @@
 import {
-    Colour, ModelObjectsCollection, RadialSymmetricBody, Simulation, Sphere, Trail, Vec3, ViewsCollection
+    BindingsCollection, Colour, ModelObjectsCollection, RadialSymmetricBody, Simulation,
+    Sphere, Trail, Vec3, ViewsCollection, Binding
 } from '../../../src/index.js';
 
 // Dimensionless coordinates keep the original VPython geometry and time step readable.
@@ -20,14 +21,11 @@ const COLOR_U235 = new Colour(0xe74c3c);
 const COLOR_PRODUCT = new Colour(0xf4d03f);
 const COLOR_NEUTRON = new Colour(0xdddddd);
 
-const nucleiViews = ViewsCollection.of(Sphere).with({ segments: 12});
+const nucleiModelViewBindings = new BindingsCollection();
 const oxygenAtoms = new ModelObjectsCollection();
 /** @type {RadialSymmetricBody[]} */
 const neutrons = [];
-/** @type {RadialSymmetricBody[]} */
-const products = [];
-/** @type {Sphere[]} */
-const productViews = [];
+const productBindings = new BindingsCollection();
 /** @type {{ body: RadialSymmetricBody, view: Sphere, growthSpeed: number }[]} */
 const flashes = [];
 
@@ -93,43 +91,12 @@ class Lattice {
 
     get nuclei() { return this._nuclei; }
 
+    fission() { this._radioactiveRemaining-- }
+
     _addNucleus(position) {
         const isU235 = Math.random() < uranium235Fraction;
         this._nuclei.add(new Nucleus(position, nucleusRadius, isU235));
         this._radioactiveRemaining += isU235 ? 1 : 0;
-    }
-
-    check(neutron) {
-        this._nuclei.forEach((nucleus, index) => {
-            if (!nucleus.fissioned && nucleus.isU235 && neutron.position.distanceTo(nucleus.position) < nucleusRadius)
-                this._fission(nucleus, index);
-        });
-    }
-
-    _fission(nucleus, index) {
-        if (nucleus.fissioned || !nucleus.isU235)
-            return;
-
-        nucleus.fissioned = true;
-        nucleiViews.viewAt(index).visible = false;
-        this._radioactiveRemaining--;
-        simulation.setBottomText(`Radioactive U-235 nuclei remaining: ${lattice._radioactiveRemaining}`);
-        createFlash(nucleus.position);
-        createNeutron(nucleus.position);
-        createNeutron(nucleus.position);
-
-        const velocity = randomDirection(productSpeed * dt / physicalCubeSide);
-        for (let i = 0; i < 2; i++) {
-            const product = new RadialSymmetricBody({
-                position: nucleus.position.clone(),
-                velocity: i === 0 ? velocity : velocity.clone().negate(),
-                radius: nucleusRadius
-            });
-            const view = new Sphere({color: COLOR_PRODUCT, segments: 12});
-            simulation.bind(product.alwaysWith(view));
-            products.push(product);
-            productViews.push(view);
-        }
     }
 
     _createLatticePointAt(ix, iy, iz) {
@@ -145,11 +112,46 @@ class Lattice {
     }
 }
 
+function check(neutron) {
+    nucleiModelViewBindings.forEach(nucleusBinding => {
+        const nucleus = nucleusBinding.model;
+        if (!nucleus.fissioned && nucleus.isU235 && neutron.position.distanceTo(nucleus.position) < nucleusRadius)
+            fissionFor(nucleusBinding);
+    });
+}
+
+function fissionFor(nucleusBinding) {
+    const nucleus = nucleusBinding.model;
+    if (nucleus.fissioned || !nucleus.isU235)
+        return;
+
+    nucleus.fissioned = true;
+    nucleusBinding.view.visible = false;
+    lattice.fission();
+    simulation.setBottomText(`Radioactive U-235 nuclei remaining: ${lattice._radioactiveRemaining}`);
+    createFlash(nucleus.position);
+    createNeutron(nucleus.position);
+    createNeutron(nucleus.position);
+
+    const velocity = randomDirection(productSpeed * dt / physicalCubeSide);
+    for (let i = 0; i < 2; i++) {
+        const product = new RadialSymmetricBody({
+            position: nucleus.position.clone(),
+            velocity: i === 0 ? velocity : velocity.clone().negate(),
+            radius: nucleusRadius
+        });
+        const binding = Binding.Empty();
+        simulation.bind(product.alwaysWith(new Sphere({color: COLOR_PRODUCT, segments: 12}))
+            .capture(binding));
+        productBindings.add(binding);
+    }
+}
+
 function createFlash(position) {
     const body = new RadialSymmetricBody({ position: position.clone(), radius: nucleusRadius * 0.01 });
     const view = new Sphere({ color: COLOR_PRODUCT, opacity: 0.6, segments: 12 });
     simulation.bind(body.alwaysWith(view));
-    flashes.push({ body, view, growthSpeed: (5000 + Math.random() * 5000) * dt / physicalCubeSide });
+    flashes.push({ body, view, growthSpeed: (2500 + Math.random() * 2500) * dt / physicalCubeSide });
 }
 
 function createNeutron(position, trailLength = 10, speed = fissionNeutronSpeed) {
@@ -173,7 +175,7 @@ function createNeutron(position, trailLength = 10, speed = fissionNeutronSpeed) 
 
 function update() {
     for (const neutron of neutrons) {
-        lattice.check(neutron);
+        check(neutron);
 
         const p = neutron.position;
         const v = neutron.velocity;
@@ -183,28 +185,26 @@ function update() {
         neutron.position.add(neutron.velocity);
     }
 
-    products.forEach((product, index) => {
-        product.position.add(product.velocity);
-        if (product.position.length() > 3)
-            productViews[index].visible = false;
-    });
+    for (const productBinding of productBindings) {
+        productBinding.model.position.add(productBinding.model.velocity);
+        productBinding.view.visible = productBinding.model.position.length() < 3;
+    }
 
     for (const flash of flashes) {
         flash.body.radius += flash.growthSpeed;
         flash.view._mesh.material.opacity = Math.max(0, 1 - flash.body.radius / 2);
-        if (flash.body.radius > 2) {
-            flash.view.visible = false;
+        flash.view.visible = flash.body.radius < 2;
+        if (flash.body.radius > 2)
             flash.growthSpeed = 0;
-        }
     }
 }
 
 const lattice = new Lattice();
 simulation
-    .bind(lattice.nuclei.alwaysWith(nucleiViews))
+    .bind(lattice.nuclei.alwaysWith(ViewsCollection.of(Sphere).with({ segments: 12})).capture(nucleiModelViewBindings))
     .bind(oxygenAtoms.onceWith(ViewsCollection.of(Sphere).with({ segments: 12, color: new Colour(0x28b463) })))
     .start();
 
-lattice.nuclei.forEach((nucleus, index) =>
-    nucleiViews.viewAt(index).color = nucleus.isU235 ? COLOR_U235 : COLOR_U238);
+nucleiModelViewBindings.forEach(nucleusBinding =>
+    nucleusBinding.view.color = nucleusBinding.model.isU235 ? COLOR_U235 : COLOR_U238);
 createNeutron(new Vec3(), 15, neutronSpeed);

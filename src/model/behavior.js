@@ -170,6 +170,8 @@ export class Binding {
         ONCE: 'once'
     });
 
+    static Empty = () => new Binding(null, null);
+
     /**
      * @param {ModelObject} model
      * @param {Renderable} view
@@ -179,6 +181,14 @@ export class Binding {
         this.model = model;
         this.view = view;
         this.mode = mode;
+    }
+
+    /** @param {Binding} binding */
+    capture(binding) {
+        binding.mode = this.mode;
+        binding.model = this.model;
+        binding.view = this.view;
+        return this;
     }
 
     /**
