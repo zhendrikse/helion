@@ -59,8 +59,9 @@ export class BindingsCollection {
         this._bindings.forEach(callback, thisArg);
     }
 
+    /** @param {BindingsCollection} bindingsCollection */
     copy(bindingsCollection) {
-        this._bindings = bindingsCollection;
+        this._bindings = bindingsCollection._bindings;
     }
 
     add(binding) { this._bindings.push(binding); }
@@ -70,8 +71,10 @@ export class ModelObjectsCollection {
     /** @param {ModelObject[]} modelObjects */
     constructor(modelObjects = []) {
         this._bindables = modelObjects;
-        /** @type {BindingsCollection} */
+        /** @type {BindingsCollection} to be "consumed" by the Simulation class */
         this._bindings = new BindingsCollection();
+        /** @type {BindingsCollection} meant for the capture() method */
+        this._lastBindings = new BindingsCollection();
     }
 
     /** @param {ModelObject} bindable */
@@ -80,8 +83,9 @@ export class ModelObjectsCollection {
         return this;
     }
 
+    /** @param {BindingsCollection} bindingsCollection */
     capture(bindingsCollection) {
-        bindingsCollection.copy(this._bindings);
+        bindingsCollection.copy(this._lastBindings);
         return this;
     }
 
@@ -118,7 +122,12 @@ export class ModelObjectsCollection {
      * @param {ViewsCollection} viewsCollection views to synchronize the models with.
      */
     onceWith(viewsCollection) {
-        this._bindables.forEach(bindable=> this._bindings.add(bindable.onceWith(viewsCollection.createView())));
+        this._lastBindings = new BindingsCollection(
+            this._bindables.map(bindable => bindable.onceWith(viewsCollection.createView()))
+        );
+
+        this._lastBindings.forEach(binding => this._bindings.add(binding));
+
         return this;
     }
 
@@ -127,7 +136,12 @@ export class ModelObjectsCollection {
      * @param {ViewsCollection} viewsCollection views to synchronize the models with.
      */
     alwaysWith(viewsCollection) {
-        this._bindables.forEach(bindable => this._bindings.add(bindable.alwaysWith(viewsCollection.createView())));
+        this._lastBindings = new BindingsCollection(
+            this._bindables.map(bindable => bindable.alwaysWith(viewsCollection.createView()))
+        );
+
+        this._lastBindings.forEach(binding => this._bindings.add(binding));
+
         return this;
     }
 
@@ -143,7 +157,7 @@ export class ModelObjectsCollection {
             binding.view.reset();
         });
         this._bindables = [];
-        this._bindings = [];
+        this._bindings = new BindingsCollection();
     }
 }
 
