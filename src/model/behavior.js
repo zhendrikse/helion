@@ -61,7 +61,7 @@ export class BindingsCollection {
 
     /** @param {BindingsCollection} bindingsCollection */
     copy(bindingsCollection) {
-        this._bindings = bindingsCollection._bindings;
+        this._bindings = [...bindingsCollection];
     }
 
     add(binding) { this._bindings.push(binding); }
@@ -151,13 +151,13 @@ export class ModelObjectsCollection {
     }
 
     reset() {
-        this._bindables.forEach(bindable => bindable.reset());
         this._bindings.forEach(binding => {
             binding.model.reset();
             binding.view.reset();
         });
         this._bindables = [];
         this._bindings = new BindingsCollection();
+        this._lastBindings = new BindingsCollection();
     }
 }
 
