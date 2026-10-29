@@ -85,13 +85,12 @@ export class Renderer {
     provideAxesAround(anObject, options) {}
 }
 
-
 /**
  * @template {Renderable} [V=Renderable]
  */
 export class ViewsCollection {
     /**
-     * @template {V} [V=Rendrable]
+     * @template {Renderable} [V=Renderable]
      * @param {V} viewConstructor
      * @return {ViewsCollection<V>}
      */
