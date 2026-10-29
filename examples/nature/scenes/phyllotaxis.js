@@ -58,6 +58,7 @@ const flowerSeedsViews = ViewsCollection.of(Circle).with({ fillColor: Colour.Yel
 for (let index = 0; index <= numberOfDots; index++)
     flowerSeeds.add(new FlowerParticle(c, index));
 
+/** @type {BindingsCollection<FlowerParticle, Circle>} */
 const seedBindings = new BindingsCollection();
 const simulation = Simulation
     .with({

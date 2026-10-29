@@ -90,9 +90,9 @@ export class Renderer {
  */
 export class ViewsCollection {
     /**
-     * @template {Renderable} [V=Renderable]
-     * @param {V} viewConstructor
-     * @return {ViewsCollection<V>}
+     * @template {Renderable} T
+     * @param {new (...args: any[]) => T} viewConstructor
+     * @returns {ViewsCollection<T>}
      */
     static of = viewConstructor => {
         return new ViewsCollection(viewConstructor);

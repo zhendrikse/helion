@@ -33,10 +33,8 @@ class ChargedSheet {
             const r = segment.position.clone().sub(position);
             const r2 = r.lengthSq();
 
-            if (r2 < 1e-24)
-                continue; // avoid infinities close to sheet
-
-            field.add(r.normalize().multiplyScalar(K * segment.charge / r2));
+            if (r2 > 1e-24) // avoid infinities close to sheet
+                field.add(r.normalize().multiplyScalar(K * segment.charge / r2));
         }
 
         return field;
@@ -60,11 +58,7 @@ class SheetElectricField extends VectorField {
 // Physics objects
 //
 const sheetSize = 0.5e-10;
-const sheet = new ChargedSheet({
-    size: sheetSize,
-    segments: 40
-});
-
+const sheet = new ChargedSheet({ size: sheetSize, segments: 40 });
 const electricField = new SheetElectricField(sheet);
 const coulombForce = CoulombForce.in(electricField);
 const electron = new RadialSymmetricBody({
@@ -76,31 +70,21 @@ const electron = new RadialSymmetricBody({
 });
 
 const electronSphere = new Sphere({ color: Colour.Yellow });
-const arrowField = new ArrowField({
-    xRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
-    yRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
-    zRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
-    magnitudeMap: magnitude => 1e-16 * Math.sqrt(1 + magnitude * 1e-3),
-    colorMap: (axis) =>
-        axis.z > 0
-            ? new Colour(0xff4444)
-            : new Colour(0x4444ff),
-    round: true
-});
-
 Simulation
     .with({
         htmlDivId: 'chargedSheetContainer',
-        camera: {
-            position: new Vec3(12, 8, 16),
-            fieldOfView: 20
-        },
-        scene: {
-            scale: 5e10
-        }
+        camera: { position: new Vec3(12, 8, 16), fieldOfView: 20 },
+        scene: { scale: 5e10 }
     })
     .withMouseClickEventListener()
-    .bind(electricField.onceWith(arrowField))
+    .bind(electricField.onceWith(new ArrowField({
+        xRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
+        yRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
+        zRange: new Range(-sheetSize, sheetSize, sheetSize / 6),
+        magnitudeMap: magnitude => 1e-16 * Math.sqrt(1 + magnitude * 1e-3),
+        colorMap: (axis) => axis.z > 0 ? new Colour(0xff4444) : new Colour(0x4444ff),
+        round: true
+    })))
     .bind(electron.alwaysWith(electronSphere))
     .bind(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
     .bind(sheet.segments.onceWith(new BoxSegmentsView({ opacity: 0.6, colorMapper: (_, _1, target) => target.setRGB(.2, .8, .2) })))

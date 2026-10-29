@@ -37,34 +37,40 @@ export class ModelObject {
     reset() {}
 }
 
+/**
+ * @template {ModelObject} [T=ModelObject]
+ * @template {Renderable} [V=Renderable]
+ */
 export class BindingsCollection {
-    /** @param {Binding[]} bindings */
+    /** @param {Binding<T, V>[]} [bindings] */
     constructor(bindings = []) {
-        /** @type {Binding[]} */
+        /** @type {Binding<T, V>[]} */
         this._bindings = bindings;
     }
 
-    /** @returns {ArrayIterator<Binding>} */
+    /** @returns {ArrayIterator<Binding<T, V>>} */
     [Symbol.iterator]() {
         return this._bindings[Symbol.iterator]();
     }
 
-    //binding(index) { return this._bindings[index]; }
-
     /**
-     * @param {(body: Binding, index: number, bodies: Binding[]) => void} callback
+     * @param {(binding: Binding<T, V>, index: number,
+     *          bindings: Binding<T, V>[]) => void} callback
      * @param {*} [thisArg]
      */
     forEach(callback, thisArg) {
         this._bindings.forEach(callback, thisArg);
     }
 
-    /** @param {BindingsCollection} bindingsCollection */
+    /** @param {Binding<T, V>} binding */
+    add(binding) {
+        this._bindings.push(binding);
+    }
+
+    /** @param {BindingsCollection<T, V>} bindingsCollection */
     copy(bindingsCollection) {
         this._bindings = [...bindingsCollection];
     }
-
-    add(binding) { this._bindings.push(binding); }
 }
 
 /**
@@ -86,7 +92,11 @@ export class ModelObjectsCollection {
         return this;
     }
 
-    /** @param {BindingsCollection} bindingsCollection */
+    /**
+     * @template {Renderable} [V=Renderable]
+     * @param {BindingsCollection<T, V>} bindingsCollection
+     * @returns {this}
+     */
     capture(bindingsCollection) {
         bindingsCollection.copy(this._lastBindings);
         return this;
@@ -123,7 +133,10 @@ export class ModelObjectsCollection {
     /**
      * Synchronize model only once with the view. Important: the
      * model is also synchronized with the view at every user interaction!!
-     * @param {ViewsCollection} viewsCollection views to synchronize the models with.
+     *
+     * @template {Renderable} [V=Renderable]
+     * @param {ViewsCollection<V>} viewsCollection
+     * @returns {this}
      */
     onceWith(viewsCollection) {
         this._lastBindings = new BindingsCollection(
@@ -139,7 +152,8 @@ export class ModelObjectsCollection {
      * Keeps the models and views synchronized at all times!
      *
      * @template {Renderable} [V=Renderable]
-     * @param {ViewsCollection<V>} viewsCollection views to synchronize the models with.
+     * @param {ViewsCollection<V>} viewsCollection
+     * @returns {this}
      */
     alwaysWith(viewsCollection) {
         this._lastBindings = new BindingsCollection(
@@ -168,7 +182,10 @@ export class ModelObjectsCollection {
 }
 
 /**
- * Binding between the phys/math model and view.
+ * Binding between a model and its view.
+ *
+ * @template {ModelObject} [T=ModelObject]
+ * @template {Renderable} [V=Renderable]
  */
 export class Binding {
     static Mode = Object.freeze({
@@ -179,12 +196,14 @@ export class Binding {
     static Empty = () => new Binding(null, null);
 
     /**
-     * @param {ModelObject} model
-     * @param {Renderable} view
-     * @param {string} mode
+     * @param {T} model
+     * @param {V} view
+     * @param {string} [mode]
      */
     constructor(model, view, mode = Binding.Mode.ALWAYS) {
+        /** @type {T} */
         this.model = model;
+        /** @type {V} */
         this.view = view;
         this.mode = mode;
     }

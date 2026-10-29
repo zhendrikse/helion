@@ -1,5 +1,6 @@
 import {
-    Vec3, Simulation, Sphere, Cylinder, Trail, RadialSymmetricBody, CoulombPairForce, AxialSymmetricBody, EC, Colour} from "../../../src/index.js";
+    Vec3, Simulation, Sphere, Cylinder, Trail, RadialSymmetricBody, CoulombPairForce, AxialSymmetricBody, EC, Colour
+} from "../../../src/index.js";
 
 const X_MAX = 1e-13;
 const ALPHA_ENERGY  = 10e6 * EC;
@@ -86,13 +87,8 @@ const alphaSphere = new Sphere({ color: ALPHA_COLOR, segments: 24 });
 const simulation = Simulation
     .with({
         htmlDivId: "rutherfordScatteringContainer",
-        camera: {
-            position: new Vec3(0, 0, 5.25),
-            fieldOfView: 40
-        },
-        scene: {
-            scale: 1 / X_MAX
-        }
+        camera: { position: new Vec3(0, 0, 5.25), fieldOfView: 40 },
+        scene: { scale: 1 / X_MAX }
     })
     .withMouseClickEventListener()
     .bind(source.onceWith(new Cylinder({segments: 48, color: new Colour(0x999999) })))

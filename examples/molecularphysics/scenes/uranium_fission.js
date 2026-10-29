@@ -21,11 +21,21 @@ const COLOR_U235 = new Colour(0xe74c3c);
 const COLOR_PRODUCT = new Colour(0xf4d03f);
 const COLOR_NEUTRON = new Colour(0xdddddd);
 
+class Nucleus extends RadialSymmetricBody {
+    constructor(position, radius, isU235, view) {
+        super({ position, radius });
+        this.isU235 = isU235;
+        this.fissioned = false;
+    }
+}
+
+/** @type {BindingsCollection<Nucleus, Sphere>} */
 const nucleiModelViewBindings = new BindingsCollection();
 /** @type {ModelObjectsCollection<RadialSymmetricBody>} */
 const oxygenAtoms = new ModelObjectsCollection();
-/** @type {RadialSymmetricBody[]} */
-const neutrons = [];
+/** @type {ModelObjectsCollection<RadialSymmetricBody>} */
+const neutrons = new ModelObjectsCollection();
+/** @type {BindingsCollection<RadialSymmetricBody, Sphere>} */
 const productBindings = new BindingsCollection();
 /** @type {{ body: RadialSymmetricBody, view: Sphere, growthSpeed: number }[]} */
 const flashes = [];
@@ -56,14 +66,6 @@ function randomDirection(speed) {
     if (direction.length() < 1e-8)
         direction.set(1, 0, 0);
     return direction.normalize().multiplyScalar(speed);
-}
-
-class Nucleus extends RadialSymmetricBody {
-    constructor(position, radius, isU235, view) {
-        super({ position, radius });
-        this.isU235 = isU235;
-        this.fissioned = false;
-    }
 }
 
 class Lattice {
@@ -164,14 +166,13 @@ function createNeutron(position, trailLength = 10, speed = fissionNeutronSpeed) 
     simulation.bind(neutron.alwaysWith(new Sphere({
         segments: 12,
         color: COLOR_NEUTRON,
-        trailLength
     })));
     simulation.bind(neutron.alwaysWith(new Trail({
         color: COLOR_NEUTRON,
         maxPoints: trailLength,
         trailStep: 2
     })));
-    neutrons.push(neutron);
+    neutrons.add(neutron);
 }
 
 function update() {
