@@ -66,6 +66,7 @@ class NewtonsCradle {
         /** @type {Pendulum[]} */
         this._pendulums = Array.from({ length: ballCount }, (_, index) =>
             new Pendulum(anchorX(index), index === 0 ? swingAngle : 0));
+        /** @type {ModelObjectsCollection<AxialSymmetricBody>} */
         this._frame = new ModelObjectsCollection()
             .add(new AxialSymmetricBody({ // Top crossbar
                 position: new Vec3(-0.85, PIVOT_Y - .025, 0),
@@ -133,7 +134,9 @@ class NewtonsCradle {
 }
 
 const cradle = new NewtonsCradle();
+/** @type {ModelObjectsCollection<RadialSymmetricBody>} */
 const balls = new ModelObjectsCollection(cradle.balls);
+/** @type {ModelObjectsCollection<RadialSymmetricBody>} */
 const rods = new ModelObjectsCollection(cradle.rods);
 
 Simulation

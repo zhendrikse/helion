@@ -86,27 +86,34 @@ export class Renderer {
 }
 
 
+/**
+ * @template {Renderable} [V=Renderable]
+ */
 export class ViewsCollection {
-    /** @param {Renderable} viewConstructor */
+    /**
+     * @template {V} [V=Rendrable]
+     * @param {V} viewConstructor
+     * @return {ViewsCollection<V>}
+     */
     static of = viewConstructor => {
         return new ViewsCollection(viewConstructor);
     }
 
-    /** @param {Renderable} viewConstructor */
+    /** @param {V} viewConstructor */
     constructor(viewConstructor) {
         this._viewConstructor = viewConstructor;
         this._options = {};
-        /** @type {Renderable[]} */
+        /** @type {V[]} */
         this._views = [];
     }
 
-    /** @returns {ArrayIterator<Renderable>} */
+    /** @returns {ArrayIterator<V>} */
     [Symbol.iterator]() {
         return this._views[Symbol.iterator]();
     }
 
     /**
-     * @param {(body: Renderable, index: number, bodies: Renderable[]) => void} callback
+     * @param {(body: V, index: number, bodies: V[]) => void} callback
      * @param {*} [thisArg]
      */
     forEach(callback, thisArg) {
@@ -126,6 +133,7 @@ export class ViewsCollection {
         this._views = [];
     }
 
+    /** @return {V} */
     createView() {
         const view = new this._viewConstructor(this._options);
         this._views.push(view);
@@ -140,10 +148,12 @@ export class ViewsCollection {
         return box;
     }
 
+    /** @param {boolean} visible */
     set visible(visible) {
         this._views.forEach(view => view.visible = visible);
     }
 
+    /** @return {V} */
     viewAt(index) {
         return this._views[index];
     }

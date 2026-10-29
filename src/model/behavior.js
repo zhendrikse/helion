@@ -67,8 +67,11 @@ export class BindingsCollection {
     add(binding) { this._bindings.push(binding); }
 }
 
+/**
+ * @template {ModelObject} [T=ModelObject]
+ */
 export class ModelObjectsCollection {
-    /** @param {ModelObject[]} modelObjects */
+    /** @param {T[]} modelObjects */
     constructor(modelObjects = []) {
         this._bindables = modelObjects;
         /** @type {BindingsCollection} to be "consumed" by the Simulation class */
@@ -77,7 +80,7 @@ export class ModelObjectsCollection {
         this._lastBindings = new BindingsCollection();
     }
 
-    /** @param {ModelObject} bindable */
+    /** @param {T} bindable */
     add(bindable) {
         this._bindables.push(bindable);
         return this;
@@ -93,23 +96,24 @@ export class ModelObjectsCollection {
 
     /**
      * Method that is meant to be called internally within the Helion library.
-     * 
-     * @param {Binding[]} simulationBindings 
-     * @param {Renderer} renderer 
+     *
+     * @param {Binding[]} simulationBindings
+     * @param {Renderer} renderer
      */
     addTo(simulationBindings, renderer) {
         this._bindings.forEach(binding => binding.addTo(simulationBindings, renderer));
     }
 
-    /** @returns {ArrayIterator<ModelObject>} */
+    /** @returns {ArrayIterator<T>} */
     [Symbol.iterator]() {
         return this._bindables[Symbol.iterator]();
     }
 
+    /** @param {number} index */
     modelObject(index) { return this._bindables[index]; }
 
     /**
-     * @param {(body: ModelObject, index: number, bodies: ModelObject[]) => void} callback
+     * @param {(body: T, index: number, bodies: T[]) => void} callback
      * @param {*} [thisArg]
      */
     forEach(callback, thisArg) {
@@ -133,7 +137,9 @@ export class ModelObjectsCollection {
 
     /**
      * Keeps the models and views synchronized at all times!
-     * @param {ViewsCollection} viewsCollection views to synchronize the models with.
+     *
+     * @template {Renderable} [V=Renderable]
+     * @param {ViewsCollection<V>} viewsCollection views to synchronize the models with.
      */
     alwaysWith(viewsCollection) {
         this._lastBindings = new BindingsCollection(

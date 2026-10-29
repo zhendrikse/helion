@@ -9,6 +9,7 @@ const scale = 1e14;
 
 class Capacitor {
     constructor(topY = 10e-14, bottomY = -10e-14) {
+        /** @type {ModelObjectsCollection<RadialSymmetricBody>} */
         this._charges = new ModelObjectsCollection();
 
         for (let x = -20; x <= 20; x += 2)

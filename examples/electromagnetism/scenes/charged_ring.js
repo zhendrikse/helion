@@ -4,23 +4,26 @@ import {
 
 const K = 9e9;
 
-class ChargedRing extends Segments {
+class ChargedRing {
     constructor({
         radius = 0.5e-10,
         segments = 60,
         charge = EC
     } = {}) {
-        super();
         const points = this._createSegmentPositions(segments, radius);
+        /** @type {Segments<AxialSymmetricBody>} */
+        this._segments = new Segments();
         this._createSegments(segments, points, charge, radius);
     }
+
+    get segments() { return this._segments; }
 
     _createSegments(segments, points, charge, radius) {
         for (let i = 0; i < segments; i++) {
             const p1 = points[i];
             const p2 = points[i + 1];
             const axis = p2.clone().sub(p1);
-            this.push(new AxialSymmetricBody({
+            this._segments.add(new AxialSymmetricBody({
                 position: p1.clone().add(p2).multiplyScalar(0.5),
                 axis,
                 radius: radius * 2.51e-2,
@@ -41,7 +44,7 @@ class ChargedRing extends Segments {
     fieldAt(position) {
         const field = new Vec3();
 
-        for (const segment of this) {
+        for (const segment of this._segments) {
             const r = segment.position.clone().sub(position);
             const r2 = r.lengthSq();
             if (r2 < 3e-23) // Cut off arrows that are too close to the ring, i.e. that are too big!
@@ -110,19 +113,14 @@ const arrowField = new ArrowField({
 Simulation
     .with({
         htmlDivId: 'chargedRingContainer',
-        camera: {
-            position: new Vec3(15, 5, 20),
-            fieldOfView: 22,
-        },
-        scene: {
-            scale: 5e10,
-        }
+        camera: { position: new Vec3(15, 5, 20), fieldOfView: 22 },
+        scene: { scale: 5e10 }
     })
     .withMouseClickEventListener()
     .bind(electron.alwaysWith(electronSphere))
     .bind(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
     .bind(electricField.onceWith(arrowField))
-    .bind(ring.onceWith(new CylinderSegmentsView()))
+    .bind(ring.segments.onceWith(new CylinderSegmentsView()))
     .runsEvery(3e-3)
     .advancesBy(3e-19)
     .substeps(5)

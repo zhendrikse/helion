@@ -34,7 +34,9 @@ class FaradayField extends VectorField {
     }
 }
 
+/** @type {ModelObjectsCollection<AxialSymmetricBody>} */
 const faradayLoops = new ModelObjectsCollection();
+/** @type {ModelObjectsCollection<AxialSymmetricBody>} */
 const faradayLoopArrows = new ModelObjectsCollection();
 for (const z of loopZs) {
     for (let i = 0; i < loopSegments; i++) {
@@ -54,10 +56,12 @@ for (const z of loopZs) {
     }));
 }
 
+/** @type {ModelObjectsCollection<RadialSymmetricBody>} */
 const charges = new ModelObjectsCollection();
 for (let i = 0; i < numCharges; i++)
     charges.add(new RadialSymmetricBody({ position: new Vec3(0, 0, i), radius: 0.055 }));
 
+/** @type {ModelObjectsCollection<AxialSymmetricBody>} */
 const magneticVectors = new ModelObjectsCollection();
 for (const position of magneticFieldPositions)
     magneticVectors.add(new AxialSymmetricBody({ position }));

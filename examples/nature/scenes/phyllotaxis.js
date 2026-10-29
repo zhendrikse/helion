@@ -52,6 +52,7 @@ const colorSchemes = [
     (/** @type {{ angle: number; }} */ _p) => 65 / 360 // monochrome 65°
 ];
 
+/** @type {ModelObjectsCollection<FlowerParticle>} */
 const flowerSeeds = new ModelObjectsCollection();
 const flowerSeedsViews = ViewsCollection.of(Circle).with({ fillColor: Colour.Yellow });
 for (let index = 0; index <= numberOfDots; index++)
@@ -75,7 +76,7 @@ const simulation = Simulation
     .runsEvery(0.02)
     .onStep(() => {
         if (n > numberOfDots)
-            return; 
+            return;
 
         flowerSeedsViews.forEach((view, index) => view.visible = index <=n);
         updateTitle(c, n);

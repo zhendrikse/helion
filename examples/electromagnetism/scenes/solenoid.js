@@ -31,6 +31,7 @@ class Solenoid {
                 radius * Math.sin(2 * Math.PI / totalSegments * turns * i)
             ));
 
+        /** @type {ModelObjectsCollection<AxialSymmetricBody>} */
         const segments = new ModelObjectsCollection();
         for (let i = 0; i < totalSegments - 1; i++) {
             const p1 = points[i];

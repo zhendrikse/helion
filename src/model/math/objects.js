@@ -429,16 +429,19 @@ export class LineSegment extends ModelObject {
     }
 }
 
+/**
+ * @template {ModelObject} [T=ModelObject]
+ */
 export class Segments extends ModelObject {
     constructor() {
         super();
-        /** @type {ModelObject[]} */
+        /** @type {T[]} */
         this._segments = [];
     }
 
     get count() { return this._segments.length; }
 
-    /** @returns {ArrayIterator<ModelObject>} */
+    /** @returns {ArrayIterator<T>} */
     [Symbol.iterator]() {
         return this._segments[Symbol.iterator]();
     }
@@ -447,8 +450,8 @@ export class Segments extends ModelObject {
         this._segments.length = 0;
     }
 
-    /** @param {ModelObject} segment */
-    push(segment) {
+    /** @param {T} segment */
+    add(segment) {
         this._segments.push(segment);
     }
 }
@@ -471,14 +474,14 @@ export class Grid extends Segments {
             this._gridLines.push(horizontalLine);
             pos += stepSize;
         }
-        this._gridLines.forEach(line => this.push(line));
+        this._gridLines.forEach(line => this.add(line));
     }
 
     /** @param {Matrix2D} matrix */
     apply(matrix) {
         this.clear();
         for (const segment of this._gridLines)
-            this.push(segment.clone().apply(matrix));
+            this.add(segment.clone().apply(matrix));
         return this;
     }
 }
@@ -504,7 +507,7 @@ export class SegmentedCircle extends Segments {
             });
         }
 
-        this._points.forEach(segment => this.push(new LineSegment(segment.from.clone(), segment.to.clone(), color)));
+        this._points.forEach(segment => this.add(new LineSegment(segment.from.clone(), segment.to.clone(), color)));
     }
 
     /** @param {Matrix2D} matrix */
@@ -518,7 +521,7 @@ export class SegmentedCircle extends Segments {
             matrix.applyTo(from);
             matrix.applyTo(to);
 
-            this.push(new LineSegment(from, to, this._color));
+            this.add(new LineSegment(from, to, this._color));
         }
 
         return this;
@@ -559,7 +562,7 @@ export class StrangeAttractor extends Segments {
             const previous = position.clone();
             Integrators.rk4VectorStep(position, this.dt, p => this.derivative(p));
             const distance = position.distanceTo(previous);
-            this.push(new LineSegment(previous, position.clone(), this.hue(distance)));
+            this.add(new LineSegment(previous, position.clone(), this.hue(distance)));
         }
     }
 }
@@ -680,7 +683,7 @@ export class Turtle extends Segments {
         const to = new Vec2(x, y);
 
         if (this.penState === Turtle.PenState.DOWN)
-            this.push(new LineSegment(from, to, this.currentColor.asHexValue()));
+            this.add(new LineSegment(from, to, this.currentColor.asHexValue()));
 
         this.x = x;
         this.y = y;

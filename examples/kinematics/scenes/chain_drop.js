@@ -57,7 +57,9 @@ class Chain {
         damping = 0.0
     } = {}) {
         this._totalBalls = totalBalls;
+        /** @type {ModelObjectsCollection<RadialSymmetricBody>} */
         this._balls = new ModelObjectsCollection();
+        /** @type {ModelObjectsCollection<BodyPair>} */
         this._bonds = new ModelObjectsCollection();
         this._length = length;
         this._mass = mass;

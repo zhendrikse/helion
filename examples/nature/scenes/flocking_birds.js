@@ -18,6 +18,7 @@ class Flock {
         this._center = new Vec3();
         this._direction = new Vec3();
 
+        /** @type {ModelObjectsCollection<Body>} */
         this._birds = new ModelObjectsCollection();
         const initialPhysicalFlockRadius = 3;
         for (let i = 0; i < bird_count; i++)

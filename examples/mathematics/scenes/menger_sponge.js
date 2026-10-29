@@ -4,10 +4,11 @@ import {Block, Segments, BoxSegmentsView, Simulation, Vec3} from "../../../src/i
 const depth = 4;
 const finalSize = 200;
 
+/** @type {Segments<Block>} */
 const sponge = new Segments();
 function mengerSponge(pos, size, currentDepth) {
     if (currentDepth === 0) {
-        sponge.push(new Block({position: pos, size: new Vec3(size, size, size)}));
+        sponge.add(new Block({position: pos, size: new Vec3(size, size, size)}));
         return;
     }
 
@@ -25,19 +26,14 @@ mengerSponge(new Vec3(), finalSize, depth);
 Simulation
     .with({
         htmlDivId: "mengerSpongeContainer",
-        headUpDisplay: {
-            enabled: false
-        },
+        headUpDisplay: { enabled: false },
         camera: {
             position: new Vec3(-180, 165, -200).multiplyScalar(2.1),
             fieldOfView: 30
         }
     })
     .bind(sponge.onceWith(new BoxSegmentsView({
-        material: new MeshStandardMaterial({
-            roughness: 0.55,
-            metalness: 0.75
-        }),
+        material: new MeshStandardMaterial({ roughness: 0.55, metalness: 0.75 }),
         colorMapper: (segment, index, targetColor) => {
             let hue = 0.175 + segment.position.y / 600;
             targetColor.setHSL(hue % 1, 1.0, 0.5);

@@ -3,13 +3,14 @@ import {
     Label, Vec2, HexValueColorMapper, Colour
 } from '../../../src/index.js';
 
-class Pythagoras extends Segments {
+class Pythagoras {
     /** 
      * @param {number} a 
      * @param {number} b 
      */
     constructor(a = 4.0, b = 3.0) {
-        super();
+        /** @type {Segments<LineSegment>} */
+        this._segments = new Segments();
 
         this._a = a;
         this._b = b;
@@ -25,16 +26,18 @@ class Pythagoras extends Segments {
         this.generate();
     }
 
+    get segments() { return this._segments; }
+
     generate() {
-        this.clear();
+        this._segments.clear();
 
         this._A.set(0, 0);
         this._B.set(this._a, 0);
         this._C.set(0, this._b);
 
-        this.push(this._ab);
-        this.push(this._ac);
-        this.push(this._bc);
+        this._segments.add(this._ab);
+        this._segments.add(this._ac);
+        this._segments.add(this._bc);
 
         this.addSquare(this._A, this._B, 0x44aaff, -1);
         this.addSquare(this._A, this._C, 0x44dd88, 1);
@@ -57,10 +60,10 @@ class Pythagoras extends Segments {
         const p3 = p2.clone().add(normal);
         const p4 = p1.clone().add(normal);
 
-        this.push(new LineSegment(p1, p2, color));
-        this.push(new LineSegment(p2, p3, color));
-        this.push(new LineSegment(p3, p4, color));
-        this.push(new LineSegment(p4, p1, color));
+        this._segments.add(new LineSegment(p1, p2, color));
+        this._segments.add(new LineSegment(p2, p3, color));
+        this._segments.add(new LineSegment(p3, p4, color));
+        this._segments.add(new LineSegment(p4, p1, color));
     }
 
     /** @param {number} a */
@@ -111,7 +114,7 @@ const simulation = Simulation
         headUpDisplay: { enabled: false },
         camera: { controls: false }
     })
-    .bind(pythagoras.onceWith(segmentsView))
+    .bind(pythagoras.segments.onceWith(segmentsView))
     .bind(pythagoras.ab.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))
     .bind(pythagoras.ac.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))
     .bind(pythagoras.bc.onceWith(new LineSegmentView({lineWidth: 3, colorMapper: new HexValueColorMapper()})))

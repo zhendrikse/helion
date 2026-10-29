@@ -59,6 +59,7 @@ const constellationLines = [];
 const constellationLabelAnchors = [];
 /** @type {Label[]} */
 const constellationLabelViews = [];
+/** @type {Segments<LineSegment>} */
 const constellationSegments = new Segments();
 const constellationView = new LineSegmentsView({
     lineWidth: 1.5,
@@ -164,7 +165,7 @@ function updateSky(localSiderealTime = 2) {
         const projectedFrom = projectStar(fromStar, localSiderealTime);
         const projectedTo = projectStar(toStar, localSiderealTime);
         if (projectedFrom && projectedTo)
-            constellationSegments.push(new LineSegment(projectedFrom, projectedTo, 0x003c66));
+            constellationSegments.add(new LineSegment(projectedFrom, projectedTo, 0x003c66));
     }
 }
 

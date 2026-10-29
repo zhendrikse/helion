@@ -13,13 +13,14 @@ class ChargedSheet {
     } = {}) {
         this.size = size;
         this.charge = charge;
+        /** @type {Segments<Block>} */
         this._segments = new Segments();
 
         const dx = size / segments;
         const dq = charge / (segments * segments);
         for (let i = 0; i < segments; i++)
             for (let j = 0; j < segments; j++)
-                this._segments.push(new Block({
+                this._segments.add(new Block({
                     position: new Vec3(-0.5 * size + i * dx, -0.5 * size + j * dx, 0),
                     charge: dq,
                     size: new Vec3(3.25, 3.25, 1).multiplyScalar(dx * .25)

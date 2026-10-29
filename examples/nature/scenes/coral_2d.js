@@ -43,6 +43,7 @@ class ParticleCloud {
     /** @param {number} N */
     constructor(N) {
         this._count = N;
+        /** @type {ModelObjectsCollection<RadialSymmetricBody>} */
         this._seeds = new ModelObjectsCollection();
         this._seedPosition = new Vec2(width * 0.5, 2);
         this._initialize();

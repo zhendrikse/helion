@@ -7,13 +7,14 @@ const range = 12;
 const unitCircleRadius = 1;
 const circleSegments = 128;
 
-class Roots extends Segments {
+class Roots {
     constructor({
         maxN = 12,
         radius = 1,
         initialRootCount = 3
     } = {}) {
-        super();
+        /** @type {Segments<LineSegment>} */
+        this._segments = new Segments();
 
         this._radius = radius;
         this._maxN = maxN;
@@ -23,11 +24,13 @@ class Roots extends Segments {
         for (let k = 0; k < maxN; k++) {
             const line = new LineSegment(new Vec2(), new Vec2());
             this._rootLines.push(line);
-            this.push(line);
+            this._segments.add(line);
         }
 
         this.update(initialRootCount);
     }
+
+    get segments() { return this._segments; }
 
     /** @param {number} rootCount */
     update(rootCount) {}
@@ -136,13 +139,8 @@ const simulation = Simulation
     .with({
         htmlDivId: 'rootsOfUnityContainer',
         viewport: { parameterMenuCollapsed: false },
-        headUpDisplay: {
-            enabled: false
-        },
-        camera: {
-            position: new Vec3(0, 0, 3),
-            controls: false
-        }
+        headUpDisplay: { enabled: false },
+        camera: { position: new Vec3(0, 0, 3), controls: false }
         })
     .bind(unitCircle.onceWith(new LineSegmentsView({
         lineWidth: 3,
@@ -151,7 +149,7 @@ const simulation = Simulation
         gapSize: 0.1,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: new Colour(0xaaaaaa) })
     })))
-    .bind(polygon.onceWith(new LineSegmentsView({
+    .bind(polygon.segments.onceWith(new LineSegmentsView({
         lineWidth: 2,
         colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: new Colour(0xffff88) })
     })))

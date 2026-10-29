@@ -37,6 +37,7 @@ const graph = new UPlotGraph({
     yLabel: 'Particles'
 });
 
+/** @type ViewsCollection<Circle> */
 const circles = ViewsCollection.of(Circle);
 const simulation = Simulation
     .with({
@@ -61,7 +62,7 @@ const simulation = Simulation
             simulation.bind(newBindings);
             circles.forEach((circle, index) =>
                 circle.fillColor = index === 0 ? Colour.Red : index >= PARTICLE_COUNT ? Colour.Cyan : Colour.Yellow);
-            newBindings._bindings.forEach(binding => gas._bindings.push(binding));
+            newBindings._bindings.forEach(binding => gas._bindings.add(binding));
         }))
     .append(new Checkbox('Gas particles')
         .checked(true)

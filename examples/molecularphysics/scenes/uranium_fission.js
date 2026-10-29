@@ -22,6 +22,7 @@ const COLOR_PRODUCT = new Colour(0xf4d03f);
 const COLOR_NEUTRON = new Colour(0xdddddd);
 
 const nucleiModelViewBindings = new BindingsCollection();
+/** @type {ModelObjectsCollection<RadialSymmetricBody>} */
 const oxygenAtoms = new ModelObjectsCollection();
 /** @type {RadialSymmetricBody[]} */
 const neutrons = [];

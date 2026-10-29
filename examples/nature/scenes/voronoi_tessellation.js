@@ -80,12 +80,16 @@ function buildVoronoiCells(seeds) {
     simulation.bind(cellCores.onceWith(cellCoresView));
 }
 
+/** @type {ModelObjectsCollection<VoronoiCellModel>} */
 const cells = new ModelObjectsCollection();
+/** @type {ModelObjectsCollection<RadialSymmetricBody>} */
 const cellCores = new ModelObjectsCollection();
+/** @type ViewsCollection<PolygonView> */
 const cellViews = ViewsCollection.of(PolygonView).with({
     borderColor: Colour.White,
     borderWidth: 0.02
 });
+/** @type ViewsCollection<Circle> */
 const cellCoresView = ViewsCollection.of(Circle);
 
 let seeds;
@@ -107,8 +111,8 @@ function reset() {
     growthRadius = 0.125;
     buildVoronoiCells(seeds);
     // Update views
-    cellViews.forEach((view, index) => view.visible = index < seedCount);
-    cellCoresView.forEach((view, index) => view.visible = index < seedCount);
+    cellViews.forEach((polygon, index) => polygon.visible = index < seedCount);
+    cellCoresView.forEach((circle, index) => circle.visible = index < seedCount);
     updateCellColors();
 }
 

@@ -137,6 +137,7 @@ export class CarbonMonoxide extends BodyPair {
 
 class CarbonMonoxideGas {
     constructor(moleculeCount = MOLECULES_COUNT, temperature = 298, boxSize = L) {
+        /** @type ModelObjectsCollection<CarbonMonoxide> */
         this._molecules = new ModelObjectsCollection();
         this._boxSize = boxSize;
         this._temperature = temperature;
@@ -145,8 +146,7 @@ class CarbonMonoxideGas {
         for (let i = 0; i < moleculeCount; i++) {
             const pos = new Vec3(Math.random() - .5, Math.random() - .5, Math.random() - .5)
                 .multiplyScalar(boxSize);
-            const molecule = new CarbonMonoxide(pos, Math.sqrt(3 * k * temperature / mass));
-            this._molecules.add(molecule);
+            this._molecules.add(new CarbonMonoxide(pos, Math.sqrt(3 * k * temperature / mass)));
         }
     }
 
@@ -195,6 +195,7 @@ class CarbonMonoxideGas {
 }
 
 const gas = new CarbonMonoxideGas();
+/** @type ViewsCollection<DiatomicMolecule> */
 const gasView = ViewsCollection.of(DiatomicMolecule);
 let t = 0;
 let steps = 0;

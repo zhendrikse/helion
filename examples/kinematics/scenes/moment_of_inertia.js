@@ -8,6 +8,7 @@ const CYLINDER_HEIGHT = 2;
 
 class MomentOfInertiaCylinder {
     constructor(radius = CYLINDER_RADIUS, height = CYLINDER_HEIGHT, ringSpacing = 0.1) {
+        /** @type {ModelObjectsCollection<RadialSymmetricBody>} */
         this._atoms = new ModelObjectsCollection();
         this._omega = new Vec3(0, 0, 0);
         this._momentOfInertia = 0;

@@ -11,7 +11,6 @@ const STICKER_OFFSET = 0.515;
 const vec = (x, y, z) => new Vec3(x, y, z);
 
 const Direction = Object.freeze({ forward: 1, backward: -1});
-const Axis = Object.freeze({ x: 'x',  y: 'y', z: 'z' })
 
 const Colors = Object.freeze({
     right:  Colour.Red,
@@ -165,6 +164,7 @@ class Rotation {
 
 class Cube {
     constructor() {
+        /** @type {ModelObjectsCollection<Cubie>} */
         this._cubies = new ModelObjectsCollection();
         for (let x = -1; x <= 1; x++)
             for (let y = -1; y <= 1; y++)

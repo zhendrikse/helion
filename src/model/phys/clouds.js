@@ -119,9 +119,10 @@ export class Gas extends ModelObjectsCollection{
 
     /**
      * @param {number} numberOfParticles
-     * @return {ModelObjectsCollection}
+     * @return {ModelObjectsCollection<RadialSymmetricBody>}
      */
     addParticles(numberOfParticles = 50) {
+        /** @type ModelObjectsCollection<RadialSymmetricBody> */
         const newParticles = new ModelObjectsCollection();
         for (let i = 0; i < numberOfParticles; i++) {
             const particle = new RadialSymmetricBody({

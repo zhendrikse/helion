@@ -88,6 +88,7 @@ class Cradle {
             this._pendulums.push(new Pendulum({ T, position: x, pivotY: -2 }));
         }
 
+        /** @type {ModelObjectsCollection<AxialSymmetricBody>} */
         this._frame = new ModelObjectsCollection()
             .add(new AxialSymmetricBody({
                 axis: new Vec3(0, -3 - 0.04 , 2),

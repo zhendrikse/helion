@@ -21,7 +21,7 @@ function scale(length) {
     return [a1, a2, length / (scaleFactor * max)];
 }
 
-export class Harmonograph extends Segments {
+export class Harmonograph {
     constructor({
         depth = 600,
         width = 600,
@@ -29,17 +29,19 @@ export class Harmonograph extends Segments {
         hueIncrement = 0.159,
         decayFactor = 0.9999
     } = {}) {
-        super();
-
         this._depth = depth;
         this._width = width;
         this._iterations = iterations;
         this._hueIncrement = hueIncrement;
         this._decayFactor = decayFactor;
+        /** @type {Segments<LineSegment>} */
+        this._segments = new Segments();
     }
 
+    get segments() { return this._segments; }
+
     generate(standardDeviation = 0.002) {
-        this.clear();
+        this._segments.clear();
         const mx = 4;
 
         const [ax1, ax2, xscale] = scale(this._width);
@@ -85,7 +87,7 @@ export class Harmonograph extends Segments {
 
             const current = new Vec3(x, y, z);
             if (previous)
-                this.push(new LineSegment(previous, current, (hue % 360) / 360));
+                this._segments.add(new LineSegment(previous, current, (hue % 360) / 360));
             previous = current;
 
             hue += dt * this._hueIncrement * 50;
@@ -109,6 +111,6 @@ Simulation
             enabled: false
         }
     })
-    .bind(harmonograph.alwaysWith(harmonographView))
+    .bind(harmonograph.segments.alwaysWith(harmonographView))
     .frameSceneOn(harmonographView, { padding: 0.75 })
     .withMouseClickEventListener(() => harmonograph.generate());

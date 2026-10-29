@@ -269,6 +269,7 @@ class SPHSolver {
         this._hSquared = smoothingLength * smoothingLength;
         this._Wpoly6_coeff = 315.0 / (64 * Math.PI * Math.pow(smoothingLength, 9));
 
+        /** @type {ModelObjectsCollection<SPHParticle>} */
         this._particles = new ModelObjectsCollection();
         this._activeParticleCount = 0;
         this._wallForce = new WallForce(smoothingLength, mass);

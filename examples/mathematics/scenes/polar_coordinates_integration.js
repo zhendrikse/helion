@@ -7,6 +7,8 @@ const functionToIntegrate = (theta, phi) => theta * theta * (phi - Math.PI) * (p
 class SegmentedSphere extends Segments {
     constructor(radius = 1, da = 0.05) {
         super();
+        /** @type {Segments<Block>} */
+        this._segments = new Segments();
         this._thetaPhi = [];
         this._radius = radius;
         this._da = da;
@@ -22,10 +24,12 @@ class SegmentedSphere extends Segments {
         this._interval = new Interval(Math.min(...values), Math.max(...values));
     }
 
+    get segments() { return this._segments; }
+
     #createCell(theta, phi, values) {
         const val = functionToIntegrate(theta, phi);
         values.push(val);
-        this.push(new Block({
+        this._segments.add(new Block({
             position: toCartesian(this._radius, theta, phi),
             size: new Vec3(this._da, this._da, this._da)
         }));
@@ -46,7 +50,7 @@ class SegmentedSphere extends Segments {
 
     integrate(func) {
         let sum = 0;
-        for (let index = 0; index < this.count; index++) {
+        for (let index = 0; index < this._segments.count; index++) {
             const {theta, phi} = this.thetaPhiAt(index);
             if (this.segmentVisibleAt(index))
                 sum += func(theta, phi) * Math.sin(theta);
@@ -75,7 +79,7 @@ const simulation = Simulation
             enabled: false
         }
     })
-    .bind(sphere.onceWith(sphereView))
+    .bind(sphere.segments.onceWith(sphereView))
     .frameSceneOn(sphereView, {padding: 1, translationY: -1.5})
     .append(new Slider("θ_min")
         .withRange(new Range(0, 180, 1))

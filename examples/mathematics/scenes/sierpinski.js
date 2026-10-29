@@ -58,28 +58,28 @@ function sierpinskiTetrahedron(vertices, level) {
 
 function tetrahedron(vertices) {
     const color = colour(vertices[0]);
-    fractal.push(new LineSegment(vertices[0], vertices[1], color));
-    fractal.push(new LineSegment(vertices[0], vertices[2], color));
-    fractal.push(new LineSegment(vertices[0], vertices[3], color));
-    fractal.push(new LineSegment(vertices[1], vertices[2], color));
-    fractal.push(new LineSegment(vertices[2], vertices[3], color));
-    fractal.push(new LineSegment(vertices[3], vertices[1], color));
+    fractal.add(new LineSegment(vertices[0], vertices[1], color));
+    fractal.add(new LineSegment(vertices[0], vertices[2], color));
+    fractal.add(new LineSegment(vertices[0], vertices[3], color));
+    fractal.add(new LineSegment(vertices[1], vertices[2], color));
+    fractal.add(new LineSegment(vertices[2], vertices[3], color));
+    fractal.add(new LineSegment(vertices[3], vertices[1], color));
 }
 
 function pyramid(vertices) {
     const color = colour(vertices[0]);
 
     // Top
-    fractal.push(new LineSegment(vertices[0], vertices[4], color));
-    fractal.push(new LineSegment(vertices[1], vertices[4], color));
-    fractal.push(new LineSegment(vertices[2], vertices[4], color));
-    fractal.push(new LineSegment(vertices[3], vertices[4], color));
+    fractal.add(new LineSegment(vertices[0], vertices[4], color));
+    fractal.add(new LineSegment(vertices[1], vertices[4], color));
+    fractal.add(new LineSegment(vertices[2], vertices[4], color));
+    fractal.add(new LineSegment(vertices[3], vertices[4], color));
 
     // Base
-    fractal.push(new LineSegment(vertices[0], vertices[1], color));
-    fractal.push(new LineSegment(vertices[1], vertices[2], color));
-    fractal.push(new LineSegment(vertices[2], vertices[3], color));
-    fractal.push(new LineSegment(vertices[3], vertices[0], color));
+    fractal.add(new LineSegment(vertices[0], vertices[1], color));
+    fractal.add(new LineSegment(vertices[1], vertices[2], color));
+    fractal.add(new LineSegment(vertices[2], vertices[3], color));
+    fractal.add(new LineSegment(vertices[3], vertices[0], color));
 }
 
 const initialTetrahedron = [
@@ -97,6 +97,7 @@ const initialPyramid = [
     new Vec3(0, 1, 0)
 ];
 
+/** @type {Segments<LineSegment>} */
 const fractal = new Segments();
 buildPyramid();
 
@@ -111,7 +112,7 @@ function buildTetrahedron() {
 }
 
 const fractalView = new LineSegmentsView({
-    lineWidth: 2,
+    lineWidth: 1.25,
     colorMapper: new HueColorMapper()
 });
 

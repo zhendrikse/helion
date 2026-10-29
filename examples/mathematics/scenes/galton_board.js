@@ -13,6 +13,7 @@ const stepDistance = 0.04;
 const totalPinSteps = stepsPerRow * (num_nails + 1);
 const totalFallSteps = totalPinSteps + stepsPerRow * 2;
 
+/** @type {ModelObjectsCollection<AxialSymmetricBody>} */
 const bars = new ModelObjectsCollection()
     .add(new AxialSymmetricBody({ // Left
         position: new Vec3(-1 - num_nails, 19.75, 0),
@@ -35,6 +36,7 @@ const bars = new ModelObjectsCollection()
         radius: 0.2
     }));
 
+/** @type {ModelObjectsCollection<AxialSymmetricBody>} */
 const pins = new ModelObjectsCollection();
 for (let i = 0; i < num_nails; i++) {
     bars.add(new AxialSymmetricBody({

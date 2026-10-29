@@ -75,9 +75,9 @@ export class CarbonMonoxide extends BodyPair {
 
 class CarbonMonoxideGas {
     constructor(moleculeCount = MOLECULES_COUNT, temperature = 298, boxSize = L) {
+        /** @type ModelObjectsCollection<CarbonMonoxide> */
         this._molecules = new ModelObjectsCollection();
         this._boxSize = boxSize;
-        this._temperature = temperature;
         const mass = 14E-3 / 6E23; // Average mass of Oxygen and Carbon
         const k = 1.38E-23; // Boltzmann constant
         for (let i = 0; i < moleculeCount; i++) {
