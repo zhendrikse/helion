@@ -1,5 +1,7 @@
 import {
-    Vec3, Simulation, Sphere, Box, RadioGroup, RadialSymmetricBody, Block, Slider, Range, Colour} from '../../../src/index.js';
+    Vec3, Simulation, Sphere, Box, RadioGroup, RadialSymmetricBody, Block, Slider, Range, Colour, ViewsCollection,
+    ModelObjectsCollection
+} from '../../../src/index.js';
 
 const LENGTH = 0.1;
 const DROPLET_RADIUS = 0.04 * LENGTH;
@@ -86,10 +88,10 @@ class Sprinkler extends Block {
         super({ size: new Vec3(length, 0.05 * length, 0.05 * length) });
 
         this._length = length;
-        this._omega = Math.PI;
-        this._shootOutward = true;
-        this._frequency = 15;
-        this._waterVelocity = 0.3;
+        this.omega = Math.PI;
+        this.shootOutward = true;
+        this.dropletFrequency = 15;
+        this.waterVelocity = 0.3;
         this._clockTicks = 0;
         this._theta = 0;
         this._waterBeams = [
@@ -98,21 +100,16 @@ class Sprinkler extends Block {
         ];
     }
 
-    /** @returns {Iterator<Droplet>} */
-    [Symbol.iterator]() {
-        const allDroplets = [
-            ...this._waterBeams[0].droplets,
-            ...this._waterBeams[1].droplets
-        ];
-        return allDroplets[Symbol.iterator]();
+    get droplets() {
+        return new ModelObjectsCollection([...this._waterBeams[0].droplets, ...this._waterBeams[1].droplets]);
     }
 
     rotate(dt) {
-        this.orientation.z += this._omega * dt;
+        this.orientation.z += this.omega * dt;
     }
 
     shedWater(dt) {
-        if (this._clockTicks >= 1 / this._frequency) {
+        if (this._clockTicks >= 1 / this.dropletFrequency) {
             this._letOutNewDroplets();
             this._clockTicks = 0;
         }
@@ -143,9 +140,9 @@ class Sprinkler extends Block {
     // a = +1  -> shoot outward
     // a = -1  -> shoot inward
     _endpointVelocities() {
-        const a = this._shootOutward ? 1 : -1;
+        const a = this.shootOutward ? 1 : -1;
         const positions = this._endpointPositions();
-        const omega = new Vec3(0, 0, this._omega);
+        const omega = new Vec3(0, 0, this.omega);
         const velocities = [];
 
         for (const position of positions) {
@@ -157,7 +154,7 @@ class Sprinkler extends Block {
             const radialVelocity = position
                 .clone()
                 .normalize()
-                .multiplyScalar(a * this._waterVelocity);
+                .multiplyScalar(a * this.waterVelocity);
 
             velocities.push(tangentialVelocity.add(radialVelocity));
         }
@@ -165,9 +162,6 @@ class Sprinkler extends Block {
         return velocities;
     }
 
-    set dropletFrequency(value) { this._frequency = value; }
-    set waterVelocity(value) { this._waterVelocity = value; }
-    set shootOutward(value) { this._shootOutward = value; }
     get length() {return this._length;}
 
     reset() {
@@ -181,7 +175,7 @@ class Sprinkler extends Block {
 
 const sprinkler = new Sprinkler({ length: LENGTH, dropletPoolSize: 100 });
 
-const simulation = Simulation
+Simulation
     .with({
         htmlDivId: 'waterSprinklerContainer',
         camera: {
@@ -193,6 +187,7 @@ const simulation = Simulation
     })
     .runsEvery(1e-2)
     .bind(sprinkler.alwaysWith(new Box({ color: new Colour(0xffff00) })))
+    .bind(sprinkler.droplets.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Cyan })))
     .bind(new RadialSymmetricBody({ radius: 0.03 * LENGTH }).onceWith(new Sphere({color: Colour.Red})))
     .onStep((clock, dt) => {
         sprinkler.shedWater(dt);
@@ -223,7 +218,4 @@ const simulation = Simulation
         .withValue(.3)
     )
     .start();
-
-for (const droplet of sprinkler)
-    simulation.bind(droplet.alwaysWith(new Sphere({ color: Colour.Cyan })));
 

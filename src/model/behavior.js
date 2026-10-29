@@ -37,17 +37,51 @@ export class ModelObject {
     reset() {}
 }
 
+export class BindingsCollection {
+    /** @param {Binding[]} bindings */
+    constructor(bindings = []) {
+        /** @type {Binding[]} */
+        this._bindings = bindings;
+    }
+
+    /** @returns {ArrayIterator<Binding>} */
+    [Symbol.iterator]() {
+        return this._bindings[Symbol.iterator]();
+    }
+
+    //binding(index) { return this._bindings[index]; }
+
+    /**
+     * @param {(body: Binding, index: number, bodies: Binding[]) => void} callback
+     * @param {*} [thisArg]
+     */
+    forEach(callback, thisArg) {
+        this._bindings.forEach(callback, thisArg);
+    }
+
+    copy(bindingsCollection) {
+        this._bindings = bindingsCollection;
+    }
+
+    add(binding) { this._bindings.push(binding); }
+}
+
 export class ModelObjectsCollection {
     /** @param {ModelObject[]} modelObjects */
     constructor(modelObjects = []) {
         this._bindables = modelObjects;
-        /** @type {Binding[]} */
-        this._bindings = [];
+        /** @type {BindingsCollection} */
+        this._bindings = new BindingsCollection();
     }
 
     /** @param {ModelObject} bindable */
     add(bindable) {
         this._bindables.push(bindable);
+        return this;
+    }
+
+    capture(bindingsCollection) {
+        bindingsCollection.copy(this._bindings);
         return this;
     }
 
@@ -84,7 +118,7 @@ export class ModelObjectsCollection {
      * @param {ViewsCollection} viewsCollection views to synchronize the models with.
      */
     onceWith(viewsCollection) {
-        this._bindables.forEach(bindable=> this._bindings.push(bindable.onceWith(viewsCollection.createView())));
+        this._bindables.forEach(bindable=> this._bindings.add(bindable.onceWith(viewsCollection.createView())));
         return this;
     }
 
@@ -93,7 +127,7 @@ export class ModelObjectsCollection {
      * @param {ViewsCollection} viewsCollection views to synchronize the models with.
      */
     alwaysWith(viewsCollection) {
-        this._bindables.forEach(bindable => this._bindings.push(bindable.alwaysWith(viewsCollection.createView())));
+        this._bindables.forEach(bindable => this._bindings.add(bindable.alwaysWith(viewsCollection.createView())));
         return this;
     }
 

@@ -1,5 +1,5 @@
 import {
-    Circle, Simulation, Vec3, Vec2, Slider, Range, Button, Checkbox,
+    Circle, Simulation, Vec3, Vec2, Slider, Range, Button, Checkbox, BindingsCollection,
     RadialSymmetricBody, Colour, ModelObjectsCollection, ViewsCollection
 } from '../../../src/index.js';
 
@@ -57,6 +57,7 @@ const flowerSeedsViews = ViewsCollection.of(Circle).with({ fillColor: Colour.Yel
 for (let index = 0; index <= numberOfDots; index++)
     flowerSeeds.add(new FlowerParticle(c, index));
 
+const seedBindings = new BindingsCollection();
 const simulation = Simulation
     .with({
         htmlDivId: 'flowerContainer',
@@ -70,7 +71,7 @@ const simulation = Simulation
         flowerSeeds.forEach(seed => seed.updateWith(c));
         updateTitle(c, n);
     })
-    .bind(flowerSeeds.alwaysWith(flowerSeedsViews))
+    .bind(flowerSeeds.alwaysWith(flowerSeedsViews).capture(seedBindings))
     .runsEvery(0.02)
     .onStep(() => {
         if (n > numberOfDots)
@@ -113,10 +114,10 @@ updateFlowerSeeds();
 function updateFlowerSeeds(schemeNr= currentScheme) {
     currentScheme = schemeNr;
     n = 0;
-    flowerSeeds.forEach((seed, index) => {
-        const seedColour = new Colour().setHSL(colorSchemes[schemeNr](seed), 1, .5);
-        flowerSeedsViews.viewAt(index).fillColor = seedColour;
-        flowerSeedsViews.viewAt(index).borderColor = showBorder ? Colour.White : seedColour;
-    });
+    seedBindings.forEach(binding => {
+        const seedColour = new Colour().setHSL(colorSchemes[schemeNr](binding.model), 1, .5);
+        binding.view.fillColor = seedColour;
+        binding.view.borderColor = showBorder ? Colour.White : seedColour;
+    })
     updateTitle(c, n);
 }
