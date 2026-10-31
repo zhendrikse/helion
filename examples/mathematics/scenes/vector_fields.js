@@ -1,9 +1,12 @@
 import {ArrowField, Simulation, VectorField, Range, Vec3} from "../../../src/index.js";
 
-const VectorFields = Object.freeze({
-    FIELD_1: "Vector field 1",
-    FIELD_2: "Vector field 2"
-});
+const X_RANGE = new Range(-1, 0.8, .2);
+const Y_RANGE = new Range(-1, 0.8, .1);
+const Z_RANGE = new Range(-1, 0.8, .2);
+
+const STEP_SIZE = 0.25;
+const JITTER = 0.1;
+const RESPAWN_CHANCE = 0.0005;
 
 class VectorField1 extends VectorField {
     constructor() {
@@ -22,36 +25,134 @@ class VectorField1 extends VectorField {
     }
 }
 
-class VectorField2 extends VectorField {
-    constructor() {
+/**
+ * Moves the arrow sample positions along the vector field.
+ * Each arrow has its own particle, initialized near its original grid position.
+ */
+class AnimatedVectorField extends VectorField1 {
+    constructor({xRange, yRange, zRange}) {
         super();
-        this.meta = "$$\\begin{pmatrix} x \\\\ y \\\\ z \\end{pmatrix} = \\begin{pmatrix} x \\\\ y \\\\ z \\end{pmatrix}$$";
+
+        this._xRange = xRange;
+        this._yRange = yRange;
+        this._zRange = zRange;
+        this._yCount = yRange.count;
+        this._zCount = zRange.count;
+        this._particles = [];
+
+        for (const x of xRange)
+            for (const y of yRange)
+                for (const z of zRange) {
+                    const home = new Vec3(x, y, z);
+                    this._particles.push({
+                        home,
+                        position: this.#jitteredPosition(home)
+                    });
+                }
+
+        // Reusable Runge-Kutta scratch vectors.
+        this._k1 = new Vec3();
+        this._k2 = new Vec3();
+        this._k3 = new Vec3();
+        this._k4 = new Vec3();
+        this._samplePosition = new Vec3();
+        this._delta = new Vec3();
+    }
+
+    #jitteredPosition(home) {
+        return new Vec3(
+            home.x + (Math.random() * 2 - 1) * JITTER,
+            home.y + (Math.random() * 2 - 1) * JITTER,
+            home.z + (Math.random() * 2 - 1) * JITTER
+        );
+    }
+
+    #sample(position, target) {
+        super.sample(position, target);
+    }
+
+    /** @param {number} elapsedTime Elapsed wall-clock time in seconds. */
+    advance(elapsedTime) {
+        const dt = Math.min(elapsedTime, 0.05) * STEP_SIZE;
+        if (dt <= 0)
+            return;
+
+        const { _k1, _k2, _k3, _k4, _samplePosition, _delta } = this;
+
+        for (const particle of this._particles) {
+            if (Math.random() < RESPAWN_CHANCE) {
+                particle.position.copy(this.#jitteredPosition(particle.home));
+                continue;
+            }
+
+            const p = particle.position;
+
+            // Fourth-order Runge-Kutta integration, as in the reference demo.
+            this.#sample(p, _k1);
+
+            _samplePosition.copy(p).addScaledVector(_k1, dt * 0.5);
+            this.#sample(_samplePosition, _k2);
+
+            _samplePosition.copy(p).addScaledVector(_k2, dt * 0.5);
+            this.#sample(_samplePosition, _k3);
+
+            _samplePosition.copy(p).addScaledVector(_k3, dt);
+            this.#sample(_samplePosition, _k4);
+
+            _delta.copy(_k1)
+                .addScaledVector(_k2, 2)
+                .addScaledVector(_k3, 2)
+                .add(_k4)
+                .multiplyScalar(dt / 6);
+
+            p.add(_delta);
+        }
     }
 
     sample(position, target) {
-        target.copy(position);
+        // ArrowField samples its regular grid in x/y/z iteration order.
+        const i = Math.round((position.x - this._xRange.from) / this._xRange.stepSize);
+        const j = Math.round((position.y - this._yRange.from) / this._yRange.stepSize);
+        const k = Math.round((position.z - this._zRange.from) / this._zRange.stepSize);
+        const index = (i * this._yCount + j) * this._zCount + k;
+        const particle = this._particles[index];
+
+        if (particle) {
+            position.copy(particle.position);
+            super.sample(position, target);
+        } else {
+            super.sample(position, target);
+        }
     }
 }
 
-const vectorField1 = new VectorField1();
-const vectorField2 = new VectorField2();
+const animatedVectorField = new AnimatedVectorField({
+    xRange: X_RANGE,
+    yRange: Y_RANGE,
+    zRange: Z_RANGE
+});
+
 const arrowField = new ArrowField({
-    xRange: new Range(-1, 0.8, .2),
-    yRange: new Range(-1, 0.8, .1),
-    zRange: new Range(-1, 0.8, .2),
+    xRange: X_RANGE,
+    yRange: Y_RANGE,
+    zRange: Z_RANGE,
     magnitudeMap: _m => .15
 });
 
-Simulation.with({
-        htmlDivId: "vectorFieldsContainer",
-        camera: {
-            position: new Vec3(10, 10, 10)
-        }
-    })
-    .bind(vectorField1.alwaysWith(arrowField))
+const simulation = Simulation.with({
+    htmlDivId: "vectorFieldsContainer",
+    camera: {
+        position: new Vec3(10, 10, 10)
+    }
+});
+
+simulation
+    .bind(animatedVectorField.alwaysWith(arrowField))
     .provideAxesAround(arrowField)
     .frameSceneOn(arrowField, {
         padding: 1.1,
         viewDirection: new Vec3(.5, 0.3, 1)
     })
-    .setLatexTitle(vectorField1.meta)
+    .setLatexTitle(animatedVectorField.meta)
+    .maxOutCpu(clock => animatedVectorField.advance(clock.elapsedTime), 30)
+    .start();
