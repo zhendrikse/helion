@@ -1,4 +1,4 @@
-import {ArrowField, Simulation, VectorField, Range, Vec3} from "../../../src/index.js";
+import {ArrowField, Integrators, Simulation, VectorField, Range, Vec3} from "../../../src/index.js";
 
 const X_RANGE = new Range(-1, 0.8, .2);
 const Y_RANGE = new Range(-1, 0.8, .1);
@@ -50,13 +50,8 @@ class AnimatedVectorField extends VectorField1 {
                     });
                 }
 
-        // Reusable Runge-Kutta scratch vectors.
-        this._k1 = new Vec3();
-        this._k2 = new Vec3();
-        this._k3 = new Vec3();
-        this._k4 = new Vec3();
-        this._samplePosition = new Vec3();
-        this._delta = new Vec3();
+        // Reusable derivative vectors for Integrators.rk4VectorStep().
+        this._derivatives = [new Vec3(), new Vec3(), new Vec3(), new Vec3()];
     }
 
     #jitteredPosition(home) {
@@ -77,35 +72,18 @@ class AnimatedVectorField extends VectorField1 {
         if (dt <= 0)
             return;
 
-        const { _k1, _k2, _k3, _k4, _samplePosition, _delta } = this;
-
         for (const particle of this._particles) {
             if (Math.random() < RESPAWN_CHANCE) {
                 particle.position.copy(this.#jitteredPosition(particle.home));
                 continue;
             }
 
-            const p = particle.position;
-
-            // Fourth-order Runge-Kutta integration, as in the reference demo.
-            this.#sample(p, _k1);
-
-            _samplePosition.copy(p).addScaledVector(_k1, dt * 0.5);
-            this.#sample(_samplePosition, _k2);
-
-            _samplePosition.copy(p).addScaledVector(_k2, dt * 0.5);
-            this.#sample(_samplePosition, _k3);
-
-            _samplePosition.copy(p).addScaledVector(_k3, dt);
-            this.#sample(_samplePosition, _k4);
-
-            _delta.copy(_k1)
-                .addScaledVector(_k2, 2)
-                .addScaledVector(_k3, 2)
-                .add(_k4)
-                .multiplyScalar(dt / 6);
-
-            p.add(_delta);
+            let stage = 0;
+            Integrators.rk4VectorStep(particle.position, dt, position => {
+                const derivative = this._derivatives[stage++];
+                VectorField1.prototype.sample.call(this, position, derivative);
+                return derivative;
+            });
         }
     }
 
