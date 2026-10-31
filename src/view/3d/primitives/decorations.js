@@ -8,16 +8,13 @@ import woodWicketColorUrl from '../../../textures/Wood_Wicker_011_color.png';
 import woodWicketNormalUrl from '../../../textures/Wood_Wicker_011_normal.png';
 import woodWicketRoughnessUrl from '../../../textures/Wood_Wicker_011_roughness.png';
 import pavingColorUrl from '../../../textures/paving_color.jpg';
+import metalFloorUrl from '../../../textures/metal_floor_256.jpg';
 import pavingRoughnessUrl from '../../../textures/paving_roughness.jpg';
 import pavingNormalUrl from '../../../textures/paving_normal.jpg';
 import {Vec3, Vec2} from '../../../model/math/objects.js';
 import grassColorUrl from '../../../textures/grass.jpg';
 import grassNormalUrl from '../../../textures/grassNormal.jpg';
 import { Colour } from '../../colormappers.js';
-
-/*******************************************
- * Floor, Grid, Ceiling, Aquarium          *
- *******************************************/
 
 class Grid extends Group {
     /**
@@ -70,6 +67,7 @@ export class Floor extends Group {
         GRID: 'Grid',
         PAVING: 'Paving',
         GRASS: 'Grass',
+        METAL: 'Metal',
         WOOD_WICKER: 'WoodWicker'  // https://3dtextures.me/2024/06/22/wood-wicker-011/
     });
     /**
@@ -128,6 +126,9 @@ export class Floor extends Group {
                     size: planeSizeXy.x * .5, // TODO enable rectangular formats
                     granularity: granularity
                 }));
+                break;
+            case Floor.Type.METAL:
+                this._mesh.material.map = this._loadTexture(loader, metalFloorUrl, granularity);
                 break;
             case Floor.Type.PAVING:
                 this._mesh.material.map = this._loadTexture(loader, pavingColorUrl, granularity);

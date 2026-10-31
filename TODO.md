@@ -1,6 +1,14 @@
+# People
+
+- Contact [Steve J Trettel](https://stevejtrettel.site/), strettel@usfca.edu 
+  - [Demos](https://stevejtrettel.github.io/threejs-demos/), [github repo](https://github.com/stevejtrettel/threejs-demos)
+
 # Links
 
 - Icon 🔮
+- [Physics simulation engine](https://github.com/explorablescience/PhysicsSimulationEngine)
+- [Awesome interactive math](https://github.com/ubavic/awesome-interactive-math)
+- Ideas for simulation in [MathBox demos](https://mathbox.org/), [repo here](https://github.com/unconed/mathbox)
 - [Simulations](https://jsfiddle.net/u/Chenopdodium/collection/quantum-mechanics/) in JavaScript by [Chantal Roth](https://www.linkedin.com/in/chantal-roth/)
 - https://www.afreeparticle.com/index.html
 - https://simulateitnow.com/
@@ -17,6 +25,8 @@
 - Elliptic curve explorer [Elliptic curve explorer](https://github.com/wgxli/elliptic-curve-explorer/tree/master?tab=readme-ov-file) en [https://github.com/alozanoroble/MATH5020-Elliptic_Curves](https://github.com/alozanoroble/MATH5020-Elliptic_Curves)
 
 - Complex function plotter functionality [https://github.com/wgxli/complex-function-plotter](https://github.com/wgxli/complex-function-plotter)
+
+- [Hyperbolic map](https://github.com/jpivarski/hyperbolic-map)
 
 - https://www.reddit.com/r/threejs/comments/1cr2a57/implementing_voronoi_fractures/
 

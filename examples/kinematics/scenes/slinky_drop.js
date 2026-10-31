@@ -1,7 +1,9 @@
 import {
     RadialSymmetricBody, Simulation, Vec3, Sphere, Helix, Cylinder, SpringForce, Floor, 
-    Vec2, AxialSymmetricBody, UniformGravitationalForce, Colour} from '../../../src/index.js';
-import {AmbientLight, DirectionalLight} from 'three';
+    Vec2, AxialSymmetricBody, UniformGravitationalForce, Colour
+} from '../../../src/index.js';
+import {DirectionalLight, MeshStandardMaterial, TextureLoader} from 'three';
+import wood from '../../../src/textures/treeBark.jpg';
 
 const g = new Vec3(0, -9.8, 0);
 const L0 = 2;
@@ -34,35 +36,31 @@ const gravitationalForce = new UniformGravitationalForce();
 const stick1 = new AxialSymmetricBody({
     position: ball2.position.clone().sub(new Vec3(L0, 2.75 * L0, 0)),
     axis: new Vec3(0, 3 * L0, 0),
-    radius: L0 / 15
+    radius: L0 * .15
 });
 const stick2 = new AxialSymmetricBody({
     position: ball2.position.clone().sub(new Vec3(L0, 0, 0)),
-    axis: new Vec3(L0/2, 0, 0),
+    axis: new Vec3(L0 * .75, 0, 0),
     radius: L0 / 15
 });
 ////////////////
 
-const sun = new DirectionalLight(0xffffff, 2);
-sun.position.set(5, 10, 5);
+const sun = new DirectionalLight(0xffffff, .75);
+sun.position.set(5, 5, 5);
+
+const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)});
 const onFloor = (ball, floorLevel, epsilon = 2e-2) =>
     ball.position.y - ball.radius <= shiftUp + floorLevel - epsilon;
+
 Simulation
     .with({
         htmlDivId: 'slinkyContainer',
-        camera: {
-            position: new Vec3(4, 2, 10).multiplyScalar(1.15),
-            fieldOfView: 50
-        },
-        lighting: {
-            enabled: false,
-        },
-        viewport: {
-            aspectRatio: '4/3'
-        }
+        camera: { position: new Vec3(4.5, 2.25, 12), fieldOfView: 50 },
+        lighting: { enabled: false },
+        viewport: { aspectRatio: '4/3' }
     })
-    .bind(stick1.onceWith(new Cylinder({ color: new Colour(0x855E42) })))
-    .bind(stick2.onceWith(new Cylinder({ color: new Colour(0x855E42) })))
+    .bind(stick1.onceWith(new Cylinder({ material: woodMaterial, color: new Colour(0x855E42) })))
+    .bind(stick2.onceWith(new Cylinder({ material: woodMaterial, color: new Colour(0x855E42) })))
     .bind(ball1.alwaysWith(new Sphere({ color: Colour.Red })))
     .bind(ball2.alwaysWith(new Sphere({ color: Colour.Green })))
     .bind(ball3.alwaysWith(new Sphere({ color: Colour.Yellow })))
@@ -73,11 +71,10 @@ Simulation
     .addObject3D(new Floor({
         position: new Vec3(0, -3.5 * L0 + shiftUp, 0),
         planeSizeXy: new Vec2(L0 * 6 , L0 * 4),
-        type: Floor.Type.GRASS,
+        type: Floor.Type.METAL,
         color: new Colour(0x008800)
     }))
     .addObject3D(sun)
-    .addObject3D(new AmbientLight(0xffffff, .3))
     .runsEvery(4e-3)
     .advancesBy(1e-3)
     .onStep((_, dt) => {

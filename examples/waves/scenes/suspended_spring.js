@@ -3,6 +3,8 @@ import {
     ChainTopology, UniformGravitationalForce, DragForce, ThreeJsScene, Colour
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
+import {MeshStandardMaterial, TextureLoader} from "three";
+import wood from "../../../src/textures/wood_128x128.jpg";
 
 const count = 50;
 const chainLength = 10;
@@ -32,16 +34,17 @@ const latticeView = LatticeView.from({
 });
 
 const pole1 = new Block({
-    size: new Vec3(0.175, 2.85, 0.175),
+    size: new Vec3(0.2, 2.85, 0.2),
     position: new Vec3(-5, -1.25, 0)
 });
 const pole2 = new Block({
-    size: new Vec3(0.175, 2.85, 0.175),
+    size: new Vec3(0.2, 2.85, 0.2),
     position: new Vec3(5, -1.25, 0)
 });
 
 const gravitationalForce = new UniformGravitationalForce();
-const dragForce = new DragForce(1e-4);
+const dragForce = new DragForce(-1e-4);
+const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)})
 Simulation
     .with({
         htmlDivId: 'suspendedSpringContainer',
@@ -50,15 +53,9 @@ Simulation
             target: new Vec3(-1.5, -1.5, 0),
             fieldOfView: 20,
         },
-        scene: {
-            background: ThreeJsScene.Background.FOG,
-        },
-        viewport: {
-            aspectRatio: 4/3
-        },
-        lighting: {
-            shadows: true,
-        }
+        scene: { background: ThreeJsScene.Background.FOG },
+        viewport: { aspectRatio: 4/3 },
+        lighting: { shadows: true }
     })
     .withMouseClickEventListener()
     .runsEvery(1e-3)
@@ -71,8 +68,8 @@ Simulation
             .integrate(dt);
     })
     .bind(chain.alwaysWith(latticeView))
-    .bind(pole1.onceWith(new Box({ color: new Colour(0x855E42) })))
-    .bind(pole2.onceWith(new Box({ color: new Colour(0x855E42) })))
+    .bind(pole1.onceWith(new Box({ material: woodMaterial, color: new Colour(0x855E42) })))
+    .bind(pole2.onceWith(new Box({ material: woodMaterial, color: new Colour(0x855E42) })))
     .addObject3D(new Floor({
         type: Floor.Type.WOOD_WICKER,
         position: new Vec3(0, -2.75, 0),

@@ -2,7 +2,8 @@ import {
     Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, SphereSphereCollision,
     RadialSymmetricBody, ThreeJsScene, Colour, ViewsCollection, ModelObjectsCollection,
 } from '../../../src/index.js';
-import { MeshStandardMaterial } from 'three';
+import {MeshStandardMaterial, TextureLoader} from 'three';
+import wood from '../../../src/textures/treeBark.jpg';
 
 const g = 9.8;
 const BALL_RADIUS = 0.1;
@@ -160,7 +161,7 @@ Simulation
     }))
     .bind(cradle.frame.onceWith(ViewsCollection.of(Cylinder).with({
         color: new Colour(0x855E42),
-        material: new MeshStandardMaterial({ roughness: 0.75, metalness: 0.15 }),
+        material: new MeshStandardMaterial({map: new TextureLoader().load(wood)}),
         castShadow: true
     })))
     .bind(balls.alwaysWith(ViewsCollection.of(Sphere).with({ color: new Colour(0xc0c0c0), castShadow: true })))

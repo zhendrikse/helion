@@ -2,7 +2,8 @@ import {
     Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody, ThreeJsScene, Colour,
     ViewsCollection, ModelObjectsCollection
 } from '../../../src/index.js';
-import {MeshStandardMaterial} from 'three';
+import {MeshStandardMaterial, TextureLoader} from 'three';
+import wood from '../../../src/textures/treeBark.jpg';
 
 const g = 9.8;
 
@@ -62,12 +63,11 @@ class Pendulum {
     }
 
     reset() {
-        super.reset();
         this._omega = 0;
         this._theta = Math.PI / 6;
-        this._updatePosition();
         this._ball.reset();
-        this._ball.position.copy(this.position);
+        this._rod.reset();
+        this._updatePosition();
     }
 }
 
@@ -90,27 +90,47 @@ class Cradle {
 
         /** @type {ModelObjectsCollection<AxialSymmetricBody>} */
         this._frame = new ModelObjectsCollection()
+            .add(new AxialSymmetricBody({ // Foot
+                position: new Vec3(-1.5, -4.95, -2.1),
+                axis: new Vec3(0, 0, 0.4),
+                radius: 0.07
+            }))
+            .add(new AxialSymmetricBody({ // Foot
+                position: new Vec3(1.5, -4.95, 1.7),
+                axis: new Vec3(0, 0, 0.4),
+                radius: 0.07
+            }))
+            .add(new AxialSymmetricBody({ // Foot
+                position: new Vec3(1.5, -4.95, -2.1),
+                axis: new Vec3(0, 0, 0.4),
+                radius: 0.07
+            }))
+            .add(new AxialSymmetricBody({ // Foot
+                position: new Vec3(-1.5, -4.95, 1.7),
+                axis: new Vec3(0, 0, 0.4),
+                radius: 0.07
+            }))
             .add(new AxialSymmetricBody({
                 axis: new Vec3(0, -3 - 0.04 , 2),
                 position: new Vec3(-1.5, -2, 0),
-                radius: 0.04
+                radius: 0.05
             }))
             .add(new AxialSymmetricBody({
                 axis: new Vec3(0, -3 - 0.04 , -2),
                 position: new Vec3(-1.5, -2, 0),
-                radius: 0.04
+                radius: 0.05
             })).add(new AxialSymmetricBody({
                 axis: new Vec3(0, -3 - 0.04 , 2),
                 position: new Vec3(1.5, -2, 0),
-                radius: 0.04
+                radius: 0.05
             })).add(new AxialSymmetricBody({
                 axis: new Vec3(0, -3 - 0.04 , -2),
                 position: new Vec3(1.5, -2, 0),
-                radius: 0.04
+                radius: 0.05
             })).add(new AxialSymmetricBody({ // Top
                 axis: new Vec3(3, 0 , 0),
                 position: new Vec3(-1.5, -2, 0),
-                radius: 0.04
+                radius: 0.05
             }));
     }
 
@@ -133,13 +153,14 @@ const balls = new ModelObjectsCollection(cradle.balls);
 const rods = new ModelObjectsCollection(cradle.rods);
 const spheres = ViewsCollection.of(Sphere).with({ castShadow: true });
 
+const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)});
 Simulation
     .with({
         htmlDivId: 'pendulumWaveContainer',
         camera: {
-            target: new Vec3(0.2, -3.3, -0.4),
+            target: new Vec3(3, -3.3, -0.4),
             fieldOfView: 50,
-            position: new Vec3(-5.5, -3.3, 0.4)
+            position: new Vec3(-5.5, -3.3, 0.4).multiplyScalar(1.1)
         },
         scene: { background: ThreeJsScene.Background.FOG },
         lighting: { shadows: true }
@@ -152,7 +173,7 @@ Simulation
         granularity: 15,
         type: Floor.Type.WOOD_WICKER
     }))
-    .bind(cradle.frame.onceWith(ViewsCollection.of(Cylinder).with({color: new Colour(0x855E42) })))
+    .bind(cradle.frame.onceWith(ViewsCollection.of(Cylinder).with({material: woodMaterial, color: new Colour(0x855E42) })))
     .bind(balls.alwaysWith(spheres))
     .bind(rods.alwaysWith(ViewsCollection.of(Cylinder).with({
         color: new Colour(0xDEB887),
