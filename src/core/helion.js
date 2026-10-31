@@ -154,7 +154,7 @@ export class Simulation {
      * @param {Viewport} viewport
      * @param {Renderer} renderer
      * @param {boolean} headUpDisplay
-     * @param {boolean} infoPanel
+     * @param {{ text?: string }} infoPanel
      */
     constructor(viewport, renderer, headUpDisplay, infoPanel) {
         this._viewport = viewport;

@@ -56,9 +56,7 @@ const simulation = Simulation
             position: new Vector3(0, 0, .9),
             fieldOfView: 60
         },
-        viewport: {
-            aspectRatio: '16/9'
-        },
+        viewport: { aspectRatio: '16/9' },
         scene: {
             background: ThreeJsScene.Background.PLAIN,
             backgroundColor: Colour.Black
