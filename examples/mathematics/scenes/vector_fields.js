@@ -139,6 +139,8 @@ const arrowField = new ArrowField({
     magnitudeMap: _m => .15
 });
 
+let previousClockTime = null;
+
 const simulation = Simulation.with({
     htmlDivId: "vectorFieldsContainer",
     camera: {
@@ -154,5 +156,15 @@ simulation
         viewDirection: new Vec3(.5, 0.3, 1)
     })
     .setLatexTitle(animatedVectorField.meta)
-    .maxOutCpu(clock => animatedVectorField.advance(clock.elapsedTime), 30)
+     .maxOutCpu(clock => {
+        // maxOutCpu may invoke its callback several times per frame.
+        // Advance only once for each newly received animation timestamp.
+        if (clock.clockTime === previousClockTime)
+            return;
+
+        if (previousClockTime !== null)
+            animatedVectorField.advance((clock.clockTime - previousClockTime) * 0.001);
+
+        previousClockTime = clock.clockTime;
+    }, 30, 1)
     .start();
