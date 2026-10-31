@@ -1,0 +1,1 @@
+import{Fn as e,K as t,Sn as n,W as r,vn as i}from"../assets/src-Cxi334Rq.js";var a=new r;i.with({htmlDivId:`sunContainer`,headUpDisplay:{enabled:!1},camera:{position:new e(5,7.5,15).multiplyScalar(.3),fieldOfView:45},scene:{background:n.Background.STARS}}).bind(a.alwaysWith(new t)).onFrame(e=>a.time=e).start();
