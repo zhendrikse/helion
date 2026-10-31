@@ -6,14 +6,16 @@ import {
     SRGBColorSpace,
     ShaderMaterial,
     TextureLoader,
-    Vector2
+    Vector2,
+    Vector3
 } from 'three';
-import {Checkbox, Colour, Renderable3D, Simulation, ThreeJsScene} from '../../../src/index.js';
+import {Checkbox, Colour, ModelObject, Renderable3D, Simulation, ThreeJsScene} from '../../../src/index.js';
 import vertexShader from './milky_way_vertex_shader.glsl?raw';
 import fragmentShader from './milky_way_fragment_shader.glsl?raw';
 
-class MilkyWayPanoramaModel {
+class MilkyWayPanoramaModel extends ModelObject {
     constructor({width, height, texture}) {
+        super();
         this._uniforms = {
             uResolution: {value: new Vector2(width, height)},
             uTranslate:  {value: new Vector2(width / 2, height / 2)},
@@ -55,7 +57,7 @@ const simulation = Simulation.with({
         aspectRatio: '19 / 12'
     },
     camera: {
-        position: {x: 0, y: 0, z: 0.9},
+        position: new Vector3(0, 0, 0.9),
         fieldOfView: 60,
         controls: false
     },
