@@ -1,49 +1,25 @@
-import { MathUtils, PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh }  from 'three';
 import vertexShader from './webgl/black_hole_vertex_shader.glsl?raw';
 import fragmentShader from './webgl/black_hole_fragment_shader.glsl?raw';
-import { ModelObject, Checkbox, Colour, Renderable3D, Simulation, ThreeJsScene } from '../../../src/index.js';
+import {
+    Vec3, Vec2, ModelObject, Checkbox, Colour, ShaderView, Simulation, ThreeJsScene, degToRad
+} from '../../../src/index.js';
 
 export class BlackHoleModel extends ModelObject {
     constructor({
         width = 160,
         height = 90,
-        cameraPosition = new Vector3(0, 0, -8.5),
-        blackHolePosition = new Vector3(0, 0, 0),
-        rotation = new Vector3(MathUtils.degToRad(-4), 0, MathUtils.degToRad(-15))
+        cameraPosition = new Vec3(0, 0, -8.5),
+        blackHolePosition = new Vec3(0, 0, 0),
+        rotation = new Vec3(degToRad(-4), 0, degToRad(-15))
     } = {}) {
         super();
-        this._uniforms = {
-            uResolution:   { value: new Vector2(width, height)},
+        this.uniforms = {
+            uResolution:   { value: new Vec2(width, height)},
             uTime:         { value: 0 },
             uCamPos:       { value: cameraPosition },
             uBlackHolePos: { value: blackHolePosition },
             uRotation:     { value: rotation},
         }
-    }
-
-    get uniforms() { return this._uniforms; }
-}
-
-export class ShaderView extends Renderable3D {
-    constructor({
-        aspectRatio = aspectRatio
-    } = {}) {
-        super();
-        this._canvasGeometry = new PlaneGeometry(aspectRatio, 1);
-    }
-
-    initialize(model) {
-        const canvasMaterial = new ShaderMaterial({
-            uniforms: model.uniforms,
-            vertexShader,
-            fragmentShader,
-        });
-
-        this.add(new Mesh(this._canvasGeometry, canvasMaterial));
-    }
-
-    canBindTo(model) {
-        return model.uniforms;
     }
 }
 
@@ -51,7 +27,7 @@ const simulation = Simulation
     .with({
         htmlDivId: 'blackHoleRayTraceContainer',
         camera: {
-            position: new Vector3(0, 0, .9),
+            position: new Vec3(0, 0, .9),
             fieldOfView: 60
         },
         viewport: { aspectRatio: '16/9' },
@@ -79,7 +55,7 @@ const simulation = Simulation
 // renderer.setSize(width, height);
 //
 const aspectRatio = simulation.width / simulation.height;
-const view = new ShaderView({ aspectRatio });
+const view = new ShaderView({ vertexShader, fragmentShader, aspectRatio });
 const blackHoleModel = new BlackHoleModel({
     width: simulation.width,
     height: simulation.height

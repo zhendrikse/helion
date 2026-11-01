@@ -1,46 +1,37 @@
-import * as THREE from 'three';
-import vertexShaderSource from './webgl/milky_way_vertex_shader.glsl?raw';
-import fragmentShaderSource from './webgl/milky_way_fragment_shader.glsl?raw';
-import { Vec3, Vec2, Simulation } from "../../../src/index.js";
+import vertexShader from './webgl/milky_way_vertex_shader.glsl?raw';
+import fragmentShader from './webgl/milky_way_fragment_shader.glsl?raw';
+import {Vec3, Vec2, Simulation, ModelObject, ShaderView} from "../../../src/index.js";
+import {
+    ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, NoColorSpace, RepeatWrapping, TextureLoader
+} from "three";
 
-const uniforms = {
-    u_image: { value: null },
-    u_translate: { value: new THREE.Vector2(0, 0) },
-    u_scale: { value: 500.0 },
-    u_rotate: { value: new THREE.Vector2(0, 0) }
-};
+class MilkyWayPanoramaModel extends ModelObject {
+    constructor({width, height, texture}) {
+        super();
+        this.uniforms = {
+            u_translate:  {value: new Vec2(width, height)},
+            u_scale:      {value: 500},
+            u_rotate:     {value: new Vec2(0, 0)},
+            u_image:      {value: texture}
+        };
+    }
+}
 
-const geometry = new THREE.PlaneGeometry(2, 2);
-const material = new THREE.ShaderMaterial({
-    uniforms: uniforms,
-    vertexShader: vertexShaderSource,
-    fragmentShader: fragmentShaderSource,
-    depthTest: false,
-    depthWrite: false
-});
-const plane = new THREE.Mesh(geometry, material);
-
-const textureLoader = new THREE.TextureLoader();
-textureLoader.load(
+const textureLoader = new TextureLoader();
+const texture = textureLoader.load(
     new URL('../images/astrophysics/milky-way.jpg', import.meta.url).href,
 
     function(texture) {
-        texture.minFilter = THREE.LinearMipmapLinearFilter;
-        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = LinearMipmapLinearFilter;
+        texture.magFilter = LinearFilter;
         texture.generateMipmaps = true;
-        texture.colorSpace = THREE.NoColorSpace;
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.ClampToEdgeWrapping;
-        uniforms.u_image.value = texture;
+        texture.colorSpace = NoColorSpace;
+        texture.wrapS = RepeatWrapping;
+        texture.wrapT = ClampToEdgeWrapping;
     },
     undefined,
-    function(error) {
-        console.error('Could not load milky-way.jpg:', error);
-    }
+    error => console.error('Could not load milky-way.jpg:', error)
 );
-
-const rotation = new Vec2(0, 0);
-const speed = new Vec2(-5e-4, 2.5e-4);
 
 const simulation = Simulation
     .with({
@@ -57,13 +48,18 @@ const simulation = Simulation
                 ' in equirectangular coordinates, and is reprojected using the stereographic projection,' +
                 ' simulating the view of the night sky from varying positions on Earth.'
         }
-    })
-    .addObject3D(plane)
+    });
+
+const milkyWay = new MilkyWayPanoramaModel({
+    width: simulation.width,
+    height: simulation.height,
+    texture: texture
+})
+
+const speed = new Vec2(-5e-4, 2.5e-4);
+simulation
+    .bind(milkyWay.onceWith(new ShaderView({ vertexShader, fragmentShader, aspectRatio: 2 })))
     .runsEvery(1/60)
-    .onStep(() => uniforms.u_rotate.value.add(speed))
-    .onReset(() => rotation.set(0, 0))
+    .onStep(() => milkyWay.uniforms.u_rotate.value.add(speed))
+    .onReset(() => milkyWay.uniforms.u_rotate.value.set(0, 0))
     .withMouseClickEventListener();
-
-
-uniforms.u_translate.value.set(simulation.width, simulation.height);
-uniforms.u_scale.value = 500;

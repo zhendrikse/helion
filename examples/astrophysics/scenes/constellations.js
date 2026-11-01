@@ -1,6 +1,6 @@
 import {
     Checkbox, Circle, Colour, HexValueColorMapper, Label, LineSegment, LineSegmentsView, Range,
-    RadialSymmetricBody, Segments, Simulation, Slider, ThreeJsScene, Vec2, Vec3
+    RadialSymmetricBody, Segments, Simulation, Slider, ThreeJsScene, Vec2, Vec3, degToRad
 } from '../../../src/index.js';
 
 const DATA_BASE_URL = 'https://raw.githubusercontent.com/ofrohn/d3-celestial/master/data/';
@@ -111,11 +111,11 @@ const simulation = Simulation
  * @returns {Vec2 | null}
  */
 function projectStar(star, localSiderealTime) {
-    const latitude = latitudeDegrees * Math.PI / 180;
-    const bearing = bearingDegrees * Math.PI / 180;
-    const siderealAngle = localSiderealTime * 15 * Math.PI / 180;
-    const ra = star.rightAscension * Math.PI / 180;
-    const dec = star.declination * Math.PI / 180;
+    const latitude = degToRad(latitudeDegrees);
+    const bearing = degToRad(bearingDegrees);
+    const siderealAngle = degToRad(localSiderealTime * 15);
+    const ra = degToRad(star.rightAscension);
+    const dec = degToRad(star.declination);
 
     const sinLatitude = Math.sin(latitude);
     const cosLatitude = Math.cos(latitude);
