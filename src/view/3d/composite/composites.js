@@ -461,9 +461,6 @@ export class ArrowField extends Renderable3D {
 
         if (xRange == null || yRange == null || zRange == null)
             throw new Error("Cannot instantiate ArrowField without x-, y-, and z-ranges");
-        this._xRange = xRange;
-        this._yRange = yRange;
-        this._zRange = zRange;
 
         this._matrixMagnitudeMap = magnitudeMap;
         this._colorMap = colorMap;
@@ -498,8 +495,13 @@ export class ArrowField extends Renderable3D {
         this._shaftOffset = new Vector3();
         this._headOffset = new Vector3();
         this._target = new Vec3();
-        this._position = new Vec3();
         this._centeredOrigin = new Vector3();
+
+        this.positions = [];
+        for (const x of xRange)
+            for (const y of yRange)
+                for (const z of zRange)
+                    this.positions.push(new Vec3(x, y, z));
     }
 
     /**  @param {VectorField} vectorField */
@@ -567,15 +569,10 @@ export class ArrowField extends Renderable3D {
      * @param {VectorField} vectorField
      */
     synchronizeWith(vectorField) {
-        let index = 0;
-        for (const x of /** @type {Iterable<number>} */ (this._xRange))
-            for (const y of /** @type {Iterable<number>} */ (this._yRange))
-                for (const z of /** @type {Iterable<number>} */ (this._zRange)) {
-                    const pos = this._position;
-                    pos.set(x, y, z);
-                    vectorField.sample(pos, this._target);
-                    this._updateVectorAt(index++, pos);
-                }
+        for (let index = 0; index < this.positions.length; index++) {
+            vectorField.sample(this.positions[index], this._target);
+            this._updateVectorAt(index, this.positions[index]);
+        }
 
         this._shaftMesh.instanceMatrix.needsUpdate = true;
         this._headMesh.instanceMatrix.needsUpdate = true;

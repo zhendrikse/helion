@@ -1,5 +1,6 @@
 import {
-    Arrow, Checkbox, Label, RadialSymmetricBody, Simulation, Sphere, Vec3, VectorField, VectorModel, Colour
+    Arrow, Checkbox, Label, RadialSymmetricBody, Simulation, Sphere, Vec3, VectorField, VectorModel, Colour,
+    ModelObjectsCollection, ViewsCollection, BindingsCollection
 } from '../../../src/index.js';
 
 class DemoVectorField extends VectorField {
@@ -110,80 +111,70 @@ class OriginalDemoVectorField extends VectorField {
     }
 }
 
-function createParticles() {
-    const particles = [];
-    for (let x = x_min; x <= x_max; x += 0.25)
-        for (let y = y_min; y <= y_max; y += 0.25)
-            particles.push(new RadialSymmetricBody({ position: new Vec3(x, y, 0), radius: 0.05 }));
-    return particles;
-}
-
-function createArrows() {
-    const arrows = [];
-    const axisVector = new Vec3();
-    for (let x = x_min; x <= x_max; x += 0.25)
-        for (let y = y_min; y <= y_max; y += 0.25) {
-            vectorField.sample(new Vec3(x, y, 0), axisVector);
-            const axis = axisVector.clone().multiplyScalar(.2);
-            const shift = axis.clone().multiplyScalar(-0.1);
-            arrows.push(new VectorModel(new Vec3(x, y, 0).add(shift), axis));
-        }
-    return arrows;
-}
-
 const source = new RadialSymmetricBody({
     position: new Vec3(-1, 0.5, 0),
-    radius: 0.25,
+    radius: 0.2,
 });
 const sourceLabel = new Label({
     text: () => 'Source',
     fontSize: '30px',
     visible: false,
-    color: new Colour(0xaaaaaa)
+    color: new Colour(0xcc0000)
 });
 const sink = new RadialSymmetricBody({
     position:  new Vec3(-1, -0.5, 0),
-    radius: 0.25,
+    radius: 0.2,
 });
 const sinkLabel = new Label({
     text: () => 'Sink',
     fontSize: '30px',
     visible: false,
-    color: new Colour(0xaaaaaa)
+    color: new Colour(0x00cc00)
 });
 const curl = new RadialSymmetricBody({
     position:  new Vec3(1, 0.5, 0),
-    radius: 0.25
+    radius: 0.2
 });
 const curlLabel = new Label({
     text: () => 'Zero divergence',
     offset: () => new Vec3(0, -1.25, 0),
     fontSize: '30px',
     visible: false,
-    color: new Colour(0xaaaaaa)
+    color: new Colour(0x00cccc)
 });
 
 let vectorField = new OriginalDemoVectorField(source.position, sink.position, curl.position);
-const particles = createParticles();
-const arrows = createArrows();
-/** @type Arrow[] */
-const arrowViews = [];
+/** @type {ModelObjectsCollection<RadialSymmetricBody>} */
+const particles = new ModelObjectsCollection();
+for (let x = x_min; x <= x_max; x += 0.25)
+    for (let y = y_min; y <= y_max; y += 0.25)
+        particles.add(new RadialSymmetricBody({ position: new Vec3(x, y, 0), radius: 0.05 }));
+
+/** @type {ModelObjectsCollection<VectorModel>} */
+const arrows = new ModelObjectsCollection();
+for (let x = x_min; x <= x_max; x += 0.25)
+    for (let y = y_min; y <= y_max; y += 0.25) {
+        const axisVector = new Vec3();
+        vectorField.sample(new Vec3(x, y, 0), axisVector);
+        const axis = axisVector.multiplyScalar(.2);
+        const shift = axis.clone().multiplyScalar(-0.1);
+        arrows.add(new VectorModel(new Vec3(x, y, 0).add(shift), axis));
+    }
+
+/** @type {BindingsCollection<VectorModel, Arrow>} */
+const arrowBindings = new BindingsCollection();
 let opacity = 0;
-for (const arrow of arrows)
-    arrowViews.push(new Arrow({
-        color: Colour.Yellow,
-        opacity: opacity,
-        round: true,
-        size: .04
-    }));
 
 const velocity = new Vec3();
 let resetCounter = 0;
-const simulation = Simulation.with({
+Simulation
+    .with({
         htmlDivId: 'divCurlDemoContainer',
+        viewport: { aspectRatio: '19/12'},
         camera: {
             orthographic: true,
-            position: new Vec3(0, 0, 4.5),
+            position: new Vec3(0, 0, 3.1),
+            controls: false,
         },
         infoPanel: {
             text: '<strong>Divergence:</strong><br/>' +
@@ -201,6 +192,13 @@ const simulation = Simulation.with({
     .bind(source.onceWith(new Sphere({color: Colour.Red, opacity: 0.7 })))
     .bind(sink.onceWith(new Sphere({color: Colour.Green, opacity: 0.7 })))
     .bind(curl.onceWith(new Sphere({color: Colour.Cyan, opacity: 0.7 })))
+    .bind(particles.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Orange })))
+    .bind(arrows.alwaysWith(ViewsCollection.of(Arrow).with({
+        color: Colour.Yellow,
+        opacity: opacity,
+        round: true,
+        size: .04
+    })).capture(arrowBindings))
     .bind(source.onceWith(sourceLabel))
     .bind(sink.onceWith(sinkLabel))
     .bind(curl.onceWith(curlLabel))
@@ -211,8 +209,7 @@ const simulation = Simulation.with({
             new DemoVectorField(source.position, sink.position, curl.position) : 
             new OriginalDemoVectorField(source.position, sink.position, curl.position);
         opacity = 0;
-        for (const arrow of arrowViews)
-            arrow.opacity = opacity;
+        arrowBindings.forEach(binding => binding.view.opacity = opacity);
     })
     .onStep((clock, dt) => {
         // Update particles
@@ -225,8 +222,7 @@ const simulation = Simulation.with({
         // Fading effect for arrows
         if (opacity < 1 && clock.simulatedTime > 0.1) {
             opacity += dt * .5;
-            for (const arrow of arrowViews)
-                arrow.opacity = opacity;
+            arrowBindings.forEach(binding => binding.view.opacity = opacity);
         }
     })
     .append(new Checkbox('Labels')
@@ -236,10 +232,3 @@ const simulation = Simulation.with({
             sinkLabel.visible = checked;
             curlLabel.visible = checked;
         }));
-
-for (const particle of particles)
-    simulation.bind(particle.alwaysWith(new Sphere({ color: Colour.Orange})));
-
-arrows.forEach((arrow, index) => simulation.bind(arrow.alwaysWith(arrowViews[index])));
-
-

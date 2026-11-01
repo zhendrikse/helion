@@ -1,9 +1,8 @@
-import {ArrowField, Simulation, VectorField, Range, Vec3} from "../../../src/index.js";
+import {ArrowField, Simulation, VectorField, Range, Vec3 } from "../../../src/index.js";
 
-const VectorFields = Object.freeze({
-    FIELD_1: "Vector field 1",
-    FIELD_2: "Vector field 2"
-});
+const X_RANGE = new Range(-.8, 0.8, .2);
+const Y_RANGE = new Range(-.8, 0.8, .15);
+const Z_RANGE = new Range(-.8, 0.8, .2);
 
 class VectorField1 extends VectorField {
     constructor() {
@@ -25,33 +24,41 @@ class VectorField1 extends VectorField {
 class VectorField2 extends VectorField {
     constructor() {
         super();
-        this.meta = "$$\\begin{pmatrix} x \\\\ y \\\\ z \\end{pmatrix} = \\begin{pmatrix} x \\\\ y \\\\ z \\end{pmatrix}$$";
+        this.meta = "\\begin{pmatrix} x \\\\ y \\\\ z \\end{pmatrix} = \\begin{pmatrix} x \\\\ y \\\\ z \\end{pmatrix}";
     }
 
-    sample(position, target) {
-        target.copy(position);
-    }
+    sample(position, target) { target.copy(position); }
 }
 
-const vectorField1 = new VectorField1();
-const vectorField2 = new VectorField2();
+const animatedVectorField = new VectorField1({
+    xRange: X_RANGE,
+    yRange: Y_RANGE,
+    zRange: Z_RANGE
+});
+
 const arrowField = new ArrowField({
-    xRange: new Range(-1, 0.8, .2),
-    yRange: new Range(-1, 0.8, .1),
-    zRange: new Range(-1, 0.8, .2),
+    xRange: X_RANGE,
+    yRange: Y_RANGE,
+    zRange: Z_RANGE,
     magnitudeMap: _m => .15
 });
 
-Simulation.with({
-        htmlDivId: "vectorFieldsContainer",
-        camera: {
-            position: new Vec3(10, 10, 10)
-        }
-    })
-    .bind(vectorField1.alwaysWith(arrowField))
+const target = new Vec3();
+Simulation
+    .with({ htmlDivId: "vectorFieldsContainer" })
+    .bind(animatedVectorField.alwaysWith(arrowField))
     .provideAxesAround(arrowField)
     .frameSceneOn(arrowField, {
         padding: 1.1,
         viewDirection: new Vec3(.5, 0.3, 1)
     })
-    .setLatexTitle(vectorField1.meta)
+    .setLatexTitle(animatedVectorField.meta)
+    .runsEvery(1/30)
+    .advancesBy(1/125)
+    .onStep(((_, dt) => {
+        for (const position of arrowField.positions) {
+            animatedVectorField.sample(position, target);
+            position.addScaledVector(target, dt);
+        }
+    }))
+    .withMouseClickEventListener();
