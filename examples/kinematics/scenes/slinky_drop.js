@@ -16,17 +16,17 @@ const shiftUp = 3.5;
 const ball1 = new RadialSymmetricBody({
     position: new Vec3(0, shiftUp + L0 / 2, 0),
     mass: 5,
-    radius: 0.3
+    radius: 0.4
 });
 const ball2 = new RadialSymmetricBody({
     position: new Vec3(0, shiftUp + L0 / 2 - L0 - ball1.mass * g.length() / k, 0),
     mass: 5,
-    radius: 0.3
+    radius: 0.4
 });
 const ball3 = new RadialSymmetricBody({
     position: ball2.position.clone().add(new Vec3(L0, 0, 0)),
     mass: 5,
-    radius: 0.3
+    radius: 0.4
 });
 
 const bondForce = new SpringForce({ k, restLength: L0 });
@@ -45,7 +45,7 @@ const stick2 = new AxialSymmetricBody({
 });
 ////////////////
 
-const sun = new DirectionalLight(0xffffff, .75);
+const sun = new DirectionalLight(0xffffff, 1);
 sun.position.set(5, 5, 5);
 
 const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)});
@@ -65,8 +65,8 @@ Simulation
     .bind(ball2.alwaysWith(new Sphere({ color: Colour.Green })))
     .bind(ball3.alwaysWith(new Sphere({ color: Colour.Yellow })))
     .bind(ball1.and(ball2).alwaysWith(new Helix({
-        color: Colour.Cyan,
-        thickness: 0.075
+        color: Colour.White,
+        thickness: 0.1
     })))
     .addObject3D(new Floor({
         position: new Vec3(0, -3.5 * L0 + shiftUp, 0),

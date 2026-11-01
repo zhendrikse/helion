@@ -1,8 +1,9 @@
 import {
     Vec3, Block, Simulation, Box, Aquarium, UniformGravitationalForce, DragForce, Force, UPlotGraph, Colour 
 } from '../../../src/index.js';
+import {MeshStandardMaterial, TextureLoader} from 'three';
+import wood from '../../../src/textures/wood_128x128.jpg';
 
-const liquidDensity = 1000;
 const g = -9.8;
 
 class WoodenBlock extends Block {
@@ -33,16 +34,11 @@ class FloatingForce extends Force {
     constructor(water) {
         super();
         this._water = water;
+        this._liquidDensity = 1000;
     }
 
-    _calculateForceOn() {
-        this._forceVector.y = liquidDensity * -g * woodenBlock.submergedVolume(this._water);
-    }
-
-    /** @param {Block} woodenBlock */
-    applyTo(woodenBlock) {
-        this._calculateForceOn(woodenBlock);
-        woodenBlock.force.y += this._forceVector.y;
+    _calculateForceOn(woodenBlock) {
+        this._forceVector.y = this._liquidDensity * -g * woodenBlock.submergedVolume(this._water);
     }
 }
 
@@ -60,32 +56,36 @@ const graph = new UPlotGraph({
     dataDefinition: [
         { label: 't [s]', color: Colour.Yellow },
         { label: 'buoyancy', color: Colour.Magenta },
-        { label: 'drag', color: Colour.Blue }
+        { label: 'drag', color: Colour.LightBlue }
     ],
     title: 'Buoyancy & drag forces',
     xLabel: 'Simulation time',
     yLabel: 'y [m]'
 });
 
+const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)});
+let stepCounter = 0;
 Simulation
     .with({
         htmlDivId: 'floatingBlockContainer',
-        camera: {
-            position: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
-        }
+        camera: { position: new Vec3(1.5, 2, 3.25), target: new Vec3(0, .5, 0) }
     })
     .addObject3D(water)
     .withMouseClickEventListener()
     .runsEvery(2e-3)
     .advancesBy(1e-3)
     .substeps(4)
-    .bind(woodenBlock.alwaysWith(new Box({ color: new Colour(0xdeb887) })))
+    .bind(woodenBlock.alwaysWith(new Box({ 
+        material: woodMaterial, 
+        color: new Colour(0xdeb887) 
+    })))
     .onStep((clock, dt) => {
         woodenBlock
             .apply(gravitationalForce)
             .apply(floatingForce)
             .apply(dragForce);
         woodenBlock.integrate(dt);
-        graph.push([clock.simulatedTime, floatingForce.asVector.y, dragForce.asVector.y]);
+        if (stepCounter++ % 10 === 0)
+            graph.push([clock.simulatedTime, floatingForce.asVector.y, dragForce.asVector.y * 3]);
     })
     .addGraph(graph)

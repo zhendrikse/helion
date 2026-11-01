@@ -87,51 +87,6 @@ class Cradle {
             const x = width * (-0.5 + i / (total - 1));
             this._pendulums.push(new Pendulum({ T, position: x, pivotY: -2 }));
         }
-
-        /** @type {ModelObjectsCollection<AxialSymmetricBody>} */
-        this._frame = new ModelObjectsCollection()
-            .add(new AxialSymmetricBody({ // Foot
-                position: new Vec3(-1.5, -4.95, -2.1),
-                axis: new Vec3(0, 0, 0.4),
-                radius: 0.07
-            }))
-            .add(new AxialSymmetricBody({ // Foot
-                position: new Vec3(1.5, -4.95, 1.7),
-                axis: new Vec3(0, 0, 0.4),
-                radius: 0.07
-            }))
-            .add(new AxialSymmetricBody({ // Foot
-                position: new Vec3(1.5, -4.95, -2.1),
-                axis: new Vec3(0, 0, 0.4),
-                radius: 0.07
-            }))
-            .add(new AxialSymmetricBody({ // Foot
-                position: new Vec3(-1.5, -4.95, 1.7),
-                axis: new Vec3(0, 0, 0.4),
-                radius: 0.07
-            }))
-            .add(new AxialSymmetricBody({
-                axis: new Vec3(0, -3 - 0.04 , 2),
-                position: new Vec3(-1.5, -2, 0),
-                radius: 0.05
-            }))
-            .add(new AxialSymmetricBody({
-                axis: new Vec3(0, -3 - 0.04 , -2),
-                position: new Vec3(-1.5, -2, 0),
-                radius: 0.05
-            })).add(new AxialSymmetricBody({
-                axis: new Vec3(0, -3 - 0.04 , 2),
-                position: new Vec3(1.5, -2, 0),
-                radius: 0.05
-            })).add(new AxialSymmetricBody({
-                axis: new Vec3(0, -3 - 0.04 , -2),
-                position: new Vec3(1.5, -2, 0),
-                radius: 0.05
-            })).add(new AxialSymmetricBody({ // Top
-                axis: new Vec3(3, 0 , 0),
-                position: new Vec3(-1.5, -2, 0),
-                radius: 0.05
-            }));
     }
 
     reset() {
@@ -144,7 +99,36 @@ class Cradle {
 
     get balls() { return this._pendulums.map(pendulum => pendulum.ball); }
     get rods() { return this._pendulums.map(pendulum => pendulum.rod); }
-    get frame() { return this._frame; }
+    get frame() {
+        /** @type {ModelObjectsCollection<AxialSymmetricBody>} */
+        const frame = new ModelObjectsCollection();
+        const footPositions = [
+            new Vec3(-1.5, -4.95, -2.1),
+            new Vec3(1.5, -4.95, 1.7),
+            new Vec3(1.5, -4.95, -2.1),
+            new Vec3(-1.5, -4.95, 1.7)
+        ];
+        footPositions.forEach(position => frame.add(new AxialSymmetricBody({
+            position,
+            axis: new Vec3(0, 0, 0.4),
+            radius: 0.07
+        })));
+        for (const z of [-2, 2])
+            for (const x of [-1.5, 1.5])
+                frame.add(new AxialSymmetricBody({
+                    axis: new Vec3(0, -3 - 0.04 , z),
+                    position: new Vec3(x, -2, 0),
+                    radius: 0.05
+                }));
+
+        frame.add(new AxialSymmetricBody({ // Top
+                axis: new Vec3(3, 0 , 0),
+                position: new Vec3(-1.5, -2, 0),
+                radius: 0.05
+            }));
+
+        return frame;
+    }
 }
 
 const total = 20;
@@ -173,7 +157,10 @@ Simulation
         granularity: 15,
         type: Floor.Type.WOOD_WICKER
     }))
-    .bind(cradle.frame.onceWith(ViewsCollection.of(Cylinder).with({material: woodMaterial, color: new Colour(0x855E42) })))
+    .bind(cradle.frame.onceWith(ViewsCollection.of(Cylinder).with({
+        material: woodMaterial,
+        color: new Colour(0x855E42)
+    })))
     .bind(balls.alwaysWith(spheres))
     .bind(rods.alwaysWith(ViewsCollection.of(Cylinder).with({
         color: new Colour(0xDEB887),
