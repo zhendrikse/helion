@@ -102,17 +102,13 @@ class Cradle {
     get frame() {
         /** @type {ModelObjectsCollection<AxialSymmetricBody>} */
         const frame = new ModelObjectsCollection();
-        const footPositions = [
-            new Vec3(-1.5, -4.95, -2.1),
-            new Vec3(1.5, -4.95, 1.7),
-            new Vec3(1.5, -4.95, -2.1),
-            new Vec3(-1.5, -4.95, 1.7)
-        ];
-        footPositions.forEach(position => frame.add(new AxialSymmetricBody({
-            position,
-            axis: new Vec3(0, 0, 0.4),
-            radius: 0.07
-        })));
+        for (const z of [-2.1, 1.7])
+            for (const x of [-1.5, 1.5])
+                frame.add(new AxialSymmetricBody({
+                    position: new Vec3(x, -4.95, z),
+                    axis: new Vec3(0, 0, 0.4),
+                    radius: 0.07
+                }));
         for (const z of [-2, 2])
             for (const x of [-1.5, 1.5])
                 frame.add(new AxialSymmetricBody({

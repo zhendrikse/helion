@@ -67,49 +67,35 @@ class NewtonsCradle {
         /** @type {Pendulum[]} */
         this._pendulums = Array.from({ length: ballCount }, (_, index) =>
             new Pendulum(anchorX(index), index === 0 ? swingAngle : 0));
-        /** @type {ModelObjectsCollection<AxialSymmetricBody>} */
-        this._frame = new ModelObjectsCollection()
-            .add(new AxialSymmetricBody({ // Top crossbar
-                position: new Vec3(-0.85, PIVOT_Y - .025, 0),
-                axis: new Vec3(1.7, 0, 0), radius
-            }))
-            .add(new AxialSymmetricBody({ // Side support
-                axis: new Vec3(0, -2.1 , 1.25),
-                position: new Vec3(-0.82, PIVOT_Y, 0), radius
-            }))
-            .add(new AxialSymmetricBody({ // Side support
-                axis: new Vec3(0, -2.1 , -1.25),
-                position: new Vec3(-0.82, PIVOT_Y, 0), radius
-            }))
-            .add(new AxialSymmetricBody({ // Side support
-                axis: new Vec3(0, -2.1 , 1.25),
-                position: new Vec3(0.82, PIVOT_Y, 0), radius
-            }))
-            .add(new AxialSymmetricBody({ // Side support
-                axis: new Vec3(0, -2.1 , -1.25),
-                position: new Vec3(0.82, PIVOT_Y, 0), radius
-            }))
-            .add(new AxialSymmetricBody({ // Foot
-                position: new Vec3(-0.82, -3.225 * PIVOT_Y, -1.45),
-                axis: new Vec3(0, 0, 0.4), radius
-            }))
-            .add(new AxialSymmetricBody({ // Foot
-                position: new Vec3(0.82, -3.225 * PIVOT_Y, -1.45),
-                axis: new Vec3(0, 0, 0.4), radius
-            }))
-            .add(new AxialSymmetricBody({ // Foot
-                position: new Vec3(-0.82, -3.225 * PIVOT_Y, 1.05),
-                axis: new Vec3(0, 0, 0.4), radius
-            }))
-            .add(new AxialSymmetricBody({ // Foot
-                position: new Vec3(0.82, -3.225 * PIVOT_Y, 1.05),
-                axis: new Vec3(0, 0, 0.4), radius
-            }));
     }
 
     get balls() { return this._pendulums.map(ball => ball.ball); }
     get rods() { return this._pendulums.map(ball => ball.rod); }
-    get frame() { return this._frame; }
+    get frame() {
+        /** @type {ModelObjectsCollection<AxialSymmetricBody>} */
+        const frame = new ModelObjectsCollection();
+        for (const x of [-.82, .82])
+            for (const z of [-1.25, 1.25])
+                frame.add(new AxialSymmetricBody({
+                    axis: new Vec3(0, -2.1 , z),
+                    position: new Vec3(x, PIVOT_Y, 0),
+                    radius: 0.04
+                }));
+        for (const x of [-.82, .82])
+            for (const z of [-1.45, 1.05])
+                frame.add(new AxialSymmetricBody({ // Feet
+                    axis: new Vec3(0, 0 , 0.4),
+                    position: new Vec3(x, -3.225 * PIVOT_Y, z),
+                    radius: 0.05
+                }));
+        frame.add(new AxialSymmetricBody({ // Top crossbar
+            position: new Vec3(-0.85, PIVOT_Y - .025, 0),
+            axis: new Vec3(1.7, 0, 0),
+            radius: 0.04
+        }));
+
+        return frame;
+    }
 
     reset = () => this._pendulums.forEach(ball => ball.reset());
 
