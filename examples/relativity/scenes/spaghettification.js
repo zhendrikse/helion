@@ -1,6 +1,7 @@
 import {
-    Simulation, RadialSymmetricBody, Vec3, Sphere, Renderable3D, ModelObject, ThreeJsScene, Colour} from "../../../src/index.js";
-import {AmbientLight, Color, PointLight} from "three";
+    Simulation, RadialSymmetricBody, Vec3, Sphere,ThreeJsScene, Colour, ModelObjectsCollection, ViewsCollection
+} from "../../../src/index.js";
+import { AmbientLight, PointLight } from "three";
 
 const vel0 = new Vec3(0, 0.65, 0);
 const radius = 0.2;
@@ -23,9 +24,9 @@ class Ball extends RadialSymmetricBody {
     }
 }
 
-class Person extends ModelObject {
+class Person {
     constructor() {
-        super();
+        /** @type {Ball[]} */
         this._balls = [];
         this._head();
         this._body();
@@ -45,16 +46,16 @@ class Person extends ModelObject {
 
     _body(pos = new Vec3(10, 1.0, 0)) {
         const theta = 0.0;
-        for (let i = 0; i < 21; i++) {
+        for (let i = 0; i < 21; i++)
             this._balls.push(new Ball({
                 position: pos.clone().add(this._offset(theta, i)),
                 radius: radius,
                 velocity: vel0.clone()
             }));
-        }
     }
 
-    _offset = (theta, i) => new Vec3(spacing * i * Math.sin(theta + base_angle), -spacing * i * Math.cos(theta + base_angle), 0);
+    _offset = (theta, i) =>
+        new Vec3(Math.sin(theta + base_angle), -Math.cos(theta + base_angle), 0).multiplyScalar(spacing * i);
 
     _leftArm = () => this._limb(-0.7, new Vec3(10, 0.7, 0));
 
@@ -87,61 +88,38 @@ class Person extends ModelObject {
     get body() { return this._balls.slice(1, 22); }
     get arms() { return this._balls.slice(22, 44); }
     get legs() { return this._balls.slice(44, 66); }
-    get all() { return this._balls }
-}
-
-class PersonView extends Renderable3D {
-    constructor() {
-        super();
-        this._spheres = [];
-        this._spheres.push(new Sphere({ color: new Colour(0.7,0.6,0.5) }));
-    }
-
-    canBindTo(model) {
-        return model instanceof Person;
-    }
-
-    initialize(person) {
-        for (let i = 0; i < person.body.length; i++)
-            this._spheres.push(new Sphere({ color: new Colour(0.2,0.4,0.7) }));
-        for (let i = 0; i < person.arms.length; i++)
-            this._spheres.push(new Sphere({ color: new Colour(0.2,0.8,0.9) }));
-        for (let i = 0; i < person.legs.length; i++)
-            this._spheres.push(new Sphere({ color: new Colour(0.2,0.2,0.7) }));
-
-        this._spheres.forEach(sphere => this.add(sphere));
-    }
-
-    synchronizeWith(person) {
-        for (let i = 0; i < this._spheres.length; i++)
-            this._spheres[i].synchronizeWith(person.all[i]);
-    }
+    get head() { return this._balls[0]; }
 }
 
 const person = new Person();
-const blackHole = new RadialSymmetricBody({ position: blackHolePos })
 
+/** @type {ModelObjectsCollection<Ball>} */
+const personBody = new ModelObjectsCollection();
+person.body.forEach(ball => personBody.add(ball));
+/** @type {ModelObjectsCollection<Ball>} */
+const personArms = new ModelObjectsCollection();
+person.arms.forEach(ball => personArms.add(ball));
+/** @type {ModelObjectsCollection<Ball>} */
+const personLegs = new ModelObjectsCollection();
+person.legs.forEach(ball => personLegs.add(ball));
+
+const blackHole = new RadialSymmetricBody({ position: blackHolePos })
 Simulation
     .with({
         htmlDivId: "spaghettificationContainer",
-        viewport: {
-            aspectRatio: "19/12"
-        },
-        camera: {
-            position: new Vec3(0, 0, 20),
-            fieldOfView: 40
-        },
-        scene: {
-            background: ThreeJsScene.Background.STARS,
-        },
-        lighting: {
-            enabled: false
-        }
+        viewport: { aspectRatio: "16/9" },
+        camera: { position: new Vec3(0, 0, 20), fieldOfView: 40 },
+        scene: { background: ThreeJsScene.Background.STARS },
+        lighting: { enabled: false }
     })
-    .addObject3D(new PointLight(0xffffff, 2.0, 0, .1)) // intense, no max distance
+    .addObject3D(new PointLight(0xffffff, 3.0, 0, .1)) // intense, no max distance
     .addObject3D(new AmbientLight(0xffffff, 1))
     .withMouseClickEventListener()
-    .bind(person.alwaysWith(new PersonView()))
+    .bind(person.head.alwaysWith(new Sphere({ color: new Colour(0.7, 0.6, 0.5) })))
+    .bind(personBody.alwaysWith(ViewsCollection.of(Sphere).with({ color: new Colour(0.2,0.4,0.7) })))
+    .bind(personArms.alwaysWith(ViewsCollection.of(Sphere).with({ color: new Colour(0.2,0.8,0.9) })))
+    .bind(personLegs.alwaysWith(ViewsCollection.of(Sphere).with({ color: new Colour(0.2,0.2,0.7) })))
     .bind(blackHole.onceWith(new Sphere({ color: new Colour(0.3,0.3,0.3) })))
-    .runsEvery(6e-3)
-    .onStep(() => person.update(0.02, blackHolePos));
+    .runsEvery(4e-3)
+    .advancesBy(0.01)
+    .onStep((_clock, dt) => person.update(dt, blackHolePos));
