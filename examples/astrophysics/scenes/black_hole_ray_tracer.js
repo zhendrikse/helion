@@ -1,8 +1,7 @@
 import { MathUtils, PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh }  from 'three';
-import vertexShader from './black_hole_vertex_shader.glsl?raw';
-import fragmentShader from './black_hole_fragment_shader.glsl?raw';
-import {Checkbox, Colour, Renderable3D, Simulation, ThreeJsScene} from '../../../src/index.js';
-import {ModelObject} from '../../../src/index.js';
+import vertexShader from './webgl/black_hole_vertex_shader.glsl?raw';
+import fragmentShader from './webgl/black_hole_fragment_shader.glsl?raw';
+import { ModelObject, Checkbox, Colour, Renderable3D, Simulation, ThreeJsScene } from '../../../src/index.js';
 
 export class BlackHoleModel extends ModelObject {
     constructor({
@@ -40,8 +39,7 @@ export class ShaderView extends Renderable3D {
             fragmentShader,
         });
 
-        const blackHoleMesh = new Mesh(this._canvasGeometry, canvasMaterial);
-        this.add(blackHoleMesh);
+        this.add(new Mesh(this._canvasGeometry, canvasMaterial));
     }
 
     canBindTo(model) {

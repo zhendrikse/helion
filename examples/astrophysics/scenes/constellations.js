@@ -222,7 +222,6 @@ try {
         simulation.bind(dummyStar.alwaysWith(view));
     });
     simulation.start();
-
 } catch (error) {
     console.error('Unable to load the night-sky data.', error);
     simulation.showHud('Could not load the star or constellation data. Check the network connection and try again.');

@@ -1,13 +1,12 @@
 import { TextureLoader, PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh } from "three";
 import {degToRad, Simulation, Slider, Vec3, Range } from "../../../src/index.js";
-import galaxyPicture from '../../../src/textures/space_pano.jpg';
 
 const cameraPosition = new Vec3(0, 0, 1);
 const cameraFov = 75;
 const fovRadians = degToRad(cameraFov);
 const yFov = cameraPosition.z * Math.tan(fovRadians / 2) * 2;
 const spaceTexture = new TextureLoader()
-    .load(galaxyPicture);
+    .load(new URL('../images/astrophysics/milky-way.jpg', import.meta.url).href);
 
 const vertexShader = `
     varying vec2 vUv;
