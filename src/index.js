@@ -4,7 +4,7 @@ export {
 } from './model/phys/bodies.js';
 
 export {
-    Range, factorial, Interval, generateUUID, degToRad, BESSEL_ZEROS, besselJ,
+    Range, factorial, Interval, generateUUID, degToRad, BESSEL_ZEROS, besselJ, radToDeg,
     sampleNormalDistribution, uniform, randomInt, Complex, toCartesian, normalDistribution
 } from './model/math/math.js';
 
@@ -14,7 +14,7 @@ export {
 
 export {
     LaplaceOperator, GaussianImpulse, PerlinNoiseOperator, DiamondSquareOperator, DoubleSlitOperator,
-    GaussianImpulseComplex2D, FFT, FFTShift2D, FFT2D, ComplexSoftness, SineImpulseOperator, ShapeMask, 
+    GaussianImpulseComplex2D, FFT, FFTShift2D, FFT2D, ComplexSoftness, SineImpulseOperator, ShapeMask,
     ComplexShapeMask, Softness, Potential
 } from './model/transformations/operators.js';
 
@@ -48,7 +48,7 @@ export { Shapes, ShapeConfiguration } from './model/math/shapes.js';
 export { PointCloud, Gas } from './model/phys/clouds.js';
 export { Integrators } from './model/math/numerics/integrators/integrators.js';
 export { SunView } from './view/3d/astro/sun.js';
-export { Saturn } from './view/3d/astro/saturn.js';
+export { Saturn, Mercury, Mars, Jupiter, Venus, Neptune, Uranus, Earth } from './view/3d/astro/planets.js';
 export { Planets, Sun } from './model/phys/planets.js';
 export { DropdownMenu, Checkbox, Button, Slider, RadioGroup, TextInput } from './core/controls.js';
 export { Simulation } from './core/helion.js';

@@ -64,18 +64,17 @@ const beamLight2 = new PointLight(0xff33ff, 1.5, 12);
 const beamLength = 20;
 const beamOffset = 1.575 * beamLength; // Makes the beam pass right through our field of view
 
-Simulation.with({
-    htmlDivId: 'pulsarContainer',
-    viewport: { aspectRatio: '16 / 9' },
-    camera: {
-        position: cameraPosition,
-        target: new Vec3(0, 0, 0),
-        fieldOfView: 50,
-        controls: true
-    },
-    scene: { background: ThreeJsScene.Background.STARS },
-    lighting: { enabled: true, shadows: false }
-})
+Simulation
+    .with({
+        htmlDivId: 'pulsarContainer',
+        viewport: { aspectRatio: '16 / 9' },
+        camera: { position: cameraPosition },
+        infoPanel: {
+            text: '<strong>🔦 Pulsar</strong><br/>• <b>Normale pulsars</b>: rotation periods ranging from 0.25 to 2 seconds.<br/>' +
+                '• <b>Millisecond pulsars</b>: Older, accelerated pulsars may spin much faster with rotation periods between 1 en 10 ms.'
+        },
+        scene: { background: ThreeJsScene.Background.STARS }
+    })
     .bind(neutronStar.alwaysWith(new Sphere({
         color: new Colour(0x777777),
         segments: 32

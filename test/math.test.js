@@ -1,13 +1,21 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
 /** !! D O   N O T   S H O R T E N   T H E S E   I M P O R T S  !! */
-import { degToRad, generateUUID, factorial, Interval, Complex, besselJ, BESSEL_ZEROS } from '../src/model/math/math.js';
+import {
+    degToRad, generateUUID, factorial, Interval, Complex, besselJ, BESSEL_ZEROS, radToDeg
+} from '../src/model/math/math.js';
 
 describe('Math functions', () => {
     it('Degrees to radians', () => {
         expect(degToRad(0), 'degToRad(0)').toBe(0);
         expect(degToRad(90), 'degToRad(0)').toBe(Math.PI * .5);
         expect(degToRad(180), 'degToRad(0)').toBe(Math.PI);
+    });
+
+    it('Radians to degrees', () => {
+        expect(radToDeg(0), 'degToRad(0)').toBe(0);
+        expect(radToDeg(Math.PI * .5), 'degToRad(0)').toBe(90);
+        expect(radToDeg(Math.PI), 'degToRad(0)').toBe(180);
     });
 
     it('UUID generation', () => {

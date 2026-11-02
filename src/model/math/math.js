@@ -41,6 +41,11 @@ export function degToRad(angle) {
     return angle * Math.PI / 180;
 }
 
+/** @param {number} angle */
+export function radToDeg(angle) {
+    return angle * 180 / Math.PI;
+}
+
 /**
  * @param {number} radius 
  * @param {number} theta 
