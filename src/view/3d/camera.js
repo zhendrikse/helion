@@ -4,36 +4,27 @@ import { Vec3 } from '../../model/math/objects.js';
 import { Viewport } from '../../core/viewport.js';
 
 export class ThreeJsCamera {
-    /**
-     * @param {Viewport} viewport
-     * @param {{
-     *     position?: Vec3
-     *     target?: Vec3
-     *     fieldOfView?: number
-     *     orthographic?: boolean
-     *     controls?: boolean
-     *     autoRotate?: boolean
-     * }}
-     */
-    constructor(viewport, {
-        position = new Vec3(3, 3, 3),
-        target = new Vec3(0, 0, 0),
-        fieldOfView = 50,
-        orthographic = false,
-        controls = true,
-        autoRotate = false
-    } = {}) {
+    static defaults = {
+        position: new Vec3(3, 3, 3),
+        target: new Vec3(0, 0, 0),
+        fieldOfView: 50,
+        controls: true,
+        autoRotate: false,
+        orthographic: false
+    };
+
+    constructor(viewport,options) {
         this._viewport = viewport;
-        this._orthographic = orthographic;
-        this._fieldOfView = fieldOfView;
-        this._camera = this._createCamera(viewport, position, fieldOfView, orthographic);
+        this._orthographic = options.orthographic;
+        this._fieldOfView = options.fieldOfView;
+        this._camera = this._createCamera(viewport, options.position, options.fieldOfView, options.orthographic);
         this._controls = null;
-        this._autoRotate = autoRotate;
+        this._autoRotate = options.autoRotate;
         this._autoRotateTheta = Math.PI / 2;
         this._autoRotatePhi = 0;
-        if (controls) {
+        if (options.controls) {
             this._controls = new OrbitControls(this._camera, viewport.canvas);
-            this._controls.target.copy(target);
+            this._controls.target.copy(options.target);
             this._applyControlLimits();
         }
     }

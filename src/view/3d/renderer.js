@@ -51,7 +51,6 @@ export class ThreeJsRenderer extends Renderer {
         this._camera = null;
         this._renderer = null;
         this._labelRenderer = null;
-        this._controls = null;
     }
 
     /** @param {boolean} autoRotate */

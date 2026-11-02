@@ -123,7 +123,7 @@ const surfaceView = new SurfaceVisualization({
 
 const simulation = Simulation
     .with({
-        htmlDivId: 'orbitalsContainer',
+        htmlDivId: 'hydrogenOrbitals3D',
         viewport: { parameterMenuCollapsed: false },
         infoPanel: {
             text: '<strong>⚛️ Atomic orbitals</strong><br/>Polar plots $r=|Y_l^m(θ,φ)|$ of real spherical harmonics.<br/>' +
@@ -146,7 +146,7 @@ function showOrbital(name) {
     phaseLayer.Y = entry.Y;
     // reuse same view → Simulation.bind replaces binding as opposed to 'stacking'
     simulation.bind(orbitalSurface(entry.Y).onceWith(surfaceView));
-    simulation.frameSceneOn(surfaceView, { padding: 0.8 });
+    simulation.frameSceneOn(surfaceView, { padding: 0.6 });
     simulation.setLatexTitle(`\\Large{${entry.latex}}\\ \\text{orbital}\\ (Y_{l}^{m},\\ r=|Y|)`);
 }
 

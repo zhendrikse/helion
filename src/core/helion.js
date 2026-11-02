@@ -12,6 +12,7 @@ import { Renderable, Renderer } from '../view/renderer.js';
 import { Colour } from '../view/colormappers.js';
 import { Object3D } from 'three/src/Three.js';
 import {ModelObjectsCollection, Binding} from "../model/behavior.js";
+import {ThreeJsCamera} from "../view/3d/camera.js";
 
 class SimulationClock {
     /**
@@ -21,10 +22,10 @@ class SimulationClock {
      * @param {number} [options.maxAccumulatedTime=0.25]
      */
     constructor({
-                    realTimeStep = 0.01,
-                    simulationTimeStep = realTimeStep,
-                    maxAccumulatedTime = 0.25
-                } = {}) {
+        realTimeStep = 0.01,
+        simulationTimeStep = realTimeStep,
+        maxAccumulatedTime = 0.25
+    } = {}) {
         this.realTimeStep = realTimeStep;             // realtime scheduling interval
         this.simulationTimeStep = simulationTimeStep;   // simulated-time increment
 
@@ -87,63 +88,60 @@ export class Simulation {
         return new Viewport(canvasWrapper, parameterMenuCollapsed, aspectRatio);
     };
 
-    static with(
-        /**
-         * @param {{
-         *   htmlDivId?: string,
-         *   viewport?: { aspectRatio?: string, parameterMenuCollapsed?: boolean },
-         *   camera?: {
-         *     position?: Vec3,
-         *     target?: Vec3,
-         *     fieldOfView?: number,
-         *     controls?: boolean,
-         *     autoRotate?: boolean,
-         *     orthographic?: boolean
-         *   },
-         *   scene?: {
-         *     background?: number,
-         *     backgroundColor?: Colour,
-         *     scale?: number
-         *   },
-         *   lighting?: {
-         *     enabled?: boolean,
-         *     shadows?: boolean
-         *   },
-         *   headUpDisplay?: { enabled?: boolean },
-         *   infoPanel?: { text?: string }
-         * }} [options]
-         */
-        {
-            // @ts-ignore htmlDivId is part of the documented options object.
-            htmlDivId,
-            viewport = {
-                aspectRatio: '1 / 1',
-                parameterMenuCollapsed: true
-            },
-            camera = {
-                position: new Vec3(3, 3, 3),
-                target: new Vec3(0, 0, 0),
-                fieldOfView: 50,
-                controls: true,
-                autoRotate: false,
-                orthographic: false
-            },
-            scene = {
-                background: ThreeJsScene.Background.TRANSPARENT,
-                backgroundColor: new Colour(0x0088ff),
-                scale: 1
-            },
-            lighting = {
-                enabled: true,
-                shadows: false
-            },
-            headUpDisplay = {
-                enabled: true
-            },
-            infoPanel = {
-                text: ''
-            }
-        } = {htmlDivId: '', camera: {}, viewport: {}, scene: {}, lighting: {}, headUpDisplay: {}, infoPanel: {}}) {
+    /**
+     * @param {{
+     *   htmlDivId?: string,
+     *   viewport?: { aspectRatio?: string, parameterMenuCollapsed?: boolean },
+     *   camera?: {
+     *     position?: Vec3,
+     *     target?: Vec3,
+     *     fieldOfView?: number,
+     *     controls?: boolean,
+     *     autoRotate?: boolean,
+     *     orthographic?: boolean
+     *   },
+     *   scene?: {
+     *     background?: number,
+     *     backgroundColor?: Colour,
+     *     scale?: number
+     *   },
+     *   lighting?: {
+     *     enabled?: boolean,
+     *     shadows?: boolean
+     *   },
+     *   headUpDisplay?: { enabled?: boolean },
+     *   infoPanel?: { text?: string }
+     * }} [options]
+     */
+    static with({
+        htmlDivId = '',
+        viewport = {},
+        camera = {},
+        scene = {},
+        lighting = {},
+        headUpDisplay = {},
+        infoPanel = {}
+    } = {}) {
+        camera = { ...ThreeJsCamera.defaults, ...camera };
+        scene = {
+            background: ThreeJsScene.Background.TRANSPARENT,
+            backgroundColor: new Colour(0x0088ff),
+            scale: 1,
+            ...scene
+        };
+        lighting = {
+            enabled: true,
+            shadows: false,
+            ...lighting
+        };
+        headUpDisplay = {
+            enabled: true,
+            ...headUpDisplay
+        };
+        infoPanel = {
+            text: '',
+            ...infoPanel
+        };
         const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, viewport.parameterMenuCollapsed ?? true, viewport.aspectRatio ?? '1 / 1');
         const renderer = new ThreeJsRenderer({ camera, viewport, lighting, scene });
         renderer.attach(viewPort);
@@ -151,6 +149,8 @@ export class Simulation {
     }
 
     /**
+     * Creates a new simulation.
+     *
      * @param {Viewport} viewport
      * @param {Renderer} renderer
      * @param {boolean} headUpDisplay

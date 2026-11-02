@@ -327,12 +327,16 @@ export class ProbabilityDensityView2D extends Renderable2D {
      * Visualizes a discrete complex field as a Monte-Carlo probability cloud.
      * Samples are drawn directly from the numerical |psi(x,y)|^2 distribution.
      *
-     * @param {{pointCount?: number, pointSize?: number, color?: Colour}} [param0]
+     * @param {{
+     *   pointCount?: number,
+     *   pointSize?: number,
+     *   color?: Colour
+     *   }} [param0]
      */
     constructor({
         pointCount = 30000,
         pointSize = 0.09,
-        color = Colour.White
+        color = Colour.White,
     } = {}) {
         super();
         this._pointCount = pointCount;
@@ -346,9 +350,11 @@ export class ProbabilityDensityView2D extends Renderable2D {
         this._geometry = new BufferGeometry();
         this._points = new Points(this._geometry, this._material);
         this.add(this._points);
-
         this._positions = new Float32Array(this._pointCount * 3);
     }
+
+    /** @param {Colour} colour */
+    set color(colour) { colour.asThreeJsColor(this._material.color); }
 
     /** @param {DiscreteComplexField} field */
     canBindTo(field) {
