@@ -79,6 +79,9 @@ export class ThreeJsRenderer extends Renderer {
         const _ = new Lighting(this._scene, this._options.lighting);
 
         this.resize();
+
+        this._resizeObserver = new ResizeObserver(() => this.resize());
+        this._resizeObserver.observe(viewport.canvasWrapper);
         window.addEventListener('resize', () => this.resize());
     }
 
@@ -135,8 +138,8 @@ export class ThreeJsRenderer extends Renderer {
     }
 
     /**
-     * @param {Renderable} anObject 
-     * @param {Object} options 
+     * @param {Renderable} anObject
+     * @param {Object} options
      */
     frameSceneOn(anObject, options) {
         this._camera.frameSceneOn(anObject, options);
@@ -149,8 +152,8 @@ export class ThreeJsRenderer extends Renderer {
     }
 
     /**
-     * @param {Renderable} anObject 
-     * @param {Object} options 
+     * @param {Renderable} anObject
+     * @param {Object} options
      */
     provideAxesAround(anObject, options) {
         if (this._axes)

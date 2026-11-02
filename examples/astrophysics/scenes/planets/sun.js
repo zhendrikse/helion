@@ -6,16 +6,15 @@ const sun = new Sun();
 Simulation
     .with({
         htmlDivId: "sunContainer",
-        headUpDisplay: {
-            enabled: false
-        },
+        headUpDisplay: { enabled: false },
         camera: {
             position: new Vec3(5, 7.5, 15).multiplyScalar(.3),
             fieldOfView: 45
         },
-        scene: {
-            background: ThreeJsScene.Background.STARS
-        }
+        infoPanel: {
+            text: '<strong>🔆 Sun</strong><br/>• Based on code in <a href=\"https://sangillee.com/2024-02-16-how-to-create-the-solar-system/\">How to Create the Solar System</a>) by Sangil Lee<br/>'
+        },
+        scene: { background: ThreeJsScene.Background.STARS }
     })
     .bind(sun.alwaysWith(new SunView()))
     .onFrame(clockTime => sun.time = clockTime)

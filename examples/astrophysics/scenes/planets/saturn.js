@@ -17,7 +17,7 @@ Simulation
                 `• Eccentricity: ${saturn.eccentricity}<br/> • Right ascension: ${radToDeg(saturn.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0xffffff, 1))
+    .addObject3D(new AmbientLight(0xffffff, 1.5))
     .bind(saturn.alwaysWith(new Saturn()))
     .onFrame(timeStamp => saturn.timeStamp = timeStamp)
     .start();

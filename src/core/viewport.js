@@ -176,11 +176,31 @@ export class Viewport {
         });
 
         document.addEventListener('fullscreenchange', () => {
-            this._fullscreenButton.innerHTML =
-                document.fullscreenElement ? '⮌' : '⛶';
-        });
+            const isFullscreen = document.fullscreenElement === this._canvasWrapperDiv;
+            this._fullscreenButton.innerHTML = isFullscreen ? '⮌' : '⛶';
 
-        document.addEventListener('fullscreenchange', () => {
+            if (isFullscreen) {
+                this._fullscreenStyles = {
+                    width: this._canvasWrapperDiv.style.width,
+                    height: this._canvasWrapperDiv.style.height,
+                    aspectRatio: this._canvasWrapperDiv.style.aspectRatio,
+                    margin: this._canvasWrapperDiv.style.margin,
+                    marginBottom: this._canvasWrapperDiv.style.marginBottom
+                };
+                Object.assign(this._canvasWrapperDiv.style, {
+                    width: '100vw',
+                    height: '100vh',
+                    aspectRatio: 'auto',
+                    margin: '0',
+                    marginBottom: '0'
+                });
+                if (window.CSS?.supports?.('height', '100dvh'))
+                    this._canvasWrapperDiv.style.height = '100dvh';
+            } else if (this._fullscreenStyles) {
+                Object.assign(this._canvasWrapperDiv.style, this._fullscreenStyles);
+                this._fullscreenStyles = null;
+            }
+
             window.dispatchEvent(new Event('resize'));
         });
 
@@ -216,17 +236,17 @@ export class Viewport {
         this._canvasWrapperDiv.appendChild(this._bottomLeftDiv);
     }
 
-        // const downloadButton = document.createElement('button');
-        // downloadButton.textContent = 'Download image';
-        // document.body.appendChild(downloadButton);
-        //
-        // downloadButton.addEventListener('click', () => {
-        //     renderer.render(scene, camera); // laatste frame renderen
-        //     const link = document.createElement('a');
-        //     link.download = 'blackhole.png';
-        //     link.href = renderer.domElement.toDataURL('image/png');
-        //     link.click();
-        // });
+    // const downloadButton = document.createElement('button');
+    // downloadButton.textContent = 'Download image';
+    // document.body.appendChild(downloadButton);
+    //
+    // downloadButton.addEventListener('click', () => {
+    //     renderer.render(scene, camera); // laatste frame renderen
+    //     const link = document.createElement('a');
+    //     link.download = 'blackhole.png';
+    //     link.href = renderer.domElement.toDataURL('image/png');
+    //     link.click();
+    // });
 
     get simulationButtonsDiv() { return this._simulationButtonsDiv; }
     get addOnsDiv() { return this._addOnsDiv; }

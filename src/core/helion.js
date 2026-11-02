@@ -22,10 +22,10 @@ class SimulationClock {
      * @param {number} [options.maxAccumulatedTime=0.25]
      */
     constructor({
-        realTimeStep = 0.01,
-        simulationTimeStep = realTimeStep,
-        maxAccumulatedTime = 0.25
-    } = {}) {
+                    realTimeStep = 0.01,
+                    simulationTimeStep = realTimeStep,
+                    maxAccumulatedTime = 0.25
+                } = {}) {
         this.realTimeStep = realTimeStep;             // realtime scheduling interval
         this.simulationTimeStep = simulationTimeStep;   // simulated-time increment
 
@@ -114,14 +114,14 @@ export class Simulation {
      * }} [options]
      */
     static with({
-        htmlDivId = '',
-        viewport = {},
-        camera = {},
-        scene = {},
-        lighting = {},
-        headUpDisplay = {},
-        infoPanel = {}
-    } = {}) {
+                    htmlDivId = '',
+                    viewport = {},
+                    camera = {},
+                    scene = {},
+                    lighting = {},
+                    headUpDisplay = {},
+                    infoPanel = {}
+                } = {}) {
         camera = { ...ThreeJsCamera.defaults(), ...camera };
         scene = {
             background: ThreeJsScene.Background.TRANSPARENT,
