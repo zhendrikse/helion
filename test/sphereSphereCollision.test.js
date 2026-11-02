@@ -1,4 +1,3 @@
-
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Vec3 } from '../src/model/math/objects.js';
 import { SphereSphereCollision } from '../src/model/transformations/interactions.js';

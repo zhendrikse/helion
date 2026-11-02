@@ -1,17 +1,18 @@
 import { PerspectiveCamera, OrthographicCamera, Vector3 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Vec3 } from '../../model/math/objects.js';
-import { Viewport } from '../../core/viewport.js';
 
 export class ThreeJsCamera {
-    static defaults = {
-        position: new Vec3(3, 3, 3),
-        target: new Vec3(0, 0, 0),
-        fieldOfView: 50,
-        controls: true,
-        autoRotate: false,
-        orthographic: false
-    };
+    static defaults = () => {
+        return {
+            position: new Vec3(3, 3, 3),
+            target: new Vec3(0, 0, 0),
+            fieldOfView: 50,
+            controls: true,
+            autoRotate: false,
+            orthographic: false
+        };
+    }
 
     constructor(viewport,options) {
         this._viewport = viewport;

@@ -122,7 +122,7 @@ export class Simulation {
         headUpDisplay = {},
         infoPanel = {}
     } = {}) {
-        camera = { ...ThreeJsCamera.defaults, ...camera };
+        camera = { ...ThreeJsCamera.defaults(), ...camera };
         scene = {
             background: ThreeJsScene.Background.TRANSPARENT,
             backgroundColor: new Colour(0x0088ff),
