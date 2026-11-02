@@ -1,6 +1,6 @@
 import vertexShader from './webgl/milky_way_vertex_shader.glsl?raw';
 import fragmentShader from './webgl/milky_way_fragment_shader.glsl?raw';
-import {Vec3, Vec2, Simulation, ModelObject, ShaderView} from "../../../src/index.js";
+import { Vec3, Vec2, Simulation, ModelObject, ShaderView, Slider, Range } from "../../../src/index.js";
 import {
     ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, NoColorSpace, RepeatWrapping, TextureLoader
 } from "three";
@@ -62,4 +62,8 @@ simulation
     .runsEvery(1/60)
     .onStep(() => milkyWay.uniforms.u_rotate.value.add(speed))
     .onReset(() => milkyWay.uniforms.u_rotate.value.set(0, 0))
+    .append(new Slider("Zoom")
+        .withRange(new Range(200, 1000, 1))
+        .withValue(500)
+        .onInput(value => milkyWay.uniforms.u_scale.value = value))
     .withMouseClickEventListener();
