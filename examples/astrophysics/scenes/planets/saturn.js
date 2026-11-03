@@ -42,7 +42,7 @@ Simulation
         material: new MeshPhongMaterial({
             map: Planet.loader.load(saturnMap),
             bumpMap: Planet.loader.load(saturnMap),
-            bumpScale: 0.05,
+            bumpScale: 5,
             shininess: 0
         }),
         innerRadius: 1.11,

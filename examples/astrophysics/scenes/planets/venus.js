@@ -42,7 +42,7 @@ Simulation
         material: new MeshPhongMaterial({
             map: Planet.loader.load(venusMap),
             bumpMap: Planet.loader.load(venusBumpMap),
-            bumpScale: 0.005,
+            bumpScale: 1,
             shininess: 0
         })
     })))

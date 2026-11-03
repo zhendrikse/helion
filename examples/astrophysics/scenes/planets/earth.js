@@ -1,13 +1,15 @@
 import {Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet, Checkbox} from '../../../../src/index.js';
 import {
     AmbientLight, BackSide, Mesh, MeshPhongMaterial, ShaderMaterial, Color, Vector3, AdditiveBlending,
-    DirectionalLight
+    DirectionalLight, SRGBColorSpace
 } from 'three';
 import fresnelVertexShader from '../../../../src/view/3d/primitives/shaders/add_on_vertex_shader.glsl?raw';
 import fresnelFragmentShader from '../../../../src/view/3d/primitives/shaders/fresnel_fragment_shader.glsl?raw';
 import atmosphereFragmentShader from '../../../../src/view/3d/primitives/shaders/atmosphere_fragment_shader.glsl?raw';
+import earthDayNightVertexShader from '../../../../src/view/3d/primitives/shaders/earth_day_night_vertex_shader.glsl?raw';
+import earthDayNightFragmentShader from '../../../../src/view/3d/primitives/shaders/earth_day_night_fragment_shader.glsl?raw';
 import earthMap from '../../textures/Solarsystemscope_texture_2k_earth_daymap.jpg';
-import earthBumpMap from '../../textures/earthbump1k.jpg';
+import earthNightMap from '../../textures/Solarsystemscope_texture_2k_earth_nightmap.jpg';
 import earthCloudsMap from '../../textures/Earth-clouds.png';
 
 const earth = new CelestialBody({
@@ -23,12 +25,18 @@ const earth = new CelestialBody({
     tilt: 23 * Math.PI / 180
 });
 
+const sunDirection = new Vector3(10, 2, -3);
+const dayTexture = Planet.loader.load(earthMap);
+const nightTexture = Planet.loader.load(earthNightMap);
+dayTexture.colorSpace = SRGBColorSpace;
+nightTexture.colorSpace = SRGBColorSpace;
+
 class EarthView extends Planet {
     constructor({material, cloudsMaterial, fresnelMaterial, atmosphereMaterial}) {
         super({material});
 
         this._atmosphere = new Mesh(this._mesh.geometry, atmosphereMaterial);
-        this._atmosphere.scale.setScalar(1.055);
+        this._atmosphere.scale.setScalar(1.06);
         this.add(this._atmosphere);
 
         this._fresnel = new Mesh(this._mesh.geometry, fresnelMaterial);
@@ -50,17 +58,19 @@ class EarthView extends Planet {
 
     synchronizeWith(body) {
         super.synchronizeWith(body);
-        this._clouds.rotation.y = body.rotation;
+        this._clouds.rotation.y = body.time * 0.001 * body.spin * .8; // Clouds rotate a bit slower
     }
 }
 
 const earthView = new EarthView({
-    material: new MeshPhongMaterial({
-        map: Planet.loader.load(earthMap),
-        bumpMap: Planet.loader.load(earthBumpMap),
-        bumpScale: 0.05,
-        specular: new Color('grey'),
-        shininess: 0
+    material: new ShaderMaterial({
+        uniforms: {
+            uDayTexture: {value: dayTexture},
+            uNightTexture: {value: nightTexture},
+            uSunDirection: {value: sunDirection}
+        },
+        vertexShader: earthDayNightVertexShader,
+        fragmentShader: earthDayNightFragmentShader
     }),
     cloudsMaterial: new MeshPhongMaterial({
         map: Planet.loader.load(earthCloudsMap),
@@ -73,7 +83,7 @@ const earthView = new EarthView({
     fresnelMaterial: new ShaderMaterial({
         uniforms: {
             uColor: {value: new Vector3(0.45, 0.55, 1)},
-            uIntensity: {value: 0.3}
+            uIntensity: {value: 0.25}
         },
         vertexShader: fresnelVertexShader,
         fragmentShader: fresnelFragmentShader,
@@ -83,7 +93,7 @@ const earthView = new EarthView({
     }),
     atmosphereMaterial: new ShaderMaterial({
         uniforms: {
-            u_sunRelPosition: {value: new Vector3(10, 0, 0)},
+            u_sunRelPosition: {value: sunDirection},
             u_color: {value: new Vector3(0.45, 0.55, 1)}
         },
         vertexShader: fresnelVertexShader,
@@ -95,8 +105,8 @@ const earthView = new EarthView({
     })
 });
 
-const sun = new DirectionalLight(0xffffff, 1.5);
-sun.position.set(10, 2, 0.5);
+const sun = new DirectionalLight(0xcccccc, 1);
+sun.position.copy(sunDirection);
 Simulation
     .with({
         htmlDivId: 'earthContainer',
@@ -115,7 +125,7 @@ Simulation
                 `• Eccentricity: ${earth.eccentricity}<br/> • Right ascension: ${radToDeg(earth.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0xffffff, 5e-2))
+    .addObject3D(new AmbientLight(0x888888, 1e-1))
     .addObject3D(sun)
     .bind(earth.alwaysWith(earthView))
     .onFrame(timeStamp => earth.time = timeStamp)
@@ -130,4 +140,3 @@ Simulation
                 .onChange(checked => earthView.fresnel = checked)))
     )
     .start();
-

@@ -43,7 +43,7 @@ Simulation
         material: new MeshPhongMaterial({
             map: Planet.loader.load(marsMap),
             bumpMap: Planet.loader.load(marsBumpMap),
-            bumpScale: 0.05,
+            bumpScale: 2.5,
             shininess: 0
         })
     })))

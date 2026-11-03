@@ -41,7 +41,7 @@ Simulation
         material: new MeshPhongMaterial({
             map: Planet.loader.load(jupiterMap),
             bumpMap: Planet.loader.load(jupiterMap),
-            bumpScale: 0.02,
+            bumpScale: 2,
             shininess: 0
         })
     })))

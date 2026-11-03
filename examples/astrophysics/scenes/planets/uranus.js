@@ -40,7 +40,7 @@ Simulation
         material: new MeshPhongMaterial({
             map: Planet.loader.load(uranusMap),
             bumpMap: Planet.loader.load(uranusMap),
-            bumpScale: 0.05,
+            bumpScale: 5,
             shininess: 0
         }),
         innerRadius: 1.55,
