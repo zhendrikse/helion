@@ -2,7 +2,7 @@ import {
     Vec3, Block, Simulation, Box, Aquarium, UniformGravitationalForce, DragForce, Force, UPlotGraph, Colour 
 } from '../../../src/index.js';
 import {MeshStandardMaterial, TextureLoader} from 'three';
-import wood from '../../../src/textures/wood_128x128.jpg';
+import wood from './textures/wood_128x128.jpg';
 
 const g = -9.8;
 

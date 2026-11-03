@@ -1,10 +1,25 @@
 import {
-    RadialSymmetricBody, Simulation, Vec3, Checkbox, Arrow, Sphere, Floor, Helix,
-    Slider, Range, UniformGravitationalForce, SpringForce, DragForce, Body, BodyPair, VectorView, Colour} from "../../../src/index.js";
+    RadialSymmetricBody, Simulation, Vec3, Checkbox, Vec2, Sphere, Floor, Helix,
+    Slider, Range, UniformGravitationalForce, SpringForce, DragForce, Body, BodyPair, VectorView, Colour} from '../../../src/index.js';
+import { DoubleSide, MeshStandardMaterial } from 'three';
+import pavingColorUrl from './textures/paving_color.jpg';
+import pavingRoughnessUrl from './textures/paving_roughness.jpg';
+import pavingNormalUrl from './textures/paving_normal.jpg';
+import pavingBumpUrl from './textures/paving_ambient_occlusion.jpg';
 
 const floor = new Floor({
     position: new Vec3(0, -1, 0),
-    type: Floor.Type.PAVING,
+    type: Floor.Type.CUSTOM,
+    planeMaterial: new MeshStandardMaterial({
+        normalScale: new Vec2(2, 2),
+        roughness: 1,
+        map: Floor.loadTexture(pavingColorUrl, 1),
+        roughnessMap: Floor.loadTexture(pavingRoughnessUrl, 1),
+        normalMap: Floor.loadTexture(pavingNormalUrl, 1),
+        bumpMap: Floor.loadTexture(pavingBumpUrl, 1),
+        bumpScale: 0.05,
+        side: DoubleSide
+    })
 });
 
 const springRestLength = 0.75;
@@ -65,7 +80,7 @@ const forceArrow = new VectorView({
 
 Simulation
     .with({
-        htmlDivId: "bouncingBallOnSpringContainer",
+        htmlDivId: 'bouncingBallOnSpringContainer',
         camera: {
             position: new Vec3(1, 0.4, 2).multiplyScalar(1.7)
         }
@@ -88,17 +103,17 @@ Simulation
         ball.integrate(dt);
     })
     .addObject3D(floor)
-    .append(new Checkbox("🚀 Velocity: ")
+    .append(new Checkbox('🚀 Velocity: ')
         .on(velocityView)
-        .withProperty("visible")
-        .togetherWith(new Checkbox("💪🏻 Force: ")
+        .withProperty('visible')
+        .togetherWith(new Checkbox('💪🏻 Force: ')
             .on(forceArrow)
-            .withProperty("visible")))
-    .append(new Slider("🍃 Air resistance: ")
+            .withProperty('visible')))
+    .append(new Slider('🍃 Air resistance: ')
         .withRange(new Range(-1, 0, 0.01))
         .withValue(dragForce.dragCoefficient)
         .on(dragForce)
-        .withProperty("dragCoefficient"));
+        .withProperty('dragCoefficient'));
 
 
 

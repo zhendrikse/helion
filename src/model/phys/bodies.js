@@ -453,16 +453,16 @@ export class Block extends Body {
 export class CelestialBody extends RadialSymmetricBody {
     /**
      * @param param0
-     * @param param0.position {Vec3}
-     * @param param0.velocity {Vec3}
-     * @param param0.name {string}
+     * @param param0.position {Vec3} Position of celestial body.
+     * @param param0.velocity {Vec3} Velocity of celestial body.
+     * @param param0.name {string} Name of celestial body.
      * @param param0.a {number} Semi major axis is half the length of the longest diameter of the ellips.
      * @param param0.e {number} Eccentricity measures much do we deviate from a circle (e=0), elliptic: 0 < e < 1.
-     * @param param0.inclination {number} Inclination of the orbit in radians.
-     * @param param0.rightAscension {number}
+     * @param param0.inclination {number} The angle between the orbital and equatorial planes.
+     * @param param0.rightAscension {number} Angle of a body crossing the reference/equatorial plane (bottom => up).
      * @param param0.meanAnomaly {number}
-     * @param param0.radius {number}
-     * @param param0.mass {number}
+     * @param param0.radius {number} Radius of celestial body.
+     * @param param0.mass {number} Mass of celestial body.
      * @param param0.spin {number} Rotation speed of planet around planet axis measured in hours.
      * @param param0.tilt {number} Angle between planet rotation axis & line perpendicular to its orbit plane.
      */

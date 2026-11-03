@@ -2,8 +2,10 @@ import {
     Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, SphereSphereCollision,
     RadialSymmetricBody, ThreeJsScene, Colour, ViewsCollection, ModelObjectsCollection,
 } from '../../../src/index.js';
-import {MeshStandardMaterial, TextureLoader} from 'three';
+import {DoubleSide, MeshStandardMaterial, TextureLoader, Vector2} from 'three';
 import wood from '../../../src/textures/treeBark.jpg';
+import grassColorUrl from './textures/grass.jpg';
+import grassNormalUrl from './textures/grassNormal.jpg';
 
 const g = 9.8;
 const BALL_RADIUS = 0.1;
@@ -142,8 +144,13 @@ Simulation
     .addObject3D(new Floor({
         position: new Vec3(0, -1.65, 0),
         planeSizeXy: new Vec2(100, 100),
-        granularity: 15,
-        type: Floor.Type.GRASS
+        planeMaterial: new MeshStandardMaterial({
+            normalScale: new Vector2(100, 100),
+            roughness: 1,
+            map: Floor.loadTexture(grassColorUrl, 15),
+            normalMap: Floor.loadTexture(grassNormalUrl, 15),
+            side: DoubleSide
+        })
     }))
     .bind(cradle.frame.onceWith(ViewsCollection.of(Cylinder).with({
         color: new Colour(0x855E42),

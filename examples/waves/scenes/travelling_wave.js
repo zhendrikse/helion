@@ -3,6 +3,10 @@ import {
     Slider, Range, Vec2, Lattice, LatticeView, ChainTopology, ThreeJsScene, Colour
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
+import {DoubleSide, MeshStandardMaterial, Vector2} from "three";
+import woodWicketColorUrl from "./textures/Wood_Wicker_011_color.png";
+import woodWicketRoughnessUrl from "./textures/Wood_Wicker_011_roughness.png";
+import woodWicketNormalUrl from "./textures/Wood_Wicker_011_normal.png";
 
 class BoundaryCondition extends Transformation {
     constructor({
@@ -88,10 +92,16 @@ Simulation
     })
     .bind(chain.alwaysWith(latticeView))
     .addObject3D(new Floor({
-        type: Floor.Type.WOOD_WICKER,
         position: new Vec3(0, -1.75, 0),
         planeSizeXy: new Vec2(200, 200),
-        granularity: 20
+        planeMaterial: new MeshStandardMaterial({
+            normalScale: new Vector2(100, 100),
+            roughness: 1,
+            map: Floor.loadTexture(woodWicketColorUrl, 20),
+            roughnessMap: Floor.loadTexture(woodWicketRoughnessUrl, 20),
+            normalMap: Floor.loadTexture(woodWicketNormalUrl, 20),
+            side: DoubleSide
+        })
     }))
     .append(latticeView.ui())
     .append(new Slider('Bond force ')

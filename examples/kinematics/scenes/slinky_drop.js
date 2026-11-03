@@ -4,6 +4,7 @@ import {
 } from '../../../src/index.js';
 import {DirectionalLight, MeshStandardMaterial, TextureLoader} from 'three';
 import wood from '../../../src/textures/treeBark.jpg';
+import metalFloorUrl from './textures/metal_floor_256.jpg';
 
 const g = new Vec3(0, -9.8, 0);
 const L0 = 2;
@@ -56,7 +57,7 @@ Simulation
     .with({
         htmlDivId: 'slinkyContainer',
         camera: { position: new Vec3(4.5, 2.25, 12), fieldOfView: 50 },
-        lighting: { enabled: false },
+        lighting: { enabled: true },
         viewport: { aspectRatio: '4/3' }
     })
     .bind(stick1.onceWith(new Cylinder({ material: woodMaterial, color: new Colour(0x855E42) })))
@@ -71,10 +72,13 @@ Simulation
     .addObject3D(new Floor({
         position: new Vec3(0, -3.5 * L0 + shiftUp, 0),
         planeSizeXy: new Vec2(L0 * 6 , L0 * 4),
-        type: Floor.Type.METAL,
-        color: new Colour(0x008800)
+        planeMaterial: new MeshStandardMaterial({
+            map: Floor.loadTexture(metalFloorUrl, 1),
+            roughness: 1,
+            metalness: 1
+        }),
+        color: new Colour(0xaaaaaa)
     }))
-    .addObject3D(sun)
     .runsEvery(4e-3)
     .advancesBy(1e-3)
     .onStep((_, dt) => {

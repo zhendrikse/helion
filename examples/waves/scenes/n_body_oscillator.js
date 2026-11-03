@@ -3,6 +3,10 @@ import {
     Slider, Range, Vec2, ChainTopology, Lattice, LatticeView, ThreeJsScene, UPlotGraph, Colour
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
+import {DoubleSide, MeshStandardMaterial, Vector2} from "three";
+import woodWicketColorUrl from "./textures/Wood_Wicker_011_color.png";
+import woodWicketRoughnessUrl from "./textures/Wood_Wicker_011_roughness.png";
+import woodWicketNormalUrl from "./textures/Wood_Wicker_011_normal.png";
 
 class InitialDisplacement extends Transformation {
     constructor(displacement = new Vec3(7, 0, 0)) {
@@ -67,23 +71,23 @@ const simulation = Simulation
             position: new Vec3(17, 6, -4).multiplyScalar(1.75),
             fieldOfView: 45
         },
-        scene: {
-            background: ThreeJsScene.Background.FOG
-        },
-        lighting: {
-            shadows: true
-        },
-        viewport: {
-            aspectRatio: '19/12'
-        }
+        scene: { background: ThreeJsScene.Background.FOG },
+        lighting: { shadows: true },
+        viewport: { aspectRatio: '19/12' }
     })
     .withMouseClickEventListener()
     .runsEvery(4e-3)
     .advancesBy(1e-3)
     .addObject3D(new Floor({
-        type: Floor.Type.WOOD_WICKER,
-        planeSizeXy: new Vec2(200, 200),
-        granularity: 5
+        planeSizeXy: new Vec2(300, 300),
+        planeMaterial: new MeshStandardMaterial({
+            normalScale: new Vector2(100, 100),
+            roughness: 1,
+            map: Floor.loadTexture(woodWicketColorUrl, 15),
+            roughnessMap: Floor.loadTexture(woodWicketRoughnessUrl, 15),
+            normalMap: Floor.loadTexture(woodWicketNormalUrl, 15),
+            side: DoubleSide
+        })
     }))
     .addGraph(graph)
     .onStep((clock, dt) => {

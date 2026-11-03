@@ -1,19 +1,9 @@
 import {
-    Group, Vector3, MeshStandardMaterial, Mesh, BufferGeometry, LineBasicMaterial,
-    BoxGeometry, RepeatWrapping, DoubleSide, Line,
-    TextureLoader, Vector2, PlaneGeometry, EdgesGeometry, LineSegments
+    Group, Vector3, MeshStandardMaterial, Mesh, BufferGeometry, LineBasicMaterial, BoxGeometry, RepeatWrapping,
+    DoubleSide, Line, Texture, TextureLoader, Vector2, PlaneGeometry, EdgesGeometry, LineSegments
 } from 'three';
 
-import woodWicketColorUrl from '../../../textures/Wood_Wicker_011_color.png';
-import woodWicketNormalUrl from '../../../textures/Wood_Wicker_011_normal.png';
-import woodWicketRoughnessUrl from '../../../textures/Wood_Wicker_011_roughness.png';
-import pavingColorUrl from '../../../textures/paving_color.jpg';
-import metalFloorUrl from '../../../textures/metal_floor_256.jpg';
-import pavingRoughnessUrl from '../../../textures/paving_roughness.jpg';
-import pavingNormalUrl from '../../../textures/paving_normal.jpg';
 import {Vec3, Vec2} from '../../../model/math/objects.js';
-import grassColorUrl from '../../../textures/grass.jpg';
-import grassNormalUrl from '../../../textures/grassNormal.jpg';
 import { Colour } from '../../colormappers.js';
 
 class Grid extends Group {
@@ -62,14 +52,27 @@ class Grid extends Group {
 }
 
 export class Floor extends Group {
+    static loader = new TextureLoader();
+
+    /**
+     * @param {any} url
+     * @param {number} granularity
+     * @return {Texture}
+     */
+    static loadTexture = (url, granularity) => {
+        const texture = Floor.loader.load(url);
+        texture.wrapS = RepeatWrapping;
+        texture.wrapT = RepeatWrapping;
+        texture.repeat.set(granularity, granularity);
+        return texture;
+    }
+
     static Type = Object.freeze({
         PLAIN: 'PLAIN',
         GRID: 'Grid',
-        PAVING: 'Paving',
-        GRASS: 'Grass',
-        METAL: 'Metal',
-        WOOD_WICKER: 'WoodWicker'  // https://3dtextures.me/2024/06/22/wood-wicker-011/
+        CUSTOM: 'Custom'
     });
+
     /**
      * 
      * @param {{
@@ -83,27 +86,23 @@ export class Floor extends Group {
      * }} param0 
      */
     constructor({
-        type= Floor.Type.PLAIN,
+        type= Floor.Type.CUSTOM,
         position = new Vec3(),
         planeSizeXy = new Vec2(2, 2),
         granularity = 1,
         color = Colour.Green,
         opacity = 1,
-        receiveShadow = true
-    } = {}) {
-        super();
-        const planeGeometry = new PlaneGeometry(planeSizeXy.x, planeSizeXy.y);
-        const planeMaterial = new MeshStandardMaterial({
+        receiveShadow = true,
+        planeMaterial = new MeshStandardMaterial({
             normalScale: new Vector2(planeSizeXy.x, planeSizeXy.y),
             roughness: 1,
             transparent: opacity !== null,
             opacity: opacity,
             side: DoubleSide
-            //occlusionMap: textureAmbientOcclusion,
-            //alphaMap: textureOpacity,
-            //aoMap: textureAmbientOcclusion,
-            //aoMapIntensity: 0,
-        });
+        })
+    } = {}) {
+        super();
+        const planeGeometry = new PlaneGeometry(planeSizeXy.x, planeSizeXy.y);
         this._mesh = new Mesh(planeGeometry, planeMaterial);
         this._mesh.receiveShadow = receiveShadow;
         this._mesh.rotation.x = -Math.PI / 2;
@@ -111,14 +110,9 @@ export class Floor extends Group {
         this.position.set(position.x, position.y, position.z);
         this.add(this._mesh);
 
-        const loader = new TextureLoader();
         switch (type) {
             case Floor.Type.PLAIN:
-                this._mesh.material.color.set(color);
-                break;
-            case Floor.Type.GRASS:
-                this._mesh.material.map = this._loadTexture(loader, grassColorUrl, granularity);
-                this._mesh.material.normalMap = this._loadTexture(loader, grassNormalUrl, granularity);
+                color.asThreeJsColor(this._mesh.material.color);
                 break;
             case Floor.Type.GRID:
                 this.add(new Grid({
@@ -127,33 +121,12 @@ export class Floor extends Group {
                     granularity: granularity
                 }));
                 break;
-            case Floor.Type.METAL:
-                this._mesh.material.map = this._loadTexture(loader, metalFloorUrl, granularity);
-                break;
-            case Floor.Type.PAVING:
-                this._mesh.material.map = this._loadTexture(loader, pavingColorUrl, granularity);
-                this._mesh.material.roughnessMap = this._loadTexture(loader, pavingRoughnessUrl, granularity);
-                this._mesh.material.normalMap = this._loadTexture(loader, pavingNormalUrl, granularity);
-                break;
-            case Floor.Type.WOOD_WICKER:
-                this._mesh.material.map = this._loadTexture(loader, woodWicketColorUrl, granularity);
-                this._mesh.material.roughnessMap = this._loadTexture(loader, woodWicketRoughnessUrl, granularity);
-                this._mesh.material.normalMap = this._loadTexture(loader, woodWicketNormalUrl, granularity);
+            case Floor.Type.CUSTOM:
+                if (!planeMaterial)
+                    throw new Error('Plane material needs to be provided for a floor with custom texture.');
+                this._mesh.material = planeMaterial;
                 break;
         }
-    }
-
-    /**
-     * @param {TextureLoader} loader
-     * @param {any} url
-     * @param {number} granularity
-     */
-    _loadTexture(loader, url, granularity) {
-        const texture = loader.load(url);
-        texture.wrapS = RepeatWrapping;
-        texture.wrapT = RepeatWrapping;
-        texture.repeat.set(granularity, granularity);
-        return texture;
     }
 
     get level() { return this.position.y; }
