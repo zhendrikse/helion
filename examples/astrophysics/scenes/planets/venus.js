@@ -1,5 +1,5 @@
 import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
-import {AmbientLight, MeshPhongMaterial } from "three";
+import { AmbientLight, DirectionalLight, MeshPhongMaterial } from "three";
 import venusMap from '../../textures/venusmap.jpg';
 import venusBumpMap from '../../textures/venusbump.jpg';
 
@@ -16,6 +16,8 @@ const venus = new CelestialBody({
     spin:  -2 * Math.PI / 2802.
 });
 
+const sun = new DirectionalLight(0xffffff, 2);
+sun.position.set(10, 2, 2.5);
 Simulation
     .with({
         htmlDivId: "venusContainer",
@@ -34,7 +36,8 @@ Simulation
                 `• Eccentricity: ${venus.eccentricity}<br/> • Right ascension: ${radToDeg(venus.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0xffffff, 1))
+    .addObject3D(sun)
+    .addObject3D(new AmbientLight(0xffffff, 7.5e-2))
     .bind(venus.alwaysWith(new Planet({
         material: new MeshPhongMaterial({
             map: Planet.loader.load(venusMap),

@@ -1,7 +1,7 @@
 import {
     Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, RingsPlanet, Planet
 } from "../../../../src/index.js";
-import { AmbientLight, MeshPhongMaterial } from "three";
+import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import saturnRingsColorUrl from '../../textures/saturnringcolor.jpg';
 import saturnRingsPatternUrl from '../../textures/saturnringpattern.gif';
 import saturnMap from '../../textures/saturnmap.jpg';
@@ -19,6 +19,8 @@ const saturn = new CelestialBody({
     spin: 2 * Math.PI / 10.66
 });
 
+const sun = new DirectionalLight(0xffffff, 2);
+sun.position.set(10, 2, 1.5);
 Simulation
     .with({
         htmlDivId: "saturnContainer",
@@ -34,7 +36,8 @@ Simulation
                 `• Eccentricity: ${saturn.eccentricity}<br/> • Right ascension: ${radToDeg(saturn.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0xffffff, 1.5))
+    .addObject3D(new AmbientLight(0xffffff, 0.25))
+    .addObject3D(sun)
     .bind(saturn.alwaysWith(new RingsPlanet({
         material: new MeshPhongMaterial({
             map: Planet.loader.load(saturnMap),

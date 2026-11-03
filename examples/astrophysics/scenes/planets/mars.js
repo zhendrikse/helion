@@ -1,5 +1,5 @@
 import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
-import { AmbientLight, MeshPhongMaterial } from "three";
+import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 
 import marsMap from '../../textures/marsmap.jpg';
 import marsBumpMap from '../../textures/marsbump.jpg';
@@ -17,6 +17,8 @@ const mars = new CelestialBody({
     spin: 2 * Math.PI / 24.66
 });
 
+const sun = new DirectionalLight(0xffffff, 2);
+sun.position.set(10, 2, 1.5);
 Simulation
     .with({
         htmlDivId: "marsContainer",
@@ -35,7 +37,8 @@ Simulation
                 `• Eccentricity: ${mars.eccentricity}<br/> • Right ascension: ${radToDeg(mars.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0xffffff, 1))
+    .addObject3D(new AmbientLight(0xffeeee, 0.1))
+    .addObject3D(sun)
     .bind(mars.alwaysWith(new Planet({
         material: new MeshPhongMaterial({
             map: Planet.loader.load(marsMap),

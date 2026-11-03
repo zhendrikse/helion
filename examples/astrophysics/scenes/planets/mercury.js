@@ -1,5 +1,5 @@
 import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
-import { AmbientLight, MeshPhongMaterial } from "three";
+import { AmbientLight, DirectionalLight, MeshPhongMaterial } from "three";
 import mercuryMap from "../../textures/mercurymap.jpg";
 import mercuryBumpMap from "../../textures/mercurybump.jpg";
 
@@ -16,6 +16,8 @@ const mercury = new CelestialBody({
     spin: 2 * Math.PI / 4222.6
 });
 
+const sun = new DirectionalLight(0xffffff, 2);
+sun.position.set(10, 2, 2.5);
 Simulation
     .with({
         htmlDivId: "mercuryContainer",
@@ -34,7 +36,8 @@ Simulation
                 `• Eccentricity: ${mercury.eccentricity}<br/> • Right ascension: ${radToDeg(mercury.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0xffffff, 1))
+    .addObject3D(new AmbientLight(0xffffff, .1))
+    .addObject3D(sun)
     .bind(mercury.alwaysWith(new Planet({
         material: new MeshPhongMaterial({
             map: Planet.loader.load(mercuryMap),

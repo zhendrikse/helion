@@ -1,5 +1,11 @@
-import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
-import { AmbientLight, Mesh, MeshPhongMaterial, Color } from "three";
+import {Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet, Checkbox} from '../../../../src/index.js';
+import {
+    AmbientLight, BackSide, Mesh, MeshPhongMaterial, ShaderMaterial, Color, Vector3, AdditiveBlending,
+    DirectionalLight
+} from 'three';
+import fresnelVertexShader from '../../../../src/view/3d/primitives/shaders/add_on_vertex_shader.glsl?raw';
+import fresnelFragmentShader from '../../../../src/view/3d/primitives/shaders/fresnel_fragment_shader.glsl?raw';
+import atmosphereFragmentShader from '../../../../src/view/3d/primitives/shaders/atmosphere_fragment_shader.glsl?raw';
 import earthMap from '../../textures/Solarsystemscope_texture_2k_earth_daymap.jpg';
 import earthBumpMap from '../../textures/earthbump1k.jpg';
 import earthCloudsMap from '../../textures/Earth-clouds.png';
@@ -18,8 +24,16 @@ const earth = new CelestialBody({
 });
 
 class EarthView extends Planet {
-    constructor({material, cloudsMaterial}) {
+    constructor({material, cloudsMaterial, fresnelMaterial, atmosphereMaterial}) {
         super({material});
+
+        this._atmosphere = new Mesh(this._mesh.geometry, atmosphereMaterial);
+        this._atmosphere.scale.setScalar(1.055);
+        this.add(this._atmosphere);
+
+        this._fresnel = new Mesh(this._mesh.geometry, fresnelMaterial);
+        this._fresnel.scale.setScalar(1.006);
+        this.add(this._fresnel);
 
         this._clouds = new Mesh(this._mesh.geometry, cloudsMaterial);
         this._clouds.scale.setScalar(1.005);
@@ -27,15 +41,65 @@ class EarthView extends Planet {
         this.add(this._clouds);
     }
 
+    /** @param {boolean} value */
+    set clouds(value) { this._clouds.visible = value; }
+    /** @param {boolean} value */
+    set atmosphere(value) { this._atmosphere.visible = value; }
+    /** @param {boolean} value */
+    set fresnel(value) { this._fresnel.visible = value; }
+
     synchronizeWith(body) {
         super.synchronizeWith(body);
         this._clouds.rotation.y = body.rotation;
     }
 }
 
+const earthView = new EarthView({
+    material: new MeshPhongMaterial({
+        map: Planet.loader.load(earthMap),
+        bumpMap: Planet.loader.load(earthBumpMap),
+        bumpScale: 0.05,
+        specular: new Color('grey'),
+        shininess: 0
+    }),
+    cloudsMaterial: new MeshPhongMaterial({
+        map: Planet.loader.load(earthCloudsMap),
+        transparent: true,
+        opacity: 0.9,
+        depthWrite: false,
+        specular: new Color(0x222222),
+        shininess: 5
+    }),
+    fresnelMaterial: new ShaderMaterial({
+        uniforms: {
+            uColor: {value: new Vector3(0.45, 0.55, 1)},
+            uIntensity: {value: 0.3}
+        },
+        vertexShader: fresnelVertexShader,
+        fragmentShader: fresnelFragmentShader,
+        transparent: true,
+        depthWrite: false,
+        blending: AdditiveBlending
+    }),
+    atmosphereMaterial: new ShaderMaterial({
+        uniforms: {
+            u_sunRelPosition: {value: new Vector3(10, 0, 0)},
+            u_color: {value: new Vector3(0.45, 0.55, 1)}
+        },
+        vertexShader: fresnelVertexShader,
+        fragmentShader: atmosphereFragmentShader,
+        transparent: true,
+        side: BackSide,
+        depthTest: true,
+        depthWrite: false
+    })
+});
+
+const sun = new DirectionalLight(0xffffff, 1.5);
+sun.position.set(10, 2, 0.5);
 Simulation
     .with({
-        htmlDivId: "earthContainer",
+        htmlDivId: 'earthContainer',
         camera: {
             fieldOfView: 45,
             position: new Vec3(1, 1.5, 4).multiplyScalar(6)
@@ -51,23 +115,19 @@ Simulation
                 `• Eccentricity: ${earth.eccentricity}<br/> • Right ascension: ${radToDeg(earth.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0xffffff, 1))
-    .bind(earth.alwaysWith(new EarthView({
-        material: new MeshPhongMaterial({
-            map: Planet.loader.load(earthMap),
-            bumpMap: Planet.loader.load(earthBumpMap),
-            bumpScale: 0.05,
-            specular: new Color('grey'),
-            shininess: 0
-        }),
-        cloudsMaterial: new MeshPhongMaterial({
-            map: Planet.loader.load(earthCloudsMap),
-            transparent: true,
-            opacity: 0.9,
-            depthWrite: false,
-            specular: new Color(0x222222),
-            shininess: 5
-        })
-    })))
+    .addObject3D(new AmbientLight(0xffffff, 5e-2))
+    .addObject3D(sun)
+    .bind(earth.alwaysWith(earthView))
     .onFrame(timeStamp => earth.time = timeStamp)
+    .append(new Checkbox('Clouds')
+        .checked(true)
+        .onChange(checked => earthView.clouds = checked)
+        .togetherWith(new Checkbox('Atmosphere')
+            .checked(true)
+            .onChange(checked => earthView.atmosphere = checked)
+            .togetherWith(new Checkbox('Fresnel')
+                .checked(true)
+                .onChange(checked => earthView.fresnel = checked)))
+    )
     .start();
+

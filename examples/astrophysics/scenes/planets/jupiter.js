@@ -1,5 +1,5 @@
 import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
-import { AmbientLight, MeshPhongMaterial } from "three";
+import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import jupiterMap from '../../textures/jupitermap.jpg';
 
 const jupiter = new CelestialBody({
@@ -15,6 +15,8 @@ const jupiter = new CelestialBody({
     spin: 2 * Math.PI / 9.93
 });
 
+const sun = new DirectionalLight(0xffffff, 2);
+sun.position.set(10, 2, 0.5);
 Simulation
     .with({
         htmlDivId: "jupiterContainer",
@@ -33,7 +35,8 @@ Simulation
                 `• Eccentricity: ${jupiter.eccentricity}<br/> • Right ascension: ${radToDeg(jupiter.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0xffffff, 1))
+    .addObject3D(new AmbientLight(0xffffff, 7.5e-2))
+    .addObject3D(sun)
     .bind(jupiter.alwaysWith(new Planet({
         material: new MeshPhongMaterial({
             map: Planet.loader.load(jupiterMap),

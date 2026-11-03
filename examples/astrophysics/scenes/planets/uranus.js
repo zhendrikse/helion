@@ -1,5 +1,5 @@
 import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, RingsPlanet, Planet } from "../../../../src/index.js";
-import { AmbientLight, MeshPhongMaterial } from "three";
+import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import uranusMap from '../../textures/uranusmap.jpg';
 import uranusRingsColorUrl from '../../textures/uranusringcolour.jpg';
 import uranusRingsPatternUrl from '../../textures/uranusringtrans.gif';
@@ -17,6 +17,8 @@ const uranus = new CelestialBody({
     spin: -2 * Math.PI / 17.24
 });
 
+const sun = new DirectionalLight(0xffffff, 2);
+sun.position.set(10, 2, 1.5);
 Simulation
     .with({
         htmlDivId: "uranusContainer",
@@ -32,7 +34,8 @@ Simulation
                 `• Eccentricity: ${uranus.eccentricity}<br/> • Right ascension: ${radToDeg(uranus.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0xffffff, 1))
+    .addObject3D(new AmbientLight(0xffffff, .1))
+    .addObject3D(sun)
     .bind(uranus.alwaysWith(new RingsPlanet({
         material: new MeshPhongMaterial({
             map: Planet.loader.load(uranusMap),

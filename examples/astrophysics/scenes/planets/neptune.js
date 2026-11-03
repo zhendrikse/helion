@@ -1,5 +1,5 @@
 import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
-import { AmbientLight, MeshPhongMaterial } from "three";
+import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import neptuneMap from '../../textures/neptunemap.jpg';
 
 const neptune = new CelestialBody({
@@ -15,6 +15,8 @@ const neptune = new CelestialBody({
     spin: 2 * Math.PI / 16.11,
 });
 
+const sun = new DirectionalLight(0xffffff, 2);
+sun.position.set(10, 2, 1.5);
 Simulation
     .with({
         htmlDivId: "neptuneContainer",
@@ -33,7 +35,8 @@ Simulation
                 `• Eccentricity: ${neptune.eccentricity}<br/> • Right ascension: ${radToDeg(neptune.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0xffffff, 1))
+    .addObject3D(new AmbientLight(0xffffff, .1))
+    .addObject3D(sun)
     .bind(neptune.alwaysWith(new Planet({
         material: new MeshPhongMaterial({
             map: Planet.loader.load(neptuneMap),
