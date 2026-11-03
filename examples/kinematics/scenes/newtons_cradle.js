@@ -145,10 +145,10 @@ Simulation
         position: new Vec3(0, -1.65, 0),
         planeSizeXy: new Vec2(100, 100),
         planeMaterial: new MeshStandardMaterial({
-            normalScale: new Vector2(100, 100),
+            normalScale: new Vector2(3, 3),
             roughness: 1,
-            map: Floor.loadTexture(grassColorUrl, 15),
-            normalMap: Floor.loadTexture(grassNormalUrl, 15),
+            map: Floor.loadTexture(grassColorUrl, 50),
+            normalMap: Floor.loadTexture(grassNormalUrl, 50),
             side: DoubleSide
         })
     }))
