@@ -7,11 +7,9 @@ import '../../assets/styles.css';
 #### ❤️ Visualizing the beauty of math &amp; physics
 <div class="header_line"></div>
 
-
-<div style="width: 50%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;" id="energyEquipartitionDemo">
+<div style="width: 50%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;" id="saturnContainer">
 </div>
-<script type="module" src={import.meta.env.BASE_URL + "examples/energy_equipartition_demo.js"}></script>
-
+<script type="module" src={import.meta.env.BASE_URL + "examples/saturn.js"}></script>
 
 [Helion](https://github.com/zhendrikse/helion) is a browser-native framework for interactive mathematics and physics.
 It turns the browser into a virtual laboratory where scientific ideas can be explored through code,
@@ -26,6 +24,7 @@ for building simulations that are both computationally
 meaningful and visually engaging.
 
 #### From scientific model to interactive visualization
+<div class="header_line"></div>
 
 <div style="width: 50%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;" id="eulerFluidDemo">
 </div>
@@ -45,8 +44,9 @@ For example, Helion supports patterns such as:
 ```js
 body.apply(gravity);
 particle.apply(electricField);
-pair.apply(spring);
-pair.apply(collision);
+leftSphere.and(rightSphere).apply(collision);
+bind(planet.alwaysWith(new Trail()));
+bind(balls.alwaysWith(ViewsCollection.of(Sphere)));
 ```
 
 Mathematical fields can likewise be transformed using operators:
@@ -54,10 +54,14 @@ Mathematical fields can likewise be transformed using operators:
 ```js
 field.apply(new FFT2D());
 field.apply(new Laplacian());
-field.apply(new ShapeMask(...));
+field.evolve(solver, dt);
 ```
 
 The goal is not to hide the mathematics, but to make the implementation reflect it.
+
+<div style="width: 50%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;" id="energyEquipartitionDemo">
+</div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/energy_equipartition_demo.js"}></script>
 
 📌 **Scientific intent first** — code that reads in terms of mathematical and physical ideas<br/>
 📌 **Model-driven architecture** — scientific state is separate from its visual representation<br/>
