@@ -36,7 +36,7 @@ class EarthView extends Planet {
         super({material});
 
         this._atmosphere = new Mesh(this._mesh.geometry, atmosphereMaterial);
-        this._atmosphere.scale.setScalar(1.06);
+        this._atmosphere.scale.setScalar(1.075);
         this.add(this._atmosphere);
 
         this._fresnel = new Mesh(this._mesh.geometry, fresnelMaterial);
@@ -44,7 +44,7 @@ class EarthView extends Planet {
         this.add(this._fresnel);
 
         this._clouds = new Mesh(this._mesh.geometry, cloudsMaterial);
-        this._clouds.scale.setScalar(1.005);
+        this._clouds.scale.setScalar(1.01);
         this._clouds.material.depthWrite = false;
         this.add(this._clouds);
     }
@@ -58,7 +58,7 @@ class EarthView extends Planet {
 
     synchronizeWith(body) {
         super.synchronizeWith(body);
-        this._clouds.rotation.y = body.time * 0.001 * body.spin * .8; // Clouds rotate a bit slower
+        this._clouds.rotation.y = body.time * 2.5e-4 * body.spin * .8; // Clouds rotate a bit slower
     }
 }
 
@@ -77,7 +77,7 @@ const earthView = new EarthView({
         transparent: true,
         opacity: 0.9,
         depthWrite: false,
-        specular: new Color(0x222222),
+        specular: new Color(0xcccccc),
         shininess: 5
     }),
     fresnelMaterial: new ShaderMaterial({

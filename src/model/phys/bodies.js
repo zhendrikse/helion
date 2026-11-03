@@ -491,7 +491,7 @@ export class CelestialBody extends RadialSymmetricBody {
         this.time = 0;
     }
 
-    get rotation() { return this.time * 0.001 * this._spin; }
+    get rotation() { return this.time * 2.5e-4 * this._spin; }
     get tilt() { return this._tilt; }
     get spin() { return this._spin; }
     get inclination() { return this._inclination; }
