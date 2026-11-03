@@ -25,7 +25,7 @@ const earth = new CelestialBody({
     tilt: 23 * Math.PI / 180
 });
 
-const sunDirection = new Vector3(10, 2, -3);
+const sunDirection = new Vector3(10, 2, -4);
 const dayTexture = Planet.loader.load(earthMap);
 const nightTexture = Planet.loader.load(earthNightMap);
 dayTexture.colorSpace = SRGBColorSpace;
@@ -36,7 +36,7 @@ class EarthView extends Planet {
         super({material});
 
         this._atmosphere = new Mesh(this._mesh.geometry, atmosphereMaterial);
-        this._atmosphere.scale.setScalar(1.075);
+        this._atmosphere.scale.setScalar(1.075); // Atmosphere thickness
         this.add(this._atmosphere);
 
         this._fresnel = new Mesh(this._mesh.geometry, fresnelMaterial);
@@ -44,7 +44,7 @@ class EarthView extends Planet {
         this.add(this._fresnel);
 
         this._clouds = new Mesh(this._mesh.geometry, cloudsMaterial);
-        this._clouds.scale.setScalar(1.01);
+        this._clouds.scale.setScalar(1.02); // Height of clouds
         this._clouds.material.depthWrite = false;
         this.add(this._clouds);
     }
@@ -75,10 +75,10 @@ const earthView = new EarthView({
     cloudsMaterial: new MeshPhongMaterial({
         map: Planet.loader.load(earthCloudsMap),
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.8,
         depthWrite: false,
-        specular: new Color(0xcccccc),
-        shininess: 5
+        specular: new Color(0xffffff),
+        shininess: 10
     }),
     fresnelMaterial: new ShaderMaterial({
         uniforms: {
@@ -125,7 +125,7 @@ Simulation
                 `• Eccentricity: ${earth.eccentricity}<br/> • Right ascension: ${radToDeg(earth.rightAscension)}°`
         }
     })
-    .addObject3D(new AmbientLight(0x888888, 1e-1))
+    .addObject3D(new AmbientLight(0x888888, 1e-2))
     .addObject3D(sun)
     .bind(earth.alwaysWith(earthView))
     .onFrame(timeStamp => earth.time = timeStamp)

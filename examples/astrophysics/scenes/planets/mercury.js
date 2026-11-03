@@ -42,7 +42,7 @@ Simulation
         material: new MeshPhongMaterial({
             map: Planet.loader.load(mercuryMap),
             bumpMap: Planet.loader.load(mercuryBumpMap),
-            bumpScale: 0.5,
+            bumpScale: 1.5,
             shininess: 0
         })
     })))
