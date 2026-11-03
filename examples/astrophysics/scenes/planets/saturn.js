@@ -1,7 +1,24 @@
-import { Simulation, Vec3, Planets, ThreeJsScene, radToDeg, Saturn } from "../../../../src/index.js";
-import { AmbientLight } from "three";
+import {
+    Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, RingsPlanet, Planet
+} from "../../../../src/index.js";
+import { AmbientLight, MeshPhongMaterial } from "three";
+import saturnRingsColorUrl from '../../textures/saturnringcolor.jpg';
+import saturnRingsPatternUrl from '../../textures/saturnringpattern.gif';
+import saturnMap from '../../textures/saturnmap.jpg';
 
-const saturn = Planets.saturn;
+const saturn = new CelestialBody({
+    name: 'saturn',
+    a: 1433449370.,
+    e: 0.055723219,
+    inclination: 2.49 * Math.PI / 180.,
+    rightAscension: 1.98,
+    meanAnomaly: 5.5911055356,
+    radius: 60000. * 1e3,
+    mass: 5.68319e+26,
+    tilt: 27 * Math.PI / 180.,
+    spin: 2 * Math.PI / 10.66
+});
+
 Simulation
     .with({
         htmlDivId: "saturnContainer",
@@ -18,6 +35,18 @@ Simulation
         }
     })
     .addObject3D(new AmbientLight(0xffffff, 1.5))
-    .bind(saturn.alwaysWith(new Saturn()))
-    .onFrame(timeStamp => saturn.timeStamp = timeStamp)
+    .bind(saturn.alwaysWith(new RingsPlanet({
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(saturnMap),
+            bumpMap: Planet.loader.load(saturnMap),
+            bumpScale: 0.05,
+            shininess: 0
+        }),
+        innerRadius: 1.11,
+        outerRadius: 2.1,
+        divisor: 4,
+        ringsColorUrl: saturnRingsColorUrl,
+        ringsPatternUrl: saturnRingsPatternUrl
+    })))
+    .onFrame(timeStamp => saturn.time = timeStamp)
     .start();

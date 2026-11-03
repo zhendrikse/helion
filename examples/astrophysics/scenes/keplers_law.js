@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, Sun, SunView, RadialSymmetricBody, Sphere, Trail, Renderable3D,
+    Simulation, Vec3, CelestialBody, SunView, RadialSymmetricBody, Sphere, Trail, Renderable3D,
     LineSegment, Label, ThreeJsScene, LineSegmentView, HexValueColorMapper, Colour
 } from '../../../src/index.js';
 
@@ -109,7 +109,7 @@ class Planet extends RadialSymmetricBody {
 }
 
 const planet = new Planet();
-const sun = new Sun({ radius: 0.12 });
+const sun = new CelestialBody({ radius: 0.12 });
 const simulation = Simulation
     .with({
         htmlDivId: 'keplersLawContainer',

@@ -1,7 +1,22 @@
-import { Simulation, Vec3, Planets, ThreeJsScene, radToDeg, Uranus } from "../../../../src/index.js";
-import { AmbientLight } from "three";
+import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, RingsPlanet, Planet } from "../../../../src/index.js";
+import { AmbientLight, MeshPhongMaterial } from "three";
+import uranusMap from '../../textures/uranusmap.jpg';
+import uranusRingsColorUrl from '../../textures/uranusringcolour.jpg';
+import uranusRingsPatternUrl from '../../textures/uranusringtrans.gif';
 
-const uranus = Planets.uranus;
+const uranus = new CelestialBody({
+    name: 'uranus',
+    a: 2876679082.,
+    e: 0.044405586,
+    inclination: 0.77 * Math.PI / 180.,
+    rightAscension: 1.2908891856,
+    meanAnomaly: 2.4950479462,
+    radius: 25600. * 1E3,
+    mass: 8.68103E25,
+    tilt: 98 * Math.PI / 180.,
+    spin: -2 * Math.PI / 17.24
+});
+
 Simulation
     .with({
         htmlDivId: "uranusContainer",
@@ -18,6 +33,18 @@ Simulation
         }
     })
     .addObject3D(new AmbientLight(0xffffff, 1))
-    .bind(uranus.alwaysWith(new Uranus()))
-    .onFrame(timeStamp => uranus.timeStamp = timeStamp)
+    .bind(uranus.alwaysWith(new RingsPlanet({
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(uranusMap),
+            bumpMap: Planet.loader.load(uranusMap),
+            bumpScale: 0.05,
+            shininess: 0
+        }),
+        innerRadius: 1.55,
+        outerRadius: 2.05,
+        divisor: 2,
+        ringsColorUrl: uranusRingsColorUrl,
+        ringsPatternUrl: uranusRingsPatternUrl
+    })))
+    .onFrame(timeStamp => uranus.time = timeStamp)
     .start();

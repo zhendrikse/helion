@@ -1,7 +1,20 @@
-import { Simulation, Vec3, Planets, ThreeJsScene, radToDeg, Neptune } from "../../../../src/index.js";
-import { AmbientLight } from "three";
+import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
+import { AmbientLight, MeshPhongMaterial } from "three";
+import neptuneMap from '../../textures/neptunemap.jpg';
 
-const neptune = Planets.neptune;
+const neptune = new CelestialBody({
+    name: 'neptune',
+    a: 4503443661.,
+    e: 0.011214269,
+    inclination: 1.77 * Math.PI / 180.,
+    rightAscension: 2.3001058656,
+    meanAnomaly: 4.6734206826,
+    radius: 24300. * 1E3,
+    mass: 1.024E26,
+    tilt: 30 * Math.PI / 180.,
+    spin: 2 * Math.PI / 16.11,
+});
+
 Simulation
     .with({
         htmlDivId: "neptuneContainer",
@@ -21,6 +34,13 @@ Simulation
         }
     })
     .addObject3D(new AmbientLight(0xffffff, 1))
-    .bind(neptune.alwaysWith(new Neptune()))
-    .onFrame(timeStamp => neptune.timeStamp = timeStamp)
+    .bind(neptune.alwaysWith(new Planet({
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(neptuneMap),
+            bumpMap: Planet.loader.load(neptuneMap),
+            bumpScale: 0.05,
+            shininess: 0
+        })
+    })))
+    .onFrame(timeStamp => neptune.time = timeStamp)
     .start();

@@ -1,7 +1,20 @@
-import { Simulation, Vec3, Planets, ThreeJsScene, radToDeg, Jupiter } from "../../../../src/index.js";
-import { AmbientLight } from "three";
+import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
+import { AmbientLight, MeshPhongMaterial } from "three";
+import jupiterMap from '../../textures/jupitermap.jpg';
 
-const jupiter = Planets.jupiter;
+const jupiter = new CelestialBody({
+    name: 'jupiter',
+    a: 778547200.,
+    e: 0.048775,
+    inclination: 1.31 * Math.PI / 180.,
+    rightAscension: 1.7504400393,
+    meanAnomaly: 0.3284360586,
+    radius: 71400. * 1e3,
+    mass: 1.89813e+27,
+    tilt: 3 * Math.PI / 180.,
+    spin: 2 * Math.PI / 9.93
+});
+
 Simulation
     .with({
         htmlDivId: "jupiterContainer",
@@ -21,6 +34,13 @@ Simulation
         }
     })
     .addObject3D(new AmbientLight(0xffffff, 1))
-    .bind(jupiter.alwaysWith(new Jupiter()))
-    .onFrame(timeStamp => jupiter.timeStamp = timeStamp)
+    .bind(jupiter.alwaysWith(new Planet({
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(jupiterMap),
+            bumpMap: Planet.loader.load(jupiterMap),
+            bumpScale: 0.02,
+            shininess: 0
+        })
+    })))
+    .onFrame(timeStamp => jupiter.time = timeStamp)
     .start();

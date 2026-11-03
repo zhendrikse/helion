@@ -450,6 +450,56 @@ export class Block extends Body {
     }
 }
 
+export class CelestialBody extends RadialSymmetricBody {
+    /**
+     * @param param0
+     * @param param0.position {Vec3}
+     * @param param0.velocity {Vec3}
+     * @param param0.name {string}
+     * @param param0.a {number} Semi major axis is half the length of the longest diameter of the ellips.
+     * @param param0.e {number} Eccentricity measures much do we deviate from a circle (e=0), elliptic: 0 < e < 1.
+     * @param param0.inclination {number} Inclination of the orbit in radians.
+     * @param param0.rightAscension {number}
+     * @param param0.meanAnomaly {number}
+     * @param param0.radius {number}
+     * @param param0.mass {number}
+     * @param param0.spin {number} Rotation speed of planet around planet axis measured in hours.
+     * @param param0.tilt {number} Angle between planet rotation axis & line perpendicular to its orbit plane.
+     */
+    constructor({
+        position = new Vec3(),
+        velocity = new Vec3(),
+        name = 'Undefined',
+        a = 1,
+        e = 0,
+        inclination = 0.,
+        rightAscension = 0.,
+        meanAnomaly = 0.,
+        radius = 1,
+        mass = 1,
+        spin = 0,
+        tilt = 0
+    } = {}) {
+        super({ position, velocity, mass, radius });
+        this._tilt = tilt; //
+        this._spin = spin; //
+        this._inclination = inclination; //
+        this._semiMajorAxis = a; //
+        this._eccentricity = e;  //
+        this._rightAscension = rightAscension;
+        this._meanAnomaly = meanAnomaly;
+        this.time = 0;
+    }
+
+    get rotation() { return this.time * 0.001 * this._spin; }
+    get tilt() { return this._tilt; }
+    get spin() { return this._spin; }
+    get inclination() { return this._inclination; }
+    get semiMajorAxis() { return this._semiMajorAxis; }
+    get eccentricity() { return this._eccentricity; }
+    get rightAscension() { return this._rightAscension; }
+}
+
 export class Lattice extends ModelObject {
     /**
      * @param {{

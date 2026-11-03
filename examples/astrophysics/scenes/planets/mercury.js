@@ -1,7 +1,21 @@
-import { Simulation, Vec3, Planets, ThreeJsScene, radToDeg, Mercury } from "../../../../src/index.js";
-import { AmbientLight } from "three";
+import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
+import { AmbientLight, MeshPhongMaterial } from "three";
+import mercuryMap from "../../textures/mercurymap.jpg";
+import mercuryBumpMap from "../../textures/mercurybump.jpg";
 
-const mercury = Planets.mercury;
+const mercury = new CelestialBody({
+    name: 'mercury',
+    a: 57909050.,
+    e: 0.205630,
+    inclination: 7 * Math.PI / 180.,
+    rightAscension: 0.8436854966,
+    meanAnomaly: 3.0507657193,
+    radius: 2439.7 * 1e3,
+    mass: 3.302e+23,
+    tilt: 0.1 * Math.PI / 180.,
+    spin: 2 * Math.PI / 4222.6
+});
+
 Simulation
     .with({
         htmlDivId: "mercuryContainer",
@@ -21,6 +35,13 @@ Simulation
         }
     })
     .addObject3D(new AmbientLight(0xffffff, 1))
-    .bind(mercury.alwaysWith(new Mercury()))
-    .onFrame(timeStamp => mercury.timeStamp = timeStamp)
+    .bind(mercury.alwaysWith(new Planet({
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(mercuryMap),
+            bumpMap: Planet.loader.load(mercuryBumpMap),
+            bumpScale: 0.005,
+            shininess: 0
+        })
+    })))
+    .onFrame(timeStamp => mercury.time = timeStamp)
     .start();

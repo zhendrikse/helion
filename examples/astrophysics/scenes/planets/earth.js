@@ -1,7 +1,21 @@
-import { Simulation, Vec3, Planets, ThreeJsScene, radToDeg, Earth } from "../../../../src/index.js";
-import { AmbientLight } from "three";
+import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
+import { AmbientLight, MeshPhongMaterial, Color } from "three";
+import earthMap from '../../textures/Solarsystemscope_texture_2k_earth_daymap.jpg';
+import earthBumpMap from '../../textures/earthbump1k.jpg';
 
-const earth = Planets.earth;
+const earth = new CelestialBody({
+    name: 'earth',
+    a: 149598261.,
+    e: 0.01671123,
+    inclination: 0.,
+    rightAscension: 0.,
+    meanAnomaly: 6.2398515744,
+    radius: 6371010, // meters
+    mass: 5.97219e+24,
+    spin: 2 * Math.PI / 24.,
+    tilt: 23 * Math.PI / 180
+});
+
 Simulation
     .with({
         htmlDivId: "earthContainer",
@@ -21,6 +35,14 @@ Simulation
         }
     })
     .addObject3D(new AmbientLight(0xffffff, 1))
-    .bind(earth.alwaysWith(new Earth()))
-    .onFrame(timeStamp => earth.timeStamp = timeStamp)
+    .bind(earth.alwaysWith(new Planet({
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(earthMap),
+            bumpMap: Planet.loader.load(earthBumpMap),
+            bumpScale: 0.05,
+            specular: new Color('grey'),
+            shininess: 0
+        })
+    })))
+    .onFrame(timeStamp => earth.time = timeStamp)
     .start();

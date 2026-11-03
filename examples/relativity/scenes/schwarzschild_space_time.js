@@ -1,14 +1,14 @@
-import { Vector2, BufferGeometry, LineBasicMaterial, Line } from 'three';
+import { BufferGeometry, LineBasicMaterial, Line } from 'three';
 import {
-    Floor, Sphere, Trail, Vec3, Simulation, RadialSymmetricBody, Sun, Checkbox, Slider, Range,
-    SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene, Colour,
-    Vec2} from '../../../src/index.js';
+    Floor, Sphere, Trail, Vec3, Simulation, RadialSymmetricBody, Checkbox, Slider, Range, CelestialBody, Colour, Vec2,
+    SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene,
+} from '../../../src/index.js';
 
 let initialCometDistance = 33;
 let currentIsRingOrbitValue = false;
 const subSteps = (isRingOrbit) => isRingOrbit ? 1000 : 10;
 
-const sun = new Sun({
+const sun = new CelestialBody({
     mass: 5,
     radius: 10
 });

@@ -1,29 +1,17 @@
 import { Renderable3D } from '../../renderer.js';
 import {
-    Mesh, MeshPhongMaterial, SphereGeometry, TextureLoader, Vector3, BufferAttribute, BufferGeometry, DoubleSide,
-    CanvasTexture, Color
+    Mesh, MeshPhongMaterial, SphereGeometry, TextureLoader, Vector3, BufferAttribute, BufferGeometry,
+    DoubleSide, CanvasTexture, Color, ShaderMaterial, AdditiveBlending, BackSide
 } from 'three';
-import mercuryMap from '../../../textures/planets/mercurymap.jpg';
-import mercuryBumpMap from '../../../textures/planets/mercurybump.jpg';
-import venusMap from '../../../textures/planets/venusmap.jpg';
-import venusBumpMap from '../../../textures/planets/venusbump.jpg';
-import earthMap from '../../../textures/planets/Solarsystemscope_texture_2k_earth_daymap.jpg';
-import earthBumpMap from '../../../textures/planets/earthbump1k.jpg';
-import marsMap from '../../../textures/planets/marsmap.jpg';
-import marsBumpMap from '../../../textures/planets/marsbump.jpg';
-import jupiterMap from '../../../textures/planets/jupitermap.jpg';
-import saturnRingsColorUrl from '../../../textures/planets/saturnringcolor.jpg';
-import saturnRingsPatternUrl from '../../../textures/planets/saturnringpattern.gif';
-import saturnMap from '../../../textures/planets/saturnmap.jpg';
-import uranusMap from '../../../textures/planets/uranusmap.jpg';
-import uranusRingsColorUrl from '../../../textures/planets/uranusringcolour.jpg';
-import uranusRingsPatternUrl from '../../../textures/planets/uranusringtrans.gif';
-import neptuneMap from '../../../textures/planets/neptunemap.jpg';
+import fresnelFragmentShader from "./shaders/fresnel_fragment_shader.glsl?raw";
+import fresnelVertexShader from "./shaders/fresnel_vertex_shader.glsl?raw";
+import sunFragmentShader from "./shaders/sun_fragment_shader.glsl?raw";
+import sunVertexShader from "./shaders/sun_vertex_shader.glsl?raw";
 
 export class Planet extends Renderable3D {
     static loader = new TextureLoader();
 
-    constructor(material) {
+    constructor({material}) {
         super();
         const geometry = new SphereGeometry(1, 64, 64);
         this._mesh = new Mesh(geometry, material);
@@ -53,76 +41,100 @@ export class Planet extends Renderable3D {
     }
 }
 
-export class Mercury extends Planet {
-    constructor() {
-        const material = new MeshPhongMaterial({
-            map: Planet.loader.load(mercuryMap),
-            bumpMap: Planet.loader.load(mercuryBumpMap),
-            bumpScale: 0.005,
-            shininess: 0
+/**
+ * Original code by Sangil Lee:
+ *    https://sangillee.com/2024-06-29-create-realistic-sun-with-shaders/
+ */
+class SurfaceMaterial {
+    constructor(uniforms) {
+        this.uniforms = uniforms;
+        this.material = new ShaderMaterial({
+            uniforms: this.uniforms,
+            vertexShader: sunVertexShader,
+            fragmentShader: sunFragmentShader
         });
-        super(material);
     }
 }
 
-export class Venus extends Planet {
-    constructor() {
-        const material = new MeshPhongMaterial({
-            map: Planet.loader.load(venusMap),
-            bumpMap: Planet.loader.load(venusBumpMap),
-            bumpScale: 0.005,
-            shininess: 0
+class FresnelMaterial {
+    constructor(uniforms) {
+        this.uniforms = uniforms;
+        this.material = new ShaderMaterial({
+            uniforms: this.uniforms,
+            transparent: true,
+            blending: AdditiveBlending,
+            depthWrite: false,
+            vertexShader: fresnelVertexShader,
+            fragmentShader: fresnelFragmentShader
         });
-        super(material);
     }
 }
 
-export class Earth extends Planet {
-    constructor() {
-        const material = new MeshPhongMaterial({
-            map: Planet.loader.load(earthMap),
-            bumpMap: Planet.loader.load(earthBumpMap),
-            bumpScale: 0.05,
-            specular: new Color('grey'),
-            shininess: 0
+class GlowMaterial {
+    constructor(uniforms) {
+        this.uniforms = uniforms;
+        this.material = new ShaderMaterial({
+            uniforms: this.uniforms,
+            transparent: true,
+            blending: AdditiveBlending,
+            depthWrite: false,
+            side: BackSide,
+            vertexShader: `
+                varying vec3 vPosition;
+                varying vec3 vNormalView;
+
+                void main(){
+                    vPosition = normalize( vec3(modelViewMatrix * vec4(position, 1.)) );
+                    vNormalView = normalize(normalMatrix * normal);
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
+                }
+                `,
+
+            fragmentShader: `
+                uniform vec3 uColor;
+                varying vec3 vPosition;
+                varying vec3 vNormalView;
+
+                void main(){
+                    float rawIntensity = max( dot(vPosition, vNormalView), 0.0 );
+                    float intensity = pow(rawIntensity, 4.0);
+                    gl_FragColor = vec4(uColor, intensity);
+                }
+                `
         });
-        super(material);
     }
 }
 
-export class Mars extends Planet {
-    constructor() {
-        const material = new MeshPhongMaterial({
-            map: Planet.loader.load(marsMap),
-            bumpMap: Planet.loader.load(marsBumpMap),
-            bumpScale: 0.05,
-            shininess: 0
-        });
-        super(material);
-    }
-}
+export class SunView extends Renderable3D {
+    constructor({
+        color = new Color("#ffcc66"),
+        speed = 2
+    } = {}) {
+        super();
+        this._speed = speed * 0.001;
+        this.uniforms = {
+            uTime: { value: 0 },
+            uColor: { value: color }
+        };
 
-export class Jupiter extends Planet {
-    constructor() {
-        const material = new MeshPhongMaterial({
-            map: Planet.loader.load(jupiterMap),
-            bumpMap: Planet.loader.load(jupiterMap),
-            bumpScale: 0.02,
-            shininess: 0
-        });
-        super(material);
+        const geometry = new SphereGeometry(1, 128, 128);
+        const surface = new Mesh(geometry, new SurfaceMaterial(this.uniforms).material);
+        const fresnel = new Mesh(geometry, new FresnelMaterial(this.uniforms).material);
+        const glow = new Mesh(geometry, new GlowMaterial(this.uniforms).material);
+        fresnel.scale.setScalar(1.02);
+        glow.scale.setScalar(1.75);
+        this.add(surface);
+        this.add(fresnel);
+        this.add(glow);
     }
-}
 
-export class Neptune extends Planet {
-    constructor() {
-        const material = new MeshPhongMaterial({
-            map: Planet.loader.load(neptuneMap),
-            bumpMap: Planet.loader.load(neptuneMap),
-            bumpScale: 0.05,
-            shininess: 0
-        });
-        super(material);
+    canBindTo(model) {
+        return model.position && model.radius && model.time !== undefined;
+    }
+
+    synchronizeWith(body) {
+        this.uniforms.uTime.value = body.time * this._speed;
+        this.scale.setScalar(body.radius);
     }
 }
 
@@ -134,18 +146,14 @@ function createPlanetRingTexture(colorUrl, patternUrl, divisor) {
         const colorImage = new Image();
         const patternImage = new Image();
 
-        let loaded = 0;
-
+        let loaded = 0
         function onLoad() {
             loaded++;
 
             if (loaded !== 2)
                 return;
 
-            if (
-                colorImage.width !== patternImage.width ||
-                colorImage.height !== patternImage.height
-            ) {
+            if (colorImage.width !== patternImage.width || colorImage.height !== patternImage.height) {
                 reject(new Error('Ring textures have different dimensions'));
                 return;
             }
@@ -156,10 +164,7 @@ function createPlanetRingTexture(colorUrl, patternUrl, divisor) {
 
             const context = canvas.getContext('2d');
             context.drawImage(colorImage, 0, 0);
-
-            const colorData = context.getImageData(
-                0, 0, canvas.width, canvas.height
-            );
+            const colorData = context.getImageData(0, 0, canvas.width, canvas.height);
 
             const patternCanvas = document.createElement('canvas');
             patternCanvas.width = patternImage.width;
@@ -167,18 +172,12 @@ function createPlanetRingTexture(colorUrl, patternUrl, divisor) {
 
             const patternContext = patternCanvas.getContext('2d');
             patternContext.drawImage(patternImage, 0, 0);
+            const patternData = patternContext.getImageData(0, 0, canvas.width, canvas.height);
 
-            const patternData = patternContext.getImageData(
-                0, 0, canvas.width, canvas.height
-            );
-
-            for (let i = 0; i < colorData.data.length; i += 4) {
-                colorData.data[i + 3] =
-                    255 - patternData.data[i] / divisor;
-            }
+            for (let i = 0; i < colorData.data.length; i += 4)
+                colorData.data[i + 3] = 255 - patternData.data[i] / divisor;
 
             context.putImageData(colorData, 0, 0);
-
             const texture = new CanvasTexture(canvas);
             texture.needsUpdate = true;
 
@@ -216,7 +215,6 @@ const PlanetRingGeometry = function (innerRadius, outerRadius, thetaSegments) {
     let vertexIndex = 0;
 
     for (let i = 0; i < thetaSegments; i++) {
-
         const angleLo = (i / thetaSegments) * Math.PI * 2;
         const angleHi = ((i + 1) / thetaSegments) * Math.PI * 2;
 
@@ -286,29 +284,30 @@ const PlanetRingGeometry = function (innerRadius, outerRadius, thetaSegments) {
 };
 
 export class RingsPlanet extends Planet {
-    constructor(material, innerRadius, outerRadius, divisor, colorUrl, patternUrl) {
-        super(material);
+    constructor({
+        material,
+        innerRadius,
+        outerRadius,
+        divisor,
+        ringsColorUrl,
+        ringsPatternUrl
+    } = {}) {
+        super({material});
         this._innerRadius = innerRadius;
         this._outerRadius = outerRadius;
         this._divisor = divisor;
-        this._colorUrl = colorUrl;
-        this._patternUrl = patternUrl;
+        this._colorUrl = ringsColorUrl;
+        this._patternUrl = ringsPatternUrl;
     }
 
     initialize(body) {
         // Set the axis of rotation (Y-axis) equal to the tilt
         this.quaternion.setFromAxisAngle(new Vector3(0, 0, 1), body.tilt);
-
         this.#createRings();
     }
 
     async #createRings() {
-        const geometry = new PlanetRingGeometry(
-            this._innerRadius,
-            this._outerRadius,
-            128,
-        );
-
+        const geometry = new PlanetRingGeometry(this._innerRadius, this._outerRadius, 128);
         const texture = await createPlanetRingTexture(this._colorUrl, this._patternUrl, this._divisor);
         const material = new MeshPhongMaterial({
             map: texture,
@@ -319,32 +318,7 @@ export class RingsPlanet extends Planet {
 
         const rings = new Mesh(geometry, material);
         rings.rotation.x = Math.PI / 2;
-
         this.add(rings);
     }
 }
 
-export class Saturn extends RingsPlanet {
-    constructor() {
-        const material = new MeshPhongMaterial({
-            map: Planet.loader.load(saturnMap),
-            bumpMap: Planet.loader.load(saturnMap),
-            bumpScale: 0.05,
-            shininess: 0
-        });
-
-        super(material, 1.11, 2.1, 4, saturnRingsColorUrl, saturnRingsPatternUrl);
-    }
-}
-
-export class Uranus extends RingsPlanet {
-    constructor() {
-        const material = new MeshPhongMaterial({
-            map: Planet.loader.load(uranusMap),
-            bumpMap: Planet.loader.load(uranusMap),
-            bumpScale: 0.05,
-            shininess: 0
-        });
-
-        super(material, 1.55, 2.05, 2, uranusRingsColorUrl, uranusRingsPatternUrl);    }
-}

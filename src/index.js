@@ -1,5 +1,5 @@
 export {
-    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology,
+    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology, CelestialBody,
     CubicLatticeTopology, BodyPair, Body, Block, BodyPairs
 } from './model/phys/bodies.js';
 
@@ -47,9 +47,7 @@ export { Equation, WaveEquation, BarrierWaveEquation } from './model/math/equati
 export { Shapes, ShapeConfiguration } from './model/math/shapes.js';
 export { PointCloud, Gas } from './model/phys/clouds.js';
 export { Integrators } from './model/math/numerics/integrators/integrators.js';
-export { SunView } from './view/3d/astro/sun.js';
-export { Saturn, Mercury, Mars, Jupiter, Venus, Neptune, Uranus, Earth } from './view/3d/astro/planets.js';
-export { Planets, Sun } from './model/phys/planets.js';
+export { Planet, RingsPlanet, SunView } from './view/3d/primitives/astro.js';
 export { DropdownMenu, Checkbox, Button, Slider, RadioGroup, TextInput } from './core/controls.js';
 export { Simulation } from './core/helion.js';
 export { ModelObject, Transformation, ModelObjectsCollection, BindingsCollection, Binding } from './model/behavior.js';

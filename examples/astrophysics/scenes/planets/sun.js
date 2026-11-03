@@ -1,8 +1,8 @@
 import {
-    Simulation, Sun, Vec3, SunView, ThreeJsScene
+    Simulation, Vec3, SunView, ThreeJsScene, CelestialBody
 } from "../../../../src/index.js";
 
-const sun = new Sun();
+const sun = new CelestialBody();
 Simulation
     .with({
         htmlDivId: "sunContainer",

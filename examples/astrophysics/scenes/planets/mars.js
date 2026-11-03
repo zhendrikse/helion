@@ -1,7 +1,22 @@
-import { Simulation, Vec3, Planets, ThreeJsScene, radToDeg, Mars } from "../../../../src/index.js";
-import { AmbientLight } from "three";
+import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
+import { AmbientLight, MeshPhongMaterial } from "three";
 
-const mars = Planets.mars;
+import marsMap from '../../textures/marsmap.jpg';
+import marsBumpMap from '../../textures/marsbump.jpg';
+
+const mars = new CelestialBody({
+    name: 'mars',
+    a: 227939100.,
+    e: 0.093315,
+    inclination: 1.85 * Math.PI / 180.,
+    rightAscension: 0.8676591934,
+    meanAnomaly: 0.3378329113,
+    radius: 3393.5 * 1e3,
+    mass: 6.4185e+23,
+    tilt: 25 * Math.PI / 180.,
+    spin: 2 * Math.PI / 24.66
+});
+
 Simulation
     .with({
         htmlDivId: "marsContainer",
@@ -21,6 +36,13 @@ Simulation
         }
     })
     .addObject3D(new AmbientLight(0xffffff, 1))
-    .bind(mars.alwaysWith(new Mars()))
-    .onFrame(timeStamp => mars.timeStamp = timeStamp)
+    .bind(mars.alwaysWith(new Planet({
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(marsMap),
+            bumpMap: Planet.loader.load(marsBumpMap),
+            bumpScale: 0.05,
+            shininess: 0
+        })
+    })))
+    .onFrame(timeStamp => mars.time = timeStamp)
     .start();

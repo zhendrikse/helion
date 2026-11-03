@@ -1,7 +1,21 @@
-import { Simulation, Vec3, Planets, ThreeJsScene, radToDeg, Venus } from "../../../../src/index.js";
-import { AmbientLight } from "three";
+import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
+import {AmbientLight, MeshPhongMaterial } from "three";
+import venusMap from '../../textures/venusmap.jpg';
+import venusBumpMap from '../../textures/venusbump.jpg';
 
-const venus = Planets.venus;
+const venus = new CelestialBody({
+    name: 'venus',
+    a: 108208000.,
+    e: 0.0067,
+    inclination: 3.39 * Math.PI / 180.,
+    rightAscension: 1.3381895772,
+    meanAnomaly: 0.8746717546,
+    radius: 6051.8 * 1e3,
+    mass: 4.8685e+23,
+    tilt: 177 * Math.PI / 180.,
+    spin:  -2 * Math.PI / 2802.
+});
+
 Simulation
     .with({
         htmlDivId: "venusContainer",
@@ -21,6 +35,13 @@ Simulation
         }
     })
     .addObject3D(new AmbientLight(0xffffff, 1))
-    .bind(venus.alwaysWith(new Venus()))
-    .onFrame(timeStamp => venus.timeStamp = timeStamp)
+    .bind(venus.alwaysWith(new Planet({
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(venusMap),
+            bumpMap: Planet.loader.load(venusBumpMap),
+            bumpScale: 0.005,
+            shininess: 0
+        })
+    })))
+    .onFrame(timeStamp => venus.time = timeStamp)
     .start();
