@@ -114,14 +114,14 @@ export class Simulation {
      * }} [options]
      */
     static with({
-                    htmlDivId = '',
-                    viewport = {},
-                    camera = {},
-                    scene = {},
-                    lighting = {},
-                    headUpDisplay = {},
-                    infoPanel = {}
-                } = {}) {
+        htmlDivId = '',
+        viewport = {},
+        camera = {},
+        scene = {},
+        lighting = {},
+        headUpDisplay = {},
+        infoPanel = {}
+    } = {}) {
         camera = { ...ThreeJsCamera.defaults(), ...camera };
         scene = {
             background: ThreeJsScene.Background.TRANSPARENT,
