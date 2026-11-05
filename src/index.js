@@ -1,6 +1,6 @@
 export {
-    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology, CelestialBody,
-    CubicLatticeTopology, BodyPair, Body, Block, BodyPairs, Moon, PlanetMoonSystem
+    AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology,
+    CubicLatticeTopology, BodyPair, Body, Block, BodyPairs
 } from './model/phys/bodies.js';
 
 export {
@@ -37,6 +37,10 @@ export {
     VectorField, ComplexFunction, MultivariateFunction, ComplexFunctionSample, RealFunction, DiscreteVectorField
 } from './model/math/fields.js';
 
+export {
+    Moon, CelestialBody, PlanetMoonSystem, Mercury, Venus, Earth, Luna, Mars, Jupiter, Saturn, Uranus, Neptune
+} from './model/phys/astro.js';
+
 export { ShaderView } from './view/webgl.js';
 export { DiscreteElectricField, PlaneWave1D } from './model/phys/fields.js';
 export { ComplexSurfaceView3D, WaveFunctionSurface3D } from './view/3d/surfaces/complex.js';
@@ -47,7 +51,7 @@ export { Equation, WaveEquation, BarrierWaveEquation } from './model/math/equati
 export { Shapes, ShapeConfiguration } from './model/math/shapes.js';
 export { PointCloud, Gas } from './model/phys/clouds.js';
 export { Integrators } from './model/math/numerics/integrators/integrators.js';
-export { Planet, RingsPlanet, SunView } from './view/3d/primitives/astro.js';
+export { Planet, RingsPlanet, SunView, Sattelite } from './view/3d/primitives/astro.js';
 export { DropdownMenu, Checkbox, Button, Slider, RadioGroup, TextInput } from './core/controls.js';
 export { Simulation } from './core/helion.js';
 export { ModelObject, Transformation, ModelObjectsCollection, BindingsCollection, Binding } from './model/behavior.js';

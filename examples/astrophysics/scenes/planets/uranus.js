@@ -1,24 +1,26 @@
-import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, RingsPlanet, Planet } from "../../../../src/index.js";
-import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
+import { Simulation, Vec3, Uranus, ThreeJsScene, radToDeg, RingsPlanet, Planet } from "../../../../src/index.js";
+import { AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import uranusMap from '../../textures/uranusmap.jpg';
 import uranusRingsColorUrl from '../../textures/uranusringcolour.jpg';
 import uranusRingsPatternUrl from '../../textures/uranusringtrans.gif';
 
-const uranus = new CelestialBody({
-    name: 'uranus',
-    a: 2876679082.,
-    e: 0.044405586,
-    inclination: 0.77 * Math.PI / 180.,
-    rightAscension: 1.2908891856,
-    meanAnomaly: 2.4950479462,
-    radius: 25600. * 1E3,
-    mass: 8.68103E25,
-    tilt: 98 * Math.PI / 180.,
-    spin: -2 * Math.PI / 17.24
+const planetView = new RingsPlanet({
+    material: new MeshPhongMaterial({
+        map: Planet.loader.load(uranusMap),
+        bumpMap: Planet.loader.load(uranusMap),
+        bumpScale: 5,
+        shininess: 0
+    }),
+    innerRadius: 1.55,
+    outerRadius: 2.05,
+    divisor: 2,
+    ringsColorUrl: uranusRingsColorUrl,
+    ringsPatternUrl: uranusRingsPatternUrl
 });
 
 const sun = new DirectionalLight(0xffffff, 2);
 sun.position.set(10, 2, 1.5);
+let lastTime = performance.now() * 1e-3;
 Simulation
     .with({
         htmlDivId: "uranusContainer",
@@ -28,26 +30,21 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>❄️ Uranus</strong><br/>` +
-                `• Mass: ${uranus.mass} kg<br/> • Radius: ${uranus.radius} m<br/>` +
-                `• Tilt: ${radToDeg(uranus.tilt)}°<br/> • Spin: ${radToDeg(uranus.spin)}°/h<br/>` +
-                `• Inclination: ${radToDeg(uranus.inclination)}°<br/> • Semi-major axis: ${uranus.semiMajorAxis} kms<br/>` +
-                `• Eccentricity: ${uranus.eccentricity}<br/> • Right ascension: ${radToDeg(uranus.rightAscension)}°`
+                '• One minute simulation time &#8792; 24 hours<br/>' +
+                `• Mass: ${Uranus.mass} kg<br/> • Radius: ${Uranus.radius} m<br/>` +
+                `• Tilt: ${radToDeg(Uranus.tilt)}°<br/> • Spin: ${radToDeg(Uranus.spin)}°/h<br/>` +
+                `• Inclination: ${radToDeg(Uranus.inclination)}°<br/> • Semi-major axis: ${Uranus.semiMajorAxis} kms<br/>` +
+                `• Eccentricity: ${Uranus.eccentricity}<br/> • Right ascension: ${radToDeg(Uranus.rightAscension)}°`
         }
     })
     .addObject3D(new AmbientLight(0xffffff, .1))
     .addObject3D(sun)
-    .bind(uranus.alwaysWith(new RingsPlanet({
-        material: new MeshPhongMaterial({
-            map: Planet.loader.load(uranusMap),
-            bumpMap: Planet.loader.load(uranusMap),
-            bumpScale: 5,
-            shininess: 0
-        }),
-        innerRadius: 1.55,
-        outerRadius: 2.05,
-        divisor: 2,
-        ringsColorUrl: uranusRingsColorUrl,
-        ringsPatternUrl: uranusRingsPatternUrl
-    })))
-    .onFrame(timeStamp => uranus.time = timeStamp)
+    .bind(Uranus.alwaysWith(planetView))
+    .onFrame(timeStamp => {
+        const deltaSeconds = (timeStamp - lastTime) * .001;
+        lastTime = timeStamp;
+        const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one second simulation view
+        Uranus.time += dtHours;
+        planetView.translation = Uranus.coordinates;
+    })
     .start();

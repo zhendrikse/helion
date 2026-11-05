@@ -7,37 +7,69 @@ import fresnelFragmentShader from "./shaders/fresnel_fragment_shader.glsl?raw";
 import fresnelVertexShader from "./shaders/fresnel_vertex_shader.glsl?raw";
 import sunFragmentShader from "./shaders/sun_fragment_shader.glsl?raw";
 import sunVertexShader from "./shaders/sun_vertex_shader.glsl?raw";
+import {Vec3} from "../../../model/math/objects.js";
 
 export class Planet extends Renderable3D {
     static loader = new TextureLoader();
 
-    constructor({material}) {
+    constructor({
+        material,
+        translation = new Vec3()
+    }) {
         super();
+        this._translation = translation;
         const geometry = new SphereGeometry(1, 64, 64);
         this._mesh = new Mesh(geometry, material);
         this.add(this._mesh);
-        this._mesh.castShadow = true;
-        this._mesh.receiveShadow = false;
     }
 
+    set translation(translation) { this._translation.set(-translation.x, -translation.y, -translation.z); }
+
+    /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, time: number, spin: number}} body */
     canBindTo(body) {
-        if (body.position === undefined ||
-            body.radius === undefined ||
-            body.tilt === undefined ||
-            body.rotation === undefined)
+        if (body.position === undefined || body.radius === undefined ||
+            body.tilt === undefined || body.spin === undefined || body.time === undefined)
             throw new Error(`Missing essential planet data on ${body}`);
         return true;
     }
 
+    /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, time: number, spin: number}} body */
     initialize(body) {
         // Set the axis of rotation (Y-axis) equal to the tilt
         this.quaternion.setFromAxisAngle(new Vector3(0, 0, 1), body.tilt);
+        this._mesh.castShadow = false;
+        this._mesh.receiveShadow = true;
     }
 
+    /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, time: number, spin: number}} body */
+    synchronizeWith(body) {
+        this.position.copy(body.position).add(this._translation);
+        this.scale.setScalar(body.radius);
+        this._mesh.rotation.y = body.time * body.spin;
+    }
+}
+
+export class Sattelite extends Planet {
+    /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, planet: CelestialBody}} body */
+    canBindTo(body) {
+        console.log(body);
+        if (body.planet === undefined)
+            throw new Error('Moon needs a planet to belong to');
+        return super.canBindTo(body);
+    }
+
+    /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, planet: CelestialBody}} body */
+    initialize(body) {
+        super.initialize(body);
+        this._mesh.castShadow = true;
+        this._mesh.receiveShadow = false;
+    }
+
+    /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, planet: CelestialBody}} model */
     synchronizeWith(model) {
-        this.position.copy(model.position);
-        this.scale.setScalar(model.radius);
-        this._mesh.rotation.y = model.rotation;
+        super.synchronizeWith(model);
+        if (model.planet.lock)
+            this.lookAt(model.planet.position);
     }
 }
 

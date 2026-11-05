@@ -1,22 +1,19 @@
-import { Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
+import { Simulation, Vec3, Neptune, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
 import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import neptuneMap from '../../textures/neptunemap.jpg';
 
-const neptune = new CelestialBody({
-    name: 'neptune',
-    a: 4503443661.,
-    e: 0.011214269,
-    inclination: 1.77 * Math.PI / 180.,
-    rightAscension: 2.3001058656,
-    meanAnomaly: 4.6734206826,
-    radius: 24300. * 1E3,
-    mass: 1.024E26,
-    tilt: 30 * Math.PI / 180.,
-    spin: 2 * Math.PI / 16.11,
+const planetView = new Planet({
+    material: new MeshPhongMaterial({
+        map: Planet.loader.load(neptuneMap),
+        bumpMap: Planet.loader.load(neptuneMap),
+        bumpScale: 5,
+        shininess: 0
+    })
 });
 
 const sun = new DirectionalLight(0xffffff, 2);
 sun.position.set(10, 2, 1.5);
+let lastTime = performance.now() * 1e-3;
 Simulation
     .with({
         htmlDivId: "neptuneContainer",
@@ -29,21 +26,21 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>🔱 Neptune<strong><br/>` +
-                `• Mass: ${neptune.mass} kg<br/> • Radius: ${neptune.radius} m<br/>` +
-                `• Tilt: ${radToDeg(neptune.tilt)}°<br/> • Spin: ${radToDeg(neptune.spin)}°/h<br/>` +
-                `• Inclination: ${radToDeg(neptune.inclination)}°<br/> • Semi-major axis: ${neptune.semiMajorAxis} kms<br/>` +
-                `• Eccentricity: ${neptune.eccentricity}<br/> • Right ascension: ${radToDeg(neptune.rightAscension)}°`
+                '• One minute simulation time &#8792; 24 hours<br/>' +
+                `• Mass: ${Neptune.mass} kg<br/> • Radius: ${Neptune.radius} m<br/>` +
+                `• Tilt: ${radToDeg(Neptune.tilt)}°<br/> • Spin: ${radToDeg(Neptune.spin)}°/h<br/>` +
+                `• Inclination: ${radToDeg(Neptune.inclination)}°<br/> • Semi-major axis: ${Neptune.semiMajorAxis} kms<br/>` +
+                `• Eccentricity: ${Neptune.eccentricity}<br/> • Right ascension: ${radToDeg(Neptune.rightAscension)}°`
         }
     })
     .addObject3D(new AmbientLight(0xffffff, .1))
     .addObject3D(sun)
-    .bind(neptune.alwaysWith(new Planet({
-        material: new MeshPhongMaterial({
-            map: Planet.loader.load(neptuneMap),
-            bumpMap: Planet.loader.load(neptuneMap),
-            bumpScale: 5,
-            shininess: 0
-        })
-    })))
-    .onFrame(timeStamp => neptune.time = timeStamp)
+    .bind(Neptune.alwaysWith(planetView))
+    .onFrame(timeStamp => {
+        const deltaSeconds = (timeStamp - lastTime) * .001;
+        lastTime = timeStamp;
+        const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one second simulation view
+        Neptune.time += dtHours;
+        planetView.translation = Neptune.coordinates;
+    })
     .start();
