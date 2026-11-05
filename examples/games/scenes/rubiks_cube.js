@@ -236,20 +236,18 @@ class Cube {
 
 const cube = new Cube();
 
-const simulation = Simulation.with({
-    htmlDivId: 'rubiksCubeContainer',
-    viewport: { parameterMenuCollapsed: false },
-    infoPanel: {
-        text: '<strong>Rubik\'s cube 🧊</strong><br>\n' +
-            'R L B U F D = turn forward<br>\n' +
-            'Shift + key = opposite direction'
-    },
-    camera: {
-        position: new Vec3(9, 8, 11).multiplyScalar(.5),
-        fieldOfView: 45
-    },
-    headUpDisplay: false
-})
+const simulation = Simulation
+    .with({
+        htmlDivId: 'rubiksCubeContainer',
+        viewport: { parameterMenuCollapsed: false },
+        infoPanel: {
+            text: '<strong>Rubik\'s cube 🧊</strong><br>\n' +
+                'R L B U F D = turn forward<br>\n' +
+                'Shift + key = opposite direction'
+        },
+        camera: { position: new Vec3(4.5, 4, 5.5), fieldOfView: 45 },
+        headUpDisplay: { enabled: false }
+    })
     .bind(cube.cubies.alwaysWith(ViewsCollection.of(Box).with({ color: new Colour(0x111111) })))
     .onFrame(timeStamp => cube.evolve(timeStamp))
     .append(new Button('Forward: ').withText('F').onClick(() => cube.apply(new Move('f')))
