@@ -158,7 +158,7 @@ simulation
     })))
     .bind(xAxis.onceWith(new LineSegmentView({
         lineWidth: 1.5,
-        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: new Colour(Colour.White) })
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, { color: Colour.White })
     })))
     .bind(xAxis.onceWith(new Label({text: () => 'X', offset: () => new Vec3(.6 * size, 0, 0)})))
     .bind(yAxis.onceWith(new Label({text: () => 'Y', offset: () => new Vec3(0, .6 * size, 0)})))
