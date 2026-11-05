@@ -1,6 +1,8 @@
-import {Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet, Checkbox} from '../../../../src/index.js';
 import {
-    AmbientLight, BackSide, Mesh, MeshPhongMaterial, ShaderMaterial, Color, Vector3, AdditiveBlending,
+    Simulation, Vec3, CelestialBody, ThreeJsScene, radToDeg, Planet, Checkbox, Moon, PlanetMoonSystem
+} from '../../../../src/index.js';
+import {
+    AmbientLight, BackSide, Mesh, MeshPhongMaterial, ShaderMaterial, Color, AdditiveBlending,
     DirectionalLight, SRGBColorSpace
 } from 'three';
 import fresnelVertexShader from '../../../../src/view/3d/primitives/shaders/add_on_vertex_shader.glsl?raw';
@@ -11,6 +13,7 @@ import earthDayNightFragmentShader from '../../../../src/view/3d/primitives/shad
 import earthMap from '../../textures/Solarsystemscope_texture_2k_earth_daymap.jpg';
 import earthNightMap from '../../textures/Solarsystemscope_texture_2k_earth_nightmap.jpg';
 import earthCloudsMap from '../../textures/Earth-clouds.png';
+import moonMap from '../../textures/moonmap1k.jpg';
 
 const earth = new CelestialBody({
     name: 'earth',
@@ -25,7 +28,25 @@ const earth = new CelestialBody({
     tilt: 23 * Math.PI / 180
 });
 
-const sunDirection = new Vector3(10, 2, -4);
+const SCALE_MOON = 275; // scaling factor for semi major axes
+const luna = new Moon(earth, {
+    "name": "luna",
+    "a": 384399 * SCALE_MOON * .2,
+    "e": 0.0549,
+    "inclination": (-23.4 + 5.145) * Math.PI / 180.,
+    "rightAscension": -Math.PI / 2.,
+    "meanAnomaly": 0.,
+    "radius": 1737400,
+    "mass": 7.349e+22,  // kg
+    "spin": 2 * Math.PI / 708.7341666667,
+    "tilt": 0.11641346110802178, // rad
+    'period': 27.321, // days
+    "tidalLock": true
+});
+
+const earthMoonSystem = new PlanetMoonSystem(earth, [luna]);
+
+const sunDirection = new Vec3(10, 2, -4);
 const dayTexture = Planet.loader.load(earthMap);
 const nightTexture = Planet.loader.load(earthNightMap);
 dayTexture.colorSpace = SRGBColorSpace;
@@ -58,7 +79,7 @@ class EarthView extends Planet {
 
     synchronizeWith(body) {
         super.synchronizeWith(body);
-        this._clouds.rotation.y = body.time * 2.5e-4 * body.spin * .8; // Clouds rotate a bit slower
+        this._clouds.rotation.y = body.time * body.spin * .8; // Clouds rotate a bit slower
     }
 }
 
@@ -82,7 +103,7 @@ const earthView = new EarthView({
     }),
     fresnelMaterial: new ShaderMaterial({
         uniforms: {
-            uColor: {value: new Vector3(0.45, 0.55, 1)},
+            uColor: {value: new Vec3(0.45, 0.55, 1)},
             uIntensity: {value: 0.25}
         },
         vertexShader: fresnelVertexShader,
@@ -94,7 +115,7 @@ const earthView = new EarthView({
     atmosphereMaterial: new ShaderMaterial({
         uniforms: {
             u_sunRelPosition: {value: sunDirection},
-            u_color: {value: new Vector3(0.45, 0.55, 1)}
+            u_color: {value: new Vec3(0.45, 0.55, 1)}
         },
         vertexShader: fresnelVertexShader,
         fragmentShader: atmosphereFragmentShader,
@@ -106,7 +127,11 @@ const earthView = new EarthView({
 });
 
 const sun = new DirectionalLight(0xcccccc, 1);
-sun.position.copy(sunDirection);
+sun.position.set(sunDirection.x, sunDirection.y, sunDirection.z);
+
+let lastTime = performance.now() * 1e-3;
+let tPhys = 0;
+let timeScale = 24 / 60; // 24 hours equal to one second simulation time
 Simulation
     .with({
         htmlDivId: 'earthContainer',
@@ -128,7 +153,23 @@ Simulation
     .addObject3D(new AmbientLight(0x888888, 1e-2))
     .addObject3D(sun)
     .bind(earth.alwaysWith(earthView))
-    .onFrame(timeStamp => earth.time = timeStamp)
+    .bind(luna.alwaysWith(
+        new Planet({
+            material: new MeshPhongMaterial({
+            map: Planet.loader.load(moonMap),
+            //bumpMap: Planet.loader.load(marsBumpMap),
+            bumpScale: 2.5,
+            shininess: 0
+        })
+    })))
+    .onFrame(timeStamp => {
+        const deltaSeconds = (timeStamp - lastTime) * .001;
+        lastTime = timeStamp;
+
+        const dtHours = deltaSeconds * timeScale;
+        tPhys += dtHours;
+        earthMoonSystem.update(tPhys);
+    })
     .append(new Checkbox('Clouds')
         .checked(true)
         .onChange(checked => earthView.clouds = checked)

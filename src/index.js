@@ -1,6 +1,6 @@
 export {
     AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology, CelestialBody,
-    CubicLatticeTopology, BodyPair, Body, Block, BodyPairs
+    CubicLatticeTopology, BodyPair, Body, Block, BodyPairs, Moon, PlanetMoonSystem
 } from './model/phys/bodies.js';
 
 export {

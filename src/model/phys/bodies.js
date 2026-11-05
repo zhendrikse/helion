@@ -2,6 +2,10 @@ import { Vec3, Vec2 } from '../math/objects.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
 import { ModelObject, Transformation } from '../behavior.js';
 import { SpringForce} from './forces.js';
+import {Planet} from "../../view/3d/primitives/astro.js";
+import earthMap from "../../../examples/astrophysics/textures/Solarsystemscope_texture_2k_earth_daymap.jpg";
+import earthNightMap from "../../../examples/astrophysics/textures/Solarsystemscope_texture_2k_earth_nightmap.jpg";
+import {Mesh, SRGBColorSpace} from "three";
 
 export class PhysicsState {
     /**
@@ -450,7 +454,114 @@ export class Block extends Body {
     }
 }
 
+class Orbit {
+    constructor(timescale, meanAnomaly, eccentricity, semiMajorAxis, inclination, ascension, accuracy = 1E2, nPoints = 10000) {
+        this._nPoints = nPoints; // number of orbit coordinates generated
+        this._timescale = timescale;
+        const range = this._linSpace(meanAnomaly, 2 * Math.PI + meanAnomaly, nPoints);
+
+        let eccentricAnomaly = range.slice();
+        let eccentricAnomalyOld = new Array(nPoints);
+
+        let maxDiff = Infinity;
+        while (maxDiff > accuracy) {
+            maxDiff = 0;
+            eccentricAnomalyOld = eccentricAnomaly.slice(); // copy array
+
+            // Newton–Raphson step
+            for (let i = 0; i < nPoints; i++) {
+                const f = eccentricAnomalyOld[i] - eccentricity * Math.sin(eccentricAnomalyOld[i]) - range[i];
+                const fPrime = 1 - eccentricity * Math.cos(eccentricAnomalyOld[i]);
+                eccentricAnomaly[i] = eccentricAnomalyOld[i] - f / fPrime;
+                maxDiff = Math.max(maxDiff, Math.abs(eccentricAnomaly[i] - eccentricAnomalyOld[i]));
+            }
+        }
+
+        this._points = [];
+        for (let i = 0; i < nPoints; i++) {
+            const theta = 2 * Math.atan2(
+                Math.sqrt(1 + eccentricity) * Math.sin(eccentricAnomaly[i] / 2),
+                Math.sqrt(1 - eccentricity) * Math.cos(eccentricAnomaly[i] / 2)
+            );
+
+            const r = semiMajorAxis * (1 - eccentricity * Math.cos(eccentricAnomaly[i]));
+            const thetaAsc = theta - ascension;
+
+            const x = (Math.cos(ascension) * Math.cos(thetaAsc) -
+                Math.sin(ascension) *
+                Math.sin(thetaAsc) *
+                Math.cos(inclination));
+
+            const z = (Math.sin(ascension) * Math.cos(thetaAsc) +
+                Math.cos(ascension) *
+                Math.sin(thetaAsc) *
+                Math.cos(inclination));
+
+            const y = Math.sin(theta - ascension) * Math.sin(inclination);
+            this._points.push(new Vec3(x, y, z).multiplyScalar(r));
+        }
+    }
+
+    _linSpace(start, stop, num) {
+        const result = [];
+        const step = (stop - start) / (num - 1);
+
+        for (let i = 0; i < num - 1; i++)
+            result.push(start + i * step);
+
+        result.push(stop); // include last point as well
+        return result;
+    }
+
+    _indexAtTime(tHours) {
+        const periodHours = this._timescale * 24;
+        const phase = (tHours % periodHours) / periodHours;
+        return Math.floor(phase * this._nPoints);
+    }
+
+    coordinatesAt(tHours) {
+        return this._points[this._indexAtTime(tHours)];
+    }
+
+    // draw({
+    //          color = 0x666666,
+    //          linewidth = 1,
+    //          opacity = 0.9,
+    //          closed = true,
+    //          scale = 1,
+    //          dashed = false
+    //      } = {}) {
+    //     const positions = new Float32Array(this._points.length * 3);
+    //
+    //     this._points.forEach((p, i) => {
+    //         positions[3 * i + 0] = p.x * scale;
+    //         positions[3 * i + 1] = p.y * scale;
+    //         positions[3 * i + 2] = p.z * scale;
+    //     });
+    //
+    //     const geometry = new BufferGeometry();
+    //     geometry.setAttribute("position", new BufferAttribute(positions, 3));
+    //
+    //     let material;
+    //     if (dashed)
+    //         material = new LineDashedMaterial({ color, linewidth, dashSize: 3, gapSize: 2, transparent: true, opacity });
+    //     else
+    //         material = new LineBasicMaterial({ color, linewidth, transparent: true, opacity });
+    //
+    //     const line = closed
+    //         ? new LineLoop(geometry, material)
+    //         : new Line(geometry, material);
+    //
+    //     if (dashed) line.computeLineDistances();
+    //
+    //     this._line = line;
+    //     return line;
+    // }
+}
+
 export class CelestialBody extends RadialSymmetricBody {
+    static EARTH_SEMI_MAJOR_AXIS = 149598261.;
+
     /**
      * @param param0
      * @param param0.position {Vec3} Position of celestial body.
@@ -489,15 +600,94 @@ export class CelestialBody extends RadialSymmetricBody {
         this._rightAscension = rightAscension;
         this._meanAnomaly = meanAnomaly;
         this.time = 0;
+        this._orbit = new Orbit(
+            365.25 * (a / CelestialBody.EARTH_SEMI_MAJOR_AXIS) ** 1.5, // rotation period w.r.t. Earth
+            meanAnomaly,
+            e,
+            a,
+            inclination,
+            rightAscension
+        );
     }
 
-    get rotation() { return this.time * 2.5e-4 * this._spin; }
+    coordinatesAt(t) { return this._orbit.coordinatesAt(t); }
+
+    get meanAnomaly() { return this._meanAnomaly; }
+    get rotation() { return this.time * this._spin; }
     get tilt() { return this._tilt; }
     get spin() { return this._spin; }
     get inclination() { return this._inclination; }
     get semiMajorAxis() { return this._semiMajorAxis; }
     get eccentricity() { return this._eccentricity; }
     get rightAscension() { return this._rightAscension; }
+}
+
+export class Moon extends CelestialBody {
+    constructor(planet, moonData) {
+        super(moonData);
+        this._planet = moonData.planet;
+        this._lock = moonData.tidalLock;
+        this._orbit = new Orbit(
+            moonData.period,
+            moonData.meanAnomaly,
+            this.eccentricity,
+            this.semiMajorAxis,
+            planet.tilt + moonData.inclination,
+            moonData.rightAscension
+        );
+    }
+
+    update() {
+        if (this._lock) {
+            this.lookAt(this._planet.position);
+            // Correct fixed phase fase-offset if needed (texture-orientation)
+            this.rotateY(Math.PI); // or rotateZ, dependent on texture
+        }
+    }
+}
+
+export const AU = 1.496 * 1E11;   // astronomical unit
+export const ORBIT_SCALE = 40;    // additional orbit compression factor for nice visual representation
+export const DISTANCE_SCALE = AU / ORBIT_SCALE;
+const toRenderUnits = (vector) => vector.clone().multiplyScalar(1000 / DISTANCE_SCALE);
+
+export class PlanetMoonSystem {
+    constructor(planet, moons = []) {
+        this._planet = planet;
+        this._moons = moons;
+    }
+
+    get mass() {
+        let M = this._planet.mass;
+        for (const moon of this._moons)
+            M += moon.mass;
+        return M;
+    }
+
+    update(tHours) {
+        // 1. barycentric position (sun-centric)
+        const baryPosition = this._planet.coordinatesAt(tHours).clone();
+
+        // 2. total mass
+        const M = this.mass;
+
+        // 3. barycentric correction
+        const correction = new Vec3();
+        for (const moon of this._moons)
+            correction.add(moon.coordinatesAt(tHours).clone().multiplyScalar(moon.mass / M));
+
+        // 4. planet position
+        this._planet.position.copy(toRenderUnits(baryPosition.clone().sub(correction)));
+
+        // 5. moon positions
+        for (const moon of this._moons)
+            moon.position.copy(toRenderUnits(baryPosition.clone().add(moon.coordinatesAt(tHours))));
+
+        // 6. rotations
+        this._planet.time = tHours;
+        for (const moon of this._moons)
+            moon.time = tHours;
+    }
 }
 
 export class Lattice extends ModelObject {
