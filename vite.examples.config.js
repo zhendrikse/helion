@@ -102,6 +102,7 @@ export default defineConfig({
                 rutherford_scattering: path.resolve(__dirname, 'examples/molecularphysics/scenes/rutherford_scattering.js'),
                 saturn: path.resolve(__dirname, 'examples/astrophysics/scenes/planets/saturn.js'),
                 slinky_drop: path.resolve(__dirname, 'examples/kinematics/scenes/slinky_drop.js'),
+                solar_system: path.resolve(__dirname, 'examples/astrophysics/scenes/solar_system.js'),
                 solenoid: path.resolve(__dirname, 'examples/electromagnetism/scenes/solenoid.js'),
                 schwarzschild_space_time: path.resolve(__dirname, 'examples/relativity/scenes/schwarzschild_space_time.js'),
                 spaghettification: path.resolve(__dirname, 'examples/relativity/scenes/spaghettification.js'),

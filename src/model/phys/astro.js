@@ -196,14 +196,6 @@ export class Moon extends CelestialBody {
 
     get planet() { return this._planet; }
     get lock() { return this._lock; }
-
-    update() {
-        if (this._lock) {
-            this.lookAt(this._planet.position);
-            // Correct fixed phase fase-offset if needed (texture-orientation)
-            this.rotateY(Math.PI); // or rotateZ, dependent on texture
-        }
-    }
 }
 
 export class PlanetMoonSystem {

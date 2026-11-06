@@ -1,6 +1,6 @@
 import {
-    Simulation, Vec3, CelestialBody, ThreeJsScene, Planet, Checkbox, PlanetMoonSystem, Trail, Range,
-    SunView, Colour, Earth, Mercury, Venus, Luna, Mars, Sattelite, Jupiter, RingsPlanet, Saturn, Slider
+    Simulation, Vec3, CelestialBody, ThreeJsScene, Planet, Checkbox, PlanetMoonSystem, Trail, Range, SunView,
+    Colour, Earth, Mercury, Venus, Luna, Mars, Sattelite, Jupiter, RingsPlanet, Saturn, Slider, Neptune, Uranus
 } from '../../../src/index.js';
 import {
     AmbientLight, MeshPhongMaterial, PointLight, Mesh, FrontSide, SphereGeometry
@@ -19,10 +19,13 @@ import venusBumpMap from '../textures/venusbump.jpg';
 import marsMap from '../textures/marsmap.jpg';
 import marsBumpMap from '../textures/marsbump.jpg';
 import jupiterMap from '../textures/jupitermap.jpg';
-import jupiterBumpMap from '../textures/jupitermap.jpg';
 import saturnMap from '../textures/saturnmap.jpg';
+import neptuneMap from '../textures/neptunemap.jpg';
 import saturnRingsColorUrl from '../textures/saturnringcolor.jpg';
 import saturnRingsPatternUrl from '../textures/saturnringpattern.gif';
+import uranusMap from "../textures/uranusmap.jpg";
+import uranusRingsColorUrl from "../textures/uranusringcolour.jpg";
+import uranusRingsPatternUrl from "../textures/uranusringtrans.gif";
 
 const earthMoonSystem = new PlanetMoonSystem(Earth, [Luna]);
 
@@ -57,6 +60,16 @@ export class EarthView extends Planet {
     }
 }
 
+const planetView = (map, bumpMap, bumpScale) =>
+    new Planet({
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(map),
+            bumpMap: Planet.loader.load(bumpMap),
+            bumpScale,
+            shininess: 0
+        })
+    });
+
 const earthView = new EarthView({
     material: new MeshPhongMaterial({
         map: Planet.loader.load(earthMap),
@@ -76,41 +89,11 @@ const lunarView = new Sattelite(earthView, {
     })
 });
 
-const mercuryView = new Planet({
-    material: new MeshPhongMaterial({
-        map: Planet.loader.load(mercuryMap),
-        bumpMap: Planet.loader.load(mercuryBumpMap),
-        bumpScale: 1.5,
-        shininess: 0
-    })
-});
-
-const marsView = new Planet({
-    material: new MeshPhongMaterial({
-        map: Planet.loader.load(marsMap),
-        bumpMap: Planet.loader.load(marsBumpMap),
-        bumpScale: 2.5,
-        shininess: 0
-    })
-});
-
-const venusView = new Planet({
-    material: new MeshPhongMaterial({
-        map: Planet.loader.load(venusMap),
-        bumpMap: Planet.loader.load(venusBumpMap),
-        bumpScale: 1,
-        shininess: 0
-    })
-});
-
-const jupiterView = new Planet({
-    material: new MeshPhongMaterial({
-        map: Planet.loader.load(jupiterMap),
-        bumpMap: Planet.loader.load(jupiterBumpMap),
-        bumpScale: 1,
-        shininess: 0
-    })
-});
+const mercuryView = planetView(mercuryMap, mercuryBumpMap, 1.5);
+const marsView = planetView(marsMap, marsBumpMap, 2.5);
+const venusView = planetView(venusMap, venusBumpMap, 1);
+const jupiterView = planetView(jupiterMap, jupiterMap, 1);
+const neptuneView = planetView(neptuneMap, neptuneMap, 5);
 
 const saturnView = new RingsPlanet({
     material: new MeshPhongMaterial({
@@ -126,8 +109,23 @@ const saturnView = new RingsPlanet({
     ringsPatternUrl: saturnRingsPatternUrl
 });
 
-const planets = [Mercury, Venus, Mars, Earth, Jupiter, Saturn];
-const celestialBodies = [lunarView, earthView, mercuryView, marsView, venusView, jupiterView, saturnView];
+const uranusView =  new RingsPlanet({
+    material: new MeshPhongMaterial({
+        map: Planet.loader.load(uranusMap),
+        bumpMap: Planet.loader.load(uranusMap),
+        bumpScale: 5,
+        shininess: 0
+    }),
+    innerRadius: 1.55,
+    outerRadius: 2.05,
+    divisor: 2,
+    ringsColorUrl: uranusRingsColorUrl,
+    ringsPatternUrl: uranusRingsPatternUrl
+});
+
+const planets = [Mercury, Venus, Mars, Earth, Jupiter, Saturn, Uranus, Neptune];
+const celestialBodies =
+    [lunarView, earthView, mercuryView, marsView, venusView, jupiterView, saturnView, uranusView, neptuneView];
 
 const sun = new CelestialBody({
     radius: 3e7
@@ -145,7 +143,7 @@ const scaleCelestialBodies = scaleFactor => celestialBodies.forEach(body => body
 scaleCelestialBodies(1.25);
 let animationSpeed = 60;
 const closePerspective = new Vec3(-400, 150, 75);
-const farPerspective  = new Vec3(1100, 400, -1800);
+const farPerspective  = new Vec3(1000, 300, -1800);
 const simulation = Simulation
     .with({
         htmlDivId: 'solarSystemContainer',
@@ -188,7 +186,29 @@ const simulation = Simulation
         color: Colour.Red
     })))
     .bind(Jupiter.alwaysWith(jupiterView))
+    .bind(Jupiter.alwaysWith(new Trail({
+        maxPoints: 1000,
+        trailStep: 100,
+        color: Colour.Cyan
+    })))
     .bind(Saturn.alwaysWith(saturnView))
+    .bind(Saturn.alwaysWith(new Trail({
+        maxPoints: 1000,
+        trailStep: 100,
+        color: new Colour(0x999999)
+    })))
+    .bind(Uranus.alwaysWith(uranusView))
+    .bind(Uranus.alwaysWith(new Trail({
+        maxPoints: 1000,
+        trailStep: 100,
+        color: Colour.LightBlue
+    })))
+    .bind(Neptune.alwaysWith(neptuneView))
+    .bind(Neptune.alwaysWith(new Trail({
+        maxPoints: 1000,
+        trailStep: 100,
+        color: Colour.Blue
+    })))
     .onFrame(timeStamp => {
         sun.time = timeStamp;
 

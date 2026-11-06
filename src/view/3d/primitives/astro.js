@@ -79,10 +79,12 @@ export class Sattelite extends Planet {
     /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, planet: CelestialBody}} model */
     synchronizeWith(model) {
         super.synchronizeWith(model);
-        if (model.lock)
+
+        if (model.lock) {
             this.lookAt(this._parent.position);
-    }
-}
+            this._mesh.rotation.y = 0;
+        }
+    }}
 
 /**
  * Original code by Sangil Lee:
