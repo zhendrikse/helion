@@ -3,7 +3,7 @@ import {
     Colour, Earth, Mercury, Venus, Luna, Mars, Sattelite, Jupiter, RingsPlanet, Saturn, Slider, Neptune, Uranus
 } from '../../../src/index.js';
 import {
-    AmbientLight, MeshPhongMaterial, PointLight, Mesh, FrontSide, SphereGeometry
+    AmbientLight, MeshPhongMaterial, PointLight, Mesh, FrontSide
 } from 'three';
 
 import earthMap from '../textures/Solarsystemscope_texture_2k_earth_daymap.jpg';
@@ -31,9 +31,9 @@ const earthMoonSystem = new PlanetMoonSystem(Earth, [Luna]);
 
 export class EarthView extends Planet {
     constructor({
-                    material,
-                    translation = new Vec3()
-                }) {
+        material,
+        translation = new Vec3()
+    }) {
         super({material, translation});
         const cloudsMaterial = new MeshPhongMaterial({
             map: Planet.loader.load(earthCloudsMap),
@@ -153,8 +153,10 @@ const simulation = Simulation
         lighting: { enabled: false, shadows: true },
         headUpDisplay: { enabled: false },
         infoPanel: {
-            text: `<strong>🌎 Solar system</strong><br/>` +
-                `• Features tidal locking of moons<br/>`
+            text: '<strong>🌗 Solar system</strong><br/>' +
+                '• <a href=\"https://en.wikipedia.org/wiki/Newton%27s_method\">Newton-Raphson method</a> for realistic (elliptic) orbits<br/>' +
+                '• Includes tilt, spin and tidal locking of applicable moons e.g. Earth’s moon<br/>' +
+                '• Features advanced techniques for rendering earth clouds &amp; sun corona<br/>'
         }
     })
     .addObject3D(new AmbientLight(0x888888, 1e-1))

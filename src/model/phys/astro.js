@@ -131,19 +131,19 @@ export class CelestialBody extends RadialSymmetricBody {
      * @param param0.tilt {number} Angle between planet rotation axis & line perpendicular to its orbit plane.
      */
     constructor({
-                    position = new Vec3(),
-                    velocity = new Vec3(),
-                    name = 'Undefined',
-                    a = 1,
-                    e = 0,
-                    inclination = 0.,
-                    rightAscension = 0.,
-                    meanAnomaly = 0.,
-                    radius = 1,
-                    mass = 1,
-                    spin = 0,
-                    tilt = 0
-                } = {}) {
+        position = new Vec3(),
+        velocity = new Vec3(),
+        name = 'Undefined',
+        a = 1,
+        e = 0,
+        inclination = 0.,
+        rightAscension = 0.,
+        meanAnomaly = 0.,
+        radius = 1,
+        mass = 1,
+        spin = 0,
+        tilt = 0
+    } = {}) {
         super({ position, velocity, mass, radius });
         this._tilt = tilt; //
         this._spin = spin; //
