@@ -195,6 +195,7 @@ export class Moon extends CelestialBody {
     }
 
     get planet() { return this._planet; }
+    get lock() { return this._lock; }
 
     update() {
         if (this._lock) {
@@ -206,9 +207,10 @@ export class Moon extends CelestialBody {
 }
 
 export class PlanetMoonSystem {
-    constructor(planet, moons = []) {
+    constructor(planet, moons = [], distanceScaleFactor = 75) {
         this._planet = planet;
         this._moons = moons;
+        this._distanceScaleFactor = distanceScaleFactor;
         this._baryPosition = new Vec3();
     }
 
@@ -221,29 +223,26 @@ export class PlanetMoonSystem {
 
     get planet() { return this._planet; }
 
-    update(tHours) {
-        // 1. time stamp update
-        this._planet.time = tHours;
-        for (const moon of this._moons)
-            moon.time = tHours;
-
-        // 2. barycentric position (sun-centric)
+    update() {
+        // 1. barycentric position (sun-centric)
         this._baryPosition.copy(this._planet.coordinates);
 
-        // 3. total mass
+        // 2. total mass
         const M = this.mass;
 
-        // 4. barycentric correction
+        // 3. barycentric correction
         const correction = new Vec3();
         for (const moon of this._moons)
             correction.add(moon.coordinates.clone().multiplyScalar(moon.mass / M));
 
-        // 5. planet position
+        // 4. planet position
         this._planet.position.copy(this._baryPosition.clone().sub(correction));
 
-        // 6. moon positions
+        // 5. moon positions
         for (const moon of this._moons)
-            moon.position.copy(this._baryPosition.clone().add(moon.coordinates));
+            moon.position.copy(this._baryPosition
+                .clone()
+                .add(moon.coordinates.clone().multiplyScalar(this._distanceScaleFactor)));
     }
 }
 
@@ -286,11 +285,9 @@ export const Earth = new CelestialBody({
     tilt: 23 * Math.PI / 180
 });
 
-const SCALE_MOON = 275; // scaling factor for semi major axes
-
 export const Luna = new Moon(Earth, {
     "name": "luna",
-    "a": 384399 * SCALE_MOON * .3,
+    "a": 384399,
     "e": 0.0549,
     "inclination": (-23.4 + 5.145) * Math.PI / 180.,
     "rightAscension": -Math.PI / 2.,

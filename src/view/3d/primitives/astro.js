@@ -14,9 +14,11 @@ export class Planet extends Renderable3D {
 
     constructor({
         material,
-        translation = new Vec3()
+        translation = new Vec3(),
+        radiusScaleFactor = 1
     }) {
         super();
+        this._radiusScaleFactor = radiusScaleFactor;
         this._translation = translation;
         const geometry = new SphereGeometry(1, 64, 64);
         this._mesh = new Mesh(geometry, material);
@@ -24,6 +26,7 @@ export class Planet extends Renderable3D {
     }
 
     set translation(translation) { this._translation.set(-translation.x, -translation.y, -translation.z); }
+    set radiusScaleFactor(factor) { this._radiusScaleFactor = factor; }
 
     /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, time: number, spin: number}} body */
     canBindTo(body) {
@@ -37,22 +40,30 @@ export class Planet extends Renderable3D {
     initialize(body) {
         // Set the axis of rotation (Y-axis) equal to the tilt
         this.quaternion.setFromAxisAngle(new Vector3(0, 0, 1), body.tilt);
-        this._mesh.castShadow = false;
-        this._mesh.receiveShadow = true;
+        this._mesh.castShadow = true;
+        this._mesh.receiveShadow = false;
     }
 
     /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, time: number, spin: number}} body */
     synchronizeWith(body) {
         this.position.copy(body.position).add(this._translation);
-        this.scale.setScalar(body.radius);
+        this.scale.setScalar(body.radius * this._radiusScaleFactor);
         this._mesh.rotation.y = body.time * body.spin;
     }
 }
 
 export class Sattelite extends Planet {
+    constructor(parent, {
+        material,
+        translation = new Vec3(),
+        radiusScaleFactor = 1
+    }) {
+        super({ material, translation, radiusScaleFactor });
+        this._parent = parent;
+    }
+
     /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, planet: CelestialBody}} body */
     canBindTo(body) {
-        console.log(body);
         if (body.planet === undefined)
             throw new Error('Moon needs a planet to belong to');
         return super.canBindTo(body);
@@ -62,14 +73,14 @@ export class Sattelite extends Planet {
     initialize(body) {
         super.initialize(body);
         this._mesh.castShadow = true;
-        this._mesh.receiveShadow = false;
+        this._mesh.receiveShadow = true;
     }
 
     /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, planet: CelestialBody}} model */
     synchronizeWith(model) {
         super.synchronizeWith(model);
-        if (model.planet.lock)
-            this.lookAt(model.planet.position);
+        if (model.lock)
+            this.lookAt(this._parent.position);
     }
 }
 
