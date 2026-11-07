@@ -1,8 +1,9 @@
-import {Simulation, Vec3, Mars, ThreeJsScene, radToDeg, Planet, Venus} from "../../../../src/index.js";
+import {Simulation, Vec3, Mars, ThreeJsScene, radToDeg, Planet, CelestialBody} from "../../../../src/index.js";
 import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import marsMap from '../../textures/marsmap.jpg';
 import marsBumpMap from '../../textures/marsbump.jpg';
 
+const mars = new CelestialBody(Mars);
 const planetView = new Planet({
     material: new MeshPhongMaterial({
         map: Planet.loader.load(marsMap),
@@ -36,12 +37,12 @@ Simulation
     })
     .addObject3D(new AmbientLight(0xffeeee, 0.1))
     .addObject3D(sun)
-    .bind(Mars.alwaysWith(planetView))
+    .bind(mars.alwaysWith(planetView))
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
         const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one minute simulation view
-        Mars.time += dtHours;
-        planetView.translation = Mars.coordinates;
+        mars.time += dtHours;
+        planetView.translation = mars.coordinates;
     })
     .start();

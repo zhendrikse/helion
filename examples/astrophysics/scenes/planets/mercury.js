@@ -1,8 +1,11 @@
-import {Simulation, Vec3, Mercury, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
+import {
+    Simulation, Vec3, Mercury, ThreeJsScene, radToDeg, Planet, CelestialBody,
+} from "../../../../src/index.js";
 import { AmbientLight, DirectionalLight, MeshPhongMaterial } from "three";
 import mercuryMap from "../../textures/mercurymap.jpg";
 import mercuryBumpMap from "../../textures/mercurybump.jpg";
 
+const mercury = new CelestialBody(Mercury);
 const planetView = new Planet({
     material: new MeshPhongMaterial({
         map: Planet.loader.load(mercuryMap),
@@ -36,12 +39,12 @@ Simulation
     })
     .addObject3D(new AmbientLight(0xffffff, .025))
     .addObject3D(sun)
-    .bind(Mercury.alwaysWith(planetView))
+    .bind(mercury.alwaysWith(planetView))
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
         const dtHours = deltaSeconds * 24; // 24 hours equal to one second simulation view
-        Mercury.time += dtHours;
-        planetView.translation = Mercury.coordinates;
+        mercury.time += dtHours;
+        planetView.translation = mercury.coordinates;
     })
     .start();

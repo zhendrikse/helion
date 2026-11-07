@@ -1,11 +1,12 @@
 import {
-    Simulation, Vec3, Saturn, ThreeJsScene, radToDeg, RingsPlanet, Planet
+    Simulation, Vec3, Saturn, ThreeJsScene, radToDeg, RingsPlanet, Planet, CelestialBody
 } from "../../../../src/index.js";
 import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import saturnRingsColorUrl from '../../textures/saturnringcolor.jpg';
 import saturnRingsPatternUrl from '../../textures/saturnringpattern.gif';
 import saturnMap from '../../textures/saturnmap.jpg';
 
+const saturn = new CelestialBody(Saturn);
 const planetView = new RingsPlanet({
     material: new MeshPhongMaterial({
         map: Planet.loader.load(saturnMap),
@@ -42,12 +43,12 @@ Simulation
     })
     .addObject3D(new AmbientLight(0xffffff, 0.25))
     .addObject3D(sun)
-    .bind(Saturn.alwaysWith(planetView))
+    .bind(saturn.alwaysWith(planetView))
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
         const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one minute simulation view
-        Saturn.time += dtHours;
-        planetView.translation = Saturn.coordinates;
+        saturn.time += dtHours;
+        planetView.translation = saturn.coordinates;
     })
     .start();

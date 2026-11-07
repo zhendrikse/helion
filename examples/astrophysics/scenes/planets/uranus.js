@@ -1,9 +1,12 @@
-import { Simulation, Vec3, Uranus, ThreeJsScene, radToDeg, RingsPlanet, Planet } from "../../../../src/index.js";
+import {
+    Simulation, Vec3, Uranus, ThreeJsScene, radToDeg, RingsPlanet, Planet, CelestialBody
+} from "../../../../src/index.js";
 import { AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import uranusMap from '../../textures/uranusmap.jpg';
 import uranusRingsColorUrl from '../../textures/uranusringcolour.jpg';
 import uranusRingsPatternUrl from '../../textures/uranusringtrans.gif';
 
+const uranus = new CelestialBody(Uranus);
 const planetView = new RingsPlanet({
     material: new MeshPhongMaterial({
         map: Planet.loader.load(uranusMap),
@@ -39,12 +42,12 @@ Simulation
     })
     .addObject3D(new AmbientLight(0xffffff, .1))
     .addObject3D(sun)
-    .bind(Uranus.alwaysWith(planetView))
+    .bind(uranus.alwaysWith(planetView))
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
         const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one second simulation view
-        Uranus.time += dtHours;
-        planetView.translation = Uranus.coordinates;
+        uranus.time += dtHours;
+        planetView.translation = uranus.coordinates;
     })
     .start();

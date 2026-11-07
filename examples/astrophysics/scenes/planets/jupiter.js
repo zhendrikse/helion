@@ -1,7 +1,8 @@
-import { Simulation, Vec3, Jupiter, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
+import {Simulation, Vec3, Jupiter, ThreeJsScene, radToDeg, Planet, CelestialBody} from "../../../../src/index.js";
 import { AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import jupiterMap from '../../textures/jupitermap.jpg';
 
+const jupiter = new CelestialBody(Jupiter);
 const planetView = new Planet({
     material: new MeshPhongMaterial({
         map: Planet.loader.load(jupiterMap),
@@ -35,12 +36,12 @@ Simulation
     })
     .addObject3D(new AmbientLight(0xffffff, 7.5e-2))
     .addObject3D(sun)
-    .bind(Jupiter.alwaysWith(planetView))
+    .bind(jupiter.alwaysWith(planetView))
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
         const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one second simulation view
-        Jupiter.time += dtHours;
-        planetView.translation = Jupiter.coordinates;
+        jupiter.time += dtHours;
+        planetView.translation = jupiter.coordinates;
     })
     .start();

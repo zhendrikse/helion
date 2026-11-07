@@ -1,7 +1,8 @@
-import { Simulation, Vec3, Neptune, ThreeJsScene, radToDeg, Planet } from "../../../../src/index.js";
+import {Simulation, Vec3, Neptune, ThreeJsScene, radToDeg, Planet, CelestialBody} from "../../../../src/index.js";
 import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
 import neptuneMap from '../../textures/neptunemap.jpg';
 
+const neptune = new CelestialBody(Neptune);
 const planetView = new Planet({
     material: new MeshPhongMaterial({
         map: Planet.loader.load(neptuneMap),
@@ -35,12 +36,12 @@ Simulation
     })
     .addObject3D(new AmbientLight(0xffffff, .1))
     .addObject3D(sun)
-    .bind(Neptune.alwaysWith(planetView))
+    .bind(neptune.alwaysWith(planetView))
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
         const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one second simulation view
-        Neptune.time += dtHours;
-        planetView.translation = Neptune.coordinates;
+        neptune.time += dtHours;
+        planetView.translation = neptune.coordinates;
     })
     .start();

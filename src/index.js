@@ -38,7 +38,8 @@ export {
 } from './model/math/fields.js';
 
 export {
-    Moon, CelestialBody, PlanetMoonSystem, Mercury, Venus, Earth, Luna, Mars, Jupiter, Saturn, Uranus, Neptune
+    Moon, CelestialBody, PlanetMoonSystem, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune,
+    Luna, Phobos, Deimos, Callisto, Europa, Ganymede, Io
 } from './model/phys/astro.js';
 
 export { ShaderView } from './view/webgl.js';

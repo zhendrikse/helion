@@ -15,9 +15,19 @@ export default defineConfig({
 		sitemap(),
 		starlight({
 			title: '☀️ Helion',
+			defaultTheme: 'dark',
+			disableThemeSwitch: true,
 			favicon: '/favicon.ico',
 			social: [
-				{ icon: 'github', label: 'GitHub', href: 'https://github.com/zhendrikse/' },
+				{
+					icon: 'github',
+					label: 'GitHub',
+					href: 'https://github.com/zhendrikse/' },
+				{
+					icon: 'linkedin',
+					label: 'LinkedIn',
+					href: 'https://www.linkedin.com/in/zegerhendrikse/',
+				},
 			],
 			sidebar: [
 				{

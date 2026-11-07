@@ -18,7 +18,8 @@ export class Planet extends Renderable3D {
         radiusScaleFactor = 1
     }) {
         super();
-        this._radiusScaleFactor = radiusScaleFactor;
+        this._radiusScaleFactor = radiusScaleFactor; // Set at construction and never altered thereafter
+        this._rescaleFactor = 1;
         this._translation = translation;
         const geometry = new SphereGeometry(1, 64, 64);
         this._mesh = new Mesh(geometry, material);
@@ -26,7 +27,7 @@ export class Planet extends Renderable3D {
     }
 
     set translation(translation) { this._translation.set(-translation.x, -translation.y, -translation.z); }
-    set radiusScaleFactor(factor) { this._radiusScaleFactor = factor; }
+    set rescale(factor) { this._rescaleFactor = factor; }
 
     /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, time: number, spin: number}} body */
     canBindTo(body) {
@@ -46,8 +47,8 @@ export class Planet extends Renderable3D {
 
     /** @param {{position: Vec3, radius: number, tilt:number, rotation: Vec3, time: number, spin: number}} body */
     synchronizeWith(body) {
-        this.position.copy(body.position).add(this._translation);
-        this.scale.setScalar(body.radius * this._radiusScaleFactor);
+        this.position.copy(body.position).add(this._translation).multiplyScalar(this._rescaleFactor);
+        this.scale.setScalar(body.radius * this._radiusScaleFactor * this._rescaleFactor);
         this._mesh.rotation.y = body.time * body.spin;
     }
 }
@@ -335,9 +336,11 @@ export class RingsPlanet extends Planet {
         outerRadius,
         divisor,
         ringsColorUrl,
-        ringsPatternUrl
+        ringsPatternUrl,
+        translation = new Vec3(),
+        radiusScaleFactor = 1
     } = {}) {
-        super({material});
+        super({material, radiusScaleFactor, translation});
         this._innerRadius = innerRadius;
         this._outerRadius = outerRadius;
         this._divisor = divisor;
