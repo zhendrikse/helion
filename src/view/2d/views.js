@@ -8,8 +8,6 @@ import { CompoundControl, DropdownMenu } from '../../core/controls.js';
 import { ColorMapper, Colour, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from '../colormappers.js';
 import { AdaptiveSymmetricNormalizer, SurfaceResolution} from '../3d/surfaces/visualization.js';
 import { ComplexFunctionSample, DiscreteScalarField, DiscreteComplexField} from '../../model/math/fields.js';
-import { Normalizer} from '../3d/surfaces/visualization.js';
-import { RadialSymmetricBody } from '../../model/phys/bodies.js';
 
 export class DiscreteFieldSurfaceView extends Renderable2D {
     /**
