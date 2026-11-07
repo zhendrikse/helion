@@ -15,9 +15,11 @@ export default defineConfig({
 		sitemap(),
 		starlight({
 			title: '☀️ Helion',
-			defaultTheme: 'dark',
-			disableThemeSwitch: true,
 			favicon: '/favicon.ico',
+			components: {
+				ThemeProvider: './src/components/ForceDarkTheme.astro',
+				ThemeSelect: './src/components/EmptyComponent.astro',
+			},
 			social: [
 				{
 					icon: 'github',
