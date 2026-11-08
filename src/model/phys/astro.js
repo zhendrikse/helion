@@ -392,7 +392,7 @@ export const Deimos = Object.freeze({
 
 export const Callisto = Object.freeze({
     'name': 'callisto',
-    'a': 1882700,
+    'a': 1882700 * .6, // TODO scaling of .6
     'e': 0.0074,
     'inclination': 0.003351032164,
     'rightAscension': 0.,
@@ -449,63 +449,68 @@ export const Io = Object.freeze({
     'period': 6.689,
     'tidalLock': true
 });
+
+export const Dione = Object.freeze({
+    'name': 'dione',
+    'a': 377396,
+    'e': 0.0022,
+    'inclination': 0,
+    'rightAscension': -Math.PI / 2.,
+    'meanAnomaly': 0.,
+    'radius': 561.4 * 3 * 1e3,
+    'mass': 1.095E21,
+    'tilt': 0.,
+    'spin': 0,
+    'period': 7.689,
+    'tidalLock': 1
+});
+
+export const Enceladus = Object.freeze({
+    'name': 'enceladus',
+    'a': 237948,
+    'e': 0.0047,
+    'inclination': 0,
+    'rightAscension': -Math.PI / 2.,
+    'meanAnomaly': 0.,
+    'radius': 252.1 * 3 * 1e3,
+    'mass': 1.08022E20,
+    'tilt': 0.,
+    'spin': 0,
+    'period': 16.689,
+    'tidalLock': true
+});
+
+export const Tethys = Object.freeze({
+    'name': 'tethys',
+    'a': 294619,
+    'e': 0.,
+    'inclination': 0,
+    'rightAscension': -Math.PI / 2.,
+    'meanAnomaly': 0.,
+    'radius': 531.1 * 3 * 1e3,
+    'mass': 6.17E20,
+    'tilt': 0.,
+    'spin': 0,
+    'period': 1.689,
+    'tidalLock': true
+});
+
+export const Titan = Object.freeze({
+    'name': 'titan',
+    'a': 1221870 *.4,  // TODO: 0.4 scaling
+    'e': 0.0288,
+    'inclination': 0,
+    'rightAscension': -Math.PI / 2.,
+    'meanAnomaly': 0.,
+    'radius': 2576. * 1E3,
+    'mass': 1.345E23,
+    'tilt': 0.,
+    'spin': 0,
+    'period': 61.689,
+    'tidalLock': true
+});
+
     /*
-    'dione': new Moon({
-        'name': 'dione',
-        'a': 377396 * 3 * SCALE_MOON,
-        'e': 0.0022,
-        'inclination': 0,
-        'right_ascension': -Math.PI / 2.,
-        'mean_anomaly': 0.,
-        'radius': 561.4 * 3 * 1e3,
-        'mass': 1.095E21,
-        'tilt': 0.,
-        'spin': 0,
-        'period': 7.689,
-        'tidal_lock': 1
-    }, Bodies.saturn),
-    'enceladus': new Moon({
-        'name': 'enceladus',
-        'a': 237948 * 3 * SCALE_MOON,
-        'e': 0.0047,
-        'inclination': 0,
-        'right_ascension': -Math.PI / 2.,
-        'mean_anomaly': 0.,
-        'radius': 252.1 * 3 * 1e3,
-        'mass': 1.08022E20,
-        'tilt': 0.,
-        'spin': 0,
-        'period': 16.689,
-        'tidal_lock': 1
-    }, Bodies.saturn),
-    'tethys':  new Moon({
-        'name': 'tethys',
-        'a': 294619 * 3 * SCALE_MOON,
-        'e': 0.,
-        'inclination': 0,
-        'right_ascension': -Math.PI / 2.,
-        'mean_anomaly': 0.,
-        'radius': 531.1 * 3 * 1e3,
-        'mass': 6.17E20,
-        'tilt': 0.,
-        'spin': 0,
-        'period': 1.689,
-        'tidal_lock': 1
-    }, Bodies.saturn),
-    'titan': new Moon({
-        'name': 'titan',
-        'a': 1221870 * SCALE_MOON,
-        'e': 0.0288,
-        'inclination': 0,
-        'right_ascension': -Math.PI / 2.,
-        'mean_anomaly': 0.,
-        'radius': 2576. * 1E3,
-        'mass': 1.345E23,
-        'tilt': 0.,
-        'spin': 0,
-        'period': 61.689,
-        'tidal_lock': 1
-    }, Bodies.saturn),
     'ariel': new Moon({
         'name': 'ariel',
         'a': 191020 * SCALE_MOON,

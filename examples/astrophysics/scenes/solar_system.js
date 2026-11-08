@@ -1,7 +1,8 @@
 import {
     Simulation, Vec3, CelestialBody, ThreeJsScene, Planet, Checkbox, PlanetMoonSystem, Trail, Range, SunView,
     Colour, Earth, Mercury, Venus, Luna, Mars, Sattelite, Jupiter, RingsPlanet, Saturn, Slider, Neptune, Uranus,
-    Moon, Phobos, Deimos, Callisto, Europa, Ganymede, Io, ColorMappers, LineSegmentsView, LineSegment, Segments
+    Moon, Phobos, Deimos, Callisto, Europa, Ganymede, Io, ColorMappers, LineSegmentsView, LineSegment, Segments,
+    Titan, Tethys, Enceladus, Dione
 } from '../../../src/index.js';
 import {
     AmbientLight, MeshPhongMaterial, PointLight, Mesh, FrontSide
@@ -86,6 +87,7 @@ const saturnView = new RingsPlanet({
         bumpScale: 7.5,
         shininess: 0,
     }),
+    radiusScaleFactor: 0.7,
     innerRadius: 1.11,
     outerRadius: 2.1,
     divisor: 4,
@@ -130,7 +132,8 @@ const planetViews = [
 
 const moons = [
     new Moon(planets[2], Luna), new Moon(planets[3], Phobos), new Moon(planets[3], Deimos),
-    new Moon(planets[4], Callisto), new Moon(planets[4], Europa), new Moon(planets[4], Ganymede), new Moon(planets[4], Io)
+    new Moon(planets[4], Callisto), new Moon(planets[4], Europa), new Moon(planets[4], Ganymede), new Moon(planets[4], Io),
+    new Moon(planets[5], Dione), new Moon(planets[5], Titan), new Moon(planets[5], Tethys), new Moon(planets[5], Enceladus)
 ];
 const moonViews = [
     new Sattelite(planetViews[2], { // Earth moon Luna
@@ -143,10 +146,14 @@ const moonViews = [
     }),
     moonView(planetViews[3], Colour.White, 5), // Deimos
     moonView(planetViews[3], Colour.White, 5), // Phobos
-    moonView(planetViews[4], new Colour(0xcccccc), 1), // Callisto
-    moonView(planetViews[4], new Colour(0xcccccc), 1), // Europa
-    moonView(planetViews[4], new Colour(0xcccccc), 1), // Ganymede
-    moonView(planetViews[4], new Colour(0xcccccc), 1)  // Io
+    moonView(planetViews[4], new Colour(0xcccccc), 1.5), // Callisto
+    moonView(planetViews[4], new Colour(0xcccccc), 1.5), // Europa
+    moonView(planetViews[4], new Colour(0xcccccc), 1.5), // Ganymede
+    moonView(planetViews[4], new Colour(0xcccccc), 1.5), // Io
+    moonView(planetViews[5], new Colour(0xcccccc), 1.5), // Dione
+    moonView(planetViews[5], new Colour(0xcccccc), 1.5), // Titan
+    moonView(planetViews[5], new Colour(0xcccccc), 1.5), // Tethys
+    moonView(planetViews[5], new Colour(0xcccccc), 1.5), // Enceladus
 ];
 
 const createOrbitView = (body, color, dashSize = 5e6, gapSize = 5e6) => {
@@ -182,6 +189,7 @@ const orbitViews = [
 const earthMoonSystem = new PlanetMoonSystem(planets[2], [moons[0]], 60);
 const marsMoonSystem = new PlanetMoonSystem(planets[3], [moons[1], moons[2]], 750);
 const jupiterMoonSystem = new PlanetMoonSystem(planets[4], [moons[3], moons[4], moons[5], moons[6]], 125);
+const saturnMoonSystem = new PlanetMoonSystem(planets[5], [moons[7], moons[8], moons[9], moons[10]], 500);
 
 const sun = new CelestialBody({ radius: 2e7 });
 const sunLight = new PointLight(0xffffff, 2, 0, 0.1);
@@ -236,6 +244,7 @@ const simulation = Simulation
         earthMoonSystem.update();
         marsMoonSystem.update();
         jupiterMoonSystem.update();
+        saturnMoonSystem.update();
     })
     .append(new Checkbox('Earth clouds')
         .checked(true)

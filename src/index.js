@@ -39,7 +39,7 @@ export {
 
 export {
     Moon, CelestialBody, PlanetMoonSystem, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune,
-    Luna, Phobos, Deimos, Callisto, Europa, Ganymede, Io
+    Luna, Phobos, Deimos, Callisto, Europa, Ganymede, Io, Titan, Tethys, Enceladus, Dione
 } from './model/phys/astro.js';
 
 export { ShaderView } from './view/webgl.js';
