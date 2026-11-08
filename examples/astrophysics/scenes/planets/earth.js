@@ -1,8 +1,6 @@
+import {Simulation, Vec3, Earth, ThreeJsScene, radToDeg, Planet, Checkbox} from '../../../../src/index.js';
 import {
-    Simulation, Vec3, Earth, ThreeJsScene, radToDeg, Planet, Checkbox, CelestialBody
-} from '../../../../src/index.js';
-import {
-    AmbientLight, BackSide, Mesh, MeshPhongMaterial, ShaderMaterial, Color, Vector3, AdditiveBlending,
+    AmbientLight, BackSide, Mesh, MeshPhongMaterial, ShaderMaterial, Color, AdditiveBlending,
     DirectionalLight, SRGBColorSpace
 } from 'three';
 import fresnelVertexShader from '../../../../src/view/3d/primitives/shaders/add_on_vertex_shader.glsl?raw';
@@ -14,8 +12,7 @@ import earthMap from '../../textures/Solarsystemscope_texture_2k_earth_daymap.jp
 import earthNightMap from '../../textures/Solarsystemscope_texture_2k_earth_nightmap.jpg';
 import earthCloudsMap from '../../textures/Earth-clouds.png';
 
-const earth = new CelestialBody(Earth);
-const sunDirection = new Vector3(10, 2, -4);
+const sunDirection = new Vec3(10, 2, -4);
 const dayTexture = Planet.loader.load(earthMap);
 const nightTexture = Planet.loader.load(earthNightMap);
 dayTexture.colorSpace = SRGBColorSpace;
@@ -73,7 +70,7 @@ const earthView = new EarthView({
     }),
     fresnelMaterial: new ShaderMaterial({
         uniforms: {
-            uColor: {value: new Vector3(0.45, 0.55, 1)},
+            uColor: {value: new Vec3(0.45, 0.55, 1)},
             uIntensity: {value: 0.25}
         },
         vertexShader: fresnelVertexShader,
@@ -85,7 +82,7 @@ const earthView = new EarthView({
     atmosphereMaterial: new ShaderMaterial({
         uniforms: {
             u_sunRelPosition: {value: sunDirection},
-            u_color: {value: new Vector3(0.45, 0.55, 1)}
+            u_color: {value: new Vec3(0.45, 0.55, 1)}
         },
         vertexShader: fresnelVertexShader,
         fragmentShader: atmosphereFragmentShader,
@@ -97,7 +94,7 @@ const earthView = new EarthView({
 });
 
 const sun = new DirectionalLight(0xcccccc, 1);
-sun.position.copy(sunDirection);
+sun.position.set(sunDirection.x, sunDirection.y, sunDirection.z);
 let lastTime = performance.now() * 1e-3;
 Simulation
     .with({
@@ -120,13 +117,13 @@ Simulation
     })
     .addObject3D(new AmbientLight(0x888888, 1e-2))
     .addObject3D(sun)
-    .bind(earth.alwaysWith(earthView))
+    .bind(Earth.alwaysWith(earthView))
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
         const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one minute simulation view
-        earth.time += dtHours;
-        earthView.translation = earth.coordinates;
+        Earth.time += dtHours;
+        earthView.translation = Earth.coordinates;
     })
     .append(new Checkbox('Clouds')
         .checked(true)

@@ -79,30 +79,6 @@ const moonView = (parent, color, radiusScaleFactor) => new Sattelite(parent, {
     radiusScaleFactor
 });
 
-const mercuryView = planetView(mercuryMap, mercuryBumpMap, 1.5);
-const venusView = planetView(venusMap, venusBumpMap, 1);
-const earthView = new EarthView({
-    material: new MeshPhongMaterial({
-        map: Planet.loader.load(earthMap),
-        bumpMap: Planet.loader.load(earthBumpMap),
-        specularMap: Planet.loader.load(earthSpecMap),
-        bumpScale: 5,
-        shininess: 0
-    })
-});
-const marsView = planetView(marsMap, marsBumpMap, 2.5);
-const jupiterView = planetView(jupiterMap, jupiterMap, 1, 0.7);
-const neptuneView = planetView(neptuneMap, neptuneMap, 5);
-
-const lunarView = new Sattelite(earthView, {
-    material: new MeshPhongMaterial({
-        map: Planet.loader.load(moonMap),
-        bumpMap: Planet.loader.load(moonBumpMap),
-        bumpScale: 2,
-        shininess: 0
-    })
-});
-
 const saturnView = new RingsPlanet({
     material: new MeshPhongMaterial({
         map: Planet.loader.load(saturnMap),
@@ -133,26 +109,44 @@ const uranusView =  new RingsPlanet({
 
 const planets = [Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune]
     .map(data => new CelestialBody(data))
-const planetViews =
-    [mercuryView, venusView, earthView, marsView, jupiterView, saturnView, uranusView, neptuneView];
+const planetViews = [
+    planetView(mercuryMap, mercuryBumpMap, 1.5),
+    planetView(venusMap, venusBumpMap, 1),
+    new EarthView({
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(earthMap),
+            bumpMap: Planet.loader.load(earthBumpMap),
+            specularMap: Planet.loader.load(earthSpecMap),
+            bumpScale: 5,
+            shininess: 0
+        })
+    }),
+    planetView(marsMap, marsBumpMap, 2.5),
+    planetView(jupiterMap, jupiterMap, 1, 0.7), // Shrink Jupiter, otherwise Io is swallowed
+    saturnView,
+    uranusView,
+    planetView(neptuneMap, neptuneMap, 5)
+];
 
 const moons = [
-    new Moon(planets[2], Luna),
-    new Moon(planets[3], Phobos),
-    new Moon(planets[3], Deimos),
-    new Moon(planets[4], Callisto),
-    new Moon(planets[4], Europa),
-    new Moon(planets[4], Ganymede),
-    new Moon(planets[4], Io)
+    new Moon(planets[2], Luna), new Moon(planets[3], Phobos), new Moon(planets[3], Deimos),
+    new Moon(planets[4], Callisto), new Moon(planets[4], Europa), new Moon(planets[4], Ganymede), new Moon(planets[4], Io)
 ];
-const moonViews =
-    [lunarView,
-        moonView(planetViews[3], Colour.White, 5), // Deimos
-        moonView(planetViews[3], Colour.White, 5), // Phobos
-        moonView(planetViews[4], new Colour(0xcccccc), 1), // Callisto
-        moonView(planetViews[4], new Colour(0xcccccc), 1), // Europa
-        moonView(planetViews[4], new Colour(0xcccccc), 1), // Ganymede
-        moonView(planetViews[4], new Colour(0xcccccc), 1)  // Io
+const moonViews = [
+    new Sattelite(planetViews[2], { // Earth moon Luna
+        material: new MeshPhongMaterial({
+            map: Planet.loader.load(moonMap),
+            bumpMap: Planet.loader.load(moonBumpMap),
+            bumpScale: 2,
+            shininess: 0
+        })
+    }),
+    moonView(planetViews[3], Colour.White, 5), // Deimos
+    moonView(planetViews[3], Colour.White, 5), // Phobos
+    moonView(planetViews[4], new Colour(0xcccccc), 1), // Callisto
+    moonView(planetViews[4], new Colour(0xcccccc), 1), // Europa
+    moonView(planetViews[4], new Colour(0xcccccc), 1), // Ganymede
+    moonView(planetViews[4], new Colour(0xcccccc), 1)  // Io
 ];
 
 const createOrbitView = (body, color, dashSize = 5e6, gapSize = 5e6) => {
@@ -210,7 +204,7 @@ planets.forEach(planet => planet.position.copy(planet.coordinates));
 
 let animationSpeed = 60;
 let lastTime = performance.now() * 1e-3;
-const closePerspective = new Vec3(-21.6, 9, 3.6);
+const closePerspective = new Vec3(-21.6, 9, 3.6).multiplyScalar(.9);
 const farPerspective  = new Vec3(100, 30, -180);
 const simulation = Simulation
     .with({
@@ -245,7 +239,7 @@ const simulation = Simulation
     })
     .append(new Checkbox('Earth clouds')
         .checked(true)
-        .onChange(checked => earthView.clouds = checked)
+        .onChange(checked => planetViews[2].clouds = checked)
         .togetherWith(new Checkbox('Show orbits')
             .checked(false)
             .onChange(checked => orbitViews.forEach(view => view.visible = checked)))
