@@ -86,7 +86,7 @@ const earthView = new EarthView({
         map: Planet.loader.load(earthMap),
         bumpMap: Planet.loader.load(earthBumpMap),
         specularMap: Planet.loader.load(earthSpecMap),
-        bumpScale: 8,
+        bumpScale: 5,
         shininess: 0
     })
 });
