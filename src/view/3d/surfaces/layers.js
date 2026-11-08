@@ -20,11 +20,11 @@ export class Layer extends Renderable3D {
         transparent: true,
     });
     /**
-     * @param {Object} [param0={}] 
-     * @param {SurfaceResolution} [param0.resolution=new SurfaceResolution(100, 100)] 
-     * @param {ColorLayer} [param0.colorLayer=new HeightLayer()] 
-     * @param {ColorMapper} [param0.colorMapper=new ColorMappers().get(ColorMappers.Gradient)()] 
-     * @param {Normalizer} [param0.normalizer=new AdaptiveSymmetricNormalizer()] 
+     * @param {Object} [param0={}]
+     * @param {SurfaceResolution} [param0.resolution=new SurfaceResolution(100, 100)]
+     * @param {ColorLayer} [param0.colorLayer=new HeightLayer()]
+     * @param {ColorMapper} [param0.colorMapper=new ColorMappers().get(ColorMappers.Gradient)()]
+     * @param {Normalizer} [param0.normalizer=new AdaptiveSymmetricNormalizer()]
      */
     constructor({
         resolution = new SurfaceResolution(100, 100),
@@ -105,11 +105,11 @@ export class Layer extends Renderable3D {
 
 class MeshLayer extends Layer {
     /**
-     * @param {Object} [param0={}] 
-     * @param {SurfaceResolution} [param0.resolution=new SurfaceResolution(100, 100)] 
-     * @param {ColorLayer} [param0.colorLayer=new HeightLayer()] 
-     * @param {ColorMapper} [param0.colorMapper=new ColorMappers().get(ColorMappers.Gradient)()] 
-     * @param {Normalizer} [param0.normalizer=new AdaptiveSymmetricNormalizer()] 
+     * @param {Object} [param0={}]
+     * @param {SurfaceResolution} [param0.resolution=new SurfaceResolution(100, 100)]
+     * @param {ColorLayer} [param0.colorLayer=new HeightLayer()]
+     * @param {ColorMapper} [param0.colorMapper=new ColorMappers().get(ColorMappers.Gradient)()]
+     * @param {Normalizer} [param0.normalizer=new AdaptiveSymmetricNormalizer()]
      */
     constructor({
         resolution = new SurfaceResolution(100, 100),
@@ -150,10 +150,12 @@ class MeshLayer extends Layer {
         this.updateNormalizerWith(model);
 
         let index = 0;
-        for (let i = 0; i <= this._resolution.u; i++) {
-            const u = i / this._resolution.u;
-            for (let j = 0; j <= this._resolution.v; j++) {
-                const v = j / this._resolution.v;
+        // PlaneGeometry stores vertices with v as the outer loop and u as the inner loop.
+        // Keep the same order here so positions and texture UVs address the same vertices.
+        for (let j = 0; j <= this._resolution.v; j++) {
+            const v = j / this._resolution.v;
+            for (let i = 0; i <= this._resolution.u; i++) {
+                const u = i / this._resolution.u;
                 model.frameAt(u, v, this._frame);
                 this.updateMesh(index);
                 this.updateColor(index);
@@ -174,9 +176,10 @@ export class SurfaceLayer extends MeshLayer {
      *  colorMapper?: ColorMapper
      *  normalizer?: Normalizer
      *  material?: Material
+     *  vertexColors?: boolean
      *  opacity?: number
      *  glyphScale?: number
-     * }} param0 
+     * }} param0
      */
     constructor({
         resolution = new SurfaceResolution(100, 100),
@@ -184,13 +187,14 @@ export class SurfaceLayer extends MeshLayer {
         colorMapper = new ColorMappers().get(ColorMappers.Gradient)(),
         normalizer = new AdaptiveSymmetricNormalizer(),
         material = Layer.material(),
+        vertexColors = true,
         opacity = 1
     } = {}) {
         super({ resolution, colorLayer, colorMapper, normalizer });
 
         const geometry = new PlaneGeometry(1, 1, resolution.u, resolution.v);
         this._mesh = new Mesh(geometry, material);
-        this._mesh.material.vertexColors = true;
+        this._mesh.material.vertexColors = vertexColors;
         this._mesh.material.transparent = true;
         this._mesh.material.side = DoubleSide;
         this._mesh.material.opacity = opacity;
@@ -294,7 +298,7 @@ export class GlyphLayer extends MeshLayer {
      *  material?: Material
      *  opacity?: number
      *  glyphScale?: number
-     * }} param0 
+     * }} param0
      */
     constructor({
         glyphType = MeshLayer.GlyphTypes.BOXES,
@@ -517,10 +521,7 @@ export class NormalsLayer extends Layer {
         resolution = new SurfaceResolution(30, 30),
         scale = 0.3,
         color = 0x00aaff,
-        material = new LineBasicMaterial({
-            color,
-            transparent: true
-        })
+        material = new LineBasicMaterial({ color, transparent: true })
     } = {}) {
         super({ resolution });
 

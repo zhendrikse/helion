@@ -15,11 +15,11 @@ export class SurfaceResolution {
 export class Normalizer {
     /** @param {Interval} rangeInterval */
     adaptTo(rangeInterval) {}
-    
+
     /**
      * @abstract
      * @param {number} value
-     * @return {number} 
+     * @return {number}
      */
     normalize(value) { return 0; }
     reset() {}
@@ -48,12 +48,12 @@ export class FixedIntervalNormalizer extends Normalizer {
 }
 
 export class AdaptiveSymmetricNormalizer extends Normalizer {
-    constructor(smoothing = 0.05) { 
-        super(); 
-        this._smoothing = smoothing; 
-        this._maxAbs = 1; 
+    constructor(smoothing = 0.05) {
+        super();
+        this._smoothing = smoothing;
+        this._maxAbs = 1;
     }
-    
+
     /** @param {Interval} rangeInterval */
     adaptTo(rangeInterval) {
         if (!Number.isFinite(rangeInterval.from) || !Number.isFinite(rangeInterval.to))
@@ -109,8 +109,8 @@ export class AdaptiveNormalizer extends Normalizer {
 
 export class ColorLayer {
     /** @param {DifferentialFrame} frame */
-    value(frame) { 
-        return 0; 
+    value(frame) {
+        return 0;
     }
 
     /** @return {ColorMapper} */
@@ -217,27 +217,29 @@ export class ColorLayers extends Registry {
     static ShapeIndex = 'ShapeIndex';
     constructor(label = 'Color ') {
         super({ label, entries: {
-            Height: () => new HeightLayer(),
-            PrincipalCurvature1: () => new PrincipalCurvature1Layer(),
-            PrincipalCurvature2: () => new PrincipalCurvature2Layer(),
-            GaussianCurvature: () => new GaussianCurvatureLayer(),
-            MeanCurvature: () => new MeanCurvatureLayer(),
-            ShapeIndex: () => new ShapeIndexLayer(),
-            Curvedness: () => new CurvednessLayer()
-        }});
+                Height: () => new HeightLayer(),
+                PrincipalCurvature1: () => new PrincipalCurvature1Layer(),
+                PrincipalCurvature2: () => new PrincipalCurvature2Layer(),
+                GaussianCurvature: () => new GaussianCurvatureLayer(),
+                MeanCurvature: () => new MeanCurvatureLayer(),
+                ShapeIndex: () => new ShapeIndexLayer(),
+                Curvedness: () => new CurvednessLayer()
+            }});
     }
 }
 
 export class SurfaceVisualization extends Renderable3D {
     static Display = Object.freeze({ Surface: 'surface', Glyphs: 'glyphs', None: 'none' });
     /**
-     * @param {Object} [param0={}] 
-     * @param {SurfaceResolution} [param0.resolution=new SurfaceResolution(100, 100)] 
+     * @param {Object} [param0={}]
+     * @param {SurfaceResolution} [param0.resolution=new SurfaceResolution(100, 100)]
      * @param {string} [param0.glyphType=GlyphLayer.GlyphTypes.BOXES]
      * @param {number} [param0.glyphScale=0.8]
-     * @param {ColorLayer} [param0.colorLayer=new HeightLayer()] 
-     * @param {ColorMapper} [param0.colorMapper=new ColorMappers().get(ColorMappers.Gradient)()] 
-     * @param {Normalizer} [param0.normalizer=new AdaptiveSymmetricNormalizer()] 
+     * @param {ColorLayer} [param0.colorLayer=new HeightLayer()]
+     * @param {ColorMapper} [param0.colorMapper=new ColorMappers().get(ColorMappers.Gradient)()]
+     * @param {Normalizer} [param0.normalizer=new AdaptiveSymmetricNormalizer()]
+     * @param {Material} [param0.material] Custom surface material, e.g. one with a texture map.
+     * @param {boolean} [param0.vertexColors=true] Whether to multiply the material by vertex colors.
      * @param {number} [param0.opacity=1]
      * @param {string} [param0.display=SurfaceVisualization.Display.Surface]
      */
@@ -248,11 +250,13 @@ export class SurfaceVisualization extends Renderable3D {
         colorLayer = new HeightLayer(),
         colorMapper = colorLayer.preferredColorMapper(),
         normalizer = colorLayer.preferredNormalizer(),
+        material,
+        vertexColors = true,
         opacity = 1,
         display = SurfaceVisualization.Display.Surface
     } = {}) {
         super();
-        this._options = {resolution, glyphType, glyphScale, colorLayer, colorMapper, normalizer, opacity};
+        this._options = {resolution, glyphType, glyphScale, colorLayer, colorMapper, normalizer, material, vertexColors, opacity};
         this._surfaceLayer = new SurfaceLayer({...this._options});
         this._glyphLayer = new GlyphLayer({...this._options});
         /** @type {Layer[]} */
@@ -268,13 +272,13 @@ export class SurfaceVisualization extends Renderable3D {
     display(type) {
         switch (type) {
             case SurfaceVisualization.Display.Surface:
-                 this._display(this._surfaceLayer); 
-                 break;
-            case SurfaceVisualization.Display.Glyphs: 
-                this._display(this._glyphLayer); 
+                this._display(this._surfaceLayer);
                 break;
-            case SurfaceVisualization.Display.None: 
-                this._display(null); 
+            case SurfaceVisualization.Display.Glyphs:
+                this._display(this._glyphLayer);
+                break;
+            case SurfaceVisualization.Display.None:
+                this._display(null);
                 break;
         }
         return this;
@@ -282,7 +286,7 @@ export class SurfaceVisualization extends Renderable3D {
 
     /** @param {Layer} layer */
     _display(layer) {
-        if (this._meshLayer) 
+        if (this._meshLayer)
             this.remove(this._meshLayer);
         this._meshLayer = layer;
         if (!layer) return;
@@ -302,7 +306,7 @@ export class SurfaceVisualization extends Renderable3D {
         if (this._model) layer.initialize(this._model);
         return this;
     }
-    
+
     /** @param {DiscreteFieldSurface} model */
     initialize(model) {
         this._model = model;
@@ -318,7 +322,7 @@ export class SurfaceVisualization extends Renderable3D {
                 .onChange(value => {
                     this._surfaceLayer.colorMapper = colorMappers.get(value)();
                     this._glyphLayer.colorMapper = colorMappers.get(value)();
-            }))
+                }))
             .add(new Slider('🪟 Opacity ')
                 .withRange(new Range(0, 1, 0.01))
                 .withValue(this._options.opacity)
@@ -345,7 +349,7 @@ export class SurfaceVisualization extends Renderable3D {
                     layer.colorMapper = colorLayer.preferredColorMapper();
                     layer.normalizer = colorLayer.preferredNormalizer();
                 }
-        });
+            });
     }
 
     /** @param {DiscreteFieldSurface} model */
@@ -353,18 +357,18 @@ export class SurfaceVisualization extends Renderable3D {
         this._meshLayer?.synchronizeWith(model);
         for (const layer of this._overlayLayers) layer.synchronizeWith(model);
     }
-    
+
     reset() {
         this._meshLayer?.reset();
         for (const layer of this._overlayLayers) layer.reset?.();
     }
-    
+
     get boundingBox() {
         const box = new Box3();
-        if (this._meshLayer) 
+        if (this._meshLayer)
             box.union(this._meshLayer.boundingBox);
-        
-        for (const layer of this._overlayLayers) 
+
+        for (const layer of this._overlayLayers)
             box.union(layer.boundingBox ?? new Box3());
         return box;
     }
