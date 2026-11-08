@@ -39,7 +39,7 @@ Simulation
     .with({
         htmlDivId: 'archimedesMapContainer',
         headUpDisplay: { enabled: false },
-        camera: { fieldOfView: 35, position: new Vec3(0, 2.5, 6.5) },
+        camera: { fieldOfView: 35, position: new Vec3(0, 2.75, 6.5) },
         lighting: { enabled: false },
         infoPanel: {
             text: '<Strong>Archimedes equiareal map</strong><br/>' +
@@ -49,7 +49,7 @@ Simulation
         }
     })
     .addObject3D(directionalLight)
-    .addObject3D(new AmbientLight(0xffffff, 0.1))
+    .addObject3D(new AmbientLight(0xffffff, 0.2))
     .bind(surface.alwaysWith(surfaceView))
     .onStep(clock => {
         t = (Math.sin(clock.simulatedTime * 0.5) + 1) / 2;
