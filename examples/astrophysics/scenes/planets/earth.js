@@ -1,4 +1,13 @@
-import {Simulation, Vec3, Earth, ThreeJsScene, radToDeg, Planet, Checkbox} from '../../../../src/index.js';
+import {
+    Simulation,
+    Vec3,
+    Earth,
+    ThreeJsScene,
+    radToDeg,
+    Planet,
+    Checkbox,
+    CelestialBody
+} from '../../../../src/index.js';
 import {
     AmbientLight, BackSide, Mesh, MeshPhongMaterial, ShaderMaterial, Color, AdditiveBlending,
     DirectionalLight, SRGBColorSpace
@@ -12,6 +21,7 @@ import earthMap from '../../textures/Solarsystemscope_texture_2k_earth_daymap.jp
 import earthNightMap from '../../textures/Solarsystemscope_texture_2k_earth_nightmap.jpg';
 import earthCloudsMap from '../../textures/Earth-clouds.png';
 
+const earth = new CelestialBody(Earth);
 const sunDirection = new Vec3(10, 2, -4);
 const dayTexture = Planet.loader.load(earthMap);
 const nightTexture = Planet.loader.load(earthNightMap);
@@ -117,13 +127,13 @@ Simulation
     })
     .addObject3D(new AmbientLight(0x888888, 1e-2))
     .addObject3D(sun)
-    .bind(Earth.alwaysWith(earthView))
+    .bind(earth.alwaysWith(earthView))
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
         const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one minute simulation view
-        Earth.time += dtHours;
-        earthView.translation = Earth.coordinates;
+        earth.time += dtHours;
+        earthView.translation = earth.coordinates;
     })
     .append(new Checkbox('Clouds')
         .checked(true)
