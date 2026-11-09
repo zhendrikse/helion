@@ -6,8 +6,6 @@ import earthMap from '../../astrophysics/textures/Solarsystemscope_texture_2k_ea
 import earthBumpMap from '../../astrophysics/textures/earthbump1k.jpg';
 
 const EARTH_RADIUS = 6_371_000;
-const BALL_RADIUS = 0.02 * EARTH_RADIUS;
-const INITIAL_DISTANCE = 1.05 * EARTH_RADIUS;
 
 const earthTexture = Planet.loader.load(earthMap);
 earthTexture.colorSpace = SRGBColorSpace;
@@ -19,24 +17,23 @@ function update(ball, dt) {
         .addScaledVector(ball.force, 0.5 * dt * dt);
 }
 let speed = 7800;
-const initialPosition = new Vec3(0, INITIAL_DISTANCE, 0);
+const initialPosition = new Vec3(0,  1.05 * EARTH_RADIUS, 0);
 const initialVelocity = () => new Vec3(-initialPosition.y, initialPosition.x, -initialPosition.z)
     .multiplyScalar(speed / initialPosition.length());
 
 const earth = new RadialSymmetricBody({ radius: EARTH_RADIUS });
 const cannonball = new RadialSymmetricBody({
-    radius: BALL_RADIUS,
+    radius: 0.02 * EARTH_RADIUS,
     position: initialPosition.clone(),
     velocity: initialVelocity()
 })
-
 const uniformEarthBall = new RadialSymmetricBody({
-    radius: BALL_RADIUS,
-    position: new Vec3(0, INITIAL_DISTANCE, 0)
+    radius: 0.02 * EARTH_RADIUS,
+    position: initialPosition.clone()
 });
 const pointMassEarthBall = new RadialSymmetricBody({
-    radius: BALL_RADIUS,
-    position: new Vec3(0, INITIAL_DISTANCE, 0)
+    radius: 0.02 * EARTH_RADIUS,
+    position: initialPosition.clone()
 });
 
 const earthView = new Sphere({
@@ -92,14 +89,14 @@ const simulation = Simulation
         }
 
         cannonball.force.copy(cannonball.position.clone().normalize().multiplyScalar(-9.8));
-        update(cannonball, dt);
+        pointMassEarthBall.force.copy(pointMassEarthBall.position.clone().normalize().multiplyScalar(-9.8));
 
         const distance = uniformEarthBall.position.length();
         const magnitude = 9.8 * (Math.min(distance, EARTH_RADIUS) / EARTH_RADIUS) ** 3;
         uniformEarthBall.force.copy(uniformEarthBall.position.clone().normalize().multiplyScalar(-magnitude));
-        update(uniformEarthBall, dt);
 
-        pointMassEarthBall.force.copy(pointMassEarthBall.position.clone().normalize().multiplyScalar(-9.8));
+        update(cannonball, dt);
+        update(uniformEarthBall, dt);
         update(pointMassEarthBall, dt);
 
         elapsedTime += dt;
