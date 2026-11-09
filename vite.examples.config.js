@@ -4,52 +4,42 @@ import fg from 'fast-glob';
 
 const examplesDir = path.resolve(import.meta.dirname, 'examples');
 
-async function getExamples() {
-    console.time('[examples] Discovery');
-
-    const files = await fg('**/scenes/*.js', {
+export default defineConfig(async () => {
+    const files = await fg('**/scenes/**/*.js', {
         cwd: examplesDir,
         onlyFiles: true,
         absolute: true,
-        followSymbolicLinks: false,
-        ignore: [
-            '**/node_modules/**',
-            '**/dist/**',
-            '**/build/**'
-        ]
+        followSymbolicLinks: false
     });
 
-    console.timeEnd('[examples] Discovery');
-    console.log(`[examples] Found ${files.length} demos.`);
-
-    return Object.fromEntries(
+    const input = Object.fromEntries(
         files.map(file => {
             const relativePath = path.relative(
                 examplesDir,
                 file
-            );
+            ).split(path.sep).join('/');
 
-            const name = relativePath
-                .replace(/\.js$/, '')
-                .replaceAll(path.sep, '_');
-
-            return [name, file];
+            return [`examples/${relativePath}`, file];
         })
     );
-}
 
-export default defineConfig(async () => {
-    const input = await getExamples();
+    console.log('[examples] Inputs:', Object.keys(input).length);
 
     return {
         base: '/helion/',
+
         build: {
             outDir: 'docs/public',
             emptyOutDir: false,
+
             rollupOptions: {
-                input
+                input,
+                output: {
+                    entryFileNames: '[name]',
+                    chunkFileNames: 'assets/[name]-[hash].js',
+                    assetFileNames: 'assets/[name]-[hash][extname]'
+                }
             }
         }
     };
 });
-

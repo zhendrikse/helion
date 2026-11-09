@@ -2,7 +2,9 @@ import {
     Simulation, AxialSymmetricBody, ModelObjectsCollection, Cylinder, Sphere, RadialSymmetricBody, Vec3, ViewsCollection,
     Colour, Block, Box, Range, Slider, UPlotGraph, normalDistribution
 } from '../../../src/index.js';
+import wood from '../../kinematics/scenes/textures/wood_128x128.jpg';
 import uPlot from 'uplot';
+import {MeshStandardMaterial, TextureLoader} from "three";
 
 const num_nails = 10;
 const num_balls = 200;
@@ -66,8 +68,8 @@ const normalValues = binPositions.map(x => num_balls * normalDistribution(x, num
 const histogram = new UPlotGraph({
     dataDefinition: [
         { label: 'Bin' },
-        { label: 'Observed distribution', color: new Colour(0x22aa55), fill: new Colour(0x22aa55) },
-        { label: 'Normal distribution', color: new Colour(0xff4444) }
+        { label: 'Observed distribution', color: new Colour(0xff0000), fill: new Colour(0xcc4444) },
+        { label: 'Normal distribution', color: new Colour(0xffff00) }
     ],
     title: 'Galton board: observed and theoretical distributions',
     xLabel: 'Bin',
@@ -90,9 +92,12 @@ const simulation = Simulation
     .bind(new Block({
         position: new Vec3(0, 1.5, -0.3),
         size: new Vec3(2 * (num_nails + 1.1), num_balls * .1825, .1)
-    }).alwaysWith(new Box({ color: new Colour(0x855E42) })))
-    .bind(bars.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0xDEB887) })))
-    .bind(pins.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0xDEB887) })))
+    }).alwaysWith(new Box({
+        material: new MeshStandardMaterial({map: new TextureLoader().load(wood)}),
+        color: new Colour(0xDEB887)
+    })))
+    .bind(bars.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0x855E42) })))
+    .bind(pins.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0x855E42) })))
     .runsEvery(0.01)
     .onStep((_clock, _dt) => {
         simulationStep++;
@@ -136,7 +141,7 @@ function spawnBall() {
     spawnedBalls++;
 
     // Same dynamic model/view binding pattern as the double-slit particle demo.
-    simulation.bind(body.alwaysWith(new Sphere({ color: Colour.Green })));
+    simulation.bind(body.alwaysWith(new Sphere({ color: Colour.Red })));
     simulation.setHtmlTitle(`Ball ${spawnedBalls} of ${num_balls}`)
 }
 
