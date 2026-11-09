@@ -4,6 +4,7 @@ import { Vec3, Vec2, Simulation, ModelObject, ShaderView, Slider, Range } from "
 import {
     ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, NoColorSpace, RepeatWrapping, TextureLoader
 } from "three";
+import milkyWayUrl from '../../../docs/public/images/astrophysics/milky-way.jpg';
 
 class MilkyWayPanoramaModel extends ModelObject {
     constructor({width, height, texture}) {
@@ -19,7 +20,7 @@ class MilkyWayPanoramaModel extends ModelObject {
 
 const textureLoader = new TextureLoader();
 const texture = textureLoader.load(
-    new URL('../images/astrophysics/milky-way.jpg', import.meta.url).href,
+    milkyWayUrl,
 
     function(texture) {
         texture.minFilter = LinearMipmapLinearFilter;
