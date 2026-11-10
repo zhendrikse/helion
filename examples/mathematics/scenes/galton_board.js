@@ -87,7 +87,13 @@ const simulation = Simulation
         htmlDivId: 'galtonBoardContainer',
         headUpDisplay: false,
         viewport: { aspectRatio: '3/4' },
-        camera: { fieldOfView: 30, position: new Vec3(0, -32, 56) }
+        camera: { fieldOfView: 30, position: new Vec3(0, -32, 56) },
+        infoPanel: {
+            text: '<strong>🎲 Galton board</strong><br/>' +
+                'The <a href=\"https://en.wikipedia.org/wiki/Galton_board\">Galton board</a> illustrates ' +
+                '<a href=\"https://en.wikipedia.org/wiki/Central_limit_theorem\">, i.e. it shows ' +
+                'that in the limit the binomial distribution approximates a normal distribution.',
+        }
     })
     .bind(new Block({
         position: new Vec3(0, 1.5, -0.3),

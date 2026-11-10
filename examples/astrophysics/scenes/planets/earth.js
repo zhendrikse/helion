@@ -1,12 +1,5 @@
 import {
-    Simulation,
-    Vec3,
-    Earth,
-    ThreeJsScene,
-    radToDeg,
-    Planet,
-    Checkbox,
-    CelestialBody
+    Simulation, Vec3, Earth, ThreeJsScene, radToDeg, Planet, Checkbox, CelestialBody
 } from '../../../../src/index.js';
 import {
     AmbientLight, BackSide, Mesh, MeshPhongMaterial, ShaderMaterial, Color, AdditiveBlending,
