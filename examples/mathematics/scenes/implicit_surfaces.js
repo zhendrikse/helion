@@ -44,7 +44,7 @@ const surfaceView = new ImplicitSurfaceView({
 let animate = false;
 Simulation
     .with({
-        htmlDivId: 'timeDependentImplicitSurfacesContainer',
+        htmlDivId: 'implicitSurfacesContainer',
         headUpDisplay: { enabled: false },
         viewport: { parameterMenuCollapsed: false },
         camera: { fieldOfView: 35 },
