@@ -23,26 +23,29 @@ class RelativisticMercury extends CelestialBody {
         this._orbit = [];
         this._alpha = 1e6;
         this._beta = 1e5;
-        this.velocity.copy(initial_velocity);
+        this.reset();
     }
 
     get coordinates() { return this.position; }
 
-    updateBy(t, dt) {
+    updateBy(dt) {
         const current_pos = this.position.clone();
         const positionLength  = current_pos.length();
         this._orbit.push(current_pos);
-        const minRadius = 1e-10;
-        const safePositionLength = Math.max(positionLength, minRadius);
-        const old_position_vector_magnitude_squared = safePositionLength * safePositionLength;
+        const old_position_vector_magnitude_squared = positionLength * positionLength;
 
         // Compute the factor coming from General Relativity
-        const fact = 1 + this._alpha * sunSchwarzschildRadius / safePositionLength + this._beta * rL2 / old_position_vector_magnitude_squared;
+        const fact = 1 + this._alpha * sunSchwarzschildRadius / positionLength + this._beta * rL2 / old_position_vector_magnitude_squared;
         const acceleration_magnitude = c_a * fact / old_position_vector_magnitude_squared;
-        const acceleration_vector = current_pos.multiplyScalar(-acceleration_magnitude / safePositionLength);
+        const acceleration_vector = current_pos.multiplyScalar(-acceleration_magnitude / positionLength);
 
         this.velocity.addScaledVector(acceleration_vector, dt);
         this.position.addScaledVector(this.velocity, dt);
+    }
+
+    reset() {
+        this.velocity.copy(initial_velocity);
+        this.position.copy(initial_position);
     }
 
     toggleAlpha() { this._alpha = this._alpha === 0 ? 1e6 : 0; } // Strength of 1/r**3 term
@@ -64,11 +67,14 @@ function angleBetween(v1, v2) {
     return Math.acos(dot); // in radialen
 }
 
+const perihelionPoints = [];
 function markPerihelion() {
+    const perihelionPoint = new Sphere({ color: Colour.Green });
     simulation.bind(new RadialSymmetricBody({
         position: vec_r_last,
-        radius: 0.2
-    }).onceWith(new Sphere({ color: Colour.Green })));
+        radius: 0.1
+    }).onceWith(perihelionPoint));
+    perihelionPoints.push(perihelionPoint);
     const prev = perihelion_list[perihelion_list.length - 2];
     const curr = perihelion_list[perihelion_list.length - 1];
 
@@ -140,7 +146,7 @@ function checkPerihelion() {
 
 const sun = new CelestialBody({
     'name': 'sun',
-    'radius': 696300000.0 * .25e-2,
+    'radius': 696300000.0,
     'mass': 1.9885440000000002e+30,
     'spin': 3600 * 2.8653290845717256e-06,
     'tilt': 0.1265363707695889
@@ -153,39 +159,48 @@ sunLight.position.set(0, 0, 0);
 
 const mercury = new RelativisticMercury(Mercury);
 
-let tPhys = 0;
 let lastTime = performance.now() * .001;
 let accumulator = 0;
 simulation = Simulation
     .with({
         htmlDivId: 'perihelionMercuryContainer',
         camera: {
-            position: new Vec3(-3 * orbitRadius, 1.25 * orbitRadius, 0).multiplyScalar(3),
+            fieldOfView: 35,
+            position: new Vec3(3, 1, 0).multiplyScalar(orbitRadius * 0.825),
         },
-        headUpDisplay: { enabled: false },
-        scene: { background: ThreeJsScene.Background.STARS, scale: 1e-6 },
-        lighting: { enabled: false }
+        viewport: { aspectRatio: '19/12' },
+        scene: { background: ThreeJsScene.Background.STARS },
+        lighting: { enabled: false },
+        infoPanel: {
+            text: '<strong>💫 Mercury\'s perihelion precession</strong><br/>' +
+                '• Explanation of one of the <a href=\"https://en.wikipedia.org/wiki/Tests_of_general_relativity\">three classic tests</a> ' +
+                'of general relativity'
+        }
     })
+    .withMouseClickEventListener(() => lastTime = performance.now())
     .bind(mercury.alwaysWith(new Planet({
         material: new MeshPhongMaterial({
             map: Planet.loader.load(mercuryMap),
             bumpMap: Planet.loader.load(mercuryBumpMap),
-            bumpScale: 1.5,
+            bumpScale: 2,
             shininess: 0
-        })
+        }),
+        radiusScaleFactor: 1.5e-7
     })))
-    .bind(mercury.alwaysWith(new Trail()))
-    .bind(sun.alwaysWith(new SunView()))
-    .onFrame(timeStamp => {
-        const deltaSeconds = (timeStamp - lastTime) * .001;
-        lastTime = timeStamp;
-        //const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one minute simulation view
+    .bind(mercury.alwaysWith(new Trail({
+        maxPoints: 230
+    })))
+    .bind(sun.alwaysWith(new SunView({ radiusScaleFactor:  2e-9})))
+    .onReset(() => perihelionPoints.forEach(point => point.visible = false))
+    .onStep(clock => {
+        const deltaSeconds = (performance.now() - lastTime) * .001;
+        lastTime = performance.now();
 
         accumulator += deltaSeconds * timeScale;
         while (accumulator > baseDt) {
             vec_r_last = mercury.position.clone();
 
-            mercury.updateBy(tPhys, baseDt);
+            mercury.updateBy(baseDt);
             checkPerihelion();
 
             mercury.time += baseDt;
@@ -193,6 +208,6 @@ simulation = Simulation
         }
     })
     .addObject3D(sunLight)
-    .addObject3D(new AmbientLight(0xffffff, 0.2))
-    .append(new Checkbox('Alpha term').onChange(() => mercury.toggleAlpha()))
-    .append(new Checkbox('Beta term').onChange(() => mercury.toggleBeta()));
+    .addObject3D(new AmbientLight(0xffffff, 0.1))
+    .append(new Checkbox('Alpha term').checked(true).onChange(() => mercury.toggleAlpha()))
+    .append(new Checkbox('Beta term').checked(true).onChange(() => mercury.toggleBeta()));

@@ -154,10 +154,12 @@ class GlowMaterial {
 export class SunView extends Renderable3D {
     constructor({
         color = new Color("#ffcc66"),
-        speed = 2
+        speed = 2,
+        radiusScaleFactor = 1.0
     } = {}) {
         super();
         this._speed = speed * 0.001;
+        this._radiusScaleFactor = radiusScaleFactor;
         this.uniforms = {
             uTime: { value: 0 },
             uColor: { value: color }
@@ -180,7 +182,7 @@ export class SunView extends Renderable3D {
 
     synchronizeWith(body) {
         this.uniforms.uTime.value = body.time * this._speed;
-        this.scale.setScalar(body.radius);
+        this.scale.setScalar(body.radius * this._radiusScaleFactor);
     }
 }
 

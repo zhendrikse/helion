@@ -535,7 +535,7 @@ export class Simulation {
      * lost and needs to be re-added if needed!!
      * @param {Event} _event
      */
-    defaultMouseClickCallback (_event) {
+    _defaultMouseClickCallback (_event) {
         if (this._status === Simulation.Status.STOPPED) {
             this._hud?.show('Running', 1000);
             this._status = Simulation.Status.RUNNING;
@@ -553,8 +553,11 @@ export class Simulation {
      * @param {(event: Event) => void} callback
      * @returns {Simulation}
      */
-    withMouseClickEventListener(callback = event => this.defaultMouseClickCallback(event)) {
-        this._viewport.canvasWrapper.addEventListener('click', event => callback(event) );
+    withMouseClickEventListener(callback = event => {}) {
+        this._viewport.canvasWrapper.addEventListener('click', event => {
+            this._defaultMouseClickCallback(event);
+            callback(event);
+        });
         return this;
     }
 
