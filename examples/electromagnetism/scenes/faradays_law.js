@@ -75,7 +75,7 @@ const faradayArrows = ViewsCollection.of(Arrow).with({
 Simulation
     .with({
         htmlDivId: 'faradayLawContainer',
-        camera: { position: new Vec3(3, 1, 4), fieldOfView: 45 },
+        camera: { position: new Vec3(4.5, 1.5, 4.5), fieldOfView: 30, target: new Vec3(-.5, -.5, 0) },
         viewport: { aspectRatio: '19/12' },
         infoPanel: {
             text: '<strong>🔌 Faraday\'s law</strong><br/>' +

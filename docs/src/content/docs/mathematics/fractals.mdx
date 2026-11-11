@@ -44,21 +44,28 @@ layout: ../../../layouts/DocsLayout.astro
 <div id="lSystemsContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/l_systems.js"}></script>
 
-### Pythagoras tree 🌳
-<div class="header_line"></div>
-
-<div class="badgeRow">
-    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/pythagoras_tree.js">
-        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=pythagoras_tree.js"/>
+<div style="width: 25%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;">
+    <a href="https://en.wikipedia.org/wiki/David_Hilbert">
+    <img alt="David Hilbert" src="https://upload.wikimedia.org/wikipedia/commons/7/79/Hilbert.jpg"/>
     </a>
 </div>
 
-🧠 Idea based on [library.fridoverweij.com](https://library.fridoverweij.com/codelab/pytagoras_tree/index.html) <br/>
-🔗 Related to [Pythagorean theorem](../pythagoras/) demo<br/>
+In 1891, [David Hilbert](https://en.wikipedia.org/wiki/David_Hilbert)
+described a remarkable mathematical object: a continuous curve
+that fills an entire square.
 
-<div id="pythagorasTreeContainer"></div>
-<script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/pythagoras_tree.js"}></script>
+At its $n$-th finite approximation, the length of the curve
+is given by:
 
+$$
+L_n = 2^n - 2^{-n}.
+$$
+
+As $n\rightarrow\infty$, its length diverges, yet every point remains inside a square
+of area one. In the limit, the curve passes through every point of that square!
+
+Formulated more accurately: the [Hausdorff dimension](https://en.wikipedia.org/wiki/Hausdorff_dimension)
+of the [Hilbert curve](https://en.wikipedia.org/wiki/Hilbert_curve) equals exactly 2.
 
 ### References
 <div style="border-top: 1px solid #999999"><br/></div>

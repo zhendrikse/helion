@@ -56,7 +56,7 @@ Simulation
         }
     })
     .append(new Checkbox('Animate').onChange(checked => animate = checked ))
-    .setLatexTitle('\\sin(x)\\cos(y) + \\sin(y)\\cos(z) + \\sin(z)\\cos(x) - \\frac12\\sin(t) = 0')
+    .setLatexTitle('\\sin x\\cos y + \\sin y\\cos z + \\sin z\\cos x - \\frac12\\sin t = 0')
     .onStep((_clock, dt) => surface.time += animate ? dt : 0)
     .bind(surface.alwaysWith(surfaceView))
     .provideAxesAround(surfaceView)

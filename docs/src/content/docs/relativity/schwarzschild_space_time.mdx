@@ -12,22 +12,7 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-### About
-<div class="header_line"></div>
-
-🎯 Visualization of space-time curvature
-
-- <span style="color: orange">orange</span> → real motion: geodesic flow in 4D $(t, r, \phi)$
-- <span style="color: cyan">cyan</span> → Geodesic-projection on embedded equatorial surface
-- <span style="color: red">red</span> → flat motion (Newtonian/Euclidian projected trail)
-
-🧠 Original [idea and code](https://www.glowscript.org/#/user/Luinthoron/folder/English/program/embedding-diagram) by M. Ryston (Department of Physics Education)<br/>
-📌 Described in [Interactive animations as a tool in teaching general relativity [...]](https://iopscience.iop.org/article/10.1088/1742-6596/1286/1/012049)<br/>
-📌 See also [Spacetime Embedding Diagrams for Black Holes](https://arxiv.org/pdf/gr-qc/9806123)<br/>
-👉 The closer to the sun, the greater the difference between <span style="color: red">red</span> and <span style="color: orange">orange</span>!<br/>
-🐍 A 3D [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Relativity/program/SchwarzwschildSpaceTime) is available as well, see [schwarzschild_space_time.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/schwarzschild_space_time.py)<br/>
-
-### Live experiment
+### Demo
 <div class="header_line"></div>
 
 <div class="badgeRow">
@@ -36,16 +21,27 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
+🎯 Visualization of space-time curvature
+🧠 Original [idea and code](https://www.glowscript.org/#/user/Luinthoron/folder/English/program/embedding-diagram) by M. Ryston (Department of Physics Education)<br/>
+📌 Described in [Interactive animations as a tool in teaching general relativity [...]](https://iopscience.iop.org/article/10.1088/1742-6596/1286/1/012049)<br/>
+📌 See also [Spacetime Embedding Diagrams for Black Holes](https://arxiv.org/pdf/gr-qc/9806123)<br/>
+👉 The closer to the sun, the greater the difference between <span style="color: red">red</span> and <span style="color: orange">orange</span>!<br/>
+🐍 A 3D [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Relativity/program/SchwarzwschildSpaceTime) is available as well, see [schwarzschild_space_time.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/schwarzschild_space_time.py)<br/>
+
 <div id="spaceTimeContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/relativity/scenes/schwarzschild_space_time.js"}></script>
-<p style="clear: both;"></p>
 
 ## Theoretical background
 <div style="border-top: 1px solid #999999"><br/></div>
 
-
 ### Flamm's paraboloid
 <div class="header_line"></div>
+
+<div style="width: 20%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;">
+    <a href="https://en.wikipedia.org/wiki/Karl_Schwarzschild">
+    <img alt="Karl Schwarzschild" src="https://upload.wikimedia.org/wikipedia/commons/0/05/Karl_schwarzschild.portrait.jpg"/>
+    </a>
+</div>
 
 The Schwarzschild metric describes a gravitational field of a non-rotating 
 spherical mass (and without electric charge), see [Wikipedia](https://en.wikipedia.org/wiki/Schwarzschild_metric):

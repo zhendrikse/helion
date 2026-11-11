@@ -17,17 +17,6 @@ out such a conclusive clarification of the Mercury anomaly. &mdash;
 [Letter from K Schwarzschild to A Einstein](https://etienneklein.fr/wp-content/uploads/2016/01/Relativit%C3%A9-g%C3%A9n%C3%A9rale.pdf),
 22 December 1915.
 
-This code simulates the movement of Mercury and displays its position and
-trajectory at regular intervals. The gravitational force and relativistic correction
-are explicitly calculated per time step:
-
-$$
-\vec{a} = -\frac{c_a \cdot \text{fact}}{r^2} \hat{r},
-\quad \text{where } \text{fact} = 1 + \alpha \frac{R_s}{r} + \beta \frac{L^2}{r^2}
-$$
-
-The additional terms $\alpha/r^3$ and  $\beta/r^4$ are included in the force.
-
 ### Demo
 <div class="header_line"><br/></div>
 
@@ -43,6 +32,17 @@ The additional terms $\alpha/r^3$ and  $\beta/r^4$ are included in the force.
 
 <div id="perihelionMercuryContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/relativity/scenes/perihelion_mercury.js"}></script>
+
+This code simulates the movement of Mercury and displays its position and
+trajectory at regular intervals. The gravitational force and relativistic correction
+are explicitly calculated per time step:
+
+$$
+\vec{a} = -\frac{c_a \cdot \text{fact}}{r^2} \hat{r},
+\quad \text{where } \text{fact} = 1 + \alpha \frac{R_s}{r} + \beta \frac{L^2}{r^2}
+$$
+
+The additional terms $\alpha/r^3$ and  $\beta/r^4$ are included in the force.
 
 ### Definitions of aphelion and perihelion
 <div style="border-top: 1px solid #999999"><br/></div>

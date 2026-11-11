@@ -147,12 +147,12 @@ const allGone = () => rod.charges.every(c => c.position.y > 1);
 const simulation = Simulation
     .with({
         htmlDivId: 'chargedRodContainer',
-        camera: {
-            position: new Vec3(2, .8, 2.5),
-            fieldOfView: 30
-        },
-        viewport: {
-            aspectRatio: '3/4'
+        camera: { position: new Vec3(1.8, .75, 2.25),  fieldOfView: 30 },
+        viewport: { aspectRatio: '3/4' },
+        infoPanel: {
+            text: '<strong>🦯 Moving charged rod</strong><br/>' +
+                '👉 The rod is modeled as a collection of point charges<br/>' +
+                '👉 Electric field arrows are <span style="color: red">red</span>, magnetic field arrows are <span style="color: blue">blue</span>'
         }
     })
     .bind(electricField.alwaysWith(electricArrowField))

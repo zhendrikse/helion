@@ -295,10 +295,14 @@ const simulation = Simulation
             position: new Vec3(5, 7.5, 15).multiplyScalar(13),
             fieldOfView: 45
         },
-        scene: {
-            background: ThreeJsScene.Background.STARS
+        scene: { background: ThreeJsScene.Background.STARS },
+        infoPanel: {
+            text: '<strong>❍ Schwarzschild space-time</strong><br/>' +
+                '• <span style="color: orange">orange</span> → real motion: geodesic flow in 4D $(t, r, \\phi)$<br/>' +
+                '• <span style="color: cyan">cyan</span> → Geodesic-projection on embedded equatorial surface<br/>' +
+                '• <span style="color: red">red</span> → flat motion (Newtonian/Euclidian projected trail)'
         }
-        })
+    })
     .addObject3D(grid)
     .addObject3D(photonRing)
     .bind(coneGeometry.onceWith(spaceTimeCone))
