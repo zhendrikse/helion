@@ -1,5 +1,5 @@
-import {Simulation, Vec3, Neptune, ThreeJsScene, radToDeg, Planet, CelestialBody} from "../../../../src/index.js";
-import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
+import {Simulation, Vec3, Neptune, ThreeJsScene, radToDeg, Planet, CelestialBody} from '../../../../src/index.js';
+import {AmbientLight, DirectionalLight, MeshPhongMaterial} from 'three';
 import neptuneMap from '../../textures/neptunemap.jpg';
 
 const neptune = new CelestialBody(Neptune);
@@ -17,7 +17,7 @@ sun.position.set(10, 2, 1.5);
 let lastTime = performance.now() * 1e-3;
 Simulation
     .with({
-        htmlDivId: "neptuneContainer",
+        htmlDivId: 'neptuneContainer',
         camera: {
             fieldOfView: 45,
             position: new Vec3(1, 1.5, 4).multiplyScalar(2.5)

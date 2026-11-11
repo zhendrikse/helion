@@ -1,5 +1,5 @@
-import {Simulation, Vec3, Mars, ThreeJsScene, radToDeg, Planet, CelestialBody} from "../../../../src/index.js";
-import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
+import {Simulation, Vec3, Mars, ThreeJsScene, radToDeg, Planet, CelestialBody} from '../../../../src/index.js';
+import {AmbientLight, DirectionalLight, MeshPhongMaterial} from 'three';
 import marsMap from '../../textures/marsmap.jpg';
 import marsBumpMap from '../../textures/marsbump.jpg';
 
@@ -18,7 +18,7 @@ sun.position.set(10, 2, 1.5);
 let lastTime = performance.now() * 1e-3;
 Simulation
     .with({
-        htmlDivId: "marsContainer",
+        htmlDivId: 'marsContainer',
         camera: {
             fieldOfView: 45,
             position: new Vec3(1, 1.5, 4).multiplyScalar(6)

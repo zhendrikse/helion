@@ -1,7 +1,7 @@
 import {
     Simulation, Vec3, Saturn, ThreeJsScene, radToDeg, RingsPlanet, Planet, CelestialBody
-} from "../../../../src/index.js";
-import {AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
+} from '../../../../src/index.js';
+import {AmbientLight, DirectionalLight, MeshPhongMaterial} from 'three';
 import saturnRingsColorUrl from '../../textures/saturnringcolor.jpg';
 import saturnRingsPatternUrl from '../../textures/saturnringpattern.gif';
 import saturnMap from '../../textures/saturnmap.jpg';
@@ -27,7 +27,7 @@ sun.position.set(10, 2, 1.5);
 let lastTime = performance.now() * 1e-3;
 Simulation
     .with({
-        htmlDivId: "saturnContainer",
+        htmlDivId: 'saturnContainer',
         camera: { fieldOfView: 45, position: new Vec3(1, 1.5, 4).multiplyScalar(.8) },
         scene: { background: ThreeJsScene.Background.STARS, scale: 1e-8 },
         lighting: { enabled: false },

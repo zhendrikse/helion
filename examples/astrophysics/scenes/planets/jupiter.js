@@ -1,5 +1,5 @@
-import {Simulation, Vec3, Jupiter, ThreeJsScene, radToDeg, Planet, CelestialBody} from "../../../../src/index.js";
-import { AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
+import {Simulation, Vec3, Jupiter, ThreeJsScene, radToDeg, Planet, CelestialBody} from '../../../../src/index.js';
+import { AmbientLight, DirectionalLight, MeshPhongMaterial} from 'three';
 import jupiterMap from '../../textures/jupitermap.jpg';
 
 const jupiter = new CelestialBody(Jupiter);
@@ -17,7 +17,7 @@ sun.position.set(10, 2, 0.5);
 let lastTime = performance.now() * 1e-3;
 Simulation
     .with({
-        htmlDivId: "jupiterContainer",
+        htmlDivId: 'jupiterContainer',
         camera: {
             fieldOfView: 45,
             position: new Vec3(1, 1.5, 4).multiplyScalar(.7)

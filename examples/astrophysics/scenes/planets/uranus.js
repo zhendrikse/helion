@@ -1,7 +1,7 @@
 import {
     Simulation, Vec3, Uranus, ThreeJsScene, radToDeg, RingsPlanet, Planet, CelestialBody
-} from "../../../../src/index.js";
-import { AmbientLight, DirectionalLight, MeshPhongMaterial} from "three";
+} from '../../../../src/index.js';
+import { AmbientLight, DirectionalLight, MeshPhongMaterial} from 'three';
 import uranusMap from '../../textures/uranusmap.jpg';
 import uranusRingsColorUrl from '../../textures/uranusringcolour.jpg';
 import uranusRingsPatternUrl from '../../textures/uranusringtrans.gif';
@@ -26,7 +26,7 @@ sun.position.set(10, 2, 1.5);
 let lastTime = performance.now() * 1e-3;
 Simulation
     .with({
-        htmlDivId: "uranusContainer",
+        htmlDivId: 'uranusContainer',
         camera: { fieldOfView: 45, position: new Vec3(1, 1.5, 4).multiplyScalar(4) },
         scene: { background: ThreeJsScene.Background.STARS, scale: 1e-7 },
         lighting: { enabled: false },
