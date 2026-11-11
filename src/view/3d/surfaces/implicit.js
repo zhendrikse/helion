@@ -32,6 +32,7 @@ export class ImplicitSurfaceView extends Renderable3D {
         material.side = DoubleSide;
         this._marchingCubes = new MarchingCubes(resolution, material, false, false, maxPolyCount);
         this._resolution = resolution;
+        this._lastTime = undefined;
         this.add(this._marchingCubes);
     }
 
@@ -51,6 +52,12 @@ export class ImplicitSurfaceView extends Renderable3D {
 
     /** @param {import('../../../model/math/surfaces.js').ImplicitSurface} model */
     synchronizeWith(model) {
+        if (typeof model.time === 'number') {
+            if (model.time === this._lastTime)
+                return;
+            this._lastTime = model.time;
+        }
+
         const size = this._resolution;
         const center = model.min.clone().add(model.max).multiplyScalar(0.5);
         const halfSize = model.max.clone().sub(model.min).multiplyScalar(0.5);
