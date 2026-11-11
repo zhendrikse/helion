@@ -90,9 +90,9 @@ const simulation = Simulation
         camera: { fieldOfView: 30, position: new Vec3(0, -32, 56) },
         infoPanel: {
             text: '<strong>🎲 Galton board</strong><br/>' +
-                'The <a href=\"https://en.wikipedia.org/wiki/Galton_board\">Galton board</a> illustrates ' +
-                '<a href=\"https://en.wikipedia.org/wiki/Central_limit_theorem\">, i.e. it shows ' +
-                'that in the limit the binomial distribution approximates a normal distribution.',
+                'The <a href=\"https://en.wikipedia.org/wiki/Galton_board\">Galton board</a> illustrates the ' +
+                '<a href=\"https://en.wikipedia.org/wiki/Central_limit_theorem\">cental limit theorem</a>, i.e. ' +
+                'it shows that in the limit the binomial distribution approximates a normal distribution.'
         }
     })
     .bind(new Block({
