@@ -26,9 +26,10 @@ const antenna = new AxialSymmetricBody({
 const simulation = Simulation
     .with({
         htmlDivId: 'antennaContainer',
+        viewport: { aspectRatio: '19/12' },
         camera: {
-            position: new Vec3(-1, 4, -10).multiplyScalar(5),
-            fieldOfView: 25
+            position: new Vec3(-1, 4, -10).multiplyScalar(3),
+            fieldOfView: 30
         }
     })
     .withMouseClickEventListener()

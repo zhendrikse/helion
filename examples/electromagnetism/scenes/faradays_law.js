@@ -76,9 +76,15 @@ Simulation
     .with({
         htmlDivId: 'faradayLawContainer',
         camera: { position: new Vec3(3, 1, 4), fieldOfView: 45 },
-        viewport: { aspectRatio: '19/12' }
+        viewport: { aspectRatio: '19/12' },
+        infoPanel: {
+            text: '<strong>🔌 Faraday\'s law</strong><br/>' +
+                '• <span style=\"color: red;\">Arrows</span>: change in magnetic field $\\frac{\\partial \\overrightarrow{B}}{\\partial t}$<br/>' +
+                '• <span style=\"color: lightblue;\">Arrows</span>: induced electric field $\\nabla \\times \\overrightarrow{E} = -\\frac{\\partial \\overrightarrow{B}}{\\partial t}$<br/>' +
+                '• <span style=\"color: orange;\">Balls</span>: electric charges traveling through the wire.<br/>\n' +
+                '• <span style=\"color: green;\">Loops</span>: <em>orientation of the integration loop</em> used in Faraday’s law.'
+        }
     })
-    .withMouseClickEventListener()
     .bind(wire.onceWith(new Cylinder({ color: Colour.Yellow })))
     .bind(charges.alwaysWith(ViewsCollection.of(Sphere).with({ color: Colour.Orange })))
     .bind(magneticVectors.alwaysWith(ViewsCollection.of(Arrow).with({
@@ -112,5 +118,6 @@ Simulation
             faradayRings.visible = checked;
             faradayArrows.visible = checked;
         })
-    );
+    )
+    .start();
 

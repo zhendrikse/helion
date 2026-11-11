@@ -99,8 +99,9 @@ const simulation = Simulation
         htmlDivId: 'solenoidContainer',
         headUpDisplay: { enabled: false },
         camera: {
-            position: new Vec3(32, 16, 48).multiplyScalar(1.25),
-            fieldOfView: 45
+            position: new Vec3(32, 16, 48).multiplyScalar(1.8),
+            fieldOfView: 30,
+            target: new Vec3(0, -5, 0)
         }
     })
     .bind(solenoid.segments.onceWith(ViewsCollection.of(Cylinder).with({ color: Colour.Yellow })))

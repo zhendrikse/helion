@@ -76,8 +76,13 @@ const arrowField = new ArrowField({
 const simulation = Simulation
     .with({
         htmlDivId: 'dipoleContainer',
+        viewport: { aspectRatio: '19/12' },
         headUpDisplay: { enabled: false },
-        camera: { position: new Vec3(32, 16, 48), fieldOfView: 40 },
+        camera: {
+            position: new Vec3(32, 16, 48).multiplyScalar(1),
+            fieldOfView: 30,
+            target: new Vec3(0, -5, 0)
+        },
         scene: { scale: scale }
     })
     .bind(dipole.positive.onceWith(positiveSphere))

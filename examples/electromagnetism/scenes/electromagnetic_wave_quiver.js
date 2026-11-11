@@ -135,11 +135,10 @@ Simulation
         htmlDivId: 'electromagneticWaveContainer',
         camera: {
             position: new Vec3(15, 5, 20),
-            fieldOfView: 45
+            fieldOfView: 35,
+            target: new Vec3(0, -1.5, 0),
         },
-        scene: {
-            scale: 1e10
-        }
+        scene: { scale: 1e10 }
     })
     .withMouseClickEventListener()
     .runsEvery(1e-3)

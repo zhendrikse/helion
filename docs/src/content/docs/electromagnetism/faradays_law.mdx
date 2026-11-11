@@ -12,28 +12,11 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-
-## About
-<div class="header_line"><br/></div>
-
-🎯 Visualization of the relationship between a changing magnetic field and the induced electric field<br/>
-🧠 Inspired by original version on [web page of Rob Salgado](https://www.visualrelativity.com/vpython/)<br/>
-🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/Faradayslaw) is available as well, see [faradays_law.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/faradays_law.py)<br/>
-👉 Current through a real wire would have an azimuthal magnetic around the wire<br/>
-👉 Faraday’s law<br/>
-<p style="clear: both;"></p>
-
 $$\text{In differential form:}\quad \nabla \times \overrightarrow{E} = -\frac{\partial \overrightarrow{B}}{\partial t}$$
 
 $$\text{In integral form:}\quad \oint \overrightarrow{E}\cdot d\overrightarrow{l} = -\frac{d\Phi_B}{dt} $$
 
-🔴 Arrows represent the magnetic field change $\frac{\partial \overrightarrow{B}}{\partial t}$<br/>
-🔵 Arrows represent induced electric field $\nabla \times \overrightarrow{E} = -\frac{\partial \overrightarrow{B}}{\partial t}$<br/>
-🟡 Balls visualize the electric charges traveling through the wire.<br/>
-🟢 Faraday loops represent the **orientation of the integration loop** used in Faraday’s law.
 
-These green arrows do **not** necessarily represent the physical electric field direction itself.
-Instead, they define the positive circulation direction according to the right-hand rule:
 
 ### Live experiment
 <div class="header_line"><br/></div>
@@ -44,10 +27,16 @@ Instead, they define the positive circulation direction according to the right-h
     </a>
 </div>
 
+🎯 Visualization of the relationship between a changing magnetic field and the induced electric field<br/>
+🧠 Inspired by original version on [web page of Rob Salgado](https://www.visualrelativity.com/vpython/)<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/Faradayslaw) is available as well, see [faradays_law.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/faradays_law.py)<br/>
+
 <div id="faradayLawContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/electromagnetism/scenes/faradays_law.js"}></script>
-<p style="clear: both;"></p>
 
+👉 Current through a real wire would have an azimuthal magnetic field around the wire<br/>
+👉 The green arrows do **not** necessarily represent the physical electric field direction itself.
+Instead, they define the positive circulation direction according to the right-hand rule.<br/>
 
 ### Important conceptual points
 <div class="header_line"><br/></div>
