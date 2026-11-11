@@ -69,7 +69,7 @@ function angleBetween(v1, v2) {
 
 const perihelionPoints = [];
 function markPerihelion() {
-    const perihelionPoint = new Sphere({ color: Colour.Green });
+    const perihelionPoint = new Sphere({ color: Colour.Yellow });
     simulation.bind(new RadialSymmetricBody({
         position: vec_r_last,
         radius: 0.1
@@ -174,7 +174,8 @@ simulation = Simulation
         infoPanel: {
             text: '<strong>💫 Mercury\'s perihelion precession</strong><br/>' +
                 '• Explanation of one of the <a href=\"https://en.wikipedia.org/wiki/Tests_of_general_relativity\">three classic tests</a> ' +
-                'of general relativity'
+                'of general relativity<br/>' +
+                '• Relativistic $\\alpha$ and $\\beta$ terms may be disabled at will.'
         }
     })
     .withMouseClickEventListener(() => lastTime = performance.now())
@@ -187,9 +188,7 @@ simulation = Simulation
         }),
         radiusScaleFactor: 1.5e-7
     })))
-    .bind(mercury.alwaysWith(new Trail({
-        maxPoints: 230
-    })))
+    .bind(mercury.alwaysWith(new Trail({ maxPoints: 230 })))
     .bind(sun.alwaysWith(new SunView({ radiusScaleFactor:  2e-9})))
     .onReset(() => perihelionPoints.forEach(point => point.visible = false))
     .onStep(clock => {
@@ -208,6 +207,6 @@ simulation = Simulation
         }
     })
     .addObject3D(sunLight)
-    .addObject3D(new AmbientLight(0xffffff, 0.1))
+    .addObject3D(new AmbientLight(0xffffff, 0.15))
     .append(new Checkbox('Alpha term').checked(true).onChange(() => mercury.toggleAlpha()))
     .append(new Checkbox('Beta term').checked(true).onChange(() => mercury.toggleBeta()));
