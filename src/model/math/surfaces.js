@@ -248,7 +248,8 @@ export class TimeDependentImplicitSurface extends ImplicitSurface {
         isovalue = 0,
         time = 0
     }) {
-        super({ func, min, max, isovalue });
+        super({ func: (x, y, z) => func(x, y, z, time), min, max, isovalue });
+        this._timeFunction = func;
         this._time = time;
         this._initialTime = time;
     }
@@ -257,7 +258,7 @@ export class TimeDependentImplicitSurface extends ImplicitSurface {
 
     /** @param {number} x @param {number} y @param {number} z */
     sampleAt(x, y, z) {
-        return this._func(x, y, z, this._time);
+        return this._timeFunction(x, y, z, this._time);
     }
 
     /** @param {number} dt */
