@@ -9,7 +9,7 @@ export {
 } from './model/math/math.js';
 
 export {
-    ParametricSurface, Surface, DiscreteFieldSurface, ScalarFieldSurface
+    ParametricSurface, Surface, DiscreteFieldSurface, ScalarFieldSurface, ImplicitSurface
 } from './model/math/surfaces.js';
 
 export {
@@ -71,6 +71,7 @@ export { WaveEquationSolver, JacobiSolver, Solver } from './model/math/numerics/
 export { WaveFunction } from './model/phys/quantum/wavefunction.js';
 export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js';
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
+export { ImplicitSurfaceView } from './view/3d/surfaces/implicit.js';
 
 export {
     SchrodingerEigenstateSolver3D,LanczosEigenstateSolver, RelaxationEigenstateSolver, SchrodingerSolver
