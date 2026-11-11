@@ -43,6 +43,7 @@ export class ImplicitSurfaceView extends Renderable3D {
 
     /** @param {import('../../../model/math/surfaces.js').ImplicitSurface} model */
     initialize(model) {
+        this._lastTime = undefined;
         const center = model.min.clone().add(model.max).multiplyScalar(0.5);
         const halfSize = model.max.clone().sub(model.min).multiplyScalar(0.5);
 
