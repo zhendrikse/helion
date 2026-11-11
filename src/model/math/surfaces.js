@@ -190,29 +190,33 @@ export class DiscreteFieldSurface extends DifferentiableSurface {
 }
 
 /**
- * A scalar field whose zero level set defines a surface.
+ * An implicit surface whose defining function may also depend on simulation time.
  *
- * The function is evaluated as f(x, y, z) = isovalue.
+ * The function is evaluated as f(x, y, z, t) = isovalue.
  */
 export class ImplicitSurface extends ModelObject {
     /**
      * @param {{
-     *  func: (x: number, y: number, z: number) => number,
+     *  func: (x: number, y: number, z: number, t: number) => number,
      *  min?: Vec3,
      *  max?: Vec3,
-     *  isovalue?: number
+     *  isovalue?: number,
+     *  time?: number
      * }} options
      */
     constructor({
         func,
         min = new Vec3(-1, -1, -1),
         max = new Vec3(1, 1, 1),
-        isovalue = 0
+        isovalue = 0,
+        time = 0
     }) {
         super();
         this._func = func;
         this._min = min.clone();
         this._max = max.clone();
+        this.time = time;
+        this._initialTime = time;
         this._isovalue = isovalue;
     }
 
@@ -222,6 +226,10 @@ export class ImplicitSurface extends ModelObject {
 
     /** @param {number} x @param {number} y @param {number} z */
     sampleAt(x, y, z) {
-        return this._func(x, y, z);
+        return this._func(x, y, z, this.time);
+    }
+
+    reset() {
+        this.time = this._initialTime;
     }
 }
