@@ -9,7 +9,7 @@ export {
 } from './model/math/math.js';
 
 export {
-    ParametricSurface, Surface, DiscreteFieldSurface, ScalarFieldSurface, ImplicitSurface
+    ParametricSurface, Surface, DiscreteFieldSurface, ScalarFieldSurface, ImplicitSurface, TimeDependentImplicitSurface
 } from './model/math/surfaces.js';
 
 export {
