@@ -225,3 +225,48 @@ export class ImplicitSurface extends ModelObject {
         return this._func(x, y, z);
     }
 }
+
+/**
+ * An implicit surface whose defining function also depends on simulation time.
+ *
+ * The function is evaluated as f(x, y, z, t) = isovalue.
+ */
+export class TimeDependentImplicitSurface extends ImplicitSurface {
+    /**
+     * @param {{
+     *  func: (x: number, y: number, z: number, t: number) => number,
+     *  min?: Vec3,
+     *  max?: Vec3,
+     *  isovalue?: number,
+     *  time?: number
+     * }} options
+     */
+    constructor({
+        func,
+        min = new Vec3(-1, -1, -1),
+        max = new Vec3(1, 1, 1),
+        isovalue = 0,
+        time = 0
+    }) {
+        super({ func, min, max, isovalue });
+        this._time = time;
+        this._initialTime = time;
+    }
+
+    get time() { return this._time; }
+
+    /** @param {number} x @param {number} y @param {number} z */
+    sampleAt(x, y, z) {
+        return this._func(x, y, z, this._time);
+    }
+
+    /** @param {number} dt */
+    advance(dt) {
+        this._time += dt;
+        return this;
+    }
+
+    reset() {
+        this._time = this._initialTime;
+    }
+}
