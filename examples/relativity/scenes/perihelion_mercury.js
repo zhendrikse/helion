@@ -152,8 +152,6 @@ const sun = new CelestialBody({
     'tilt': 0.1265363707695889
 });
 
-sun.position.set(0, 0, 0);
-
 const sunLight = new PointLight(0xffffff, 2.0, 0, .1); // intense, no max distance
 sunLight.position.set(0, 0, 0);
 
@@ -206,6 +204,7 @@ simulation = Simulation
             accumulator -= baseDt;
         }
     })
+    .onFrame(clockTime => sun.time = clockTime)
     .addObject3D(sunLight)
     .addObject3D(new AmbientLight(0xffffff, 0.15))
     .append(new Checkbox('Alpha term').checked(true).onChange(() => mercury.toggleAlpha()))
