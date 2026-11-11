@@ -35,12 +35,12 @@ export class ImplicitSurfaceView extends Renderable3D {
         this.add(this._marchingCubes);
     }
 
-    /** @param {import('../../../model/math/implicit.js').ImplicitSurface} model */
+    /** @param {import('../../../model/math/surfaces.js').ImplicitSurface} model */
     canBindTo(model) {
         return typeof model.sampleAt === 'function';
     }
 
-    /** @param {import('../../../model/math/implicit.js').ImplicitSurface} model */
+    /** @param {import('../../../model/math/surfaces.js').ImplicitSurface} model */
     initialize(model) {
         const center = model.min.clone().add(model.max).multiplyScalar(0.5);
         const halfSize = model.max.clone().sub(model.min).multiplyScalar(0.5);
@@ -49,7 +49,7 @@ export class ImplicitSurfaceView extends Renderable3D {
         this._marchingCubes.scale.set(halfSize.x, halfSize.y, halfSize.z);
     }
 
-    /** @param {import('../../../model/math/implicit.js').ImplicitSurface} model */
+    /** @param {import('../../../model/math/surfaces.js').ImplicitSurface} model */
     synchronizeWith(model) {
         const size = this._resolution;
         const center = model.min.clone().add(model.max).multiplyScalar(0.5);
