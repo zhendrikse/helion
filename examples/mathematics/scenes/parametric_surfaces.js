@@ -1,7 +1,6 @@
 import {
     Simulation, ParametricSurface, Domain, DropdownMenu, Registry, SurfaceVisualization,
-    ContoursLayer, SurfaceResolution, ColorLayers, PrincipalDirectionsLayer, Checkbox,
-    FixedIntervalNormalizer
+    ContoursLayer, SurfaceResolution, ColorLayers, PrincipalDirectionsLayer, Checkbox
 } from '../../../src/index.js';
 
 const sin = Math.sin, cos = Math.cos, tan = Math.tan, log = Math.log, PI = Math.PI;

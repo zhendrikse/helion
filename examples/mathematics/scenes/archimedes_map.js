@@ -42,7 +42,7 @@ Simulation
         camera: { fieldOfView: 35, position: new Vec3(0, 2.75, 6.5) },
         lighting: { enabled: false },
         infoPanel: {
-            text: '<Strong>Archimedes equiareal map</strong><br/>' +
+            text: '<Strong>🗺️ Archimedes equiareal map</strong><br/>' +
                 '📌 A mathematical projection or mapping derived from Archimedes\' work ' +
                 '<a href=\"https://en.wikipedia.org/wiki/On_the_Sphere_and_Cylinder\">On the Sphere and the Cylinder</a>, ' +
                 ' in which regions on a sphere are mapped onto a cylindrical surface while preserving equal areas.'
