@@ -194,3 +194,118 @@ export class DifferentialGeometry {
         return target;
     }
 }
+
+
+/**
+ * Differential geometry calculations for a surface defined by F(x, y, z) = c.
+ *
+ * The supplied position must lie on (or very close to) the implicit surface.
+ * Derivatives are estimated with central finite differences.
+ */
+export class ImplicitDifferentialGeometry {
+    /**
+     * @param {{ sampleAt(x: number, y: number, z: number): number, isovalue?: number }} surface
+     * @param {{ eps?: number }} options
+     */
+    constructor(surface, { eps = 1e-4 } = {}) {
+        this._surface = surface;
+        this.eps = eps;
+
+        this._gradient = new Vec3();
+        this._normal = new Vec3();
+        this._tangent1 = new Vec3();
+        this._tangent2 = new Vec3();
+    }
+
+    /**
+     * @param {Vec3} position Point on the implicit surface
+     * @param {DifferentialFrame} target
+     * @returns {DifferentialFrame|null}
+     */
+    differentialFrameAt(position, target) {
+        const e = this.eps;
+        const e2 = e * e;
+        const f = (x, y, z) => this._surface.sampleAt(x, y, z);
+        const { x, y, z } = position;
+        const f0 = f(x, y, z);
+
+        const xp = f(x + e, y, z), xm = f(x - e, y, z);
+        const yp = f(x, y + e, z), ym = f(x, y - e, z);
+        const zp = f(x, y, z + e), zm = f(x, y, z - e);
+
+        const gradient = this._gradient.set(
+            (xp - xm) / (2 * e),
+            (yp - ym) / (2 * e),
+            (zp - zm) / (2 * e)
+        );
+        const gradientLength = gradient.length();
+
+        // At a critical point of F there is no well-defined surface normal.
+        if (gradientLength < 1e-10)
+            return null;
+
+        const normal = this._normal.copy(gradient).multiplyScalar(1 / gradientLength);
+
+        const hxx = (xp - 2 * f0 + xm) / e2;
+        const hyy = (yp - 2 * f0 + ym) / e2;
+        const hzz = (zp - 2 * f0 + zm) / e2;
+
+        const hxy = (f(x + e, y + e, z) - f(x + e, y - e, z)
+            - f(x - e, y + e, z) + f(x - e, y - e, z)) / (4 * e2);
+        const hxz = (f(x + e, y, z + e) - f(x + e, y, z - e)
+            - f(x - e, y, z + e) + f(x - e, y, z - e)) / (4 * e2);
+        const hyz = (f(x, y + e, z + e) - f(x, y + e, z - e)
+            - f(x, y - e, z + e) + f(x, y - e, z - e)) / (4 * e2);
+
+        // Construct an orthonormal basis for the tangent plane.
+        const reference = Math.abs(normal.x) < 0.8
+            ? new Vec3(1, 0, 0)
+            : new Vec3(0, 1, 0);
+
+        const tangent1 = this._tangent1.copy(normal).cross(reference).normalize();
+        const tangent2 = this._tangent2.copy(normal).cross(tangent1).normalize();
+
+        // Restrict Hessian(F) / |grad(F)| to the tangent plane.
+        const hessianProduct = (a, b) =>
+            a.x * (hxx * b.x + hxy * b.y + hxz * b.z)
+            + a.y * (hxy * b.x + hyy * b.y + hyz * b.z)
+            + a.z * (hxz * b.x + hyz * b.y + hzz * b.z);
+
+        const a = hessianProduct(tangent1, tangent1) / gradientLength;
+        const b = hessianProduct(tangent1, tangent2) / gradientLength;
+        const c = hessianProduct(tangent2, tangent2) / gradientLength;
+
+        const halfDifference = 0.5 * (a - c);
+        const radius = Math.hypot(halfDifference, b);
+        const k1 = 0.5 * (a + c) + radius;
+        const k2 = 0.5 * (a + c) - radius;
+
+        let v1x, v1y;
+        if (Math.abs(b) > 1e-12) {
+            v1x = b;
+            v1y = k1 - a;
+        } else if (a >= c) {
+            v1x = 1;
+            v1y = 0;
+        } else {
+            v1x = 0;
+            v1y = 1;
+        }
+
+        const length = Math.hypot(v1x, v1y);
+        v1x /= length;
+        v1y /= length;
+
+        target.position.copy(position);
+        target.normal.copy(normal);
+        target.k1 = k1;
+        target.k2 = k2;
+        target.d1.copy(tangent1).multiplyScalar(v1x)
+            .addScaledVector(tangent2, v1y).normalize();
+        target.d2.copy(normal).cross(target.d1).normalize();
+        target.u = 0;
+        target.v = 0;
+
+        return target;
+    }
+}
