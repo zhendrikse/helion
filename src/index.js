@@ -63,7 +63,7 @@ export { Renderable3D, Renderable2D, ViewsCollection } from './view/renderer.js'
 export { DiscreteFieldBoxView } from './view/3d/views.js';
 export { ContoursLayer, PrincipalDirectionsLayer, GlyphLayer } from './view/3d/surfaces/layers.js';
 export { TangentFrameView } from './view/3d/surfaces/tangentframe.js';
-export { DifferentialGeometry, DifferentialFrame } from './model/math/numerics/diffgeometry.js';
+export { DifferentialGeometry, ImplicitDifferentialGeometry, DifferentialFrame } from './model/math/numerics/diffgeometry.js';
 export { Matrix2D, RotationMatrix2D, linspace, meshgrid } from './model/math/linearalgebra.js';
 export { Arrow2D, Circle, PolygonView } from './view/2d/primitives.js';
 export { OneDimensionalWaveFunctionView, StreamlinesView, VelocitiesView } from './view/2d/composites.js';
