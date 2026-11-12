@@ -83,6 +83,9 @@ export class Renderer {
      * @param {Object} options
      */
     provideAxesAround(anObject, options) {}
+
+    /** @abstract */
+    setAnimationLoop(callback) {}
 }
 
 /**

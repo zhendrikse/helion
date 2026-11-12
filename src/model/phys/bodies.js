@@ -446,7 +446,6 @@ export class Block extends Body {
     }
 }
 
-
 export class Lattice extends ModelObject {
     /**
      * @param {{
@@ -557,23 +556,29 @@ export class Lattice extends ModelObject {
 export class ChainTopology extends Transformation {
     /**
      * @param {{
-     * count?: number, 
+     * count?: number,
      * length?: number,
      * bondRestLength?: number,
-     * totalMass?: number
-     * }} options 
+     * totalMass?: number,
+     * terminalMass?: number,
+     * direction?: Vec3
+     * }} options
      */
     constructor({
         count = 100,
         length = 20,
-        bondRestLength = length / (count -1),
-        totalMass = 0.025
+        bondRestLength = length / (count - 1),
+        totalMass = 0.025,
+        terminalMass = 0,
+        direction = new Vec3(1, 0, 0)
     } = {}) {
         super();
         this._count = count;
         this._length = length;
         this._totalMass = totalMass;
+        this._terminalMass = terminalMass;
         this._bondRestLength = bondRestLength;
+        this._direction = direction.clone().normalize();
     }
 
     /** @param {Lattice} lattice */
@@ -583,8 +588,8 @@ export class ChainTopology extends Transformation {
         for (let i = 0; i < this._count; i++)
             lattice.addBody(new RadialSymmetricBody({
                 radius: lattice.bodySize,
-                mass: this._totalMass / this._count,
-                position: new Vec3(-this._length / 2 + i * dx, 0, 0)
+                mass: this._totalMass / this._count + (i === this._count - 1 ? this._terminalMass : 0),
+                position: this._direction.clone().multiplyScalar(-this._length / 2 + i * dx)
             }));
 
         for (let i = 0; i < this._count - 1; i++)

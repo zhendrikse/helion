@@ -62,6 +62,10 @@ export class ThreeJsRenderer extends Renderer {
     /** @param {boolean} orthographic */
     set orthographic(orthographic) { this._camera.orthographic = orthographic; }
 
+    setAnimationLoop(callback) {
+        this._renderer.setAnimationLoop(callback);
+    }
+
     attach(viewport) {
         this._renderer = new WebGLRenderer({
             alpha: true,

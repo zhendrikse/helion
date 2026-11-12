@@ -22,10 +22,10 @@ class SimulationClock {
      * @param {number} [options.maxAccumulatedTime=0.25]
      */
     constructor({
-                    realTimeStep = 0.01,
-                    simulationTimeStep = realTimeStep,
-                    maxAccumulatedTime = 0.25
-                } = {}) {
+        realTimeStep = 0.01,
+        simulationTimeStep = realTimeStep,
+        maxAccumulatedTime = 0.25
+    } = {}) {
         this.realTimeStep = realTimeStep;             // realtime scheduling interval
         this.simulationTimeStep = simulationTimeStep;   // simulated-time increment
 
@@ -190,7 +190,7 @@ export class Simulation {
         if (infoPanel.text)
             this._viewport.infoPanelText = infoPanel.text;
 
-        requestAnimationFrame(this.animate);
+        this._renderer.setAnimationLoop(this.animate);
     }
 
     get width() { return this._viewport.width; }
@@ -244,6 +244,7 @@ export class Simulation {
      */
     runsEvery(dt) {
         this._clock.realTimeStep = dt;
+        this._clock.simulationTimeStep = dt;
         return this;
     }
 
@@ -389,32 +390,25 @@ export class Simulation {
     }
 
     _tuneIterationsPerFrame(/** @type {number} */ timeStamp) {
-        if (this._framesPerSecond <= this._minimumFrameRate)
+        if (this._framesPerSecond < this._minimumFrameRate) {
+            // The frame rate per second is lower than required => try to lower the iterations per frame
             if (this._iterationsPerFrame > 5) // do not drop below 5 iterations per frame
                 this._iterationsPerFrame--;
-            else
-                this._iterationsPerFrame++;
-        this._viewport.bottomLeftText = `${this._iterationsPerFrame} iterations @${this._framesPerSecond} fps`;
-
-        // start new measurement time interval
-        this._framesPerSecond = 0;
-        this._lastTime = timeStamp;
+        } else {
+            // The frame rate per second is higher than required => try to increase the iterations per frame
+            this._iterationsPerFrame++;
+        }
     }
 
     /** @param {number} timeStamp */
     animate = timeStamp => {
         if (this._status === Simulation.Status.RUNNING) {
             if (this._maxPerformanceFunction) {
-                if (timeStamp - this._lastTime > 1000) // Update iterations per RAF every second
-                    this._tuneIterationsPerFrame(timeStamp);
-
                 let iterations = 0;
                 while (iterations < this._iterationsPerFrame) {
                     this._maxPerformanceFunction(this._clock);
                     iterations++;
                 }
-
-                this._framesPerSecond++;
             }
 
             this._clock.updateWith(timeStamp, this._timeScale);
@@ -422,6 +416,15 @@ export class Simulation {
                 this._updatePhysics();
         }
 
+        this._framesPerSecond++;
+        if (timeStamp - this._lastTime > 1000) {
+            if (this._maxPerformanceFunction) {
+                this._viewport.bottomLeftText = `${this._iterationsPerFrame} iterations @${this._framesPerSecond} fps`;
+                this._tuneIterationsPerFrame(timeStamp);
+            }
+            this._framesPerSecond = 0;
+            this._lastTime = timeStamp;
+        }
         this._onFrame(timeStamp);
 
         // Sync model and views after model update
@@ -429,7 +432,6 @@ export class Simulation {
             binding.synchronize();
 
         this._renderer.render(timeStamp);
-        requestAnimationFrame(this.animate);
     };
 
     /**

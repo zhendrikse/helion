@@ -34,8 +34,6 @@ class Pendulum {
             0);
     }
 
-    positionVectorTo = otherPendulum => otherPendulum.position.clone().sub(this.position)
-
     _updatePosition() {
         const position = this.position;
         const pivot = new Vec3(this._anchorX, PIVOT_Y, 0);
