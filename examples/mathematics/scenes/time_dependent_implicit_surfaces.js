@@ -20,6 +20,8 @@ const surface = new TimeDependentImplicitSurface({
 const surfaceView = new ImplicitSurfaceView({
     resolution: 36,
     maxPolyCount: 30000,
+    showPrincipalDirections: true,
+    principalDirectionStride: 600,
     color: new Colour(0x4f9bd8),
     opacity: 0.9,
     material: new MeshStandardMaterial({
