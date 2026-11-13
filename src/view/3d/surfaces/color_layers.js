@@ -43,13 +43,21 @@ export class AdaptiveSymmetricNormalizer extends Normalizer {
         super();
         this._smoothing = smoothing;
         this._maxAbs = 1;
+        this._initialized = false;
     }
 
     /** @param {Interval} rangeInterval */
     adaptTo(rangeInterval) {
         if (!Number.isFinite(rangeInterval.from) || !Number.isFinite(rangeInterval.to))
             return;
+
         const maxAbs = Math.max(Math.abs(rangeInterval.from), Math.abs(rangeInterval.to));
+        if (!this._initialized) {
+            this._maxAbs = maxAbs;
+            this._initialized = true;
+            return;
+        }
+
         this._maxAbs = Math.max(this._maxAbs * (1 - this._smoothing) + maxAbs * this._smoothing, maxAbs);
     }
 
@@ -64,6 +72,7 @@ export class AdaptiveSymmetricNormalizer extends Normalizer {
 
     reset() {
         this._maxAbs = 1;
+        this._initialized = false;
     }
 }
 
