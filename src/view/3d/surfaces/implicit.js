@@ -1,5 +1,5 @@
 import {
-    BufferAttribute, BufferGeometry, Color, DoubleSide, LineBasicMaterial, LineSegments, MeshStandardMaterial
+    BufferAttribute, BufferGeometry, Color, DoubleSide, MeshStandardMaterial
 } from 'three';
 import { MarchingCubes } from 'three/addons/objects/MarchingCubes.js';
 import { Renderable3D } from '../../renderer.js';
@@ -7,7 +7,8 @@ import { Colour, ColorMappers } from '../../colormappers.js';
 import { ImplicitDifferentialGeometry, DifferentialFrame } from '../../../model/math/numerics/diffgeometry.js';
 import { Vec3 } from '../../../model/math/objects.js';
 import { Interval } from '../../../model/math/math.js';
-import { MeanCurvatureLayer, AdaptiveSymmetricNormalizer } from './color_layers.js';
+import { MeanCurvatureLayer } from './color_layers.js';
+import { PrincipalDirectionsLayer } from './layers.js';
 
 /**
  * Extracts an isosurface from an ImplicitSurface model using marching cubes.
@@ -61,13 +62,13 @@ export class ImplicitSurfaceView extends Renderable3D {
         this._differentialGeometry = null;
         this._frame = new DifferentialFrame();
         this._color = new Color();
-        this._principalLines = new LineSegments(
-            new BufferGeometry(),
-            new LineBasicMaterial({ vertexColors: true, transparent: true })
-        );
-        this._marchingCubes.add(this._principalLines);
-        this._principalLines.visible = showPrincipalDirections;
-        this.add(this._marchingCubes);
+        this._principalDirectionsLayer = new PrincipalDirectionsLayer({
+            scale: principalDirectionScale,
+            showSecondDirection: true,
+            colorMode: PrincipalDirectionsLayer.ColorMode.Direction
+        });
+        this._principalDirectionsLayer.visible = showPrincipalDirections;
+        this.add(this._marchingCubes, this._principalDirectionsLayer);
     }
 
     /** @param {import('../../../model/math/surfaces.js').ImplicitSurface} model */
@@ -86,6 +87,7 @@ export class ImplicitSurfaceView extends Renderable3D {
 
         const eps = Math.min(halfSize.x, halfSize.y, halfSize.z) / this._resolution * 0.1;
         this._differentialGeometry = new ImplicitDifferentialGeometry(model, { eps });
+        this._principalDirectionsLayer.initialize(model);
     }
 
     /** @param {import('../../../model/math/surfaces.js').ImplicitSurface} model */
@@ -130,6 +132,8 @@ export class ImplicitSurfaceView extends Renderable3D {
         const frames = new Map();
         const values = new Float32Array(positions.count);
         const range = new Interval(Infinity, -Infinity);
+        const directionFrames = [];
+        const seenDirections = new Set();
 
         // MarchingCubes emits unshared triangle vertices. Reuse differential frames
         // at identical positions to avoid repeating finite-difference calculations.
@@ -168,47 +172,19 @@ export class ImplicitSurfaceView extends Renderable3D {
         }
         colors.needsUpdate = true;
 
-        if (this._showPrincipalDirections)
-            this.#updatePrincipalDirectionLines(positions, center, halfSize, frameAtVertex);
-    }
-
-    #updatePrincipalDirectionLines(positions, center, halfSize, frameAtVertex) {
-        const linePositions = [];
-        const lineColors = [];
-        const stride = this._principalDirectionStride;
-        const scale = this._principalDirectionScale;
-        const seen = new Set();
-
-        for (let i = 0; i < positions.count; i += stride) {
-            const x = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
-            const key = `${x.toFixed(5)},${y.toFixed(5)},${z.toFixed(5)}`;
-            if (seen.has(key)) continue;
-            seen.add(key);
-
-            const frame = frameAtVertex(i);
-            if (!frame) continue;
-
-            for (const [direction, rgb] of [
-                [frame.d1, [1, 0.25, 0.15]],
-                [frame.d2, [0.15, 0.75, 1]]
-            ]) {
-                linePositions.push(
-                    x, y, z,
-                    x + direction.x * scale / halfSize.x,
-                    y + direction.y * scale / halfSize.y,
-                    z + direction.z * scale / halfSize.z
-                );
-                lineColors.push(...rgb, ...rgb);
+        if (this._showPrincipalDirections) {
+            for (let i = 0; i < positions.count; i += this._principalDirectionStride) {
+                const x = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
+                const key = `${x.toFixed(5)},${y.toFixed(5)},${z.toFixed(5)}`;
+                if (seenDirections.has(key)) continue;
+                seenDirections.add(key);
+                const frame = frameAtVertex(i);
+                if (frame) directionFrames.push(frame);
             }
+            this._principalDirectionsLayer.synchronizeWithFrames(directionFrames);
         }
-
-        const geometry = new BufferGeometry();
-        geometry.setAttribute('position', new BufferAttribute(new Float32Array(linePositions), 3));
-        geometry.setAttribute('color', new BufferAttribute(new Float32Array(lineColors), 3));
-
-        this._principalLines.geometry.dispose();
-        this._principalLines.geometry = geometry;
     }
+
 
     set colorLayer(colorLayer) {
         this._colorLayer = colorLayer;
@@ -229,15 +205,14 @@ export class ImplicitSurfaceView extends Renderable3D {
 
     set principalDirectionsVisible(visible) {
         this._showPrincipalDirections = visible;
-        this._principalLines.visible = visible;
+        this._principalDirectionsLayer.visible = visible;
         this._lastTime = undefined;
     }
 
     dispose() {
         this._marchingCubes.geometry.dispose();
         this._marchingCubes.material.dispose();
-        this._principalLines.geometry.dispose();
-        this._principalLines.material.dispose();
+        this._principalDirectionsLayer.dispose();
         this.removeFromParent();
     }
 }
