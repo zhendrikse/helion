@@ -266,8 +266,9 @@ class ScientificColorMapper extends ColorMapper {
      * @param {Color} targetColor
      */
     map(normalizedValue, targetColor) {
-        const num = Math.floor(4 * normalizedValue);
-        const s = 4 * (normalizedValue - num / 4);
+        const value = Math.max(0, Math.min(1, normalizedValue));
+        const num = Math.min(3, Math.floor(4 * value));
+        const s = 4 * (value - num / 4);
 
         switch (num) {
             case 0 :
