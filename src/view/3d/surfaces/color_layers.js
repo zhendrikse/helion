@@ -43,13 +43,21 @@ export class AdaptiveSymmetricNormalizer extends Normalizer {
         super();
         this._smoothing = smoothing;
         this._maxAbs = 1;
+        this._initialized = false;
     }
 
     /** @param {Interval} rangeInterval */
     adaptTo(rangeInterval) {
         if (!Number.isFinite(rangeInterval.from) || !Number.isFinite(rangeInterval.to))
             return;
+
         const maxAbs = Math.max(Math.abs(rangeInterval.from), Math.abs(rangeInterval.to));
+        if (!this._initialized) {
+            this._maxAbs = maxAbs;
+            this._initialized = true;
+            return;
+        }
+
         this._maxAbs = Math.max(this._maxAbs * (1 - this._smoothing) + maxAbs * this._smoothing, maxAbs);
     }
 
@@ -64,6 +72,7 @@ export class AdaptiveSymmetricNormalizer extends Normalizer {
 
     reset() {
         this._maxAbs = 1;
+        this._initialized = false;
     }
 }
 
@@ -72,12 +81,21 @@ export class AdaptiveNormalizer extends Normalizer {
         super(); this._smoothing = smoothing;
         this._min = 0;
         this._max = 1;
+        this._initialized = false;
     }
 
     /** @param {Interval} rangeInterval */
     adaptTo(rangeInterval) {
         if (!Number.isFinite(rangeInterval.from) || !Number.isFinite(rangeInterval.to))
             return;
+
+        if (!this._initialized) {
+            this._min = rangeInterval.from;
+            this._max = rangeInterval.to;
+            this._initialized = true;
+            return;
+        }
+
         this._min = this._min * (1 - this._smoothing) + rangeInterval.from * this._smoothing;
         this._max = this._max * (1 - this._smoothing) + rangeInterval.to * this._smoothing;
     }
@@ -95,6 +113,7 @@ export class AdaptiveNormalizer extends Normalizer {
     reset() {
         this._min = 0;
         this._max = 1;
+        this._initialized = false;
     }
 }
 
@@ -208,13 +227,13 @@ export class ColorLayers extends Registry {
     static ShapeIndex = 'ShapeIndex';
     constructor(label = 'Color ') {
         super({ label, entries: {
-            Height: () => new HeightLayer(),
-            PrincipalCurvature1: () => new PrincipalCurvature1Layer(),
-            PrincipalCurvature2: () => new PrincipalCurvature2Layer(),
-            GaussianCurvature: () => new GaussianCurvatureLayer(),
-            MeanCurvature: () => new MeanCurvatureLayer(),
-            ShapeIndex: () => new ShapeIndexLayer(),
-            Curvedness: () => new CurvednessLayer()
-        }});
+                Height: () => new HeightLayer(),
+                PrincipalCurvature1: () => new PrincipalCurvature1Layer(),
+                PrincipalCurvature2: () => new PrincipalCurvature2Layer(),
+                GaussianCurvature: () => new GaussianCurvatureLayer(),
+                MeanCurvature: () => new MeanCurvatureLayer(),
+                ShapeIndex: () => new ShapeIndexLayer(),
+                Curvedness: () => new CurvednessLayer()
+            }});
     }
 }
