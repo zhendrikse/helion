@@ -1,12 +1,9 @@
 import {Renderable3D} from '../../renderer.js';
 import {Box3} from 'three';
 import {CompoundControl, DropdownMenu, Slider} from '../../../core/controls.js';
-import {ColorMapper, ColorMappers} from '../../colormappers.js';
-import {Interval, Range} from '../../../model/math/math.js';
+import {Range} from '../../../model/math/math.js';
 import {GlyphLayer, Layer, SurfaceLayer} from './layers.js';
-import {Registry} from '../../../core/utils.js';
 import { DiscreteFieldSurface } from '../../../model/math/surfaces.js';
-import { DifferentialFrame } from '../../../model/math/numerics/diffgeometry.js';
 
 export class SurfaceResolution {
     constructor(uSegments = 50, vSegments = 50) { this.u = uSegments; this.v = vSegments; }
