@@ -15,6 +15,7 @@ export { Normalizer, FixedIntervalNormalizer, AdaptiveSymmetricNormalizer, Adapt
 } from './color_layers.js';
 
 import { HeightLayer, AdaptiveSymmetricNormalizer, ColorLayers } from './color_layers.js';
+import {ColorMappers} from "../../colormappers.js";
 
 export class SurfaceVisualization extends Renderable3D {
     static Display = Object.freeze({ Surface: 'surface', Glyphs: 'glyphs', None: 'none' });

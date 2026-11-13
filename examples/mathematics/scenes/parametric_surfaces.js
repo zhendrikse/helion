@@ -109,4 +109,4 @@ function changeSurface(surfaceId) {
     simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
 }
 
-changeSurface('Bow curve');
+changeSurface('Enneper\'s surface');
