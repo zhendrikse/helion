@@ -1,6 +1,6 @@
 import {
     Simulation, ParametricSurface, Domain, DropdownMenu, Registry, SurfaceVisualization,
-    ContoursLayer, SurfaceResolution, ColorLayers, PrincipalDirectionsLayer, Checkbox
+    ContoursLayer, SurfaceResolution, ColorLayers, PrincipalDirectionsLayer, Checkbox, ColorMappers
 } from '../../../src/index.js';
 
 const sin = Math.sin, cos = Math.cos, tan = Math.tan, log = Math.log, PI = Math.PI;
@@ -88,8 +88,8 @@ const simulation = Simulation
         .for(surfacesRegistry)
         .onChange(value => changeSurface(value))
     )
-    .append(surfaceView.colorLayerUI())
-    .append(surfaceView.ui())
+    .append(surfaceView.colorLayerUI(ColorLayers.GaussianCurvature))
+    .append(surfaceView.ui(ColorMappers.Seismic))
     .append(new Checkbox('Contours ')
         .on(contoursLayer)
         .withProperty('visible')

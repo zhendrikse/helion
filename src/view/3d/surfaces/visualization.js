@@ -74,7 +74,10 @@ export class SurfaceVisualization extends Renderable3D {
         this._meshLayer = layer;
         if (!layer) return;
         this.add(layer);
-        if (this._model) { layer.initialize(this._model); layer.synchronizeWith(this._model); }
+        if (this._model) {
+            layer.initialize(this._model);
+            layer.synchronizeWith(this._model);
+        }
     }
 
     /** @param {DiscreteFieldSurface} model */
@@ -85,8 +88,10 @@ export class SurfaceVisualization extends Renderable3D {
 
     /** @param {Layer} layer */
     addOverlayLayer(layer) {
-        this._overlayLayers.push(layer); this.add(layer);
-        if (this._model) layer.initialize(this._model);
+        this._overlayLayers.push(layer);
+        this.add(layer);
+        if (this._model)
+            layer.initialize(this._model);
         return this;
     }
 
@@ -94,14 +99,16 @@ export class SurfaceVisualization extends Renderable3D {
     initialize(model) {
         this._model = model;
         this._meshLayer?.initialize(model);
-        for (const layer of this._overlayLayers) layer.initialize(model);
+        for (const layer of this._overlayLayers)
+            layer.initialize(model);
     }
 
-    ui() {
+    ui(defaultColormap = ColorMappers.Gradient) {
         const colorMappers = new ColorMappers('🎨 Color map');
         return new CompoundControl()
             .add(new DropdownMenu()
                 .for(colorMappers)
+                .withValue(defaultColormap)
                 .onChange(value => {
                     this._surfaceLayer.colorMapper = colorMappers.get(value)();
                     this._glyphLayer.colorMapper = colorMappers.get(value)();
@@ -115,10 +122,11 @@ export class SurfaceVisualization extends Renderable3D {
                 }));
     }
 
-    colorLayerUI() {
+    colorLayerUI(defaultLayer = ColorLayers.Height) {
         const colorLayers = new ColorLayers('🖌️ Color ');
         return new DropdownMenu()
             .for(colorLayers)
+            .withValue(defaultLayer)
             .onChange(value => {
                 const colorLayer = colorLayers.get(value)();
                 this._surfaceLayer.colorLayer = colorLayer;
@@ -138,12 +146,14 @@ export class SurfaceVisualization extends Renderable3D {
     /** @param {DiscreteFieldSurface} model */
     synchronizeWith(model) {
         this._meshLayer?.synchronizeWith(model);
-        for (const layer of this._overlayLayers) layer.synchronizeWith(model);
+        for (const layer of this._overlayLayers)
+            layer.synchronizeWith(model);
     }
 
     reset() {
         this._meshLayer?.reset();
-        for (const layer of this._overlayLayers) layer.reset?.();
+        for (const layer of this._overlayLayers)
+            layer.reset?.();
     }
 
     get boundingBox() {
