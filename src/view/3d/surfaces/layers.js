@@ -480,8 +480,8 @@ export class PrincipalDirectionsLayer extends Layer {
             for (let j = 0; j <= this._resolution.v; j++) {
                 const v = j / this._resolution.v;
                 const frame = new DifferentialFrame();
-                if (model.frameAt(u, v, frame))
-                    frames.push(frame);
+                model.frameAt(u, v, frame);
+                frames.push(frame);
             }
         }
         this.synchronizeWithFrames(frames);
