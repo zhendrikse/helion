@@ -79,6 +79,7 @@ export class ImplicitSurfaceView extends Renderable3D {
     /** @param {import('../../../model/math/surfaces.js').ImplicitSurface} model */
     initialize(model) {
         this._lastTime = undefined;
+        this._normalizer.reset();
         const center = model.min.clone().add(model.max).multiplyScalar(0.5);
         const halfSize = model.max.clone().sub(model.min).multiplyScalar(0.5);
 
@@ -189,6 +190,7 @@ export class ImplicitSurfaceView extends Renderable3D {
     set colorLayer(colorLayer) {
         this._colorLayer = colorLayer;
         this._normalizer = colorLayer.preferredNormalizer();
+        this._normalizer.reset();
         this._colorMapper = colorLayer.preferredColorMapper();
         this._lastTime = undefined;
     }
@@ -200,6 +202,7 @@ export class ImplicitSurfaceView extends Renderable3D {
 
     set normalizer(normalizer) {
         this._normalizer = normalizer;
+        this._normalizer.reset();
         this._lastTime = undefined;
     }
 
