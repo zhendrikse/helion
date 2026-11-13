@@ -72,12 +72,21 @@ export class AdaptiveNormalizer extends Normalizer {
         super(); this._smoothing = smoothing;
         this._min = 0;
         this._max = 1;
+        this._initialized = false;
     }
 
     /** @param {Interval} rangeInterval */
     adaptTo(rangeInterval) {
         if (!Number.isFinite(rangeInterval.from) || !Number.isFinite(rangeInterval.to))
             return;
+
+        if (!this._initialized) {
+            this._min = rangeInterval.from;
+            this._max = rangeInterval.to;
+            this._initialized = true;
+            return;
+        }
+
         this._min = this._min * (1 - this._smoothing) + rangeInterval.from * this._smoothing;
         this._max = this._max * (1 - this._smoothing) + rangeInterval.to * this._smoothing;
     }
@@ -95,6 +104,7 @@ export class AdaptiveNormalizer extends Normalizer {
     reset() {
         this._min = 0;
         this._max = 1;
+        this._initialized = false;
     }
 }
 
