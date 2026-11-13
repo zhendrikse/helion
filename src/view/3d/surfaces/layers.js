@@ -382,137 +382,137 @@ export class PrincipalDirectionsLayer extends Layer {
         resolution = new SurfaceResolution(30, 30),
         scale = 0.2,
         showSecondDirection = true,
-        colorMode = PrincipalDirectionsLayer.ColorMode.Curvature,
+        colorMode = PrincipalDirectionsLayer.ColorMode.Direction,
         material = new LineBasicMaterial({
             vertexColors: true,
             transparent: true,
         })
     } = {}) {
         super({resolution});
-
         this._scale = scale;
         this._showSecondDirection = showSecondDirection;
         this._colorMode = colorMode;
         this._tempColor = new Color();
-
         this._material = material;
-
         this._uVectors = [];
         this._vVectors = [];
-
         this._frame = new DifferentialFrame();
     }
 
     initialize(model) {
         super.initialize(model);
         this.disposeGeometry();
+    }
 
-        for (let i = 0; i <= this._resolution.u; i++) {
-            for (let j = 0; j <= this._resolution.v; j++) {
-                const line1 = this.#makeLine();
-                const line2 = this.#makeLine();
+    #ensureLineCount(count) {
+        while (this._uVectors.length < count) {
+            const line1 = this.#makeLine();
+            const line2 = this.#makeLine();
+            this.add(line1, line2);
+            this._uVectors.push({line: line1});
+            this._vVectors.push({line: line2});
+        }
 
-                this.add(line1);
-                this.add(line2);
-
-                this._uVectors.push({ i, j, line: line1 });
-                this._vVectors.push({ i, j, line: line2 });
-            }
+        while (this._uVectors.length > count) {
+            const u = this._uVectors.pop().line;
+            const v = this._vVectors.pop().line;
+            this.remove(u, v);
+            u.geometry.dispose();
+            v.geometry.dispose();
         }
     }
 
-    #updateLine(line, direction) {
-        const g = line.geometry;
-        const pos = g.attributes.position.array;
-        const col = g.attributes.color.array;
+    #updateLine(line, frame, direction, curvature) {
+        const geometry = line.geometry;
+        const positions = geometry.attributes.position.array;
+        const colors = geometry.attributes.color.array;
+        const point = frame.position;
 
-        const p = this._frame.position;
-        const p2 = new Vec3(
-            p.x + direction.x * this._scale,
-            p.y + direction.y * this._scale,
-            p.z + direction.z * this._scale
-        );
+        positions[0] = point.x;
+        positions[1] = point.y;
+        positions[2] = point.z;
+        positions[3] = point.x + direction.x * this._scale;
+        positions[4] = point.y + direction.y * this._scale;
+        positions[5] = point.z + direction.z * this._scale;
 
-        pos[0] = p.x;
-        pos[1] = p.y;
-        pos[2] = p.z;
-
-        pos[3] = p2.x;
-        pos[4] = p2.y;
-        pos[5] = p2.z;
-
-        this.#color(direction);
-        col[0] = this._tempColor.r;
-        col[1] = this._tempColor.g;
-        col[2] = this._tempColor.b;
-
-        col[3] = this._tempColor.r;
-        col[4] = this._tempColor.g;
-        col[5] = this._tempColor.b;
-
-        g.attributes.position.needsUpdate = true;
-        g.attributes.color.needsUpdate = true;
-    }
-
-    #color(direction) {
         if (this._colorMode === PrincipalDirectionsLayer.ColorMode.Curvature) {
-            const k = Math.abs(this._frame.k1); // of k2
-            const t = Math.min(k / 5, 1);
+            const t = Math.min(Math.abs(curvature) / 5, 1);
             this._tempColor.setHSL(0.6 - 0.6 * t, 0.8, 0.5);
+        } else {
+            this._tempColor.setRGB(Math.abs(direction.x), Math.abs(direction.y), Math.abs(direction.z));
         }
 
-        this._tempColor.setRGB(Math.abs(direction.x), Math.abs(direction.y), Math.abs(direction.z));
+        for (let i = 0; i < 2; i++) {
+            const offset = i * 3;
+            colors[offset] = this._tempColor.r;
+            colors[offset + 1] = this._tempColor.g;
+            colors[offset + 2] = this._tempColor.b;
+        }
+
+        geometry.attributes.position.needsUpdate = true;
+        geometry.attributes.color.needsUpdate = true;
+    }
+
+    /**
+     * Synchronize from frames supplied by any differential-geometry source.
+     * Frame positions must use the same coordinate space as this layer.
+     * @param {Iterable<DifferentialFrame>} frames
+     */
+    synchronizeWithFrames(frames) {
+        const frameList = Array.from(frames);
+        this.#ensureLineCount(frameList.length);
+
+        frameList.forEach((frame, index) => {
+            const first = this._uVectors[index].line;
+            const second = this._vVectors[index].line;
+            first.visible = true;
+            second.visible = this._showSecondDirection;
+            this.#updateLine(first, frame, frame.d1, frame.k1);
+            if (this._showSecondDirection)
+                this.#updateLine(second, frame, frame.d2, frame.k2);
+        });
     }
 
     synchronizeWith(model) {
-        super.synchronizeWith(model);
-
-        let idx = 0;
-        for (let i = 0; i <= this._resolution.u; i++)
+        const frames = [];
+        for (let i = 0; i <= this._resolution.u; i++) {
+            const u = i / this._resolution.u;
             for (let j = 0; j <= this._resolution.v; j++) {
-                const u = i / this._resolution.u;
                 const v = j / this._resolution.v;
-
-                model.frameAt(u, v, this._frame);
-                if (!this._frame) continue;
-
-                this.#updateLine(this._uVectors[idx].line, this._frame.d1);
-                if (this._showSecondDirection)
-                    this.#updateLine(this._vVectors[idx].line, this._frame.d2);
-
-                idx++;
+                const frame = new DifferentialFrame();
+                if (model.frameAt(u, v, frame))
+                    frames.push(frame);
             }
+        }
+        this.synchronizeWithFrames(frames);
     }
 
     disposeGeometry() {
-        for (const v of this._uVectors) this.remove(v.line);
-        for (const v of this._vVectors) this.remove(v.line);
-
+        for (const entry of this._uVectors) {
+            this.remove(entry.line);
+            entry.line.geometry.dispose();
+        }
+        for (const entry of this._vVectors) {
+            this.remove(entry.line);
+            entry.line.geometry.dispose();
+        }
         this._uVectors.length = 0;
         this._vVectors.length = 0;
     }
 
     get boundingBox() {
         const box = new Box3();
-
-        for (const v of this._uVectors)
-            box.expandByObject(v.line);
-
-        for (const v of this._vVectors)
-            box.expandByObject(v.line);
-
+        for (const entry of this._uVectors)
+            if (entry.line.visible) box.expandByObject(entry.line);
+        for (const entry of this._vVectors)
+            if (entry.line.visible) box.expandByObject(entry.line);
         return box;
     }
 
     #makeLine() {
         const geometry = new BufferGeometry();
-
-        const positions = new Float32Array(2 * 3);
-        geometry.setAttribute('position', new BufferAttribute(positions, 3));
-
-        const colors = new Float32Array(2 * 3);
-        geometry.setAttribute('color', new BufferAttribute(colors, 3));
-
+        geometry.setAttribute('position', new BufferAttribute(new Float32Array(6), 3));
+        geometry.setAttribute('color', new BufferAttribute(new Float32Array(6), 3));
         return new Line(geometry, this._material);
     }
 }
