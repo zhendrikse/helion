@@ -11,7 +11,6 @@ import {ColorMapper, ColorMappers} from '../../colormappers.js';
 import {Registry} from '../../../core/utils.js';
 import {Checkbox, DropdownMenu} from '../../../core/controls.js';
 import {Interval} from '../../../model/math/math.js';
-import {Vec3} from '../../../model/math/objects.js';
 
 export class Layer extends Renderable3D {
     static material = () => new MeshStandardMaterial({
