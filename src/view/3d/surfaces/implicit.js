@@ -6,19 +6,24 @@ import { Renderable3D } from '../../renderer.js';
 import { Colour, ColorMappers } from '../../colormappers.js';
 import { ImplicitDifferentialGeometry, DifferentialFrame } from '../../../model/math/numerics/diffgeometry.js';
 import { Vec3 } from '../../../model/math/objects.js';
+import { Interval } from '../../../model/math/math.js';
+import { MeanCurvatureLayer, AdaptiveSymmetricNormalizer } from './color_layers.js';
 
 /**
  * Extracts an isosurface from an ImplicitSurface model using marching cubes.
- * Optionally colors vertices by mean curvature and displays principal directions.
+ * Vertex colors are calculated through the shared surface color-layer pipeline.
  */
 export class ImplicitSurfaceView extends Renderable3D {
     /**
      * @param {{
      *  resolution?: number,
      *  opacity?: number,
+     *  color?: Colour,
      *  material?: import('three').Material,
      *  maxPolyCount?: number,
-     *  curvatureColors?: boolean,
+     *  colorLayer?: import('./color_layers.js').ColorLayer,
+     *  colorMapper?: import('../../colormappers.js').ColorMapper,
+     *  normalizer?: import('./color_layers.js').Normalizer,
      *  showPrincipalDirections?: boolean,
      *  principalDirectionStride?: number,
      *  principalDirectionScale?: number
@@ -28,12 +33,11 @@ export class ImplicitSurfaceView extends Renderable3D {
         resolution = 32,
         opacity = 1,
         color = new Colour(0x4f9bd8),
-        material = new MeshStandardMaterial({
-            roughness: 0.35,
-            metalness: 0.1,
-        }),
+        material = new MeshStandardMaterial({ roughness: 0.35, metalness: 0.1 }),
         maxPolyCount = 30000,
-        curvatureColors = true,
+        colorLayer = new MeanCurvatureLayer(),
+        colorMapper = colorLayer.preferredColorMapper(),
+        normalizer = colorLayer.preferredNormalizer(),
         showPrincipalDirections = false,
         principalDirectionStride = 250,
         principalDirectionScale = 0.08
@@ -43,18 +47,19 @@ export class ImplicitSurfaceView extends Renderable3D {
         material.opacity = opacity;
         material.transparent = true;
         material.side = DoubleSide;
-        material.vertexColors = curvatureColors;
+        material.vertexColors = true;
 
         this._marchingCubes = new MarchingCubes(resolution, material, false, false, maxPolyCount);
         this._resolution = resolution;
         this._lastTime = undefined;
-        this._curvatureColors = curvatureColors;
+        this._colorLayer = colorLayer;
+        this._colorMapper = colorMapper;
+        this._normalizer = normalizer;
         this._showPrincipalDirections = showPrincipalDirections;
         this._principalDirectionStride = Math.max(1, principalDirectionStride);
         this._principalDirectionScale = principalDirectionScale;
         this._differentialGeometry = null;
         this._frame = new DifferentialFrame();
-        this._colorMapper = ColorMappers.get(ColorMappers.Seismic);
         this._color = new Color();
         this._principalLines = new LineSegments(
             new BufferGeometry(),
@@ -79,7 +84,6 @@ export class ImplicitSurfaceView extends Renderable3D {
         this._marchingCubes.position.set(center.x, center.y, center.z);
         this._marchingCubes.scale.set(halfSize.x, halfSize.y, halfSize.z);
 
-        // Set the finite-difference step relative to the sampled volume.
         const eps = Math.min(halfSize.x, halfSize.y, halfSize.z) / this._resolution * 0.1;
         this._differentialGeometry = new ImplicitDifferentialGeometry(model, { eps });
     }
@@ -105,17 +109,13 @@ export class ImplicitSurfaceView extends Renderable3D {
                 const py = (2 * y / size - 1) * halfSize.y + center.y;
                 for (let x = 0; x < size; x++) {
                     const px = (2 * x / size - 1) * halfSize.x + center.x;
-                    // MarchingCubes computes normals from the negative field gradient.
-                    // Negate the implicit function so the sphere normals point outward.
                     this._marchingCubes.setCell(x, y, z, model.isovalue - model.sampleAt(px, py, pz));
                 }
             }
         }
 
         this._marchingCubes.update();
-
-        if (this._curvatureColors || this._showPrincipalDirections)
-            this.#updateDifferentialGeometry(center, halfSize);
+        this.#updateDifferentialGeometry(center, halfSize);
     }
 
     #updateDifferentialGeometry(center, halfSize) {
@@ -124,58 +124,55 @@ export class ImplicitSurfaceView extends Renderable3D {
         if (!positions || positions.count === 0)
             return;
 
-        let colors = geometry.getAttribute('color');
-        if (this._curvatureColors && (!colors || colors.count !== positions.count)) {
-            colors = new BufferAttribute(new Float32Array(positions.count * 3), 3);
-            geometry.setAttribute('color', colors);
-        }
+        const colors = new BufferAttribute(new Float32Array(positions.count * 3), 3);
+        geometry.setAttribute('color', colors);
+        const colorValues = colors.array;
+        const frames = new Map();
+        const values = new Float32Array(positions.count);
+        const range = new Interval(Infinity, -Infinity);
 
-        const colorValues = colors?.array;
-        const curvature = this._curvatureColors ? new Float32Array(positions.count) : null;
-        const cache = new Map();
-        let maxAbsCurvature = 0;
-
-        // MarchingCubes emits triangle vertices without sharing them. Cache frames by
-        // position so the finite-difference calculation is done only once per location.
-        for (let i = 0; i < positions.count; i++) {
-            const x = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
+        // MarchingCubes emits unshared triangle vertices. Reuse differential frames
+        // at identical positions to avoid repeating finite-difference calculations.
+        const frameAtVertex = (index) => {
+            const x = positions.getX(index), y = positions.getY(index), z = positions.getZ(index);
             const key = `${x.toFixed(5)},${y.toFixed(5)},${z.toFixed(5)}`;
-            let meanCurvature = cache.get(key);
-
-            if (meanCurvature === undefined) {
+            let frame = frames.get(key);
+            if (!frame) {
                 const point = new Vec3(
                     center.x + x * halfSize.x,
                     center.y + y * halfSize.y,
                     center.z + z * halfSize.z
                 );
-                const frame = this._differentialGeometry.differentialFrameAt(point, this._frame);
-                meanCurvature = frame ? 0.5 * (frame.k1 + frame.k2) : 0;
-                cache.set(key, meanCurvature);
+                frame = new DifferentialFrame();
+                if (!this._differentialGeometry.differentialFrameAt(point, frame))
+                    frame = null;
+                frames.set(key, frame);
             }
+            return frame;
+        };
 
-            if (curvature) {
-                curvature[i] = meanCurvature;
-                maxAbsCurvature = Math.max(maxAbsCurvature, Math.abs(meanCurvature));
-            }
+        for (let i = 0; i < positions.count; i++) {
+            const frame = frameAtVertex(i);
+            const value = frame ? this._colorLayer.value(frame) : 0;
+            values[i] = value;
+            range.include(value);
         }
 
-        if (curvature) {
-            const scale = Math.max(maxAbsCurvature, 1e-9);
-            for (let i = 0; i < positions.count; i++) {
-                this._colorMapper.map(0.5 + 0.5 * curvature[i] / scale, this._color);
-                const offset = i * 3;
-                colorValues[offset] = this._color.r;
-                colorValues[offset + 1] = this._color.g;
-                colorValues[offset + 2] = this._color.b;
-            }
-            colors.needsUpdate = true;
+        this._normalizer.adaptTo(range);
+        for (let i = 0; i < positions.count; i++) {
+            this._colorMapper.map(this._normalizer.normalize(values[i]), this._color);
+            const offset = i * 3;
+            colorValues[offset] = this._color.r;
+            colorValues[offset + 1] = this._color.g;
+            colorValues[offset + 2] = this._color.b;
         }
+        colors.needsUpdate = true;
 
         if (this._showPrincipalDirections)
-            this.#updatePrincipalDirectionLines(positions, center, halfSize);
+            this.#updatePrincipalDirectionLines(positions, center, halfSize, frameAtVertex);
     }
 
-    #updatePrincipalDirectionLines(positions, center, halfSize) {
+    #updatePrincipalDirectionLines(positions, center, halfSize, frameAtVertex) {
         const linePositions = [];
         const lineColors = [];
         const stride = this._principalDirectionStride;
@@ -188,17 +185,12 @@ export class ImplicitSurfaceView extends Renderable3D {
             if (seen.has(key)) continue;
             seen.add(key);
 
-            const point = new Vec3(
-                center.x + x * halfSize.x,
-                center.y + y * halfSize.y,
-                center.z + z * halfSize.z
-            );
-            if (!this._differentialGeometry.differentialFrameAt(point, this._frame))
-                continue;
+            const frame = frameAtVertex(i);
+            if (!frame) continue;
 
             for (const [direction, rgb] of [
-                [this._frame.d1, [1, 0.25, 0.15]],
-                [this._frame.d2, [0.15, 0.75, 1]]
+                [frame.d1, [1, 0.25, 0.15]],
+                [frame.d2, [0.15, 0.75, 1]]
             ]) {
                 linePositions.push(
                     x, y, z,
@@ -218,9 +210,27 @@ export class ImplicitSurfaceView extends Renderable3D {
         this._principalLines.geometry = geometry;
     }
 
+    set colorLayer(colorLayer) {
+        this._colorLayer = colorLayer;
+        this._normalizer = colorLayer.preferredNormalizer();
+        this._colorMapper = colorLayer.preferredColorMapper();
+        this._lastTime = undefined;
+    }
+
+    set colorMapper(colorMapper) {
+        this._colorMapper = colorMapper;
+        this._lastTime = undefined;
+    }
+
+    set normalizer(normalizer) {
+        this._normalizer = normalizer;
+        this._lastTime = undefined;
+    }
+
     set principalDirectionsVisible(visible) {
         this._showPrincipalDirections = visible;
         this._principalLines.visible = visible;
+        this._lastTime = undefined;
     }
 
     dispose() {
