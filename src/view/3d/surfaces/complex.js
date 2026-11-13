@@ -2,7 +2,8 @@ import {
     Mesh, DoubleSide, MeshStandardMaterial, PlaneGeometry, Color, BufferAttribute, ShaderMaterial, Box3
 } from 'three';
 import { Renderable3D } from "../../renderer.js";
-import { AdaptiveSymmetricNormalizer, SurfaceResolution } from "./visualization.js";
+import { SurfaceResolution } from "./visualization.js";
+import { AdaptiveSymmetricNormalizer } from "./color_layers.js";
 import { Interval, Range} from "../../../model/math/math.js";
 import { ComplexColorMappers} from "../../colormappers.js";
 import { CompoundControl, DropdownMenu, Slider } from "../../../core/controls.js";

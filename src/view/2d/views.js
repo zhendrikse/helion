@@ -1,12 +1,13 @@
 import {
-    Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, Color, Box3, CircleGeometry, DoubleSide,
-    Points, PointsMaterial, BufferGeometry, Float32BufferAttribute, SRGBColorSpace, LinearSRGBColorSpace
+    Mesh, PlaneGeometry, MeshBasicMaterial, DataTexture, RGBAFormat, Color, Box3, DoubleSide,
+    Points, PointsMaterial, BufferGeometry, Float32BufferAttribute, SRGBColorSpace
 } from 'three';
 
 import { Renderable2D } from '../renderer.js';
 import { CompoundControl, DropdownMenu } from '../../core/controls.js';
-import { ColorMapper, Colour, ComplexColorMappers, HexValueColorMapper, WavelengthColorMapper} from '../colormappers.js';
-import { AdaptiveSymmetricNormalizer, SurfaceResolution} from '../3d/surfaces/visualization.js';
+import { ColorMapper, Colour, ComplexColorMappers, WavelengthColorMapper} from '../colormappers.js';
+import { SurfaceResolution} from '../3d/surfaces/visualization.js';
+import { AdaptiveSymmetricNormalizer } from '../3d/surfaces/color_layers.js';
 import { ComplexFunctionSample, DiscreteScalarField, DiscreteComplexField} from '../../model/math/fields.js';
 
 export class DiscreteFieldSurfaceView extends Renderable2D {

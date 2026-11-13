@@ -5,7 +5,8 @@ import {
 } from 'three';
 import {Renderable3D} from '../../renderer.js';
 import {DifferentialFrame} from '../../../model/math/numerics/diffgeometry.js';
-import {AdaptiveSymmetricNormalizer, ColorLayer, HeightLayer, Normalizer, SurfaceResolution} from './visualization.js';
+import { AdaptiveSymmetricNormalizer, ColorLayer, HeightLayer, Normalizer } from './color_layers.js';
+import { SurfaceResolution} from './visualization.js';
 import {ColorMapper, ColorMappers} from '../../colormappers.js';
 import {Registry} from '../../../core/utils.js';
 import {Checkbox, DropdownMenu} from '../../../core/controls.js';
