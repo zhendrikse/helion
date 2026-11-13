@@ -60,10 +60,12 @@ export class Layer extends Renderable3D {
     /** @param {Normalizer} normalizer */
     set normalizer(normalizer) {
         this._normalizer = normalizer;
+        this._normalizer.reset();
         this._dirty = true;
     }
 
     initialize(mathSurfaceDefinition) {
+        this._normalizer.reset();
         this._dirty = true;
     }
 
@@ -719,7 +721,7 @@ export class ContoursLayer extends Layer {
     }
 
     synchronizeWith(model) {
-        super.synchronizeWith(model);
+        this.updateNormalizerWith(model);
 
         for (const entry of this._uLines)
             this.#updateLine(entry, (v) => model.frameAt(entry.u, v, this._frame));
