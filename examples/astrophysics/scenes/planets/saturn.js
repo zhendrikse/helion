@@ -34,13 +34,13 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>🪐 Saturn</strong><br/>` +
-                '📌 One minute &#8792; 24 hours.<br/>' +
-                '📌 Second-largest planet.<br/>\n' +
-                '📌 Rings consist of ice particles, rocks and dust.<br/>\n' +
-                '📌 Less dense than water!<br/>\n' +
-                '📌 Atmosphere is mostly hydrogen and helium.<br/>\n' +
-                '📌 Has numerous moons, including Titan and Enceladus.<br/>\n' +
-                '📌 Titan has lakes and seas of liquid methane and ethane.<br/>\n' +
+                '• One minute &#8792; 24 hours.<br/>' +
+                '• Second-largest planet.<br/>\n' +
+                '• Rings consist of ice particles, rocks and dust.<br/>\n' +
+                '• Less dense than water!<br/>\n' +
+                '• Atmosphere is mostly hydrogen and helium.<br/>\n' +
+                '• Has numerous moons, including Titan and Enceladus.<br/>\n' +
+                '• Titan has lakes and seas of liquid methane and ethane.<br/>\n' +
                 '👉 Enceladus ejects huge plumes of water vapor and ice, suggesting a potentially habitable ocean beneath its icy crust.<br/>'
         }
     })

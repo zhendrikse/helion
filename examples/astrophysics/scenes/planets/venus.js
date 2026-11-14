@@ -28,12 +28,12 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>♀️ Venus</strong><br/>` +
-                '📌 One second &#8792; 24 hours.<br/>' +
-                '📌 Almost identical to Earth.<br/>' +
-                '📌 Approx. 465°C on average.<br/>' +
-                '📌 Extremely dense atmosphere, mostly carbon dioxide.<br/>' +
-                '📌 About 92 times Earth\'s atmospheric pressure at the surface.<br/>' +
-                '📌 Rotates backwards compared with most planets.<br/>' +
+                '• One second &#8792; 24 hours.<br/>' +
+                '• Almost identical to Earth.<br/>' +
+                '• Approx. 465°C on average.<br/>' +
+                '• Extremely dense atmosphere, mostly carbon dioxide.<br/>' +
+                '• About 92 times Earth\'s atmospheric pressure at the surface.<br/>' +
+                '• Rotates backwards compared with most planets.<br/>' +
                 '👉 A day on Venus (one rotation) is longer than its year (one orbit around the Sun).<br/>'
         }
     })

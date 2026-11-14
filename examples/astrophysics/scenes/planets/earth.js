@@ -111,13 +111,13 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>🌎 Earth</strong><br/>` +
-                '📌 One minute &#8792; 24 hours.<br/>' +
-                '📌 The fifth-largest planet.<br/>' +
-                '📌 Approx. 71% of its surface is covered by water.<br/>' +
-                '📌 Atmosphere: mainly nitrogen and oxygen.<br/>' +
-                '📌 Average surface temperature is approx. 15°C.<br/>' +
-                '📌 The moon is its only satellite.<br/>' +
-                '📌 Magnetic field protects us from much of the solar wind and charged particles.<br/>' +
+                '• One minute &#8792; 24 hours.<br/>' +
+                '• The fifth-largest planet.<br/>' +
+                '• Approx. 71% of its surface is covered by water.<br/>' +
+                '• Atmosphere: mainly nitrogen and oxygen.<br/>' +
+                '• Average surface temperature is approx. 15°C.<br/>' +
+                '• The moon is its only satellite.<br/>' +
+                '• Magnetic field protects us from much of the solar wind and charged particles.<br/>' +
                 '👉 Earth\'s liquid water, protective atmosphere and suitable temperatures make it uniquely habitable.<br/>'
         }
     })

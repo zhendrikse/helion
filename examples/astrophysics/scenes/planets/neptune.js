@@ -27,14 +27,14 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>🔱 Neptune</strong><br/>` +
-                '📌 One minute &#8792; 24 hours.<br/>' +
-                '📌 Fourth-largest planet.<br/>\n' +
-                '📌 Most distant planet.<br/>\n' +
-                '📌 Deep blue color, partly due to methane in atmosphere &amp; other atmospheric factors.<br/>\n' +
-                '📌 Approx. -200°C in its upper atmosphere.<br/>\n' +
-                '📌 Some of the fastest planetary winds, reaching approx. 2,000 km/h.<br/>\n' +
-                '📌 Takes approx. 165 Earth years to orbit the Sun.<br/>\n' +
-                '📌 Its largest moon, Triton, orbits backwards relative to Neptune\'s rotation.<br/>\n' +
+                '• One minute &#8792; 24 hours.<br/>' +
+                '• Fourth-largest planet.<br/>\n' +
+                '• Most distant planet.<br/>\n' +
+                '• Deep blue color, partly due to methane in atmosphere &amp; other atmospheric factors.<br/>\n' +
+                '• Approx. -200°C in its upper atmosphere.<br/>\n' +
+                '• Some of the fastest planetary winds, reaching approx. 2,000 km/h.<br/>\n' +
+                '• Takes approx. 165 Earth years to orbit the Sun.<br/>\n' +
+                '• Its largest moon, Triton, orbits backwards relative to Neptune\'s rotation.<br/>\n' +
                 '👉 Discovered through mathematical predictions before it was directly observed!<br/>'
         }
     })

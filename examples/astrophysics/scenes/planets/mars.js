@@ -28,13 +28,13 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>♂️ Mars</strong><br/>` +
-                '📌 One minute &#8792; 24 hours.<br/>' +
-                '📌 Approx. half Earth\'s diameter.<br/>\n' +
-                '📌 Red color because of iron oxide (rust) in its surface dust.<br/>\n' +
-                '📌 Average temperature around -65°C.<br/>\n' +
-                '📌 Two small moons, Phobos and Deimos.<br/>\n' +
-                '📌 Olympus Mons is the largest known volcano in the solar system.<br/>\n' +
-                '📌 Day lasts only 37 minutes longer than day on Earth.<br/>\n' +
+                '• One minute &#8792; 24 hours.<br/>' +
+                '• Approx. half Earth\'s diameter.<br/>\n' +
+                '• Red color because of iron oxide (rust) in its surface dust.<br/>\n' +
+                '• Average temperature around -65°C.<br/>\n' +
+                '• Two small moons, Phobos and Deimos.<br/>\n' +
+                '• Olympus Mons is the largest known volcano in the solar system.<br/>\n' +
+                '• Day lasts only 37 minutes longer than day on Earth.<br/>\n' +
                 '👉 Evidence of ancient rivers/lakes: liquid water once flowed across its surface.<br/>'
         }
     })

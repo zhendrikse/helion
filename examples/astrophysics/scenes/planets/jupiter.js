@@ -24,13 +24,13 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>🌪️ Jupiter</strong><br/>` +
-                '📌 One minute &#8792; 24 hours.<br/>' +
-                '📌 It is the largest planet.<br/>' +
-                '📌 More mass than 2 x the combined mass of all other planets.<br/>' +
-                '📌 Consists primarily hydrogen and helium.<br/>' +
-                '📌 The Great Red Spot is a gigantic storm that has lasted for centuries.<br/>' +
-                '📌 Has a large family of moons, including Europa, Ganymede and Io.<br/>' +
-                '📌 Has an extremely powerful magnetic field.<br/>' +
+                '• One minute &#8792; 24 hours.<br/>' +
+                '• It is the largest planet.<br/>' +
+                '• More mass than 2 x the combined mass of all other planets.<br/>' +
+                '• Consists primarily hydrogen and helium.<br/>' +
+                '• The Great Red Spot is a gigantic storm that has lasted for centuries.<br/>' +
+                '• Has a large family of moons, including Europa, Ganymede and Io.<br/>' +
+                '• Has an extremely powerful magnetic field.<br/>' +
                 '👉 Moon Ganymede is larger than Mercury!'
         }
     })

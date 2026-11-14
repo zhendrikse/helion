@@ -33,12 +33,12 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>❄️ Uranus</strong><br/>` +
-                '📌 One minute &#8792; 24 hours.<br/>' +
-                '📌 Third-largest planet.<br/>\n' +
-                '📌 Pale blue-green due to methane in its atmosphere.<br/>\n' +
-                '📌 Rotates almost on its side, (tilt &#8792; 98°).<br/>\n' +
-                '📌 Upper atmosphere approx -224°C: coldest planetary atmosphere in our solar system.<br/>\n' +
-                '📌 Has 13 known rings and 28 moons.<br/>\n' +
+                '• One minute &#8792; 24 hours.<br/>' +
+                '• Third-largest planet.<br/>\n' +
+                '• Pale blue-green due to methane in its atmosphere.<br/>\n' +
+                '• Rotates almost on its side, (tilt &#8792; 98°).<br/>\n' +
+                '• Upper atmosphere approx -224°C: coldest planetary atmosphere in our solar system.<br/>\n' +
+                '• Has 13 known rings and 28 moons.<br/>\n' +
                 '👉 Because of its extreme tilt, parts of Uranus experience approx. 42 years of continuous sunlight followed by 42 years of darkness.<br/>'
         }
     })

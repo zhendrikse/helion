@@ -30,12 +30,12 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>🌕 Mercury</strong><br/>` +
-                '📌 One second &#8792; 24 hours.<br/>' +
-                '📌 Smallest planet in the solar system.<br/>' +
-                '📌 Around -180°C at night and 430°C during the day.<br/>' +
-                '📌 Orbits the Sun in just 88 Earth days.<br/>' +
-                '📌 Covered in craters, resembling our Moon.<br/>' +
-                '📌 About 38% of Earth\'s gravity.<br/>' +
+                '• One second &#8792; 24 hours.<br/>' +
+                '• Smallest planet in the solar system.<br/>' +
+                '• Around -180°C at night and 430°C during the day.<br/>' +
+                '• Orbits the Sun in just 88 Earth days.<br/>' +
+                '• Covered in craters, resembling our Moon.<br/>' +
+                '• About 38% of Earth\'s gravity.<br/>' +
                 '👉 Despite being closest to the Sun, Venus is hotter because of its greenhouse effect.<br/>'
         }
     })
