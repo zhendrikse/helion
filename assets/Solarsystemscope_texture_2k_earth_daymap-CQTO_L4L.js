@@ -1,0 +1,1 @@
+var e=`/helion/assets/Solarsystemscope_texture_2k_earth_daymap-DKLT2WuX.jpg`;export{e as t};

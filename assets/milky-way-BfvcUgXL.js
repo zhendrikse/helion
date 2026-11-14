@@ -1,0 +1,1 @@
+var e=`/helion/assets/milky-way-BNzENGz_.jpg`;export{e as t};

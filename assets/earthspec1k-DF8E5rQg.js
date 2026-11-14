@@ -1,0 +1,1 @@
+var e=`/helion/assets/earthspec1k-DVJhpabx.jpg`;export{e as t};
