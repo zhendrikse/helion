@@ -1,0 +1,55 @@
+---
+---
+
+<script>
+    import {
+        Simulation, ParametricSurface, Domain, SurfaceVisualization, Ring, Colour,
+        ContoursLayer, SurfaceResolution, ColorLayers, ColorMappers, AxialSymmetricBody, Vec3
+    } from '../../../src/index.js';
+
+    const surface = new ParametricSurface({
+        domain: new Domain([0, 2 * Math.PI], [-2.5, 2.5]),
+        x: (u, v) => 2 * Math.cosh(v / 2) * Math.cos(u),
+        y: (u, v) => 2 * Math.cosh(v / 2) * Math.sin(u),
+        z: (u, v) => v
+    });
+
+    const contoursLayer = new ContoursLayer({
+        resolution: new SurfaceResolution(50, 50),
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: new Colour(0x666666)}),
+        colorLayer: new ColorLayers().get(ColorLayers.Height)()
+    });
+
+    const surfaceView = new SurfaceVisualization({
+        resolution: new SurfaceResolution(200, 200),
+        colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: Colour.LightBlue}),
+        opacity: 0.85
+    })
+        .addOverlayLayer(contoursLayer);
+
+    Simulation
+        .with({
+            htmlDivId: 'parametricCatenoid',
+            headUpDisplay: { enabled: false },
+            camera: { fieldOfView: 35 },
+            infoPanel: {
+                text: '<strong>🪀 Catenoid (parametric equation)</strong><br/>' +
+                '👉 A film of soap caught between two rings tries to minimize its surface and forms a catenoid!<br/>'
+            }
+        })
+        .bind(surface.onceWith(surfaceView))
+        .bind(new AxialSymmetricBody({
+            position: new Vec3(0, 2.5, 0),
+            radius: 3.8,
+            axis: new Vec3(0, 1, 0)
+        }).onceWith(new Ring({ thickness: 0.01, radialSegments: 64 })))
+        .bind(new AxialSymmetricBody({
+            position: new Vec3(0, -2.5, 0),
+            radius: 3.8,
+            axis: new Vec3(0, 1, 0)
+        }).onceWith(new Ring({ thickness: 0.01, radialSegments: 64 })))
+        .onFrame(() => surfaceView.rotation.y += 5e-3)
+        .setLatexTitle('\\large{\\begin{pmatrix}x \\\\ y \\\\ z \\end{pmatrix} = \\begin{pmatrix} 2\\cosh(v / 2)\\cos(u) \\\\ 2\\cosh(v / 2)\\sin(u) \\\\ v \\end{pmatrix} },\\quad\\begin{cases} u\\in [0, 2\\pi] \\\\ v\\in [-2.5, 2.5] \\end{cases}')
+        .frameSceneOn(surfaceView, {padding: 0.75, translationY: -5});
+
+</script>

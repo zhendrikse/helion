@@ -1,7 +1,10 @@
 ---
-title: "🪀 Suspended string"
+title: "🪢 Catenoids"
 layout: ../../../layouts/DocsLayout.astro
 ---
+
+import CatenoidImplicit from '../../../components/CatenoidImplicit.astro';
+import CatenoidParametric from '../../../components/CatenoidParametric.astro';
 
 <div class="badgeRow">
     <a href="https://en.wikipedia.org/wiki/JavaScript">
@@ -12,11 +15,11 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-## Demo
+### Demo
 <div class="header_line"></div>
 
 <div class="badgeRow">
-    <a href="https://github.com/zhendrikse/helion/blob/main/examples/waves/scenes/suspended_spring.js">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/nature/scenes/suspended_spring.js">
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=suspended_spring.js"/>
     </a>
 </div>
@@ -26,5 +29,21 @@ layout: ../../../layouts/DocsLayout.astro
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/MyPrograms/program/SuspendedSpring) is available as well, see [suspended_spring.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/suspended_spring.py)<br/>
 
 <div id="suspendedSpringContainer"></div>
-<script type="module" src={import.meta.env.BASE_URL + "examples/waves/scenes/suspended_spring.js"}></script>
+<script type="module" src={import.meta.env.BASE_URL + "examples/nature/scenes/suspended_spring.js"}></script>
 
+### Catenoid as parametric surface
+<div class="header_line"></div>
+
+👉 A film of soap caught between two rings tries to minimize its surface and forms a catenoid!<br/>
+🔗 For source code, see [parametric surfaces](../../mathematics/parametric_surfaces/) demo<br/>
+
+<div id="parametricCatenoid"></div>
+<CatenoidParametric/>
+
+### Catenoid as implicit surface
+<div class="header_line"></div>
+
+🔗 For source code, see [implicit surfaces](../../mathematics/implicit_surfaces/) demo<br/>
+
+<div id="implicitCatenoid"></div>
+<CatenoidImplicit/>

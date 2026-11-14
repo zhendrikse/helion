@@ -5,9 +5,9 @@ import {
 import 'uplot/dist/uPlot.min.css';
 import {DoubleSide, MeshStandardMaterial, TextureLoader, Vector2} from "three";
 import wood from "../../../src/textures/treeBark.jpg";
-import woodWicketColorUrl from "./textures/Wood_Wicker_011_color.png";
-import woodWicketRoughnessUrl from "./textures/Wood_Wicker_011_roughness.png";
-import woodWicketNormalUrl from "./textures/Wood_Wicker_011_normal.png";
+import woodWicketColorUrl from "../../waves/scenes/textures/Wood_Wicker_011_color.png";
+import woodWicketRoughnessUrl from "../../waves/scenes/textures/Wood_Wicker_011_roughness.png";
+import woodWicketNormalUrl from "../../waves/scenes/textures/Wood_Wicker_011_normal.png";
 
 const count = 50;
 const chainLength = 10;
@@ -85,6 +85,7 @@ Simulation
             side: DoubleSide
         })
     }))
+    .setLatexTitle('\\text{Catenoid:}\\quad\\large{y=a\\cosh (x/a)}')
     .append(new Slider('Bond force ')
         .withRange(new Range(10, 1000, 1))
         .on(chain)

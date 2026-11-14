@@ -1,0 +1,37 @@
+---
+---
+
+<script>
+    import { ColorMappers, ImplicitSurface, ImplicitSurfaceView, Simulation, Vec3 } from '../../../src/index.js';
+
+    const surface = new ImplicitSurface({
+        func: (x, y, z, t) =>
+            Math.sqrt(x * x + z * z) - 1.5 * Math.cosh(y / 1.5),
+        min: new Vec3(-3, -3, -3),
+        max: new Vec3(3, 3, 3)
+    });
+
+    const surfaceView = new ImplicitSurfaceView({
+        colorMapper: ColorMappers.get(ColorMappers.Scientific),
+        opacity: 0.9
+    });
+
+    Simulation
+        .with({
+            htmlDivId: 'implicitCatenoid',
+            headUpDisplay: { enabled: false },
+            camera: { fieldOfView: 35 },
+            infoPanel: {
+                text: '<strong>🪀 Catenoid (implicit equation)</strong><br/>' +
+                    '• Rendered with <a href="https://en.wikipedia.org/wiki/Marching_cubes">marching cubes</a> algorithm ' +
+                    ' provided by the <a href="https://threejs.org">Three.js</a> library.'
+            }
+        })
+        .onFrame(() => surfaceView.rotation.y += 5e-3)
+        .setLatexTitle('\\large{\\sqrt{x^2 + y^2} - 1.5 \\cosh(z / 1.5) = 0}')
+        .bind(surface.onceWith(surfaceView))
+        .frameSceneOn(surfaceView, {
+            padding: 0.85,
+            viewDirection: new Vec3(1, 0.8, 1)
+        });
+</script>

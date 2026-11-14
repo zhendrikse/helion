@@ -3,13 +3,20 @@ import {
     ContoursLayer, SurfaceResolution, ColorLayers, PrincipalDirectionsLayer, Checkbox, ColorMappers
 } from '../../../src/index.js';
 
-const sin = Math.sin, cos = Math.cos, tan = Math.tan, log = Math.log, PI = Math.PI;
+const sin = Math.sin, cos = Math.cos, cosh = Math.cosh, tanh=Math.tanh, tan = Math.tan, log = Math.log, PI = Math.PI;
+
 const surfaces = {
     'Bow curve': new ParametricSurface({
         domain: new Domain([0, 2 * PI], [0, 4 * PI]),
         x: (u, v) => (1 * sin(u) + 2) * sin(v),
         y: (u, v) => 1 * cos(u) + 2 * cos(0.5 * v),
         z: (u, v) => (1 * sin(u) + 2) * cos(v)
+    }),
+    'Catenoid': new ParametricSurface({
+        domain: new Domain([0, 2 * PI], [-2.5, 2.5]),
+        x: (u, v) => 2 * cosh(v / 2) * cos(u),
+        y: (u, v) => 2 * cosh(v / 2) * sin(u),
+        z: (u, v) => v
     }),
     'Dini\'s spiral': new ParametricSurface({
         domain: new Domain([0, 4 * PI], [0.1, 2 - 0.1]),
@@ -25,9 +32,9 @@ const surfaces = {
     }),
     'Folium': new ParametricSurface({
         domain: new Domain([-PI, PI], [-PI, PI]),
-        x: (u, v) => cos(u + 2 * PI/3) / Math.cosh(v),
-        y: (u, v) => cos(u - 2 * PI/3) / Math.cosh(v),
-        z: (u, v) => cos(u) * (2 * v/PI - Math.tanh(v)),
+        x: (u, v) => cos(u + 2 * PI/3) / cosh(v),
+        y: (u, v) => cos(u - 2 * PI/3) / cosh(v),
+        z: (u, v) => cos(u) * (2 * v/PI - tanh(v)),
     }),
     'Klein bottle': new ParametricSurface({
         domain: new Domain([0, 2 * PI], [0, 2 * PI]),
@@ -104,9 +111,10 @@ const simulation = Simulation
 /** @param {string} surfaceId */
 function changeSurface(surfaceId) {
     const newSurface = surfacesRegistry.get(surfaceId);
-    simulation.bind(newSurface.onceWith(surfaceView));
-    simulation.provideAxesAround(surfaceView);
-    simulation.frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
+    simulation
+        .bind(newSurface.onceWith(surfaceView))
+        .provideAxesAround(surfaceView)
+        .frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
 }
 
 changeSurface('Bow curve');

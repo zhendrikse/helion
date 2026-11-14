@@ -7,7 +7,7 @@ import { Colour, ColorMappers } from '../../colormappers.js';
 import { ImplicitDifferentialGeometry, DifferentialFrame } from '../../../model/math/numerics/diffgeometry.js';
 import { Vec3 } from '../../../model/math/objects.js';
 import { Interval } from '../../../model/math/math.js';
-import { MeanCurvatureLayer } from './color_layers.js';
+import {HeightLayer, MeanCurvatureLayer} from './color_layers.js';
 import { PrincipalDirectionsLayer } from './layers.js';
 
 /**
@@ -19,7 +19,6 @@ export class ImplicitSurfaceView extends Renderable3D {
      * @param {{
      *  resolution?: number,
      *  opacity?: number,
-     *  color?: Colour,
      *  material?: import('three').Material,
      *  maxPolyCount?: number,
      *  colorLayer?: import('./color_layers.js').ColorLayer,
@@ -31,20 +30,18 @@ export class ImplicitSurfaceView extends Renderable3D {
      * }} options
      */
     constructor({
-                    resolution = 32,
-                    opacity = 1,
-                    color = new Colour(0x4f9bd8),
-                    material = new MeshStandardMaterial({ roughness: 0.35, metalness: 0.1 }),
-                    maxPolyCount = 30000,
-                    colorLayer = new MeanCurvatureLayer(),
-                    colorMapper = colorLayer.preferredColorMapper(),
-                    normalizer = colorLayer.preferredNormalizer(),
-                    showPrincipalDirections = false,
-                    principalDirectionStride = 250,
-                    principalDirectionScale = 0.08
-                } = {}) {
+            resolution = 32,
+            opacity = 1,
+            material = new MeshStandardMaterial({ roughness: 0.45, metalness: 0.1 }),
+            maxPolyCount = 30000,
+            colorLayer = new HeightLayer(),
+            colorMapper = colorLayer.preferredColorMapper(),
+            normalizer = colorLayer.preferredNormalizer(),
+            showPrincipalDirections = false,
+            principalDirectionStride = 250,
+            principalDirectionScale = 0.08
+        } = {}) {
         super();
-        color.asThreeJsColor(material.color);
         material.opacity = opacity;
         material.transparent = true;
         material.side = DoubleSide;
