@@ -34,11 +34,14 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>🪐 Saturn</strong><br/>` +
-                '• One minute simulation time &#8792; 24 hours<br/>' +
-                `• Mass: ${Saturn.mass} kg<br/> • Radius: ${Saturn.radius} m<br/>` +
-                `• Tilt: ${radToDeg(Saturn.tilt)}°<br/> • Spin: ${radToDeg(Saturn.spin)}°/h<br/>` +
-                `• Inclination: ${radToDeg(Saturn.inclination)}°<br/> • Semi-major axis: ${Saturn.semiMajorAxis} kms<br/>` +
-                `• Eccentricity: ${Saturn.eccentricity}<br/> • Right ascension: ${radToDeg(Saturn.rightAscension)}°`
+                '📌 One minute &#8792; 24 hours.<br/>' +
+                '📌 Second-largest planet.<br/>\n' +
+                '📌 Rings consist of ice particles, rocks and dust.<br/>\n' +
+                '📌 Less dense than water!<br/>\n' +
+                '📌 Atmosphere is mostly hydrogen and helium.<br/>\n' +
+                '📌 Has numerous moons, including Titan and Enceladus.<br/>\n' +
+                '📌 Titan has lakes and seas of liquid methane and ethane.<br/>\n' +
+                '👉 Enceladus ejects huge plumes of water vapor and ice, suggesting a potentially habitable ocean beneath its icy crust.<br/>'
         }
     })
     .addObject3D(new AmbientLight(0xffffff, 0.25))

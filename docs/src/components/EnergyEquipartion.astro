@@ -1,3 +1,7 @@
+---
+---
+
+<script>
 import {
     RadialSymmetricBody, Vec3, Simulation, DiatomicMolecule, ViewsCollection, ModelObjectsCollection,
     BodyPair, SwitchableBondView, Aquarium, RadioGroup, SphereSphereCollision, SpringForce,
@@ -129,3 +133,4 @@ Simulation
     .onStep((_, dt) => gas.evolve(dt))
     .addObject3D(new Aquarium({ size: new Vec3(1, 1, 1).multiplyScalar(2 * L) }))
     .start();
+</script>

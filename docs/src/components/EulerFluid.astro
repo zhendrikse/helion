@@ -1,7 +1,11 @@
+---
+---
+
+<script>
 import { LinearSRGBColorSpace } from 'three';
 import {
-    Checkbox, ColorMappers, DiscreteScalarField, DiscreteVectorField, Circle, VelocitiesView, Slider, Vec2,
-    DropdownMenu, Interval, RadialSymmetricBody, RadioGroup, Simulation, Solver, Colour, Range, StreamlinesView,
+    ColorMappers, DiscreteScalarField, DiscreteVectorField, Circle, VelocitiesView, Vec2,
+    Interval, RadialSymmetricBody, Simulation, Solver, Colour, StreamlinesView,
     DiscreteFieldSurfaceView, FixedIntervalNormalizer, ModelObject
 } from '../../../src/index.js';
 
@@ -481,4 +485,4 @@ Simulation
         fluid.setObstacle(x, y, false);
     })
     .start();
-
+</script>

@@ -1,5 +1,5 @@
 import {
-    ModelObject, Checkbox, Polygon, Range, Simulation, Slider, PolygonView, Vec2, Renderable2D, Vec3, Colour
+    ModelObject, Polygon, Simulation, PolygonView, Vec2, Renderable2D, Vec3, Colour
 } from '../../../src/index.js';
 import {
     BufferGeometry, Color, DoubleSide, Float32BufferAttribute,

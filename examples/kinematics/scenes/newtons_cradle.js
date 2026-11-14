@@ -3,7 +3,7 @@ import {
     RadialSymmetricBody, ThreeJsScene, Colour, ViewsCollection, ModelObjectsCollection,
 } from '../../../src/index.js';
 import {DoubleSide, MeshStandardMaterial, TextureLoader, Vector2} from 'three';
-import wood from '../../../src/textures/treeBark.jpg';
+import wood from './textures/treeBark.jpg';
 import grassColorUrl from './textures/grass.jpg';
 import grassNormalUrl from './textures/grassNormal.jpg';
 

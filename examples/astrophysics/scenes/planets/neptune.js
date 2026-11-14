@@ -26,12 +26,16 @@ Simulation
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
         infoPanel: {
-            text: `<strong>🔱 Neptune<strong><br/>` +
-                '• One minute simulation time &#8792; 24 hours<br/>' +
-                `• Mass: ${Neptune.mass} kg<br/> • Radius: ${Neptune.radius} m<br/>` +
-                `• Tilt: ${radToDeg(Neptune.tilt)}°<br/> • Spin: ${radToDeg(Neptune.spin)}°/h<br/>` +
-                `• Inclination: ${radToDeg(Neptune.inclination)}°<br/> • Semi-major axis: ${Neptune.semiMajorAxis} kms<br/>` +
-                `• Eccentricity: ${Neptune.eccentricity}<br/> • Right ascension: ${radToDeg(Neptune.rightAscension)}°`
+            text: `<strong>🔱 Neptune</strong><br/>` +
+                '📌 One minute &#8792; 24 hours.<br/>' +
+                '📌 Fourth-largest planet.<br/>\n' +
+                '📌 Most distant planet.<br/>\n' +
+                '📌 Deep blue color, partly due to methane in atmosphere &amp; other atmospheric factors.<br/>\n' +
+                '📌 Approx. -200°C in its upper atmosphere.<br/>\n' +
+                '📌 Some of the fastest planetary winds, reaching approx. 2,000 km/h.<br/>\n' +
+                '📌 Takes approx. 165 Earth years to orbit the Sun.<br/>\n' +
+                '📌 Its largest moon, Triton, orbits backwards relative to Neptune\'s rotation.<br/>\n' +
+                '👉 Discovered through mathematical predictions before it was directly observed!<br/>'
         }
     })
     .addObject3D(new AmbientLight(0xffffff, .1))
@@ -40,7 +44,7 @@ Simulation
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
-        const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one second simulation view
+        const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one minute simulation view
         neptune.time += dtHours;
         planetView.translation = neptune.coordinates;
     })

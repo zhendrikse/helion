@@ -4,7 +4,7 @@ import {
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 import {MeshStandardMaterial, TextureLoader, Vector2, DoubleSide} from "three";
-import wood from '../../../src/textures/treeBark.jpg';
+import wood from './textures/treeBark.jpg';
 import grassColorUrl from './textures/grass.jpg';
 import grassNormalUrl from './textures/grassNormal.jpg';
 

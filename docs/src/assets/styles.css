@@ -81,6 +81,7 @@ button:hover {
 .helionInfoPanel {
     color: #d0d0d0;
     position: absolute;
+    font-size: 14px;
     left: 5px;
     z-index: 10;
     background: rgba(0, 0, 0, 0.8);

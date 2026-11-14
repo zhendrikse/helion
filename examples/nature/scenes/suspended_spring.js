@@ -4,7 +4,7 @@ import {
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 import {DoubleSide, MeshStandardMaterial, TextureLoader, Vector2} from "three";
-import wood from "../../../src/textures/treeBark.jpg";
+import wood from "../../kinematics/scenes/textures/treeBark.jpg";
 import woodWicketColorUrl from "../../waves/scenes/textures/Wood_Wicker_011_color.png";
 import woodWicketRoughnessUrl from "../../waves/scenes/textures/Wood_Wicker_011_roughness.png";
 import woodWicketNormalUrl from "../../waves/scenes/textures/Wood_Wicker_011_normal.png";

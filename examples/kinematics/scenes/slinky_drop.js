@@ -3,7 +3,7 @@ import {
     Vec2, AxialSymmetricBody, UniformGravitationalForce, Colour
 } from '../../../src/index.js';
 import {DirectionalLight, MeshStandardMaterial, TextureLoader} from 'three';
-import wood from '../../../src/textures/treeBark.jpg';
+import wood from './textures/treeBark.jpg';
 import metalFloorUrl from './textures/metal_floor_256.jpg';
 
 const g = new Vec3(0, -9.8, 0);

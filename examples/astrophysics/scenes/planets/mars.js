@@ -1,4 +1,4 @@
-import {Simulation, Vec3, Mars, ThreeJsScene, radToDeg, Planet, CelestialBody} from '../../../../src/index.js';
+import {Simulation, Vec3, Mars, ThreeJsScene, Planet, CelestialBody} from '../../../../src/index.js';
 import {AmbientLight, DirectionalLight, MeshPhongMaterial} from 'three';
 import marsMap from '../../textures/marsmap.jpg';
 import marsBumpMap from '../../textures/marsbump.jpg';
@@ -28,11 +28,14 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>♂️ Mars</strong><br/>` +
-                '• One minute simulation time &#8792; 24 hours<br/>' +
-                `• Mass: ${Mars.mass} kg<br/> • Radius: ${Mars.radius} m<br/>` +
-                `• Tilt: ${radToDeg(Mars.tilt)}°<br/> • Spin: ${radToDeg(Mars.spin)}°/h<br/>` +
-                `• Inclination: ${radToDeg(Mars.inclination)}°<br/> • Semi-major axis: ${Mars.semiMajorAxis} kms<br/>` +
-                `• Eccentricity: ${Mars.eccentricity}<br/> • Right ascension: ${radToDeg(Mars.rightAscension)}°`
+                '📌 One minute &#8792; 24 hours.<br/>' +
+                '📌 Approx. half Earth\'s diameter.<br/>\n' +
+                '📌 Red color because of iron oxide (rust) in its surface dust.<br/>\n' +
+                '📌 Average temperature around -65°C.<br/>\n' +
+                '📌 Two small moons, Phobos and Deimos.<br/>\n' +
+                '📌 Olympus Mons is the largest known volcano in the solar system.<br/>\n' +
+                '📌 Day lasts only 37 minutes longer than day on Earth.<br/>\n' +
+                '👉 Evidence of ancient rivers/lakes: liquid water once flowed across its surface.<br/>'
         }
     })
     .addObject3D(new AmbientLight(0xffeeee, 0.1))

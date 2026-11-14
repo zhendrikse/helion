@@ -2,9 +2,11 @@ import {
     Simulation, AxialSymmetricBody, ModelObjectsCollection, Cylinder, Sphere, RadialSymmetricBody, Vec3, ViewsCollection,
     Colour, Block, Box, Range, Slider, UPlotGraph, normalDistribution
 } from '../../../src/index.js';
-import wood from '../../kinematics/scenes/textures/wood_128x128.jpg';
+import wood from '../../kinematics/scenes/textures/wood_oak.jpg';
+import wood2 from '../../kinematics/scenes/textures/treeBark.jpg';
+
 import uPlot from 'uplot';
-import {MeshStandardMaterial, TextureLoader} from "three";
+import { MeshStandardMaterial, RepeatWrapping, TextureLoader } from "three";
 
 const num_nails = 10;
 const num_balls = 200;
@@ -68,7 +70,7 @@ const normalValues = binPositions.map(x => num_balls * normalDistribution(x, num
 const histogram = new UPlotGraph({
     dataDefinition: [
         { label: 'Bin' },
-        { label: 'Observed distribution', color: new Colour(0xff0000), fill: new Colour(0xcc4444) },
+        { label: 'Observed distribution', color: new Colour(0x00ffff), fill: new Colour(0x22cccc) },
         { label: 'Normal distribution', color: new Colour(0xffff00) }
     ],
     title: 'Galton board: observed and theoretical distributions',
@@ -82,12 +84,19 @@ histogram.graphData[0].push(...binPositions);
 histogram.graphData[1].push(...bins);
 histogram.graphData[2].push(...normalValues);
 
+const textureLoader = new TextureLoader();
+const texture = textureLoader.load(wood);
+texture.wrapS = RepeatWrapping;
+texture.wrapT = RepeatWrapping;
+texture.repeat.set(2, 2);
+
+const material = new MeshStandardMaterial({map: new TextureLoader().load(wood2)});
 const simulation = Simulation
     .with({
         htmlDivId: 'galtonBoardContainer',
         headUpDisplay: false,
         viewport: { aspectRatio: '3/4' },
-        camera: { fieldOfView: 30, position: new Vec3(0, -32, 56) },
+        camera: { controls: false, fieldOfView: 30, position: new Vec3(0, -32, 56) },
         infoPanel: {
             text: '<strong>🎲 Galton board</strong><br/>' +
                 'The <a href=\"https://en.wikipedia.org/wiki/Galton_board\">Galton board</a> illustrates the ' +
@@ -99,11 +108,11 @@ const simulation = Simulation
         position: new Vec3(0, 1.5, -0.3),
         size: new Vec3(2 * (num_nails + 1.1), num_balls * .1825, .1)
     }).alwaysWith(new Box({
-        material: new MeshStandardMaterial({map: new TextureLoader().load(wood)}),
+        material: new MeshStandardMaterial({ map: texture }),
         color: new Colour(0xDEB887)
     })))
-    .bind(bars.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0x855E42) })))
-    .bind(pins.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0x855E42) })))
+    .bind(bars.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0x855E42), material })))
+    .bind(pins.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0x855E42), material })))
     .runsEvery(0.01)
     .onStep((_clock, _dt) => {
         simulationStep++;
@@ -147,7 +156,7 @@ function spawnBall() {
     spawnedBalls++;
 
     // Same dynamic model/view binding pattern as the double-slit particle demo.
-    simulation.bind(body.alwaysWith(new Sphere({ color: Colour.Red })));
+    simulation.bind(body.alwaysWith(new Sphere({ color: Colour.Cyan })));
     simulation.setHtmlTitle(`Ball ${spawnedBalls} of ${num_balls}`)
 }
 

@@ -111,11 +111,14 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>🌎 Earth</strong><br/>` +
-                '• One minute simulation time &#8792; 24 hours<br/>' +
-                `• Mass: ${Earth.mass} kg<br/> • Radius: ${Earth.radius} m<br/>` +
-                `• Tilt: ${radToDeg(Earth.tilt)}°<br/> • Spin: ${radToDeg(Earth.spin)}°/h<br/>` +
-                `• Inclination: ${radToDeg(Earth.inclination)}°<br/> • Semi-major axis: ${Earth.semiMajorAxis} kms<br/>` +
-                `• Eccentricity: ${Earth.eccentricity}<br/> • Right ascension: ${radToDeg(Earth.rightAscension)}°`
+                '📌 One minute &#8792; 24 hours.<br/>' +
+                '📌 The fifth-largest planet.<br/>' +
+                '📌 Approx. 71% of its surface is covered by water.<br/>' +
+                '📌 Atmosphere: mainly nitrogen and oxygen.<br/>' +
+                '📌 Average surface temperature is approx. 15°C.<br/>' +
+                '📌 The moon is its only satellite.<br/>' +
+                '📌 Magnetic field protects us from much of the solar wind and charged particles.<br/>' +
+                '👉 Earth\'s liquid water, protective atmosphere and suitable temperatures make it uniquely habitable.<br/>'
         }
     })
     .addObject3D(new AmbientLight(0x888888, 1e-2))

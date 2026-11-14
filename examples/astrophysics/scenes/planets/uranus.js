@@ -33,11 +33,13 @@ Simulation
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>❄️ Uranus</strong><br/>` +
-                '• One minute simulation time &#8792; 24 hours<br/>' +
-                `• Mass: ${Uranus.mass} kg<br/> • Radius: ${Uranus.radius} m<br/>` +
-                `• Tilt: ${radToDeg(Uranus.tilt)}°<br/> • Spin: ${radToDeg(Uranus.spin)}°/h<br/>` +
-                `• Inclination: ${radToDeg(Uranus.inclination)}°<br/> • Semi-major axis: ${Uranus.semiMajorAxis} kms<br/>` +
-                `• Eccentricity: ${Uranus.eccentricity}<br/> • Right ascension: ${radToDeg(Uranus.rightAscension)}°`
+                '📌 One minute &#8792; 24 hours.<br/>' +
+                '📌 Third-largest planet.<br/>\n' +
+                '📌 Pale blue-green due to methane in its atmosphere.<br/>\n' +
+                '📌 Rotates almost on its side, (tilt &#8792; 98°).<br/>\n' +
+                '📌 Upper atmosphere approx -224°C: coldest planetary atmosphere in our solar system.<br/>\n' +
+                '📌 Has 13 known rings and 28 moons.<br/>\n' +
+                '👉 Because of its extreme tilt, parts of Uranus experience approx. 42 years of continuous sunlight followed by 42 years of darkness.<br/>'
         }
     })
     .addObject3D(new AmbientLight(0xffffff, .1))
@@ -46,7 +48,7 @@ Simulation
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
-        const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one second simulation view
+        const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one minute simulation view
         uranus.time += dtHours;
         planetView.translation = uranus.coordinates;
     })

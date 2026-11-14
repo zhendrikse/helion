@@ -3,7 +3,7 @@ import {
     ViewsCollection, ModelObjectsCollection
 } from '../../../src/index.js';
 import {DoubleSide, MeshStandardMaterial, TextureLoader, Vector2} from 'three';
-import wood from '../../../src/textures/treeBark.jpg';
+import wood from '../../kinematics/scenes/textures/treeBark.jpg';
 import woodWicketColorUrl from './textures/Wood_Wicker_011_color.png';
 import woodWicketNormalUrl from './textures/Wood_Wicker_011_normal.png';
 import woodWicketRoughnessUrl from './textures/Wood_Wicker_011_roughness.png';

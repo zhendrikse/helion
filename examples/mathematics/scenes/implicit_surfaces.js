@@ -1,6 +1,5 @@
 import {
-    Checkbox, ColorMappers,
-    Domain, DropdownMenu, ImplicitSurface, ImplicitSurfaceView, ParametricSurface, Registry, Simulation, Vec3
+    Checkbox, ColorMappers, DropdownMenu, ImplicitSurface, ImplicitSurfaceView, Registry, Simulation, Vec3
 } from '../../../src/index.js';
 
 const cos = Math.cos;
@@ -9,12 +8,14 @@ const PI = Math.PI;
 
 const majorRadius = 1.35;
 const minorRadius = 0.65;
-const radialDistance = (x, y) => Math.hypot(x, y);
-const c = t => 1.5 + .25 * Math.sin(t);
+
 const surfaces = {
     'Catenoid': {
         'surface': new ImplicitSurface({
-            func: (x, y, z, t) => Math.sqrt(x * x + z * z) - c(t) * Math.cosh(y / c(t)),
+            func: (x, y, z, t) => {
+                const c = t => 1.5 + .25 * Math.sin(t);
+                return Math.sqrt(x * x + z * z) - c(t) * Math.cosh(y / c(t))
+            },
             min: new Vec3(-3, -3, -3),
             max: new Vec3(3, 3, 3)
         }),
@@ -34,6 +35,7 @@ const surfaces = {
             func: (x, y, z, t) => {
                 // The major radius shrinks to zero at t = PI, turning the
                 // torus equation continuously into the equation of a sphere.
+                const radialDistance = (x, y) => Math.hypot(x, y);
                 const R = majorRadius * (1 + cos(t)) * 0.5;
                 return (radialDistance(x, y) - R) ** 2 + z * z - minorRadius ** 2;
             },

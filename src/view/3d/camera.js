@@ -18,16 +18,14 @@ export class ThreeJsCamera {
         this._viewport = viewport;
         this._orthographic = options.orthographic;
         this._fieldOfView = options.fieldOfView;
+        this._controlsEnabled = options.controls;
         this._camera = this._createCamera(viewport, options.position, options.fieldOfView, options.orthographic);
-        this._controls = null;
         this._autoRotate = options.autoRotate;
         this._autoRotateTheta = Math.PI / 2;
         this._autoRotatePhi = 0;
-        if (options.controls) {
-            this._controls = new OrbitControls(this._camera, viewport.canvas);
-            this._controls.target.copy(options.target);
-            this._applyControlLimits();
-        }
+        this._controls = new OrbitControls(this._camera, viewport.canvas);
+        this._controls.target.copy(options.target);
+        this._applyControlLimits();
     }
 
     _createCamera(viewport, position, fieldOfView, orthographic) {
@@ -46,20 +44,20 @@ export class ThreeJsCamera {
     }
 
     _applyControlLimits() {
-        if (!this._controls) return;
         if (this._orthographic) {
             this._controls.enableRotate = false;
             this._controls.enablePan = false;
             this._controls.enableZoom = true;
         } else {
-            this._controls.enableRotate = true;
-            this._controls.enablePan = true;
-            this._controls.enableZoom = true;
+            this._controls.enableRotate = this._controlsEnabled;
+            this._controls.enablePan = this._controlsEnabled;
+            this._controls.enableZoom = this._controlsEnabled;
         }
     }
 
     set orthographic(orthographic) {
-        if (this._orthographic === orthographic) return;
+        if (this._orthographic === orthographic)
+            return;
         this._orthographic = orthographic;
         const pos = this._camera.position.clone();
         const target = this._controls ? this._controls.target.clone() : new Vector3(0, 0, 0);

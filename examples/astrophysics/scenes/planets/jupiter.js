@@ -18,20 +18,20 @@ let lastTime = performance.now() * 1e-3;
 Simulation
     .with({
         htmlDivId: 'jupiterContainer',
-        camera: {
-            fieldOfView: 45,
-            position: new Vec3(1, 1.5, 4).multiplyScalar(.7)
-        },
+        camera: { fieldOfView: 45, position: new Vec3(.7, 1.19, 2.8) },
         scene: { background: ThreeJsScene.Background.STARS, scale: 1e-8 },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: `<strong>🌪️ Jupiter</strong><br/>` +
-                '• One minute simulation time &#8792; 24 hours<br/>' +
-                `• Mass: ${Jupiter.mass} kg<br/> • Radius: ${Jupiter.radius} m<br/>` +
-                `• Tilt: ${radToDeg(Jupiter.tilt)}°<br/> • Spin: ${radToDeg(Jupiter.spin)}°/h<br/>` +
-                `• Inclination: ${radToDeg(Jupiter.inclination)}°<br/> • Semi-major axis: ${Jupiter.semiMajorAxis} kms<br/>` +
-                `• Eccentricity: ${Jupiter.eccentricity}<br/> • Right ascension: ${radToDeg(Jupiter.rightAscension)}°`
+                '📌 One minute &#8792; 24 hours.<br/>' +
+                '📌 It is the largest planet.<br/>' +
+                '📌 More mass than 2 x the combined mass of all other planets.<br/>' +
+                '📌 Consists primarily hydrogen and helium.<br/>' +
+                '📌 The Great Red Spot is a gigantic storm that has lasted for centuries.<br/>' +
+                '📌 Has a large family of moons, including Europa, Ganymede and Io.<br/>' +
+                '📌 Has an extremely powerful magnetic field.<br/>' +
+                '👉 Moon Ganymede is larger than Mercury!'
         }
     })
     .addObject3D(new AmbientLight(0xffffff, 7.5e-2))
@@ -40,7 +40,7 @@ Simulation
     .onFrame(timeStamp => {
         const deltaSeconds = (timeStamp - lastTime) * .001;
         lastTime = timeStamp;
-        const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one second simulation view
+        const dtHours = deltaSeconds * 24 / 60; // 24 hours equal to one minute simulation view
         jupiter.time += dtHours;
         planetView.translation = jupiter.coordinates;
     })
