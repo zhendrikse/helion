@@ -7,7 +7,7 @@ const sin = Math.sin;
 const PI = Math.PI;
 
 const majorRadius = 1.35;
-const minorRadius = 0.65;
+const minorRadius = 0.5;
 
 const surfaces = {
     'Catenoid': {
@@ -21,7 +21,17 @@ const surfaces = {
         }),
         'latex': '\\large{\\sqrt{x^2 + y^2} = c(t)\\cosh\\left(\\frac{z}{c(t)}\\right)}'
     },
-    'Schwarz Primitive': {
+    'Genus 2 surface': {
+        'surface': new ImplicitSurface({
+            func: (x, y, z, t) =>
+                2 * z * (z * z - 3 * x * x) * (1 - y * y) + (x * x + z * z) * (x * x + z * z) - (9 * y * y -1) * (1 - y * y),
+            min: new Vec3(-2, -2, -2),
+            max: new Vec3(2, 2, 2),
+            isovalue: .25
+        }),
+        'latex': '\\large{2z(z^2 - 3x^2)(1 - z^2) + (x^2 + z^2)^2 - (9y^2 -1)(1 - y^2)}'
+    },
+    'Gyroid lattice': {
         'surface': new ImplicitSurface({
             func: (x, y, z, t) =>
                 sin(x) * cos(y) + sin(y) * cos(z) + sin(z) * cos(x) - 0.5 * sin(t),
@@ -52,10 +62,10 @@ const surfacesRegistry = new Registry({
 });
 
 const surfaceView = new ImplicitSurfaceView({
-    resolution: 36,
-    maxPolyCount: 30000,
+    resolution: 45,
+    maxPolyCount: 60_000,
     colorMapper: ColorMappers.get(ColorMappers.Scientific),
-    opacity: 0.95
+    opacity: 0.9
 });
 
 let animate = false;
@@ -77,7 +87,7 @@ const simulation = Simulation
     .onStep((_clock, dt) => currentSurface.time += animate ? dt : 0)
     .append(new DropdownMenu()
         .for(surfacesRegistry)
-        .withValue('Torus')
+        .withValue('Gyroid lattice')
         .onChange(value => changeSurface(value))
     )
     .start();
@@ -93,4 +103,4 @@ function changeSurface(surfaceId) {
         .frameSceneOn(surfaceView, {padding: 0.9, translationY: -5});
 }
 
-changeSurface('Torus');
+changeSurface('Gyroid lattice');
