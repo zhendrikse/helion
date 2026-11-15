@@ -1,4 +1,4 @@
-import { MeshPhongMaterial, AmbientLight, PointLight, MathUtils } from 'three';
+import {MeshPhongMaterial, AmbientLight, PointLight, MathUtils, MeshBasicMaterial} from 'three';
 import {
     CelestialBody, Checkbox, Colour, Mercury, Planet, RadialSymmetricBody, Simulation, Sphere, SunView,
     ThreeJsScene, Trail, Vec3
@@ -69,7 +69,11 @@ function angleBetween(v1, v2) {
 
 const perihelionPoints = [];
 function markPerihelion() {
-    const perihelionPoint = new Sphere({ color: Colour.Yellow });
+    const perihelionPoint = new Sphere({
+        material: new MeshBasicMaterial(),
+        color: Colour.Yellow,
+        opacity: 0.7
+    });
     simulation.bind(new RadialSymmetricBody({
         position: vec_r_last,
         radius: 0.1

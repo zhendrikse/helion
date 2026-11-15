@@ -155,7 +155,9 @@ export class SunView extends Renderable3D {
     constructor({
         color = new Color("#ffcc66"),
         speed = 2,
-        radiusScaleFactor = 1.0
+        radiusScaleFactor = 1.0,
+        fresnelScale = 1.02,
+        glowScale = 1.75
     } = {}) {
         super();
         this._speed = speed * 0.001;
@@ -169,8 +171,8 @@ export class SunView extends Renderable3D {
         const surface = new Mesh(geometry, new SurfaceMaterial(this.uniforms).material);
         const fresnel = new Mesh(geometry, new FresnelMaterial(this.uniforms).material);
         const glow = new Mesh(geometry, new GlowMaterial(this.uniforms).material);
-        fresnel.scale.setScalar(1.02);
-        glow.scale.setScalar(1.75);
+        fresnel.scale.setScalar(fresnelScale);
+        glow.scale.setScalar(glowScale);
         this.add(surface);
         this.add(fresnel);
         this.add(glow);

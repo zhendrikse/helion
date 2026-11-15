@@ -176,15 +176,15 @@ export class Sphere extends Renderable3D {
         super();
         if (!material) {
             material = new MeshStandardMaterial({
-                opacity: opacity,
                 transparent: true,
-                wireframe: wireframe,
-                visible: visible,
-                roughness: 0.2,
                 metalness: 0.8
             });
         }
         material.color.copy(color.asThreeJsColor());
+        material.opacity = opacity;
+        material.wireframe = wireframe;
+        material.visible = visible;
+        material.transparent = true;
         this._mesh = new Mesh(new SphereGeometry(1, segments, segments), material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
@@ -465,7 +465,6 @@ export class Cone extends Renderable3D {
      * @param {{
      *     color?: Colour,
      *     opacity?: number,
-     *     width?: number,
      *     segments?: number,
      *     visible?: boolean,
      *     material?: Material
@@ -474,7 +473,6 @@ export class Cone extends Renderable3D {
     constructor({
         color = Colour.Yellow,
         opacity = 1,
-        width = 1,
         segments = 32,
         visible = true,
         material = new MeshStandardMaterial({
@@ -497,7 +495,6 @@ export class Cone extends Renderable3D {
 
         this._mesh = new Mesh(new ConeGeometry(1, 1, segments), this._material);
         this.add(this._mesh);
-        this._width = width;
         this._direction = new Vector3();
         this.visible = visible;
     }
@@ -516,7 +513,7 @@ export class Cone extends Renderable3D {
         const length = this._direction.length();
 
         this.position.add(this._direction.clone().multiplyScalar(0.5));
-        this.scale.set(this._width * 0.5, length, this._width * 0.5);
+        this.scale.set(body.radius, length, body.radius * 0.5);
 
         if (length > 0)
             this.quaternion.setFromUnitVectors(Arrow.UP, this._direction.normalize());

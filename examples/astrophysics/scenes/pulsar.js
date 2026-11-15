@@ -75,20 +75,9 @@ Simulation
         },
         scene: { background: ThreeJsScene.Background.STARS }
     })
-    .bind(neutronStar.alwaysWith(new Sphere({
-        color: new Colour(0x777777),
-        segments: 32
-    })))
-    .bind(beam1.alwaysWith(new Cone({
-        color: new Colour(0x8070ff),
-        opacity: 0.3,
-        width: 1
-    })))
-    .bind(beam2.alwaysWith(new Cone({
-        color: new Colour(0x8070ff),
-        opacity: 0.1,
-        width: 1
-    })))
+    .bind(neutronStar.alwaysWith(new Sphere({ color: new Colour(0x777777), segments: 32 })))
+    .bind(beam1.alwaysWith(new Cone({ color: new Colour(0x8070ff), opacity: 0.3 })))
+    .bind(beam2.alwaysWith(new Cone({ color: new Colour(0x8070ff), opacity: 0.1 })))
     .addObject3D(ambientLight)
     .addObject3D(beamLight1)
     .addObject3D(beamLight2)
