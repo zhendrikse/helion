@@ -169,22 +169,18 @@ export class Sphere extends Renderable3D {
         opacity = 1,
         wireframe = false,
         visible = true,
-        material = null,
+        material = new MeshStandardMaterial({
+            transparent: true,
+            roughness: 0.2,
+            metalness: 0.8
+        }),
         segments = 24,
         castShadow = false,
     } = {}) {
         super();
-        if (!material) {
-            material = new MeshStandardMaterial({
-                transparent: true,
-                metalness: 0.8
-            });
-        }
-        material.color.copy(color.asThreeJsColor());
-        material.opacity = opacity;
+        color.asThreeJsColor(material.color);
         material.wireframe = wireframe;
-        material.visible = visible;
-        material.transparent = true;
+        material.opacity = opacity;
         this._mesh = new Mesh(new SphereGeometry(1, segments, segments), material);
         this._mesh.castShadow = castShadow;
         this.add(this._mesh);
