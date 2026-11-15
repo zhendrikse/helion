@@ -4,9 +4,9 @@ import {
 } from '../../../src/index.js';
 import {DoubleSide, MeshStandardMaterial, TextureLoader, Vector2} from 'three';
 import wood from '../../kinematics/scenes/textures/treeBark.jpg';
-import woodWicketColorUrl from './textures/Wood_Wicker_011_color.png';
-import woodWicketNormalUrl from './textures/Wood_Wicker_011_normal.png';
-import woodWicketRoughnessUrl from './textures/Wood_Wicker_011_roughness.png';
+import woodWickerColorUrl from './textures/Wood_Wicker_011_color.png';
+import woodWickerNormalUrl from './textures/Wood_Wicker_011_normal.png';
+import woodWickerRoughnessUrl from './textures/Wood_Wicker_011_roughness.png';
 
 const g = 9.8;
 
@@ -156,9 +156,9 @@ Simulation
         planeMaterial: new MeshStandardMaterial({
             normalScale: new Vector2(100, 100),
             roughness: 1,
-            map: Floor.loadTexture(woodWicketColorUrl, 15),
-            roughnessMap: Floor.loadTexture(woodWicketRoughnessUrl, 15),
-            normalMap: Floor.loadTexture(woodWicketNormalUrl, 15),
+            map: Floor.loadTexture(woodWickerColorUrl, 15),
+            roughnessMap: Floor.loadTexture(woodWickerRoughnessUrl, 15),
+            normalMap: Floor.loadTexture(woodWickerNormalUrl, 15),
             side: DoubleSide
         })
     }))

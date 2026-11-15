@@ -430,6 +430,11 @@ export class LineSegment extends ModelObject {
 }
 
 /**
+ * Segments serves as a lightweight collection of geometric segments.
+ * The class serves a distinct purpose compared to ModelObjectsCollection,
+ * which purpose is to collect model objects with view binding,
+ * so the two classes serve different use cases.
+ *
  * @template {ModelObject} [T=ModelObject]
  */
 export class Segments extends ModelObject {

@@ -74,6 +74,11 @@ export class BindingsCollection {
 }
 
 /**
+ * ModelObjectsCollection's purpose is to collect model objects with view binding.
+ * so the two classes serve different use cases.
+ * The class serves a distinct purpose compared to Segments,
+ * which serves as a lightweight collection of geometric segments.
+ *
  * @template {ModelObject} [T=ModelObject]
  */
 export class ModelObjectsCollection {
