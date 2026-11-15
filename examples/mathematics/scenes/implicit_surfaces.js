@@ -25,11 +25,21 @@ const surfaces = {
         'surface': new ImplicitSurface({
             func: (x, y, z, t) =>
                 2 * z * (z * z - 3 * x * x) * (1 - y * y) + (x * x + z * z) * (x * x + z * z) - (9 * y * y -1) * (1 - y * y),
-            min: new Vec3(-2, -2, -2),
-            max: new Vec3(2, 2, 2),
+            min: new Vec3(-2, -1.25, -2),
+            max: new Vec3(2, 1.25, 2),
             isovalue: .25
         }),
-        'latex': '\\large{2z(z^2 - 3x^2)(1 - z^2) + (x^2 + z^2)^2 - (9y^2 -1)(1 - y^2)}'
+        'latex': '2z(z^2 - 3x^2)(1 - z^2) + (x^2 + z^2)^2 - (9y^2 -1)(1 - y^2)'
+    },
+    'Genus 8 surface': {
+        'surface': new ImplicitSurface({
+            func: (x, y, z, t) =>
+                ((x - 1) * x * x * (x + 1) + y * y) **2 + ((y - 1) * y * y * (y + 1) + z * z) **2 + .1 * y * y + 0.05 * (y - 1) * y * y * (y + 1),
+            min: new Vec3(-1.2, -.65, -.6),
+            max: new Vec3(1.2, .65, .6),
+            isovalue: 2.25e-2
+        }),
+        'latex': '((x - 1) x^2 (x + 1) + y^2)^2 + ((y - 1) y^2 (y + 1) + z^2)^2 + .1y^2 + 0.05(y - 1) y^2 (y + 1)'
     },
     'Gyroid lattice': {
         'surface': new ImplicitSurface({
