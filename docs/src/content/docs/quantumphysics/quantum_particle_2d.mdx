@@ -13,7 +13,7 @@ layout: ../../../layouts/DocsLayout.astro
 </div>
 
 ### What are you looking at?
-<div class="header_line"><br/></div>
+<div class="header_line"></div>
 
 This demo visualizes the stationary eigenstates belonging to the Hamiltonian of a 2D quantum particle:
 
@@ -50,7 +50,7 @@ wave-like patterns, including the characteristic lobes and nodes of quantum wave
 <div id="qmsolveEigenstates" ></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/quantumphysics/scenes/quantum_particle_2d.js"}></script>
 
-## Validation of solver
+### Validation of solver
 <div class="header_line"></div>
 
 The solver implements the so-called [Lanczos algorithm](https://en.wikipedia.org/wiki/Lanczos_algorithm)
@@ -58,7 +58,7 @@ featuring full reorthogonalization, matrix-free Hamiltonian application,
 [Ritz vectors](https://en.wikipedia.org/wiki/Rayleigh%E2%80%93Ritz_method), eigenvalue ordering,
 residual checks and QL-diagonalization.
 
-### Isotropic harmonic oscillator
+#### Isotropic harmonic oscillator
 
 For the isotropic harmonic oscillator, the analytic energies are given by $\sqrt{k}(n_x +n_y+1)$ with $k=0.05$:
 
@@ -85,7 +85,7 @@ which is expected for a numeric solver like this.
 However, they are still extremely small, e.g. in the order of 0.06 %
 for the highest energy levels.
 
-### Infinite square well
+#### Infinite square well
 
 The analytic expression for the energies are now given by:
 

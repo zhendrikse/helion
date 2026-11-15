@@ -12,21 +12,6 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-### About
-<div class="header_line"></div>
-
-🎯 Solving the wave equation using a finite difference method for implementing the Laplace operator/solver<br/>
-🧠 Inspired by [this example](https://beltoforion.de/de/unterhaltungsmathematik/2d-wellengleichung.php) from [Recreational Mathematics with Python](https://github.com/beltoforion/recreational_mathematics_with_python)<br/>
-🔗 Related to [pool with moving obstacle](../../waves/pool/) demo<br/>
-🐍 Also available in [VPython](https://vpython.org/) as [raindrop_waves.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/raindrop_waves.py), but significantly slower!<br/>
-👉 Wave equation with velocity-based damping:
-
-$$
-u_{tt} + \gamma u_t = c^2 \nabla^2 u
-$$
-
-Where $u$ is the height of water, $u_t$ the velocity, and $\gamma$ the damping coefficient.
-
 ### Live demo
 <div class="header_line"></div>
 
@@ -35,6 +20,11 @@ Where $u$ is the height of water, $u_t$ the velocity, and $\gamma$ the damping c
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=raindrops.js"/>
     </a>
 </div>
+
+🎯 Solving the wave equation using a finite difference method for implementing the Laplace operator/solver<br/>
+🧠 Inspired by [this example](https://beltoforion.de/de/unterhaltungsmathematik/2d-wellengleichung.php) from [Recreational Mathematics with Python](https://github.com/beltoforion/recreational_mathematics_with_python)<br/>
+🔗 Related to [pool with moving obstacle](../../waves/pool/) demo<br/>
+🐍 Also available in [VPython](https://vpython.org/) as [raindrop_waves.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/raindrop_waves.py), but significantly slower!<br/>
 
 <div id="raindropContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/nature/scenes/raindrops.js"}></script>

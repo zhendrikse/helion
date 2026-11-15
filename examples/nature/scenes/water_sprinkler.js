@@ -183,7 +183,13 @@ Simulation
             fieldOfView: 40
         },
         scene: { scale: 10 },
-        headUpDisplay: false
+        headUpDisplay: false,
+        infoPanel: {
+            text: '<strong>💦 Water sprinkler</strong><br/>' +
+                'The outflow velocity is given by:<br/>' +
+                '$$\\overrightarrow{v} = -\\overrightarrow{r} \\times \\omega + a v_\\text{water} \\dfrac{\\overrightarrow{r}}{\\| \\overrightarrow{r} \\|}$$<br/>' +
+                '•  $a=+1 \\rightarrow \\text{shoot outward}$<br/>• $a=−1 \\rightarrow \\text{shoot inward}$.\n'
+        }
     })
     .runsEvery(1e-2)
     .bind(sprinkler.alwaysWith(new Box({ color: new Colour(0xffff00) })))

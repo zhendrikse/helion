@@ -31,7 +31,12 @@ Simulation
             fieldOfView: 19
         },
         viewport: { aspectRatio: '19/12' },
-        headUpDisplay: { enabled: false }
+        headUpDisplay: { enabled: false },
+        infoPanel: {
+            text: '<strong>☔ Raindrops</strong><br/>👉 Wave equation with velocity-based damping:<br/>' +
+                '$$u_{tt} + \\gamma u_t = c^2 \\nabla^2 u$$<br/>' +
+                'Where<br/>• $u$ is the height of water,<br/>• $u_t$ the velocity, and<br/>• $\\gamma$ the damping coefficient.'
+        }
     })
     .bind(surface.alwaysWith(waterSurface))
     .runsEvery(0.01)

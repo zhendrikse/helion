@@ -49,7 +49,8 @@ Simulation
     .bind(animatedVectorField.alwaysWith(arrowField))
     .provideAxesAround(arrowField)
     .frameSceneOn(arrowField, {
-        padding: 1.1,
+        padding: 0.85,
+        translationY: -.5,
         viewDirection: new Vec3(.5, 0.3, 1)
     })
     .setLatexTitle(animatedVectorField.meta)

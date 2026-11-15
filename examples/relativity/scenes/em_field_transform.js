@@ -123,11 +123,15 @@ const Ep = new Vec3();
 const simulation = Simulation
     .with({
         htmlDivId: 'emTransformContainer',
-        camera: { position: new Vec3(18, 15, 38), fieldOfView: 35 },
+        camera: { position: new Vec3(14.4, 10, 30.4), target: new Vec3(0, 5, 0), fieldOfView: 35 },
+        viewport: { aspectRatio: '1/1' },
         infoPanel: {
             text: "<strong/>Lorentz transform of EM-fields</strong><br/>" +
-                "$\nE'_x = E_x$<br/>$\nE'_y = \\gamma (E_y - v B_z)$<br/>$E'_z = \\gamma(E_z+v B_y)$<br/>and<br/>" +
-                "$B'_x = B_x$<br/>$B'_y = \\gamma (B_y + vE_z/c^2)$<br/>$\B'_z = \\gamma (B_z - vE_y/c^2)$"
+                '• <a href=\"(https://en.wikipedia.org/wiki/Lorentz_transformation\">Lorentz transformation</a> ' +
+                'of a magnetic field around a wire for an observer in an inertial frame at rest versus an observer ' +
+                'in a moving inertial frame.<br/>' +
+                '• $\nE\'_x = E_x$<br/>$\n• E\'_y = \\gamma (E_y - v B_z)$<br/>• $E\'_z = \\gamma(E_z+v B_y)$<br/>' +
+                '• $B\'_x = B_x$<br/>• $B\'_y = \\gamma (B_y + vE_z/c^2)$<br/>• $\B\'_z = \\gamma (B_z - vE_y/c^2)$'
         }
     })
     .withMouseClickEventListener()

@@ -28,6 +28,11 @@ import { Content as Common } from '../../../snippets/black_hole_background_info.
 
 🧠 Based on [Simulating a Schwarzschild Black Hole: Part 1 — The Background and Raytracer](https://medium.com/@cadenmarinozzi/simulating-a-schwarzschild-black-hole-part-1-the-background-and-raytracer-7de436a56b7e) by [Caden Marinozzi](https://medium.com/@cadenmarinozzi)<br/>
 🔗 Related to [black hole ray tracer](../../astrophysics/black_hole_ray_tracer/) and [night sky projection](../../astrophysics/night_sky/#night-sky-projection) demos<br/>
+
+<div id="blackHoleSpaceTimeContainer"></div>
+<script type="module"  src={import.meta.env.BASE_URL + "examples/relativity/scenes/black_hole_space_time.js"}></script>
+<p style="clear: both;"></p>
+
 👉 Extended with the relativistic formula used for real-time black hole shaders (null geodesic approximation of the Schwarzschild metric):
 
 $$
@@ -38,16 +43,12 @@ $$
 $$
 \begin{cases} \overrightarrow{v} &= \text{ray direction} \\
 \overrightarrow{r} &= \text{position with respect to the black hole} \\
-GM &= \text{gravitational parameter} 
+GM &= \text{gravitational parameter}
 \end{cases}
 $$
 
-👉 Result: correct photon orbit behavior, stronger bending near the hole and realistic 
+👉 Result: correct photon orbit behavior, stronger bending near the hole and realistic
 [Einstein ring](https://en.wikipedia.org/wiki/Einstein_ring).
-
-<p style="clear: both;"></p>
-<div id="blackHoleSpaceTimeContainer"></div>
-<script type="module"  src={import.meta.env.BASE_URL + "examples/relativity/scenes/black_hole_space_time.js"}></script>
 
 <Common/>
     

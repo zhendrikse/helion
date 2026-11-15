@@ -145,6 +145,11 @@ Simulation
             fieldOfView: 50,
             position: new Vec3(-5.5, -3.3, 0.4).multiplyScalar(1.1)
         },
+        infoPanel: {
+            text: '<strong>⚖️ Pendulum wave</strong><br/>' +
+                '$$\\theta(t)=\\theta_0 \\cos \\bigg( \\sqrt{ \\frac {g} {L}} t \\bigg)$$<br/>' +
+                'where<br/>$$L = \\frac{g T^2}{4\\pi^2}$$'
+        },
         scene: { background: ThreeJsScene.Background.FOG },
         lighting: { shadows: true }
     })

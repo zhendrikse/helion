@@ -244,7 +244,6 @@ export class Simulation {
      */
     runsEvery(dt) {
         this._clock.realTimeStep = dt;
-        this._clock.simulationTimeStep = dt;
         return this;
     }
 

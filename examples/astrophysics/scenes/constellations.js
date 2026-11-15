@@ -99,7 +99,7 @@ const simulation = Simulation
     .append(new Checkbox('Constellation labels')
         .checked(true)
         .onChange(checked => constellationLabelViews.forEach(label => label.visible = checked)))
-    .advancesBy(0.01)
+    .advancesBy(5e-3)
     .runsEvery(0.05)
     .onStep((clock, dt) => updateSky(clock.simulatedTime));
 
