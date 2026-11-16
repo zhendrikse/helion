@@ -198,6 +198,8 @@ for (let i = 0; i < 3; i++) {
 
     initialAngleSliders.push(slider);
     simulation.append(slider);
+    simulation.append(new Button(`Mass ${i + 1} −`).withText('Down').onClick(() => decreaseAngle(index)));
+    simulation.append(new Button(`Mass ${i + 1} +`).withText('Up').onClick(() => increaseAngle(index)));
 }
 
 simulation.start();
