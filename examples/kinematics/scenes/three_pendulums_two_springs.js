@@ -66,6 +66,7 @@ const springs = [
 ];
 
 const initialAngleSliders = [];
+const startButton = new Button('Start').withText('Start').onClick(startOrPause);
 
 function setInitialAngle(index, value) {
     initialAngles[index] = value;
@@ -161,8 +162,8 @@ const simulation = Simulation
     })
     .bind(support.onceWith(new Box({ color: new Colour(0x2255cc) })))
     .bind(pendulums[0].string.alwaysWith(new Cylinder({ color: new Colour(0xff8000), radiusFunction: body => 0.015 })))
-    .bind(pendulums[1].string.alwaysWith(new (awaitImportCylinder())({ color: new Colour(0xff8000), radiusFunction: body => 0.015 })))
-    .bind(pendulums[2].string.alwaysWith(new (awaitImportCylinder())({ color: new Colour(0xff8000), radiusFunction: body => 0.015 })))
+    .bind(pendulums[1].string.alwaysWith(new Cylinder({ color: new Colour(0xff8000), radiusFunction: body => 0.015 })))
+    .bind(pendulums[2].string.alwaysWith(new Cylinder({ color: new Colour(0xff8000), radiusFunction: body => 0.015 })))
     .bind(pendulums[0].bob.alwaysWith(new Sphere({ color: new Colour(0x33bb55) })))
     .bind(pendulums[1].bob.alwaysWith(new Sphere({ color: new Colour(0x33bb55) })))
     .bind(pendulums[2].bob.alwaysWith(new Sphere({ color: new Colour(0x33bb55) })))
@@ -180,7 +181,7 @@ const simulation = Simulation
     })))
     .runsEvery(1 / 300)
     .onStep(update)
-    .append(new Button('Start').withText('Start').onClick(startOrPause))
+    .append(startButton)
     .append(new Button('Reset').withText('Reset').onClick(reset))
     .append(new Button('Mode 1').withText('Mode 1').onClick(() => chooseMode([0.2, 0.2, 0.2])))
     .append(new Button('Mode 2').withText('Mode 2').onClick(() => chooseMode([-0.2, 0, 0.2])))
