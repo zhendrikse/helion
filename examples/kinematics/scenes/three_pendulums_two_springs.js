@@ -53,8 +53,16 @@ const pendulums = anchors.map((anchor, index) => ({
 }));
 
 const springs = [
-    pendulums[0].bob.and(pendulums[1].bob),
-    pendulums[1].bob.and(pendulums[2].bob)
+    new AxialSymmetricBody({
+        position: pendulums[0].bob.position.clone().add(new Vec3(0.17, 0, 0)),
+        axis: pendulums[1].bob.position.clone().sub(pendulums[0].bob.position).sub(new Vec3(0.34, 0, 0)),
+        radius: 0.1
+    }),
+    new AxialSymmetricBody({
+        position: pendulums[1].bob.position.clone().add(new Vec3(0.17, 0, 0)),
+        axis: pendulums[2].bob.position.clone().sub(pendulums[1].bob.position).sub(new Vec3(0.34, 0, 0)),
+        radius: 0.1
+    })
 ];
 
 const initialAngleSliders = [];
@@ -94,6 +102,11 @@ function updateGeometry() {
             0
         );
     });
+
+    springs[0].position.copy(pendulums[0].bob.position).add(new Vec3(0.17, 0, 0));
+    springs[1].position.copy(pendulums[1].bob.position).add(new Vec3(0.17, 0, 0));
+    springs[0].axis.copy(pendulums[1].bob.position).sub(pendulums[0].bob.position).sub(new Vec3(0.34, 0, 0));
+    springs[1].axis.copy(pendulums[2].bob.position).sub(pendulums[1].bob.position).sub(new Vec3(0.34, 0, 0));
 }
 
 function reset() {
