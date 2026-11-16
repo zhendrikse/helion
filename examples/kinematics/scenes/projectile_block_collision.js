@@ -58,7 +58,6 @@ function launchBall() {
     const ball = new RadialSymmetricBody({
         position: new Vec3(100, 105, 0),
         velocity: new Vec3(-launchSpeed * Math.cos(radians), launchSpeed * Math.sin(radians), 0),
-        acceleration: new Vec3(0, -g, 0),
         mass: m,
         radius: 5
     });
