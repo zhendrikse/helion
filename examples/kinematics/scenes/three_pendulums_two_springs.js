@@ -1,5 +1,5 @@
 import {
-    AxialSymmetricBody, Block, Box, Button, Colour, Helix, RadialSymmetricBody,
+    AxialSymmetricBody, Block, Box, Button, Colour, Cylinder, Helix, RadialSymmetricBody,
     Range, Simulation, Slider, Sphere, Vec3
 } from '../../../src/index.js';
 
@@ -147,7 +147,7 @@ const simulation = Simulation
         }
     })
     .bind(support.onceWith(new Box({ color: new Colour(0x2255cc) })))
-    .bind(pendulums[0].string.alwaysWith(new (awaitImportCylinder())({ color: new Colour(0xff8000), radiusFunction: body => 0.015 })))
+    .bind(pendulums[0].string.alwaysWith(new Cylinder({ color: new Colour(0xff8000), radiusFunction: body => 0.015 })))
     .bind(pendulums[1].string.alwaysWith(new (awaitImportCylinder())({ color: new Colour(0xff8000), radiusFunction: body => 0.015 })))
     .bind(pendulums[2].string.alwaysWith(new (awaitImportCylinder())({ color: new Colour(0xff8000), radiusFunction: body => 0.015 })))
     .bind(pendulums[0].bob.alwaysWith(new Sphere({ color: new Colour(0x33bb55) })))
@@ -172,8 +172,7 @@ const simulation = Simulation
     .append(new Button('Mode 1').withText('Mode 1').onClick(() => chooseMode([0.2, 0.2, 0.2])))
     .append(new Button('Mode 2').withText('Mode 2').onClick(() => chooseMode([-0.2, 0, 0.2])))
     .append(new Button('Mode 3').withText('Mode 3').onClick(() => chooseMode([0.1, -0.2, 0.1])))
-    .append(new Button('Mixed').withText('Mixed').onClick(() => chooseMode([-0.3, 0, 0])))
-    .start();
+    .append(new Button('Mixed').withText('Mixed').onClick(() => chooseMode([-0.3, 0, 0])));
 
 for (let i = 0; i < 3; i++) {
     const index = i;
@@ -187,8 +186,5 @@ for (let i = 0; i < 3; i++) {
     simulation.append(slider);
 }
 
-function awaitImportCylinder() {
-    return Cylinder;
-}
-
+simulation.start();
 updateGeometry();
