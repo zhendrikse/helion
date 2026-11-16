@@ -20,6 +20,8 @@ let time = 0;
 let angularVelocity = 0;
 let blockAngle = 0;
 let graphStep = 0;
+let blockHasBeenHit = false;
+let blockAtRest = false;
 
 /** @type {{ body: RadialSymmetricBody, view: Sphere, active: boolean }[]} */
 const balls = [];
@@ -60,6 +62,7 @@ function launchBall() {
         mass: m,
         radius: 5
     });
+    ball.acceleration.set(0, -g, 0);
     const view = new Sphere({
         color: new Colour(Math.floor(Math.random() * 0xffffff)),
         segments: 24
@@ -120,6 +123,7 @@ function updateBall(ball) {
 
         const leverArm = Math.max(p.y - 0.5, 1);
         angularVelocity = blockVelocity / leverArm;
+        blockHasBeenHit = true;
         rotateBlock(-angularVelocity * dt);
         return;
     }
@@ -128,17 +132,19 @@ function updateBall(ball) {
     v.add(a.clone().multiplyScalar(dt));
     p.add(v.clone().multiplyScalar(dt));
 
-    const centreDistance = Math.abs(building2.position.x - pivot.x);
-    const angularAcceleration = (building2.position.x >= pivot.x ? 1 : -1) *
-        M * g * centreDistance / blockInertia;
-    angularVelocity += angularAcceleration * dt;
+    if (blockHasBeenHit && !blockAtRest) {
+        const centreDistance = Math.abs(building2.position.x - pivot.x);
+        const angularAcceleration = (building2.position.x >= pivot.x ? 1 : -1) *
+            M * g * centreDistance / blockInertia;
+        angularVelocity += angularAcceleration * dt;
 
-    const nextAngle = -angularVelocity * dt;
-    rotateBlock(nextAngle);
+        rotateBlock(-angularVelocity * dt);
 
-    // Stop when the block reaches the floor, as in the VPython example.
-    if (building2.position.y <= 10.5) {
-        angularVelocity = 0;
+        // Stop when the block reaches the floor, as in the VPython example.
+        if (building2.position.y <= 10.5) {
+            angularVelocity = 0;
+            blockAtRest = true;
+        }
     }
 }
 
@@ -178,9 +184,9 @@ function restart() {
     angularVelocity = 0;
     time = 0;
     graphStep = 0;
-    angularVelocityGraph.graphData[0].length = 0;
-    angularVelocityGraph.graphData[1].length = 0;
-    angularVelocityGraph.update();
+    blockHasBeenHit = false;
+    blockAtRest = false;
+    angularVelocityGraph.reset();
     launchBall();
 }
 
