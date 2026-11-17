@@ -51,7 +51,13 @@ const field = new ScalarField(
     position => Math.exp(-0.3 * position.lengthSq())
 );
 
-const sphereView = new SphereSegmentsView({ opacity: 0.3 });
+const sphereView = new SphereSegmentsView({
+    opacity: 0.3,
+    colorMapper: (scalar, index, color) => {
+        const t = Math.log1p(scalar.value * 10);
+        return color.setHSL(0.66 * (1 - t), 1, 0.5);
+    }
+});
 
 const simulation = Simulation
     .with({
