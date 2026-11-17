@@ -1,6 +1,6 @@
 import {
     Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
-    BoxGeometry, Object3D, Vector2, Box3
+    BoxGeometry, SphereGeometry, Object3D, Vector2, Box3
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
@@ -124,6 +124,35 @@ export class BoxSegmentsView extends InstancedSegmentsView {
         else
             this._dummy.scale.set(0, 0, 0);
         this._dummy.quaternion.identity();
+    }
+}
+
+
+export class SphereSegmentsView extends InstancedSegmentsView {
+    constructor({
+        material = new MeshStandardMaterial({ transparent: true }),
+        colorMapper = (segment, index, targetColor) => {
+            const t = Math.log1p(segment.value * 10);
+            return targetColor.setHSL(0.66 * (1 - t), 1, 0.5);
+        },
+        opacity = 1,
+    } = {}) {
+        super({ material, colorMapper, opacity });
+    }
+
+    createGeometry() {
+        return new SphereGeometry(1, 12, 12);
+    }
+
+    updateTransform(segment) {
+        this._dummy.position.copy(segment.position);
+        this._dummy.scale.setScalar(segment.radius);
+        this._dummy.quaternion.identity();
+    }
+
+    /** @param {number} opacity */
+    set opacity(opacity) {
+        this._material.opacity = opacity;
     }
 }
 
