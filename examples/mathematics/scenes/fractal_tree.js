@@ -176,6 +176,7 @@ const treeView = new FractalTreeView();
 function showTree(mode) {
     tree.mode = mode;
     tree.rebuild();
+    treeView.synchronizeWith(tree);
 }
 
 Simulation
@@ -185,8 +186,8 @@ Simulation
         camera: {
             controls: false,
             orthographic: true,
-            position: new Vec3(0, 0, 900),
-            target: new Vec3(0, 0, 0)
+            position: new Vec3(0, 50, 900),
+            target: new Vec3(0, 50, 0)
         },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false },
@@ -195,7 +196,7 @@ Simulation
                 'Explore two recursive trees: a nature-like branching tree and a Pythagoras-style line tree.'
         }
     })
-    .bind(tree.alwaysWith(treeView))
+    .bind(tree.onceWith(treeView))
     .append(new Button('Nature tree').withText('Nature tree 🌳').onClick(() => showTree('nature')))
     .append(new Button('Pythagoras tree').withText('Pythagoras tree').onClick(() => showTree('pythagoras')));
 
