@@ -131,10 +131,7 @@ export class BoxSegmentsView extends InstancedSegmentsView {
 export class SphereSegmentsView extends InstancedSegmentsView {
     constructor({
         material = new MeshStandardMaterial({ transparent: true }),
-        colorMapper = (segment, index, targetColor) => {
-            const t = Math.log1p(segment.value * 10);
-            return targetColor.setHSL(0.66 * (1 - t), 1, 0.5);
-        },
+        colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, 1, 1),
         opacity = 1,
     } = {}) {
         super({ material, colorMapper, opacity });
