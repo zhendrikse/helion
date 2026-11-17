@@ -79,7 +79,7 @@ export {
 } from './model/phys/quantum/solvers.js';
 
 export {
-    CylinderSegmentsView, BoxSegmentsView, LineSegmentsView, LineSegmentView, CurveView
+    CylinderSegmentsView, BoxSegmentsView, SphereSegmentsView, LineSegmentsView, LineSegmentView, CurveView
 } from './view/3d/composite/segmentviews.js';
 
 export {
