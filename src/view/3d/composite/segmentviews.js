@@ -1,6 +1,6 @@
 import {
     Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
-    BoxGeometry, Object3D, Vector2, Box3
+    BoxGeometry, Object3D, Vector2, Box3, SphereGeometry
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
@@ -45,7 +45,11 @@ class InstancedSegmentsView extends Renderable3D {
 
     /** @param {Segments} segments */
     initialize(segments) {
-        this._mesh = new InstancedMesh(this.createGeometry(), this._material, segments.count);
+        // InstancedMesh requires a positive capacity. Keep one slot for an
+        // initially empty collection; synchronizeWith() sets the active count.
+        const capacity = Math.max(1, segments.count);
+        this._mesh = new InstancedMesh(this.createGeometry(), this._material, capacity);
+        this._mesh.count = segments.count;
         this.add(this._mesh);
     }
 
@@ -61,6 +65,22 @@ class InstancedSegmentsView extends Renderable3D {
 
     /** @param {Segments} segments */
     synchronizeWith(segments) {
+        // A binding can reach its first synchronization before initialize()
+        // has created the mesh (for example after a view is reused/reset).
+        if (!this._mesh)
+            this.initialize(segments);
+
+        // Segments collections may grow after the view was initialized.
+        if (segments.count > this._mesh.instanceMatrix.count) {
+            this.remove(this._mesh);
+            this._mesh.dispose();
+            this._mesh = new InstancedMesh(
+                this.createGeometry(), this._material, segments.count
+            );
+            this.add(this._mesh);
+        }
+
+        this._mesh.count = segments.count;
         this._instanceIndex = 0;
 
         for (const segment of segments) {
@@ -73,7 +93,8 @@ class InstancedSegmentsView extends Renderable3D {
         }
 
         this._mesh.instanceMatrix.needsUpdate = true;
-        this._mesh.instanceColor.needsUpdate = true;
+        if (this._mesh.instanceColor)
+            this._mesh.instanceColor.needsUpdate = true;
     }
 }
 
@@ -98,6 +119,31 @@ export class CylinderSegmentsView extends InstancedSegmentsView {
         const length = this._direction.length();
         this._dummy.scale.set(segment.radius, length, segment.radius);
         this._dummy.quaternion.setFromUnitVectors(new Vec3(0, 1, 0), this._direction.normalize());
+    }
+}
+
+export class SphereSegmentsView extends InstancedSegmentsView {
+    constructor({
+        material = new MeshStandardMaterial({ transparent: true }),
+        colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, 1, 1),
+        opacity = 1,
+    } = {}) {
+        super({ material, colorMapper, opacity });
+    }
+
+    createGeometry() {
+        return new SphereGeometry(1, 12, 12);
+    }
+
+    updateTransform(segment) {
+        this._dummy.position.copy(segment.position);
+        this._dummy.scale.setScalar(segment.radius);
+        this._dummy.quaternion.identity();
+    }
+
+    /** @param {number} opacity */
+    set opacity(opacity) {
+        this._material.opacity = opacity;
     }
 }
 
