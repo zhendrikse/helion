@@ -45,7 +45,11 @@ class InstancedSegmentsView extends Renderable3D {
 
     /** @param {Segments} segments */
     initialize(segments) {
-        this._mesh = new InstancedMesh(this.createGeometry(), this._material, segments.count);
+        // InstancedMesh requires a positive capacity. Keep one slot for an
+        // initially empty collection; synchronizeWith() sets the active count.
+        const capacity = Math.max(1, segments.count);
+        this._mesh = new InstancedMesh(this.createGeometry(), this._material, capacity);
+        this._mesh.count = segments.count;
         this.add(this._mesh);
     }
 
@@ -61,6 +65,22 @@ class InstancedSegmentsView extends Renderable3D {
 
     /** @param {Segments} segments */
     synchronizeWith(segments) {
+        // A binding can reach its first synchronization before initialize()
+        // has created the mesh (for example after a view is reused/reset).
+        if (!this._mesh)
+            this.initialize(segments);
+
+        // Segments collections may grow after the view was initialized.
+        if (segments.count > this._mesh.instanceMatrix.count) {
+            this.remove(this._mesh);
+            this._mesh.dispose();
+            this._mesh = new InstancedMesh(
+                this.createGeometry(), this._material, segments.count
+            );
+            this.add(this._mesh);
+        }
+
+        this._mesh.count = segments.count;
         this._instanceIndex = 0;
 
         for (const segment of segments) {
@@ -73,7 +93,8 @@ class InstancedSegmentsView extends Renderable3D {
         }
 
         this._mesh.instanceMatrix.needsUpdate = true;
-        this._mesh.instanceColor.needsUpdate = true;
+        if (this._mesh.instanceColor)
+            this._mesh.instanceColor.needsUpdate = true;
     }
 }
 
