@@ -1,6 +1,6 @@
 import {
     AxialSymmetricBody, Button, Colour, Cylinder, HueColorMapper, LineSegment,
-    LineSegmentsView, ModelObjectsCollection, RadialSymmetricBody, Range, Segments,
+    LineSegmentsView, ModelObjectsCollection, RadialSymmetricBody, Segments,
     Simulation, Sphere, Vec3, ViewsCollection
 } from '../../../src/index.js';
 
@@ -29,8 +29,10 @@ function addNatureBranch(position, direction, length) {
 
     const end = position.clone().add(direction.clone().multiplyScalar(length));
     const theta = radians(30);
-    const left = direction.clone().rotateAround(new Vec3(0, 0, 1), theta);
-    const right = direction.clone().rotateAround(new Vec3(0, 0, 1), -theta);
+    const left = direction.clone();
+    left.rotateEuler(new Vec3(0, 0, 1), theta);
+    const right = direction.clone();
+    right.rotateEuler(new Vec3(0, 0, 1), -theta);
 
     addNatureBranch(end, left, length - 14.5);
     addNatureBranch(end, right, length - 14.5);
