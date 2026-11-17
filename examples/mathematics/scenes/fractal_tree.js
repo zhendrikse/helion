@@ -1,7 +1,7 @@
 import { ModelObject, Button, Simulation, Vec3, Renderable3D } from '../../../src/index.js';
 import {
     BufferGeometry, Color, CylinderGeometry, Float32BufferAttribute,
-    LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, SphereGeometry,
+    Group, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, SphereGeometry,
     Vector3
 } from 'three';
 
@@ -64,8 +64,8 @@ class FractalTree extends ModelObject {
         const nextY = y + Math.trunc(Math.sin(radians(angle)) * depth * 8);
 
         this.lines.push({
-            start: new Vector3(x, -y, 0),
-            end: new Vector3(nextX, -nextY, 0),
+            start: new Vector3(x - 256, 410 - y, 0),
+            end: new Vector3(nextX - 256, 410 - nextY, 0),
             hue: depth / 12
         });
 
@@ -100,7 +100,7 @@ class FractalTreeView extends Renderable3D {
             });
         }
 
-        this._group = new (awaitGroup())();
+        this._group = new Group();
 
         if (tree.mode === 'nature')
             this._drawNature(tree);
