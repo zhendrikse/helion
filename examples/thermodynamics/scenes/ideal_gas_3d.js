@@ -1,10 +1,10 @@
 import {
     Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, Checkbox,
-    UPlotGraph, Colour, SphereSegmentsView, Aquarium
+    UPlotGraph, Colour, SphereSegmentsView, Aquarium, RadialSymmetricBody, Sphere
 } from '../../../src/index.js';
 
 const CONTAINER_SIZE = 10;
-const PARTICLE_COUNT = 200;
+const PARTICLE_COUNT = 500;
 const PARTICLES_TO_ADD = 50;
 const BIN_COUNT = 30;
 const MAX_SPEED = 10;
@@ -40,19 +40,31 @@ const graph = new UPlotGraph({
     yLabel: 'Particles'
 });
 
-const simulation = Simulation
+const changeContainerTo = type => {
+    gas.limitToContainer = type;
+    bowlView.visible = type === Gas.bounceWithinSphere;
+    aquarium.visible = type === Gas.bounceWithinBox
+    reset();
+}
+
+const aquarium = new Aquarium({ opacity: 0.1, size: new Vec3(CONTAINER_SIZE, CONTAINER_SIZE, CONTAINER_SIZE) });
+const bowl = new RadialSymmetricBody({ radius: CONTAINER_SIZE * .5 });
+const bowlView = new Sphere({ opacity: 0.2, visible: false });
+Simulation
     .with({
         htmlDivId: 'idealGas3dContainer',
-        camera: { position: new Vec3(13, 11, 15) },
+        camera: { position: new Vec3(26, 14, 30), fieldOfView: 20 },
         lighting: { enabled: true },
         infoPanel: {
             text: '<strong>🎈 3D ideal gas</strong><br/>Maxwell speed distribution of an ideal three-dimensional gas in a cubic container.' +
-                '\n $$f(v)=4\\pi\\left(\\frac{m}{2\\pi k_B T}\\right)^{3/2}v^2 e^{-mv^2/(2k_B T)}$$' +
-                '\n $$v_{\\mathrm{rms}}=\\sqrt{\\frac{3k_B T}{m}}$$'
+                '$$a = \\frac{m}{2 k_B T}$$' +
+                '$$f(v)=4\\pi\\left(\\frac{a}{\\pi}\\right)^{3/2}v^2 \\exp(-av^2)$$' +
+                '$$v_{\\mathrm{rms}}=\\sqrt{\\frac{3k_B T}{m}}$$'
         }
     })
     .bind(gas.spheres.alwaysWith(spheresView))
     .bind(gas.tracer.alwaysWith(tracerTrail))
+    .bind(bowl.onceWith(bowlView))
     .runsEvery(0.01)
     .onStep((_, dt) => gas.evolve(dt))
     .appendStartStopResetUI()
@@ -63,18 +75,12 @@ const simulation = Simulation
         .checked(true)
         .onChange(checked => tracerTrail.visible = checked)
         .togetherWith(new RadioGroup()
-            .add('Cube', () => {
-                gas.limitToContainer = Gas.bounceWithinBox;
-                reset();
-            })
-            .add('Sphere', () => {
-                gas.limitToContainer = Gas.bounceWithinSphere;
-                reset();
-            })
+            .add('Cube', () => changeContainerTo(Gas.bounceWithinBox))
+            .add('Sphere', () => changeContainerTo(Gas.bounceWithinSphere))
             .checked(0)))
     .append(temperatureSlider)
     .addGraph(graph)
-    .addObject3D(new Aquarium({ size: new Vec3(CONTAINER_SIZE, CONTAINER_SIZE, CONTAINER_SIZE) }))
+    .addObject3D(aquarium)
     .onFrame(() => {
         const { bins, theory } = gas.speedDistribution(BIN_COUNT, MAX_SPEED);
         histogramBuffer.push(bins);
