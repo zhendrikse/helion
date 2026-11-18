@@ -149,7 +149,7 @@ export class Gas extends ModelObjectsCollection{
         const newParticles = new ModelObjectsCollection();
         for (let i = 0; i < numberOfParticles; i++) {
             const particle = new RadialSymmetricBody({
-                position: this.#randomPosition(),
+                position: this.#randomPosition(this._bindables.length),
                 velocity: this.#newInitialVelocity(this._temperature),
                 radius: this._particleRadius,
                 mass: this._particleMass
@@ -179,7 +179,7 @@ export class Gas extends ModelObjectsCollection{
         return new Vec2(Math.cos(angle), Math.sin(angle)).multiplyScalar(speed);
     }
 
-    #randomPosition() {
+    #randomPosition(placedCount = this._bindables.length) {
         const halfSize = this._containerSize * 0.5 - this._particleRadius;
         const sphericalContainer = this._limitToContainer === Gas.bounceWithinSphere;
 
@@ -193,7 +193,7 @@ export class Gas extends ModelObjectsCollection{
             if (sphericalContainer && position.lengthSq() > halfSize * halfSize)
                 continue;
 
-            const overlaps = this._bindables.some(other => {
+            const overlaps = this._bindables.slice(0, placedCount).some(other => {
                 const minimumDistance = this._particleRadius + other.radius;
                 return position.distanceSquaredTo(other.position) < minimumDistance * minimumDistance;
             });
@@ -295,7 +295,7 @@ export class Gas extends ModelObjectsCollection{
      * @param {number} temperature
      */
     #resetParticle(particle, temperature, index) {
-        particle.position.copy(index === 0 ? new Vec3() : this.#randomPosition());
+        particle.position.copy(index === 0 ? new Vec3() : this.#randomPosition(index));
         if (temperature === 0) {
             particle.velocity.set(0, 0, 0);
             return;
