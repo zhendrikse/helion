@@ -73,6 +73,7 @@ class InstancedSegmentsView extends Renderable3D {
         // Segments collections may grow after the view was initialized.
         if (segments.count > this._mesh.instanceMatrix.count) {
             this.remove(this._mesh);
+            this._mesh.geometry.dispose();
             this._mesh.dispose();
             this._mesh = new InstancedMesh(
                 this.createGeometry(), this._material, segments.count
