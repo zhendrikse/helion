@@ -149,7 +149,7 @@ export class Gas extends ModelObjectsCollection{
         const newParticles = new ModelObjectsCollection();
         for (let i = 0; i < numberOfParticles; i++) {
             const particle = new RadialSymmetricBody({
-                position: this.#randomPosition(this._bindables.length),
+                position: this._dimensions === 3 ? this.#randomPosition(this._bindables.length) : new Vec3(),
                 velocity: this.#newInitialVelocity(this._temperature),
                 radius: this._particleRadius,
                 mass: this._particleMass
@@ -294,7 +294,7 @@ export class Gas extends ModelObjectsCollection{
      * @param {number} temperature
      */
     #resetParticle(particle, temperature, index) {
-        particle.position.copy(index === 0 ? new Vec3() : this.#randomPosition(index));
+        particle.position.copy(index === 0 || this._dimensions === 2 ? new Vec3() : this.#randomPosition(index));
         if (temperature === 0) {
             particle.velocity.set(0, 0, 0);
             return;
