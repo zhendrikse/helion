@@ -45,9 +45,9 @@ const simulation = Simulation
         camera: { position: new Vec3(0, 0, CONTAINER_SIZE * 1.05), orthographic: true, controls: false },
         lighting: { enabled: false },
         infoPanel: {
-            text: '<strong>🚶🏻‍➡️️ Random walk / Brownian motion</strong><br/>Maxwell velocity distribution of an ideal two-dimensional gas' +
-                ' in a square container.\n $$ A=\\frac{m}{2 \\pi k_B T}$$\n $$f(\\overrightarrow{v}) d^2\\overrightarrow{v} =' +
-                'e^{(-Av^2)} d^2\\overrightarrow{v}$$'
+            text: '<strong>🚶🏻‍➡️️ Random walk / Brownian motion</strong><br/>A heavy tracer particle undergoes random motion through collisions with the particles of a three-dimensional ideal gas.' +
+                '$$f(v) = \\frac{m}{k_BT}v e^{-\\frac{mv^2}{2k_BT}}$$' +
+                '$$v=\\sqrt{x^x + y^2}, v_\\mathrm{rms} = \\sqrt{\\frac{2k_BT}{m}}$$'
         }
     })
     .runsEvery(0.01)
