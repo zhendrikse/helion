@@ -11,6 +11,7 @@ const MAX_SPEED = 10;
 const AVERAGING_FRAMES = 100;
 
 const gas = new Gas({
+    particleCount: PARTICLE_COUNT,
     containerSize: CONTAINER_SIZE,
     dimensions: 3
 });
