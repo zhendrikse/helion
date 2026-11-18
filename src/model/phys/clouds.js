@@ -280,10 +280,9 @@ export class Gas extends ModelObjectsCollection{
     /** @param {number} dt */
     evolve(dt) {
         const particles = this._bindables.slice(0, this.size);
-        const limit = this._containerSize * .5 - this._particleRadius;
         for (const particle of particles) {
-            this._limitToContainer(particle, limit);
             particle.integrate(dt);
+            this._limitToContainer(particle, this._containerSize * .5 - particle.radius);
         }
         for (let i = 0; i < particles.length; i++)
             for (let j = i + 1; j < particles.length; j++)
