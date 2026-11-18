@@ -115,6 +115,7 @@ export class Gas extends ModelObjectsCollection{
         this._baseParticleCount = particleCount;
         this._containerSize = containerSize;
         this._dimensions = dimensions;
+        /** @type {Segments<RadialSymmetricBody>} */
         this._spheres = new Segments();
         this._particleRadius = particleRadius;
         this._particleMass = particleMass;
@@ -137,6 +138,7 @@ export class Gas extends ModelObjectsCollection{
     set tracerMass(mass) { this._bindables[0].state.mass = mass; }
     get tracerMass() { return this._bindables[0].state.mass; }
     get tracer() { return this._bindables[0]; }
+    /** @returns {Segments<RadialSymmetricBody>} */
     get spheres() { return this._spheres; }
     get temperature() { return this._temperature; }
 
@@ -292,6 +294,7 @@ export class Gas extends ModelObjectsCollection{
     /**
      * @param {RadialSymmetricBody} particle
      * @param {number} temperature
+     * @param {number} index
      */
     #resetParticle(particle, temperature, index) {
         particle.position.copy(index === 0 || this._dimensions === 2 ? new Vec3() : this.#randomPosition(index));
