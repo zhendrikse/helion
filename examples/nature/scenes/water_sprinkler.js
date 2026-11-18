@@ -187,7 +187,7 @@ Simulation
         infoPanel: {
             text: '<strong>💦 Water sprinkler</strong><br/>' +
                 'The outflow velocity is given by:<br/>' +
-                '$$\\overrightarrow{v} = -\\overrightarrow{r} \\times \\omega + a v_\\text{water} \\dfrac{\\overrightarrow{r}}{\\| \\overrightarrow{r} \\|}$$<br/>' +
+                '$$\\overrightarrow{v} = -\\overrightarrow{r} \\times \\omega + a v_\\mathrm{water} \\dfrac{\\overrightarrow{r}}{\\| \\overrightarrow{r} \\|}$$<br/>' +
                 '•  $a=+1 \\rightarrow \\text{shoot outward}$<br/>• $a=−1 \\rightarrow \\text{shoot inward}$.\n'
         }
     })

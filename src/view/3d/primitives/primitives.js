@@ -172,7 +172,8 @@ export class Sphere extends Renderable3D {
         material = new MeshStandardMaterial({
             transparent: true,
             roughness: 0.2,
-            metalness: 0.8
+            metalness: 0.8,
+            depthTest: false
         }),
         segments = 24,
         castShadow = false,

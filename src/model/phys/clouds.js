@@ -2,8 +2,9 @@ import { ModelObject, ModelObjectsCollection } from '../behavior.js';
 import { PhysicsState, RadialSymmetricBody } from './bodies.js';
 import { Integrators } from '../math/numerics/integrators/integrators.js';
 import { SphereSphereCollision } from '../transformations/interactions.js';
-import { Vec2, Vec3 } from '../math/objects.js';
+import {Segments, Vec2, Vec3} from '../math/objects.js';
 import { Colour } from "../../view/colormappers.js";
+import {sampleNormalDistribution} from "../math/math.js";
 
 export class PointCloud extends ModelObject {
     /**
@@ -60,28 +61,41 @@ export class PointCloud extends ModelObject {
 
 export class Gas extends ModelObjectsCollection{
     static bounceWithinSphere = (particle, limit) => {
-        if (particle.position.lengthSq() > limit * limit)
-            particle.state.velocity.negate();
+        if (particle.position.lengthSq() <= limit * limit)
+            return;
+
+        const normal = particle.position.clone().normalize();
+        const normalSpeed = particle.velocity.dot(normal);
+        if (normalSpeed > 0)
+            particle.velocity.addScaledVector(normal, -2 * normalSpeed);
+
+        particle.position.setLength(limit);
     };
 
     static bounceWithinBox = (particle, limit) => {
         ['x', 'y', 'z'].forEach(axis => {
-            if (particle.position[axis] > limit || particle.position[axis] < -limit)
-                particle.velocity[axis] *= -1;
+            if (particle.position[axis] > limit) {
+                particle.position[axis] = limit;
+                particle.velocity[axis] = -Math.abs(particle.velocity[axis]);
+            } else if (particle.position[axis] < -limit) {
+                particle.position[axis] = -limit;
+                particle.velocity[axis] = Math.abs(particle.velocity[axis]);
+            }
         });
     };
 
     /**
-    * @param {Partial<{
-    *     particleCount: number,
-    *     containerSize: number,
-    *     particleRadius: number,
-    *     particleMass: number,
-    *     tracerRadius: number,
-    *     tracerMass: number,
-    *     initialSpeed: number,
-    *     containerFunction: (particle: RadialSymmetricBody, limit: number) => void
-    * }>} [param0={}] Optional gas configuration
+     * @param {Partial<{
+     *     particleCount: number,
+     *     containerSize: number,
+     *     particleRadius: number,
+     *     particleMass: number,
+     *     tracerRadius: number,
+     *     tracerMass: number,
+     *     initialSpeed: number,
+     *     dimensions: 2 | 3,
+     *     containerFunction: (particle: RadialSymmetricBody, limit: number) => void
+     * }>} [param0={}] Optional gas configuration
      */
     constructor({
         particleCount = 200,
@@ -91,11 +105,18 @@ export class Gas extends ModelObjectsCollection{
         tracerRadius = 0.08,
         tracerMass = 1,
         initialSpeed = 2,
+        dimensions = 2,
         containerFunction = Gas.bounceWithinBox
     } = {}) {
         super();
+        if (dimensions !== 2 && dimensions !== 3)
+            throw new Error('Gas dimensions must be either 2 or 3.');
+
         this._baseParticleCount = particleCount;
         this._containerSize = containerSize;
+        this._dimensions = dimensions;
+        /** @type {Segments<RadialSymmetricBody>} */
+        this._spheres = new Segments();
         this._particleRadius = particleRadius;
         this._particleMass = particleMass;
         this._temperature = particleMass * initialSpeed * initialSpeed / 2;
@@ -103,11 +124,13 @@ export class Gas extends ModelObjectsCollection{
         this._k = 1;
         this._limitToContainer = containerFunction;
 
-        this.add(new RadialSymmetricBody({
+        const tracer = new RadialSymmetricBody({
             velocity: this.#newInitialVelocity(this._temperature),
             radius: tracerRadius,
             mass: tracerMass
-        }));
+        });
+        this.add(tracer);
+        this._spheres.add(tracer);
         this.addParticles(particleCount);
     }
 
@@ -115,6 +138,8 @@ export class Gas extends ModelObjectsCollection{
     set tracerMass(mass) { this._bindables[0].state.mass = mass; }
     get tracerMass() { return this._bindables[0].state.mass; }
     get tracer() { return this._bindables[0]; }
+    /** @returns {Segments<RadialSymmetricBody>} */
+    get spheres() { return this._spheres; }
     get temperature() { return this._temperature; }
 
     /**
@@ -126,22 +151,60 @@ export class Gas extends ModelObjectsCollection{
         const newParticles = new ModelObjectsCollection();
         for (let i = 0; i < numberOfParticles; i++) {
             const particle = new RadialSymmetricBody({
+                position: this._dimensions === 3 ? this.#randomPosition(this._bindables.length) : new Vec3(),
                 velocity: this.#newInitialVelocity(this._temperature),
                 radius: this._particleRadius,
                 mass: this._particleMass
             });
             newParticles.add(particle);
             this.add(particle);
+            this._spheres.add(particle);
         }
         return newParticles;
     }
 
     /** @param {number} temperature */
     #newInitialVelocity(temperature) {
-        // Init speed based on temperature: v_rms^2 = 2 k T / m (2D)
-        const averageKineticEnergy = Math.sqrt(2 * this._k * temperature / this._particleMass);
+        if (this._dimensions === 3) {
+            // Each Cartesian component is Gaussian with variance kT/m.
+            const sigma = Math.sqrt(this._k * temperature / this._particleMass);
+            return new Vec3(
+                sampleNormalDistribution(0, sigma),
+                sampleNormalDistribution(0, sigma),
+                sampleNormalDistribution(0, sigma)
+            );
+        }
+
+        // In 2D, preserve the original fixed-speed initialization.
+        const speed = Math.sqrt(2 * this._k * temperature / this._particleMass);
         const angle = Math.random() * 2 * Math.PI;
-        return new Vec2(Math.cos(angle), Math.sin(angle)).multiplyScalar(averageKineticEnergy);
+        return new Vec2(Math.cos(angle), Math.sin(angle)).multiplyScalar(speed);
+    }
+
+    #randomPosition(placedCount = this._bindables.length) {
+        const halfSize = this._containerSize * 0.5 - this._particleRadius;
+        const sphericalContainer = this._limitToContainer === Gas.bounceWithinSphere;
+
+        for (let attempt = 0; attempt < 10000; attempt++) {
+            const position = new Vec3(
+                (2 * Math.random() - 1) * halfSize,
+                (2 * Math.random() - 1) * halfSize,
+                this._dimensions === 3 ? (2 * Math.random() - 1) * halfSize : 0
+            );
+
+            if (sphericalContainer && position.lengthSq() > halfSize * halfSize)
+                continue;
+
+            const overlaps = this._bindables.slice(0, placedCount).some(other => {
+                const minimumDistance = this._particleRadius + other.radius;
+                return position.distanceSquaredTo(other.position) < minimumDistance * minimumDistance;
+            });
+
+            if (!overlaps)
+                return position;
+        }
+
+        throw new Error('Unable to place a gas particle without overlap. Reduce the particle count or radius.');
     }
 
     /** @param {number} newTemperature */
@@ -160,8 +223,11 @@ export class Gas extends ModelObjectsCollection{
         this._bindables.length = this._baseParticleCount + 1;
         this._bindings.length = 0;
         this._temperature = temperature;
-        for (let i = 0; i < this._bindables.length; i++)
-            this.#resetParticle(this._bindables[i], i === 0 ? 0 : this._temperature);
+        this._spheres.clear();
+        for (let i = 0; i < this._bindables.length; i++) {
+            this.#resetParticle(this._bindables[i], i === 0 ? 0 : this._temperature, i);
+            this._spheres.add(this._bindables[i]);
+        }
     }
 
     /**
@@ -171,18 +237,20 @@ export class Gas extends ModelObjectsCollection{
      */
     computeTheoreticalCurve(meanV2, binCount, maxSpeed) {
         const binSize = maxSpeed / binCount;
-        const T = meanV2 / 2;   // effective temperature
-
+        const effectiveVariance = meanV2 / this._dimensions;
         const theory = [];
         for (let i = 0; i < binCount; i++) {
             const v = (i + 0.5) * binSize;
-            const value = (v / T) * Math.exp(-v * v / (2 * T));
+            const value = this._dimensions === 3 ?
+                Math.sqrt(2 / Math.PI) * v * v / Math.pow(effectiveVariance, 1.5) *
+                Math.exp(-v * v / (2 * effectiveVariance)) :
+                v / effectiveVariance * Math.exp(-v * v / (2 * effectiveVariance));
             theory.push(value);
         }
 
-        // normalize so that area is equal to histogram
+        // Normalize the theoretical curve to the number of gas particles.
         const sumTheory = theory.reduce((a, b) => a + b, 0);
-        const scale = this.size / sumTheory;
+        const scale = (this.size - 1) / sumTheory;
         return theory.map(v => v * scale);
     }
 
@@ -203,7 +271,7 @@ export class Gas extends ModelObjectsCollection{
             bins[index]++;
         }
 
-        const meanV2 = sumV2 / this.size;
+        const meanV2 = sumV2 / (this.size - 1);
         return {
             speeds: Array.from({ length: binCount }, (_, i) => (i + 0.5) * binSize),
             bins,
@@ -214,10 +282,9 @@ export class Gas extends ModelObjectsCollection{
     /** @param {number} dt */
     evolve(dt) {
         const particles = this._bindables.slice(0, this.size);
-        const limit = this._containerSize * .5 - this._particleRadius;
         for (const particle of particles) {
-            this._limitToContainer(particle, limit);
             particle.integrate(dt);
+            this._limitToContainer(particle, this._containerSize * .5 - particle.radius);
         }
         for (let i = 0; i < particles.length; i++)
             for (let j = i + 1; j < particles.length; j++)
@@ -227,11 +294,12 @@ export class Gas extends ModelObjectsCollection{
     /**
      * @param {RadialSymmetricBody} particle
      * @param {number} temperature
+     * @param {number} index
      */
-    #resetParticle(particle, temperature) {
-        particle.position.set(0, 0, 0);
+    #resetParticle(particle, temperature, index) {
+        particle.position.copy(index === 0 || this._dimensions === 2 ? new Vec3() : this.#randomPosition(index));
         if (temperature === 0) {
-            particle.velocity.set(0, 0);
+            particle.velocity.set(0, 0, 0);
             return;
         }
         particle.velocity.copy(this.#newInitialVelocity(temperature));
