@@ -1,6 +1,7 @@
 import { ShaderMaterial } from 'three';
 import {
-    LineSegment, LineSegmentsView, PointCloud, PointCloudView, Segments, Simulation, ThreeJsScene, Vec2, Vec3
+    LineSegment, LineSegmentsView, PointCloud, PointCloudView, Segments, Simulation, Slider,
+    ThreeJsScene, Vec2, Vec3, Range
 } from '../../../src/index.js';
 
 const PARTICLE_COUNT = 12000;
@@ -121,14 +122,14 @@ const nozzleView = new LineSegmentsView({
     colorMapper: { map: (_value, color) => color.set(0x00ffff) }
 });
 
-Simulation
+const simulation = Simulation
     .with({
         htmlDivId: 'nozzleFlowContainer',
         viewport: { aspectRatio: '19 / 12' },
         camera: {
             position: new Vec3(0, 0, 3.5),
             target: new Vec3(0.5, 0, 0),
-            orthographic: true,
+            orthographic: true
         },
         scene: { background: ThreeJsScene.Background.TRANSPARENT },
         lighting: { enabled: false },
@@ -140,4 +141,8 @@ Simulation
     .runsEvery(1 / 60)
     .advancesBy(5e-3)
     .onStep((_clock, dt) => flow.evolve(dt))
+    .append(new Slider("Animation speed")
+        .withRange(new Range(1, 8, 1))
+        .withValue(3)
+        .onInput(value => simulation.substeps(value)))
     .start();

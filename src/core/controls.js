@@ -56,7 +56,7 @@ export class HtmlControl {
 
         this._inputControl.addEventListener(eventType, (/** @type {Event} */ event) => {
             callback(event);
-            this._simulation.onUserInteraction(event);
+            this._simulation.onUserInteractionEvent(event);
         });
         return this;
     }
@@ -278,7 +278,7 @@ export class Slider extends HtmlControl {
 
         this._inputControl.addEventListener(eventType, event => {
             callback(event);
-            this._simulation.onUserInteraction(event);
+            this._simulation.onUserInteractionEvent(event);
             // @ts-ignore
             const value = parseFloat(event.target.value);
             this._span.textContent = value.toFixed(2) + this._units;
@@ -370,7 +370,7 @@ export class RadioGroup extends HtmlControl {
             if (event.target.checked)
                 callback(event);
 
-            this._simulation.onUserInteraction(event);
+            this._simulation.onUserInteractionEvent(event);
         });
 
         this._inputControl.append(radio, text);

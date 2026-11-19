@@ -1,8 +1,6 @@
 import {
-    Button, LineSegmentsView, Simulation, Vec3, Turtle, HexValueColorMapper,
-    Colour
-} from '../../../src/index.js';
-import {Color} from 'three';
+    Button, LineSegmentsView, Simulation, Vec3, Turtle, HexValueColorMapper, Colour
+} from '../../../../src/index.js';
 
 function kochSnowflake(turtle, length, depth) {
     if (depth === 0) {
@@ -199,15 +197,9 @@ drawDragonCurve(turtle);
 Simulation
     .with({
         htmlDivId: 'fractalsContainer',
-        viewport: { parameterMenuCollapsed: false },
-        camera: {
-            fieldOfView: 30,
-            position: new Vec3(0, 0, 1100),
-            controls: false
-        },
-        headUpDisplay: {
-            enabled: false
-        }
+        viewport: { parameterMenuCollapsed: false, aspectRatio: '4/3' },
+        camera: { fieldOfView: 30, position: new Vec3(0, 0, 800),  controls: false },
+        headUpDisplay: { enabled: false }
     })
     .bind(turtle.alwaysWith(turtleView))
     .append(new Button()

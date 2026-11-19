@@ -76,7 +76,9 @@ export class ThreeJsRenderer extends Renderer {
             this._renderer.shadowMap.enabled = true;
             this._renderer.shadowMap.type = PCFShadowMap;
         }
-        this._renderer.outputColorSpace = SRGBColorSpace
+        this._renderer.outputColorSpace = this._options.renderer.colorSpace;
+        this._renderer.toneMapping = this._options.renderer.toneMapping;
+        this._renderer.toneMappingExposure = this._options.renderer.toneMappingExposure;
 
         this.#createLabelRenderer(viewport);
         this._camera = new ThreeJsCamera(viewport, this._options.camera)

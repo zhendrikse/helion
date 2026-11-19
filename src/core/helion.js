@@ -13,6 +13,7 @@ import { Colour } from '../view/colormappers.js';
 import { Object3D } from 'three/src/Three.js';
 import {ModelObjectsCollection, Binding} from "../model/behavior.js";
 import {ThreeJsCamera} from "../view/3d/camera.js";
+import {NoToneMapping, SRGBColorSpace} from "three";
 
 class SimulationClock {
     /**
@@ -106,6 +107,11 @@ export class Simulation {
      *     autoRotate?: boolean,
      *     orthographic?: boolean
      *   },
+     *   renderer?: {
+     *       toneMapping: string,
+     *       toneMappingExposure: number,
+     *       colorSpace: string
+     *   }
      *   scene?: {
      *     background?: number,
      *     backgroundColor?: Colour,
@@ -123,12 +129,19 @@ export class Simulation {
         htmlDivId = '',
         viewport = {},
         camera = {},
+        renderer = {},
         scene = {},
         lighting = {},
         headUpDisplay = {},
         infoPanel = {}
     } = {}) {
         camera = { ...ThreeJsCamera.defaults(), ...camera };
+        renderer = {
+            colorSpace: SRGBColorSpace,
+            toneMapping: NoToneMapping,
+            toneMappingExposure: 1,
+            ...renderer
+        };
         scene = {
             background: ThreeJsScene.Background.TRANSPARENT,
             backgroundColor: new Colour(0x0088ff),
@@ -149,9 +162,9 @@ export class Simulation {
             ...infoPanel
         };
         const viewPort = Simulation.viewportFromHtmlDiv(htmlDivId, viewport.parameterMenuCollapsed ?? true, viewport.aspectRatio ?? '1 / 1');
-        const renderer = new ThreeJsRenderer({ camera, viewport, lighting, scene });
-        renderer.attach(viewPort);
-        return new Simulation(viewPort, renderer, headUpDisplay.enabled, infoPanel);
+        const threeJsRenderer = new ThreeJsRenderer({ camera, viewport, lighting, scene, renderer });
+        threeJsRenderer.attach(viewPort);
+        return new Simulation(viewPort, threeJsRenderer, headUpDisplay.enabled, infoPanel);
     }
 
     /**
@@ -497,6 +510,7 @@ export class Simulation {
                 canvas.setPointerCapture?.(event.pointerId);
 
             callback(x, y, event);
+            this.onUserInteractionEvent();
         };
 
         canvas.addEventListener(action, eventHandler, options);
@@ -633,10 +647,8 @@ export class Simulation {
 
     /**
      * We enforce a new synchronization of ALL views after each user interaction.
-     *
-     * @param {Event} _event
      */
-    onUserInteraction(_event) {
+    onUserInteractionEvent() {
         for (const binding of this._bindings)
             binding.forceSynchronize();
     }

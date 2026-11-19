@@ -14,7 +14,7 @@ export class ThreeJsCamera {
         };
     }
 
-    constructor(viewport,options) {
+    constructor(viewport, options) {
         this._viewport = viewport;
         this._orthographic = options.orthographic;
         this._fieldOfView = options.fieldOfView;
@@ -47,7 +47,7 @@ export class ThreeJsCamera {
         if (this._orthographic) {
             this._controls.enableRotate = false;
             this._controls.enablePan = false;
-            this._controls.enableZoom = true;
+            this._controls.enableZoom = this._controlsEnabled;
         } else {
             this._controls.enableRotate = this._controlsEnabled;
             this._controls.enablePan = this._controlsEnabled;

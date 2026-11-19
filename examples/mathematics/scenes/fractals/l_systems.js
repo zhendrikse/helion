@@ -1,7 +1,7 @@
 import {
     DropdownMenu, HexValueColorMapper, LineSegmentsView, Registry,
     Simulation, Slider, Range, Turtle, LindenmayerSystem
-} from '../../../src/index.js';
+} from '../../../../src/index.js';
 
 const standardRules = {
     '1' : '',

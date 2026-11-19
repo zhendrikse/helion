@@ -1,6 +1,6 @@
 import {
     Segments, LineSegmentsView, RadioGroup, Simulation, LineSegment, HueColorMapper, Vec3
-} from '../../../src/index.js';
+} from '../../../../src/index.js';
 
 const LEVEL = 5;
 
@@ -112,7 +112,7 @@ function buildTetrahedron() {
 }
 
 const fractalView = new LineSegmentsView({
-    lineWidth: 1.25,
+    lineWidth: 1,
     colorMapper: new HueColorMapper()
 });
 
@@ -120,11 +120,11 @@ Simulation
     .with({
         htmlDivId: 'sierpinskiContainer',
         headUpDisplay: { enabled: false },
-        camera: { fieldOfView: 30 },
-        viewport: { aspectRatio: '3/4', parameterMenuCollapsed: false }
+        camera: { fieldOfView: 20 },
+        viewport: { parameterMenuCollapsed: false }
     })
     .bind(fractal.alwaysWith(fractalView))
-    .frameSceneOn(fractalView, {padding: 1, translationY: -1})
+    .frameSceneOn(fractalView, {viewDirection: new Vec3(1, 1, .8), padding: 1, translationY: -5})
     .append(new RadioGroup()
         .add('Pyramid', buildPyramid)
         .add('Tetrahedron', buildTetrahedron)

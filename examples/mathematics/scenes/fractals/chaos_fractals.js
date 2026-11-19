@@ -2,7 +2,7 @@ import {
     Simulation, Vec3, Slider, Range, Button, ColorMappers, DiscreteFieldSurfaceView,
     DiscreteScalarField, ColorMapper, Transformation, FixedIntervalNormalizer,
     AdaptiveNormalizer
-} from '../../../src/index.js';
+} from '../../../../src/index.js';
 
 const NX = 1000;
 const NY = 1000;

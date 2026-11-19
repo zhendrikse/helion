@@ -1,5 +1,5 @@
 import { MeshStandardMaterial } from "three";
-import {Block, Segments, BoxSegmentsView, Simulation, Vec3} from "../../../src/index.js";
+import {Block, Segments, BoxSegmentsView, Simulation, Vec3} from "../../../../src/index.js";
 
 const depth = 4;
 const finalSize = 200;

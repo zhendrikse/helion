@@ -12,27 +12,11 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-### Fractals &amp; turtle graphics 🐢
+### 🐢 L-systems &amp; turtle graphics
 <div class="header_line"></div>
 
 <div class="badgeRow">
-    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/fractals.js">
-        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=fractals.js"/>
-    </a>
-</div>
-
-🎯 Learn how to draw fractals using [turtle graphics](https://en.wikipedia.org/wiki/Turtle_graphics)<br/>
-🧠 Inspired by [github.com/jeffvun/fractals](https://github.com/jeffvun/fractals/) <br/>
-🐍 A [VPython](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/Fractals) version is available as well, see [fractals.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/fractals.py)
-
-<div id="fractalsContainer"></div>
-<script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/fractals.js"}></script>
-
-### L-systems &amp; turtle graphics 🐢
-<div class="header_line"></div>
-
-<div class="badgeRow">
-    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/l_systems.js">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/fractals/l_systems.js">
         <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=l_systems.js"/>
     </a>
 </div>
@@ -42,7 +26,7 @@ layout: ../../../layouts/DocsLayout.astro
 👉 Learn more about [L-systems](https://en.wikipedia.org/wiki/L-system)<br/>
 
 <div id="lSystemsContainer"></div>
-<script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/l_systems.js"}></script>
+<script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/fractals/l_systems.js"}></script>
 
 <div style="width: 25%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;">
     <a href="https://en.wikipedia.org/wiki/David_Hilbert">
@@ -67,9 +51,276 @@ of area one. In the limit, the curve passes through every point of that square!
 Formulated more accurately: the [Hausdorff dimension](https://en.wikipedia.org/wiki/Hausdorff_dimension)
 of the [Hilbert curve](https://en.wikipedia.org/wiki/Hilbert_curve) equals exactly 2.
 
-### References
-<div style="border-top: 1px solid #999999"><br/></div>
+### 🐢 Fractals &amp; turtle graphics
+<div class="header_line"></div>
 
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/fractals/fractals.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=fractals.js"/>
+    </a>
+</div>
+
+🎯 Learn how to draw fractals using [turtle graphics](https://en.wikipedia.org/wiki/Turtle_graphics)<br/>
+🧠 Inspired by [github.com/jeffvun/fractals](https://github.com/jeffvun/fractals/) <br/>
+🐍 A [VPython](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/Fractals) version is available as well, see [fractals.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/fractals.py)
+
+<div id="fractalsContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/fractals/fractals.js"}></script>
+
+### 🕹️ Chaos game fractals
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/fractals/chaos_fractals.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=chaos_fractals.js"/>
+    </a>
+</div>
+
+🎯 Improved understanding of the [chaos game](https://en.wikipedia.org/wiki/Chaos_game)<br/>
+🧠 Inspired by [nnakul/chaos-game](https://github.com/nnakul/chaos-game/tree/master) by [Nikhil Nakul](https://github.com/nnakul/)<br/>
+🐍 A [VPython version](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/ChaosGame) is available as well, see [chaos_game.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/chaos_game.py)
+
+<div id="chaosFractalsContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/fractals/chaos_fractals.js"}></script>
+
+#### About the chaos game
+
+The chaos game is an iterative procedure $s_i\rightarrow s_{i+1}$ that can be written
+as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation)
+
+$$
+s_{i+1}=T_js_i+r_j
+$$
+
+where the set of pairs $\{(T_j, r_j) | j=1,2,\dots\}$ with matrices $T_j$ and $r_j$
+characterize the chosen ruleset and $j$ denotes a (per iteration) randomly chosen index.
+The famous [Barnsley fern](https://www.hendrikse.name/helion/nature/plants/#-3d-barnsley-fern) is generated in a similar way.
+
+#### Why do fractals arise from the chaos game
+
+<div style="width: 50%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;">
+  <a href="https://en.wikipedia.org/wiki/Chaos_game#/media/File:Sierpinski_Chaos.gif">
+    <img alt="Sierpinksy chaos" src={import.meta.env.BASE_URL + "images/mathematics/Sierpinski_Chaos.gif"}/>
+  </a>
+  <figcaption>
+    Source <a href="https://en.wikipedia.org/wiki/Chaos_game#/media/File:Sierpinski_Chaos.gif">Wikipedia</a>
+  </figcaption>
+</div>
+
+The chaos game is an iterative process of placing dots on a canvas
+using certain fixed locations (vertices) that are chosen randomly.
+
+For example, in the animation on the right,
+the position of each new dot is halfway between the current position and one of the three
+fixed corners of a triangle.
+
+Let's assume we start with a point that is located in one of the areas that will eventually be empty,
+see the figure on the right.
+
+<div style="width: 55%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;">
+  <a href="https://math.bu.edu/DYSYS/chaos-game/node3.html">
+    <img alt="Sierpinksy chaos" src={import.meta.env.BASE_URL + "images/mathematics/sierpinski.gif"}/>
+  </a>
+  <figcaption>
+    Source <a href="https://math.bu.edu/DYSYS/chaos-game/node3.html">BU Math</a>
+  </figcaption>
+</div>
+
+After one iteration, the point will jump to either one of the three smaller empty triangles.
+Eventually after a couple of iterations, the point will enter a small triangle that is so small that,
+given the finite resolution of the screen and the pixels it contains, it will disappear.
+
+In a certain sense, the fractal itself is a kind of
+[strange attractor](https://www.hendrikse.name/helion/mathematics/strange_attractors/)!
+
+<div className="badgeRow">
+    <a href="https://en.wikipedia.org/wiki/JavaScript">
+        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
+    </a>
+    <a href="https://threejs.org/">
+        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
+    </a>
+</div>
+
+### 🧽 Menger sponge
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/fractals/menger_sponge.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=menger_sponge.js"/>
+    </a>
+</div>
+
+🧠 Inspired by [MengerSponge.py](https://github.com/jeffvun/fractals/blob/main/MengerSponge.py)<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/MengerSponge) is available as well, see [menger_sponge.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/menger_sponge.py)<br/>
+
+<div id="mengerSpongeContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/fractals/menger_sponge.js"}></script>
+
+### 🐫 Sierpiński pyramid
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/fractals/sierpinski.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=sierpinski.js"/>
+    </a>
+</div>
+
+🧠 Inspired by [a student assignment](https://isoptera.lcsc.edu/~seth/cs111/project5.pdf) by [S. Seth Long](https://isoptera.lcsc.edu/~seth/)<br/>
+🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/Sierpinsky) is available as well, see [sierpinski.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/sierpinski.py)<br/>
+
+<div id="sierpinskiContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/fractals/sierpinski.js"}></script>
+
+### 🍞 Mandelbrot & Julia fractals
+<div class="header_line"></div>
+
+<div class="badgeRow">
+    <a href="https://github.com/zhendrikse/helion/blob/main/examples/mathematics/scenes/fractals/mandelbrot_julia.js">
+        <img alt="Source" src="https://img.shields.io/badge/github-repo-green?logo=github&label=mandelbrot_julia.js"/>
+    </a>
+</div>
+
+🐍 A [VPython version](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Math/program/ChaosGame) is available as well, see [mandelbrot.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/mandelbrot.py)
+
+<div id="mandelbrotJuliaContainer"></div>
+<script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/fractals/mandelbrot_julia.js"}></script>
+
+#### Julia and Mandelbrot sets explained
+
+The term fractal was coined by [Benoît Mandelbrot](https://en.wikipedia.org/wiki/Benoit_Mandelbrot)
+himself, and is derived from the Latin word ‘fractus’, which means broken or fractured.
+
+<figure>
+   <a href="images/burning_ship.png">
+     <img alt="Burning ship fractal" src="images/burning_ship.png"/>
+   </a>
+   <figcaption>The famous and stunningly beautiful
+   <a href="https://en.wikipedia.org/wiki/Burning_Ship_fractal">burning ship fractal</a>
+   using a dedicated color mapping function, see also the text below.</figcaption>
+</figure>
+
+<p style="clear: both;"></p>
+
+The Mandelbrot and Julia sets are examples of such fractals. Such a set (fractal) can
+be drawn on a piece of paper, or on a computer screen, i.e. a plane. Each point
+in this plane actually represents a (two-dimensional) value/number, called a
+complex number.
+
+The collection of points, or numbers that lie "inside" the fractal (black part),
+_is_ the actual Mandelbrot set. The remaining points are said to be
+"outside" the Mandelbrot set.
+
+Whether a point is on the inside or outside, is associated with a mathematical
+concept called convergence (and divergence). For example, if you multiply a number by itself
+again and again, it runs away to infinity if your starting value is greater than one,
+i.e. it diverges, and it approaches zero if your starting value is less than one, i.e. it
+converges. And, of course, if you start with 1, it always remains one.
+
+So summarizing, the Mandelbrot set depicts which set of (two-dimensional) numbers _converges_
+when multiplied by itself (the Mandelbrot set, or the inside), and which set of numbers
+_diverges_ when multiplied by itself (the outside).
+
+A more thorough visual explanation is given in the video
+[The Mandelbrot Set Explained](https://www.youtube.com/watch?v=7MotVcGvFMg).
+
+#### Julia sets
+
+As was explained above, the Mandelbrot set is generated by multiplying a two-dimension
+(i.e. complex) number by itself, or stated differently, by (iteratively) squaring this number.
+
+This can more rigorously be expressed by the formula:
+
+$z_{n+1} = z_n^2 + c$
+
+where the index $n$ labels each consecutive iteration.
+
+The Mandelbrot set
+is generated using $z_0=0$ (start value), and let $c$ vary across the (complex) plane,
+and check for each value of $c$ whether the iteration process diverges or not.
+
+Julia sets are generated by varying $z$ across the (complex) plane,
+while the parameter $c$ is kept constant instead.
+This implies that for each value of $c$, a different Julia set will be generated!
+
+This difference is also neatly addressed in the
+video [Julia Sets, and how they relate to The Mandelbrot Set](https://www.youtube.com/watch?v=dctJ7ISkU-4),
+which is a follow-up on [The Mandelbrot Set Explained](https://www.youtube.com/watch?v=7MotVcGvFMg).
+
+#### The burning ship fractal
+
+As was explained above, the Mandelbrot set is generated by multiplying a
+(complex) number by itself, or stated more rigorously:
+
+$z_{n+1} = z_n^2 + c, z_0 = 0$
+
+where the index $n$ labels each consecutive iteration. The start value is zero.
+
+The burning ship uses a somewhat modified version of this formula, namely:
+
+$z_{n+1} = \left(\|\text{Re}(z_n)\| + i\|\text{Im}(z_n)\|\right)^2 + c, z_0 = 0$
+
+In addition, a different (and fixed) color mapping is used that underscores
+the metaphor of a burning ship.
+
+#### Mandelbrot set defined mathematically
+
+A Mandelbrot set is defined as a two-dimensional set in the complex plane $\mathbb{C}$
+for which an infinite sequence of numbers $z_n$, defined by the
+recursive relation
+
+$z_{n+1} = z_n^2 + c, z_0 = 0$
+
+does _not_ diverge to infinity. The parameter $c$ is also known as point of interest.
+
+The complex numbers that do remain bounded
+make up the inner glowing regions of the Mandelbrot set. Particularly interesting
+behaviour shows up near the edges of the set. The visualizations are realized by
+color-coding exactly this rate of divergence.
+
+The Mandelbrot set illustrates the same principle as
+[Conway&apos;s Game of Life](https://www.hendrikse.name/science/mathematics/2d_game_of_life.html),
+namely  that complex structures can emerge from an astonishingly small and simple set of rules.
+
+There are certain regions of values for the parameter $c$ (point of interest), where
+a tiny change in the value of this parameter $c$ results in a completely different
+(convergence) behaviour of our function. Any system that responds completely differently
+to any such a tiny change in its parameter(s) is said to behave chaotically.
+
+[Chaos theory](https://en.wikipedia.org/wiki/Chaos_theory) studies exactly these kind of systems. They are said to behave chaotically,
+as they turn out to behave unpredictably given there sensitivity on their initial/boundary condition(s).
+
+Chaotic systems are quite well known because of the so-called [butterfly-effect](https://en.wikipedia.org/wiki/Butterfly_effect):
+a distant butterfly flapping its wings a few weeks ago, may be causing a tornado’s route to change
+its course, similar to a slight change in a parameter value (in this case of the constant $c$)
+that causes the function to either diverge to infinity or remain bounded.
+
+The butterfly-effect is more rigorously is defined as a deterministic
+non-linear response of a system that for its future state(s) is (extremely)
+sensitive on one or more of its initial conditions.
+
+#### Some history
+
+Robert W. Brooks &amp; Peter Matelski first described and illustrated this set in
+1978 as a part of a study on Kleinian groups. Two years later,
+[Benoît Mandelbrot](https://en.wikipedia.org/wiki/Benoit_Mandelbrot) managed to create
+the first now well-known visualizations of the set,
+while working at IBM’s Thomas J. Watson Research Center in New York:
+
+> Because of his access to IBM's computers, Mandelbrot was one of the first to use computer
+graphics to create and display fractal geometric images, leading to his discovery of the
+Mandelbrot set in 1980. He showed how visual complexity can be created from simple rules.
+He said that things typically considered to be "rough", a "mess", or "chaotic",
+such as clouds or shorelines, actually had a "degree of order". &mdash;
+[Wikipedia](https://en.wikipedia.org/wiki/Benoit_Mandelbrot)
+
+### References
+<div class="header_line"></div>
+
+- [What's so special about the Mandelbrot Set? &mdash; Numberphile](https://www.youtube.com/watch?v=FFftmWSzgmk)
+- [The Feigenbaum Constant (4.669) &mdash; Numberphile](https://www.youtube.com/watch?v=ETrYE4MdoLQ)
+- Chaos game [Wikipedia page](https://en.wikipedia.org/wiki/Chaos_game)
+- [Chaos Game &mdash; Numberphile](https://www.youtube.com/watch?v=kbKtFN71Lfs)
 - [A 1.58-Dimensional Object &mdash; Numberphile](https://www.youtube.com/watch?v=FnRhnZbDprE)
 - [Fractal Dimensions (extra footage) - Numberphile](https://www.youtube.com/watch?v=Yz06NW6DwsE)
 
