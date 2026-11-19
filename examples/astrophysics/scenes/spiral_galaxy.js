@@ -1,6 +1,6 @@
 import {
     sampleNormalDistribution, uniform, randomInt, Vec3, Simulation, PointCloud,
-    PointCloudMaterial, PointCloudView, ThreeJsScene, Colour
+    PointCloudMaterial, PointCloudView, ThreeJsScene
 } from '../../../src/index.js';
 
 class SpiralGalaxy extends PointCloud {
@@ -42,16 +42,8 @@ class SpiralGalaxy extends PointCloud {
     add(starPositions, starRadius) {
         for (let i = 0, n = starPositions.length; i < n; i++) {
             this._positions.push(starPositions[i]);
-            this._colors.push(SpiralGalaxy.colorAt(starPositions[i]));
             this._sizes.push(starRadius);
         }
-    }
-
-    /** @param {Vec3} position */
-    static colorAt(position) {
-        const distance = Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2);
-        const t = Math.min(distance / SpiralGalaxy.ScaleFactor, 1.0); // 0 at center, 1 at border
-        return new Colour().setHSL(0.65 - 0.5 * t, 1.0, 0.6); // from yellow (t=0) to blue (t=1)
     }
 
     static createCoreStars(numRimStars, coreRadius) {
@@ -133,7 +125,15 @@ class SpiralGalaxy extends PointCloud {
 }
 
 const spiralGalaxy = new SpiralGalaxy();
-const pointCloud = new PointCloudView({ material: PointCloudMaterial.galaxy() });
+const pointCloud = new PointCloudView({
+    material: PointCloudMaterial.galaxy(),
+    colorMapper: (galaxy, index, color) => {
+        const position = galaxy.positionAt(index);
+        const distance = position.length();
+        const t = Math.min(distance / SpiralGalaxy.ScaleFactor, 1.0);
+        color.setHSL(0.65 - 0.5 * t, 1.0, 0.6);
+    }
+});
 Simulation
     .with({
         htmlDivId: 'galaxyContainer',
