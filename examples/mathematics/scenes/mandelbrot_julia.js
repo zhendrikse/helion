@@ -198,37 +198,31 @@ simulation
         .withValue('Mandelbrot')
         .onChange(value => {
             fractal.setType(value);
-            synchronize();
         }))
     .append(new DropdownMenu()
         .for(juliaRegistry)
         .withValue('0.325 + 0.417i')
         .onChange(value => {
             fractal.setJuliaConstant(juliaConstants[value]);
-            synchronize();
         }))
     .append(new DropdownMenu()
         .for(colorRegistry)
         .withValue('RGB')
         .onChange(value => {
             fractalView.colorMapper = new FractalColorMapper(value);
-            synchronize();
         }))
     .append(new Button('Zoom in').withText('+')
         .onClick(() => {
             fractal.zoom(0.8);
-            synchronize();
         }))
     .append(new Button('Zoom out').withText('−')
         .onClick(() => {
             fractal.zoom(1.1);
-            synchronize();
         }))
     .append(new Button('Reset view')
         .onClick(() => {
             fractal.resetRange();
             fractal.compute();
-            synchronize();
         }));
 
 simulation
