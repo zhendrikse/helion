@@ -53,9 +53,10 @@ class NozzleFlow extends PointCloud {
 
         super({ positions, sizes });
         this.nozzle = nozzle;
+        this._velocity = { x: 0, y: 0 };
     }
 
-    velocity(x, y) {
+    velocity(x, y, target = this._velocity) {
         const r = this.nozzle.radius(x);
         const exp = x < 0 ? Math.exp(5 * x + 5) : Math.exp(-3 * x + 4.5);
         const denom = (1 + exp) * (1 + exp);
@@ -67,10 +68,9 @@ class NozzleFlow extends PointCloud {
         const norm = Math.sqrt(1 + dadx * dadx);
         const speed = 1 + 2 * Math.exp(-x * x);
 
-        return {
-            x: speed / norm,
-            y: speed * dadx / norm
-        };
+        target.x = speed / norm;
+        target.y = speed * dadx / norm;
+        return target;
     }
 
     evolve() {
