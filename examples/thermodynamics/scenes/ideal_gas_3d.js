@@ -17,7 +17,16 @@ const gas = new Gas({
 });
 const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: new Colour(0xBF40BF) });
 const spheresView = new SphereSegmentsView({
-    colorMapper: (particle, index, color) => color.setHex(index === 0 ? 0xff4040 : 0xffd45a)
+    colorMapper: (particle, index, color) => {
+        const base = index === 0 ? [1, 0.25, 0.25] : [1, 0.83, 0.35];
+        const flash = Math.min(1, particle.collisionFlash ?? 0);
+        const glow = 0.9 * flash;
+        color.setRGB(
+            base[0] + (1 - base[0]) * glow,
+            base[1] + (1 - base[1]) * glow,
+            base[2] + (1 - base[2]) * glow
+        );
+    }
 });
 /** @type {number[][]} */
 const histogramBuffer = [];
