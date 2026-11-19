@@ -4,29 +4,29 @@ import {
 } from '../../../src/index.js';
 
 const PARTICLE_COUNT = 12000;
-const SIMULATION_SPEED = 0.5;
-const SUBSTEPS = 5;
-const STEP_SIZE = 0.01;
 
-class Nozzle extends Segments {
+class Nozzle {
     constructor(ratio = 0.25) {
-        super();
-        this.ratio = ratio;
+        this._outline = new Segments();
+        this._ratio = ratio;
 
         for (let i = 0; i < 199; i++) {
             const x1 = -2 + i * (5 / 199);
             const x2 = -2 + (i + 1) * (5 / 199);
 
-            this.add(new LineSegment(new Vec2(x1, this.radius(x1)), new Vec2(x2, this.radius(x2))));
-            this.add(new LineSegment(new Vec2(x1, -this.radius(x1)), new Vec2(x2, -this.radius(x2))));
+            this._outline.add(new LineSegment(new Vec2(x1, this.radius(x1)), new Vec2(x2, this.radius(x2))));
+            this._outline.add(new LineSegment(new Vec2(x1, -this.radius(x1)), new Vec2(x2, -this.radius(x2))));
         }
     }
 
+    get outline() { return this._outline; }
+    get ratio() { return this._ratio; }
+
     radius(x) {
         if (x < 0)
-            return this.ratio + (0.5 - this.ratio / 2) / (1 + Math.exp(5 * x + 5)) + 0.057;
+            return this._ratio + (0.5 - this._ratio / 2) / (1 + Math.exp(5 * x + 5)) + 0.057;
 
-        return this.ratio + (1 - this.ratio) / (1 + Math.exp(-3 * x + 4.5)) + 0.05;
+        return this._ratio + (1 - this._ratio) / (1 + Math.exp(-3 * x + 4.5)) + 0.05;
     }
 }
 
@@ -45,7 +45,7 @@ class NozzleFlow extends PointCloud {
         this._velocity = new Vec2();
     }
 
-    velocity(x, y, target = this._velocity) {
+    _calculateVelocity(x, y, target = this._velocity) {
         const r = this.nozzle.radius(x);
         const exp = x < 0 ? Math.exp(5 * x + 5) : Math.exp(-3 * x + 4.5);
         const denom = (1 + exp) * (1 + exp);
@@ -60,16 +60,14 @@ class NozzleFlow extends PointCloud {
         return target;
     }
 
-    evolve() {
-        for (let step = 0; step < SUBSTEPS; step++) {
-            for (const particle of this._positions) {
-                const velocity = this.velocity(particle.x, particle.y);
-                particle.addScaledVector(velocity, STEP_SIZE * SIMULATION_SPEED);
+    evolve(dt) {
+        for (const particle of this._positions) {
+            const velocity = this._calculateVelocity(particle.x, particle.y);
+            particle.addScaledVector(velocity, dt);
 
-                if (particle.x > 3) {
-                    particle.x = -2 - Math.random() * 2;
-                    particle.y = (Math.random() - 0.5) * (1 + this.nozzle.ratio);
-                }
+            if (particle.x > 3) {
+                particle.x = -2 - Math.random() * 2;
+                particle.y = (Math.random() - 0.5) * (1 + this.nozzle.ratio);
             }
         }
     }
@@ -126,17 +124,20 @@ const nozzleView = new LineSegmentsView({
 Simulation
     .with({
         htmlDivId: 'nozzleFlowContainer',
-        viewport: { aspectRatio: '5 / 2' },
+        viewport: { aspectRatio: '19 / 12' },
         camera: {
-            position: new Vec3(0, 0, 3), orthographic: true, controls: false
+            position: new Vec3(0, 0, 3.5),
+            target: new Vec3(0.5, 0, 0),
+            orthographic: true,
         },
         scene: { background: ThreeJsScene.Background.TRANSPARENT },
         lighting: { enabled: false },
         headUpDisplay: { enabled: false }
     })
-    .bind(nozzle.alwaysWith(nozzleView))
+    .bind(nozzle.outline.alwaysWith(nozzleView))
     .bind(flow.alwaysWith(particleView))
-    .substeps(1)
+    .substeps(3)
     .runsEvery(1 / 60)
-    .onStep(() => flow.evolve())
+    .advancesBy(5e-3)
+    .onStep((_clock, dt) => flow.evolve(dt))
     .start();
