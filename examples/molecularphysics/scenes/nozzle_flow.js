@@ -1,10 +1,9 @@
 import { ShaderMaterial } from 'three';
 import {
-    LineSegment, LineSegmentsView, PointCloud, PointCloudView,
-    Segments, Simulation, ThreeJsScene, Vec3
+    LineSegment, LineSegmentsView, PointCloud, PointCloudView, Segments, Simulation, ThreeJsScene, Vec2, Vec3
 } from '../../../src/index.js';
 
-const PARTICLE_COUNT = 25000;
+const PARTICLE_COUNT = 12000;
 const SIMULATION_SPEED = 0.5;
 const SUBSTEPS = 5;
 const STEP_SIZE = 0.01;
@@ -18,14 +17,8 @@ class Nozzle extends Segments {
             const x1 = -2 + i * (5 / 199);
             const x2 = -2 + (i + 1) * (5 / 199);
 
-            this.add(new LineSegment(
-                new Vec3(x1, this.radius(x1), 0),
-                new Vec3(x2, this.radius(x2), 0)
-            ));
-            this.add(new LineSegment(
-                new Vec3(x1, -this.radius(x1), 0),
-                new Vec3(x2, -this.radius(x2), 0)
-            ));
+            this.add(new LineSegment(new Vec2(x1, this.radius(x1)), new Vec2(x2, this.radius(x2))));
+            this.add(new LineSegment(new Vec2(x1, -this.radius(x1)), new Vec2(x2, -this.radius(x2))));
         }
     }
 
@@ -43,17 +36,13 @@ class NozzleFlow extends PointCloud {
         const sizes = [];
 
         for (let i = 0; i < PARTICLE_COUNT; i++) {
-            positions.push(new Vec3(
-                -2 - Math.random() * 3,
-                (Math.random() - 0.5) * (1 + nozzle.ratio),
-                0
-            ));
+            positions.push(new Vec2(-2 - Math.random() * 3, (Math.random() - 0.5) * (1 + nozzle.ratio)));
             sizes.push(3);
         }
 
         super({ positions, sizes });
         this.nozzle = nozzle;
-        this._velocity = { x: 0, y: 0 };
+        this._velocity = new Vec2();
     }
 
     velocity(x, y, target = this._velocity) {
@@ -67,9 +56,7 @@ class NozzleFlow extends PointCloud {
 
         const norm = Math.sqrt(1 + dadx * dadx);
         const speed = 1 + 2 * Math.exp(-x * x);
-
-        target.x = speed / norm;
-        target.y = speed * dadx / norm;
+        target.set(speed, speed * dadx).divideScalar(norm);
         return target;
     }
 
@@ -77,8 +64,7 @@ class NozzleFlow extends PointCloud {
         for (let step = 0; step < SUBSTEPS; step++) {
             for (const particle of this._positions) {
                 const velocity = this.velocity(particle.x, particle.y);
-                particle.x += velocity.x * STEP_SIZE * SIMULATION_SPEED;
-                particle.y += velocity.y * STEP_SIZE * SIMULATION_SPEED;
+                particle.addScaledVector(velocity, STEP_SIZE * SIMULATION_SPEED);
 
                 if (particle.x > 3) {
                     particle.x = -2 - Math.random() * 2;
@@ -89,11 +75,8 @@ class NozzleFlow extends PointCloud {
     }
 
     reset() {
-        for (const particle of this._positions) {
-            particle.x = -2 - Math.random() * 3;
-            particle.y = (Math.random() - 0.5) * (1 + this.nozzle.ratio);
-            particle.z = 0;
-        }
+        for (const particle of this._positions)
+            particle.set(-2 - Math.random() * 3, (Math.random() - 0.5) * (1 + this.nozzle.ratio));
     }
 }
 
@@ -137,9 +120,7 @@ const particleView = new PointCloudView({
 
 const nozzleView = new LineSegmentsView({
     lineWidth: 2,
-    colorMapper: {
-        map: (_value, color) => color.set(0x00ffff)
-    }
+    colorMapper: { map: (_value, color) => color.set(0x00ffff) }
 });
 
 Simulation
@@ -147,10 +128,7 @@ Simulation
         htmlDivId: 'nozzleFlowContainer',
         viewport: { aspectRatio: '5 / 2' },
         camera: {
-            position: new Vec3(0, 0, 5),
-            target: new Vec3(0, 0, 0),
-            orthographic: true,
-            controls: false
+            position: new Vec3(0, 0, 3), orthographic: true, controls: false
         },
         scene: { background: ThreeJsScene.Background.TRANSPARENT },
         lighting: { enabled: false },
@@ -158,6 +136,7 @@ Simulation
     })
     .bind(nozzle.alwaysWith(nozzleView))
     .bind(flow.alwaysWith(particleView))
+    .substeps(1)
     .runsEvery(1 / 60)
     .onStep(() => flow.evolve())
     .start();
