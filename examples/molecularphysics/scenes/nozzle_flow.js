@@ -1,6 +1,6 @@
 import { ShaderMaterial } from 'three';
 import {
-    LineSegment, LineSegmentsView, PointCloud, PointCloudMaterial, PointCloudView,
+    LineSegment, LineSegmentsView, PointCloud, PointCloudView,
     Segments, Simulation, ThreeJsScene, Vec3
 } from '../../../src/index.js';
 
