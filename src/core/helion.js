@@ -45,9 +45,15 @@ class SimulationClock {
         this.clockTime = 0;
     }
 
-    tick() {
-        this.accumulator -= this.realTimeStep;
-        this.simulatedTime += this.simulationTimeStep;
+    /**
+     * Consume one integration substep from the accumulated real time.
+     *
+     * @param {number} [realTimeStep=this.realTimeStep]
+     * @param {number} [simulationTimeStep=this.simulationTimeStep]
+     */
+    tick(realTimeStep = this.realTimeStep, simulationTimeStep = this.simulationTimeStep) {
+        this.accumulator -= realTimeStep;
+        this.simulatedTime += simulationTimeStep;
     }
 
     /**
@@ -370,6 +376,9 @@ export class Simulation {
      * @param {number} substeps the number of steps for each clock tick dt.
      */
     substeps(substeps) {
+        if (!Number.isInteger(substeps) || substeps < 1)
+            throw new RangeError(`Substeps must be a positive integer, but received ${substeps}`);
+
         this._stepsPerClockTick = substeps;
         return this;
     }
@@ -377,11 +386,13 @@ export class Simulation {
     _updatePhysics() {
         let i = 0;
         const maxSteps = 10;
+        const realTimeStep = this._clock.realTimeStep / this._stepsPerClockTick;
+        const simulationTimeStep = this._clock.simulationTimeStep / this._stepsPerClockTick;
 
         while (this._clock.accumulator >= this._clock.realTimeStep && i < maxSteps) {
             for (let j = 0; j < this._stepsPerClockTick; j++) {
-                this._stepFunction(this._clock, this._clock.simulationTimeStep);
-                this._clock.tick();
+                this._stepFunction(this._clock, simulationTimeStep);
+                this._clock.tick(realTimeStep, simulationTimeStep);
             }
 
             i++;
