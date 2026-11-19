@@ -270,7 +270,7 @@ Simulation
                 .withText('Reset view')
                 .onClick(() => {
                     fractal.resetRange();
-                    fractal.compute();
+                    fractal.apply(fractal.transformation);
                 })))
     )
     .onPointer('pointerdown', (x, y, event) => {
