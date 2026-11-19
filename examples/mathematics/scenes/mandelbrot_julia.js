@@ -1,6 +1,6 @@
 import {
     Button, ColorMappers, DiscreteScalarField, DiscreteFieldSurfaceView,
-    DropdownMenu, FixedIntervalNormalizer, Interval, Registry, Simulation, Vec3
+    DropdownMenu, FixedIntervalNormalizer, Interval, Registry, Simulation, Transformation, Vec3
 } from '../../../src/index.js';
 
 const WIDTH = 600;
@@ -38,6 +38,93 @@ const colorRegistry = new Registry({
 });
 
 /**
+ * Base class for transformations that fill a scalar field with escape-time values.
+ */
+class EscapeTimeTransformation extends Transformation {
+    constructor(maxIterations = MAX_ITERATIONS) {
+        super();
+        this.maxIterations = maxIterations;
+    }
+
+    /** @abstract @param {number} re @param {number} im */
+    iterationsAt(re, im) { return this.maxIterations; }
+
+    /** @param {DiscreteScalarField} field */
+    applyTo(field) {
+        const { reMin, reMax, imMin, imMax } = field.complexRange;
+        const reStep = (reMax - reMin) / (field.nx - 1);
+        const imStep = (imMax - imMin) / (field.ny - 1);
+
+        for (let y = 0; y < field.ny; y++) {
+            const im = imMin + y * imStep;
+            for (let x = 0; x < field.nx; x++) {
+                const re = reMin + x * reStep;
+                field.setValueAt(x, y, this.iterationsAt(re, im));
+            }
+        }
+    }
+}
+
+/** z(n+1) = z(n)^2 + c, with c equal to the sampled point. */
+class MandelbrotTransformation extends EscapeTimeTransformation {
+    /** @param {number} re @param {number} im */
+    iterationsAt(re, im) {
+        const cr = re, ci = im;
+        let zr = 0, zi = 0, magnitudeSquared = 0, iteration = 0;
+        while (magnitudeSquared <= 4 && iteration < this.maxIterations) {
+            const nextReal = zr * zr - zi * zi + cr;
+            zi = 2 * zr * zi + ci;
+            zr = nextReal;
+            magnitudeSquared = zr * zr + zi * zi;
+            iteration++;
+        }
+        return iteration;
+    }
+}
+
+/** z(n+1) = z(n)^2 + c, with a fixed c and the sampled point as z(0). */
+class JuliaTransformation extends EscapeTimeTransformation {
+    /** @param {[number, number]} constant */
+    constructor(constant, maxIterations = MAX_ITERATIONS) {
+        super(maxIterations);
+        this.constant = constant;
+    }
+
+    /** @param {number} re @param {number} im */
+    iterationsAt(re, im) {
+        const [cr, ci] = this.constant;
+        let zr = re, zi = im, magnitudeSquared = zr * zr + zi * zi, iteration = 0;
+        while (magnitudeSquared <= 4 && iteration < this.maxIterations) {
+            const nextReal = zr * zr - zi * zi + cr;
+            zi = 2 * zr * zi + ci;
+            zr = nextReal;
+            magnitudeSquared = zr * zr + zi * zi;
+            iteration++;
+        }
+        return iteration;
+    }
+}
+
+/** z(n+1) = (|Re(z)| + i|Im(z)|)^2 + c, with c equal to the sampled point. */
+class BurningShipTransformation extends EscapeTimeTransformation {
+    /** @param {number} re @param {number} im */
+    iterationsAt(re, im) {
+        const cr = re, ci = im;
+        let zr = 0, zi = 0, magnitudeSquared = 0, iteration = 0;
+        while (magnitudeSquared <= 16 && iteration < this.maxIterations) {
+            const oldReal = Math.abs(zr);
+            const oldImaginary = Math.abs(zi);
+            const nextReal = oldReal * oldReal - oldImaginary * oldImaginary + cr;
+            zi = 2 * oldReal * oldImaginary + ci;
+            zr = nextReal;
+            magnitudeSquared = zr * zr + zi * zi;
+            iteration++;
+        }
+        return iteration;
+    }
+}
+
+/**
  * A scalar field containing the escape iteration count for every point
  * in the currently selected region of the complex plane.
  */
@@ -48,92 +135,69 @@ class FractalField extends DiscreteScalarField {
         this.type = 'Mandelbrot';
         this.constant = juliaConstants['0.325 + 0.417i'];
         this.resetRange();
-        this.compute();
+        this.transformation = new MandelbrotTransformation();
+        this.apply(this.transformation);
     }
 
     resetRange() {
         const aspect = this.nx / this.ny;
-        this.range = this.type === 'Julia'
+        this.complexRange = this.type === 'Julia'
             ? { reMin: -1.5 * aspect, reMax: 1.5 * aspect, imMin: -1.5, imMax: 1.5 }
             : this.type === 'Burning Ship'
                 ? { reMin: -2.5, reMax: 1.5, imMin: -2, imMax: 2 }
                 : { reMin: -2, reMax: 1, imMin: -1, imMax: 1 };
     }
 
+    /** @param {string} type */
     setType(type) {
         this.type = type;
         this.resetRange();
-        this.compute();
+        this.transformation = type === 'Julia'
+            ? new JuliaTransformation(this.constant)
+            : type === 'Burning Ship'
+                ? new BurningShipTransformation()
+                : new MandelbrotTransformation();
+        this.apply(this.transformation);
     }
 
+    /** @param {[number, number]} constant */
     setJuliaConstant(constant) {
         this.constant = constant;
-        this.compute();
+        if (this.type === 'Julia') {
+            this.transformation = new JuliaTransformation(constant);
+            this.apply(this.transformation);
+        }
     }
 
     /** @param {number} factor */
     zoom(factor) {
-        const centerRe = 0.5 * (this.range.reMin + this.range.reMax);
-        const centerIm = 0.5 * (this.range.imMin + this.range.imMax);
-        const halfWidth = 0.5 * (this.range.reMax - this.range.reMin) * factor;
-        const halfHeight = 0.5 * (this.range.imMax - this.range.imMin) * factor;
-        this.range = {
+        const centerRe = 0.5 * (this.complexRange.reMin + this.complexRange.reMax);
+        const centerIm = 0.5 * (this.complexRange.imMin + this.complexRange.imMax);
+        const halfWidth = 0.5 * (this.complexRange.reMax - this.complexRange.reMin) * factor;
+        const halfHeight = 0.5 * (this.complexRange.imMax - this.complexRange.imMin) * factor;
+        this.complexRange = {
             reMin: centerRe - halfWidth, reMax: centerRe + halfWidth,
             imMin: centerIm - halfHeight, imMax: centerIm + halfHeight
         };
-        this.compute();
+        this.apply(this.transformation);
     }
 
     /** @param {number} u @param {number} v */
     recenter(u, v) {
-        const centerRe = this.range.reMin + u * (this.range.reMax - this.range.reMin);
-        const centerIm = this.range.imMin + v * (this.range.imMax - this.range.imMin);
-        const halfWidth = 0.5 * (this.range.reMax - this.range.reMin);
-        const halfHeight = 0.5 * (this.range.imMax - this.range.imMin);
-        this.range = {
+        const centerRe = this.complexRange.reMin + u * (this.complexRange.reMax - this.complexRange.reMin);
+        const centerIm = this.complexRange.imMin + v * (this.complexRange.imMax - this.complexRange.imMin);
+        const halfWidth = 0.5 * (this.complexRange.reMax - this.complexRange.reMin);
+        const halfHeight = 0.5 * (this.complexRange.imMax - this.complexRange.imMin);
+        this.complexRange = {
             reMin: centerRe - halfWidth, reMax: centerRe + halfWidth,
             imMin: centerIm - halfHeight, imMax: centerIm + halfHeight
         };
-        this.compute();
+        this.apply(this.transformation);
     }
 
-    // The view uses a fixed normalization: escape counts are always in [0, maxIterations].
+    // Escape counts always lie in [0, maxIterations], keeping color normalization fixed.
     rangeAt() {
         return new Interval(0, this.maxIterations);
-    }
-
-    compute() {
-        const { reMin, reMax, imMin, imMax } = this.range;
-        const reStep = (reMax - reMin) / (this.nx - 1);
-        const imStep = (imMax - imMin) / (this.ny - 1);
-        const [constantRe, constantIm] = this.constant;
-
-        for (let y = 0; y < this.ny; y++) {
-            const im = imMin + y * imStep;
-
-            for (let x = 0; x < this.nx; x++) {
-                const re = reMin + x * reStep;
-                let zr = this.type === 'Julia' ? re : 0;
-                let zi = this.type === 'Julia' ? im : 0;
-                const cr = this.type === 'Julia' ? constantRe : re;
-                const ci = this.type === 'Julia' ? constantIm : im;
-                const escapeRadiusSquared = this.type === 'Burning Ship' ? 16 : 4;
-                let magnitudeSquared = 0;
-                let iteration = 0;
-
-                while (magnitudeSquared <= escapeRadiusSquared && iteration < this.maxIterations) {
-                    const oldReal = this.type === 'Burning Ship' ? Math.abs(zr) : zr;
-                    const oldImaginary = this.type === 'Burning Ship' ? Math.abs(zi) : zi;
-                    const nextReal = oldReal * oldReal - oldImaginary * oldImaginary + cr;
-                    zi = 2 * oldReal * oldImaginary + ci;
-                    zr = nextReal;
-                    magnitudeSquared = zr * zr + zi * zi;
-                    iteration++;
-                }
-
-                this.setValueAt(x, y, iteration);
-            }
-        }
     }
 }
 
