@@ -1,7 +1,6 @@
 import {
-    Button, Colour, ColorMappers, DiscreteScalarField, DiscreteFieldSurfaceView,
-    DropdownMenu, FixedIntervalNormalizer, Interval, Registry, Simulation,
-    ThreeJsScene, Vec3, hsvToRgb
+    Button, ColorMappers, DiscreteScalarField, DiscreteFieldSurfaceView,
+    DropdownMenu, FixedIntervalNormalizer, Interval, Registry, Simulation, Vec3
 } from '../../../src/index.js';
 
 const WIDTH = 600;
@@ -35,7 +34,7 @@ const juliaRegistry = new Registry({
 
 const colorRegistry = new Registry({
     label: 'Color scheme',
-    entries: { RGB: 'RGB', Hue: 'Hue', Inferno: 'Inferno' }
+    entries: { RGB: 'RGB', Viridis: 'Viridis', RdYlBu: 'RdYlBu', Inferno: 'Inferno', Scientific: 'Scientific' }
 });
 
 /**
@@ -140,100 +139,82 @@ class FractalField extends DiscreteScalarField {
 
 class FractalColorMapper {
     constructor(scheme) {
-        this.scheme = scheme;
-        this.inferno = ColorMappers.get(ColorMappers.Inferno);
+        this._scheme = scheme;
+        this.mapper = ColorMappers.get(ColorMappers.Scientific);
+    }
+
+    set scheme(value) {
+        this._scheme = value;
+        if (value !== 'RGB')
+            this.mapper = ColorMappers.get(value)
     }
 
     /** @param {number} value @param {import('three').Color} target */
     map(value, target) {
-        if (value >= 1) {
+        if (value >= 1)
             target.setRGB(0, 0, 0);
-        } else if (this.scheme === 'Hue') {
-            hsvToRgb((value * 5) % 1, 1, 1, target);
-        } else if (this.scheme === 'Inferno') {
-            this.inferno.map(value, target);
-        } else {
-            target.setRGB(value, Math.sqrt(value), Math.pow(value, 0.2));
-        }
+        else if (this._scheme !== 'RGB')
+            this.mapper.map(value * 4, target);
+        else
+            target.setRGB(10 * value, Math.sqrt(value), Math.pow(value, 0.2));
+        target.convertLinearToSRGB();
     }
 }
+const fractalColorMapper = new FractalColorMapper('Scientific');
 
 const fractal = new FractalField();
 const fractalView = new DiscreteFieldSurfaceView({
-    colorMapper: new FractalColorMapper('RGB'),
+    colorMapper: fractalColorMapper,
     normalizer: new FixedIntervalNormalizer(new Interval(0, MAX_ITERATIONS)),
     opacityFunction: () => 1,
     scale: 0.01
 });
-const fractalBinding = fractal.alwaysWith(fractalView);
 
-const simulation = Simulation.with({
-    htmlDivId: 'mandelbrotJuliaContainer',
-    viewport: { aspectRatio: '3 / 2', parameterMenuCollapsed: false },
-    camera: {
-        position: new Vec3(0, 0, 10),
-        target: new Vec3(0, 0, 0),
-        orthographic: true,
-        controls: false
-    },
-    scene: {
-        background: ThreeJsScene.Background.PLAIN,
-        backgroundColor: Colour.Black
-    },
-    lighting: { enabled: false },
-    headUpDisplay: { enabled: false },
-    infoPanel: {
-        text: '<strong>Fractals</strong><br>' +
-            'Explore the Mandelbrot set, Julia sets and the Burning Ship fractal. ' +
-            'Click to recenter; use the mouse wheel or buttons to zoom.'
-    }
-});
-
-const synchronize = () => fractalBinding.forceSynchronize();
-simulation.bind(fractalBinding);
-
-simulation
+Simulation
+    .with({
+        htmlDivId: 'mandelbrotJuliaContainer',
+        viewport: { aspectRatio: '3 / 2', parameterMenuCollapsed: false },
+        camera: { position: new Vec3(0, 0, 4), orthographic: true, controls: false },
+        lighting: { enabled: false },
+        headUpDisplay: { enabled: false },
+        infoPanel: {
+            text: '<strong>Fractals</strong><br>' +
+                'Explore the Mandelbrot set, Julia sets and the Burning Ship fractal. ' +
+                'Click to recenter; use the mouse wheel or buttons to zoom.'
+        }
+    })
+    .bind(fractal.onceWith(fractalView))
     .append(new DropdownMenu()
         .for(fractalRegistry)
         .withValue('Mandelbrot')
-        .onChange(value => {
-            fractal.setType(value);
-        }))
+        .onChange(value => fractal.setType(value)))
     .append(new DropdownMenu()
         .for(juliaRegistry)
         .withValue('0.325 + 0.417i')
-        .onChange(value => {
-            fractal.setJuliaConstant(juliaConstants[value]);
-        }))
+        .onChange(value => fractal.setJuliaConstant(juliaConstants[value])))
     .append(new DropdownMenu()
         .for(colorRegistry)
-        .withValue('RGB')
-        .onChange(value => {
-            fractalView.colorMapper = new FractalColorMapper(value);
-        }))
-    .append(new Button('Zoom in').withText('+')
-        .onClick(() => {
-            fractal.zoom(0.8);
-        }))
-    .append(new Button('Zoom out').withText('−')
-        .onClick(() => {
-            fractal.zoom(1.1);
-        }))
-    .append(new Button('Reset view')
-        .onClick(() => {
-            fractal.resetRange();
-            fractal.compute();
-        }));
-
-simulation
+        .withValue('Scientific')
+        .onChange(value => fractalColorMapper.scheme = value))
+    .append(new Button()
+        .withText('Zoom in')
+        .onClick(() => fractal.zoom(0.8))
+        .togetherWith(new Button()
+            .withText('Zoom out')
+            .onClick(() => fractal.zoom(1.1))
+            .togetherWith(new Button()
+                .withText('Reset view')
+                .onClick(() => {
+                    fractal.resetRange();
+                    fractal.compute();
+                })))
+    )
     .onPointer('pointerdown', (x, y, event) => {
         if (event.button !== 0)
             return;
         fractal.recenter(x + 0.5, y + 0.5);
-        synchronize();
     })
     .onPointer('wheel', (_x, _y, event) => {
         event.preventDefault();
         fractal.zoom(event.deltaY < 0 ? 0.8 : 1.1);
-        synchronize();
     });
