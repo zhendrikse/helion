@@ -59,7 +59,7 @@ class EscapeTimeTransformation extends Transformation {
             const im = imMin + y * imStep;
             for (let x = 0; x < field.nx; x++) {
                 const re = reMin + x * reStep;
-                field.setValueAt(x, y, this.iterationsAt(re, im));
+                field.setValueAt(x, HEIGHT - y, this.iterationsAt(re, im));
             }
         }
     }
@@ -276,7 +276,7 @@ Simulation
     .onPointer('pointerdown', (x, y, event) => {
         if (event.button !== 0)
             return;
-        fractal.recenter(x + 0.5, y + 0.5);
+        fractal.recenter(x + 0.5, -y + 0.5);
     })
     .onPointer('wheel', (_x, _y, event) => {
         event.preventDefault();
