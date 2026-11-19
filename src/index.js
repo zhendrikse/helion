@@ -73,6 +73,7 @@ export { Hamiltonian, SingleParticle } from './model/phys/quantum/hamiltonian.js
 export { DirichletBoundaryCondition } from './model/math/numerics/boundaryconditions/dirichlet.js';
 export { ImplicitSurfaceView } from './view/3d/surfaces/implicit.js';
 export { SurfaceVisualization, SurfaceResolution} from './view/3d/surfaces/visualization.js';
+export { PointCloudView, PointCloudMaterial } from './view/3d/composite/pointcloudview.js'
 
 export {
     SchrodingerEigenstateSolver3D,LanczosEigenstateSolver, RelaxationEigenstateSolver, SchrodingerSolver
@@ -95,9 +96,7 @@ export {
     ColorLayers, FixedIntervalNormalizer, AdaptiveNormalizer, AdaptiveSymmetricNormalizer
 } from './view/3d/surfaces/color_layers.js';
 
-export {
-    ElectromagneticWave, PointCloudView, PointCloudMaterial,
-    ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule
+export { ElectromagneticWave, ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule
 } from './view/3d/composite/composites.js';
 
 export {
