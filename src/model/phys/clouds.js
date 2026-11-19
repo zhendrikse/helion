@@ -283,12 +283,32 @@ export class Gas extends ModelObjectsCollection{
     evolve(dt) {
         const particles = this._bindables.slice(0, this.size);
         for (const particle of particles) {
+            particle.collisionFlash = Math.max(0, (particle.collisionFlash ?? 0) - 4 * dt);
             particle.integrate(dt);
             this._limitToContainer(particle, this._containerSize * .5 - particle.radius);
         }
+
         for (let i = 0; i < particles.length; i++)
-            for (let j = i + 1; j < particles.length; j++)
-                particles[i].and(particles[j]).apply(this._collisionHandler);
+            for (let j = i + 1; j < particles.length; j++) {
+                const body1 = particles[i];
+                const body2 = particles[j];
+                const pair = body1.and(body2);
+                const separation = pair.axis;
+                const distanceSquared = separation.lengthSq();
+                const minimumDistance = body1.radius + body2.radius;
+
+                // Flash both particles only for an approaching pair that actually overlaps.
+                if (distanceSquared > 0 && distanceSquared < minimumDistance * minimumDistance) {
+                    const normalSpeed = body2.velocity.clone().sub(body1.velocity)
+                        .dot(separation) / Math.sqrt(distanceSquared);
+                    if (normalSpeed < 0) {
+                        body1.collisionFlash = 1;
+                        body2.collisionFlash = 1;
+                    }
+                }
+
+                pair.apply(this._collisionHandler);
+            }
     }
 
     /**
@@ -297,6 +317,7 @@ export class Gas extends ModelObjectsCollection{
      * @param {number} index
      */
     #resetParticle(particle, temperature, index) {
+        particle.collisionFlash = 0;
         particle.position.copy(index === 0 || this._dimensions === 2 ? new Vec3() : this.#randomPosition(index));
         if (temperature === 0) {
             particle.velocity.set(0, 0, 0);
