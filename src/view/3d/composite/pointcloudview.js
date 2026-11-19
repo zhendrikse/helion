@@ -106,7 +106,8 @@ export class PointCloudView extends Renderable3D {
      * @param {{
      *     material?: ShaderMaterial,
      *     colorMapper?: (pointCloud: PointCloud, index: number, color: Colour) => void,
-     *     sizeMapper?: (pointCloud: PointCloud, index: number) => number
+     *     sizeMapper?: (pointCloud: PointCloud, index: number) => number,
+     *     positionScale?: number
      * }} [options]
      */
     constructor({
@@ -118,13 +119,15 @@ export class PointCloudView extends Renderable3D {
             else
                 color.setRGB(1, 1, 1);
         },
-        sizeMapper = (pointCloud, index) => pointCloud.sizeAt?.(index) ?? 1
+        sizeMapper = (pointCloud, index) => pointCloud.sizeAt?.(index) ?? 1,
+        positionScale = 1
     } = {}) {
         super();
 
         this._material = material;
         this._colorMapper = colorMapper;
         this._sizeMapper = sizeMapper;
+        this._positionScale = positionScale;
 
         this._geometry = new BufferGeometry();
         this._points = new Points(this._geometry, this._material);
@@ -178,7 +181,12 @@ export class PointCloudView extends Renderable3D {
 
         for (let i = 0; i < count; i++) {
             const position = pointCloud.positionAt(i);
-            this._positionAttribute.setXYZ(i, position.x, position.y, position.z);
+            this._positionAttribute.setXYZ(
+                i,
+                position.x * this._positionScale,
+                position.y * this._positionScale,
+                position.z * this._positionScale
+            );
 
             this._colorMapper(pointCloud, i, this._color);
             this._colorAttribute.setXYZ(i, this._color.r, this._color.g, this._color.b);
