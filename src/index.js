@@ -96,8 +96,11 @@ export {
 } from './view/3d/surfaces/color_layers.js';
 
 export {
-    ElectromagneticWave, PointCloudView, PointCloudMaterial,
-    ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule
+    PointCloudView, PointCloudMaterial
+} from './view/3d/composite/pointcloudview.js';
+
+export {
+    ElectromagneticWave, ArrowField, SwitchableBondView, LatticeView, DiatomicMolecule
 } from './view/3d/composite/composites.js';
 
 export {
