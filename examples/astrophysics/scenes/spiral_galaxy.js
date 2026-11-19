@@ -131,7 +131,12 @@ const pointCloud = new PointCloudView({
         const position = galaxy.positionAt(index);
         const distance = position.length();
         const t = Math.min(distance / SpiralGalaxy.ScaleFactor, 1.0);
-        color.setHSL(0.65 - 0.5 * t, 1.0, 0.6);
+        // Preserve the original galaxy shader gradient: warm core to cool blue edge.
+        color.setRGB(
+            1.0 - 0.6 * t,
+            0.9 - 0.3 * t,
+            0.8 + 0.2 * t
+        );
     }
 });
 Simulation
