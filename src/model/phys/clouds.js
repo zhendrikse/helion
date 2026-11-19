@@ -59,6 +59,13 @@ export class PointCloud extends ModelObject {
     sizeAt(index) { return this._sizes[index]; }
 }
 
+class GasParticle extends RadialSymmetricBody {
+    constructor({ position, velocity, radius, mass }) {
+        super({ position, velocity, radius, mass });
+        this.afterglowCounter = 0;
+    }
+}
+
 export class Gas extends ModelObjectsCollection{
     static bounceWithinSphere = (particle, limit) => {
         if (particle.position.lengthSq() <= limit * limit)
@@ -115,8 +122,9 @@ export class Gas extends ModelObjectsCollection{
         this._baseParticleCount = particleCount;
         this._containerSize = containerSize;
         this._dimensions = dimensions;
-        /** @type {Segments<RadialSymmetricBody>} */
+        /** @type {Segments<GasParticle>} */
         this._spheres = new Segments();
+
         this._particleRadius = particleRadius;
         this._particleMass = particleMass;
         this._temperature = particleMass * initialSpeed * initialSpeed / 2;
@@ -124,7 +132,7 @@ export class Gas extends ModelObjectsCollection{
         this._k = 1;
         this._limitToContainer = containerFunction;
 
-        const tracer = new RadialSymmetricBody({
+        const tracer = new GasParticle({
             velocity: this.#newInitialVelocity(this._temperature),
             radius: tracerRadius,
             mass: tracerMass
@@ -138,19 +146,19 @@ export class Gas extends ModelObjectsCollection{
     set tracerMass(mass) { this._bindables[0].state.mass = mass; }
     get tracerMass() { return this._bindables[0].state.mass; }
     get tracer() { return this._bindables[0]; }
-    /** @returns {Segments<RadialSymmetricBody>} */
+    /** @returns {Segments<GasParticle>} */
     get spheres() { return this._spheres; }
     get temperature() { return this._temperature; }
 
     /**
      * @param {number} numberOfParticles
-     * @return {ModelObjectsCollection<RadialSymmetricBody>}
+     * @return {ModelObjectsCollection<GasParticle>}
      */
     addParticles(numberOfParticles = 50) {
-        /** @type ModelObjectsCollection<RadialSymmetricBody> */
+        /** @type ModelObjectsCollection<GasParticle> */
         const newParticles = new ModelObjectsCollection();
         for (let i = 0; i < numberOfParticles; i++) {
-            const particle = new RadialSymmetricBody({
+            const particle = new GasParticle({
                 position: this._dimensions === 3 ? this.#randomPosition(this._bindables.length) : new Vec3(),
                 velocity: this.#newInitialVelocity(this._temperature),
                 radius: this._particleRadius,
@@ -287,8 +295,16 @@ export class Gas extends ModelObjectsCollection{
             this._limitToContainer(particle, this._containerSize * .5 - particle.radius);
         }
         for (let i = 0; i < particles.length; i++)
-            for (let j = i + 1; j < particles.length; j++)
+            for (let j = i + 1; j < particles.length; j++) {
                 particles[i].and(particles[j]).apply(this._collisionHandler);
+                if (this._collisionHandler.collisionDetected) {
+                    particles[i].afterglowCounter = 1e4; // Afterglow time
+                    particles[j].afterglowCounter = 1e4; // Afterglow time
+                } else {
+                    particles[i].afterglowCounter--;
+                    particles[j].afterglowCounter--;
+                }
+            }
     }
 
     /**

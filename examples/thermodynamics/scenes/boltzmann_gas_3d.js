@@ -15,9 +15,9 @@ const gas = new Gas({
     containerSize: CONTAINER_SIZE,
     dimensions: 3
 });
-const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: new Colour(0xBF40BF) });
+const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: new Colour(0x55ffff) });
 const spheresView = new SphereSegmentsView({
-    colorMapper: (particle, index, color) => color.setHex(index === 0 ? 0xff4040 : 0xffd45a)
+    colorMapper: (particle, index, color) => color.setHex(index === 0 ? 0x55ffff : particle.afterglowCounter > 0 ? 0xff0000 : 0x55ff55)
 });
 /** @type {number[][]} */
 const histogramBuffer = [];
@@ -56,7 +56,8 @@ Simulation
         camera: { position: new Vec3(26, 14, 30), fieldOfView: 20 },
         lighting: { enabled: true },
         infoPanel: {
-            text: '<strong>🎈 3D ideal gas</strong><br/>Maxwell speed distribution of an ideal three-dimensional gas in a cubic container.' +
+            text: '<strong>🎈 3D ideal gas</strong><br/>• Colliding particles are colored red<br/>' +
+                '• Maxwell speed distribution of an ideal three-dimensional gas in a cubic container.' +
                 '$$a = \\frac{m}{2 k_B T}$$' +
                 '$$f(v)=4\\pi\\left(\\frac{a}{\\pi}\\right)^{3/2}v^2 \\exp(-av^2)$$' +
                 '$$v_{\\mathrm{rms}}=\\sqrt{\\frac{3k_B T}{m}}$$'

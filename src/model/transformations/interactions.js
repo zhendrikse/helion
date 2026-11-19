@@ -1,4 +1,5 @@
 import {Transformation} from '../behavior.js';
+import {Vec3} from "../math/objects.js";
 
 export class SphereSphereCollision extends Transformation {
     /**
@@ -11,7 +12,11 @@ export class SphereSphereCollision extends Transformation {
             throw new RangeError('Restitution must be a finite number between 0 and 1.');
 
         this._restitution = restitution;
+        this._normalVector = new Vec3();
+        this._collisionDetected = false;
     }
+
+    get collisionDetected() { return this._collisionDetected; }
 
     applyTo(bodyPair) {
         const body1 = bodyPair.body1;
@@ -20,12 +25,12 @@ export class SphereSphereCollision extends Transformation {
         const distance = r.length();
         const minDist = body1.radius + body2.radius;
 
-        if (distance === 0 || distance >= minDist)
+        this._collisionDetected = distance !== 0 && distance < minDist
+        if (!this._collisionDetected)
             return;
 
         // Penetration correction
         const overlap = minDist - distance;
-        const n = r.clone().normalize();
 
         let body1Adjust = 0.5;
         let body2Adjust = 0.5;
@@ -37,12 +42,13 @@ export class SphereSphereCollision extends Transformation {
             body2Adjust = 0;
         }
 
-        body1.state.position.addScaledVector(n, -body1Adjust * overlap);
-        body2.state.position.addScaledVector(n,  body2Adjust * overlap);
+        this._normalVector.copy(r).normalize();
+        body1.state.position.addScaledVector(this._normalVector, -body1Adjust * overlap);
+        body2.state.position.addScaledVector(this._normalVector,  body2Adjust * overlap);
 
         // Apply an impulse only when the bodies are approaching one another.
         const relativeVelocity = body2.velocity.clone().sub(body1.velocity);
-        const normalSpeed = relativeVelocity.dot(n);
+        const normalSpeed = relativeVelocity.dot(this._normalVector);
         if (normalSpeed >= 0)
             return;
 
@@ -50,7 +56,7 @@ export class SphereSphereCollision extends Transformation {
         const inverseMass2 = 1 / body2.mass;
         const impulseMagnitude = -(1 + this._restitution) * normalSpeed /
             (inverseMass1 + inverseMass2);
-        const impulse = n.multiplyScalar(impulseMagnitude);
+        const impulse = this._normalVector.multiplyScalar(impulseMagnitude);
 
         body1.state.velocity.addScaledVector(impulse, -inverseMass1);
         body2.state.velocity.addScaledVector(impulse, inverseMass2);

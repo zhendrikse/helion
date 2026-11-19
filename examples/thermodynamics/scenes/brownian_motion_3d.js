@@ -17,9 +17,9 @@ const gas = new Gas({
     tracerRadius: 0.3,
     dimensions: 3
 });
-const tracerTrail = new Trail({ maxPoints: 250, trailStep: 3, color: new Colour(0xBF40BF) });
+const tracerTrail = new Trail({ maxPoints: 500, trailStep: 10, color: new Colour(0x55ffff) });
 const spheresView = new SphereSegmentsView({
-    colorMapper: (particle, index, color) => color.setHex(index === 0 ? 0xff4040 : 0xffd45a)
+    colorMapper: (particle, index, color) => color.setHex(index === 0 ? 0x55ffff : particle.afterglowCounter > 0 ? 0xff0000 : 0x55ff55)
 });
 /** @type {number[][]} */
 const histogramBuffer = [];
@@ -61,7 +61,9 @@ Simulation
         camera: { position: new Vec3(26, 14, 30), fieldOfView: 20 },
         lighting: { enabled: true },
         infoPanel: {
-            text: '<strong>🚶🏻‍➡️ 3D Brownian motion</strong><br/>A heavy tracer particle undergoes random motion through collisions with the particles of a three-dimensional ideal gas.' +
+            text: '<strong>🚶🏻‍➡️ 3D Brownian motion</strong><br/>' +
+                '• A heavy tracer particle undergoes random motion through collisions with the particles of a three-dimensional ideal gas.<br/>' +
+                '• Colliding particles are colored red<br/>' +
                 '$$a = \\frac{m}{2 k_B T}$$' +
                 '$$f(v)=4\\pi\\left(\\frac{a}{\\pi}\\right)^{3/2}v^2 \\exp(-av^2)$$' +
                 '$$v_{\\mathrm{rms}}=\\sqrt{\\frac{3k_B T}{m}}$$'
