@@ -165,8 +165,8 @@ const simulation = Simulation
                 'the stars do not exert individual forces on one another.'
         }
     })
-    .bind(milkyWay.onceWith(new PointCloudView()))
-    .bind(andromeda.onceWith(new PointCloudView()))
+    .bind(milkyWay.alwaysWith(new PointCloudView()))
+    .bind(andromeda.alwaysWith(new PointCloudView()))
     .runsEvery(1 / frameRate)
     .advancesBy(DELTA_T);
 
