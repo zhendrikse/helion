@@ -87,23 +87,25 @@ const alphaSphere = new Sphere({ color: ALPHA_COLOR, segments: 24 });
 const simulation = Simulation
     .with({
         htmlDivId: "rutherfordScatteringContainer",
-        camera: { position: new Vec3(0, 0, 5.25), fieldOfView: 40 },
+        camera: { position: new Vec3(3, 0, 5.25).multiplyScalar(1.25), fieldOfView: 30 },
         scene: { scale: 1 / X_MAX }
     })
     .withMouseClickEventListener()
     .bind(source.onceWith(new Cylinder({segments: 48, color: new Colour(0x999999) })))
     .bind(gold.alwaysWith(new Sphere({ color: Colour.Yellow, segments: 36 })))
-    .maxOutCpu(() => {
+    .substeps(100)
+    .advancesBy(5e-24)
+    .onStep((_clock, dt) => {
         if (!alpha)
             createAlphaParticle();
 
         gold.and(alpha).apply(coulombForce);
-        alpha.integrate(2.5e-23);
-        gold.integrate(2.5e-23);
+        alpha.integrate(dt);
+        gold.integrate(dt);
 
         if (alpha.position.length() >= MAX_DISTANCE)
             finishAlphaParticle();
-    }, 30, 60)
+    })
     .onReset(() => {
         if (alphaTrail)
             alphaTrail.reset();

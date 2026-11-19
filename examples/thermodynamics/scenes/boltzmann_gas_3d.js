@@ -49,7 +49,7 @@ const changeContainerTo = type => {
 
 const aquarium = new Aquarium({ opacity: 0.1, size: new Vec3(CONTAINER_SIZE, CONTAINER_SIZE, CONTAINER_SIZE) });
 const bowl = new RadialSymmetricBody({ radius: CONTAINER_SIZE * .5 });
-const bowlView = new Sphere({ opacity: 0.2, visible: false });
+const bowlView = new Sphere({ opacity: 0.1, visible: false });
 Simulation
     .with({
         htmlDivId: 'idealGas3dContainer',

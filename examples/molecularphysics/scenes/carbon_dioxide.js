@@ -200,8 +200,7 @@ Simulation
         viewport: {aspectRatio: '4/3', parameterMenuCollapsed: false }
         })
     .withMouseClickEventListener()
-    .runsEvery(1e-2)
-    .substeps(2)
+    .runsEvery(5e-3)
     .advancesBy(5e-13)
     .onStep((clock, dt) => {
         electricField.time = clock.simulatedTime;

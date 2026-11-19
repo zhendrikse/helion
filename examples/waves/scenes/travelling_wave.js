@@ -83,8 +83,7 @@ Simulation
     })
     .withMouseClickEventListener()
     .runsEvery(2e-3)
-    .substeps(20)
-    .advancesBy(2e-4)
+    .advancesBy(4e-4)
     .onStep((clock, dt) => {
         boundaryCondition.time = clock.simulatedTime;
         chain.apply(boundaryCondition);

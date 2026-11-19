@@ -61,7 +61,8 @@ Simulation
     .bind(proton.alwaysWith(sphere))
     .bind(proton.alwaysWith(new Trail({ maxPoints: 300, color: sphere.color })))
     .runsEvery(1e-3)
-    .substeps(5)
+    .substeps(20)
+    .advancesBy(1e-3)
     .onStep((_, dt) => {
         proton
             .apply(lorentzForce)

@@ -313,13 +313,13 @@ const simulation = Simulation
     .bind(flatComet.alwaysWith(flatCometTrail))
     .bind(comet.alwaysWith(new Sphere({ color: Colour.Cyan })))
     .bind(comet.alwaysWith(cometTrail))
+    .withMouseClickEventListener()
     .runsEvery(0.03)
     .onStep((clock, _) => timeStep(clock.clockTime))
     .onFrame(clockTime => {
         sun.time = clockTime;
         photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1)
     })
-    .appendStartStopResetUI()
     .append(new Checkbox('Grid: ')
         .on(grid)
         .withProperty('visible')

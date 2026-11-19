@@ -210,7 +210,7 @@ const simulation = Simulation
         color: new Colour(0xffff66)
     })))
     .runsEvery(1e-3)
-    .substeps(20)
+    .substeps(4)
     .advancesBy(1e-4)
     .onStep((clock, dt) => chain.update(dt))
     .onFrame(timestep => {

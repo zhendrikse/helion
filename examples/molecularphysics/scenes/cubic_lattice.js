@@ -26,7 +26,7 @@ class BoundaryCondition extends Transformation {
             : lattice.bodyCount - 1;
         const targetBall = lattice.bodyAt(targetIndex);
 
-        if (this._time < this.pulseDuration)
+        if (this._time < .2 * this.pulseDuration)
             targetBall.state.velocity.y = this._amplitude * Math.sin(this._omega * this._time);
     }
 
@@ -82,7 +82,7 @@ Simulation
     .withMouseClickEventListener()
     .runsEvery(1e-3)
     .advancesBy(1e-4)
-    .substeps(5)
+    .substeps(3)
     .onStep((clock, dt) => {
         boundaryCondition.time = clock.simulatedTime;
         crystal.apply(boundaryCondition);

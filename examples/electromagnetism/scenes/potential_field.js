@@ -137,6 +137,7 @@ const simulation = Simulation
     .bind(potential.alwaysWith(potentialView))
     .bind(electricField.alwaysWith(arrowField))
     .bind(electricField.alwaysWith(streamlinesView))
+    .runsEvery(1e-3)
     .onStep(() => {
         if (solvedIterations >= iterationLimit)
             return;

@@ -87,7 +87,7 @@ Simulation
     })
     .withMouseClickEventListener()
     .addGraph(graph)
-    .runsEvery(5e-4)
+    .runsEvery(5e-3)
     .onStep((clock, dt) => {
         chain
             .applyToBodies(dragForce)
@@ -101,7 +101,6 @@ Simulation
 
         graph.push([clock.clockTime, weight.position.y + chainLength]);
     })
-    .substeps(10)
     .bind(chain.alwaysWith(latticeView))
     .bind(weight.alwaysWith(new Box({
         material: woodMaterial,

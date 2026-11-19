@@ -78,8 +78,8 @@ Simulation
     .bind(proton.alwaysWith(new Trail({ maxPoints: 2000, color: protonSphere.color })))
     .bind(magneticField.onceWith(arrowField))
     .runsEvery(1e-3)
-    .advancesBy(5e-4)
-    .substeps(20)
+    .advancesBy(2.5e-4)
+    .substeps(10)
     .onStep((_, dt) => {
         if (outOfBox(proton.position))
             return;

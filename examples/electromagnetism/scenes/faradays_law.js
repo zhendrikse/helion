@@ -104,7 +104,7 @@ Simulation
     .bind(faradayLoops.onceWith(faradayRings))
     .bind(faradayLoopArrows.onceWith(faradayArrows))
     .runsEvery(1e-3)
-    .advancesBy(.01)
+    .advancesBy(3e-2)
     .substeps(10)
     .onStep((clock, dt) => {
         const fieldLength = (clock.simulatedTime % 20) / 25 + 0.001;

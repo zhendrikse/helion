@@ -121,9 +121,9 @@ Simulation
     .bind(electron.alwaysWith(new Trail({ maxPoints: 150, color: electronSphere.color })))
     .bind(electricField.onceWith(arrowField))
     .bind(ring.segments.onceWith(new CylinderSegmentsView()))
-    .runsEvery(3e-3)
-    .advancesBy(3e-19)
-    .substeps(5)
+    .runsEvery(5e-3)
+    .advancesBy(2e-19)
+    .substeps(2)
     .onStep((_, dt) => {
         electron
             .apply(electricForce)

@@ -44,7 +44,7 @@ Simulation
     .bind(bodyB.alwaysWith(new Trail({ maxPoints: 500, color: Colour.Cyan })))
     .bind(bodyC.alwaysWith(new Sphere({ color: Colour.Magenta })))
     .bind(bodyC.alwaysWith(new Trail({ maxPoints: 500, color: Colour.Magenta })))
-    .maxOutCpu(_ => {
+    .onStep(_ => {
         bodyA.and(bodyB).apply(gravitationalForce);
         bodyA.and(bodyC).apply(gravitationalForce);
         bodyB.and(bodyC).apply(gravitationalForce);
@@ -52,5 +52,6 @@ Simulation
         bodyA.integrate(10, Integrators.symplecticEulerStep);
         bodyB.integrate(10, Integrators.symplecticEulerStep);
         bodyC.integrate(10, Integrators.symplecticEulerStep);
-    }, 30, 1000)
+    })
+    .substeps(200)
     .withMouseClickEventListener();

@@ -62,7 +62,7 @@ Simulation
     })
     .withMouseClickEventListener()
     .runsEvery(1e-3)
-    .substeps(40)
+    .substeps(3)
     .advancesBy(5e-4)
     .onStep((clock, dt) => {
         chain

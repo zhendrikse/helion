@@ -58,7 +58,9 @@ const graph = new UPlotGraph({
     xLabel: 'Simulation time',
     yLabel: 'Displacement'
 });
-const simulation = Simulation
+
+let tickCounter = 0;
+Simulation
     .with({
         htmlDivId: 'bouncingBallContainer',
         camera: {
@@ -80,8 +82,10 @@ const simulation = Simulation
 
         if (ball.liesOnFloor())
             ball.bounceOffOfFloor(dt, 0.9);
+
+        if (tickCounter++ % 25 === 0)
+            updateGraph(clock.simulatedTime);
     })
-    .onFrame((timeStamp) => updateGraph(timeStamp))
     .addObject3D(new Floor({
         type: Floor.Type.GRID,
         planeSizeXy: new Vec2(5, 5),

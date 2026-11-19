@@ -234,8 +234,8 @@ const simulation = Simulation
     .addGraph(graph)
     .bind(gas.molecules.alwaysWith(gasView))
     .runsEvery(0.003)
-    .advancesBy(5e-16)
-    .substeps(3)
+    .substeps(2)
+    .advancesBy(3e-16)
     .onStep((_, dt) => {
         gas.evolve(dt);
         t += dt;

@@ -89,7 +89,7 @@ Simulation
     .bind(electron.alwaysWith(new Trail({ maxPoints: 250, color: electronSphere.color })))
     .bind(sheet.segments.onceWith(new BoxSegmentsView({ opacity: 0.6, colorMapper: (_, _1, target) => target.setRGB(.2, .8, .2) })))
     .runsEvery(3e-3)
-    .substeps(5)
+    .substeps(2)
     .advancesBy(5e-20)
     .onStep((_, dt) => {
         electron
