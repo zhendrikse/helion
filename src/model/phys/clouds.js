@@ -292,22 +292,27 @@ export class Gas extends ModelObjectsCollection{
             for (let j = i + 1; j < particles.length; j++) {
                 const body1 = particles[i];
                 const body2 = particles[j];
-                const pair = body1.and(body2);
-                const separation = pair.axis;
-                const distanceSquared = separation.lengthSq();
+                const dx = body2.position.x - body1.position.x;
+                const dy = body2.position.y - body1.position.y;
+                const dz = body2.position.z - body1.position.z;
+                const distanceSquared = dx * dx + dy * dy + dz * dz;
                 const minimumDistance = body1.radius + body2.radius;
 
                 // Flash both particles only for an approaching pair that actually overlaps.
                 if (distanceSquared > 0 && distanceSquared < minimumDistance * minimumDistance) {
-                    const normalSpeed = body2.velocity.clone().sub(body1.velocity)
-                        .dot(separation) / Math.sqrt(distanceSquared);
+                    const inverseDistance = 1 / Math.sqrt(distanceSquared);
+                    const normalSpeed = (
+                        (body2.velocity.x - body1.velocity.x) * dx +
+                        (body2.velocity.y - body1.velocity.y) * dy +
+                        (body2.velocity.z - body1.velocity.z) * dz
+                    ) * inverseDistance;
                     if (normalSpeed < 0) {
                         body1.collisionFlash = 1;
                         body2.collisionFlash = 1;
                     }
                 }
 
-                pair.apply(this._collisionHandler);
+                body1.and(body2).apply(this._collisionHandler);
             }
     }
 
