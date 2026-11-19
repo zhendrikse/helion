@@ -158,9 +158,15 @@ export class PointCloudView extends Renderable3D {
         this._sizeAttribute = new BufferAttribute(new Float32Array(capacity), 1)
             .setUsage(DynamicDrawUsage);
 
-        this._geometry.setAttribute('position', this._positionAttribute);
-        this._geometry.setAttribute('color', this._colorAttribute);
-        this._geometry.setAttribute('size', this._sizeAttribute);
+        const geometry = new BufferGeometry();
+        geometry.setAttribute('position', this._positionAttribute);
+        geometry.setAttribute('color', this._colorAttribute);
+        geometry.setAttribute('size', this._sizeAttribute);
+
+        const oldGeometry = this._geometry;
+        this._geometry = geometry;
+        this._points.geometry = geometry;
+        oldGeometry.dispose();
     }
 
     /** @param {PointCloud} pointCloud */
