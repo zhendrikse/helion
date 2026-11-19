@@ -160,7 +160,8 @@ const simulation = Simulation
         lighting: { enabled: false },
         infoPanel: {
             text: '<strong>🌌 Galactic collision</strong><br/>' +
-                'A simplified model of the Milky Way and Andromeda approaching one another. ' +
+                'A simplified model of the Milky Way and Andromeda approaching one another, based on ' +
+                '<a href="https://github.com/SamirOmarov/galactic-collision">Samir Omarov\'s original simulation</a>. ' +
                 'Each star is accelerated by the gravitational field of the two galactic centres; ' +
                 'the stars do not exert individual forces on one another.'
         }
