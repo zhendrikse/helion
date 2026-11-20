@@ -299,6 +299,7 @@ class FractalCylinderView extends Renderable3D {
 
         this._instancedMesh.instanceMatrix.needsUpdate = true;
         this._instancedMesh.instanceColor.needsUpdate = true;
+        this._instancedMesh.computeBoundingSphere();
     }
 
     dispose() {
