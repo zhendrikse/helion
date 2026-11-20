@@ -3,10 +3,10 @@ import {
     DropdownMenu, Interval, Registry, Simulation, Transformation, Vec3, Complex
 } from '../../../../src/index.js';
 
-const WIDTH = 1200;
-const HEIGHT = 800;
+const WIDTH = 900;
+const HEIGHT = 600;
 const WORLD_HEIGHT = 4;
-const MAX_ITERATIONS = 500;
+const MAX_ITERATIONS = 1000;
 
 const colorRegistry = new Registry({
     label: 'Color scheme',
@@ -29,7 +29,7 @@ class EscapeTimeTransformation extends Transformation {
         const aspect = nx / ny;
         this.complexRange = this._isMandelbrot ?
             [new Interval(-2.25, 1.25), new Interval(-1.25, 1.25)] :
-            [new Interval(-1.25 * aspect, 1.25 * aspect), new Interval(-1.25, 1.25)]
+            [new Interval(-1.25 * aspect, 1.25 * aspect), new Interval(-1.25, 1.25)];
     }
 
     /** @param {DiscreteScalarField} field */
@@ -153,7 +153,7 @@ class FractalColorMapper {
     set scheme(value) {
         this._scheme = value;
         if (value !== 'RGB')
-            this.mapper = ColorMappers.get(value)
+            this.mapper = ColorMappers.get(value);
     }
 
     /**
@@ -164,9 +164,9 @@ class FractalColorMapper {
         if (value >= 1)
             target.setRGB(0, 0, 0);
         else if (this._scheme !== 'RGB')
-            this.mapper.map(value * 3, target);
+            this.mapper.map(value * 20, target);
         else
-            target.setRGB(4 * value, Math.sqrt(value), Math.pow(value, 0.2));
+            target.setRGB(value, Math.sqrt(value), Math.pow(value, 0.2));
         target.convertLinearToSRGB();
     }
 }
