@@ -2,7 +2,7 @@ import {
     Button, ColorMappers, DiscreteScalarField, DiscreteFieldSurfaceView, Cylinder, Renderable3D,
     DropdownMenu, Interval, Registry, Simulation, Transformation, Vec3, Complex
 } from '../../../../src/index.js';
-import { Color } from 'three';
+import { Color, InstancedMesh, Matrix4 } from 'three';
 
 const WIDTH = 1200;
 const HEIGHT = 800;
@@ -246,7 +246,9 @@ class FractalCylinderView extends Renderable3D {
         this._colorMapper = colorMapper;
         this._normalizer = normalizer;
         this._rgb = new Color();
-        this._meshes = [];
+        this._samples = [];
+        this._matrix = new Matrix4();
+        this._instancedMesh = null;
         this._prototype = new Cylinder({ segments: 8 });
         this._geometry = this._prototype._mesh.geometry;
         this._material = this._prototype._mesh.material;
@@ -264,47 +266,49 @@ class FractalCylinderView extends Renderable3D {
         const stepX = Math.max(1, Math.floor((field.nx - 1) / (this._columns - 1)));
         const stepY = Math.max(1, Math.floor((field.ny - 1) / (this._rows - 1)));
 
-        for (let j = 0; j < field.ny; j += stepY) {
-            for (let i = 0; i < field.nx; i += stepX) {
-                const mesh = this._prototype._mesh.clone();
-                mesh.material = this._material.clone();
-                mesh.position.set(
-                    this._width * (i / (field.nx - 1) - 0.5),
-                    0,
-                    this._depth * (j / (field.ny - 1) - 0.5)
-                );
-                mesh.scale.set(this._radius, 0.001, this._radius);
-                this.add(mesh);
-                this._meshes.push({ mesh, i, j });
-            }
-        }
-        this._prototype._mesh.visible = false;
+        for (let j = 0; j < field.ny; j += stepY)
+            for (let i = 0; i < field.nx; i += stepX)
+                this._samples.push({ i, j });
+
+        this._instancedMesh = new InstancedMesh(
+            this._geometry,
+            this._material,
+            this._samples.length
+        );
+        this.add(this._instancedMesh);
     }
 
     /** @param {DiscreteScalarField} field */
     synchronizeWith(field) {
         this._normalizer.adaptTo(field.rangeAt());
 
-        for (const { mesh, i, j } of this._meshes) {
+        this._samples.forEach(({ i, j }, index) => {
             const iterations = field.valueAt(i, j);
             const height = Math.max(0.001, this._maxHeight * iterations / MAX_ITERATIONS);
+            const x = this._width * (i / (field.nx - 1) - 0.5);
+            const z = this._depth * (j / (field.ny - 1) - 0.5);
+
+            this._matrix.makeScale(this._radius, height, this._radius);
+            this._matrix.setPosition(x, height * 0.5, z);
+            this._instancedMesh.setMatrixAt(index, this._matrix);
+
             this._colorMapper.map(this._normalizer.normalize(iterations), this._rgb);
             this._rgb.convertSRGBToLinear();
-            mesh.scale.y = height;
-            mesh.position.y = height * 0.5;
-            mesh.material.color.copy(this._rgb);
-        }
+            this._instancedMesh.setColorAt(index, this._rgb);
+        });
+
+        this._instancedMesh.instanceMatrix.needsUpdate = true;
+        this._instancedMesh.instanceColor.needsUpdate = true;
     }
 
     dispose() {
-        this._meshes.forEach(({ mesh }) => {
-            this.remove(mesh);
-            mesh.material.dispose();
-        });
-        this._meshes = [];
+        if (this._instancedMesh)
+            this.remove(this._instancedMesh);
         this._geometry.dispose();
         this._material.dispose();
         this._prototype.remove(this._prototype._mesh);
+        this._instancedMesh = null;
+        this._samples = [];
     }
 }
 
