@@ -289,6 +289,7 @@ class FractalCylinderView extends Renderable3D {
             const iterations = field.valueAt(i, j);
             const height = Math.max(0.001, this._maxHeight * iterations / MAX_ITERATIONS);
             this._colorMapper.map(this._normalizer.normalize(iterations), this._rgb);
+            this._rgb.convertSRGBToLinear();
             mesh.scale.y = height;
             mesh.position.y = height * 0.5;
             mesh.material.color.copy(this._rgb);
