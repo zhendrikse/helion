@@ -164,7 +164,7 @@ class FractalColorMapper {
         if (value >= 1)
             target.setRGB(0, 0, 0);
         else if (this._scheme !== 'RGB')
-            this.mapper.map(value * 20, target);
+            this.mapper.map(value * 4, target);
         else
             target.setRGB(value, Math.sqrt(value), Math.pow(value, 0.2));
         target.convertLinearToSRGB();
