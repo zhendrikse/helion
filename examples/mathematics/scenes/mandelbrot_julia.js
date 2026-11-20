@@ -3,8 +3,10 @@ import {
     DropdownMenu, FixedIntervalNormalizer, Interval, Registry, Simulation, Transformation, Vec3, Complex
 } from '../../../../src/index.js';
 
-const WIDTH = 600;
-const HEIGHT = 400;
+const WIDTH = 1200;
+const HEIGHT = 800;
+const WORLD_HEIGHT = 4;
+const SCALE = WORLD_HEIGHT / HEIGHT;
 const MAX_ITERATIONS = 500;
 
 const colorRegistry = new Registry({
@@ -27,8 +29,8 @@ class EscapeTimeTransformation extends Transformation {
     resetRange(nx, ny) {
         const aspect = nx / ny;
         this.complexRange = this._isMandelbrot ?
-            { reMin: -2.5, reMax: 1.5, imMin: -1.5, imMax: 1.5 } :
-            { reMin: -1.75 * aspect, reMax: 1.75 * aspect, imMin: -1.75, imMax: 1.75 };
+            { reMin: -2.25, reMax: 1.25, imMin: -1.25, imMax: 1.25 } :
+            { reMin: -1.25 * aspect, reMax: 1.25 * aspect, imMin: -1.25, imMax: 1.25 };
     }
 
     /** @param {DiscreteScalarField} field */
@@ -70,7 +72,7 @@ class EscapeTimeTransformation extends Transformation {
 /** z(n+1) = (|Re(z)| + i|Im(z)|)^2 + c, with c equal to the sampled point. */
 class BurningShipTransformation extends EscapeTimeTransformation {
     resetRange(nx, ny) {
-        this.complexRange = { reMin: -3, reMax: 2, imMin: -2.5, imMax: 2.5 }
+        this.complexRange = { reMin: -2.5, reMax: 1.5, imMin: -2, imMax: 2 }
     }
 
     iterationsAt(re, im) {
@@ -180,7 +182,7 @@ const fractalView = new DiscreteFieldSurfaceView({
     colorMapper: fractalColorMapper,
     normalizer: new FixedIntervalNormalizer(new Interval(0, MAX_ITERATIONS)),
     opacityFunction: () => 1,
-    scale: 0.01
+    scale: SCALE
 });
 
 Simulation
