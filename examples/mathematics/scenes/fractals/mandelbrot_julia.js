@@ -1,12 +1,11 @@
 import {
     Button, ColorMappers, DiscreteScalarField, DiscreteFieldSurfaceView,
-    DropdownMenu, FixedIntervalNormalizer, Interval, Registry, Simulation, Transformation, Vec3, Complex
+    DropdownMenu, Interval, Registry, Simulation, Transformation, Vec3, Complex
 } from '../../../../src/index.js';
 
 const WIDTH = 1200;
 const HEIGHT = 800;
 const WORLD_HEIGHT = 4;
-const SCALE = WORLD_HEIGHT / HEIGHT;
 const MAX_ITERATIONS = 500;
 
 const colorRegistry = new Registry({
@@ -29,21 +28,20 @@ class EscapeTimeTransformation extends Transformation {
     resetRange(nx, ny) {
         const aspect = nx / ny;
         this.complexRange = this._isMandelbrot ?
-            { reMin: -2.25, reMax: 1.25, imMin: -1.25, imMax: 1.25 } :
-            { reMin: -1.25 * aspect, reMax: 1.25 * aspect, imMin: -1.25, imMax: 1.25 };
+            [new Interval(-2.25, 1.25), new Interval(-1.25, 1.25)] :
+            [new Interval(-1.25 * aspect, 1.25 * aspect), new Interval(-1.25, 1.25)]
     }
 
     /** @param {DiscreteScalarField} field */
     applyTo(field) {
-        const { reMin, reMax, imMin, imMax } = this.complexRange;
-        const reStep = (reMax - reMin) / (field.nx - 1);
-        const imStep = (imMax - imMin) / (field.ny - 1);
+        const reStep = this.complexRange[0].range / (field.nx - 1);
+        const imStep = this.complexRange[1].range / (field.ny - 1);
 
         for (let y = 0; y < field.ny; y++) {
-            const im = imMin + y * imStep;
+            const im = this.complexRange[1].min + y * imStep;
             for (let x = 0; x < field.nx; x++) {
-                const re = reMin + x * reStep;
-                field.setValueAt(x, HEIGHT - y, this.iterationsAt(re, im));
+                const re = this.complexRange[0].min + x * reStep;
+                field.setValueAt(x, field.ny - 1 - y, this.iterationsAt(re, im));
             }
         }
     }
@@ -72,7 +70,7 @@ class EscapeTimeTransformation extends Transformation {
 /** z(n+1) = (|Re(z)| + i|Im(z)|)^2 + c, with c equal to the sampled point. */
 class BurningShipTransformation extends EscapeTimeTransformation {
     resetRange(nx, ny) {
-        this.complexRange = { reMin: -2.5, reMax: 1.5, imMin: -2, imMax: 2 }
+        this.complexRange = [new Interval(-2.5, 1.5), new Interval(-2, 2)];
     }
 
     iterationsAt(re, im) {
@@ -106,41 +104,38 @@ class Fractal {
 
     setType(type, constant = null) {
         this.transformation = type === 'Burning Ship'
-                ? new BurningShipTransformation()
-                : new EscapeTimeTransformation(constant);
-        this.transformation.resetRange(this.escapeValuesField.nx, this.escapeValuesField.ny);
+            ? new BurningShipTransformation()
+            : new EscapeTimeTransformation(constant);
+        this.reset();
+    }
+
+    _update(centerRe, centerIm, halfWidth, halfHeight) {
+        this.transformation.complexRange = [
+            new Interval(centerRe - halfWidth, centerRe + halfWidth),
+            new Interval(centerIm - halfHeight, centerIm + halfHeight)
+        ];
         this.escapeValuesField.apply(this.transformation);
     }
 
     /** @param {number} factor */
     zoom(factor) {
         const range = this.transformation.complexRange;
-        const centerRe = 0.5 * (range.reMin + range.reMax);
-        const centerIm = 0.5 * (range.imMin + range.imMax);
-        const halfWidth = 0.5 * (range.reMax - range.reMin) * factor;
-        const halfHeight = 0.5 * (range.imMax - range.imMin) * factor;
-        this.transformation.complexRange = {
-            reMin: centerRe - halfWidth, reMax: centerRe + halfWidth,
-            imMin: centerIm - halfHeight, imMax: centerIm + halfHeight
-        };
-        this.escapeValuesField.apply(this.transformation);
+        this._update(
+            0.5 * (range[0].min + range[0].max),
+            0.5 * (range[1].min + range[1].max),
+            0.5 * range[0].range * factor,
+            0.5 * range[1].range * factor
+        );
     }
 
-    /**
-     * @param {number} u
-     * @param {number} v
-     */
     recenter(u, v) {
         const range = this.transformation.complexRange;
-        const centerRe = range.reMin + u * (range.reMax - range.reMin);
-        const centerIm = range.imMin + v * (range.imMax - range.imMin);
-        const halfWidth = 0.5 * (range.reMax - range.reMin);
-        const halfHeight = 0.5 * (range.imMax - range.imMin);
-        this.transformation.complexRange = {
-            reMin: centerRe - halfWidth, reMax: centerRe + halfWidth,
-            imMin: centerIm - halfHeight, imMax: centerIm + halfHeight
-        };
-        this.escapeValuesField.apply(this.transformation);
+        this._update(
+            range[0].scaleUnitParameter(u),
+            range[1].scaleUnitParameter(v),
+            0.5 * range[0].range,
+            0.5 * range[1].range
+        );
     }
 
     reset() {
@@ -176,13 +171,45 @@ class FractalColorMapper {
     }
 }
 
+/**
+ * Normalizes escaped points to the available color range while reserving 1
+ * for points that never escape (MAX_ITERATIONS), which remain black.
+ */
+class FractalNormalizer {
+    constructor() {
+        this._range = new Interval(0, MAX_ITERATIONS - 1);
+    }
+
+    /** @param {Interval} range */
+    adaptTo(range) {
+        this._range = new Interval(Math.min(range.from, MAX_ITERATIONS - 1), Math.min(range.to, MAX_ITERATIONS - 1));
+    }
+
+    /** @param {number} value */
+    normalize(value) {
+        if (value >= MAX_ITERATIONS)
+            return 1;
+
+        const span = this._range.range;
+        if (span <= 0)
+            return 0;
+
+        // Keep 1 exclusively for points that did not escape.
+        return 0.999 * Math.max(0, Math.min(1, (value - this._range.min) / span));
+    }
+
+    reset() {
+        this._range = new Interval(0, MAX_ITERATIONS - 1);
+    }
+}
+
 const fractalColorMapper = new FractalColorMapper('RGB');
 const fractal = new Fractal();
 const fractalView = new DiscreteFieldSurfaceView({
     colorMapper: fractalColorMapper,
-    normalizer: new FixedIntervalNormalizer(new Interval(0, MAX_ITERATIONS)),
+    normalizer: new FractalNormalizer(),
     opacityFunction: () => 1,
-    scale: SCALE
+    scale: WORLD_HEIGHT / HEIGHT
 });
 
 Simulation

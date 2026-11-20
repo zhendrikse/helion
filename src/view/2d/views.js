@@ -95,6 +95,10 @@ export class DiscreteFieldSurfaceView extends Renderable2D {
         this._mesh = null;
         this._texture = null;
     }
+
+    reset() {
+        this._normalizer.reset();
+    }
 }
 
 /**

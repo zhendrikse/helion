@@ -22,7 +22,6 @@ export class FixedIntervalNormalizer extends Normalizer {
         super();
         this._interval = interval;
 
-
         this._min = Infinity;
         this._max = -Infinity;
     }
