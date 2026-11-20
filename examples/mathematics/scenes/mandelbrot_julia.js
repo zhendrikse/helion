@@ -1,7 +1,8 @@
 import {
-    Button, ColorMappers, DiscreteScalarField, DiscreteFieldSurfaceView,
+    Button, ColorMappers, DiscreteScalarField, DiscreteFieldSurfaceView, Cylinder, Renderable3D,
     DropdownMenu, Interval, Registry, Simulation, Transformation, Vec3, Complex
 } from '../../../../src/index.js';
+import { Color } from 'three';
 
 const WIDTH = 1200;
 const HEIGHT = 800;
@@ -110,6 +111,7 @@ class Fractal {
                 : new EscapeTimeTransformation(constant);
         this.transformation.resetRange(this.escapeValuesField.nx, this.escapeValuesField.ny);
         this.escapeValuesField.apply(this.transformation);
+        this.synchronizeViews();
     }
 
     /** @param {number} factor */
@@ -124,6 +126,7 @@ class Fractal {
             imMin: centerIm - halfHeight, imMax: centerIm + halfHeight
         };
         this.escapeValuesField.apply(this.transformation);
+        this.synchronizeViews();
     }
 
     /**
@@ -141,11 +144,17 @@ class Fractal {
             imMin: centerIm - halfHeight, imMax: centerIm + halfHeight
         };
         this.escapeValuesField.apply(this.transformation);
+        this.synchronizeViews();
     }
 
     reset() {
         this.transformation.resetRange(this.escapeValuesField.nx, this.escapeValuesField.ny);
         this.escapeValuesField.apply(this.transformation);
+        this.synchronizeViews();
+    }
+
+    synchronizeViews() {
+        this.views?.forEach(view => view.synchronizeWith(this.escapeValuesField));
     }
 }
 
@@ -211,21 +220,111 @@ class FractalNormalizer {
     }
 }
 
+
+/**
+ * A fixed-radius cylinder landscape of the escape-time field.
+ * Height and color represent the iteration count.
+ */
+class FractalCylinderView extends Renderable3D {
+    constructor({
+        width = 6,
+        depth = 4,
+        maxHeight = 2.5,
+        radius = 0.02,
+        columns = 120,
+        rows = 80,
+        colorMapper,
+        normalizer
+    } = {}) {
+        super();
+        this._width = width;
+        this._depth = depth;
+        this._maxHeight = maxHeight;
+        this._radius = radius;
+        this._columns = columns;
+        this._rows = rows;
+        this._colorMapper = colorMapper;
+        this._normalizer = normalizer;
+        this._rgb = new Color();
+        this._meshes = [];
+        this._prototype = new Cylinder({ segments: 8 });
+        this._geometry = this._prototype._mesh.geometry;
+        this._material = this._prototype._mesh.material;
+    }
+
+    /** @param {DiscreteScalarField} field */
+    canBindTo(field) {
+        if (!field.valueAt || !field.rangeAt)
+            throw new Error('FractalCylinderView needs a discrete scalar field.');
+        return true;
+    }
+
+    /** @param {DiscreteScalarField} field */
+    initialize(field) {
+        const stepX = Math.max(1, Math.floor((field.nx - 1) / (this._columns - 1)));
+        const stepY = Math.max(1, Math.floor((field.ny - 1) / (this._rows - 1)));
+
+        for (let j = 0; j < field.ny; j += stepY) {
+            for (let i = 0; i < field.nx; i += stepX) {
+                const mesh = this._prototype._mesh.clone();
+                mesh.position.set(
+                    this._width * (i / (field.nx - 1) - 0.5),
+                    0,
+                    this._depth * (j / (field.ny - 1) - 0.5)
+                );
+                mesh.scale.set(this._radius, 0.001, this._radius);
+                this.add(mesh);
+                this._meshes.push({ mesh, i, j });
+            }
+        }
+        this._prototype._mesh.visible = false;
+    }
+
+    /** @param {DiscreteScalarField} field */
+    synchronizeWith(field) {
+        this._normalizer.adaptTo(field.rangeAt());
+
+        for (const { mesh, i, j } of this._meshes) {
+            const iterations = field.valueAt(i, j);
+            const height = Math.max(0.001, this._maxHeight * iterations / MAX_ITERATIONS);
+            this._colorMapper.map(this._normalizer.normalize(iterations), this._rgb);
+            mesh.scale.y = height;
+            mesh.position.y = height * 0.5;
+            mesh.material.color.copy(this._rgb);
+        }
+    }
+
+    dispose() {
+        this._meshes.forEach(({ mesh }) => this.remove(mesh));
+        this._meshes = [];
+        this._geometry.dispose();
+        this._material.dispose();
+        this._prototype.remove(this._prototype._mesh);
+    }
+}
+
 const fractalColorMapper = new FractalColorMapper('RGB');
+const fractalNormalizer = new FractalNormalizer();
 const fractal = new Fractal();
 const fractalView = new DiscreteFieldSurfaceView({
     colorMapper: fractalColorMapper,
-    normalizer: new FractalNormalizer(),
+    normalizer: fractalNormalizer,
     opacityFunction: () => 1,
     scale: SCALE
 });
+const fractal3DView = new FractalCylinderView({
+    colorMapper: fractalColorMapper,
+    normalizer: fractalNormalizer
+});
+fractal3DView.visible = false;
+fractal.views = [fractalView, fractal3DView];
 
-Simulation
+const simulation = Simulation
     .with({
         htmlDivId: 'mandelbrotJuliaContainer',
         viewport: { aspectRatio: '3 / 2', parameterMenuCollapsed: false },
         camera: { position: new Vec3(0, 0, 4), orthographic: true, controls: false },
-        lighting: { enabled: false },
+        lighting: { enabled: true },
         headUpDisplay: { enabled: false },
         infoPanel: {
             text: '<strong>Fractals</strong><br>' +
@@ -234,6 +333,24 @@ Simulation
         }
     })
     .bind(fractal.escapeValuesField.onceWith(fractalView))
+    .bind(fractal.escapeValuesField.onceWith(fractal3DView))
+    .append(new Button()
+        .withText('2D')
+        .onClick(() => {
+            fractalView.visible = true;
+            fractal3DView.visible = false;
+            simulation.orthographic = true;
+            simulation.cameraPosition = new Vec3(0, 0, 4);
+        })
+        .togetherWith(new Button()
+            .withText('3D')
+            .onClick(() => {
+                fractalView.visible = false;
+                fractal3DView.visible = true;
+                fractal.synchronizeViews();
+                simulation.orthographic = false;
+                simulation.cameraPosition = new Vec3(7, 6, 8);
+            })))
     .append(new Button()
         .withText('Zoom in')
         .onClick(() => fractal.zoom(0.8))
