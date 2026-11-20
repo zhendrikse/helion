@@ -1,6 +1,6 @@
 import {
     Button, ColorMappers, DiscreteScalarField, DiscreteFieldSurfaceView,
-    DropdownMenu, FixedIntervalNormalizer, Interval, Registry, Simulation, Transformation, Vec3, Complex
+    DropdownMenu, Interval, Registry, Simulation, Transformation, Vec3, Complex
 } from '../../../../src/index.js';
 
 const WIDTH = 1200;
@@ -43,7 +43,7 @@ class EscapeTimeTransformation extends Transformation {
             const im = imMin + y * imStep;
             for (let x = 0; x < field.nx; x++) {
                 const re = reMin + x * reStep;
-                field.setValueAt(x, HEIGHT - y, this.iterationsAt(re, im));
+                field.setValueAt(x, field.ny - 1 - y, this.iterationsAt(re, im));
             }
         }
     }
@@ -176,11 +176,46 @@ class FractalColorMapper {
     }
 }
 
+/**
+ * Normalizes escaped points to the available color range while reserving 1
+ * for points that never escape (MAX_ITERATIONS), which remain black.
+ */
+class FractalNormalizer {
+    constructor() {
+        this._min = 0;
+        this._max = MAX_ITERATIONS - 1;
+    }
+
+    /** @param {Interval} range */
+    adaptTo(range) {
+        this._min = Math.min(range.from, MAX_ITERATIONS - 1);
+        this._max = Math.min(range.to, MAX_ITERATIONS - 1);
+    }
+
+    /** @param {number} value */
+    normalize(value) {
+        if (value >= MAX_ITERATIONS)
+            return 1;
+
+        const span = this._max - this._min;
+        if (span <= 0)
+            return 0;
+
+        // Keep 1 exclusively for points that did not escape.
+        return 0.999 * Math.max(0, Math.min(1, (value - this._min) / span));
+    }
+
+    reset() {
+        this._min = 0;
+        this._max = MAX_ITERATIONS - 1;
+    }
+}
+
 const fractalColorMapper = new FractalColorMapper('RGB');
 const fractal = new Fractal();
 const fractalView = new DiscreteFieldSurfaceView({
     colorMapper: fractalColorMapper,
-    normalizer: new FixedIntervalNormalizer(new Interval(0, MAX_ITERATIONS)),
+    normalizer: new FractalNormalizer(),
     opacityFunction: () => 1,
     scale: SCALE
 });
