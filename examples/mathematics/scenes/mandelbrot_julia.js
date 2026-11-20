@@ -412,6 +412,8 @@ const simulation = Simulation
         fractal.recenter(x + 0.5, -y + 0.5);
     })
     .onPointer('wheel', (_x, _y, event) => {
+        if (fractal3DView.visible)
+            return; // In 3D, OrbitControls handles camera zoom.
         event.preventDefault();
         fractal.zoom(event.deltaY < 0 ? 0.8 : 1.1);
     });
