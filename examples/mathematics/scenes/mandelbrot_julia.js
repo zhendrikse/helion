@@ -407,7 +407,7 @@ const simulation = Simulation
             fractal.synchronizeViews();
         }))
     .onPointer('pointerdown', (x, y, event) => {
-        if (event.button !== 0)
+        if (fractal3DView.visible || event.button !== 0)
             return;
         fractal.recenter(x + 0.5, -y + 0.5);
     })
