@@ -327,7 +327,7 @@ const simulation = Simulation
     .with({
         htmlDivId: 'mandelbrotJuliaContainer',
         viewport: { aspectRatio: '3 / 2', parameterMenuCollapsed: false },
-        camera: { position: new Vec3(0, 0, 4), orthographic: true, controls: false },
+        camera: { position: new Vec3(0, 0, 4), orthographic: true, controls: true },
         lighting: { enabled: true },
         headUpDisplay: { enabled: false },
         infoPanel: {
