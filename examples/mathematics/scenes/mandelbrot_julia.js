@@ -252,6 +252,7 @@ class FractalCylinderView extends Renderable3D {
         this._prototype = new Cylinder({ segments: 8 });
         this._geometry = this._prototype._mesh.geometry;
         this._material = this._prototype._mesh.material;
+        this._material.color.setRGB(1, 1, 1);
     }
 
     /** @param {DiscreteScalarField} field */
