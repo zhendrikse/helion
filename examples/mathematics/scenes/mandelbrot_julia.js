@@ -267,6 +267,7 @@ class FractalCylinderView extends Renderable3D {
         for (let j = 0; j < field.ny; j += stepY) {
             for (let i = 0; i < field.nx; i += stepX) {
                 const mesh = this._prototype._mesh.clone();
+                mesh.material = this._material.clone();
                 mesh.position.set(
                     this._width * (i / (field.nx - 1) - 0.5),
                     0,
@@ -295,7 +296,10 @@ class FractalCylinderView extends Renderable3D {
     }
 
     dispose() {
-        this._meshes.forEach(({ mesh }) => this.remove(mesh));
+        this._meshes.forEach(({ mesh }) => {
+            this.remove(mesh);
+            mesh.material.dispose();
+        });
         this._meshes = [];
         this._geometry.dispose();
         this._material.dispose();
@@ -398,7 +402,10 @@ const simulation = Simulation
     .append(new DropdownMenu()
         .for(colorRegistry)
         .withValue('RGB')
-        .onChange(value => fractalColorMapper.scheme = value))
+        .onChange(value => {
+            fractalColorMapper.scheme = value;
+            fractal.synchronizeViews();
+        }))
     .onPointer('pointerdown', (x, y, event) => {
         if (event.button !== 0)
             return;
