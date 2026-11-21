@@ -1,6 +1,6 @@
 import {
     Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
-    BoxGeometry, Object3D, Vector2, Box3, SphereGeometry
+    BoxGeometry, Object3D, Vector2, Box3, SphereGeometry, Vector3
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
@@ -12,6 +12,7 @@ import { LineSegment, Segments } from "../../../model/math/objects.js";
 import {ColorMappers, Colour} from "../../colormappers.js";
 
 class InstancedSegmentsView extends Renderable3D {
+    static UP = new Vector3(0, 1, 0);
     /**
      * @param {{
      *     opacity?: number
@@ -118,7 +119,7 @@ export class CylinderSegmentsView extends InstancedSegmentsView {
         this._direction.copy(segment.axis);
         const length = this._direction.length();
         this._dummy.scale.set(segment.radius, length, segment.radius);
-        this._dummy.quaternion.setFromUnitVectors(new Vec3(0, 1, 0), this._direction.normalize());
+        this._dummy.quaternion.setFromUnitVectors(InstancedSegmentsView.UP, this._direction.normalize());
     }
 }
 
@@ -276,7 +277,7 @@ export class LineSegmentsView extends LineSegmentView {
         return true;
     }
 
-    /** @param {Segments} segments */
+    /** @param {Segments<LineSegment>} segments */
     synchronizeWith(segments) {
         const positions = [];
         const colors = [];

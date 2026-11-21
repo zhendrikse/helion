@@ -146,7 +146,12 @@ Simulation
         headUpDisplay: { enabled: false },
         camera: { position: new Vec3(50, -600, 200), fieldOfView: 50, target: new Vec3(1, -100, 0) },
         scene: { background: ThreeJsScene.Background.STARS },
-        lighting: { enabled: false }
+        lighting: { enabled: false },
+        infoPanel: {
+            text: '<strong>𖦹 Spiral galaxy</strong><br/>' +
+                '•  The (theory behind the) code is thoroughly explained in <a href=\"https://towardsdatascience.com/create-3-d-galactic-art-with-matplotlib-a7534148a319/\">this article</a> <br/>' +
+                '•  Helion version has been extended with WebGL coloring and fading<br/>'
+        }
     })
     .runsEvery(0.02)
     .bind(spiralGalaxy.onceWith(pointCloud))

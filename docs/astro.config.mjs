@@ -5,6 +5,7 @@ import sitemap from '@astrojs/sitemap';
 
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import starlightLlmsTxt from "starlight-llms-txt";
 
 export default defineConfig({
 	base: '/helion/', // URL prefix for GitHub pages
@@ -16,6 +17,9 @@ export default defineConfig({
 		starlight({
 			title: '☀️ Helion',
 			favicon: '/favicon.ico',
+			plugins: [
+				starlightLlmsTxt(),
+			],
 			components: {
 				ThemeProvider: './src/components/ForceDarkTheme.astro',
 				ThemeSelect: './src/components/EmptyComponent.astro',

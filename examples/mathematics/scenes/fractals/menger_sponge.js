@@ -1,5 +1,5 @@
-import { MeshStandardMaterial } from "three";
-import {Block, Segments, BoxSegmentsView, Simulation, Vec3} from "../../../../src/index.js";
+import { MeshStandardMaterial } from 'three';
+import {Block, Segments, BoxSegmentsView, Simulation, Vec3, Checkbox} from '../../../../src/index.js';
 
 const depth = 4;
 const finalSize = 200;
@@ -22,20 +22,31 @@ function mengerSponge(pos, size, currentDepth) {
 }
 
 mengerSponge(new Vec3(), finalSize, depth);
+const spongeView = new BoxSegmentsView({
+    material: new MeshStandardMaterial({ roughness: 0.55, metalness: 0.75 }),
+    colorMapper: (segment, index, targetColor) => {
+        let hue = 0.175 + segment.position.y / 600;
+        targetColor.setHSL(hue % 1, 1.0, 0.5);
+    }
+});
 
+let autoRotate = true;
 Simulation
     .with({
-        htmlDivId: "mengerSpongeContainer",
+        htmlDivId: 'mengerSpongeContainer',
         headUpDisplay: { enabled: false },
-        camera: {
-            position: new Vec3(-180, 165, -200).multiplyScalar(2.1),
-            fieldOfView: 30
+        camera: { position: new Vec3(-360, 330, -400), fieldOfView: 30 },
+        infoPanel: {
+            text: '<strong>🧽 Menger sponge</strong><br/>' +
+                '• Every face is a <a href=\"https://en.wikipedia.org/wiki/Sierpi%C5%84ski_carpet\">Sierpiński carpet</a><br/>' +
+                '• Volume: $$V_n=\\left(\\frac{20}{27}\\right)^n \\to 0,\\ n\\to\\infty$$<br/>' +
+                '• Area: $$A_n\\propto\\left(\\frac{20}{9}\\right)^n \\to \\infty,\\ n\\to\\infty$$<br/>' +
+                '• Dimension <a href=\"https://en.wikipedia.org/wiki/Embedding\">embedded space</a> is 3<br/>' +
+                '• <a href=\"https://en.wikipedia.org/wiki/Hausdorff_dimension\">Hausdorff dimension</a> is $$\\frac{\\ln(20)}{\\ln(3)}\\approx 2.726833$$<br/>' +
+                '• <a href=\"https://en.wikipedia.org/wiki/Lebesgue_covering_dimension\">Topological dimension</a> is 1<br/>'
         }
     })
-    .bind(sponge.onceWith(new BoxSegmentsView({
-        material: new MeshStandardMaterial({ roughness: 0.55, metalness: 0.75 }),
-        colorMapper: (segment, index, targetColor) => {
-            let hue = 0.175 + segment.position.y / 600;
-            targetColor.setHSL(hue % 1, 1.0, 0.5);
-        }
-    })));
+    .bind(sponge.onceWith(spongeView))
+    .onStep(() => { if (autoRotate) spongeView.rotation.y += 5e-4; })
+    .append(new Checkbox('Auto rotate').checked(true).onChange(checked => autoRotate = checked))
+    .start();

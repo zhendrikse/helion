@@ -1,5 +1,5 @@
 import {
-    Segments, LineSegmentsView, RadioGroup, Simulation, LineSegment, HueColorMapper, Vec3
+    Segments, LineSegmentsView, RadioGroup, Simulation, LineSegment, HueColorMapper, Vec3, Checkbox
 } from '../../../../src/index.js';
 
 const LEVEL = 5;
@@ -116,17 +116,30 @@ const fractalView = new LineSegmentsView({
     colorMapper: new HueColorMapper()
 });
 
+let autoRotate = true;
 Simulation
     .with({
         htmlDivId: 'sierpinskiContainer',
         headUpDisplay: { enabled: false },
         camera: { fieldOfView: 20 },
-        viewport: { parameterMenuCollapsed: false }
+        infoPanel: {
+            text: '<strong>🐫 Sierpiński pyramid</strong><br/>' +
+                '• Every face is a <a href=\"https://en.wikipedia.org/wiki/Sierpi%C5%84ski_triangle\">Sierpiński triangle</a><br/>' +
+                '• Volume: $$V_n=V_0\\left(\\frac{1}{2}\\right)^n \\to 0,\\ n\\to\\infty$$<br/>' +
+                '• Area: $$A_n=4^n\\cdot\\frac{A_0}{4^n}=A_0$$<br/>' +
+                '• Dimension <a href=\"https://en.wikipedia.org/wiki/Embedding\">embedded space</a> is 3<br/>' +
+                '• <a href=\"https://en.wikipedia.org/wiki/Hausdorff_dimension\">Hausdorff dimension</a> is $$\\frac{\\ln(4)}{\\ln(2)}=2\\ \\text{exactly!}$$<br/>' +
+                '• <a href=\"https://en.wikipedia.org/wiki/Lebesgue_covering_dimension\">Topological dimension</a> is 1<br/>' +
+                '• Its projection can be a completely filled square, try it yourself!'
+        }
     })
     .bind(fractal.alwaysWith(fractalView))
-    .frameSceneOn(fractalView, {viewDirection: new Vec3(1, 1, .8), padding: 1, translationY: -5})
+    .frameSceneOn(fractalView, {viewDirection: new Vec3(1, 1, .8), padding: .9, translationY: -5})
     .append(new RadioGroup()
         .add('Pyramid', buildPyramid)
         .add('Tetrahedron', buildTetrahedron)
         .checked(0)
-    );
+    )
+    .onStep(() => { if (autoRotate) fractalView.rotation.y += 5e-4; })
+    .append(new Checkbox('Auto rotate').checked(true).onChange(checked => autoRotate = checked))
+    .start();
