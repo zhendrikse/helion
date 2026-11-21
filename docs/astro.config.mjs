@@ -37,7 +37,7 @@ export default defineConfig({
 					href: 'https://www.linkedin.com/in/zegerhendrikse/',
 				},
 				{
-					icon: 'globe',
+					icon: 'link',
 					label: 'Website',
 					href: 'https://www.hendrikse.name/'
 				},
