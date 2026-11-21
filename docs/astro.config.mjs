@@ -1,3 +1,4 @@
+
 import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 
@@ -10,10 +11,11 @@ import rehypeKatex from 'rehype-katex';
 import starlightLlmsTxt from 'starlight-llms-txt';
 
 export default defineConfig({
-	base: '/helion/', // URL prefix for GitHub pages
+	base: '/helion/',
 	site: 'https://www.hendrikse.name/helion/',
 	outDir: '../dist',
 	publicDir: 'public',
+
 	integrations: [
 		sitemap(),
 		starlight({
@@ -87,16 +89,12 @@ export default defineConfig({
 				{
 					collapsed: true,
 					label: 'Nature',
-					items: [
-						{ autogenerate: { directory: 'nature' } },
-					],
+					items: [{ autogenerate: { directory: 'nature' } }],
 				},
 				{
 					collapsed: true,
 					label: 'Optics',
-					items: [
-						{ autogenerate: { directory: 'optics' } },
-					],
+					items: [{ autogenerate: { directory: 'optics' } }],
 				},
 				{
 					collapsed: true,
@@ -122,12 +120,14 @@ export default defineConfig({
 		}),
 		mdx(),
 	],
+
 	markdown: {
 		processor: unified({
 			remarkPlugins: [remarkMath],
 			rehypePlugins: [rehypeKatex],
 		}),
 	},
+
 	vite: {
 		server: {
 			fs: {
