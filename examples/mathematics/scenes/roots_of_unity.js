@@ -140,8 +140,15 @@ const simulation = Simulation
         htmlDivId: 'rootsOfUnityContainer',
         viewport: { parameterMenuCollapsed: false },
         headUpDisplay: { enabled: false },
-        camera: { position: new Vec3(0, 0, 3), controls: false }
-        })
+        camera: { position: new Vec3(0, 0, 3), controls: false },
+        infoPanel: {
+            text: '<strong>🥕 Roots of unity</strong><br/>' + '' +
+                'The $n$-th roots of unity are the complex numbers $z$ that satisfy the equation:' +
+                '$$ z^n =1\\quad \\Leftrightarrow z^n -1 = 0$$' +
+                'Using Euler\'s formula, we can find all $n$ distinct roots:' +
+                '$$z_k=e^{i\\dfrac{2\\pi k}{n}}$$ where $$k=0, 1, 2,\\cdots,n-1$$'
+        }
+    })
     .bind(unitCircle.onceWith(new LineSegmentsView({
         lineWidth: 3,
         dashed: true,

@@ -1,5 +1,6 @@
 ---
-title: "🥕 Roots of unity"
+title: 🥕 Roots of unity
+description: Interactive visualization of the roots of unity
 layout: ../../../layouts/DocsLayout.astro
 ---
 
@@ -12,7 +13,7 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-### About
+### Visual explanation of the roots of unity
 <div class="header_line"></div>
 
 <div class="badgeRow">
@@ -21,18 +22,8 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-The $n$-th roots of unity  are the complex numbers $z$ that satisfy the equation:
-
-$$
-z^n =1\quad \text{or equivalently}\quad z^n -1 = 0
-$$
-
-using Euler's formula, we can find all $n$ distinct roots. They are given by:
-
-$$
-z_k=e^{i\dfrac{2\pi k}{n}}=\cos\left(\dfrac{2\pi k}{n}\right) + i\sin\left(\dfrac{2\pi k}{n}\right), \quad k=0, 1, 2,\cdots,n-1.
-$$
-
+📖 Interactive visualization of the [roots of unity](https://en.wikipedia.org/wiki/Root_of_unity)<br/>
+🔗 This demo is part of [basic calculus and complex analysis](https://www.hendrikse.name/fermat-last-theorem/chapter-1/calculus-complex-analysis.html#the-n-th-roots-of-unity) in [Fermat's last theorem](https://www.hendrikse.name/fermat-last-theorem/)
 
 <div id="rootsOfUnityContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/mathematics/scenes/roots_of_unity.js"}></script>

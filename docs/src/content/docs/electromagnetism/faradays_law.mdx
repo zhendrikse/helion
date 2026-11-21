@@ -1,5 +1,7 @@
 ---
-title: "🔌 Faraday's law of induction"
+title: 🔌 Faraday's law of induction
+sidebar: 🔌 Faraday's law of induction
+description: Visually engaging simulations illustrating Faraday's law of induction
 layout: ../../../layouts/DocsLayout.astro
 ---
 
@@ -16,7 +18,7 @@ $$\text{In differential form:}\quad \nabla \times \overrightarrow{E} = -\frac{\p
 
 $$\text{In integral form:}\quad \oint \overrightarrow{E}\cdot d\overrightarrow{l} = -\frac{d\Phi_B}{dt} $$
 
-### Demo
+### Faraday's law visualized
 <div class="header_line"></div>
 
 <div class="badgeRow">
@@ -25,16 +27,19 @@ $$\text{In integral form:}\quad \oint \overrightarrow{E}\cdot d\overrightarrow{l
     </a>
 </div>
 
-🎯 Visualization of the relationship between a changing magnetic field and the induced electric field<br/>
+A visualization of the relationship between a changing magnetic field and the induced electric field
+
 🧠 Inspired by original version on [web page of Rob Salgado](https://www.visualrelativity.com/vpython/)<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Electromagnetism/program/Faradayslaw) is available as well, see [faradays_law.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/faradays_law.py)<br/>
 
 <div id="faradayLawContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/electromagnetism/scenes/faradays_law.js"}></script>
 
+Note that:
+
 👉 Current through a real wire would have an azimuthal magnetic field around the wire<br/>
 👉 The green arrows do **not** necessarily represent the physical electric field direction itself.
-Instead, they define the positive circulation direction according to the right-hand rule.<br/>
+Instead, they define the positive circulation direction according to the right-hand rule.
 
 ##### Important conceptual points
 
@@ -66,7 +71,7 @@ The minus sign in Faraday’s law means:
 If the magnetic field through the loop increases in one direction, the induced electric field circulates in the direction that would generate an opposing magnetic field.
 This is the essence of electromagnetic induction and energy conservation.
 
-## Field of moving charged rod
+### Field of moving charged rod
 <div class="header_line"></div>
 
 <div class="badgeRow">

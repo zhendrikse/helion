@@ -5,13 +5,13 @@ import sitemap from '@astrojs/sitemap';
 
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import starlightLlmsTxt from "starlight-llms-txt";
+import starlightLlmsTxt from 'starlight-llms-txt';
 
 export default defineConfig({
 	base: '/helion/', // URL prefix for GitHub pages
 	site: 'https://www.hendrikse.name/helion/',
-	outDir: "../dist",
-	publicDir: "public",
+	outDir: '../dist',
+	publicDir: 'public',
 	integrations: [
 		sitemap(),
 		starlight({
@@ -21,6 +21,7 @@ export default defineConfig({
 				starlightLlmsTxt(),
 			],
 			components: {
+				Head: './src/components/Head.astro',
 				ThemeProvider: './src/components/ForceDarkTheme.astro',
 				ThemeSelect: './src/components/EmptyComponent.astro',
 			},
@@ -28,11 +29,17 @@ export default defineConfig({
 				{
 					icon: 'github',
 					label: 'GitHub',
-					href: 'https://github.com/zhendrikse/' },
+					href: 'https://github.com/zhendrikse/'
+				},
 				{
 					icon: 'linkedin',
 					label: 'LinkedIn',
 					href: 'https://www.linkedin.com/in/zegerhendrikse/',
+				},
+				{
+					icon: 'globe',
+					label: 'Website',
+					href: 'https://www.hendrikse.name/'
 				},
 			],
 			sidebar: [

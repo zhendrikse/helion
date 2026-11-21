@@ -608,5 +608,6 @@ initScreenSize();
 grid.init();
 solver.setNumParticles(grid, particleCount, true);
 createParticleViews();
+updateParticleColors();
 
 window.addEventListener('resize', _ => initScreenSize());

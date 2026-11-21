@@ -15,12 +15,22 @@ import {ModelObjectsCollection, Binding} from "../model/behavior.js";
 import {ThreeJsCamera} from "../view/3d/camera.js";
 import {NoToneMapping, SRGBColorSpace} from "three";
 
+/**
+ * SimulationClock
+ *
+ * Clock that separates real-time scheduling from simulated time stepping.
+ * Ensures simulations run at consistent speeds regardless of frame rate.
+ *
+ * @internal
+ */
 class SimulationClock {
     /**
-     * @param {Object} [options]
-     * @param {number} [options.realTimeStep=0.01]
-     * @param {number} [options.simulationTimeStep=options.realTimeStep]
-     * @param {number} [options.maxAccumulatedTime=0.25]
+     * @param {Object} [options] - Configuration options
+     * @param {number} [options.realTimeStep=0.01] - Real-time step in seconds (typically 1/60 or 1/100)
+     * @param {number} [options.simulationTimeStep=this.realTimeStep] - Simulated time advanced per step
+     * @param {number} [options.maxAccumulatedTime=0.25] - Maximum accumulated time before forced catch-up
+     *
+     * @internal
      */
     constructor({
         realTimeStep = 0.01,
@@ -38,28 +48,42 @@ class SimulationClock {
         this._maxAccumulatedTime = maxAccumulatedTime;
     }
 
+    /**
+     * Reset the clock to initial state.
+     *
+     * @returns {this} This SimulationClock instance for chaining
+     * @internal
+     */
     reset() {
         this.simulatedTime = 0;
         this.accumulator = 0;
         this.elapsedTime = 0;
         this.previousClockTime = 0;
         this.clockTime = 0;
+        return this;
     }
 
     /**
      * Consume one integration substep from the accumulated real time.
      *
-     * @param {number} [realTimeStep=this.realTimeStep]
-     * @param {number} [simulationTimeStep=this.simulationTimeStep]
+     * @param {number} [realTimeStep=this.realTimeStep] - Real time step in seconds
+     * @param {number} [simulationTimeStep=this.simulationTimeStep] - Simulated time step in seconds
+     * @returns {this} This SimulationClock instance for chaining
+     * @internal
      */
     tick(realTimeStep = this.realTimeStep, simulationTimeStep = this.simulationTimeStep) {
         this.accumulator -= realTimeStep;
         this.simulatedTime += simulationTimeStep;
+        return this;
     }
 
     /**
-     * @param {number} clockTime
-     * @param {number} timeScale
+     * Update clock time and accumulate elapsed time.
+     *
+     * @param {number} clockTime - The current clock time in milliseconds
+     * @param {number} timeScale - Speed multiplier for simulation time
+     * @returns {this} This SimulationClock instance for chaining
+     * @internal
      */
     updateWith(clockTime, timeScale) {
         this.previousClockTime = this.clockTime;
@@ -67,6 +91,7 @@ class SimulationClock {
         this.elapsedTime = (this.clockTime - this.previousClockTime) * 1e-3;
         this.elapsedTime = Math.min(this.elapsedTime, this._maxAccumulatedTime);
         this.accumulator += this.elapsedTime * timeScale;
+        return this;
     }
 }
 
@@ -78,12 +103,18 @@ export class Simulation {
     });
 
     /**
-     * @param {string} htmlDivId
-     * @param {boolean} parameterMenuCollapsed
-     * @param {string} aspectRatio
-     * @returns {Viewport}
+     * Create a viewport from an HTML div element.
+     * Automatically creates a div if one with the given ID doesn't exist.
+     *
+     * @param {string} htmlDivId - The ID of the HTML div element for the canvas
+     * @param {boolean} parameterMenuCollapsed - Whether the parameter menu should be collapsed
+     * @param {string} aspectRatio - The aspect ratio of the viewport (e.g., '16 / 9', '4 / 3')
+     * @returns {Viewport} A new Viewport instance
+     *
+     * @example
+     * const viewPort = Simulation.viewportFromHtmlDiv('myCanvas', false, '16 / 9');
      */
-    static viewportFromHtmlDiv = (htmlDivId, parameterMenuCollapsed, aspectRatio) => {
+    static viewportFromHtmlDiv(htmlDivId, parameterMenuCollapsed, aspectRatio) {
         let canvasWrapper = document.getElementById(htmlDivId);
         if (!canvasWrapper) {
             console.warn(`No HTML div with ID = \'${htmlDivId}\' found: creating Helion div automatically!`);
@@ -96,6 +127,11 @@ export class Simulation {
     };
 
     /**
+     * Create a new Helion simulation.
+     *
+     * This is the main entry point for creating a simulation. It sets up the Three.js renderer,
+     * viewport, head-up display, and info panel.
+     *
      * @param {{
      *   htmlDivId?: string,
      *   viewport?: { aspectRatio?: string, parameterMenuCollapsed?: boolean },
@@ -123,7 +159,15 @@ export class Simulation {
      *   },
      *   headUpDisplay?: { enabled?: boolean },
      *   infoPanel?: { text?: string }
-     * }} [options]
+     * }} [options] - Configuration options for the simulation
+     *
+     * @returns {Simulation} A new Simulation instance
+     *
+     * @example
+     * const sim = Simulation.with({
+     *     htmlDivId: 'myCanvas',
+     *     camera: { position: new Vec3(0, 0, 10), target: new Vec3(0, 0, 0) }
+     * });
      */
     static with({
         htmlDivId = '',
@@ -168,12 +212,14 @@ export class Simulation {
     }
 
     /**
-     * Creates a new simulation.
+     * Creates a new Simulation instance.
      *
-     * @param {Viewport} viewport
-     * @param {Renderer} renderer
-     * @param {boolean} headUpDisplay
-     * @param {{ text?: string }} infoPanel
+     * @param {Viewport} viewport - The viewport containing canvas and UI elements
+     * @param {Renderer} renderer - The Three.js renderer instance
+     * @param {boolean} headUpDisplay - Whether to enable the head-up display
+     * @param {{ text?: string }} infoPanel - Optional info panel text
+     *
+     * @internal
      */
     constructor(viewport, renderer, headUpDisplay, infoPanel) {
         this._viewport = viewport;
@@ -212,44 +258,120 @@ export class Simulation {
         this._renderer.setAnimationLoop(this.animate);
     }
 
+    /**
+     * Get the width of the simulation viewport.
+     *
+     * @returns {number} The viewport width in pixels
+     *
+     * @example
+     * const w = sim.width;
+     */
     get width() { return this._viewport.width; }
+    /**
+     * @returns {number}
+     */
     get height() { return this._viewport.height; }
-    /** @param {Vec3} position */
-    set cameraPosition(position)     { this._renderer.cameraPosition = position;   }
-    /** @param {boolean} autoRotate */
-    set autoRotate(autoRotate)     { this._renderer.autoRotate = autoRotate;     }
-    /** @param {boolean} visible */
-    set axesVisible(visible)       { this._renderer.axesVisible = visible;       }
-    /** @param {boolean} orthographic */
-    set orthographic(orthographic) { this._renderer.orthographic = orthographic; }
+    /**
+     * @param {Vec3} position
+     * @returns {this}
+     */
+    set cameraPosition(position) { this._renderer.cameraPosition = position; return this; }
+    /**
+     * @param {boolean} autoRotate
+     * @returns {this}
+     */
+    set autoRotate(autoRotate) { this._renderer.autoRotate = autoRotate; return this; }
+    /**
+     * @param {boolean} visible
+     * @returns {this}
+     */
+    set axesVisible(visible) { this._renderer.axesVisible = visible; return this; }
+    /**
+     * @param {boolean} orthographic
+     * @returns {this}
+     */
+    set orthographic(orthographic) { this._renderer.orthographic = orthographic; return this; }
 
+    /**
+     * Add an object3D to the renderer.
+     *
+     * @param {Object3D} object3D - The Three.js object3D to add
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.addObject3D(new THREE.Mesh());
+     */
     addObject3D(/** @type {Object3D} */ object3D) {
         this._renderer.add(object3D);
         return this;
     }
 
+    /**
+     * Remove axes from the renderer.
+     *
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.removeAxes();
+     */
     removeAxes() {
         this._renderer.removeAxes();
         return this;
     }
 
+    /**
+     * Set a LaTeX title in the viewport.
+     *
+     * @param {string} latex - The LaTeX string to display
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.setLatexTitle('E = mc^2');
+     */
     setLatexTitle(/** @type {string} */ latex) {
         renderMath(this._viewport.titleDiv, latex);
         return this;
     }
 
+    /**
+     * Set an HTML title in the viewport.
+     *
+     * @param {string} text - The HTML text to display
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.setHtmlTitle('My Simulation');
+     */
     setHtmlTitle(/** @type {string} */ text) {
         this._viewport.titleDiv.innerHTML = text;
         return this;
     }
 
+    /**
+     * Clear the title in the viewport.
+     *
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.clearTitle();
+     */
     clearTitle() {
         this._viewport.titleDiv.replaceChildren();
         return this;
     }
 
+    /**
+     * Set text at the bottom left of the viewport.
+     *
+     * @param {string} text - The text to display
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.setBottomText('100 iterations @ 60 fps');
+     */
     setBottomText(/** @type {string} */ text) {
         this._viewport.bottomLeftText = text;
+        return this;
     }
 
     /**
@@ -423,7 +545,10 @@ export class Simulation {
         }
     }
 
-    /** @param {number} timeStamp */
+    /**
+     * @param {number} timeStamp
+     * @internal
+     */
     animate = timeStamp => {
         if (this._status === Simulation.Status.RUNNING) {
             if (this._maxPerformanceFunction) {
@@ -546,6 +671,17 @@ export class Simulation {
         return this;
     }
 
+    /**
+     * Reset the simulation to its initial state.
+     *
+     * This resets the clock, clears all bindings, and calls the onReset callback if one has been set.
+     * After calling this method, the simulation will be in a stopped state.
+     *
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.reset();
+     */
     reset() {
         this._clock.reset();
 
@@ -553,13 +689,16 @@ export class Simulation {
             binding.reset();
 
         this._onReset?.();
+        return this;
     }
 
     /**
      * Add a mouse-click event listener to a simulation canvas. It defaults to start/stop.
      * When calling this function with a custom callback, the default start/stop functionality is
      * lost and needs to be re-added if needed!!
-     * @param {Event} _event
+     *
+     * @param {Event} _event - Internal event parameter (not used directly)
+     * @internal
      */
     _defaultMouseClickCallback (_event) {
         if (this._status === Simulation.Status.STOPPED) {
@@ -587,6 +726,17 @@ export class Simulation {
         return this;
     }
 
+    /**
+     * Start the simulation.
+     *
+     * Begins the animation loop and sets the status to RUNNING.
+     * Also updates the run button text to show pause state.
+     *
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.start();
+     */
     start() {
         this._hud?.show('Running', 1000);
         this._status = Simulation.Status.RUNNING;
@@ -594,6 +744,17 @@ export class Simulation {
         return this;
     }
 
+    /**
+     * Stop the simulation.
+     *
+     * Halts the animation and sets the status to STOPPED.
+     * Updates the run button text to show play state.
+     *
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.stop();
+     */
     stop() {
         this._hud?.show('Simulation stopped');
         this._status = Simulation.Status.STOPPED;
@@ -601,16 +762,36 @@ export class Simulation {
         return this;
     }
 
+    /**
+     * @returns {boolean} True if the simulation is currently running
+     *
+     * @example
+     * if (sim.isRunning) { ... }
+     */
     get isRunning() { return this._status === Simulation.Status.RUNNING; }
 
+    /**
+     * Set a callback to be called when the simulation is reset.
+     *
+     * @param {Function} resetFunction - Function to call on reset. Called with no arguments.
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.onReset(() => console.log('Simulation reset'));
+     */
     onReset(resetFunction = () => {}) {
         this._onReset = resetFunction;
         return this;
     }
 
     /**
-     * @param {HtmlControl} control
-     * @returns {Simulation}
+     * Append an HTML control to the simulation.
+     *
+     * @param {HtmlControl} control Helion control to be appended
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * simulation.append(helionControl);
      */
     append(control) {
         if (!this._parameterDivExists) {
@@ -622,6 +803,17 @@ export class Simulation {
         return this;
     }
 
+    /**
+     * Append the start/stop/reset UI controls to the simulation.
+     *
+     * Creates a compound control with a run/pause button and a reset button,
+     * and appends it to the simulation's button container.
+     *
+     * @returns {this} This Simulation instance for chaining
+     *
+     * @example
+     * sim.appendStartStopResetUI();
+     */
     appendStartStopResetUI() {
         this._runButton
             .onClick(() => {
@@ -647,6 +839,12 @@ export class Simulation {
 
     /**
      * We enforce a new synchronization of ALL views after each user interaction.
+     *
+     * This method is called whenever the user interacts with the simulation
+     * (e.g., clicking, dragging, using keyboard input). It forces all bound
+     * models to synchronize their state with the view.
+     *
+     * @internal
      */
     onUserInteractionEvent() {
         for (const binding of this._bindings)

@@ -1,0 +1,55 @@
+---
+import Default from '@astrojs/starlight/components/Head.astro';
+
+const { entry } = Astro.locals.starlightRoute;
+const { title, description } = entry.data;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
+const isHomePage = Astro.url.pathname === '/helion/' || Astro.url.pathname === '/helion';
+
+// Bepaal het vakgebied op basis van de URL-structuur (bijv. /helion/quantum-physics/...)
+const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
+const category = pathSegments.length > 1 ? pathSegments[1].replace(/-/g, ' ') : 'Mathematics and Physics';
+
+const schema = isHomePage
+  ? {
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      "name": "Helion",
+      "description": description || "A browser-native JavaScript framework for interactive mathematics and physics simulations.",
+      "url": canonicalURL,
+      "programmingLanguage": "JavaScript",
+      "runtimePlatform": "Web Browser (WebGL / HTML5 Canvas)",
+      "applicationCategory": "EducationalApplication",
+      "about": ["Physics", "Mathematics", "Scientific Computing", "Numerical Simulation"],
+      "author": {
+        "@type": "Person",
+        "name": "Zeger Hendrikse",
+        "url": "https://www.hendrikse.name/"
+      }
+    }
+  : {
+      "@context": "https://schema.org",
+      "@type": ["LearningResource", "SoftwareApplication"],
+      "name": title,
+      "description": description || `Interactive browser simulation of ${title} built with Helion.`,
+      "url": canonicalURL,
+      "learningResourceType": "Simulation",
+      "interactivityType": "active",
+      "educationalUse": ["Self-study", "Demonstration", "Experimentation"],
+      "about": {
+        "@type": "Thing",
+        "name": category
+      },
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Any (Web Browser)",
+      "programmingLanguage": "JavaScript",
+      "isPartOf": {
+        "@type": "SoftwareSourceCode",
+        "name": "Helion",
+        "url": "https://hendrikse.name/helion/"
+      }
+    };
+---
+
+<Default {...Astro.props}><slot /></Default>
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

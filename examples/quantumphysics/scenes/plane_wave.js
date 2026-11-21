@@ -47,9 +47,9 @@ Simulation
             text: '<strong>Complex plane wave $\\Psi$</strong><br/>' +
                 'Each arrow represents the complex value of the wave function at a fixed position $x$.<br/>' +
                 'The arrow rotates in the complex plane as time evolves:<br/>' +
-                '- <b>z-direction</b>: $Re(\\Psi)$<br/>' +
-                '- <b>y-direction</b>: $Im(\\Psi)$<br/>' +
-                '- <b>color</b>: $\\text{phase}(\\Psi)$<br/>' +
+                '• <b>z-direction</b>: $Re(\\Psi)$<br/>' +
+                '• <b>y-direction</b>: $Im(\\Psi)$<br/>' +
+                '• <b>color</b>: $\\text{phase}(\\Psi)$<br/>' +
                 'The <b>arrow length is constant</b>, as $\\|\\Psi\\|$ does not depend on $t$'
         }
     })
