@@ -1,5 +1,5 @@
 ---
-title: "❄️ Fractals"
+title: "❄️ The world of fractals"
 layout: ../../../layouts/DocsLayout.astro
 ---
 
@@ -11,6 +11,16 @@ layout: ../../../layouts/DocsLayout.astro
         <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
     </a>
 </div>
+
+## A playground of recursive wonders
+<div class="header_line"></div>
+
+🐢 [L-systems &amp; turtle graphics](#-l-systems--turtle-graphics)<br/>
+🐢 [Fractals & turtle graphics](#-fractals--turtle-graphics)<br/>
+🕹️ [Chaos game fractals](#%EF%B8%8F-chaos-game-fractals)<br/>
+🧽 [Menger sponge](#-menger-sponge)<br/>
+🐫 [Sierpiński pyramid](#-sierpi%C5%84ski-pyramid)<br/>
+🍞 [Mandelbrot & Julia sets](#-mandelbrot--julia-sets)<br/>
 
 ### 🐢 L-systems &amp; turtle graphics
 <div class="header_line"></div>
@@ -85,6 +95,16 @@ of the [Hilbert curve](https://en.wikipedia.org/wiki/Hilbert_curve) equals exact
 
 #### About the chaos game
 
+<p style="clear: all"></p>
+<div style="width: 40%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;">
+  <a href="https://en.wikipedia.org/wiki/Chaos_game#/media/File:Sierpinski_Chaos.gif">
+    <img alt="Sierpinksy chaos" src={import.meta.env.BASE_URL + "images/mathematics/Sierpinski_Chaos.gif"}/>
+  </a>
+  <figcaption>
+    Source <a href="https://en.wikipedia.org/wiki/Chaos_game#/media/File:Sierpinski_Chaos.gif">Wikipedia</a>
+  </figcaption>
+</div>
+
 The chaos game is an iterative procedure $s_i\rightarrow s_{i+1}$ that can be written
 as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation)
 
@@ -95,17 +115,9 @@ $$
 where the set of pairs $\{(T_j, r_j) | j=1,2,\dots\}$ with matrices $T_j$ and $r_j$
 characterize the chosen ruleset and $j$ denotes a (per iteration) randomly chosen index.
 The famous [Barnsley fern](https://www.hendrikse.name/helion/nature/plants/#-3d-barnsley-fern) is generated in a similar way.
+<p style="clear: all"></p>
 
 #### Why do fractals arise from the chaos game
-
-<div style="width: 50%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;">
-  <a href="https://en.wikipedia.org/wiki/Chaos_game#/media/File:Sierpinski_Chaos.gif">
-    <img alt="Sierpinksy chaos" src={import.meta.env.BASE_URL + "images/mathematics/Sierpinski_Chaos.gif"}/>
-  </a>
-  <figcaption>
-    Source <a href="https://en.wikipedia.org/wiki/Chaos_game#/media/File:Sierpinski_Chaos.gif">Wikipedia</a>
-  </figcaption>
-</div>
 
 The chaos game is an iterative process of placing dots on a canvas
 using certain fixed locations (vertices) that are chosen randomly.
@@ -133,14 +145,7 @@ given the finite resolution of the screen and the pixels it contains, it will di
 In a certain sense, the fractal itself is a kind of
 [strange attractor](https://www.hendrikse.name/helion/mathematics/strange_attractors/)!
 
-<div className="badgeRow">
-    <a href="https://en.wikipedia.org/wiki/JavaScript">
-        <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-007ACC?logo=javascript&logoColor=white"/>
-    </a>
-    <a href="https://threejs.org/">
-        <img alt="Three.js" src="https://img.shields.io/badge/Three.js-000000?logo=three.js&logoColor=white"/>
-    </a>
-</div>
+<p style="clear: all"></p>
 
 ### 🧽 Menger sponge
 <div class="header_line"></div>
