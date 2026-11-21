@@ -1,0 +1,1 @@
+var e=`/helion/assets/Wood_Wicker_011_color-CR5y99jg.png`,t=`/helion/assets/Wood_Wicker_011_roughness-CjG6A0Mj.png`,n=`/helion/assets/Wood_Wicker_011_normal-C2jUjTfO.png`;export{t as n,e as r,n as t};

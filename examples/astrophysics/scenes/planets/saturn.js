@@ -1,0 +1,7 @@
+import{$n as e,Ct as t,Yn as n,Yr as r,fi as i,fr as a,nt as o,ti as s,vt as c,wt as l}from"../../../../assets/src-BpGOP1ZC.js";import{n as u,r as d,t as f}from"../../../../assets/saturnringpattern-CM3JZqpk.js";var p=new o(c),m=new l({material:new i({map:t.loader.load(d),bumpMap:t.loader.load(d),bumpScale:7.5,shininess:0}),innerRadius:1.11,outerRadius:2.1,divisor:4,ringsColorUrl:u,ringsPatternUrl:f}),h=new s(16777215,2);h.position.set(10,2,1.5);var g=performance.now()*.001;n.with({htmlDivId:`saturnContainer`,camera:{fieldOfView:45,position:new a(1,1.5,4).multiplyScalar(.8)},scene:{background:e.Background.STARS,scale:1e-8},lighting:{enabled:!1},headUpDisplay:{enabled:!1},infoPanel:{text:`<strong>🪐 Saturn</strong><br/>• One minute &#8792; 24 hours.<br/>• Second-largest planet.<br/>
+• Rings consist of ice particles, rocks and dust.<br/>
+• Less dense than water!<br/>
+• Atmosphere is mostly hydrogen and helium.<br/>
+• Has numerous moons, including Titan and Enceladus.<br/>
+• Titan has lakes and seas of liquid methane and ethane.<br/>
+👉 Enceladus ejects huge plumes of water vapor and ice, suggesting a potentially habitable ocean beneath its icy crust.<br/>`}}).addObject3D(new r(16777215,.25)).addObject3D(h).bind(p.alwaysWith(m)).onFrame(e=>{let t=(e-g)*.001;g=e;let n=t*24/60;p.time+=n,m.translation=p.coordinates}).start();

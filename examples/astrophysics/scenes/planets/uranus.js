@@ -1,0 +1,6 @@
+import{$n as e,Ct as t,Yn as n,Yr as r,fi as i,fr as a,nt as o,ti as s,wt as c,xt as l}from"../../../../assets/src-BpGOP1ZC.js";import{n as u,r as d,t as f}from"../../../../assets/uranusringtrans-YxoGehUH.js";var p=new o(l),m=new c({material:new i({map:t.loader.load(d),bumpMap:t.loader.load(d),bumpScale:5,shininess:0}),innerRadius:1.55,outerRadius:2.05,divisor:2,ringsColorUrl:u,ringsPatternUrl:f}),h=new s(16777215,2);h.position.set(10,2,1.5);var g=performance.now()*.001;n.with({htmlDivId:`uranusContainer`,camera:{fieldOfView:45,position:new a(1,1.5,4).multiplyScalar(4)},scene:{background:e.Background.STARS,scale:1e-7},lighting:{enabled:!1},headUpDisplay:{enabled:!1},infoPanel:{text:`<strong>❄️ Uranus</strong><br/>• One minute &#8792; 24 hours.<br/>• Third-largest planet.<br/>
+• Pale blue-green due to methane in its atmosphere.<br/>
+• Rotates almost on its side, (tilt &#8792; 98°).<br/>
+• Upper atmosphere approx -224°C: coldest planetary atmosphere in our solar system.<br/>
+• Has 13 known rings and 28 moons.<br/>
+👉 Because of its extreme tilt, parts of Uranus experience approx. 42 years of continuous sunlight followed by 42 years of darkness.<br/>`}}).addObject3D(new r(16777215,.1)).addObject3D(h).bind(p.alwaysWith(m)).onFrame(e=>{let t=(e-g)*.001;g=e;let n=t*24/60;p.time+=n,m.translation=p.coordinates}).start();
