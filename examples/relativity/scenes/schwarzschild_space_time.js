@@ -195,7 +195,7 @@ class Comet extends RadialSymmetricBody {
             return;
 
         if (this._stateVector.r <= 2 * M + 0.01) {
-            this.stop();
+            this.fixed = true;
             this.visible = false;
             return;
         }
