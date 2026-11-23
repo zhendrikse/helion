@@ -171,13 +171,13 @@ class Comet extends RadialSymmetricBody {
         const k1 = derivativeOf(state);
 
         const s2 = state.clone().addScaled(k1, 0.5 * dt);
-        const k2 = derivativeOf(s2, M);
+        const k2 = derivativeOf(s2);
 
         const s3 = state.clone().addScaled(k2, 0.5 * dt);
-        const k3 = derivativeOf(s3, M);
+        const k3 = derivativeOf(s3);
 
         const s4 = state.clone().addScaled(k3, dt);
-        const k4 = derivativeOf(s4, M);
+        const k4 = derivativeOf(s4);
 
         // combine IN PLACE
         state.t += (dt / 6) * (k1.t + 2 * k2.t + 2 * k3.t + k4.t);
@@ -227,8 +227,6 @@ class Comet extends RadialSymmetricBody {
 
     get r() { return this._stateVector.r; }
     get phi() { return this._stateVector.phi; }
-    get distance() { return Math.sqrt(this.position.x * this.position.x + this.position.z * this.position.z); }
-
     reset(stateVector = this._startStateVector) {
         super.reset();
         this.visible = true;
@@ -354,7 +352,7 @@ const simulation = Simulation
     .bind(comet.alwaysWith(cometTrail))
     .withMouseClickEventListener()
     .runsEvery(0.03)
-    .onStep((clock, _) => timeStep(clock.clockTime))
+    .onStep(() => timeStep())
     .onFrame(clockTime => {
         sun.time = clockTime;
         photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1)
