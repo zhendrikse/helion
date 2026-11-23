@@ -35,8 +35,8 @@ class SchwarzschildSurface extends ParametricSurface {
         const phi = v => 2 * Math.PI * v;
         super({
             x: (u, v) => r(u) * Math.cos(phi(v)),
-            y: (u, v) => r(u) * Math.sin(phi(v)),
-            z: (u, v) => SchwarzschildSurface.zAsFunctionOf(r(u), mass)
+            y: (u, v) => SchwarzschildSurface.zAsFunctionOf(r(u), mass),
+            z: (u, v) => r(u) * Math.sin(phi(v))
         });
         this._mass = mass;
         this._rMin = rMin;
@@ -131,7 +131,7 @@ class Comet extends RadialSymmetricBody {
         if (bracket <= 0.01)
             return new StateVector(0, 0, 0, 0, 0, 0);
 
-        // This is the 'embedding dynamics'
+        // Geodesic equations for the metric induced on the Flamm surface.
         return new StateVector(
             0,
             state.rDot,
@@ -304,9 +304,6 @@ function timeStep() {
 //
 const coneGeometry = new SchwarzschildSurface(sun.mass);
 
-const cometInsideCone = () =>
-    coneGeometry.rMin < comet.r && comet.r < coneGeometry.rMax;
-
 // Grid
 const grid = new Floor({
     position: new Vec3(0, SchwarzschildSurface.yOffset, 0),
@@ -339,8 +336,8 @@ const simulation = Simulation
         scene: { background: ThreeJsScene.Background.STARS },
         infoPanel: {
             text: '<strong>❍ Schwarzschild space-time</strong><br/>' +
-                '• <span style="color: orange">orange</span> → real motion: geodesic flow in 4D $(t, r, \\phi)$<br/>' +
-                '• <span style="color: cyan">cyan</span> → Geodesic-projection on embedded equatorial surface<br/>' +
+                '• <span style="color: orange">orange</span> → Schwarzschild spacetime geodesic $(t, r, \\phi)$<br/>' +
+                '• <span style="color: cyan">cyan</span> → geodesic of the Flamm spatial geometry<br/>' +
                 '• <span style="color: red">red</span> → Euclidean projection of the embedded-surface trajectory'
         }
     })
