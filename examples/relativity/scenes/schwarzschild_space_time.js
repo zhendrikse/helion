@@ -1,8 +1,7 @@
-import { Integrators } from '../../../src/model/math/numerics/integrators/integrators.js';
 import {
     Floor, Sphere, Trail, Vec3, Simulation, RadialSymmetricBody, Checkbox, Slider, Range, CelestialBody, Colour, Vec2,
     SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene,
-    Ring, AxialSymmetricBody,
+    Ring, AxialSymmetricBody, Integrators
 } from '../../../src/index.js';
 
 let initialCometDistance = 33;
@@ -40,12 +39,8 @@ class SchwarzschildSurface extends ParametricSurface {
             y: (u, v) => r(u) * Math.sin(phi(v))
         });
         this._mass = mass;
-        this._rMin = rMin;
-        this._rMax = rMax;
     }
 
-    get rMin() { return this._rMin }
-    get rMax() { return this._rMax; }
     get mass() { return this._mass; }
 }
 
@@ -236,6 +231,7 @@ const realComet = new Comet({
 });
 
 const photonRing = new AxialSymmetricBody({
+    position: new Vec3(0, sun.mass * 3, 0),
     mass: 3 * sun.mass,
     radius: 3 * sun.mass,
     axis: new Vec3(0, 1, 0)
@@ -266,11 +262,6 @@ function timeStep() {
     );
 }
 
-//
-// Math (surface) model
-//
-const coneGeometry = new SchwarzschildSurface(sun.mass);
-
 // Grid
 const grid = new Floor({
     position: new Vec3(0, SchwarzschildSurface.yOffset, 0),
@@ -286,7 +277,7 @@ const spaceTimeCone = new SurfaceVisualization({
 });
 spaceTimeCone.addOverlayLayer(new ContoursLayer({
     resolution: new SurfaceResolution(25, 35),
-    colorMapper: new ColorMappers().get(ColorMappers.Uniform)()
+    colorMapper: ColorMappers.get(ColorMappers.Uniform, {color: new Colour(0xbbbb00) })
 }));
 
 const realCometTrail = new Trail({ color: new Colour(0xff8800) });
@@ -294,6 +285,10 @@ const flatCometTrail = new Trail({ color: new Colour(0xff0000) });
 const cometTrail = new Trail({ color: new Colour(0x00ffff) });
 const ringColor = new Colour();
 const ring = new Ring({ thickness: 0.02 });
+const ringIsco = new Ring({
+    color: new Colour(0xcc00ff ),
+    thickness: 0.02
+});
 const simulation = Simulation
     .with({
         htmlDivId: 'spaceTimeContainer',
@@ -308,12 +303,9 @@ const simulation = Simulation
         }
     })
     .addObject3D(grid)
-    .bind(iscoRing.onceWith(new Ring({
-        color: new Colour(0xcc00ff ),
-        thickness: 0.02
-    })))
+    .bind(iscoRing.onceWith(ringIsco))
     .bind(photonRing.onceWith(ring))
-    .bind(coneGeometry.onceWith(spaceTimeCone))
+    .bind(new SchwarzschildSurface(sun.mass).onceWith(spaceTimeCone))
     .bind(sun.alwaysWith(new SunView()))
     .bind(realComet.alwaysWith(new Sphere({ color: new Colour(0xff8800) })))
     .bind(realComet.alwaysWith(realCometTrail))
@@ -342,59 +334,44 @@ const simulation = Simulation
 
 // TODO Mass slider
 
+function reset() {
+    const initialState = StateVector.initial(sun.mass, initialCometDistance, currentIsRingOrbitValue);
+    comet.reset(initialState);
+    realComet.reset(initialState);
+    flatComet.reset();
+    flatCometTrail.reset();
+    realCometTrail.reset();
+    cometTrail.reset();
+    comet.state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
+    realComet.state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
+    flatComet.state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
+}
+
 const distanceSlider = new Slider('Distance: ')
     .withRange(new Range(25.1, 64, .1))
     .withValue(33)
     .onInput(value => {
         initialCometDistance = value;
-        const initialState = StateVector.initial(sun.mass, initialCometDistance, currentIsRingOrbitValue);
-        comet.reset(initialState);
-        realComet.reset(initialState);
-        flatComet.reset();
-        flatCometTrail.reset();
-        realCometTrail.reset();
-        cometTrail.reset();
-        comet.state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
-        realComet.state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
-        flatComet.state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
+        reset();
     });
 
 simulation
     .append(new Checkbox('Photon sphere: ')
-        .on(photonRing)
+        .on(ring)
         .withProperty('visible')
-        .checked(false)
+        .checked(true)
         .togetherWith(new Checkbox('ISCO: ')
-            .on(iscoRing)
+            .on(ringIsco)
             .withProperty('visible')
-            .checked(false)
+            .checked(true)
             .togetherWith(new Checkbox('Orbit: ')
                 .onChange(checked => {
                     currentIsRingOrbitValue = checked;
-                    const initialState = StateVector.initial(
-                        sun.mass, initialCometDistance, currentIsRingOrbitValue
-                    );
-                    comet.reset(initialState);
-                    realComet.reset(initialState);
-                    flatComet.reset();
-                    cometTrail.reset();
-                    realCometTrail.reset();
-                    flatCometTrail.reset();
-                    comet.state.position.copy(
-                        SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass)
-                    );
-                    realComet.state.position.copy(
-                        SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi)
-                    );
-                    flatComet.state.position.set(
-                        comet.position.x, SchwarzschildSurface.yOffset, comet.position.z
-                    );
-                })
-            )
-        )
+                    reset();
+                })))
     )
     .append(distanceSlider);
-
+reset();
 //
 // Event handling
 //
