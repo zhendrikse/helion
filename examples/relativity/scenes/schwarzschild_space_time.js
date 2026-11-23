@@ -58,15 +58,33 @@ class StateVector {
         this.phiDot = phiDot;
     }
 
-    static initial(isOrbit = false) {
-        const r = initialCometDistance;
+    static initial(mass, distance, isOrbit = false) {
+        const r = distance;
         const t = 0;
         const phi = 0;
-        const tDot = 1 / Math.sqrt(1 - 3 * sun.mass / r);
-        const phiDot = isOrbit
-            ? Math.sqrt(sun.mass) / (r ** 1.5 * Math.sqrt(1 - 3 * sun.mass / r))
-            : 0.489374;
-        const rDot = isOrbit ? 0 : -25.2;
+        const f = 1 - (2 * mass / r);
+
+        if (f <= 0)
+            throw new RangeError('Initial position must be outside the Schwarzschild radius.');
+
+        let rDot;
+        let phiDot;
+        let tDot;
+
+        if (isOrbit) {
+            if (r <= 3 * mass)
+                throw new RangeError('A circular timelike orbit requires r > 3M.');
+
+            rDot = 0;
+            tDot = 1 / Math.sqrt(1 - 3 * mass / r);
+            phiDot = Math.sqrt(mass / (r * r * r)) * tDot;
+        } else {
+            // Preserve the original infalling trajectory, but normalize its
+            // four-velocity so that g(mu, nu) u(mu) u(nu) = -1.
+            rDot = -25.2;
+            phiDot = 0.489374;
+            tDot = Math.sqrt((1 + (rDot * rDot) / f + r * r * phiDot * phiDot) / f);
+        }
 
         return new StateVector(t, r, phi, tDot, rDot, phiDot);
     }
@@ -120,7 +138,8 @@ class Comet extends RadialSymmetricBody {
             state.phiDot,
             // radial acceleration on surface
             0,
-            (M / (state.r * bracket * bracket)) * state.rDot * state.rDot + bracket * state.phiDot * state.phiDot,
+            (M / (state.r * bracket)) * state.rDot * state.rDot +
+            (bracket / state.r) * state.phiDot * state.phiDot,
             (-2 / state.r) * state.rDot * state.phiDot
         );
     }
@@ -139,7 +158,7 @@ class Comet extends RadialSymmetricBody {
             state.tDot,
             state.rDot,
             state.phiDot,
-            (-M / (state.r * bracket * bracket)) * state.tDot * state.rDot,
+            (-2 * M / (state.r * bracket)) * state.tDot * state.rDot,
             (-M * bracket / (state.r * state.r * state.r)) * state.tDot * state.tDot +
             (M / (state.r * bracket)) * state.rDot * state.rDot +
             bracket * state.phiDot * state.phiDot,
@@ -176,6 +195,9 @@ class Comet extends RadialSymmetricBody {
      * @param {number} dt
      */
     updateRealMotion(M, dt) {
+        if (!this._stateVector || !this.visible)
+            return;
+
         if (this._stateVector.r <= 2 * M + 0.01) {
             this.stop();
             this.visible = false;
@@ -186,10 +208,20 @@ class Comet extends RadialSymmetricBody {
     }
 
     /**
+     * Integrate a spatial geodesic of the Flamm embedding metric.
      * @param {number} M
      * @param {number} dt
      */
     update(M, dt) {
+        if (!this._stateVector || !this.visible)
+            return;
+
+        if (this._stateVector.r <= 2 * M + 0.01) {
+            this.stop();
+            this.visible = false;
+            return;
+        }
+
         this._stateVector = this._rk4Step(this._stateVector, this._derivativeSurface, M, dt);
     }
 
@@ -197,12 +229,11 @@ class Comet extends RadialSymmetricBody {
     get phi() { return this._stateVector.phi; }
     get distance() { return Math.sqrt(this.position.x * this.position.x + this.position.z * this.position.z); }
 
-    reset() {
+    reset(stateVector = this._startStateVector) {
         super.reset();
         this.visible = true;
-        this._stateVector = this._startStateVector ? this._startStateVector.clone() : null;
-        if (this._stateVector)
-            this._stateVector.r = initialCometDistance;
+        this._startStateVector = stateVector ? stateVector.clone() : null;
+        this._stateVector = stateVector ? stateVector.clone() : null;
     }
 }
 
@@ -212,7 +243,7 @@ class Comet extends RadialSymmetricBody {
 const comet = new Comet({
     position: Comet.initialPosition(initialCometDistance),
     radius: 1.75,
-    stateVector: StateVector.initial(currentIsRingOrbitValue)
+    stateVector: StateVector.initial(sun.mass, initialCometDistance, currentIsRingOrbitValue)
 });
 
 const flatComet = new Comet({
@@ -224,38 +255,48 @@ const flatComet = new Comet({
 const realComet = new Comet({
     position: new Vec3(initialCometDistance, SchwarzschildSurface.yOffset, 0),
     radius: 1.75,
-    stateVector: StateVector.initial(currentIsRingOrbitValue)
+    stateVector: StateVector.initial(sun.mass, initialCometDistance, currentIsRingOrbitValue)
 });
 
-function createPhotonSphere(M, segments = 300) {
-    const r = 3 * M;
+function createCircularMarker(M, r, color, segments = 300) {
     const points = [];
 
     for (let i = 0; i <= segments; i++) {
         const phi = (i / segments) * 2 * Math.PI;
-        points.push(SchwarzschildSurface.gridPointAt(r, phi, M));
+        points.push(SchwarzschildSurface.surfacePointAt(r, phi, M));
     }
 
     const geometry = new BufferGeometry().setFromPoints(points);
-    const material = new LineBasicMaterial({ color: 0x00aaff });
+    const material = new LineBasicMaterial({ color });
     return new Line(geometry, material);
 }
 
-const photonRing = createPhotonSphere(sun.mass);
+const photonRing = createCircularMarker(sun.mass, 3 * sun.mass, 0x00aaff);
 photonRing.visible = false;
+const iscoRing = createCircularMarker(sun.mass, 6 * sun.mass, 0xffcc00);
+iscoRing.visible = false;
 
-/** @param {number} clockTime */
-function timeStep(clockTime) {
+function timeStep() {
+    const dt = 2e-3;
+
     for (let substep = 0; substep < subSteps(currentIsRingOrbitValue); substep++) {
-        if (cometInsideCone())
-            comet.update(sun.mass, 2e-3); // 3D geodesic
-        if (cometInsideCone() || subSteps(currentIsRingOrbitValue))
-            realComet.updateRealMotion(sun.mass, 2e-3);
-
-        comet._state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
-        realComet._state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
-        flatComet._state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
+        // Integration is independent of whether an object is inside the
+        // visible parameter range of the embedded surface.
+        comet.update(sun.mass, dt);
+        realComet.updateRealMotion(sun.mass, dt);
     }
+
+    comet.state.position.copy(
+        SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass)
+    );
+    realComet.state.position.copy(
+        SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi)
+    );
+    flatComet.state.position.set(
+        comet.position.x,
+        SchwarzschildSurface.yOffset,
+        comet.position.z
+    );
 }
 
 //
@@ -264,7 +305,7 @@ function timeStep(clockTime) {
 const coneGeometry = new SchwarzschildSurface(sun.mass);
 
 const cometInsideCone = () =>
-    coneGeometry.rMin < comet.distance && comet.distance < coneGeometry.rMax;
+    coneGeometry.rMin < comet.r && comet.r < coneGeometry.rMax;
 
 // Grid
 const grid = new Floor({
@@ -300,11 +341,12 @@ const simulation = Simulation
             text: '<strong>❍ Schwarzschild space-time</strong><br/>' +
                 '• <span style="color: orange">orange</span> → real motion: geodesic flow in 4D $(t, r, \\phi)$<br/>' +
                 '• <span style="color: cyan">cyan</span> → Geodesic-projection on embedded equatorial surface<br/>' +
-                '• <span style="color: red">red</span> → flat motion (Newtonian/Euclidian projected trail)'
+                '• <span style="color: red">red</span> → Euclidean projection of the embedded-surface trajectory'
         }
     })
     .addObject3D(grid)
     .addObject3D(photonRing)
+    .addObject3D(iscoRing)
     .bind(coneGeometry.onceWith(spaceTimeCone))
     .bind(sun.alwaysWith(new SunView()))
     .bind(realComet.alwaysWith(new Sphere({ color: new Colour(0xff8800) })))
@@ -338,13 +380,13 @@ const distanceSlider = new Slider('Distance: ')
     .withValue(33)
     .onInput(value => {
         initialCometDistance = value;
-        realComet._stateVector = StateVector.initial(currentIsRingOrbitValue);
-        comet.reset();
+        const initialState = StateVector.initial(sun.mass, initialCometDistance, currentIsRingOrbitValue);
+        comet.reset(initialState);
+        realComet.reset(initialState);
         flatComet.reset();
         flatCometTrail.reset();
         realCometTrail.reset();
         cometTrail.reset();
-        comet._stateVector = StateVector.initial(currentIsRingOrbitValue);
         comet.state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
         realComet.state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
         flatComet.state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
@@ -355,15 +397,33 @@ simulation
         .on(photonRing)
         .withProperty('visible')
         .checked(false)
-        .togetherWith(new Checkbox('Orbit: ')
-            .onChange(checked => {
-                realComet.reset();
-                realComet._stateVector = StateVector.initial(checked);
-                comet.reset();
-                comet._stateVector = StateVector.initial(checked);
-                flatComet.reset();
-                currentIsRingOrbitValue = checked;
-            })
+        .togetherWith(new Checkbox('ISCO: ')
+            .on(iscoRing)
+            .withProperty('visible')
+            .checked(false)
+            .togetherWith(new Checkbox('Orbit: ')
+                .onChange(checked => {
+                    currentIsRingOrbitValue = checked;
+                    const initialState = StateVector.initial(
+                        sun.mass, initialCometDistance, currentIsRingOrbitValue
+                    );
+                    comet.reset(initialState);
+                    realComet.reset(initialState);
+                    flatComet.reset();
+                    cometTrail.reset();
+                    realCometTrail.reset();
+                    flatCometTrail.reset();
+                    comet.state.position.copy(
+                        SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass)
+                    );
+                    realComet.state.position.copy(
+                        SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi)
+                    );
+                    flatComet.state.position.set(
+                        comet.position.x, SchwarzschildSurface.yOffset, comet.position.z
+                    );
+                })
+            )
         )
     )
     .append(distanceSlider);
