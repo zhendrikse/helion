@@ -1,4 +1,4 @@
-import { BufferGeometry, LineBasicMaterial, Line } from 'three';
+import { Integrators } from '../../../src/model/math/numerics/integrators/integrators.js';
 import {
     Floor, Sphere, Trail, Vec3, Simulation, RadialSymmetricBody, Checkbox, Slider, Range, CelestialBody, Colour, Vec2,
     SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene,
@@ -97,7 +97,7 @@ class StateVector {
         );
     }
 
-    addScaled(other, scale) {
+    addScaledVector(other, scale) {
         this.t += scale * other.t;
         this.r += scale * other.r;
         this.phi += scale * other.phi;
@@ -167,29 +167,6 @@ class Comet extends RadialSymmetricBody {
         );
     }
 
-    _rk4Step(state, derivativeFn, M, dt) {
-        const derivativeOf = (s) => derivativeFn(s, M);
-        const k1 = derivativeOf(state);
-
-        const s2 = state.clone().addScaled(k1, 0.5 * dt);
-        const k2 = derivativeOf(s2);
-
-        const s3 = state.clone().addScaled(k2, 0.5 * dt);
-        const k3 = derivativeOf(s3);
-
-        const s4 = state.clone().addScaled(k3, dt);
-        const k4 = derivativeOf(s4);
-
-        // combine IN PLACE
-        state.t += (dt / 6) * (k1.t + 2 * k2.t + 2 * k3.t + k4.t);
-        state.r += (dt / 6) * (k1.r + 2 * k2.r + 2 * k3.r + k4.r);
-        state.phi += (dt / 6) * (k1.phi + 2 * k2.phi + 2 * k3.phi + k4.phi);
-        state.tDot += (dt / 6) * (k1.tDot + 2 * k2.tDot + 2 * k3.tDot + k4.tDot);
-        state.rDot += (dt / 6) * (k1.rDot + 2 * k2.rDot + 2 * k3.rDot + k4.rDot);
-        state.phiDot += (dt / 6) * (k1.phiDot + 2 * k2.phiDot + 2 * k3.phiDot + k4.phiDot);
-
-        return state;
-    }
 
     /**
      * @param {number} M
@@ -200,12 +177,12 @@ class Comet extends RadialSymmetricBody {
             return;
 
         if (this._stateVector.r <= 2 * M + 0.01) {
-            this.stop();
+            this.fixed = true;
             this.visible = false;
             return;
         }
 
-        this._stateVector = this._rk4Step(this._stateVector, this._derivativeGeodesic, M, dt);
+        Integrators.rk4VectorStep(this._stateVector, dt, state => this._derivativeGeodesic(state, M));
     }
 
     /**
@@ -223,13 +200,14 @@ class Comet extends RadialSymmetricBody {
             return;
         }
 
-        this._stateVector = this._rk4Step(this._stateVector, this._derivativeSurface, M, dt);
+        Integrators.rk4VectorStep(this._stateVector, dt, state => this._derivativeSurface(state, M));
     }
 
     get r() { return this._stateVector.r; }
     get phi() { return this._stateVector.phi; }
     reset(stateVector = this._startStateVector) {
         super.reset();
+        this.fixed = false;
         this.visible = true;
         this._startStateVector = stateVector ? stateVector.clone() : null;
         this._stateVector = stateVector ? stateVector.clone() : null;
