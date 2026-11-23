@@ -2,6 +2,7 @@ import { BufferGeometry, LineBasicMaterial, Line } from 'three';
 import {
     Floor, Sphere, Trail, Vec3, Simulation, RadialSymmetricBody, Checkbox, Slider, Range, CelestialBody, Colour, Vec2,
     SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene,
+    Ring, AxialSymmetricBody,
 } from '../../../src/index.js';
 
 let initialCometDistance = 33;
@@ -35,8 +36,8 @@ class SchwarzschildSurface extends ParametricSurface {
         const phi = v => 2 * Math.PI * v;
         super({
             x: (u, v) => r(u) * Math.cos(phi(v)),
-            y: (u, v) => SchwarzschildSurface.zAsFunctionOf(r(u), mass),
-            z: (u, v) => r(u) * Math.sin(phi(v))
+            z: (u, v) => SchwarzschildSurface.zAsFunctionOf(r(u), mass),
+            y: (u, v) => r(u) * Math.sin(phi(v))
         });
         this._mass = mass;
         this._rMin = rMin;
@@ -122,8 +123,8 @@ class Comet extends RadialSymmetricBody {
     }
 
     /**
-     * @param {StateVector} state 
-     * @param {number} M 
+     * @param {StateVector} state
+     * @param {number} M
      */
     _derivativeSurface(state, M) {
         const bracket = state.r - 2 * M;
@@ -145,8 +146,8 @@ class Comet extends RadialSymmetricBody {
     }
 
     /**
-     * @param {StateVector} state 
-     * @param {number} M 
+     * @param {StateVector} state
+     * @param {number} M
      */
     _derivativeGeodesic(state, M) {
         const bracket = state.r - 2 * M;
@@ -256,23 +257,17 @@ const realComet = new Comet({
     stateVector: StateVector.initial(sun.mass, initialCometDistance, currentIsRingOrbitValue)
 });
 
-function createCircularMarker(M, r, color, segments = 300) {
-    const points = [];
-
-    for (let i = 0; i <= segments; i++) {
-        const phi = (i / segments) * 2 * Math.PI;
-        points.push(SchwarzschildSurface.surfacePointAt(r, phi, M));
-    }
-
-    const geometry = new BufferGeometry().setFromPoints(points);
-    const material = new LineBasicMaterial({ color });
-    return new Line(geometry, material);
-}
-
-const photonRing = createCircularMarker(sun.mass, 3 * sun.mass, 0x00aaff);
-photonRing.visible = false;
-const iscoRing = createCircularMarker(sun.mass, 6 * sun.mass, 0xffcc00);
-iscoRing.visible = false;
+const photonRing = new AxialSymmetricBody({
+    mass: 3 * sun.mass,
+    radius: 3 * sun.mass,
+    axis: new Vec3(0, 1, 0)
+});
+const iscoRing = new AxialSymmetricBody({
+    position: new Vec3(0, sun.mass * 6, 0),
+    mass: sun.mass,
+    radius: 6 * sun.mass,
+    axis: new Vec3(0, 1, 0)
+})
 
 function timeStep() {
     const dt = 2e-3;
@@ -284,12 +279,8 @@ function timeStep() {
         realComet.updateRealMotion(sun.mass, dt);
     }
 
-    comet.state.position.copy(
-        SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass)
-    );
-    realComet.state.position.copy(
-        SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi)
-    );
+    comet.state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
+    realComet.state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
     flatComet.state.position.set(
         comet.position.x,
         SchwarzschildSurface.yOffset,
@@ -316,21 +307,20 @@ const spaceTimeCone = new SurfaceVisualization({
     display: SurfaceVisualization.Display.None
 });
 spaceTimeCone.addOverlayLayer(new ContoursLayer({
-    resolution: new SurfaceResolution(25, 50),
+    resolution: new SurfaceResolution(25, 35),
     colorMapper: new ColorMappers().get(ColorMappers.Uniform)()
 }));
 
 const realCometTrail = new Trail({ color: new Colour(0xff8800) });
 const flatCometTrail = new Trail({ color: new Colour(0xff0000) });
 const cometTrail = new Trail({ color: new Colour(0x00ffff) });
+const ringColor = new Colour();
+const ring = new Ring({ thickness: 0.02 });
 const simulation = Simulation
     .with({
         htmlDivId: 'spaceTimeContainer',
-        viewport: { parameterMenuCollapsed: false },
-        camera: {
-            position: new Vec3(5, 7.5, 15).multiplyScalar(13),
-            fieldOfView: 45
-        },
+        viewport: { parameterMenuCollapsed: false, aspectRatio: '19/16' },
+        camera: { position: new Vec3(45, 97, 195), fieldOfView: 45 },
         scene: { background: ThreeJsScene.Background.STARS },
         infoPanel: {
             text: '<strong>❍ Schwarzschild space-time</strong><br/>' +
@@ -340,8 +330,11 @@ const simulation = Simulation
         }
     })
     .addObject3D(grid)
-    .addObject3D(photonRing)
-    .addObject3D(iscoRing)
+    .bind(iscoRing.onceWith(new Ring({
+        color: new Colour(0xcc00ff ),
+        thickness: 0.02
+    })))
+    .bind(photonRing.onceWith(ring))
     .bind(coneGeometry.onceWith(spaceTimeCone))
     .bind(sun.alwaysWith(new SunView()))
     .bind(realComet.alwaysWith(new Sphere({ color: new Colour(0xff8800) })))
@@ -355,7 +348,8 @@ const simulation = Simulation
     .onStep(() => timeStep())
     .onFrame(clockTime => {
         sun.time = clockTime;
-        photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1)
+        ringColor.setRGB(1, 1 + .5 * Math.sin(clockTime *.005), 0)
+        ring.color = ringColor;
     })
     .append(new Checkbox('Grid: ')
         .on(grid)
