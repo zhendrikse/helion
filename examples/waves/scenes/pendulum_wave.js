@@ -1,8 +1,8 @@
 import {
     Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, RadialSymmetricBody, ThreeJsScene, Colour,
-    ViewsCollection, ModelObjectsCollection
+    ViewsCollection, ModelObjectsCollection, Renderable
 } from '../../../src/index.js';
-import {DoubleSide, MeshStandardMaterial, TextureLoader, Vector2} from 'three';
+import {DoubleSide, MeshStandardMaterial, Vector2} from 'three';
 import wood from '../../kinematics/scenes/textures/treeBark.jpg';
 import woodWickerColorUrl from './textures/Wood_Wicker_011_color.png';
 import woodWickerNormalUrl from './textures/Wood_Wicker_011_normal.png';
@@ -23,10 +23,7 @@ class Pendulum {
         this._xPosition = position;
         this._length = length;
 
-        this._ball = new RadialSymmetricBody({
-            position: this.position,
-            radius: 0.1
-        });
+        this._ball = new RadialSymmetricBody({ radius: 0.1 });
         this._rod = new AxialSymmetricBody({
             position: new Vec3(position, pivotY - length * Math.cos(theta0), length * Math.sin(theta0)),
             axis: new Vec3(),
@@ -136,7 +133,7 @@ const balls = new ModelObjectsCollection(cradle.balls);
 const rods = new ModelObjectsCollection(cradle.rods);
 const spheres = ViewsCollection.of(Sphere).with({ castShadow: true });
 
-const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)});
+const woodMaterial = new MeshStandardMaterial({map: Renderable.loadTexture(wood)});
 Simulation
     .with({
         htmlDivId: 'pendulumWaveContainer',
@@ -161,9 +158,9 @@ Simulation
         planeMaterial: new MeshStandardMaterial({
             normalScale: new Vector2(100, 100),
             roughness: 1,
-            map: Floor.loadTexture(woodWickerColorUrl, 15),
-            roughnessMap: Floor.loadTexture(woodWickerRoughnessUrl, 15),
-            normalMap: Floor.loadTexture(woodWickerNormalUrl, 15),
+            map: Renderable.loadTexture(woodWickerColorUrl, 15),
+            roughnessMap: Renderable.loadTexture(woodWickerRoughnessUrl, 15),
+            normalMap: Renderable.loadTexture(woodWickerNormalUrl, 15),
             side: DoubleSide
         })
     }))

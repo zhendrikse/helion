@@ -1,12 +1,12 @@
-import { TextureLoader, PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh } from "three";
-import { degToRad, Simulation, Slider, Vec3, Range } from "../../../src/index.js";
+import { PlaneGeometry, ShaderMaterial, Vector2, Vector3, Mesh } from "three";
+import {degToRad, Simulation, Slider, Vec3, Range, Renderable} from "../../../src/index.js";
 import milkyWayUrl from '../../../docs/public/images/astrophysics/milky-way.jpg';
 
 const cameraPosition = new Vec3(0, 0, 1);
 const cameraFov = 75;
 const fovRadians = degToRad(cameraFov);
 const yFov = cameraPosition.z * Math.tan(fovRadians / 2) * 2;
-const spaceTexture = new TextureLoader().load(milkyWayUrl);
+const spaceTexture = Renderable.loadTexture(milkyWayUrl);
 
 const vertexShader = `
     varying vec2 vUv;

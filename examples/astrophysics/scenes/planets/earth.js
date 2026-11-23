@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, Earth, ThreeJsScene, radToDeg, Planet, Checkbox, CelestialBody
+    Simulation, Vec3, Earth, ThreeJsScene, Planet, Checkbox, CelestialBody, Renderable
 } from '../../../../src/index.js';
 import {
     AmbientLight, BackSide, Mesh, MeshPhongMaterial, ShaderMaterial, Color, AdditiveBlending,
@@ -16,8 +16,8 @@ import earthCloudsMap from '../../textures/Earth-clouds.png';
 
 const earth = new CelestialBody(Earth);
 const sunDirection = new Vec3(10, 2, -4);
-const dayTexture = Planet.loader.load(earthMap);
-const nightTexture = Planet.loader.load(earthNightMap);
+const dayTexture = Renderable.loadTexture(earthMap);
+const nightTexture = Renderable.loadTexture(earthNightMap);
 dayTexture.colorSpace = SRGBColorSpace;
 nightTexture.colorSpace = SRGBColorSpace;
 

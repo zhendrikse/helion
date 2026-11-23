@@ -1,6 +1,6 @@
 import {
     Vec3, Vec2, Simulation, Floor, Block, Slider, Range, Lattice, LatticeView,
-    ChainTopology, UniformGravitationalForce, DragForce, ThreeJsScene, Colour, Box, UPlotGraph, Interval
+    ChainTopology, UniformGravitationalForce, DragForce, ThreeJsScene, Colour, Box, UPlotGraph, Interval, Renderable
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 import {MeshStandardMaterial, TextureLoader, Vector2, DoubleSide} from "three";
@@ -69,7 +69,7 @@ const graph = new UPlotGraph({
 
 const gravitationalForce = new UniformGravitationalForce();
 const dragForce = new DragForce(-2e-4);
-const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)});
+const woodMaterial = new MeshStandardMaterial({map: Renderable.loadTexture(wood)});
 Simulation
     .with({
         htmlDivId: 'harmonicOscillatorContainer',
@@ -87,7 +87,7 @@ Simulation
     })
     .withMouseClickEventListener()
     .addGraph(graph)
-    .runsEvery(5e-3)
+    .substeps(2)
     .onStep((clock, dt) => {
         chain
             .applyToBodies(dragForce)
@@ -116,10 +116,10 @@ Simulation
         position: new Vec3(0, -chainLength * 2.5, 0),
         planeSizeXy: new Vec2(100, 100),
         planeMaterial: new MeshStandardMaterial({
-            normalScale: new Vector2(3, 3),
+            normalScale: new Vector2(25, 25),
             roughness: 1,
-            map: Floor.loadTexture(grassColorUrl, 50),
-            normalMap: Floor.loadTexture(grassNormalUrl, 50),
+            map: Renderable.loadTexture(grassColorUrl, 25),
+            normalMap: Renderable.loadTexture(grassNormalUrl, 25),
             side: DoubleSide
         })
     }))

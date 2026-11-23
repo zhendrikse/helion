@@ -1,8 +1,8 @@
 import vertexShader from './webgl/milky_way_vertex_shader.glsl?raw';
 import fragmentShader from './webgl/milky_way_fragment_shader.glsl?raw';
-import { Vec3, Vec2, Simulation, ModelObject, ShaderView, Slider, Range } from "../../../src/index.js";
+import {Vec3, Vec2, Simulation, ModelObject, ShaderView, Slider, Range, Renderable} from "../../../src/index.js";
 import {
-    ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, NoColorSpace, RepeatWrapping, TextureLoader
+    ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, NoColorSpace, RepeatWrapping
 } from "three";
 import milkyWayUrl from '../../../docs/public/images/astrophysics/milky-way.jpg';
 
@@ -18,10 +18,8 @@ class MilkyWayPanoramaModel extends ModelObject {
     }
 }
 
-const textureLoader = new TextureLoader();
-const texture = textureLoader.load(
+const texture = Renderable.loader.load(
     milkyWayUrl,
-
     function(texture) {
         texture.minFilter = LinearMipmapLinearFilter;
         texture.magFilter = LinearFilter;

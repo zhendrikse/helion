@@ -1,8 +1,8 @@
 import {
-    RadialSymmetricBody, Simulation, Vec3, Sphere, Helix, Cylinder, SpringForce, Floor, 
-    Vec2, AxialSymmetricBody, UniformGravitationalForce, Colour
+    RadialSymmetricBody, Simulation, Vec3, Sphere, Helix, Cylinder, SpringForce, Floor,
+    Vec2, AxialSymmetricBody, UniformGravitationalForce, Colour, Renderable
 } from '../../../src/index.js';
-import {DirectionalLight, MeshStandardMaterial, TextureLoader} from 'three';
+import { DirectionalLight, MeshStandardMaterial } from 'three';
 import wood from './textures/treeBark.jpg';
 import metalFloorUrl from './textures/metal_floor_256.jpg';
 
@@ -49,7 +49,7 @@ const stick2 = new AxialSymmetricBody({
 const sun = new DirectionalLight(0xffffff, 1);
 sun.position.set(5, 5, 5);
 
-const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)});
+const woodMaterial = new MeshStandardMaterial({map: Renderable.loadTexture(wood)});
 const onFloor = (ball, floorLevel, epsilon = 2e-2) =>
     ball.position.y - ball.radius <= shiftUp + floorLevel - epsilon;
 
@@ -73,13 +73,13 @@ Simulation
         position: new Vec3(0, -3.5 * L0 + shiftUp, 0),
         planeSizeXy: new Vec2(L0 * 6 , L0 * 4),
         planeMaterial: new MeshStandardMaterial({
-            map: Floor.loadTexture(metalFloorUrl, 1),
+            map: Renderable.loadTexture(metalFloorUrl, 1),
             roughness: 1,
             metalness: 1
         }),
         color: new Colour(0xaaaaaa)
     }))
-    .runsEvery(4e-3)
+    .substeps(2)
     .advancesBy(1e-3)
     .onStep((_, dt) => {
         if (onFloor(ball2, -3.5 * L0) || onFloor(ball3, -3.5 * L0))

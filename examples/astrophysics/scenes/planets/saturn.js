@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, Saturn, ThreeJsScene, radToDeg, RingsPlanet, Planet, CelestialBody
+    Simulation, Vec3, Saturn, ThreeJsScene, radToDeg, RingsPlanet, Planet, CelestialBody, Renderable
 } from '../../../../src/index.js';
 import {AmbientLight, DirectionalLight, MeshPhongMaterial} from 'three';
 import saturnRingsColorUrl from '../../textures/saturnringcolor.jpg';
@@ -9,8 +9,8 @@ import saturnMap from '../../textures/saturnmap.jpg';
 const saturn = new CelestialBody(Saturn);
 const planetView = new RingsPlanet({
     material: new MeshPhongMaterial({
-        map: Planet.loader.load(saturnMap),
-        bumpMap: Planet.loader.load(saturnMap),
+        map: Renderable.loadTexture(saturnMap),
+        bumpMap: Renderable.loadTexture(saturnMap),
         bumpScale: 7.5,
         shininess: 0
     }),

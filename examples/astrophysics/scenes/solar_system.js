@@ -2,7 +2,7 @@ import {
     Simulation, Vec3, CelestialBody, ThreeJsScene, Planet, Checkbox, PlanetMoonSystem, Trail, Range, SunView,
     Colour, Earth, Mercury, Venus, Luna, Mars, Sattelite, Jupiter, RingsPlanet, Saturn, Slider, Neptune, Uranus,
     Moon, Phobos, Deimos, Callisto, Europa, Ganymede, Io, ColorMappers, LineSegmentsView, LineSegment, Segments,
-    Titan, Tethys, Enceladus, Dione
+    Titan, Tethys, Enceladus, Dione, Renderable
 } from '../../../src/index.js';
 import {
     AmbientLight, MeshPhongMaterial, PointLight, Mesh, FrontSide
@@ -37,7 +37,7 @@ export class EarthView extends Planet {
     }) {
         super({material, translation, radiusScaleFactor});
         const cloudsMaterial = new MeshPhongMaterial({
-            map: Planet.loader.load(earthCloudsMap),
+            map: Renderable.loadTexture(earthCloudsMap),
             transparent: true,
             opacity: 0.75,
             depthWrite: false,   // prevents harsh borders
@@ -63,8 +63,8 @@ export class EarthView extends Planet {
 
 const planetView = (map, bumpMap, bumpScale, radiusScaleFactor=1) => new Planet({
     material: new MeshPhongMaterial({
-        map: Planet.loader.load(map),
-        bumpMap: Planet.loader.load(bumpMap),
+        map: Renderable.loadTexture(map),
+        bumpMap: Renderable.loadTexture(bumpMap),
         bumpScale,
         shininess: 0
     }),
@@ -82,8 +82,8 @@ const moonView = (parent, color, radiusScaleFactor) => new Sattelite(parent, {
 
 const saturnView = new RingsPlanet({
     material: new MeshPhongMaterial({
-        map: Planet.loader.load(saturnMap),
-        bumpMap: Planet.loader.load(saturnMap),
+        map: Renderable.loadTexture(saturnMap),
+        bumpMap: Renderable.loadTexture(saturnMap),
         bumpScale: 7.5,
         shininess: 0,
     }),
@@ -97,8 +97,8 @@ const saturnView = new RingsPlanet({
 
 const uranusView =  new RingsPlanet({
     material: new MeshPhongMaterial({
-        map: Planet.loader.load(uranusMap),
-        bumpMap: Planet.loader.load(uranusMap),
+        map: Renderable.loadTexture(uranusMap),
+        bumpMap: Renderable.loadTexture(uranusMap),
         bumpScale: 5,
         shininess: 0
     }),
@@ -116,9 +116,9 @@ const planetViews = [
     planetView(venusMap, venusBumpMap, 1),
     new EarthView({
         material: new MeshPhongMaterial({
-            map: Planet.loader.load(earthMap),
-            bumpMap: Planet.loader.load(earthBumpMap),
-            specularMap: Planet.loader.load(earthSpecMap),
+            map: Renderable.loadTexture(earthMap),
+            bumpMap: Renderable.loadTexture(earthBumpMap),
+            specularMap: Renderable.loadTexture(earthSpecMap),
             bumpScale: 5,
             shininess: 0
         })
@@ -138,8 +138,8 @@ const moons = [
 const moonViews = [
     new Sattelite(planetViews[2], { // Earth moon Luna
         material: new MeshPhongMaterial({
-            map: Planet.loader.load(moonMap),
-            bumpMap: Planet.loader.load(moonBumpMap),
+            map: Renderable.loadTexture(moonMap),
+            bumpMap: Renderable.loadTexture(moonBumpMap),
             bumpScale: 2,
             shininess: 0
         })

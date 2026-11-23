@@ -184,12 +184,12 @@ export class LanczosEigenstateSolver extends Solver {
      * Cooperative asynchronous variant of solve().
      *
      * @param {WaveFunction} waveFunction
-     * @param {(text: string, percent: number) => void} progressCallback
+     * @param {(text: string, percent: number) => void} onProgress
      * @returns {Promise<number[]>} an array with residuals for each eigenvalue
      */
-    async solveAsync(waveFunction, progressCallback) {
-        const { basis, diagonal, offDiagonal } = await this._buildKrylovSubspaceAsync(progressCallback);
-        const { values, vectors } = await this._diagonalizeTridiagonal(diagonal, offDiagonal, progressCallback);
+    async solveAsync(waveFunction, onProgress) {
+        const { basis, diagonal, offDiagonal } = await this._buildKrylovSubspaceAsync(onProgress);
+        const { values, vectors } = await this._diagonalizeTridiagonal(diagonal, offDiagonal, onProgress);
 
         const count = Math.min(this._states, values.length);
         const residuals = new Array(count)

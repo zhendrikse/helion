@@ -1,12 +1,21 @@
-import {Simulation, Vec3, Neptune, ThreeJsScene, radToDeg, Planet, CelestialBody} from '../../../../src/index.js';
+import {
+    Simulation,
+    Vec3,
+    Neptune,
+    ThreeJsScene,
+    radToDeg,
+    Planet,
+    CelestialBody,
+    Renderable
+} from '../../../../src/index.js';
 import {AmbientLight, DirectionalLight, MeshPhongMaterial} from 'three';
 import neptuneMap from '../../textures/neptunemap.jpg';
 
 const neptune = new CelestialBody(Neptune);
 const planetView = new Planet({
     material: new MeshPhongMaterial({
-        map: Planet.loader.load(neptuneMap),
-        bumpMap: Planet.loader.load(neptuneMap),
+        map: Renderable.loadTexture(neptuneMap),
+        bumpMap: Renderable.loadTexture(neptuneMap),
         bumpScale: 5,
         shininess: 0
     })

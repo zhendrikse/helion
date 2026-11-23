@@ -52,21 +52,6 @@ class Grid extends Group {
 }
 
 export class Floor extends Group {
-    static loader = new TextureLoader();
-
-    /**
-     * @param {any} url
-     * @param {number} granularity
-     * @return {Texture}
-     */
-    static loadTexture = (url, granularity) => {
-        const texture = Floor.loader.load(url);
-        texture.wrapS = RepeatWrapping;
-        texture.wrapT = RepeatWrapping;
-        texture.repeat.set(granularity, granularity);
-        return texture;
-    }
-
     static Type = Object.freeze({
         PLAIN: 'PLAIN',
         GRID: 'Grid',

@@ -557,7 +557,8 @@ export class Box extends Renderable3D {
     } = {}) {
         super();
         material.opacity = opacity;
-        material.color.copy(color.asThreeJsColor());
+        material.transparent = true;
+        color.asThreeJsColor(material.color);
         this._mesh = new Mesh(new BoxGeometry(1, 1, 1), material);
         this.add(this._mesh);
         this._mesh.castShadow = castShadow;
@@ -595,11 +596,11 @@ export class Ring extends Renderable3D {
     constructor({
         color = Colour.Yellow,
         thickness = 0.1,
-        radialSegments = 16,
+        radialSegments = 32,
         tubularSegments = 32,
         material = new MeshStandardMaterial({
-            roughness: 0.4,
-            metalness: 0.75
+            roughness: 0.2,
+            metalness: 0.3
         })
     } = {}) {
         super();
@@ -609,6 +610,8 @@ export class Ring extends Renderable3D {
         this.add(this._mesh);
         this._direction = new Vector3();
     }
+
+    set color(colour) { colour.asThreeJsColor(this._mesh.material.color)}
 
     /** @param {{position:Vec3, axis:Vec3, radius:number}} body */
     canBindTo(body) {

@@ -1,8 +1,9 @@
-import { BufferGeometry, LineBasicMaterial, Line } from 'three';
 import {
     Floor, Sphere, Trail, Vec3, Simulation, RadialSymmetricBody, Checkbox, Slider, Range, CelestialBody, Colour, Vec2,
     SurfaceVisualization, ContoursLayer, ColorMappers, SurfaceResolution, ParametricSurface, SunView, ThreeJsScene,
+    Ring, AxialSymmetricBody, Integrators
 } from '../../../src/index.js';
+import {GaussianCurvatureLayer} from "../../../src/view/3d/surfaces/color_layers.js";
 
 let initialCometDistance = 33;
 let currentIsRingOrbitValue = false;
@@ -227,22 +228,18 @@ const realComet = new Comet({
     stateVector: StateVector.initial(currentIsRingOrbitValue)
 });
 
-function createPhotonSphere(M, segments = 300) {
-    const r = 3 * M;
-    const points = [];
-
-    for (let i = 0; i <= segments; i++) {
-        const phi = (i / segments) * 2 * Math.PI;
-        points.push(SchwarzschildSurface.gridPointAt(r, phi, M));
-    }
-
-    const geometry = new BufferGeometry().setFromPoints(points);
-    const material = new LineBasicMaterial({ color: 0x00aaff });
-    return new Line(geometry, material);
-}
-
-const photonRing = createPhotonSphere(sun.mass);
-photonRing.visible = false;
+const photonRing = new AxialSymmetricBody({
+    position: new Vec3(0, sun.mass * 3, 0),
+    mass: 3 * sun.mass,
+    radius: 3 * sun.mass,
+    axis: new Vec3(0, 1, 0)
+});
+const iscoRing = new AxialSymmetricBody({
+    position: new Vec3(0, sun.mass * 6, 0),
+    mass: sun.mass,
+    radius: 6 * sun.mass,
+    axis: new Vec3(0, 1, 0)
+})
 
 /** @param {number} clockTime */
 function timeStep(clockTime) {
@@ -256,6 +253,14 @@ function timeStep(clockTime) {
         realComet._state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
         flatComet._state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
     }
+
+    comet.state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
+    realComet.state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
+    flatComet.state.position.set(
+        comet.position.x,
+        SchwarzschildSurface.yOffset,
+        comet.position.z
+    );
 }
 
 //
@@ -277,35 +282,43 @@ const grid = new Floor({
 
 // Curved space-time: Flamm's paraboloid
 const spaceTimeCone = new SurfaceVisualization({
-    display: SurfaceVisualization.Display.None
+    display: SurfaceVisualization.Display.Surface,
+    colorLayer: new GaussianCurvatureLayer(),
+    colorMapper: ColorMappers.get(ColorMappers.Seismic),
+    opacity: 0.35
 });
 spaceTimeCone.addOverlayLayer(new ContoursLayer({
-    resolution: new SurfaceResolution(25, 50),
-    colorMapper: new ColorMappers().get(ColorMappers.Uniform)()
+    resolution: new SurfaceResolution(25, 35),
+    colorLayer: new GaussianCurvatureLayer(),
+    colorMapper: ColorMappers.get(ColorMappers.Seismic)
 }));
 
 const realCometTrail = new Trail({ color: new Colour(0xff8800) });
 const flatCometTrail = new Trail({ color: new Colour(0xff0000) });
 const cometTrail = new Trail({ color: new Colour(0x00ffff) });
+const ringColor = new Colour();
+const ring = new Ring({ thickness: 0.015 });
+const ringIsco = new Ring({
+    color: new Colour(0xcc00ff ),
+    thickness: 0.0125
+});
 const simulation = Simulation
     .with({
         htmlDivId: 'spaceTimeContainer',
-        viewport: { parameterMenuCollapsed: false },
-        camera: {
-            position: new Vec3(5, 7.5, 15).multiplyScalar(13),
-            fieldOfView: 45
-        },
+        viewport: { parameterMenuCollapsed: false, aspectRatio: '19/16' },
+        camera: { position: new Vec3(45, 97, 195), fieldOfView: 45 },
         scene: { background: ThreeJsScene.Background.STARS },
         infoPanel: {
             text: '<strong>❍ Schwarzschild space-time</strong><br/>' +
-                '• <span style="color: orange">orange</span> → real motion: geodesic flow in 4D $(t, r, \\phi)$<br/>' +
-                '• <span style="color: cyan">cyan</span> → Geodesic-projection on embedded equatorial surface<br/>' +
-                '• <span style="color: red">red</span> → flat motion (Newtonian/Euclidian projected trail)'
+                '• <span style="color: orange">orange</span> → Schwarzschild spacetime geodesic $(t, r, \\phi)$<br/>' +
+                '• <span style="color: cyan">cyan</span> → geodesic of the Flamm spatial geometry<br/>' +
+                '• <span style="color: red">red</span> → Euclidean projection of the embedded-surface trajectory'
         }
     })
     .addObject3D(grid)
-    .addObject3D(photonRing)
-    .bind(coneGeometry.onceWith(spaceTimeCone))
+    .bind(iscoRing.onceWith(ringIsco))
+    .bind(photonRing.onceWith(ring))
+    .bind(new SchwarzschildSurface(sun.mass).onceWith(spaceTimeCone))
     .bind(sun.alwaysWith(new SunView()))
     .bind(realComet.alwaysWith(new Sphere({ color: new Colour(0xff8800) })))
     .bind(realComet.alwaysWith(realCometTrail))
@@ -315,10 +328,11 @@ const simulation = Simulation
     .bind(comet.alwaysWith(cometTrail))
     .withMouseClickEventListener()
     .runsEvery(0.03)
-    .onStep((clock, _) => timeStep(clock.clockTime))
+    .onStep(() => timeStep())
     .onFrame(clockTime => {
         sun.time = clockTime;
-        photonRing.material.color.offsetHSL(0, 0, Math.sin(clockTime * 0.002) * 0.1)
+        ringColor.setRGB(1, 1 + .5 * Math.sin(clockTime *.005), 0)
+        ring.color = ringColor;
     })
     .append(new Checkbox('Grid: ')
         .on(grid)
@@ -333,41 +347,48 @@ const simulation = Simulation
 
 // TODO Mass slider
 
+function reset() {
+    const initialState = StateVector.initial(sun.mass, initialCometDistance, currentIsRingOrbitValue);
+    comet.reset(initialState);
+    realComet.reset(initialState);
+    flatComet.reset();
+    flatCometTrail.reset();
+    realCometTrail.reset();
+    cometTrail.reset();
+    comet.state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
+    realComet.state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
+    flatComet.state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
+}
+
 const distanceSlider = new Slider('Distance: ')
     .withRange(new Range(25.1, 64, .1))
     .withValue(33)
     .onInput(value => {
         initialCometDistance = value;
-        realComet._stateVector = StateVector.initial(currentIsRingOrbitValue);
-        comet.reset();
-        flatComet.reset();
-        flatCometTrail.reset();
-        realCometTrail.reset();
-        cometTrail.reset();
-        comet._stateVector = StateVector.initial(currentIsRingOrbitValue);
-        comet.state.position.copy(SchwarzschildSurface.surfacePointAt(comet.r, comet.phi, sun.mass));
-        realComet.state.position.copy(SchwarzschildSurface.gridPointAt(realComet.r, realComet.phi));
-        flatComet.state.position.set(comet.position.x, SchwarzschildSurface.yOffset, comet.position.z);
+        reset();
     });
 
 simulation
     .append(new Checkbox('Photon sphere: ')
-        .on(photonRing)
+        .on(ring)
         .withProperty('visible')
-        .checked(false)
-        .togetherWith(new Checkbox('Orbit: ')
-            .onChange(checked => {
-                realComet.reset();
-                realComet._stateVector = StateVector.initial(checked);
-                comet.reset();
-                comet._stateVector = StateVector.initial(checked);
-                flatComet.reset();
-                currentIsRingOrbitValue = checked;
-            })
+        .checked(true)
+        .togetherWith(new Checkbox('ISCO: ')
+            .on(ringIsco)
+            .withProperty('visible')
+            .togetherWith(new Checkbox('Orbit: ')
+                .onChange(checked => {
+                    realComet.reset();
+                    realComet._stateVector = StateVector.initial(checked);
+                    comet.reset();
+                    comet._stateVector = StateVector.initial(checked);
+                    flatComet.reset();
+                    currentIsRingOrbitValue = checked;
+                }))
         )
     )
     .append(distanceSlider);
-
+reset();
 //
 // Event handling
 //

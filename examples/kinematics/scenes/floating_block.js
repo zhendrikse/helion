@@ -1,7 +1,7 @@
 import {
-    Vec3, Block, Simulation, Box, Aquarium, UniformGravitationalForce, DragForce, Force, UPlotGraph, Colour 
+    Vec3, Block, Simulation, Box, Aquarium, UniformGravitationalForce, DragForce, Force, UPlotGraph, Colour, Renderable
 } from '../../../src/index.js';
-import {MeshStandardMaterial, TextureLoader} from 'three';
+import {MeshStandardMaterial} from 'three';
 import wood from './textures/wood_128x128.jpg';
 
 const g = -9.8;
@@ -63,7 +63,7 @@ const graph = new UPlotGraph({
     yLabel: 'y [m]'
 });
 
-const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)});
+const woodMaterial = new MeshStandardMaterial({map: Renderable.loadTexture(wood)});
 let stepCounter = 0;
 Simulation
     .with({
@@ -72,9 +72,8 @@ Simulation
     })
     .addObject3D(water)
     .withMouseClickEventListener()
-    .runsEvery(2e-3)
     .advancesBy(1e-3)
-    .substeps(4)
+    .substeps(7)
     .bind(woodenBlock.alwaysWith(new Box({ 
         material: woodMaterial, 
         color: new Colour(0xdeb887) 
@@ -83,8 +82,8 @@ Simulation
         woodenBlock
             .apply(gravitationalForce)
             .apply(floatingForce)
-            .apply(dragForce);
-        woodenBlock.integrate(dt);
+            .apply(dragForce)
+            .integrate(dt);
         if (stepCounter++ % 10 === 0)
             graph.push([clock.simulatedTime, floatingForce.asVector.y, dragForce.asVector.y * 3]);
     })

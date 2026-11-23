@@ -84,7 +84,7 @@ const simulation = Simulation
         size: .15,
         magnitudeMap: mag => 2 * mag
     })))
-    .runsEvery(0.0075)
+    .advancesBy(1/60)
     .onStep((clock, dt) => {
         cylinder.applyTorque(torqueAt(clock.simulatedTime), dt);
         const force = new Vec3(0, Math.cos(clock.simulatedTime), 0);

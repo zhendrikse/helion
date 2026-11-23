@@ -1,9 +1,11 @@
 import {
     Vec3, Simulation, Sphere, Box, Slider, Range, SwitchableBondView, RadialSymmetricBody,
     SpringForce, Force, UniformGravitationalForce, Block, UPlotGraph,
-    BodyPair, Colour, ModelObjectsCollection, ViewsCollection
+    BodyPair, Colour, ModelObjectsCollection, ViewsCollection, Renderable
 } from '../../../src/index.js';
 import {g} from '../../../src/model/phys/forces.js';
+import {MeshStandardMaterial} from "three";
+import wood from "./textures/wood_128x128.jpg";
 
 /**
  * Artificial restoring force used to keep the chain close to
@@ -154,14 +156,6 @@ class Chain {
                 .apply(this._pivotForce)
                 .integrate(dt);
     }
-
-    reset() {
-        for (const ball of this._balls)
-            ball.reset();
-
-        for (const bond of this._bonds)
-            bond.reset();
-    }
 }
 
 const chain = new Chain({
@@ -195,9 +189,7 @@ const simulation = Simulation
     .with({
         htmlDivId: 'chainDropContainer',
         camera: {
-            position: new Vec3(1, 0.5, 2).multiplyScalar(1.75),
-            target: new Vec3(.2, -0.7, 0),
-            fieldOfView: 30,
+            position: new Vec3(1.75, 0.875, 3.5), target: new Vec3(.2, -.85, 0), fieldOfView: 30
         }
     })
     .withMouseClickEventListener()
@@ -209,16 +201,18 @@ const simulation = Simulation
         tubularSegments: 400,
         color: new Colour(0xffff66)
     })))
-    .runsEvery(1e-3)
-    .substeps(4)
+    .substeps(10)
     .advancesBy(1e-4)
     .onStep((clock, dt) => chain.update(dt))
     .onFrame(timestep => {
-        if (!simulation.isRunning)
-            return;
-        graph.push([timestep, chain.endBall.acceleration.y, g]);
+        if (simulation.isRunning)
+            graph.push([timestep, chain.endBall.acceleration.y, g]);
     })
-    .bind(table.onceWith(new Box({ color: new Colour(0x888888), opacity: 0.3 })))
+    .bind(table.onceWith(new Box({
+        material: new MeshStandardMaterial({map: Renderable.loadTexture(wood)}),
+        color: new Colour(0xdeb887)
+    })))
+    .onReset(() => graph.reset())
     .addGraph(graph)
     .append(new Slider('Spring force ')
         .withRange(new Range(1, 100, 1))

@@ -1,4 +1,6 @@
-import {Simulation, Vec3, Venus, ThreeJsScene, radToDeg, Planet, CelestialBody } from '../../../../src/index.js';
+import {
+    Simulation, Vec3, Venus, ThreeJsScene, Planet, CelestialBody, Renderable
+} from '../../../../src/index.js';
 import { AmbientLight, DirectionalLight, MeshPhongMaterial } from 'three';
 import venusMap from '../../textures/venusmap.jpg';
 import venusBumpMap from '../../textures/venusbump.jpg';
@@ -6,8 +8,8 @@ import venusBumpMap from '../../textures/venusbump.jpg';
 const venus = new CelestialBody(Venus);
 const planetView = new Planet({
     material: new MeshPhongMaterial({
-        map: Planet.loader.load(venusMap),
-        bumpMap: Planet.loader.load(venusBumpMap),
+        map: Renderable.loadTexture(venusMap),
+        bumpMap: Renderable.loadTexture(venusBumpMap),
         bumpScale: 1,
         shininess: 0
     })

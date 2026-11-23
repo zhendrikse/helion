@@ -1,12 +1,12 @@
 import {
-    Simulation, AxialSymmetricBody, ModelObjectsCollection, Cylinder, Sphere, RadialSymmetricBody, Vec3, ViewsCollection,
-    Colour, Block, Box, Range, Slider, UPlotGraph, normalDistribution
+    Simulation, AxialSymmetricBody, ModelObjectsCollection, Cylinder, Sphere, RadialSymmetricBody, Vec3,
+    ViewsCollection, Colour, Block, Box, Range, Slider, UPlotGraph, normalDistribution, Renderable
 } from '../../../src/index.js';
 import wood from '../../kinematics/scenes/textures/wood_oak.jpg';
 import wood2 from '../../kinematics/scenes/textures/treeBark.jpg';
 
 import uPlot from 'uplot';
-import { MeshStandardMaterial, RepeatWrapping, TextureLoader } from "three";
+import { MeshStandardMaterial } from "three";
 
 const num_nails = 10;
 const num_balls = 200;
@@ -84,13 +84,7 @@ histogram.graphData[0].push(...binPositions);
 histogram.graphData[1].push(...bins);
 histogram.graphData[2].push(...normalValues);
 
-const textureLoader = new TextureLoader();
-const texture = textureLoader.load(wood);
-texture.wrapS = RepeatWrapping;
-texture.wrapT = RepeatWrapping;
-texture.repeat.set(2, 2);
-
-const material = new MeshStandardMaterial({map: new TextureLoader().load(wood2)});
+const material = new MeshStandardMaterial({map: Renderable.loadTexture(wood2)});
 const simulation = Simulation
     .with({
         htmlDivId: 'galtonBoardContainer',
@@ -108,7 +102,7 @@ const simulation = Simulation
         position: new Vec3(0, 1.5, -0.3),
         size: new Vec3(2 * (num_nails + 1.1), num_balls * .1825, .1)
     }).alwaysWith(new Box({
-        material: new MeshStandardMaterial({ map: texture }),
+        material: new MeshStandardMaterial({ map: Renderable.loadTexture(wood, 2) }),
         color: new Colour(0xDEB887)
     })))
     .bind(bars.onceWith(ViewsCollection.of(Cylinder).with({ color: new Colour(0x855E42), material })))

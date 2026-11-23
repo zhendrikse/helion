@@ -1,6 +1,6 @@
 import {MeshPhongMaterial, AmbientLight, PointLight, MathUtils, MeshBasicMaterial} from 'three';
 import {
-    CelestialBody, Checkbox, Colour, Mercury, Planet, RadialSymmetricBody, Simulation, Sphere, SunView,
+    CelestialBody, Checkbox, Colour, Mercury, Planet, RadialSymmetricBody, Renderable, Simulation, Sphere, SunView,
     ThreeJsScene, Trail, Vec3
 } from '../../../src/index.js';
 import mercuryMap from '../../astrophysics/textures/mercurymap.jpg';
@@ -183,8 +183,8 @@ simulation = Simulation
     .withMouseClickEventListener(() => lastTime = performance.now())
     .bind(mercury.alwaysWith(new Planet({
         material: new MeshPhongMaterial({
-            map: Planet.loader.load(mercuryMap),
-            bumpMap: Planet.loader.load(mercuryBumpMap),
+            map: Renderable.loadTexture(mercuryMap),
+            bumpMap: Renderable.loadTexture(mercuryBumpMap),
             bumpScale: 2,
             shininess: 0
         }),

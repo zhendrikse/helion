@@ -1,6 +1,6 @@
 import { Renderable3D } from '../../renderer.js';
 import {
-    Mesh, MeshPhongMaterial, SphereGeometry, TextureLoader, Vector3, BufferAttribute, BufferGeometry,
+    Mesh, MeshPhongMaterial, SphereGeometry, Vector3, BufferAttribute, BufferGeometry,
     DoubleSide, CanvasTexture, Color, ShaderMaterial, AdditiveBlending, BackSide
 } from 'three';
 import fresnelFragmentShader from "./shaders/fresnel_fragment_shader.glsl?raw";
@@ -10,8 +10,6 @@ import sunVertexShader from "./shaders/sun_vertex_shader.glsl?raw";
 import {Vec3} from "../../../model/math/objects.js";
 
 export class Planet extends Renderable3D {
-    static loader = new TextureLoader();
-
     constructor({
         material,
         translation = new Vec3(),
