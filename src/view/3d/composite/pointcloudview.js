@@ -71,7 +71,7 @@ export class PointCloudMaterial {
                     vColor = color;
                     float randomFactor = 0.8 + 0.2 * rand(position.xy);
                     // Keep the dense galactic core visible; fade stars only towards the outer disc.
-                    vAlpha = randomFactor * (1.0 - smoothstep(0.0, 500.0, dist));
+                    vAlpha = 0.5 * randomFactor * (1.0 - smoothstep(0.0, 500.0, dist));
 
                     gl_PointSize = size * (750.0 / (length(mvPosition.xyz) + 1.0));
                     gl_Position = projectionMatrix * mvPosition;

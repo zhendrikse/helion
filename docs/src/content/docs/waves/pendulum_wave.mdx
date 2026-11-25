@@ -2,6 +2,7 @@
 title: Pendulum wave
 sidebar:
   label: ⚖️ Pendulum wave
+description: Simulation of a pendulum wave, illustrating standing waves and the so-called beating phenomenon
 layout: ../../../layouts/DocsLayout.astro
 ---
 
@@ -14,6 +15,15 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
+> A [pendulum wave](https://en.wikipedia.org/wiki/Pendulum_wave) is an elementary physics demonstration and
+> [kinetic art](https://en.wikipedia.org/wiki/Kinetic_art) comprising a number of uncoupled
+> [simple pendulums](https://en.wikipedia.org/wiki/Simple_pendulum) with
+> [monotonically](https://en.wikipedia.org/wiki/Monotonic) increasing lengths. As the pendulums oscillate,
+> they appear to produce travelling and
+> [standing waves](https://en.wikipedia.org/wiki/Standing_wave),
+> [beating](https://en.wikipedia.org/wiki/Beat_(acoustics)),
+> and random motion. &mdash; [WikiPedia](https://en.wikipedia.org/wiki/Pendulum_wave)
+
 ### Pendulum wave demo
 <div class="header_line"></div>
 
@@ -23,15 +33,14 @@ layout: ../../../layouts/DocsLayout.astro
     </a>
 </div>
 
-🎯 Illustration of a pendulum wave<br/>
-⭐ Based on the VPython [PendulumWave](https://glowscript.org/#/user/yizhe/folder/Public/program/PendulumWave) and inspired by [www.dynamicmath.xyz](https://www.dynamicmath.xyz/)<br/>
+🧠 inspired by [PendulumWave](https://glowscript.org/#/user/yizhe/folder/Public/program/PendulumWave) and [www.dynamicmath.xyz](https://www.dynamicmath.xyz/)<br/>
 🔗 Related to [Newton's cradle](../../kinematics/newtons_cradle/) demo<br/>
 🐍 A [VPython demo](https://www.glowscript.org/#/user/zeger.hendrikse/folder/Kinematics/program/PendulumWave) is available as well, see [pendulum_wave.py](https://github.com/zhendrikse/physics-in-python/blob/main/vpython/pendulum_wave.py)<br/>
 
 <div id="pendulumWaveContainer"></div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/waves/scenes/pendulum_wave.js"}></script>
 
-### 🧠 Pendulum wave synchronization
+### Pendulum wave synchronization
 <div class="header_line"></div>
 
 At first glance the pendulum wave looks chaotic, but it is actually a **perfectly designed periodic motion**!

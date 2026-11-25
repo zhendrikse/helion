@@ -24,12 +24,15 @@ export class PointCloud extends ModelObject {
         sizes = [],
     } = {}) {
         super();
-        this._positions = positions;
         this._colors = colors;
         this._sizes = sizes;
         this._masses = masses;
-        this._velocities = velocities;
         this._particleState = new PhysicsState();
+
+        this._positions = positions;
+        this._velocities = velocities;
+        this._initialPositions = positions.map(position => position.clone());
+        this._initialVelocities = velocities.map(velocity => velocity.clone());
     }
 
     /** @param {number} index */
@@ -57,6 +60,11 @@ export class PointCloud extends ModelObject {
     colorAt(index) { return this._colors[index]; }
     /** @param {number} index */
     sizeAt(index) { return this._sizes[index]; }
+
+    reset() {
+        this._initialPositions.forEach((position, index) => this._positions[index].copy(position));
+        this._initialVelocities.forEach((velocity, index) => this._velocities[index].copy(velocity));
+    }
 }
 
 class GasParticle extends RadialSymmetricBody {

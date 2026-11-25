@@ -114,7 +114,7 @@ class FresnelMaterial {
     }
 }
 
-class GlowMaterial {
+export class GlowMaterial {
     constructor(uniforms) {
         this.uniforms = uniforms;
         this.material = new ShaderMaterial({
@@ -136,13 +136,14 @@ class GlowMaterial {
 
             fragmentShader: `
                 uniform vec3 uColor;
+                uniform float intensity;
                 varying vec3 vPosition;
                 varying vec3 vNormalView;
 
                 void main(){
                     float rawIntensity = max( dot(vPosition, vNormalView), 0.0 );
-                    float intensity = pow(rawIntensity, 4.0);
-                    gl_FragColor = vec4(uColor, intensity);
+                    float glowIntensity = pow(rawIntensity, intensity);
+                    gl_FragColor = vec4(uColor, glowIntensity);
                 }
                 `
         });
@@ -162,7 +163,8 @@ export class SunView extends Renderable3D {
         this._radiusScaleFactor = radiusScaleFactor;
         this.uniforms = {
             uTime: { value: 0 },
-            uColor: { value: color }
+            uColor: { value: color },
+            intensity: { value: 3.75 }
         };
 
         const geometry = new SphereGeometry(1, 128, 128);
