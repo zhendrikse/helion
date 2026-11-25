@@ -38,7 +38,8 @@ const simulation = Simulation
     .with({
         htmlDivId: 'doubleSlitContainer',
         camera: { position: new Vec3(0, -9, 7).multiplyScalar(resolution) },
-        viewport: { aspectRatio: '2/1' }
+        viewport: { aspectRatio: '2/1', parameterMenuCollapsed: false },
+        headUpDisplay: { enabled: false }
     })
     .bind(slit1.onceWith(new Cylinder({ color: Colour.White })))
     .bind(slit2.onceWith(new Cylinder({ color: Colour.White })))
@@ -50,7 +51,7 @@ const simulation = Simulation
         colorMapper: wavelengthColorMapper,
         normalizer: new FixedIntervalNormalizer()
     })))
-    .withMouseClickEventListener()
+    .appendStartStopResetUI()
     .onReset(() => particles.length = 0)
     .onStep((_) => {
         if (Math.random() > 0.9) spawnParticleFromSlit(slit1.position);
