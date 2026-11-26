@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, Uranus, ThreeJsScene, radToDeg, RingsPlanet, Planet, CelestialBody
+    Simulation, Vec3, Uranus, ThreeJsScene, radToDeg, RingsPlanet, Planet, CelestialBody, Renderable
 } from '../../../../src/index.js';
 import { AmbientLight, DirectionalLight, MeshPhongMaterial} from 'three';
 import uranusMap from '../../textures/uranusmap.jpg';
@@ -9,8 +9,8 @@ import uranusRingsPatternUrl from '../../textures/uranusringtrans.gif';
 const uranus = new CelestialBody(Uranus);
 const planetView = new RingsPlanet({
     material: new MeshPhongMaterial({
-        map: Planet.loader.load(uranusMap),
-        bumpMap: Planet.loader.load(uranusMap),
+        map: Renderable.loadTexture(uranusMap),
+        bumpMap: Renderable.loadTexture(uranusMap),
         bumpScale: 5,
         shininess: 0
     }),

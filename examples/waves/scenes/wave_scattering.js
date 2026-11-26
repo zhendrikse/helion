@@ -22,9 +22,7 @@ const waveEquation = new BarrierWaveEquation({
 });
 const solver = new WaveEquationSolver(waveEquation);
 
-const sineImpuls = new SineImpulseOperator({
-    amplitude: 0.5
-});
+const sineImpuls = new SineImpulseOperator({ amplitude: 0.5 });
 /** @param {ShapeConfiguration} shapeConfig */
 function reset(shapeConfig) {
     field

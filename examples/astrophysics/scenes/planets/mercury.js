@@ -1,5 +1,5 @@
 import {
-    Simulation, Vec3, Mercury, ThreeJsScene, radToDeg, Planet, CelestialBody,
+    Simulation, Vec3, Mercury, ThreeJsScene, Planet, CelestialBody, Renderable,
 } from '../../../../src/index.js';
 import { AmbientLight, DirectionalLight, MeshPhongMaterial } from 'three';
 import mercuryMap from '../../textures/mercurymap.jpg';
@@ -8,8 +8,8 @@ import mercuryBumpMap from '../../textures/mercurybump.jpg';
 const mercury = new CelestialBody(Mercury);
 const planetView = new Planet({
     material: new MeshPhongMaterial({
-        map: Planet.loader.load(mercuryMap),
-        bumpMap: Planet.loader.load(mercuryBumpMap),
+        map: Renderable.loadTexture(mercuryMap),
+        bumpMap: Renderable.loadTexture(mercuryBumpMap),
         bumpScale: 1.5,
         shininess: 0
     })

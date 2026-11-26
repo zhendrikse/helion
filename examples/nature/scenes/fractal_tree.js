@@ -1,9 +1,9 @@
 import {
     AxialSymmetricBody, Button, Colour, Cylinder, HueColorMapper, LineSegment, LineSegmentsView, degToRad,
-    ModelObjectsCollection, RadialSymmetricBody, Segments, Simulation, Sphere, Vec3, ViewsCollection
+    ModelObjectsCollection, RadialSymmetricBody, Segments, Simulation, Sphere, Vec3, ViewsCollection, Renderable
 } from '../../../src/index.js';
 import wood from '../../kinematics/scenes/textures/treeBark.jpg';
-import {MeshStandardMaterial, TextureLoader} from "three";
+import { MeshStandardMaterial } from "three";
 
 const branches = new ModelObjectsCollection();
 const buds = new ModelObjectsCollection();
@@ -54,7 +54,7 @@ branches.add(new AxialSymmetricBody({ position: new Vec3(0, -300, 0), axis: new 
 addNatureBranch(new Vec3(0, -125, 0), new Vec3(0, 1, 0), 125);
 addPythagorasBranch(256, 650, -90, 12);
 
-const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)});
+const woodMaterial = new MeshStandardMaterial({map: Renderable.loadTexture(wood)});
 const branchViews = ViewsCollection.of(Cylinder).with({ material: woodMaterial, color: new Colour(0xDEB887) });
 const budViews = ViewsCollection.of(Sphere).with({
     material: new MeshStandardMaterial({

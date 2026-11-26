@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Floor, Vec2, AxialSymmetricBody, Cylinder, SphereSphereCollision,
-    RadialSymmetricBody, ThreeJsScene, Colour, ViewsCollection, ModelObjectsCollection,
+    RadialSymmetricBody, ThreeJsScene, Colour, ViewsCollection, ModelObjectsCollection, Renderable,
 } from '../../../src/index.js';
 import {DoubleSide, MeshStandardMaterial, TextureLoader, Vector2} from 'three';
 import wood from './textures/treeBark.jpg';
@@ -143,10 +143,10 @@ Simulation
         position: new Vec3(0, -1.65, 0),
         planeSizeXy: new Vec2(100, 100),
         planeMaterial: new MeshStandardMaterial({
-            normalScale: new Vector2(3, 3),
+            normalScale: new Vector2(25, 25),
             roughness: 1,
-            map: Floor.loadTexture(grassColorUrl, 50),
-            normalMap: Floor.loadTexture(grassNormalUrl, 50),
+            map: Renderable.loadTexture(grassColorUrl, 25),
+            normalMap: Renderable.loadTexture(grassNormalUrl, 25),
             side: DoubleSide
         })
     }))

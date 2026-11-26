@@ -1,4 +1,4 @@
-import { Object3D, Box3 } from 'three';
+import { Object3D, Box3, RepeatWrapping, TextureLoader, Texture } from 'three';
 import { Viewport } from '../core/viewport.js';
 
 /**
@@ -12,9 +12,24 @@ import { Viewport } from '../core/viewport.js';
  * @method initialize(model) - Initializes the object with the given model.
  * @method synchronizeWith(model) - Synchronizes the object with the given model.
  * @method reset() - Resets a view (when it has state) to its initial state.
- * @method dispose() - Disposes of the object and releases any resources it holds.  
+ * @method dispose() - Disposes of the object and releases any resources it holds.
  */
 export class Renderable extends Object3D {
+    static loader = new TextureLoader();
+
+    /**
+     * @param {any} url the URL to load the texture from.
+     * @param {number} granularity set the number of repeats, one by default.
+     * @return {Texture} the loaded texture
+     */
+    static loadTexture = (url, granularity = 1) => {
+        const texture = Renderable.loader.load(url, texture1 => () =>{}, ()=>{}, ()=>{});
+        texture.wrapS = RepeatWrapping;
+        texture.wrapT = RepeatWrapping;
+        texture.repeat.set(granularity, granularity);
+        return texture;
+    }
+
     /**
      * @abstract
      * @param {any} _model

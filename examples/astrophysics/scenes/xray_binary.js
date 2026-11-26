@@ -83,7 +83,7 @@ const streamMaterial = new MeshBasicMaterial({
     depthWrite: false
 });
 
-const material = new MeshPhongMaterial({ transparent: false, roughness: 0.6, metalness: 0.2 });
+const material = () => new MeshPhongMaterial({ transparent: false, roughness: 0.6, metalness: 0.2 });
 Simulation
     .with({
         htmlDivId: 'xrayBinaryContainer',
@@ -102,13 +102,17 @@ Simulation
     })))
     .bind(accretionDisk.alwaysWith(new Cylinder({ color: new Colour(0xd3b644), opacity: 0.55 })))
     .bind(diskWind.onceWith(glow))
-    .bind(lowerJet.alwaysWith(new Cone({ color: new Colour(0xe0e044), opacity: 0.1 })))
-    .bind(upperJet.alwaysWith(new Cone({ color: new Colour(0xe0e044), opacity: 0.1 })))
-    .bind(mainStar.alwaysWith(new Sphere({ material, color: new Colour(0xff5500), segments: 64 })))
-    .bind(rocheBulge1.alwaysWith(new Sphere({ material, color: new Colour(0xff7700), opacity: 0.85, segments: 64 })))
-    .bind(rocheBulge2.alwaysWith(new Sphere({ material, color: new Colour(0xff7700), opacity: 0.9, segments: 64 })))
+    .bind(lowerJet.alwaysWith(new Cone({ color: new Colour(0xeeee44), opacity: 0.1 })))
+    .bind(upperJet.alwaysWith(new Cone({ color: new Colour(0xeeee44), opacity: 0.1 })))
+    .bind(mainStar.alwaysWith(new Sphere({
+        material: material(),
+        color: new Colour(0xff7700),
+        segments: 64
+    })))
+    .bind(rocheBulge1.alwaysWith(new Sphere({ material: material(), color: new Colour(0xff7700), opacity: 0.85, segments: 64 })))
+    .bind(rocheBulge2.alwaysWith(new Sphere({ material: material(), color: new Colour(0xff7700), opacity: 0.9, segments: 64 })))
     .bind(stream.alwaysWith(new Cylinder({
-        color: new Colour(0xb3e6ff),
+        color: new Colour(0xb3e666),
         opacity: 0.8,
         radiusFunction: body => body.radius,
         material: streamMaterial

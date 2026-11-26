@@ -1,6 +1,6 @@
 import {
     Vec3, Simulation, Sphere, Floor, SwitchableBondView, Transformation,
-    Slider, Range, Vec2, Lattice, LatticeView, ChainTopology, ThreeJsScene, Colour
+    Slider, Range, Vec2, Lattice, LatticeView, ChainTopology, ThreeJsScene, Colour, Renderable
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
 import {DoubleSide, MeshStandardMaterial, Vector2} from "three";
@@ -96,9 +96,9 @@ Simulation
         planeMaterial: new MeshStandardMaterial({
             normalScale: new Vector2(100, 100),
             roughness: 1,
-            map: Floor.loadTexture(woodWicketColorUrl, 20),
-            roughnessMap: Floor.loadTexture(woodWicketRoughnessUrl, 20),
-            normalMap: Floor.loadTexture(woodWicketNormalUrl, 20),
+            map: Renderable.loadTexture(woodWicketColorUrl, 20),
+            roughnessMap: Renderable.loadTexture(woodWicketRoughnessUrl, 20),
+            normalMap: Renderable.loadTexture(woodWicketNormalUrl, 20),
             side: DoubleSide
         })
     }))

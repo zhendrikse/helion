@@ -1,5 +1,5 @@
 import {
-    Simulation, Sphere, Trail, Vec3, Colour, Planet, Slider, Range, RadialSymmetricBody
+    Simulation, Sphere, Trail, Vec3, Colour, Slider, Range, RadialSymmetricBody, Renderable
 } from '../../../src/index.js';
 import {DirectionalLight, MeshPhongMaterial, SRGBColorSpace} from 'three';
 import earthMap from '../../astrophysics/textures/Solarsystemscope_texture_2k_earth_daymap.jpg';
@@ -7,7 +7,7 @@ import earthBumpMap from '../../astrophysics/textures/earthbump1k.jpg';
 
 const EARTH_RADIUS = 6_371_000;
 
-const earthTexture = Planet.loader.load(earthMap);
+const earthTexture = Renderable.loadTexture(earthMap);
 earthTexture.colorSpace = SRGBColorSpace;
 
 function update(ball, dt) {
@@ -41,7 +41,7 @@ const earthView = new Sphere({
     segments: 64,
     material: new MeshPhongMaterial({
         map: earthTexture,
-        bumpMap: Planet.loader.load(earthBumpMap),
+        bumpMap: Renderable.loadTexture(earthBumpMap),
         bumpScale: 20,
         transparent: true,
         opacity: 0.9,
@@ -80,7 +80,6 @@ const simulation = Simulation
     .bind(pointMassEarthBall.alwaysWith(new Sphere({ color: Colour.Green })))
     .bind(pointMassEarthBall.alwaysWith(new Trail({ color: Colour.Green, maxPoints: 2000 })))
     .bind(earth.alwaysWith(earthView))
-    .runsEvery(0.01)
     .advancesBy(5)
     .onStep((_clock, dt) => {
         if (cannonBallHitEarth()) {

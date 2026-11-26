@@ -8,6 +8,7 @@ import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { Vec2, Vec3 } from '../../../model/math/objects.js';
 import { Body, BodyPair } from '../../../model/phys/bodies.js';
 import {Colour} from '../../colormappers.js';
+import {GlowMaterial} from "./astro.js";
 
 //
 // T R A I L
@@ -154,15 +155,18 @@ export class Trail extends Renderable3D {
 //
 export class Sphere extends Renderable3D {
     /**
-     * @param {{
-     * color?: Colour,
-     * opacity?: number,
-     * wireframe?: boolean,
-     * visible?: boolean
-     * material?: Material | null,
-     * segments?: number,
-     * castShadow?: boolean
-     * }} param0
+     * @param {Object} param0 - Configuration options.
+     * @param {Colour} [param0.color] - The sphere's color.
+     * @param {number} [param0.opacity] - The sphere's opacity (0–1).
+     * @param {boolean} [param0.wireframe] - Whether to render as wireframe.
+     * @param {boolean} [param0.visible] - Whether the object is visible.
+     * @param {Material|null} [param0.material] - Custom material, or null to use the default.
+     * @param {number} [param0.segments] - Number of geometry segments.
+     * @param {boolean} [param0.castShadow] - Whether the object casts shadows.
+     * @param {number} [param0.glowIntensity] - Intensity of the glow effect, between zero and one.
+     * @param {Colour} [param0.glowColor] - Color of the glow effect.
+     * @param {boolean} [param0.glowOnly] - Whether to render only the glow.
+     * @param {number} [param0.glowRadius] - Radius of the glow effect, default 1.
      */
     constructor({
         color = Colour.Yellow,
@@ -170,20 +174,36 @@ export class Sphere extends Renderable3D {
         wireframe = false,
         visible = true,
         material = new MeshStandardMaterial({
-            transparent: true,
             roughness: 0.2,
             metalness: 0.8
         }),
         segments = 24,
         castShadow = false,
+        glowIntensity = 0,
+        glowColor = Colour.Yellow,
+        glowOnly = false,
+        glowRadius = 1
     } = {}) {
         super();
         color.asThreeJsColor(material.color);
+        material.transparent = true;
         material.wireframe = wireframe;
         material.opacity = opacity;
-        this._mesh = new Mesh(new SphereGeometry(1, segments, segments), material);
-        this._mesh.castShadow = castShadow;
-        this.add(this._mesh);
+
+        this._mesh = glowOnly ? null : new Mesh(new SphereGeometry(1, segments, segments), material);
+        this._glowMesh = glowIntensity === 0 ?
+            null :
+            new Mesh(new SphereGeometry(glowRadius, 32, 32), new GlowMaterial({
+                intensity: { value: 1 / glowIntensity },
+                uColor: { value: glowColor.asThreeJsColor() }
+            }).material);
+
+        if (glowIntensity !== 0)
+            this.add(this._glowMesh);
+        if (!glowOnly) {
+            this.add(this._mesh);
+            this._mesh.castShadow = castShadow;
+        }
         this.visible = visible;
     }
 
@@ -204,6 +224,19 @@ export class Sphere extends Renderable3D {
     /** @param {Colour} newColor */
     set color(newColor) {
         newColor.asThreeJsColor(this._mesh.material.color);
+    }
+
+    dispose() {
+        if (this._glowMesh) {
+            this.remove(this._glowMesh);
+            this._glowMesh = null;
+        }
+        if (this._mesh) {
+            this.remove(this._mesh);
+            this._mesh = null;
+        }
+
+        this.clear();
     }
 }
 
@@ -557,7 +590,8 @@ export class Box extends Renderable3D {
     } = {}) {
         super();
         material.opacity = opacity;
-        material.color.copy(color.asThreeJsColor());
+        material.transparent = true;
+        color.asThreeJsColor(material.color);
         this._mesh = new Mesh(new BoxGeometry(1, 1, 1), material);
         this.add(this._mesh);
         this._mesh.castShadow = castShadow;
@@ -595,11 +629,11 @@ export class Ring extends Renderable3D {
     constructor({
         color = Colour.Yellow,
         thickness = 0.1,
-        radialSegments = 16,
+        radialSegments = 32,
         tubularSegments = 32,
         material = new MeshStandardMaterial({
-            roughness: 0.4,
-            metalness: 0.75
+            roughness: 0.2,
+            metalness: 0.3
         })
     } = {}) {
         super();
@@ -609,6 +643,8 @@ export class Ring extends Renderable3D {
         this.add(this._mesh);
         this._direction = new Vector3();
     }
+
+    set color(colour) { colour.asThreeJsColor(this._mesh.material.color)}
 
     /** @param {{position:Vec3, axis:Vec3, radius:number}} body */
     canBindTo(body) {

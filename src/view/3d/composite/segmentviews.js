@@ -10,6 +10,7 @@ import { Interval } from "../../../model/math/math.js";
 import { Vec2, Vec3 } from "../../../model/math/objects.js";
 import { LineSegment, Segments } from "../../../model/math/objects.js";
 import {ColorMappers, Colour} from "../../colormappers.js";
+import {GlowMaterial} from "../primitives/astro.js";
 
 class InstancedSegmentsView extends Renderable3D {
     static UP = new Vector3(0, 1, 0);
@@ -129,6 +130,36 @@ export class SphereSegmentsView extends InstancedSegmentsView {
         colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, 1, 1),
         opacity = 1,
     } = {}) {
+        super({ material, colorMapper, opacity });
+    }
+
+    createGeometry() {
+        return new SphereGeometry(1, 12, 12);
+    }
+
+    updateTransform(segment) {
+        this._dummy.position.copy(segment.position);
+        this._dummy.scale.setScalar(segment.radius);
+        this._dummy.quaternion.identity();
+    }
+
+    /** @param {number} opacity */
+    set opacity(opacity) {
+        this._material.opacity = opacity;
+    }
+}
+
+export class FuzzySphereSegmentsView extends InstancedSegmentsView {
+    constructor({
+        glowIntensity = 0.3,
+        glowColor = Colour.Yellow,
+        colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, 1, 1),
+        opacity = 1,
+    } = {}) {
+        const material = new GlowMaterial({
+            intensity: { value: 1 / glowIntensity },
+            uColor: { value: glowColor.asThreeJsColor() }
+        }).material;
         super({ material, colorMapper, opacity });
     }
 

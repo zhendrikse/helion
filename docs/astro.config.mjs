@@ -1,14 +1,16 @@
-
-import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 
-import starlight from '@astrojs/starlight';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import starlightLlmsTxt from 'starlight-llms-txt';
+
+import { defineConfig } from 'astro/config';
+import starlight from '@astrojs/starlight';
+
+const GA_ID = 'G-2D6GMNZ92T';
 
 export default defineConfig({
 	base: '/helion/',
@@ -23,6 +25,24 @@ export default defineConfig({
 			favicon: '/favicon.ico',
 			plugins: [
 				starlightLlmsTxt(),
+			],
+			head: [
+				{
+					tag: 'script',
+					attrs: {
+						async: true,
+						src: `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`,
+					},
+				},
+				{
+					tag: 'script',
+					content: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}');
+          `,
+				},
 			],
 			components: {
 				Head: './src/components/Head.astro',

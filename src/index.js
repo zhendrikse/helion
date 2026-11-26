@@ -59,7 +59,7 @@ export { ModelObject, Transformation, ModelObjectsCollection, BindingsCollection
 export { Registry } from './core/utils.js';
 export { UPlotGraph, UPlotBarGraph } from './core/uplot.js';
 export { Floor, Aquarium, Ceiling } from './view/3d/primitives/decorations.js';
-export { Renderable3D, Renderable2D, ViewsCollection } from './view/renderer.js';
+export { Renderable3D, Renderable2D, ViewsCollection, Renderable } from './view/renderer.js';
 export { DiscreteFieldBoxView } from './view/3d/views.js';
 export { ContoursLayer, PrincipalDirectionsLayer, GlyphLayer } from './view/3d/surfaces/layers.js';
 export { TangentFrameView } from './view/3d/surfaces/tangentframe.js';

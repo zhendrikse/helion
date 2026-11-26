@@ -1,5 +1,5 @@
 import {
-    Simulation, ParametricSurface, Domain, SurfaceVisualization, SurfaceResolution, Vec3, Planet
+    Simulation, ParametricSurface, Domain, SurfaceVisualization, SurfaceResolution, Vec3, Renderable
 } from '../../../src/index.js';
 import {AmbientLight, DirectionalLight, MeshPhongMaterial, SRGBColorSpace} from 'three';
 import earthMap from '../../astrophysics/textures/Solarsystemscope_texture_2k_earth_daymap.jpg';
@@ -10,7 +10,7 @@ const PI = Math.PI;
 const R = 1.5;
 let t = 0;
 
-const earthTexture = Planet.loader.load(earthMap);
+const earthTexture = Renderable.loadTexture(earthMap);
 earthTexture.colorSpace = SRGBColorSpace;
 
 const radius = v =>  R * ((1 - t) * Math.cos(v) + t);
@@ -25,8 +25,8 @@ const surfaceView = new SurfaceVisualization({
     resolution: new SurfaceResolution(192, 96),
     material: new MeshPhongMaterial({
         map: earthTexture,
-        bumpMap: Planet.loader.load(earthBumpMap),
-        specularMap: Planet.loader.load(earthSpecMap),
+        bumpMap: Renderable.loadTexture(earthBumpMap),
+        specularMap: Renderable.loadTexture(earthSpecMap),
         bumpScale: 5
     }),
     vertexColors: false

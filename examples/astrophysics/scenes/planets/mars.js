@@ -1,4 +1,4 @@
-import {Simulation, Vec3, Mars, ThreeJsScene, Planet, CelestialBody} from '../../../../src/index.js';
+import {Simulation, Vec3, Mars, ThreeJsScene, Planet, CelestialBody, Renderable} from '../../../../src/index.js';
 import {AmbientLight, DirectionalLight, MeshPhongMaterial} from 'three';
 import marsMap from '../../textures/marsmap.jpg';
 import marsBumpMap from '../../textures/marsbump.jpg';
@@ -6,8 +6,8 @@ import marsBumpMap from '../../textures/marsbump.jpg';
 const mars = new CelestialBody(Mars);
 const planetView = new Planet({
     material: new MeshPhongMaterial({
-        map: Planet.loader.load(marsMap),
-        bumpMap: Planet.loader.load(marsBumpMap),
+        map: Renderable.loadTexture(marsMap),
+        bumpMap: Renderable.loadTexture(marsBumpMap),
         bumpScale: 2.5,
         shininess: 0
     })

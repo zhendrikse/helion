@@ -1,9 +1,9 @@
 import {
     Vec3, Simulation, Floor, Box, Block, Slider, Range, Vec2, Lattice, LatticeView,
-    ChainTopology, UniformGravitationalForce, DragForce, ThreeJsScene, Colour
+    ChainTopology, UniformGravitationalForce, DragForce, ThreeJsScene, Colour, Renderable
 } from '../../../src/index.js';
 import 'uplot/dist/uPlot.min.css';
-import {DoubleSide, MeshStandardMaterial, TextureLoader, Vector2} from "three";
+import {DoubleSide, MeshStandardMaterial, Vector2} from "three";
 import wood from "../../kinematics/scenes/textures/treeBark.jpg";
 import woodWicketColorUrl from "../../waves/scenes/textures/Wood_Wicker_011_color.png";
 import woodWicketRoughnessUrl from "../../waves/scenes/textures/Wood_Wicker_011_roughness.png";
@@ -47,7 +47,7 @@ const pole2 = new Block({
 
 const gravitationalForce = new UniformGravitationalForce();
 const dragForce = new DragForce(-1e-4);
-const woodMaterial = new MeshStandardMaterial({map: new TextureLoader().load(wood)})
+const woodMaterial = new MeshStandardMaterial({map: Renderable.loadTexture(wood)})
 Simulation
     .with({
         htmlDivId: 'suspendedSpringContainer',
@@ -79,9 +79,9 @@ Simulation
         planeMaterial: new MeshStandardMaterial({
             normalScale: new Vector2(100, 100),
             roughness: 1,
-            map: Floor.loadTexture(woodWicketColorUrl, 20),
-            roughnessMap: Floor.loadTexture(woodWicketRoughnessUrl, 20),
-            normalMap: Floor.loadTexture(woodWicketNormalUrl, 20),
+            map: Renderable.loadTexture(woodWicketColorUrl, 20),
+            roughnessMap: Renderable.loadTexture(woodWicketRoughnessUrl, 20),
+            normalMap: Renderable.loadTexture(woodWicketNormalUrl, 20),
             side: DoubleSide
         })
     }))
