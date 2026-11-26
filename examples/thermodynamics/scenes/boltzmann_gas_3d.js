@@ -1,8 +1,7 @@
 import {
     Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, Checkbox,
-    UPlotGraph, Colour, SphereSegmentsView, Aquarium, RadialSymmetricBody, Sphere
+    UPlotGraph, Colour, SphereSegmentsView, FuzzySphereSegmentsView, Aquarium, RadialSymmetricBody, Sphere
 } from '../../../src/index.js';
-import {FuzzySphereSegmentsView} from "../../../src/view/3d/composite/segmentviews.js";
 
 const CONTAINER_SIZE = 10;
 const PARTICLE_COUNT = 500;
