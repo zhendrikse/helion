@@ -16,6 +16,7 @@ let sourceFrequency = 1.0;
 let sourceVelocity = 0.5;
 let waveSpeed = 1.0;
 let simulationTime = 0;
+let sourceX = SOURCE_INITIAL_X;
 let nextEmissionTime = 0;
 let nextWavefrontIndex = 0;
 let lastArrivalTime = null;
@@ -167,10 +168,10 @@ function recordArrival(wavefront, time) {
 }
 
 function emitWavefronts() {
-    while (nextEmissionTime <= simulationTime && nextWavefrontIndex < MAX_WAVEFRONTS) {
+    while (nextEmissionTime <= simulationTime) {
         const wavefront = wavefronts[nextWavefrontIndex % MAX_WAVEFRONTS];
         wavefront.emissionTime = nextEmissionTime;
-        wavefront.sourceX = SOURCE_INITIAL_X + sourceVelocity * nextEmissionTime;
+        wavefront.sourceX = sourceX - sourceVelocity * (simulationTime - nextEmissionTime);
         wavefront.emittedFrequency = sourceFrequency;
         wavefront.emittedVelocity = sourceVelocity;
         wavefront.previousGap = -Infinity;
@@ -210,12 +211,15 @@ function updateWavefronts() {
 
 function simulate(dt) {
     simulationTime += dt;
-    source.position.set(SOURCE_INITIAL_X + sourceVelocity * simulationTime, SOURCE_Y, 0.04);
+    sourceX += sourceVelocity * dt;
+    source.position.set(sourceX, SOURCE_Y, 0.04);
     updateWavefronts();
 }
 
 function resetSimulation() {
     simulationTime = 0;
+    sourceX = SOURCE_INITIAL_X;
+    isDraggingObserver = false;
     nextEmissionTime = 0;
     nextWavefrontIndex = 0;
     lastArrivalTime = null;
@@ -227,7 +231,7 @@ function resetSimulation() {
         wavefront.mesh.visible = false;
     }
 
-    source.position.set(SOURCE_INITIAL_X, SOURCE_Y, 0.04);
+    source.position.set(sourceX, SOURCE_Y, 0.04);
     graph.reset();
     simulation?.setBottomText('Drag the observer to change its position.');
 }
