@@ -130,8 +130,10 @@ export class Gas extends ModelObjectsCollection{
         this._baseParticleCount = particleCount;
         this._containerSize = containerSize;
         this._dimensions = dimensions;
-        /** @type {Segments<GasParticle>} */
+        /** @type {Segments<GasParticle>} Includes the tracer for compatibility. */
         this._spheres = new Segments();
+        /** @type {Segments<GasParticle>} Gas particles only, excluding the tracer. */
+        this._gasParticles = new Segments();
 
         this._particleRadius = particleRadius;
         this._particleMass = particleMass;
@@ -154,8 +156,10 @@ export class Gas extends ModelObjectsCollection{
     set tracerMass(mass) { this._bindables[0].state.mass = mass; }
     get tracerMass() { return this._bindables[0].state.mass; }
     get tracer() { return this._bindables[0]; }
-    /** @returns {Segments<GasParticle>} */
+    /** @returns {Segments<GasParticle>} Includes the tracer as the first segment. */
     get spheres() { return this._spheres; }
+    /** @returns {Segments<GasParticle>} Gas particles only, excluding the tracer. */
+    get gasParticles() { return this._gasParticles; }
     get temperature() { return this._temperature; }
 
     /**
@@ -175,6 +179,7 @@ export class Gas extends ModelObjectsCollection{
             newParticles.add(particle);
             this.add(particle);
             this._spheres.add(particle);
+            this._gasParticles.add(particle);
         }
         return newParticles;
     }
@@ -240,9 +245,12 @@ export class Gas extends ModelObjectsCollection{
         this._bindings.length = 0;
         this._temperature = temperature;
         this._spheres.clear();
+        this._gasParticles.clear();
         for (let i = 0; i < this._bindables.length; i++) {
             this.#resetParticle(this._bindables[i], i === 0 ? 0 : this._temperature, i);
             this._spheres.add(this._bindables[i]);
+            if (i > 0)
+                this._gasParticles.add(this._bindables[i]);
         }
     }
 
