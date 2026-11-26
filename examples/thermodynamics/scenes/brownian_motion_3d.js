@@ -19,8 +19,9 @@ const gas = new Gas({
 });
 const tracerTrail = new Trail({ maxPoints: 500, trailStep: 10, color: new Colour(0x55ffff) });
 const spheresView = new FuzzySphereSegmentsView({
-    colorMapper: (particle, index, color) => color.setHex(index === 0 ? 0x55ffff : particle.afterglowCounter > 0 ? 0xff0000 : 0x55ff55)
+    colorMapper: (particle, index, color) => color.setHex(particle.afterglowCounter > 0 ? 0xff0000 : 0x55ff55)
 });
+const tracerView = new Sphere({ color: new Colour(0x55ffff) });
 /** @type {number[][]} */
 const histogramBuffer = [];
 const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SPEED / BIN_COUNT);
@@ -58,7 +59,8 @@ Simulation
                 '$$v_{\\mathrm{rms}}=\\sqrt{\\frac{3k_B T}{m}}$$'
         }
     })
-    .bind(gas.spheres.alwaysWith(spheresView))
+    .bind(gas.gasParticles.alwaysWith(spheresView))
+    .bind(gas.tracer.alwaysWith(tracerView))
     .bind(gas.tracer.alwaysWith(tracerTrail))
     .bind(bowl.onceWith(bowlView))
     .runsEvery(0.01)
