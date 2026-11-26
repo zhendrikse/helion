@@ -150,15 +150,14 @@ export class SphereSegmentsView extends InstancedSegmentsView {
 
 export class FuzzySphereSegmentsView extends InstancedSegmentsView {
     constructor({
-        glowIntensity = 3.3,
+        glowIntensity = 0.3,
         glowColor = Colour.Yellow,
-        colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, 1, 1),
+        colorMapper = (segment, index, targetColor) => targetColor.copy(glowColor.asThreeJsColor()),
         opacity = 1,
     } = {}) {
         const material = new ShaderMaterial({
             uniforms: {
-                uColor: { value: glowColor.asThreeJsColor() },
-                intensity: { value: glowIntensity },
+                intensity: { value: 1 / glowIntensity },
                 opacity: { value: opacity }
             },
             transparent: true,
@@ -193,7 +192,6 @@ export class FuzzySphereSegmentsView extends InstancedSegmentsView {
                 }
             `,
             fragmentShader: `
-                uniform vec3 uColor;
                 uniform float intensity;
                 uniform float opacity;
 
@@ -204,7 +202,7 @@ export class FuzzySphereSegmentsView extends InstancedSegmentsView {
                 void main() {
                     float rawIntensity = max(dot(vPosition, vNormalView), 0.0);
                     float glowIntensity = pow(rawIntensity, intensity);
-                    gl_FragColor = vec4(uColor * vInstanceColor, glowIntensity * opacity);
+                    gl_FragColor = vec4(vInstanceColor, glowIntensity * opacity);
                 }
             `
         });
