@@ -1,3 +1,4 @@
+export * as THREE from 'three';
 export {
     AxialSymmetricBody, RadialSymmetricBody, Lattice, ChainTopology,
     CubicLatticeTopology, BodyPair, Body, Block, BodyPairs

@@ -9,14 +9,6 @@ export default defineConfig({
             name: 'Helion',
             formats: ['es'],
             fileName: (format) => `helion.${format}.js`,
-        },
-        rollupOptions: {
-            external: ['three', 'uplot'],
-            output: {
-                globals: {
-                    three: 'THREE'
-                }
-            }
         }
     }
 });

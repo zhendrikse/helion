@@ -1,4 +1,3 @@
-import { Vector2 } from 'three';
 import {
     RadialSymmetricBody, Simulation, Sphere, Floor, Vec3, Trail, G, UniformGravitationalForce, UPlotGraph,
     Vec2, Colour} from '../../../src/index.js';
