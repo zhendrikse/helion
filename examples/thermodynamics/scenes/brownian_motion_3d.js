@@ -22,6 +22,14 @@ const spheresView = new FuzzySphereSegmentsView({
     colorMapper: (particle, index, color) => color.setHex(particle.afterglowCounter > 0 ? 0xff0000 : 0x55ff55)
 });
 const tracerView = new Sphere({ color: new Colour(0x55ffff) });
+const fuzzyTracerView = new Sphere({
+    color: new Colour(0x55ffff),
+    glowColor: new Colour(0x55ffff),
+    glowIntensity: 0.3,
+    glowRadius: 1.5,
+    glowOnly: true,
+    visible: false
+});
 /** @type {number[][]} */
 const histogramBuffer = [];
 const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SPEED / BIN_COUNT);
@@ -61,6 +69,7 @@ Simulation
     })
     .bind(gas.gasParticles.alwaysWith(spheresView))
     .bind(gas.tracer.alwaysWith(tracerView))
+    .bind(gas.tracer.alwaysWith(fuzzyTracerView))
     .bind(gas.tracer.alwaysWith(tracerTrail))
     .bind(bowl.onceWith(bowlView))
     .runsEvery(0.01)
@@ -71,6 +80,11 @@ Simulation
         .togetherWith(new Button(' | ')
             .withText(`Add ${PARTICLES_TO_ADD}`)
             .onClick(() => gas.addParticles(PARTICLES_TO_ADD))))
+    .append(new Checkbox('Fuzzy tracer')
+        .onChange(checked => {
+            tracerView.visible = !checked;
+            fuzzyTracerView.visible = checked;
+        }))
     .append(new RadioGroup()
         .add('Cube', () => changeContainerTo(Gas.bounceWithinBox))
         .add('Sphere', () => changeContainerTo(Gas.bounceWithinSphere))
