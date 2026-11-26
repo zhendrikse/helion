@@ -31,9 +31,6 @@ const upperJet = new AxialSymmetricBody({
 const mainStar = new CelestialBody({ position: new Vec3(-0.2, 0, 0), radius: 0.185 });
 const rocheBulge1 = new RadialSymmetricBody({ radius: 0.088 });
 const rocheBulge2 = new RadialSymmetricBody({ radius: 0.049 });
-const diskWind = new CelestialBody({
-    radius: whiteDwarf.radius - 5e-4 // Hide core inside white dwarf as we only want the glow to be rendered
-});
 
 const initialDStart = 0.05 - rocheBulge2.radius + 0.01;
 const initialStreamStart = new Vec3(-initialDStart, 0, 0);
@@ -48,7 +45,6 @@ const whiteDwarfLight1 = new PointLight(0xcc66ff, 1.25, 0.45);
 const whiteDwarfLight2 = new PointLight(0xcc66ff, 1.25, 0.45);
 
 const jetOffset = new Vec3(0, jetLength, 0);
-const glow = new SunView({ glowScale: 125, color: new Colour(0xffeedd)});
 function updateSystem() {
     angle += dTheta;
 
@@ -57,7 +53,6 @@ function updateSystem() {
     accretionDisk.position.copy(whiteDwarfPosition);
     lowerJet.position.copy(whiteDwarfPosition).sub(jetOffset);
     upperJet.position.copy(whiteDwarfPosition).add(jetOffset);
-    glow.position.set(whiteDwarfPosition.x, whiteDwarfPosition.y, whiteDwarfPosition.z);
 
     const orbitingPosition = distance => new Vec3(cos(angle), 0, sin(angle)).multiplyScalar(distance);
     mainStar.position.copy(orbitingPosition(-0.2));
@@ -76,19 +71,12 @@ function updateSystem() {
     whiteDwarfLight2.position.set(whiteDwarfPosition.x, whiteDwarfPosition.y - .01, whiteDwarfPosition.z);
 }
 
-const streamMaterial = new MeshBasicMaterial({
-    transparent: true,
-    opacity: 0.8,
-    side: DoubleSide,
-    depthWrite: false
-});
-
 const material = () => new MeshPhongMaterial({ transparent: false, roughness: 0.6, metalness: 0.2 });
 Simulation
     .with({
         htmlDivId: 'xrayBinaryContainer',
         viewport: { aspectRatio: '4 / 3' },
-        camera: { position: new Vec3(0.2, 0.4, -1).normalize().multiplyScalar(-1.35), fieldOfView: 40 },
+        camera: { position: new Vec3(0.3, 0.6, -1.5), fieldOfView: 40 },
         infoPanel: {
             text: '<strong>🔮 X-ray binary</strong><br/>Matter from the red giant is spilling through the ' +
                 '<a href=\"https://en.wikipedia.org/wiki/Roche_lobe\">Roche lobe</a> ' +
@@ -98,16 +86,18 @@ Simulation
     })
     .bind(whiteDwarf.alwaysWith(new Sphere({
         color: new Colour(0xcc66ff),
-        material: new MeshBasicMaterial({ color: 0xcc66ff })
+        material: new MeshBasicMaterial({ color: 0xcc66ff }),
+        glowIntensity: 0.5,
+        glowColor: new Colour(0xd3b6aa),
+        glowRadius: 50
     })))
     .bind(accretionDisk.alwaysWith(new Cylinder({ color: new Colour(0xd3b644), opacity: 0.55 })))
-    .bind(diskWind.onceWith(glow))
     .bind(lowerJet.alwaysWith(new Cone({ color: new Colour(0xeeee44), opacity: 0.1 })))
     .bind(upperJet.alwaysWith(new Cone({ color: new Colour(0xeeee44), opacity: 0.1 })))
     .bind(mainStar.alwaysWith(new Sphere({
         material: material(),
         color: new Colour(0xff7700),
-        segments: 64
+        segments: 128
     })))
     .bind(rocheBulge1.alwaysWith(new Sphere({ material: material(), color: new Colour(0xff7700), opacity: 0.85, segments: 64 })))
     .bind(rocheBulge2.alwaysWith(new Sphere({ material: material(), color: new Colour(0xff7700), opacity: 0.9, segments: 64 })))
@@ -115,15 +105,20 @@ Simulation
         color: new Colour(0xb3e666),
         opacity: 0.8,
         radiusFunction: body => body.radius,
-        material: streamMaterial
+        material: new MeshBasicMaterial({
+            transparent: true,
+            opacity: 0.8,
+            side: DoubleSide,
+            depthWrite: false
+        })
     })))
     .addObject3D(whiteDwarfLight1)
     .addObject3D(whiteDwarfLight2)
     .append(new Slider('Orbital speed')
         .withUnits(' rad/frame')
-        .withRange(new Range(-0.01, -0.001, 0.001))
-        .withValue(dTheta)
-        .onInput(value => dTheta = value))
+        .withRange(new Range(0, 10, .1))
+        .withValue(-dTheta * 1e3)
+        .onInput(value => dTheta = -value * 1e-3))
     .runsEvery(1 / 60)
     .onStep(updateSystem)
     .start();

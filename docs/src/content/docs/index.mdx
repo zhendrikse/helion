@@ -6,27 +6,26 @@ import '../../assets/styles.css';
 import EulerFluid from '../../components/EulerFluid.astro';
 import EnergyEquipartition from '../../components/EnergyEquipartion.astro';
 
-#### A virtual laboratory for exploring the mathematics and physics of our universe.
+### Explore the mathematics and physics of our universe in your browser
 <div class="header_line"></div>
 
 <div style="width: 50%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;" id="saturnContainer">
 </div>
 <script type="module" src={import.meta.env.BASE_URL + "examples/astrophysics/scenes/planets/saturn.js"}></script>
 
-[Helion](https://github.com/zhendrikse/helion) is a browser-native framework for
-building interactive and visually engaging demos for mathematics and physics.
-It turns the browser into a virtual laboratory where scientific ideas can be explored
-through code, numerical experiments, and interactive visualizations.
+[Helion](https://github.com/zhendrikse/helion) is a browser native scientific modeling
+and visualization framework for interactive mathetics and physics.
+It turns your browser into a virtual laboratory where scientific ideas can be explored through code,
+numerical experiments, and interactive visualizations.
 
 Helion is built around a simple principle: **scientific code should express scientific intent**.
-Mathematical and physical concepts such as fields, transformations, forces, geometries, and numerical
-solvers should be recognizable in the code, rather than hidden behind layers of generic software abstractions.
+Mathematical and physical concepts such as fields, transformations, forces, geometries,
+and numerical solvers should immediately be recognizable in the code.
 
-The result is a JavaScript environment (fast feedback loops!)
-for building simulations that are both computationally
-meaningful and visually engaging.
+The result is a JavaScript environment for building simulations that are
+both computationally meaningful and visually engaging.
 
-#### From scientific model to interactive visualization
+### From scientific model to interactive visualization
 <div class="header_line"></div>
 
 <div style="width: 50%; float: right; margin: 1em 0 1rem 1em; display: flex; flex-direction: column; align-items: center;" id="eulerFluidDemo">
@@ -34,9 +33,9 @@ meaningful and visually engaging.
 <EulerFluid/>
 
 Helion separates a scientific model from the way it is visualized.
-A model describes the mathematical or
-physical system; transformations modify its state, and solvers advance it according to the equations
-or numerical methods being used. Views translate that state into a visual representation.
+A model describes the mathematical or physical system;
+transformations modify its state, and solvers advance it according to the equations or
+numerical methods being used. Views translate that state into a visual representation.
 
 This separation makes it possible to explore the same model through different views,
 to change how a system is solved without redesigning its visualization,
@@ -71,9 +70,9 @@ The goal is not to hide the mathematics, but to make the implementation reflect 
 📌 **Reusable numerical methods** — solvers and transformations can be combined with different models<br/>
 📌 **Interactive 2D and 3D graphics** — observe the behavior of a system as it evolves<br/>
 📌 **Browser-based exploration** — run the published demonstrations directly in your browser<br/>
-📌 **Built for curiosity** — from individual mathematical objects to complex physical simulations
+📌 **Built for curiosity** — from individual mathematical objects to complex physical simulations<br/>
 
-#### Core concepts
+### Core concepts
 <div class="header_line"></div>
 
 Helion organizes scientific simulations around a small set of complementary ideas. Each has a distinct responsibility.
@@ -132,11 +131,10 @@ The same architectural ideas can be used to study very different systems:
 - **Nature-inspired systems:** procedural geometry, growth, and simulations of natural patterns.
 - **Astronomy and relativity:** visual models of celestial systems and relativistic phenomena.
 
-The published examples are an important part of Helion: they show how the underlying concepts
-can be used in practice, from compact mathematical demonstrations to more elaborate simulations.
+The published examples are an important part of Helion: they show how the underlying concepts can
+be used in practice, from compact mathematical demonstrations to more elaborate simulations.
 
-#### Designed for learning and exploration
-
+### Designed for learning and exploration
 <div class="header_line"></div>
 
 Helion is particularly suited to situations where seeing a system evolve is as important as understanding its equations.
@@ -150,22 +148,7 @@ Rather than treating visualization as a final, separate step, Helion brings the 
 representation together throughout the experiment. Parameters can be changed, simulations can be restarted,
 and different representations can help reveal patterns that are difficult to see in equations alone.
 
-#### Positioning
-<div class="header_line"></div>
-
-| Project         | Browser    | Nice 3D | Math semantics | Phys semantics | API        |
-| --------------- | ---------- | ------- | -------------- | -------------- | ---------- |
-| VPython         | 🤞         | 💪     | 🤏             | 🤏             | very basic |
-| Three.js        | ✔️         | 🎖️     | ❌             | ❌             | low level  |
-| p5.js           | ✔️         | 🤏     | ❌             | ❌             | basic      |
-| Babylon.js      | ✔️         | 🎖️     | ❌             | ❌             | low level  |
-| Mathematica     | ❌ (cloud) | 🎖️     | 💪💪💪        | 💪             | high level  |
-| MATLAB          | ❌         | 👍     | 💪             | 🤏             | high level |
-| Manim           | ❌         | 👍     | 💪             | ❌             | high level |
-| Helion          | ✔️         | 👍     | 💪             | 💪             | high level |
-
-
-#### Explore the live demonstrations
+### Explore the live demonstrations
 <div class="header_line"></div>
 
 Browse the examples and explore the mathematics and physics interactively.
@@ -186,13 +169,11 @@ Browse the examples and explore the mathematics and physics interactively.
     <a href="waves/">🌊 Waves</a>
 </div>
 
-#### Explore the code
+### Explore the code
 <div class="header_line"></div>
 
 Helion is an evolving open-source project. The source code, examples, and documentation provide a starting point for understanding how the framework works and for experimenting with new scientific ideas.
 
 - [Source code on GitHub](https://github.com/zhendrikse/helion)
 - [Browse the examples](https://github.com/zhendrikse/helion/tree/main/examples)
-
-
 

@@ -129,20 +129,6 @@ Rather than treating visualization as a final, separate step, Helion brings the 
 representation together throughout the experiment. Parameters can be changed, simulations can be restarted,
 and different representations can help reveal patterns that are difficult to see in equations alone.
 
-### 🎯 Positioning
-
-| Project         | Browser    | Nice 3D | Math semantics | Phys semantics | API        |
-| --------------- | ---------- | ------- | -------------- | -------------- | ---------- |
-| VPython         | 🤞         | 💪     | 🤏             | 🤏             | very basic |
-| Three.js        | ✔️         | 🎖️     | ❌             | ❌             | low level  |
-| p5.js           | ✔️         | 🤏     | ❌             | ❌             | basic      |
-| Babylon.js      | ✔️         | 🎖️     | ❌             | ❌             | low level  |
-| Mathematica     | ❌ (cloud) | 🎖️     | 💪💪💪        | 💪             | high level  |
-| MATLAB          | ❌         | 👍     | 💪             | 🤏             | high level |
-| Manim           | ❌         | 👍     | 💪             | ❌             | high level |
-| Helion          | ✔️         | 👍     | 💪             | 💪             | high level |
-
-
 ### 🧪 Explore the live demonstrations
 
 Browse the examples and explore the mathematics and physics interactively.
