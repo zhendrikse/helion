@@ -1,6 +1,6 @@
 import {
-    Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
-    BoxGeometry, Object3D, Vector2, Box3, SphereGeometry, Vector3
+    AdditiveBlending, BackSide, Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
+    BoxGeometry, Object3D, Vector2, Box3, SphereGeometry, Vector3, ShaderMaterial
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
@@ -10,7 +10,6 @@ import { Interval } from "../../../model/math/math.js";
 import { Vec2, Vec3 } from "../../../model/math/objects.js";
 import { LineSegment, Segments } from "../../../model/math/objects.js";
 import {ColorMappers, Colour} from "../../colormappers.js";
-import {GlowMaterial} from "../primitives/astro.js";
 
 class InstancedSegmentsView extends Renderable3D {
     static UP = new Vector3(0, 1, 0);
@@ -151,15 +150,65 @@ export class SphereSegmentsView extends InstancedSegmentsView {
 
 export class FuzzySphereSegmentsView extends InstancedSegmentsView {
     constructor({
-        glowIntensity = 0.3,
+        glowIntensity = 3.3,
         glowColor = Colour.Yellow,
         colorMapper = (segment, index, targetColor) => targetColor.setRGB(1, 1, 1),
         opacity = 1,
     } = {}) {
-        const material = new GlowMaterial({
-            intensity: { value: 1 / glowIntensity },
-            uColor: { value: glowColor.asThreeJsColor() }
-        }).material;
+        const material = new ShaderMaterial({
+            uniforms: {
+                uColor: { value: glowColor.asThreeJsColor() },
+                intensity: { value: glowIntensity },
+                opacity: { value: opacity }
+            },
+            transparent: true,
+            blending: AdditiveBlending,
+            depthWrite: false,
+            side: BackSide,
+            vertexShader: `
+                varying vec3 vPosition;
+                varying vec3 vNormalView;
+                varying vec3 vInstanceColor;
+
+                void main() {
+                    vec4 mvPosition;
+
+                    #ifdef USE_INSTANCING
+                        mvPosition = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+                        vNormalView = normalize(normalMatrix * mat3(instanceMatrix) * normal);
+                    #else
+                        mvPosition = modelViewMatrix * vec4(position, 1.0);
+                        vNormalView = normalize(normalMatrix * normal);
+                    #endif
+
+                    vPosition = normalize(mvPosition.xyz);
+
+                    #ifdef USE_INSTANCING_COLOR
+                        vInstanceColor = instanceColor;
+                    #else
+                        vInstanceColor = vec3(1.0);
+                    #endif
+
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                uniform vec3 uColor;
+                uniform float intensity;
+                uniform float opacity;
+
+                varying vec3 vPosition;
+                varying vec3 vNormalView;
+                varying vec3 vInstanceColor;
+
+                void main() {
+                    float rawIntensity = max(dot(vPosition, vNormalView), 0.0);
+                    float glowIntensity = pow(rawIntensity, intensity);
+                    gl_FragColor = vec4(uColor * vInstanceColor, glowIntensity * opacity);
+                }
+            `
+        });
+
         super({ material, colorMapper, opacity });
     }
 
@@ -175,7 +224,7 @@ export class FuzzySphereSegmentsView extends InstancedSegmentsView {
 
     /** @param {number} opacity */
     set opacity(opacity) {
-        this._material.opacity = opacity;
+        this._material.uniforms.opacity.value = opacity;
     }
 }
 
