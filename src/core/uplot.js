@@ -1,4 +1,12 @@
 import uPlot from 'uplot';
+import uPlotCss from 'uplot/dist/uPlot.min.css?inline';
+
+if (typeof document !== 'undefined' && !document.querySelector('[data-helion-uplot-style]')) {
+    const style = document.createElement('style');
+    style.dataset.helionUplotStyle = '';
+    style.textContent = uPlotCss;
+    document.head.appendChild(style);
+}
 import { Interval } from '../model/math/math.js';
 import { Colour } from '../view/colormappers.js';
 
