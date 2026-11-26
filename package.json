@@ -3,12 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "description": "A web-based simulation environment for educational and scientific visualizations",
-  "main": "./dist/helion.umd.js",
   "module": "./dist/helion.es.js",
   "exports": {
     ".": {
-      "import": "./dist/helion.es.js",
-      "require": "./dist/helion.umd.js"
+      "import": "./dist/helion.es.js"
     }
   },
   "scripts": {
@@ -54,10 +52,6 @@
     "remark-math": "^6.0.0",
     "starlight-llms-txt": "^0.12.0",
     "three": "^0.187.0",
-    "uplot": "^1.6.32"
-  },
-  "peerDependencies": {
-    "three": "^0.186.0",
     "uplot": "^1.6.32"
   }
 }
