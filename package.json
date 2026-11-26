@@ -1,6 +1,6 @@
 {
   "name": "helion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "A web-based simulation environment for educational and scientific visualizations",
   "module": "./dist/helion.es.js",
