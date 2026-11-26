@@ -103,5 +103,8 @@ function spawnParticleFromSlit(slitPos) {
         radius: .06 * resolution
     });
     particles.push(particle);
-    simulation.bind(particle.alwaysWith(new Sphere({ color: Colour.White})));
+    simulation.bind(particle.alwaysWith(new Sphere({
+        glowOnly: true,
+        glowIntensity: 0.3
+    })));
 }

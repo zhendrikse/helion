@@ -1,6 +1,6 @@
 import {
-    AdditiveBlending, BackSide, Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
-    BoxGeometry, Object3D, Vector2, Box3, SphereGeometry, Vector3, ShaderMaterial
+    Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
+    BoxGeometry, Object3D, Vector2, Box3, SphereGeometry, Vector3, ShaderMaterial, AdditiveBlending, BackSide
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
@@ -54,7 +54,10 @@ class InstancedSegmentsView extends Renderable3D {
         this.add(this._mesh);
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @return {Geometry}
+     */
     createGeometry() {
         throw new Error("createGeometry() must be implemented");
     }
@@ -154,7 +157,7 @@ export class FuzzySphereSegmentsView extends InstancedSegmentsView {
         glowColor = Colour.Yellow,
         colorMapper = (segment, index, targetColor) => targetColor.copy(glowColor.asThreeJsColor()),
         opacity = 1,
-        radiusScale = 1,
+        radiusScale = 2,
     } = {}) {
         const material = new ShaderMaterial({
             uniforms: {
@@ -173,22 +176,10 @@ export class FuzzySphereSegmentsView extends InstancedSegmentsView {
                 void main() {
                     vec4 mvPosition;
 
-                    #ifdef USE_INSTANCING
-                        mvPosition = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
-                        vNormalView = normalize(normalMatrix * mat3(instanceMatrix) * normal);
-                    #else
-                        mvPosition = modelViewMatrix * vec4(position, 1.0);
-                        vNormalView = normalize(normalMatrix * normal);
-                    #endif
-
+                    mvPosition = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+                    vNormalView = normalize(normalMatrix * mat3(instanceMatrix) * normal);
                     vPosition = normalize(mvPosition.xyz);
-
-                    #ifdef USE_INSTANCING_COLOR
-                        vInstanceColor = instanceColor;
-                    #else
-                        vInstanceColor = vec3(1.0);
-                    #endif
-
+                    vInstanceColor = instanceColor;
                     gl_Position = projectionMatrix * mvPosition;
                 }
             `,
@@ -209,7 +200,7 @@ export class FuzzySphereSegmentsView extends InstancedSegmentsView {
         });
 
         super({ material, colorMapper, opacity });
-        this._radiusScale = radiusScale;
+        this.radiusScale = radiusScale;
     }
 
     createGeometry() {
@@ -218,26 +209,13 @@ export class FuzzySphereSegmentsView extends InstancedSegmentsView {
 
     updateTransform(segment) {
         this._dummy.position.copy(segment.position);
-        this._dummy.scale.setScalar(segment.radius * this._radiusScale);
+        this._dummy.scale.setScalar(segment.radius * this.radiusScale);
         this._dummy.quaternion.identity();
     }
 
     /** @param {number} opacity */
-    set opacity(opacity) {
-        this._material.uniforms.opacity.value = opacity;
-    }
-
-    /**
-     * Scale the rendered radius without changing the model segment radius.
-     * @param {number} radiusScale
-     */
-    set radiusScale(radiusScale) {
-        this._radiusScale = radiusScale;
-    }
-
-    get radiusScale() {
-        return this._radiusScale;
-    }
+    set opacity(opacity) { this._material.uniforms.opacity.value = opacity; }
+    get opacity() { return this._material.uniforms.opacity.value; }
 }
 
 export class BoxSegmentsView extends InstancedSegmentsView {

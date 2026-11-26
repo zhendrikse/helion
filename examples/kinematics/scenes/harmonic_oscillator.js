@@ -86,7 +86,6 @@ Simulation
         }
     })
     .withMouseClickEventListener()
-    .addGraph(graph)
     .substeps(2)
     .onStep((clock, dt) => {
         chain
@@ -134,5 +133,7 @@ Simulation
         .on(chain)
         .withProperty('damping')
         .withValue(0.25)
-    );
+    )
+    .addGraph(graph);
+
 latticeView.nodesVisible = false;
