@@ -31,6 +31,14 @@ const field = new DiscreteScalarField({
     ny: Math.floor(2 * xMax * resolution),
 });
 field.apply(doubleSlitOperator);
+const intensityRaster = new FieldEdgeIntensityPixelRaster({
+    edgeHeight: .6 * xMax * resolution,
+    colorMapper: wavelengthColorMapper
+});
+const fieldSurface = new DiscreteFieldSurfaceView({
+    colorMapper: wavelengthColorMapper,
+    normalizer: new FixedIntervalNormalizer()
+});
 
 /** @type {RadialSymmetricBody[]} */
 const particles = [];
@@ -43,16 +51,15 @@ const simulation = Simulation
     })
     .bind(slit1.onceWith(new Cylinder({ color: Colour.White })))
     .bind(slit2.onceWith(new Cylinder({ color: Colour.White })))
-    .bind(field.onceWith(new FieldEdgeIntensityPixelRaster({
-        edgeHeight: .6 * xMax * resolution,
-        colorMapper: wavelengthColorMapper
-    })))
-    .bind(field.onceWith(new DiscreteFieldSurfaceView({
-        colorMapper: wavelengthColorMapper,
-        normalizer: new FixedIntervalNormalizer()
-    })))
+    .bind(field.onceWith(intensityRaster))
+    .bind(field.onceWith(fieldSurface))
     .appendStartStopResetUI()
-    .onReset(() => particles.length = 0)
+    .onReset(() => {
+        particles.length = 0;
+        field.apply(doubleSlitOperator);
+        intensityRaster.synchronizeWith(field);
+        fieldSurface.synchronizeWith(field);
+    })
     .onStep((_) => {
         if (Math.random() > 0.9) spawnParticleFromSlit(slit1.position);
         if (Math.random() > 0.9) spawnParticleFromSlit(slit2.position);
