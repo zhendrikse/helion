@@ -1,0 +1,1 @@
+var e=`/helion/assets/wood_128x128-DT3Fslvv.jpg`;export{e as t};

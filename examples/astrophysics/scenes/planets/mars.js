@@ -1,0 +1,7 @@
+import{Dr as e,Qr as t,Zn as n,ii as r,mi as i,mr as a,pt as o,rt as s,tr as c,wt as l}from"../../../../assets/src-BXkous4q.js";import{n as u,t as d}from"../../../../assets/marsbump-DV6pDe_V.js";var f=new s(o),p=new l({material:new i({map:e.loadTexture(u),bumpMap:e.loadTexture(d),bumpScale:2.5,shininess:0})}),m=new r(16777215,2);m.position.set(10,2,1.5);var h=performance.now()*.001;n.with({htmlDivId:`marsContainer`,camera:{fieldOfView:45,position:new a(1,1.5,4).multiplyScalar(6)},scene:{background:c.Background.STARS,scale:1e-6},lighting:{enabled:!1},headUpDisplay:{enabled:!1},infoPanel:{text:`<strong>♂️ Mars</strong><br/>• One minute &#8792; 24 hours.<br/>• Approx. half Earth's diameter.<br/>
+• Red color because of iron oxide (rust) in its surface dust.<br/>
+• Average temperature around -65°C.<br/>
+• Two small moons, Phobos and Deimos.<br/>
+• Olympus Mons is the largest known volcano in the solar system.<br/>
+• Day lasts only 37 minutes longer than day on Earth.<br/>
+👉 Evidence of ancient rivers/lakes: liquid water once flowed across its surface.<br/>`}}).addObject3D(new t(16772846,.1)).addObject3D(m).bind(f.alwaysWith(p)).onFrame(e=>{let t=(e-h)*.001;h=e;let n=t*24/60;f.time+=n,p.translation=f.coordinates}).start();
