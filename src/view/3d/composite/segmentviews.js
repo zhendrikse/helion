@@ -154,6 +154,7 @@ export class FuzzySphereSegmentsView extends InstancedSegmentsView {
         glowColor = Colour.Yellow,
         colorMapper = (segment, index, targetColor) => targetColor.copy(glowColor.asThreeJsColor()),
         opacity = 1,
+        radiusScale = 1,
     } = {}) {
         const material = new ShaderMaterial({
             uniforms: {
@@ -208,6 +209,7 @@ export class FuzzySphereSegmentsView extends InstancedSegmentsView {
         });
 
         super({ material, colorMapper, opacity });
+        this._radiusScale = radiusScale;
     }
 
     createGeometry() {
@@ -216,13 +218,25 @@ export class FuzzySphereSegmentsView extends InstancedSegmentsView {
 
     updateTransform(segment) {
         this._dummy.position.copy(segment.position);
-        this._dummy.scale.setScalar(segment.radius);
+        this._dummy.scale.setScalar(segment.radius * this._radiusScale);
         this._dummy.quaternion.identity();
     }
 
     /** @param {number} opacity */
     set opacity(opacity) {
         this._material.uniforms.opacity.value = opacity;
+    }
+
+    /**
+     * Scale the rendered radius without changing the model segment radius.
+     * @param {number} radiusScale
+     */
+    set radiusScale(radiusScale) {
+        this._radiusScale = radiusScale;
+    }
+
+    get radiusScale() {
+        return this._radiusScale;
     }
 }
 
