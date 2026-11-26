@@ -10,7 +10,6 @@ const WORLD_WIDTH = 12;
 const WORLD_HEIGHT = 6;
 const SOURCE_INITIAL_X = 1;
 const SOURCE_Y = 2;
-const OBSERVER_Y = -2;
 const MAX_WAVEFRONTS = 100;
 
 let sourceFrequency = 1.0;
