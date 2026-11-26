@@ -89,7 +89,6 @@ const simulation = Simulation
             side: DoubleSide
         })
     }))
-    .addGraph(graph)
     .onStep((clock, dt) => {
         chain.integrate(dt);
 
@@ -117,5 +116,6 @@ const simulation = Simulation
         .on(chain)
         .withProperty('damping')
         .withValue(0.2)
-    );
+    )
+    .addGraph(graph);
 

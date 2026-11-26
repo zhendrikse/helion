@@ -1,6 +1,6 @@
 import {
     Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, Checkbox,
-    UPlotGraph, Colour, SphereSegmentsView, Aquarium, RadialSymmetricBody, Sphere
+    UPlotGraph, Colour, Aquarium, RadialSymmetricBody, Sphere, FuzzySphereSegmentsView
 } from '../../../src/index.js';
 
 const CONTAINER_SIZE = 10;
@@ -18,23 +18,12 @@ const gas = new Gas({
     dimensions: 3
 });
 const tracerTrail = new Trail({ maxPoints: 500, trailStep: 10, color: new Colour(0x55ffff) });
-const spheresView = new SphereSegmentsView({
+const spheresView = new FuzzySphereSegmentsView({
     colorMapper: (particle, index, color) => color.setHex(index === 0 ? 0x55ffff : particle.afterglowCounter > 0 ? 0xff0000 : 0x55ff55)
 });
 /** @type {number[][]} */
 const histogramBuffer = [];
 const speedAxis = Array.from({ length: BIN_COUNT }, (_, i) => (i + 0.5) * MAX_SPEED / BIN_COUNT);
-
-const temperatureSlider = new Slider('Temperature')
-    .withRange(new Range(0.1, MAX_SPEED * 0.5, 0.1))
-    .withValue(gas.temperature)
-    .onInput(value => gas.temperature = value);
-
-const tracerMassSlider = new Slider('Tracer mass')
-    .withRange(new Range(1, 100, 1))
-    .withValue(gas.tracerMass)
-    .on(gas)
-    .withProperty('tracerMass');
 
 const graph = new UPlotGraph({
     dataDefinition: [
@@ -74,19 +63,33 @@ Simulation
     .bind(bowl.onceWith(bowlView))
     .runsEvery(0.01)
     .onStep((_, dt) => gas.evolve(dt))
-    .appendStartStopResetUI()
-    .append(new Button()
-        .withText(`Add ${PARTICLES_TO_ADD}`)
-        .onClick(() => gas.addParticles(PARTICLES_TO_ADD)))
     .append(new Checkbox('Tracer trail')
         .checked(true)
         .onChange(checked => tracerTrail.visible = checked)
-        .togetherWith(new RadioGroup()
-            .add('Cube', () => changeContainerTo(Gas.bounceWithinBox))
-            .add('Sphere', () => changeContainerTo(Gas.bounceWithinSphere))
-            .checked(0)))
-    .append(tracerMassSlider)
-    .append(temperatureSlider)
+        .togetherWith(new Button(' | ')
+            .withText(`Add ${PARTICLES_TO_ADD}`)
+            .onClick(() => gas.addParticles(PARTICLES_TO_ADD))))
+    .append(new RadioGroup()
+        .add('Cube', () => changeContainerTo(Gas.bounceWithinBox))
+        .add('Sphere', () => changeContainerTo(Gas.bounceWithinSphere))
+        .checked(0))
+    .append(new Slider('Tracer mass')
+        .withRange(new Range(1, 100, 1))
+        .withValue(gas.tracerMass)
+        .on(gas)
+        .withProperty('tracerMass'))
+    .append(new Slider('Temperature')
+        .withRange(new Range(0.1, MAX_SPEED * 0.5, 0.1))
+        .withValue(gas.temperature)
+        .onInput(value => gas.temperature = value))
+    .append(new Slider('Fuzziness')
+        .withRange(new Range(1.0, 3.0, .01))
+        .on(spheresView)
+        .withProperty('radiusScale'))
+    .append(new Slider('Opacity')
+        .withRange(new Range(.1, 1.0, .01))
+        .on(spheresView)
+        .withProperty('opacity'))
     .addGraph(graph)
     .addObject3D(aquarium)
     .onFrame(() => {

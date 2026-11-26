@@ -1,6 +1,6 @@
 import {
     sampleNormalDistribution, uniform, randomInt, Vec3, Simulation, PointCloud,
-    PointCloudMaterial, PointCloudView, ThreeJsScene
+    PointCloudMaterial, PointCloudView, ThreeJsScene, Slider, Range
 } from '../../../src/index.js';
 
 class SpiralGalaxy extends PointCloud {
@@ -125,8 +125,9 @@ class SpiralGalaxy extends PointCloud {
 }
 
 const spiralGalaxy = new SpiralGalaxy();
+const galaxyParameters = { opacity: { value: 0.5 }, pointSize: { value: 0.8 }};
 const pointCloud = new PointCloudView({
-    material: PointCloudMaterial.galaxy(),
+    material: PointCloudMaterial.galaxy(galaxyParameters),
     colorMapper: (galaxy, index, color) => {
         const position = galaxy.positionAt(index);
         const distance = position.length();
@@ -156,4 +157,12 @@ Simulation
     .runsEvery(0.02)
     .bind(spiralGalaxy.onceWith(pointCloud))
     .onStep(_ => pointCloud.rotation.z += 1e-3 )
+    .append(new Slider('Fuzziness')
+        .withRange(new Range(0.1, 1.0, 0.01))
+        .on(galaxyParameters.opacity)
+        .withProperty('value'))
+    .append(new Slider('Star size')
+        .withRange(new Range(0.1, 1.0, 0.01))
+        .on(galaxyParameters.pointSize)
+        .withProperty('value'))
     .start();
