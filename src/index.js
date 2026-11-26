@@ -52,7 +52,7 @@ export { Equation, WaveEquation, BarrierWaveEquation } from './model/math/equati
 export { Shapes, ShapeConfiguration } from './model/math/shapes.js';
 export { PointCloud, Gas } from './model/phys/clouds.js';
 export { Integrators } from './model/math/numerics/integrators/integrators.js';
-export { Planet, RingsPlanet, SunView, Sattelite, GlowMaterial } from './view/3d/primitives/astro.js';
+export { Planet, RingsPlanet, SunView, Sattelite } from './view/3d/primitives/astro.js';
 export { DropdownMenu, Checkbox, Button, Slider, RadioGroup, TextInput } from './core/controls.js';
 export { Simulation } from './core/helion.js';
 export { ModelObject, Transformation, ModelObjectsCollection, BindingsCollection, Binding } from './model/behavior.js';
@@ -80,7 +80,8 @@ export {
 } from './model/phys/quantum/solvers.js';
 
 export {
-    CylinderSegmentsView, BoxSegmentsView, LineSegmentsView, LineSegmentView, CurveView, SphereSegmentsView
+    CylinderSegmentsView, BoxSegmentsView, LineSegmentsView, LineSegmentView, CurveView,
+    SphereSegmentsView, FuzzySphereSegmentsView
 } from './view/3d/composite/segmentviews.js';
 
 export {

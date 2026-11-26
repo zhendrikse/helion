@@ -231,7 +231,6 @@ const simulation = Simulation
         camera: { position: new Vec3(4.25, 1.25, 7.25).multiplyScalar(1.5) }
     })
     .withMouseClickEventListener()
-    .addGraph(graph)
     .bind(gas.molecules.alwaysWith(gasView))
     .runsEvery(0.003)
     .substeps(2)
@@ -270,4 +269,6 @@ const simulation = Simulation
         .add('Cylinders', () => gasView.forEach(view =>
             view.bondType = SwitchableBondView.Type.Cylinder))
         .checked(1)
-    );
+    )
+    .addGraph(graph);
+

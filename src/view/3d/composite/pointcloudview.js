@@ -49,8 +49,9 @@ export class PointCloudMaterial {
         });
     }
 
-    static galaxy() {
+    static galaxy(uniforms = { opacity: { value: 1.0 }, pointSize: { value: 1.0 }}) {
         return new ShaderMaterial({
+            uniforms: uniforms,
             vertexColors: true,
             transparent: true,
             depthTest: false,
@@ -59,6 +60,8 @@ export class PointCloudMaterial {
                 attribute float size;
                 varying vec3 vColor;
                 varying float vAlpha;
+                uniform float opacity;
+                uniform float pointSize;
 
                 float rand(vec2 co) {
                     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
@@ -71,9 +74,9 @@ export class PointCloudMaterial {
                     vColor = color;
                     float randomFactor = 0.8 + 0.2 * rand(position.xy);
                     // Keep the dense galactic core visible; fade stars only towards the outer disc.
-                    vAlpha = 0.5 * randomFactor * (1.0 - smoothstep(0.0, 500.0, dist));
+                    vAlpha = opacity * randomFactor * (1.0 - smoothstep(0.0, 500.0, dist));
 
-                    gl_PointSize = size * (750.0 / (length(mvPosition.xyz) + 1.0));
+                    gl_PointSize = pointSize * size * (750.0 / (length(mvPosition.xyz) + 1.0));
                     gl_Position = projectionMatrix * mvPosition;
                 }
             `,

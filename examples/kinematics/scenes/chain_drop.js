@@ -213,7 +213,6 @@ const simulation = Simulation
         color: new Colour(0xdeb887)
     })))
     .onReset(() => graph.reset())
-    .addGraph(graph)
     .append(new Slider('Spring force ')
         .withRange(new Range(1, 100, 1))
         .on(chain)
@@ -225,5 +224,6 @@ const simulation = Simulation
         .on(chain)
         .withProperty('damping')
         .withValue(chain.damping)
-    );
+    )
+    .addGraph(graph);
 

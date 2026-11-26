@@ -1,6 +1,6 @@
 import {
     Color, MeshBasicMaterial, InstancedMesh, MeshStandardMaterial, CylinderGeometry,
-    BoxGeometry, Object3D, Vector2, Box3, SphereGeometry, Vector3
+    BoxGeometry, Object3D, Vector2, Box3, SphereGeometry, Vector3, ShaderMaterial, AdditiveBlending, BackSide
 } from "three";
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
@@ -54,7 +54,10 @@ class InstancedSegmentsView extends Renderable3D {
         this.add(this._mesh);
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @return {Geometry}
+     */
     createGeometry() {
         throw new Error("createGeometry() must be implemented");
     }
@@ -146,6 +149,73 @@ export class SphereSegmentsView extends InstancedSegmentsView {
     set opacity(opacity) {
         this._material.opacity = opacity;
     }
+}
+
+export class FuzzySphereSegmentsView extends InstancedSegmentsView {
+    constructor({
+        glowIntensity = 0.3,
+        glowColor = Colour.Yellow,
+        colorMapper = (segment, index, targetColor) => targetColor.copy(glowColor.asThreeJsColor()),
+        opacity = 1,
+        radiusScale = 2,
+    } = {}) {
+        const material = new ShaderMaterial({
+            uniforms: {
+                intensity: { value: 1 / glowIntensity },
+                opacity: { value: opacity }
+            },
+            transparent: true,
+            blending: AdditiveBlending,
+            depthWrite: false,
+            side: BackSide,
+            vertexShader: `
+                varying vec3 vPosition;
+                varying vec3 vNormalView;
+                varying vec3 vInstanceColor;
+
+                void main() {
+                    vec4 mvPosition;
+
+                    mvPosition = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+                    vNormalView = normalize(normalMatrix * mat3(instanceMatrix) * normal);
+                    vPosition = normalize(mvPosition.xyz);
+                    vInstanceColor = instanceColor;
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                uniform float intensity;
+                uniform float opacity;
+
+                varying vec3 vPosition;
+                varying vec3 vNormalView;
+                varying vec3 vInstanceColor;
+
+                void main() {
+                    float rawIntensity = max(dot(vPosition, vNormalView), 0.0);
+                    float glowIntensity = pow(rawIntensity, intensity);
+                    gl_FragColor = vec4(vInstanceColor, glowIntensity * opacity);
+                }
+            `
+        });
+
+        super({ material, colorMapper, opacity });
+        this.radiusScale = radiusScale;
+    }
+
+    createGeometry() {
+        return new SphereGeometry(1, 12, 12);
+    }
+
+    updateTransform(segment) {
+        this._dummy.position.copy(segment.position);
+        this._dummy.scale.setScalar(segment.radius * this.radiusScale);
+        this._dummy.quaternion.identity();
+    }
+
+    /** @param {number} opacity */
+    set opacity(opacity) { this._material.uniforms.opacity.value = opacity; }
+    get opacity() { return this._material.uniforms.opacity.value; }
 }
 
 export class BoxSegmentsView extends InstancedSegmentsView {
