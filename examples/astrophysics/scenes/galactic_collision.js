@@ -1,6 +1,6 @@
 import {
-    Checkbox, Colour, PointCloud, PointCloudMaterial, PointCloudView, GlowMaterial,
-    RadialSymmetricBody, Simulation, Sphere, ThreeJsScene, Trail, Vec3
+    Checkbox, Colour, PointCloud, PointCloudMaterial, PointCloudView,
+    RadialSymmetricBody, Range, Simulation, Slider, Sphere, ThreeJsScene, Trail, Vec3
 } from '../../../src/index.js';
 
 /**
@@ -136,7 +136,10 @@ class TwoGalaxies extends PointCloud {
         return accelerations;
     }
 
-    /** Advance the system with a velocity-Verlet / leapfrog step. @param {number} dt */
+    /**
+     * Advance the system with a velocity-Verlet / leapfrog step.
+     * @param {number} dt
+     */
     evolve(dt) {
         const halfStep = 0.5 * dt;
 
@@ -154,9 +157,10 @@ class TwoGalaxies extends PointCloud {
     }
 }
 
+const galaxyParameters = { opacity: { value: 0.75 }, pointSize: { value: 0.75 }};
 const galaxies = new TwoGalaxies();
 const stars = new PointCloudView({
-    material: PointCloudMaterial.galaxy(),
+    material: PointCloudMaterial.galaxy(galaxyParameters),
     // The first two particles are the cores, now rendered as separate spheres.
     sizeMapper: (pointCloud, index) => index < 2 ? 0 : pointCloud.sizeAt(index)
 });
@@ -177,17 +181,29 @@ Simulation
     .bind(galaxies.alwaysWith(stars))
     .bind(galaxies.core1.alwaysWith(new Trail({ color: new Colour(0xffc864), trailStep: 10, maxPoints: 1000 })))
     .bind(galaxies.core1.alwaysWith(new Sphere({
-        material: new GlowMaterial({ intensity: { value: 3.75 },  uColor: { value: new Colour(0xffc864).asThreeJsColor() } }).material
+        glowIntensity: 0.225,
+        glowOnly: true,
+        glowColor: new Colour(0xffc864)
     })))
     .bind(galaxies.core2.alwaysWith(new Trail({ color: new Colour(0xc8c8ff), trailStep:10, maxPoints: 1000 })))
     .bind(galaxies.core2.alwaysWith(new Sphere({
-        material: new GlowMaterial({ intensity: { value: 3.75 }, uColor: { value: new Colour(0xc8c8ff).asThreeJsColor() } }).material
+        glowIntensity: 0.225,
+        glowOnly: true,
+        glowColor: new Colour(0xc8c8ff)
     })))
-    .append(new Checkbox('Star–star gravity')
-        .checked(false)
-        .onChange(enabled => galaxies.starSelfGravityEnabled = enabled))
     .advancesBy(0.025)
     .substeps(5)
     .onStep((clock, dt) => galaxies.evolve(dt))
     .onReset(() => galaxies.reset())
-    .withMouseClickEventListener();
+    .withMouseClickEventListener()
+    .append(new Checkbox('Star–star gravity')
+        .checked(false)
+        .onChange(enabled => galaxies.starSelfGravityEnabled = enabled))
+    .append(new Slider('Opacity')
+        .withRange(new Range(0.1, 1.0, 0.01))
+        .on(galaxyParameters.opacity)
+        .withProperty('value'))
+    .append(new Slider('Star size')
+        .withRange(new Range(0.1, 1.0, 0.01))
+        .on(galaxyParameters.pointSize)
+        .withProperty('value'));

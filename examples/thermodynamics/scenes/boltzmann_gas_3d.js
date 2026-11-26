@@ -2,6 +2,7 @@ import {
     Button, RadioGroup, Range, Simulation, Slider, Trail, Vec3, Gas, Checkbox,
     UPlotGraph, Colour, SphereSegmentsView, Aquarium, RadialSymmetricBody, Sphere
 } from '../../../src/index.js';
+import {FuzzySphereSegmentsView} from "../../../src/view/3d/composite/segmentviews.js";
 
 const CONTAINER_SIZE = 10;
 const PARTICLE_COUNT = 500;
@@ -16,7 +17,7 @@ const gas = new Gas({
     dimensions: 3
 });
 const tracerTrail = new Trail({ maxPoints: 150, trailStep: 2, color: new Colour(0x55ffff) });
-const spheresView = new SphereSegmentsView({
+const spheresView = new FuzzySphereSegmentsView({
     colorMapper: (particle, index, color) => color.setHex(index === 0 ? 0x55ffff : particle.afterglowCounter > 0 ? 0xff0000 : 0x55ff55)
 });
 /** @type {number[][]} */
